@@ -338,3 +338,4 @@ def analyze_ingredient_ai(prompt: str, valid_categories: dict) -> dict:
     except Exception as e:
         print(f"ERROR: Ingredient Analysis failed: {e}")
         raise ValueError(f"AI Analysis failed: {e}")
+#
