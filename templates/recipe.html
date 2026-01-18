@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% import "components/typography.html" as type %}
+{% import "components/badges.html" as badge %}
+{% import "components/cards.html" as card %}
+
+{% block title %}{{ recipe.title }} - The AI Kitchen{% endblock %}
+
+{% block content %}
+<div class="max-w-screen-2xl mx-auto px-4 py-8 lg:py-12">
+
+    <!-- Navigation Back -->
+    <a href="/"
+        class="inline-flex items-center text-sm font-medium text-slate-500 hover:text-orange-600 mb-8 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+            <path d="m15 18-6-6 6-6" />
+        </svg>
+        Back to Kitchen
+    </a>
+
+    <!-- Full Width Hero Image -->
+    <div
+        class="relative w-full aspect-video md:aspect-[21/9] rounded-3xl overflow-hidden shadow-xl mb-12 bg-orange-50 group border border-slate-200">
+        {% if recipe.image_filename %}
+        <img src="{{ get_recipe_image_url(recipe) }}" alt="{{ recipe.title }}" class="w-full h-full object-cover">
+        {% else %}
+        <!-- Contextual Placeholder -->
+        <div class="absolute inset-0 bg-gradient-to-br from-orange-50 to-white opacity-50"></div>
+        <div class="absolute inset-0 flex items-center justify-center">
+            <span
+                class="text-9xl opacity-20 transform group-hover:scale-110 transition-transform duration-700">🍽️</span>
+        </div>
+        {% endif %}
+
+        <!-- Subtle Retake/Generate Button -->
+        <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <a href="{{ url_for('recipe_image_generation_view', recipe_id=recipe.id) }}"
+                title="{% if recipe.image_filename %}Retake Photo{% else %}Generate Photo{% endif %}"
+                class="h-10 w-10 bg-black/50 hover:bg-black/70 backdrop-blur text-white rounded-full flex items-center justify-center transition-all shadow-sm">
+                {% if recipe.image_filename %}
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                    </path>
+                </svg>
+                {% else %}
+                <span class="text-lg">📸</span>
+                {% endif %}
+            </a>
+        </div>
+
+        <!-- Generate Prompt Badge (if no image) -->
+        {% if not recipe.image_filename %}
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <a href="{{ url_for('recipe_image_generation_view', recipe_id=recipe.id) }}"
+                class="bg-white/80 backdrop-blur px-6 py-3 rounded-full text-sm font-bold text-slate-600 shadow-lg pointer-events-auto cursor-pointer group-hover:scale-105 transition-transform decoration-0">
+                ✨ Generate Recipe Photo
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Recipe Header Info -->
+    <div class="flex flex-col items-center text-center max-w-4xl mx-auto mb-16">
+        <div class="flex flex-wrap gap-2 mb-6 justify-center">
+            {{ badge.difficulty_pill(recipe.difficulty) }}
+            {{ badge.tag_pill(recipe.cuisine, 'orange') }}
+            {{ badge.tag_pill(recipe.diet, 'green') }}
+            {% if recipe.protein_type %}
+            {{ badge.tag_pill(recipe.protein_type, 'blue') }}
+            {% endif %}
+            {% for tag in recipe.meal_types_list %}
+            {{ badge.tag_pill(tag, 'purple') }}
+            {% endfor %}
+        </div>
+
+        <h1 class="font-serif text-5xl md:text-7xl font-bold text-slate-900 leading-tight mb-6">
+            {{ recipe.title }}
+        </h1>
+
+        <p class="text-xl text-slate-600 font-light leading-relaxed max-w-2xl">
+            A {{ recipe.difficulty|lower }} {{ recipe.cuisine }} dish perfect for the {{ recipe.diet }} diet.
+            Using fresh ingredients from your pantry, customized by our World Class AI Chef.
+        </p>
+    </div>
+
+    <!-- COMPONENT COLUMNS LAYOUT -->
+    <div class="border-t border-slate-200 pt-12">
+        {{ type.section_header('Cooking Steps', 'Each component prepared separately.') }}
+
+        <div
+            class="grid grid-cols-1 {% if steps_by_component|length == 2 %}md:grid-cols-2{% elif steps_by_component|length >= 3 %}md:grid-cols-3{% endif %} gap-8 mt-8">
+            {% for component_name, steps in steps_by_component %}
+            <div
+                class="component-card bg-white border-2 border-slate-200 rounded-2xl p-6 hover:border-slate-300 transition-colors">
+                <!-- Component Header -->
+                <h2 class="text-2xl font-serif font-bold text-slate-900 mb-6 pb-3 border-b-2 border-orange-200">
+                    {{ component_name }}
+                </h2>
+
+                <!-- Component-Specific Visual Ingredients -->
+                {% if ingredients_by_component[component_name] %}
+                <div class="mb-6">
+                    <h3 class="text-sm font-bold uppercase tracking-wide text-slate-500 mb-3">Ingredients</h3>
+                    <!-- Visual Grid with Images, Names, and Amounts -->
+                    <div class="grid grid-cols-4 gap-0.5">
+                        {% for item in ingredients_by_component[component_name] %}
+                        {{ card.visual_ingredient(item, size='md') }}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Steps within this component, grouped by phase -->
+                <div class="space-y-6">
+                    {% for phase in ['Prep', 'Cook', 'Serve'] %}
+                    {% set phase_steps = steps|selectattr('phase', 'equalto', phase)|list %}
+                    {% if phase_steps %}
+                    <div
+                        class="relative pl-6 border-l-2 {% if phase == 'Prep' %}border-blue-200{% elif phase == 'Cook' %}border-orange-300{% else %}border-green-200{% endif %}">
+                        <span class="absolute -left-[9px] top-0 h-4 w-4 rounded-full border-2 border-white 
+                                {% if phase == 'Prep' %}bg-blue-400
+                                {% elif phase == 'Cook' %}bg-orange-500
+                                {% else %}bg-green-500{% endif %}">
+                        </span>
+
+                        <h4 class="text-xs font-bold uppercase tracking-widest mb-3
+                                {% if phase == 'Prep' %}text-blue-600
+                                {% elif phase == 'Cook' %}text-orange-600
+                                {% else %}text-green-600{% endif %}">
+                            {{ phase }}
+                        </h4>
+
+                        <div class="space-y-4">
+                            {% for step in phase_steps %}
+                            <div class="group flex gap-3">
+                                <span
+                                    class="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-xs font-bold group-hover:bg-slate-900 group-hover:text-white transition-colors">
+                                    {{ step.step_number }}
+                                </span>
+                                <p class="text-sm text-slate-700 leading-relaxed">
+                                    {{ step.text }}
+                                </p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endblock %}

@@ -1,0 +1,658 @@
+{% extends "base.html" %}
+
+{% block title %}Prompt Studio - The AI Kitchen{% endblock %}
+
+{% block content %}
+<div class="h-[calc(100vh-65px)] flex flex-col bg-slate-50 overflow-hidden">
+    <!-- Header -->
+    <div class="bg-white border-b border-slate-200 px-4 py-2 flex justify-between items-center shadow-sm z-10">
+        <div class="flex items-center gap-3">
+            <h1 class="font-bold text-slate-800 flex items-center gap-2">
+                <span class="text-indigo-600">⚡</span> Prompt Studio
+            </h1>
+            <span id="currentFilename" class="text-sm font-mono text-slate-500 bg-slate-100 px-2 py-1 rounded">No file
+                selected</span>
+            <span id="unsavedIndicator" class="hidden w-2 h-2 bg-orange-500 rounded-full"
+                title="Unsaved changes"></span>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="saveCurrentFile()" id="btnSave" disabled
+                class="px-3 py-1 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4">
+                    </path>
+                </svg>
+                Save
+            </button>
+            <button onclick="runTest()" id="btnRun" disabled
+                class="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z">
+                    </path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Run
+            </button>
+        </div>
+    </div>
+
+    <!-- 3-Pane Layout -->
+    <div class="flex-grow flex overflow-hidden">
+
+        <!-- Left: File Explorer -->
+        <div class="w-64 bg-slate-50 border-r border-slate-200 flex flex-col">
+            <div
+                class="p-2 border-b border-slate-200 flex justify-between items-center text-xs uppercase text-slate-500 font-semibold bg-slate-100">
+                <span>Prompts</span>
+                <button onclick="refreshFileList()" class="hover:text-slate-800" title="Refresh">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+            <div id="fileList" class="flex-grow overflow-y-auto p-2 space-y-1 text-sm">
+                <!-- File items loaded here -->
+                <div class="text-xs text-slate-400 italic text-center mt-4">Loading...</div>
+            </div>
+            <!-- Create New (Optional Future) -->
+            <div class="p-2 border-t border-slate-200 text-center">
+                <button class="text-xs text-indigo-600 hover:text-indigo-800">+ New Prompt</button>
+            </div>
+        </div>
+
+        <!-- Center: Editor AND Description -->
+        <div class="flex-grow flex flex-col relative border-r border-slate-200">
+            <!-- Description Box -->
+            <div class="p-3 border-b border-slate-200 bg-slate-50">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Description (Internal)</label>
+                <input id="promptDescription" type="text"
+                    class="w-full text-xs border-slate-300 rounded focus:ring-1 focus:ring-indigo-500 text-slate-700"
+                    placeholder="Describe what this prompt does...">
+            </div>
+
+            <!-- Ace Editor Container -->
+            <div id="editor" class="flex-grow w-full h-full"></div>
+            <!-- Overlays -->
+            <div id="editorOverlay"
+                class="absolute inset-0 bg-slate-50/50 flex items-center justify-center z-20 pointer-events-none hidden">
+                <span class="text-slate-400 font-medium">Select a file to edit</span>
+            </div>
+        </div>
+
+        <!-- Right: Test Runner -->
+        <div class="w-96 bg-white flex flex-col shadow-xl z-20 max-w-[40%]">
+            <div
+                class="p-3 border-b border-slate-200 bg-slate-100 font-semibold text-slate-700 text-sm flex items-center gap-2">
+                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z">
+                    </path>
+                </svg>
+                Test Runner
+            </div>
+
+            <div class="p-4 border-b border-slate-200 space-y-4">
+                <!-- Runner Selection -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Runner Mode</label>
+                    <div class="space-y-2">
+                        <input type="hidden" id="runnerSelect" value="gemini_text">
+
+                        <button onclick="setRunner('gemini_text')" id="btn_gemini_text"
+                            class="w-full text-left px-3 py-2 text-xs border rounded transition-all flex justify-between items-center group runner-btn border-slate-200 hover:border-indigo-300">
+                            <span>Gemini (Text/Raw)</span>
+                            <span
+                                class="text-[10px] uppercase font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded hidden rec-badge">Recommended</span>
+                        </button>
+
+                        <button onclick="setRunner('gemini_json')" id="btn_gemini_json"
+                            class="w-full text-left px-3 py-2 text-xs border rounded transition-all flex justify-between items-center group runner-btn border-slate-200 hover:border-indigo-300">
+                            <span>Gemini (JSON Mode)</span>
+                            <span
+                                class="text-[10px] uppercase font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded hidden rec-badge">Recommended</span>
+                        </button>
+
+                        <button onclick="setRunner('vertex_image')" id="btn_vertex_image"
+                            class="w-full text-left px-3 py-2 text-xs border rounded transition-all flex justify-between items-center group runner-btn border-slate-200 hover:border-indigo-300">
+                            <span>Vertex AI (Image)</span>
+                            <span
+                                class="text-[10px] uppercase font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded hidden rec-badge">Recommended</span>
+                        </button>
+
+                        <button onclick="setRunner('article_generator')" id="btn_article_generator"
+                            class="w-full text-left px-3 py-2 text-xs border rounded transition-all flex justify-between items-center group runner-btn border-slate-200 hover:border-indigo-300">
+                            <span>Article Generator (CMS)</span>
+                            <span
+                                class="text-[10px] uppercase font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded hidden rec-badge">Recommended</span>
+                        </button>
+
+                        <button onclick="setRunner('podcast_ingredient')" id="btn_podcast_ingredient"
+                            class="w-full text-left px-3 py-2 text-xs border rounded transition-all flex justify-between items-center group runner-btn border-slate-200 hover:border-indigo-300">
+                            <span>Podcast Generator (Audio)</span>
+                            <span
+                                class="text-[10px] uppercase font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded hidden rec-badge">Recommended</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Variable Inputs -->
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-xs font-semibold text-slate-500">Variables</label>
+                        <button onclick="detectVariables()"
+                            class="text-[10px] text-blue-600 hover:underline">Rescan</button>
+                    </div>
+                    <div id="variableInputs" class="space-y-3 max-h-60 overflow-y-auto pr-1">
+                        <p class="text-xs text-slate-400 italic">No variables detected.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Output -->
+            <div class="flex-grow flex flex-col min-h-0">
+                <div class="flex border-b border-slate-200">
+                    <button class="px-4 py-2 text-xs font-semibold text-indigo-600 border-b-2 border-indigo-600"
+                        id="tabOutput">Output</button>
+                    <button class="px-4 py-2 text-xs font-semibold text-slate-500 hover:text-slate-700"
+                        onclick="alert('Feature coming soon: View the raw prompt sent to API')">Rendered Prompt</button>
+                    <button
+                        class="ml-auto px-4 py-1 text-xs bg-green-600 text-white rounded hidden hover:bg-green-700 m-1"
+                        id="btnSaveResource" onclick="saveResourceFromPreview()">
+                        Save to Library
+                    </button>
+                </div>
+                <div class="flex-grow overflow-auto p-4 bg-slate-900 text-green-400 font-mono text-xs whitespace-pre-wrap"
+                    id="testOutput">
+                    <!-- Output goes here -->
+                    <span class="text-slate-600">Ready to run...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<!-- Ace Editor CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/ace.js"></script>
+
+<script>
+    let editor;
+    let currentFile = null;
+    let isDirty = false;
+    let detectedVars = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Init Ace
+        editor = ace.edit("editor");
+        editor.setTheme("ace/theme/tomorrow");
+        editor.session.setMode("ace/mode/django"); // Jinja2 syntax highlight usually works well with Django or Text
+        editor.setOptions({
+            fontSize: "14px",
+            showPrintMargin: false,
+            highlightActiveLine: true,
+            wrap: true
+        });
+
+        editor.on("input", () => {
+            if (!isDirty && currentFile) {
+                isDirty = true;
+                updateUIState();
+            }
+        });
+
+        // Listen to Description Change
+        document.getElementById('promptDescription').addEventListener('input', () => {
+            if (!isDirty && currentFile) {
+                isDirty = true;
+                updateUIState();
+            }
+        });
+
+        // Load files
+        refreshFileList();
+    });
+
+    function setRunner(mode) {
+        document.getElementById('runnerSelect').value = mode;
+
+        // Update UI styling
+        document.querySelectorAll('.runner-btn').forEach(btn => {
+            btn.classList.remove('border-indigo-600', 'bg-indigo-50', 'ring-1', 'ring-indigo-600');
+            btn.classList.add('border-slate-200');
+        });
+
+        const activeBtn = document.getElementById(`btn_${mode}`);
+        if (activeBtn) {
+            activeBtn.classList.remove('border-slate-200');
+            activeBtn.classList.add('border-indigo-600', 'bg-indigo-50', 'ring-1', 'ring-indigo-600');
+        }
+    }
+
+    function recommendRunner(filename) {
+        // Clear all recommendation badges
+        document.querySelectorAll('.rec-badge').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.runner-btn').forEach(btn => btn.classList.remove('bg-green-50/50'));
+
+        let rec = 'gemini_text'; // Default
+
+        if (filename.includes('ingredient_text/') || filename.includes('recipe_text/')) {
+            rec = 'gemini_json';
+        } else if (filename.includes('ingredient_image/') || filename.includes('recipe_image/style_')) {
+            rec = 'vertex_image';
+        } else if (filename.includes('recipe_image/')) {
+            rec = 'gemini_text'; // visual_description, image_analysis
+        } else if (filename.includes('resource_writer')) {
+            rec = 'article_generator';
+        } else if (filename.includes('resource_audio') || filename.includes('podcast')) {
+            rec = 'podcast_ingredient';
+        }
+
+        // Highlight recommended
+        const btn = document.getElementById(`btn_${rec}`);
+        if (btn) {
+            btn.querySelector('.rec-badge').classList.remove('hidden');
+            // Auto-select recommended if clean load
+            setRunner(rec);
+        }
+    }
+
+    function updateUIState() {
+        document.getElementById('unsavedIndicator').classList.toggle('hidden', !isDirty);
+        document.getElementById('btnSave').disabled = !currentFile;
+        document.getElementById('btnRun').disabled = !currentFile;
+        document.getElementById('currentFilename').textContent = currentFile || "No file selected";
+    }
+
+    async function refreshFileList() {
+        const div = document.getElementById('fileList');
+        div.innerHTML = '<div class="text-xs text-slate-400 italic text-center mt-2">Refreshing...</div>';
+
+        try {
+            const res = await fetch('/admin/prompts/api/prompts');
+            const data = await res.json();
+
+            if (data.success) {
+                div.innerHTML = '';
+
+                // Group by folder
+                const groups = {};
+                data.files.forEach(f => {
+                    const parts = f.split('/');
+                    const folder = parts.length > 1 ? parts[0] : 'General';
+                    if (!groups[folder]) groups[folder] = [];
+                    groups[folder].push(f);
+                });
+
+                Object.keys(groups).sort().forEach(folder => {
+                    // Header
+                    const header = document.createElement('div');
+                    header.className = "px-2 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-2 mb-1 border-b border-slate-100";
+                    header.innerText = folder.replace(/_/g, ' ');
+                    div.appendChild(header);
+
+                    // Files
+                    groups[folder].forEach(file => {
+                        const btn = document.createElement('button');
+                        const displayName = file.split('/').pop();
+
+                        btn.className = "w-full text-left px-2 py-1.5 rounded hover:bg-white hover:shadow-sm text-slate-700 hover:text-indigo-600 transition-all truncate flex items-center gap-2 pl-4";
+                        btn.innerHTML = `
+                            <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 011.414.586l5.414 5.414a1 1 0 01.586 1.414V19a2 2 0 01-2 2z"></path></svg>
+                            <span class="truncate">${displayName}</span>
+                        `;
+                        btn.onclick = () => loadFile(file);
+
+                        // Highlight active
+                        if (file === currentFile) btn.classList.add('bg-white', 'shadow-sm', 'text-indigo-600', 'font-medium');
+
+                        div.appendChild(btn);
+                    });
+                });
+            }
+        } catch (e) {
+            div.innerHTML = `<div class="text-red-500 text-xs p-2">Error: ${e}</div>`;
+        }
+    }
+
+    async function loadFile(filename) {
+        // REMOVED CONFIRMATION DIALOG AS REQUESTED
+        // if (isDirty) {
+        //     if (!confirm("You have unsaved changes. Discard them?")) return;
+        // }
+
+        try {
+            const res = await fetch(`/admin/prompts/api/prompts/${filename}`);
+            const data = await res.json();
+
+            if (data.success) {
+                currentFile = filename;
+                editor.setValue(data.content, -1); // -1 moves cursor to start
+                document.getElementById('promptDescription').value = data.description || "";
+
+                isDirty = false;
+                detectedVars = data.variables;
+
+                updateUIState();
+                renderVariableInputs(data.variables);
+
+                // Logic to set recommended runner
+                recommendRunner(filename);
+
+                // Refresh list highlight
+                refreshFileList();
+            }
+        } catch (e) {
+            alert("Failed to load file: " + e);
+        }
+    }
+
+    async function saveCurrentFile() {
+        if (!currentFile) return;
+
+        try {
+            const content = editor.getValue();
+            const description = document.getElementById('promptDescription').value;
+
+            const res = await fetch('/admin/prompts/api/prompts/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    filename: currentFile,
+                    content: content,
+                    description: description
+                })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                isDirty = false;
+                updateUIState();
+
+                // Flash success/toast
+                const btn = document.getElementById('btnSave');
+                const orig = btn.innerHTML;
+                btn.innerHTML = `<span class="text-green-300">Saved!</span>`;
+                setTimeout(() => btn.innerHTML = orig, 2000);
+            } else {
+                alert("Error saving: " + data.error);
+            }
+        } catch (e) {
+            alert("Error saving: " + e);
+        }
+    }
+
+    function renderVariableInputs(vars) {
+        const container = document.getElementById('variableInputs');
+        if (!vars || vars.length === 0) {
+            container.innerHTML = '<p class="text-xs text-slate-400 italic">No variables detected.</p>';
+            return;
+        }
+
+        container.innerHTML = '';
+        vars.forEach(v => {
+            const div = document.createElement('div');
+
+            const label = document.createElement('label');
+            label.className = "block text-[10px] font-bold text-slate-500 uppercase mb-1 tracking-wider";
+            label.innerText = v;
+
+            let input;
+
+            // Heuristic for Input Type
+            if (v.includes('_json') || v.includes('_list') || v.includes('context')) {
+                // Textarea for JSON/Complex
+                input = document.createElement('textarea');
+                input.rows = 3;
+                input.placeholder = `Enter JSON for ${v}...`;
+                input.className = "w-full text-xs font-mono border-slate-300 rounded focus:ring-1 focus:ring-indigo-500 bg-slate-50";
+            } else {
+                // Text Input
+                input = document.createElement('input');
+                input.type = 'text';
+                input.placeholder = `Value for ${v}`;
+                input.className = "w-full text-xs border-slate-300 rounded focus:ring-1 focus:ring-indigo-500";
+            }
+
+            input.dataset.varName = v; // Bind for gathering later
+            input.id = `input_${v}`;
+
+            div.appendChild(label);
+            div.appendChild(input);
+            container.appendChild(div);
+        });
+    }
+
+    function detectVariables() {
+        // Manual regex client-side or re-fetch?
+        // Let's do client-side regex simple match
+        const content = editor.getValue();
+        const pattern = /\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g;
+        const matches = [...content.matchAll(pattern)].map(m => m[1]);
+        const unique = [...new Set(matches)].sort();
+
+        detectedVars = unique;
+        renderVariableInputs(unique);
+    }
+
+    async function runTest() {
+        if (!currentFile) return;
+
+        const runner = document.getElementById('runnerSelect').value;
+        const outputDiv = document.getElementById('testOutput');
+
+        // Gather inputs
+        const variables = {};
+        const inputs = document.querySelectorAll('#variableInputs [data-var-name]');
+        inputs.forEach(inp => {
+            const key = inp.dataset.varName;
+            let val = inp.value;
+            // Attempt JSON parse if it looks like object/array
+            if ((val.startsWith('{') || val.startsWith('[')) && (key.includes('_json') || key.includes('context'))) {
+                try {
+                    val = JSON.parse(val);
+                } catch (e) {
+                    // Keep as string if parse fails, maybe warn?
+                    console.warn(`Failed to parse JSON for ${key}`);
+                }
+            }
+            variables[key] = val;
+        });
+
+        outputDiv.innerHTML = '<span class="animate-pulse">Loading AI response...</span>';
+        document.getElementById('btnRun').disabled = true;
+
+        try {
+            const res = await fetch('/admin/prompts/api/prompts/test', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    filename: currentFile,
+                    variables: variables,
+                    runner: runner
+                })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                // Article Generator Handling
+                if (runner === 'article_generator') {
+                    lastArticleResult = data.result;
+                    // Render Article Preview
+                    const article = data.result;
+                    const imgHtml = article.temp_image_url ? `<div class="mb-4"><img src="${article.temp_image_url}" class="max-w-md rounded shadow mb-2"><div class="text-[10px] text-slate-400">Temp: ${article.temp_image_url}</div></div>` : '';
+
+                    outputDiv.innerHTML = `
+                        <div class="p-4 bg-white rounded text-slate-800 border border-slate-200">
+                             <div class="flex justify-between items-start">
+                                 <h3 class="font-bold text-lg mb-2">${article.title}</h3>
+                                 <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded font-mono">${article.slug}</span>
+                             </div>
+                             ${imgHtml}
+                             <p class="text-sm text-slate-600 italic mb-4">${article.summary}</p>
+                             <div class="text-xs font-mono bg-slate-100 p-2 rounded max-h-40 overflow-auto whitespace-pre-wrap">${article.content_markdown?.substring(0, 300)}...</div>
+                        </div>
+                     `;
+                    // Show Save Button
+                    document.getElementById('btnSaveResource').classList.remove('hidden');
+                }
+                else if (typeof data.result === 'string' && data.result.startsWith('<img') && runner === 'vertex_image') {
+                    outputDiv.innerHTML = data.result; // HTML (Image)
+                    document.getElementById('btnSaveResource').classList.add('hidden');
+                }
+                else if (data.success && runner === 'podcast_ingredient') {
+                    // Podcast Handling
+                    const res = data.result;
+                    if (res.audio_url) {
+                        lastPodcastResult = res; // Store for saving
+                        outputDiv.innerHTML = `
+                        <div class="p-4 bg-white rounded border border-slate-200">
+                            <h3 class="font-bold text-lg mb-4 text-slate-800">🎧 Generated Podcast</h3>
+                            <audio controls class="w-full mb-6 bg-slate-100 rounded">
+                                <source src="${res.audio_url}" type="audio/mpeg">
+                                Your browser does not support audio element.
+                            </audio>
+                            
+                            <h4 class="font-bold text-xs uppercase text-slate-400 mb-2">Transcript</h4>
+                            <div class="space-y-3 bg-slate-50 p-4 rounded max-h-60 overflow-y-auto text-sm">
+                                ${res.script.map(line => `
+                                    <div class="flex gap-2">
+                                        <span class="font-bold ${line.speaker === 'A' ? 'text-blue-600' : 'text-purple-600'} w-6 shrink-0">${line.speaker}:</span>
+                                        <span class="text-slate-700">${line.text}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+
+                        // Hook into the save button (reuse the resource button or make a new one? Reuse seems confusing given logic diffs)
+                        // Let's create a dedicated Save Podcast button dynamically or reuse the space
+                        // Ideally we should have separate buttons, but for speed, I'll hijack the "Save to Library" button 
+                        // and change its onclick handler behavior dynamically? No, cleaner to add a specific button.
+                        // But I didn't add a new button in HTML. 
+
+                        // Actually, I can use the existing save button but change its behavior via a global flag or check 'runner'
+                        const saveBtn = document.getElementById('btnSaveResource');
+                        saveBtn.classList.remove('hidden');
+                        saveBtn.innerText = "Save Podcast";
+                        saveBtn.onclick = savePodcast; // Rebind click
+                    } else {
+                        outputDiv.innerText = JSON.stringify(res, null, 2);
+                    }
+
+                } else {
+                    outputDiv.innerText = typeof data.result === 'object' ? JSON.stringify(data.result, null, 2) : data.result;
+                    document.getElementById('btnSaveResource').classList.add('hidden');
+                }
+            } else {
+                outputDiv.innerText = `Error: ${data.error}`;
+                outputDiv.classList.add('text-red-400');
+                document.getElementById('btnSaveResource').classList.add('hidden');
+            }
+        } catch (e) {
+            outputDiv.innerText = `Network Error: ${e}`;
+        } finally {
+            document.getElementById('btnRun').disabled = false;
+        }
+    }
+
+    // CMS Save Logic
+    let lastArticleResult = null;
+    let lastPodcastResult = null;
+
+    async function savePodcast() {
+        if (!lastPodcastResult) return;
+        const btn = document.getElementById('btnSaveResource'); // We are reusing this button
+        btn.innerText = "Saving Audio...";
+        btn.disabled = true;
+
+        try {
+            // We need ingredient name from variables. 
+            const res = await fetch('/admin/prompts/api/podcasts/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    temp_path: lastPodcastResult.temp_path,
+                    ingredient_name: document.getElementById('var_ingredient_name')?.value || 'podcast'
+                })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                btn.innerText = "Saved!";
+                btn.classList.replace('bg-green-600', 'bg-slate-500');
+                setTimeout(() => {
+                    btn.classList.add('hidden');
+                    btn.classList.replace('bg-slate-500', 'bg-green-600');
+                    btn.onclick = saveResourceFromPreview; // Reset
+                }, 3000);
+            } else {
+                alert("Error saving: " + data.error);
+                btn.innerText = "Save Failed";
+                btn.disabled = false;
+            }
+        } catch (e) {
+            alert(e);
+            btn.disabled = false;
+        }
+    }
+
+    async function saveResourceFromPreview() {
+        if (!lastArticleResult) return;
+
+        const btn = document.getElementById('btnSaveResource');
+        btn.innerText = "Saving...";
+        btn.disabled = true;
+
+        try {
+            const res = await fetch('/admin/prompts/api/resources/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(lastArticleResult)
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                btn.innerText = "Saved!";
+                btn.classList.replace('bg-green-600', 'bg-slate-500');
+                setTimeout(() => {
+                    btn.classList.add('hidden');
+                    btn.innerText = "Save to Library";
+                    btn.disabled = false;
+                    btn.classList.replace('bg-slate-500', 'bg-green-600');
+                }, 3000);
+            } else {
+                alert("Error saving: " + data.error);
+                btn.innerText = "Save Failed";
+                btn.disabled = false;
+            }
+        } catch (e) {
+            alert("Error: " + e);
+            btn.innerText = "Save";
+            btn.disabled = false;
+        }
+    }
+
+    // Updated Output Renderer in runTest...
+    // We need to hook into the runTest function. 
+    // Since I can't easily edit the middle of runTest with simple replacement without replacing the whole block,
+    // I will append a visual handling logic to the success block in runTest via a wider replacement or overwrite.
+    // Actually, I'll just overwrite the relevant part of runTest in the implementation below.
+
+
+    // Ctrl+S to Save
+    document.addEventListener('keydown', e => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+            e.preventDefault();
+            saveCurrentFile();
+        }
+    });
+
+</script>
+{% endblock %}

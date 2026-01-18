@@ -1,0 +1,41 @@
+# Secrets
+.env
+.env.local
+credentials.json
+service_account.json
+gcs_key.json
+
+# Database
+instance/
+*.db
+*.sqlite3
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+.DS_Store
+
+# Generated Content (Keep folder, ignore files)
+static/recipes/*
+!static/recipes/.gitkeep
+
+static/pantry/*
+!static/pantry/.gitkeep
+
+static/temp/*
+!static/temp/.gitkeep
+
+temp_ingredients_for_Mapping
+temp_video/
+data/pantry_*.json
+
+# IDEs
+.vscode/
+.idea/
+
+# Google Cloud SDK
+google-cloud-sdk/
+google-cloud-cli-darwin-arm.tar.gz
+

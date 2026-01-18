@@ -1,0 +1,440 @@
+{% extends "base.html" %}
+
+{% block title %}Creative Matrix - Studio{% endblock %}
+
+{% block content %}
+<div class="bg-zinc-950 min-h-screen text-zinc-100 pb-24">
+
+    <!-- Header -->
+    <div class="border-b border-zinc-800 bg-zinc-900/50 px-8 py-6 backdrop-blur-md sticky top-0 z-40">
+        <div class="flex items-center justify-between max-w-[1920px] mx-auto">
+            <div class="flex items-center gap-4">
+                <div
+                    class="h-10 w-10 rounded-xl bg-indigo-600 flex items-center justify-center text-xl shadow-lg shadow-indigo-600/20">
+                    💠
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-white tracking-wide">Creative Matrix</h1>
+                    <p class="text-xs text-zinc-400 uppercase tracking-widest">3x3 Generation Pipeline</p>
+                </div>
+            </div>
+            <div class="flex gap-4">
+                <a href="/"
+                    class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg text-sm font-medium transition-colors">
+                    Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- The Matrix -->
+    <div class="p-8 max-w-[1920px] mx-auto overflow-x-auto">
+
+        <!-- Grid Container: 5 columns (3 main + 2 actions) -->
+        <div class="grid grid-cols-[1fr_auto_1fr_auto_1fr] gap-6 min-w-[1200px]">
+
+            <!-- HEADERS -->
+            <div class="mb-4 flex items-center gap-2 text-indigo-400">
+                <span class="font-mono font-bold text-2xl opacity-50">A</span>
+                <h2 class="font-bold uppercase tracking-widest text-sm">The Source (Input)</h2>
+            </div>
+            <div></div> <!-- Space -->
+            <div class="mb-4 flex items-center gap-2 text-purple-400">
+                <span class="font-mono font-bold text-2xl opacity-50">B</span>
+                <h2 class="font-bold uppercase tracking-widest text-sm">The Logic (Prompt)</h2>
+            </div>
+            <div></div> <!-- Space -->
+            <div class="mb-4 flex items-center gap-2 text-green-400">
+                <span class="font-mono font-bold text-2xl opacity-50">C</span>
+                <h2 class="font-bold uppercase tracking-widest text-sm">The Result (Output)</h2>
+            </div>
+
+            <!-- === ROW 1: TEXT METHOD === -->
+
+            <!-- A1: Input -->
+            <div
+                class="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4 flex flex-col gap-2 h-64 group hover:border-indigo-500/30 transition-colors">
+                <div class="flex justify-between items-center text-xs text-zinc-500 font-mono uppercase">
+                    <span>1A. Raw Text</span>
+                </div>
+                <textarea id="text_a1"
+                    class="flex-grow w-full bg-transparent border-0 resize-none focus:ring-0 text-lg font-serif placeholder-zinc-700 text-white"
+                    placeholder="Type a raw idea here...&#10;e.g. 'A futuristic cheeseburger'"></textarea>
+            </div>
+
+            <!-- Action 1A -> 2A -->
+            <div class="flex items-center justify-center">
+                <button onclick="analyzeRow(1)" id="btn-analyze-1"
+                    class="w-12 h-12 bg-zinc-800 hover:bg-indigo-600 rounded-full border border-zinc-700 hover:border-indigo-400 flex items-center justify-center transition-all shadow-lg hover:scale-110 group active:scale-95">
+                    <svg class="w-5 h-5 text-zinc-400 group-hover:text-white transition-colors" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- B1: Prompt (2A) -->
+            <div
+                class="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4 flex flex-col gap-2 h-64 hover:border-purple-500/30 transition-colors relative overflow-hidden">
+                <div class="absolute inset-0 bg-zinc-950/80 backdrop-blur-sm z-20 hidden items-center justify-center"
+                    id="loader_b1">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+                </div>
+                <div class="flex justify-between items-center text-xs text-zinc-500 font-mono uppercase">
+                    <span>2A. Prompt</span>
+                    <span class="text-purple-400">Text-to-Image</span>
+                </div>
+                <textarea id="prompt_b1"
+                    class="flex-grow w-full bg-transparent border-0 resize-none focus:ring-0 font-mono text-sm text-purple-200"
+                    placeholder="..."></textarea>
+            </div>
+
+            <!-- Action 2A -> 3A -->
+            <div class="flex items-center justify-center">
+                <button onclick="generateRow(1)" id="btn-generate-1"
+                    class="w-12 h-12 bg-zinc-800 hover:bg-green-600 rounded-full border border-zinc-700 hover:border-green-400 flex items-center justify-center transition-all shadow-lg hover:scale-110 group active:scale-95">
+                    <svg class="w-5 h-5 text-zinc-400 group-hover:text-white transition-colors" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- C1: Output (3A) -->
+            <div class="bg-black border border-zinc-800 rounded-2xl overflow-hidden h-64 relative group">
+                <div class="absolute inset-0 flex items-center justify-center text-zinc-700 font-mono text-xs"
+                    id="placeholder_c1">
+
+                </div>
+                <div class="absolute inset-0 bg-black/80 z-20 hidden items-center justify-center" id="loader_c1">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+                </div>
+                <img id="img_c1" src="" class="w-full h-full object-cover hidden transition-opacity duration-700">
+                <a id="dl_c1" href="#" download="render_1A.png"
+                    class="absolute top-2 right-2 bg-black/60 hover:bg-indigo-600 text-white p-2 rounded-lg backdrop-blur-md hidden hover:scale-105 transition-all z-30">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16v1a3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                </a>
+            </div>
+
+            <!-- === SHARED ROW 2 & 3: IMAGE METHOD === -->
+
+            <!-- Shared Input (1B & 1C) -->
+            <div
+                class="row-span-2 bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4 flex flex-col gap-2 group hover:border-indigo-500/30 transition-colors relative">
+                <div class="flex justify-between items-center text-xs text-zinc-500 font-mono uppercase">
+                    <span>1B & 1C. Image Source</span>
+                </div>
+
+                <div
+                    class="flex-grow flex items-center justify-center border-2 border-dashed border-zinc-800 rounded-xl relative hover:bg-zinc-800/50 transition-colors cursor-pointer overflow-hidden">
+                    <input type="file" id="file_shared" accept="image/*"
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+                        onchange="previewFile(this, 'preview_shared')">
+                    <div class="text-center pointer-events-none" id="label_shared">
+                        <span class="text-4xl block mb-2">📷</span>
+                    </div>
+                    <img id="preview_shared"
+                        class="w-full h-full object-cover absolute inset-0 hidden pointer-events-none opacity-60">
+                </div>
+            </div>
+
+            <!-- SHARED ACTIONS (1B/1C -> 2B/2C/3B/3C) -->
+            <div class="row-span-2 flex flex-col items-center justify-center gap-6 py-4">
+
+                <!-- 1. Magic Button (All) -->
+                <button onclick="runMagicFlow()" id="btn-magic"
+                    class="w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 rounded-2xl border border-white/10 flex flex-col items-center justify-center transition-all shadow-xl shadow-indigo-900/50 hover:scale-105 hover:shadow-indigo-500/40 group active:scale-95 px-2 text-center z-10">
+                    <span class="text-2xl mb-1 group-hover:rotate-12 transition-transform">✨</span>
+                    <span class="text-[9px] font-bold text-white uppercase leading-tight">Magic<br>All</span>
+                </button>
+
+                <!-- 2. Analyze Only (2B Prompt) -->
+                <button onclick="analyzeRow(2)" id="btn-analyze-2"
+                    class="w-10 h-10 bg-zinc-800 hover:bg-indigo-600 rounded-full border border-zinc-700 hover:border-indigo-400 flex items-center justify-center transition-all shadow-lg hover:scale-110 group active:scale-95"
+                    title="Generate Prompt Only (2B)">
+                    <span class="text-xs font-mono font-bold text-zinc-400 group-hover:text-white">Txt</span>
+                </button>
+
+                <!-- 3. Remix Only (3C Image) -->
+                <button onclick="generateRow(3)" id="btn-analyze-3"
+                    class="w-10 h-10 bg-zinc-800 hover:bg-indigo-600 rounded-full border border-zinc-700 hover:border-indigo-400 flex items-center justify-center transition-all shadow-lg hover:scale-110 group active:scale-95"
+                    title="Generate Remix Image Step 3C">
+                    <svg class="w-4 h-4 text-zinc-400 group-hover:text-white transition-colors" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                        </path>
+                    </svg>
+                </button>
+
+            </div>
+
+            <!-- ROW 2: Logic & Output -->
+
+            <!-- B2: Prompt (2B) -->
+            <div
+                class="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4 flex flex-col gap-2 h-64 hover:border-purple-500/30 transition-colors relative overflow-hidden">
+                <div class="absolute inset-0 bg-zinc-950/80 backdrop-blur-sm z-20 hidden items-center justify-center"
+                    id="loader_b2">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+                </div>
+
+                <div class="flex justify-between items-center text-xs text-zinc-500 font-mono uppercase">
+                    <span>2B. Analysis</span>
+                    <span class="text-purple-400">Gemini Vision</span>
+                </div>
+                <textarea id="prompt_b2"
+                    class="flex-grow w-full bg-transparent border-0 resize-none focus:ring-0 font-mono text-sm text-purple-200"
+                    placeholder="..."></textarea>
+            </div>
+
+            <!-- Action 2B -> 3B -->
+            <div class="flex items-center justify-center">
+                <button onclick="generateRow(2)" id="btn-generate-2"
+                    class="w-12 h-12 bg-zinc-800 hover:bg-green-600 rounded-full border border-zinc-700 hover:border-green-400 flex items-center justify-center transition-all shadow-lg hover:scale-110 group active:scale-95">
+                    <svg class="w-5 h-5 text-zinc-400 group-hover:text-white transition-colors" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- C2: Output (3B) -->
+            <div class="bg-black border border-zinc-800 rounded-2xl overflow-hidden h-64 relative group">
+                <div class="absolute inset-0 flex items-center justify-center text-zinc-700 font-mono text-xs"
+                    id="placeholder_c2">
+
+                </div>
+                <div class="absolute inset-0 bg-black/80 z-20 hidden items-center justify-center" id="loader_c2">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+                </div>
+                <img id="img_c2" src="" class="w-full h-full object-cover hidden">
+                <a id="dl_c2" href="#" download="render_1B.png"
+                    class="absolute top-2 right-2 bg-black/60 hover:bg-indigo-600 text-white p-2 rounded-lg backdrop-blur-md hidden hover:scale-105 transition-all z-30">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16v1a3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                </a>
+            </div>
+
+            <!-- ROW 3: Logic & Output -->
+
+            <!-- B3: Prompt (Passed Through) -->
+            <div
+                class="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4 flex flex-col gap-2 h-64 relative opacity-60">
+
+                <div class="flex justify-between items-center text-xs text-zinc-500 font-mono uppercase">
+                    <span>2C. Fixed Prompt</span>
+                </div>
+                <textarea id="prompt_b3" readonly
+                    class="flex-grow w-full bg-transparent border-0 resize-none focus:ring-0 font-mono text-sm text-zinc-500 cursor-not-allowed">A professional close-up food photography shot of [Ingredient Name]. Studio lighting, soft shadows, sharp focus, isolated on a pure white background. 8k resolution, highly detailed texture, appetizing.</textarea>
+
+                <div
+                    class="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/50 backdrop-blur-sm rounded-2xl">
+                    <span class="text-xs font-mono text-white">Pass-through</span>
+                </div>
+            </div>
+
+            <!-- Action 2C (Spacer - Arrow) -->
+            <div class="flex items-center justify-center opacity-30">
+                <svg class="w-6 h-6 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3">
+                    </path>
+                </svg>
+            </div>
+
+            <!-- C3: Output (3C) -->
+            <div class="bg-black border border-zinc-800 rounded-2xl overflow-hidden h-64 relative group">
+                <div class="absolute inset-0 flex items-center justify-center text-zinc-700 font-mono text-xs"
+                    id="placeholder_c3">
+
+                </div>
+                <div class="absolute inset-0 bg-black/80 z-20 hidden items-center justify-center" id="loader_c3">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+                </div>
+                <!-- 1C generates image in 3C -->
+                <img id="img_c3" src="" class="w-full h-full object-cover hidden">
+                <a id="dl_c3" href="#" download="render_1C.png"
+                    class="absolute top-2 right-2 bg-black/60 hover:bg-indigo-600 text-white p-2 rounded-lg backdrop-blur-md hidden hover:scale-105 transition-all z-30">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16v1a3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- File Preview Logic ---
+    function previewFile(input, imgId) {
+        const file = input.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = document.getElementById(imgId);
+                img.src = e.target.result;
+                img.classList.remove('hidden');
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // --- State Management ---
+    function toggleLoader(id, show) {
+        const el = document.getElementById(id);
+        if (show) el.classList.replace('hidden', 'flex');
+        else el.classList.replace('flex', 'hidden');
+    }
+
+    function setOutputImage(imgId, url, dlId) {
+        const img = document.getElementById(imgId);
+        img.src = url;
+        img.classList.remove('hidden');
+
+        // Show DL button
+        if (dlId) {
+            const btn = document.getElementById(dlId);
+            btn.href = url;
+            btn.classList.remove('hidden');
+        }
+    }
+
+    // --- MAGIC Automated Flow ---
+
+    async function runMagicFlow() {
+        const btn = document.getElementById('btn-magic');
+        btn.classList.add('animate-pulse', 'pointer-events-none', 'ring-2', 'ring-indigo-500');
+
+        try {
+            // Step 1: Analyze 2B
+            // Reuse logic but wait for it
+            const successA = await analyzeRow(2, true); // true = silent mode (no loader toggle or let analyzeRow handle it)
+
+            if (successA) {
+                // Step 2: Generate 3B (2B Prompt -> 3B Image)
+                // AND Generate 3C (1B Image + Fixed Prompt -> 3C Image)
+
+                // We can run these in parallel
+                const p1 = generateRow(2, true);
+                const p2 = generateRow(3, true);
+
+                await Promise.all([p1, p2]);
+            }
+        } catch (e) {
+            console.error("Magic flow error:", e);
+        } finally {
+            btn.classList.remove('animate-pulse', 'pointer-events-none', 'ring-2', 'ring-indigo-500');
+        }
+    }
+
+
+    // --- Row Actions ---
+
+    async function analyzeRow(rowNum, keepUI = false) {
+        const btnId = `btn-analyze-${rowNum}`;
+        const btn = document.getElementById(btnId);
+        if (!keepUI && btn) btn.classList.add('animate-pulse', 'pointer-events-none');
+
+        toggleLoader(`loader_b${rowNum}`, true);
+
+        const formData = new FormData();
+        let success = false;
+
+        if (rowNum === 1) {
+            formData.append('text_a1', document.getElementById('text_a1').value);
+        } else if (rowNum === 2) {
+            // Uses Shared Input
+            const file = document.getElementById('file_shared').files[0];
+            if (file) {
+                formData.append('image_a2', file);
+            } else {
+                alert("Please upload an image first.");
+                toggleLoader(`loader_b${rowNum}`, false);
+                if (!keepUI && btn) btn.classList.remove('animate-pulse', 'pointer-events-none');
+                return false;
+            }
+        }
+
+        try {
+            const response = await fetch('/admin/studio/analyze', { method: 'POST', body: formData });
+            const data = await response.json();
+
+            if (data.success) {
+                if (rowNum === 1) document.getElementById('prompt_b1').value = data.row1;
+                if (rowNum === 2) document.getElementById('prompt_b2').value = data.row2;
+                success = true;
+            } else {
+                alert("Analysis failed: " + data.error);
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            if (!keepUI && btn) btn.classList.remove('animate-pulse', 'pointer-events-none');
+            toggleLoader(`loader_b${rowNum}`, false);
+        }
+        return success;
+    }
+
+    async function generateRow(rowNum, keepUI = false) {
+        let btnId;
+        if (rowNum === 1) btnId = 'btn-generate-1';
+        if (rowNum === 2) btnId = 'btn-generate-2';
+        if (rowNum === 3) btnId = 'btn-analyze-3';
+
+        const btn = document.getElementById(btnId);
+        if (!keepUI && btn) btn.classList.add('animate-pulse', 'pointer-events-none');
+
+        toggleLoader(`loader_c${rowNum}`, true);
+
+        const formData = new FormData();
+
+        if (rowNum === 1) {
+            formData.append('prompt_b1', document.getElementById('prompt_b1').value);
+        } else if (rowNum === 2) {
+            formData.append('prompt_b2', document.getElementById('prompt_b2').value);
+        } else if (rowNum === 3) {
+            // Uses Shared  Input
+            formData.append('prompt_b3', document.getElementById('prompt_b3').value);
+            const file = document.getElementById('file_shared').files[0];
+            if (file) formData.append('image_a3', file);
+            else {
+                alert("Please upload an image first.");
+                toggleLoader(`loader_c${rowNum}`, false);
+                if (!keepUI && btn) btn.classList.remove('animate-pulse', 'pointer-events-none');
+                return;
+            }
+        }
+
+        try {
+            const response = await fetch('/admin/studio/generate', { method: 'POST', body: formData });
+            const data = await response.json();
+
+            if (data.success) {
+                if (rowNum === 1 && data.image_c1) setOutputImage('img_c1', data.image_c1, 'dl_c1');
+                if (rowNum === 2 && data.image_c2) setOutputImage('img_c2', data.image_c2, 'dl_c2');
+                if (rowNum === 3 && data.image_c3) setOutputImage('img_c3', data.image_c3, 'dl_c3');
+            } else {
+                alert("Generation failed: " + data.error);
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            if (!keepUI && btn) btn.classList.remove('animate-pulse', 'pointer-events-none');
+            toggleLoader(`loader_c${rowNum}`, false);
+        }
+    }
+
+</script>
+{% endblock %}
