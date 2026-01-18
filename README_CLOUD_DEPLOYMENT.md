@@ -111,7 +111,7 @@ export INSTANCE_CONNECTION_NAME=[PROJECT:REGION:INSTANCE]
 **To Update Secrets/Config:**
 
 ```bash
-gcloud run services update bym-app \
+gcloud run services update lazy-chef-app \
   --region us-central1 \
   --set-env-vars DB_PASS='YOUR_PASSWORD'
 
@@ -120,7 +120,7 @@ gcloud run services update bym-app \
 **To View Production Logs:**
 
 ```bash
-gcloud run services logs read bym-app --region us-central1 --limit 20
+gcloud run services logs read lazy-chef-app --region us-central1 --limit 20
 
 ```
 

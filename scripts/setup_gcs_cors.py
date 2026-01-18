@@ -60,5 +60,5 @@ def configure_cors(bucket_name):
 
 if __name__ == "__main__":
     # Target Bucket Name
-    TARGET_BUCKET_NAME = "buildyourmeal-assets"
+    TARGET_BUCKET_NAME = "thelazychef-assets"
     configure_cors(TARGET_BUCKET_NAME)

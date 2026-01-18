@@ -8,10 +8,10 @@ import getpass
 import shutil
 
 # Configuration
-SERVICE_NAME = "bym-app"
+SERVICE_NAME = "lazy-chef-app"
 REGION = "us-central1"
-GCS_BUCKET = "buildyourmeal-assets"
-TEMP_BUILD_DIR = "/tmp/bym_build_staging"
+GCS_BUCKET = "thelazychef-assets"
+TEMP_BUILD_DIR = "/tmp/thelazychef_build_staging"
 
 # Colors
 GREEN = "\033[92m"

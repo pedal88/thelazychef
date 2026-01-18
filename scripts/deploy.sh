@@ -2,9 +2,9 @@
 set -e
 
 # Configuration
-SERVICE_NAME="bym-app"
+SERVICE_NAME="lazy-chef-app"
 REGION="us-central1" # Change as needed
-GCS_BUCKET_NAME="buildyourmeal-assets" # Your verified bucket
+GCS_BUCKET_NAME="thelazychef-assets" # Your verified bucket
 
 # Colors
 GREEN='\033[0;32m'
