@@ -9,7 +9,7 @@ on:
 env:
   PROJECT_ID: ${{ secrets.PROJECT_ID }}
   REGION: us-central1
-  GAR_LOCATION: us-central1-docker.pkg.dev/${{ secrets.PROJECT_ID }}/app-repo
+  GAR_LOCATION: europe-north2-docker.pkg.dev/${{ secrets.PROJECT_ID }}/app-repo
   SERVICE_NAME: lazy-chef-app
   MIGRATION_JOB_NAME: bym-db-migration
   WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }} # projects/123/.../providers/my-provider
