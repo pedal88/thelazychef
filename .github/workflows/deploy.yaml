@@ -111,6 +111,11 @@ jobs:
             --image ${{ env.GAR_LOCATION }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
             --region ${{ env.REGION }} \
             --command "flask,db,stamp,head" \
+            --set-env-vars FLASK_APP=app.py \
+          || gcloud run jobs create ${{ env.MIGRATION_JOB_NAME }} \
+            --image ${{ env.GAR_LOCATION }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
+            --region ${{ env.REGION }} \
+            --command "flask,db,stamp,head" \
             --set-env-vars FLASK_APP=app.py
 
       - name: Execute Migration Job
