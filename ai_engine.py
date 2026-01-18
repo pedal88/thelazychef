@@ -12,7 +12,10 @@ load_dotenv()
 api_key = os.getenv("GOOGLE_API_KEY")
 
 if not api_key:
-    raise ValueError("GOOGLE_API_KEY is not set in .env")
+    # In Cloud Run, this variable is injected via the job definition.
+    # In local development, it comes from .env.
+    print("CRITICAL ERROR: GOOGLE_API_KEY environment variable is missing.")
+    raise ValueError("GOOGLE_API_KEY environment variable is missing. Please check Secrets/Env Vars.")
 
 client = genai.Client(api_key=api_key)
 
