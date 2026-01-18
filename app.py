@@ -8,6 +8,7 @@ print(f"--- CONFIG DEBUG: DB_BACKEND={os.getenv('DB_BACKEND', 'local')} ---")
 
 import uuid
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, abort
+from flask_migrate import Migrate
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from database.db_connector import configure_database
 from database.models import db, Ingredient, Recipe, Instruction, RecipeIngredient, RecipeMealType, User
@@ -78,6 +79,9 @@ app.config['SECRET_KEY'] = 'dev-key-secret'
 # Database Configuration (Local vs Cloud SQL)
 configure_database(app)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Initialize Flask-Migrate
+migrate = Migrate(app, db)
 
 @app.template_filter('get_protein_category')
 def get_protein_category(protein_name):
