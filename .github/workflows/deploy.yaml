@@ -12,8 +12,8 @@ env:
   GAR_LOCATION: europe-north2-docker.pkg.dev/${{ secrets.PROJECT_ID }}/app-repo
   SERVICE_NAME: lazy-chef-app
   MIGRATION_JOB_NAME: bym-db-migration
-  WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }} # projects/123/.../providers/my-provider
-  WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }} # github-deployer@...
+  WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
+  WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
 
 jobs:
   # ------------------------------------------------------------------
@@ -110,22 +110,5 @@ jobs:
           gcloud run jobs update ${{ env.MIGRATION_JOB_NAME }} \
             --image ${{ env.GAR_LOCATION }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
             --region ${{ env.REGION }} \
-            --command "flask,db,stamp,head" \
-            --set-env-vars FLASK_APP=app.py,GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }},DB_BACKEND=cloudsql,INSTANCE_CONNECTION_NAME=${{ secrets.INSTANCE_CONNECTION_NAME }},DB_USER=${{ secrets.DB_USER }},DB_PASS=${{ secrets.DB_PASS }},DB_NAME=${{ secrets.DB_NAME }} \
-          || gcloud run jobs create ${{ env.MIGRATION_JOB_NAME }} \
-            --image ${{ env.GAR_LOCATION }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
-            --region ${{ env.REGION }} \
-            --command "flask,db,stamp,head" \
-            --set-env-vars FLASK_APP=app.py,GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }},DB_BACKEND=cloudsql,INSTANCE_CONNECTION_NAME=${{ secrets.INSTANCE_CONNECTION_NAME }},DB_USER=${{ secrets.DB_USER }},DB_PASS=${{ secrets.DB_PASS }},DB_NAME=${{ secrets.DB_NAME }}
-
-      - name: Execute Migration Job
-        run: |
-          gcloud run jobs execute ${{ env.MIGRATION_JOB_NAME }} --region ${{ env.REGION }} --wait
-
-      - name: Deploy to Cloud Run
-        uses: google-github-actions/deploy-cloudrun@v2
-        with:
-          service: ${{ env.SERVICE_NAME }}
-          region: ${{ env.REGION }}
-          image: ${{ env.GAR_LOCATION }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
-          flags: '--allow-unauthenticated'
+            --command flask --args db,stamp,head \
+            --set-env-vars FLASK_APP=app.py,GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }},DB_BACKEND=cloudsql,INSTANCE_CONNECTION_NAME=${{ secrets.INSTANCE_CONNECTION_NAME }},
