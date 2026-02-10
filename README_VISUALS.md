@@ -101,7 +101,6 @@ erDiagram
     Ingredient ||--o{ RecipeIngredient : used_in
     Chef ||--o{ Recipe : authors
     Recipe ||--o{ Instruction : has_steps
-    }
 ```
 
 ## 4. Deployment Pipeline (CI/CD)
