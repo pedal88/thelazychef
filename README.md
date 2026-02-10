@@ -1,8 +1,8 @@
-# The AI Kitchen 🍳
+# The Lazy Chef 🍳
 
 > **Transform your pantry staples into 5-star visual masterpieces using the power of Generative AI.**
 
-The AI Kitchen is a next-generation recipe application that doesn't just tell you what to cook—it shows you. By combining advanced Large Language Models (Gemini 1.5) for culinary logic with state-of-the-art Image Generation models (Imagen 3), it creates a seamless, visual, and highly personalized cooking experience.
+The Lazy Chef is a next-generation recipe application that doesn't just tell you what to cook—it shows you. By combining advanced Large Language Models (Gemini 1.5) for culinary logic with state-of-the-art Image Generation models (Imagen 3), it creates a seamless, visual, and highly personalized cooking experience.
 
 ---
 

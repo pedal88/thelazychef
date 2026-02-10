@@ -1,6 +1,6 @@
 # Deployment Guide
 
-This guide describes how to deploy the **Build Your Meal** application to **Google Cloud Run** and initialize the production **Cloud SQL** database.
+This guide describes how to deploy the **The Lazy Chef** application to **Google Cloud Run** and initialize the production **Cloud SQL** database.
 
 ## Prerequisites
 1.  **Google Cloud Project**: You need an active project ID.

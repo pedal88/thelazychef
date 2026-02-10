@@ -10,7 +10,7 @@ GCS_BUCKET_NAME="thelazychef-assets" # Your verified bucket
 GREEN='\033[0;32m'
 NC='\033[0m'
 
-echo -e "${GREEN}=== Build Your Meal Deployment Script ===${NC}"
+echo -e "${GREEN}=== The Lazy Chef Deployment Script ===${NC}"
 
 # Check arguments
 if [ -z "$1" ]; then

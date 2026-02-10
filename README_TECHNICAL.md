@@ -2,7 +2,7 @@
 
 **Audience**: Developers, System Architects, Maintainers.
 
-The AI Kitchen is a full-stack Flask application that leverages a "Human-in-the-Loop" AI architecture. It strictly separates **Generative Logic** (Text/Recipe Data) from **Visual Logic** (Image Generation) to ensure data consistency and validity.
+The Lazy Chef is a full-stack Flask application that leverages a "Human-in-the-Loop" AI architecture. It strictly separates **Generative Logic** (Text/Recipe Data) from **Visual Logic** (Image Generation) to ensure data consistency and validity.
 
 ## 1. Architecture Overview
 

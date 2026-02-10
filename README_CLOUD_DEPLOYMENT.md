@@ -1,8 +1,8 @@
-Here is the `README.md` file summarizing our deployment journey. It is structured to provide both a conceptual overview and the hard technical details of how we moved "Build Your Meal" from your laptop to the cloud.
+Here is the `README.md` file summarizing our deployment journey. It is structured to provide both a conceptual overview and the hard technical details of how we moved "The Lazy Chef" from your laptop to the cloud.
 
 ---
 
-# Build Your Meal - Cloud Deployment Documentation
+# The Lazy Chef - Cloud Deployment Documentation
 
 ## 1. High-Level Overview: The Journey to the Cloud ☁️
 
