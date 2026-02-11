@@ -1779,24 +1779,35 @@ def generate_from_video():
 # --- INGREDIENT DASHBOARD ROUTES ---
 @app.route('/ingredient-images')
 def ingredient_dashboard():
-    # 1. Load Pantry
+    # 1. Load Pantry from JSON (Baseline)
     pantry_path = os.path.join(app.root_path, 'data', 'constraints', 'pantry.json')
     with open(pantry_path, 'r') as f:
         pantry_items = json.load(f)
+        
+    # 2. Merge with Database (Truth)
+    # The DB contains the updated GCS URLs from our sync script
+    db_ingredients = db.session.execute(db.select(Ingredient)).scalars().all()
+    db_map = {ing.food_id: ing.image_url for ing in db_ingredients}
     
-    # 2. Check for Candidates
+    # 3. Check for Candidates & Apply Overrides
     generator = VertexImageGenerator(storage_provider=storage_provider, root_path=app.root_path)
-    # We populate the candidate status for each item
+    
     for item in pantry_items:
+        # DB Override
+        if item['food_id'] in db_map and db_map[item['food_id']]:
+             item['images']['image_url'] = db_map[item['food_id']]
+        
+        # Candidate Logic
         safe_name = generator._get_safe_filename(item['food_name'])
         candidate_path = os.path.join(generator.candidates_dir, safe_name)
         item['has_candidate'] = os.path.exists(candidate_path)
         item['candidate_url'] = f"/static/pantry/candidates/{safe_name}" if item['has_candidate'] else None
         
-        # Ensure image_url is fully qualified for display if it's relative
+        # Ensure image_url is fully qualified for display if it's relative AND NOT from GCS (which starts with https)
         if 'images' in item and item['images'].get('image_url'):
-             if not item['images']['image_url'].startswith('/'):
-                 item['images']['image_url'] = f"/static/{item['images']['image_url']}"
+             url = item['images']['image_url']
+             if not url.startswith('/') and not url.startswith('http'):
+                 item['images']['image_url'] = f"/static/{url}"
                  
         # 3. Check for Originals (Locked Assets)
         # We assume original filename matches current filename (based on migration strategy)
