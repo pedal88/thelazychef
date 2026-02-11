@@ -19,6 +19,10 @@ class VertexImageGenerator:
         self.root_path = root_path or os.getcwd()
         self.pantry_file = os.path.join(self.root_path, 'data', 'constraints', 'pantry.json')
         
+        # Local candidate storage (Legacy support for dashboard)
+        self.candidates_dir = os.path.join(self.root_path, 'static', 'pantry', 'candidates')
+        os.makedirs(self.candidates_dir, exist_ok=True)
+        
         # Initialize GenAI Client
         api_key = os.getenv("GOOGLE_API_KEY")
         if api_key:
