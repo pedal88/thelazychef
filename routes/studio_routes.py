@@ -4,7 +4,7 @@ import json
 import shutil
 import uuid
 from datetime import datetime
-from flask import Blueprint, jsonify, request, current_app
+from flask import Blueprint, jsonify, request, current_app, render_template
 from flask_login import login_required
 from utils.decorators import admin_required
 from jinja2 import Environment, FileSystemLoader
@@ -28,7 +28,7 @@ os.makedirs(BACKUP_DIR, exist_ok=True)
 @admin_required
 def studio_ui():
     """Render the Studio UI."""
-    return current_app.jinja_env.get_template('studio/prompt_ide.html').render()
+    return render_template('studio/prompt_ide.html')
 
 @prompts_bp.route('/api/prompts', methods=['GET'])
 @login_required
