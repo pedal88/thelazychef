@@ -1785,7 +1785,7 @@ def ingredient_dashboard():
         pantry_items = json.load(f)
     
     # 2. Check for Candidates
-    generator = VertexImageGenerator(root_path=app.root_path)
+    generator = VertexImageGenerator(storage_provider=storage_provider, root_path=app.root_path)
     # We populate the candidate status for each item
     for item in pantry_items:
         safe_name = generator._get_safe_filename(item['food_name'])
@@ -1821,7 +1821,7 @@ def generate_ingredient_image():
     if not ingredient_name and not user_input:
         return jsonify({'success': False, 'error': 'Missing name or details'})
         
-    generator = VertexImageGenerator(root_path=app.root_path)
+    generator = VertexImageGenerator(storage_provider=storage_provider, root_path=app.root_path)
 
     if ingredient_name:
         # STRATEGY A: Use the Studio Template (Preferred)
@@ -1847,7 +1847,7 @@ def approve_ingredient_image():
     if not ingredient_name:
         return jsonify({'success': False, 'error': 'Missing ingredient name'})
         
-    generator = VertexImageGenerator(root_path=app.root_path)
+    generator = VertexImageGenerator(storage_provider=storage_provider, root_path=app.root_path)
     result = generator.approve_candidate(ingredient_name)
     
     return jsonify(result)

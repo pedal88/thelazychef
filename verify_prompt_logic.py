@@ -8,7 +8,9 @@ except ImportError:
     sys.path.append(os.path.join(os.getcwd(), '..'))
     from services.vertex_image_service import VertexImageGenerator
 
-gen = VertexImageGenerator(root_path=os.getcwd())
+from services.storage_service import LocalStorageProvider
+storage = LocalStorageProvider()
+gen = VertexImageGenerator(storage_provider=storage, root_path=os.getcwd())
 
 # Test 1: With Visual Details
 prompt_1 = gen.get_prompt("Cheddar Cheese", visual_details="Sharp, orange, block")
