@@ -109,7 +109,7 @@ def generate_actual_image(visual_prompt: str, number_of_images: int = 1) -> list
         print(f"Error generating image: {e}")
         raise e
 
-def generate_image_variation(image_bytes: bytes, fixed_prompt: str) -> Image.Image:
+def generate_image_variation(image_bytes: bytes, fixed_prompt: str) -> list[Image.Image]:
     """
     Simulates an 'Image Variation' or 'Remix' by:
     1. Using Gemini Vision to describe the input image content/subject.

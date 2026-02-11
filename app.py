@@ -426,7 +426,7 @@ def studio_generate():
             file = request.files['image_a3']
             image_bytes = file.read()
             # Variation Generation
-            img = generate_image_variation(image_bytes, prompt_b3)
+            img = generate_image_variation(image_bytes, prompt_b3)[0]
             filename = f"studio_c_{uuid.uuid4().hex}.png"
             
             # Save via Storage
