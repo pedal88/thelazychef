@@ -132,3 +132,5 @@ jobs:
             DB_USER=${{ secrets.DB_USER }}
             DB_PASS=${{ secrets.DB_PASS }}
             DB_NAME=${{ secrets.DB_NAME }}
+            STORAGE_BACKEND=gcs
+            GCS_BUCKET_NAME=thelazychef-assets
