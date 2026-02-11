@@ -68,7 +68,7 @@
 
             <!-- 1. Describe It -->
             <div x-show="tab === 'describe'" class="transition-all duration-300">
-                <form action="/" method="POST" class="relative group">
+                <form action="{{ url_for('new_recipe') }}" method="POST" class="relative group">
                     <input type="hidden" name="chef_id" id="chefInput" value="gourmet">
                     <!-- Glow Removed -->
                     <div class="relative flex bg-white rounded-lg p-1 shadow-lg shadow-slate-900/50">

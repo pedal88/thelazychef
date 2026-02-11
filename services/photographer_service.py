@@ -45,7 +45,7 @@ def generate_visual_prompt(recipe_text: str, ingredients_list: str = None) -> st
     )
     
     response = client.models.generate_content(
-        model='gemini-2.0-flash-exp', # Using a fast text model
+        model='gemini-2.0-flash', # Using a fast text model
         contents=full_prompt
     )
     
@@ -68,7 +68,7 @@ def generate_visual_prompt_from_image(image_bytes: bytes) -> str:
     image = Image.open(BytesIO(image_bytes))
 
     response = client.models.generate_content(
-        model='gemini-2.0-flash-exp',
+        model='gemini-2.0-flash',
         contents=[full_prompt, image]
     )
     
@@ -130,7 +130,7 @@ def generate_image_variation(image_bytes: bytes, fixed_prompt: str) -> Image.Ima
     try:
         image = Image.open(BytesIO(image_bytes))
         response = client.models.generate_content(
-            model='gemini-2.0-flash-exp',
+            model='gemini-2.0-flash',
             contents=[vision_prompt, image]
         )
         subject_description = response.text.strip()
@@ -231,7 +231,7 @@ def process_external_image(image_url: str) -> Image.Image:
         
         # Reuse client from outer scope
         response = client.models.generate_content(
-            model='gemini-2.0-flash-exp',
+            model='gemini-2.0-flash',
             contents=[vision_prompt, image]
         )
         subject_description = response.text.strip()
