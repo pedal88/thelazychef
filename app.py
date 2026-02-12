@@ -1801,9 +1801,50 @@ def ingredient_dashboard():
         
         # Candidate Logic
         safe_name = generator._get_safe_filename(item['food_name'])
-        candidate_path = os.path.join(generator.candidates_dir, safe_name)
-        item['has_candidate'] = os.path.exists(candidate_path)
-        item['candidate_url'] = f"/static/pantry/candidates/{safe_name}" if item['has_candidate'] else None
+        
+        # Check storage backend to determine existence check
+        storage_backend = os.getenv('STORAGE_BACKEND', 'local')
+        if storage_backend == 'gcs':
+             # For GCS, we should ideally check if the blob exists.
+             # But checking 100+ blobs per request is slow.
+             # Strategy: Assume if we found a way to "list" them efficiently, or just rely on a naming convention?
+             # Better: The frontend generates them. The backend check is only for "Reload".
+             # Let's perform a CHECK only if we really need to, or skip it for performance?
+             # Attempt to check existence:
+             # We can use storage_provider.exists, but we need to instantiate it efficiently.
+             # NOTE: This N+1 check will be slow on GCS.
+             # Optimization: List valid candidates once per request?
+             # For now, let's just constructing the URL and checking if it *should* exist? 
+             # No, we need to know IF it exists to show the "Approve" button state or the image.
+             
+             # HACK: For now, we will skip the server-side check for candidates on GCS to avoid latency.
+             # OR we implement a "list_candidates" method in generator.
+             # Let's try to verify existence for the *single* item if possible, but for the dashboard loop it's heavy.
+             
+             # Alternative: The dashboard JS handles the "broken image" by hiding it?
+             # But we need 'has_candidate' to be True to show the UI.
+             
+             # Let's try storage.exists(filename, folder)
+             # We need to make sure we don't kill performance.
+             # Actually, let's just check the "Current" images mapping? No, candidates are new.
+             
+             # Compromise: We will NOT check existence loop-side in GCS mode for now to avoid timeout.
+             # We will assume False unless we have a better way (e.g. separate API to fetch candidates).
+             # Wait, if we assume False, the user can't approve them after reload.
+             
+             # Fix: Generator should provide `list_candidates()`
+             # For this immediate fix, let's just check `storage_provider.exists` and accept the latency for the admin page.
+             item['has_candidate'] = storage_provider.exists(safe_name, "pantry/candidates")
+             if item['has_candidate']:
+                  bucket_name = os.getenv('GCS_BUCKET_NAME')
+                  item['candidate_url'] = f"https://storage.googleapis.com/{bucket_name}/pantry/candidates/{safe_name}"
+             else:
+                  item['candidate_url'] = None
+        else:
+             # Local check
+             candidate_path = os.path.join(generator.candidates_dir, safe_name)
+             item['has_candidate'] = os.path.exists(candidate_path)
+             item['candidate_url'] = f"/static/pantry/candidates/{safe_name}" if item['has_candidate'] else None
         
         # Ensure image_url is fully qualified for display if it's relative AND NOT from GCS (which starts with https)
         if 'images' in item and item['images'].get('image_url'):

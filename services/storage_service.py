@@ -124,6 +124,12 @@ class GoogleCloudStorageProvider(StorageProvider):
         blob.make_public()
         blob.patch()
 
+        # Bugfix: Public URLs might take time to propagate or fail with UBLA.
+        # For candidates (temporary), return a Signed URL to ensure immediate access.
+        if "candidates" in folder:
+             # Signed URL valid for 15 minutes
+             return blob.generate_signed_url(expiration=900, method='GET')
+        
         return blob.public_url
 
     def delete(self, filename: str, folder: str) -> bool:

@@ -3,8 +3,46 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy import String, Integer, Boolean, Text, Float, ForeignKey
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
+import datetime
 
-class Base(DeclarativeBase):
+# Association table for linking resources to each other
+resource_relations = db.Table('resource_relations',
+    db.Column('source_id', db.Integer, db.ForeignKey('resource.id'), primary_key=True),
+    db.Column('related_id', db.Integer, db.ForeignKey('resource.id'), primary_key=True)
+)
+
+class Resource(db.Model):
+    __tablename__ = 'resource'
+    id = db.Column(db.Integer, primary_key=True)
+    slug = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    title = db.Column(db.String(200), nullable=False)
+    summary = db.Column(db.String(500))
+    content_markdown = db.Column(db.Text)  # Stores the raw markdown
+    image_filename = db.Column(db.String(255))
+    
+    # 1. Tag Column (User Choice: 1)
+    tags = db.Column(db.String(255))
+    
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+
+    # 2. Smart Linking (User Choice: 2B)
+    related_resources = db.relationship(
+        'Resource',
+        secondary=resource_relations,
+        primaryjoin=(resource_relations.c.source_id == id),
+        secondaryjoin=(resource_relations.c.related_id == id),
+        backref=db.backref('related_to', lazy='dynamic'),
+        lazy='dynamic'
+    )
+
+    def get_tag_list(self):
+        """Helper to split tags string into a list"""
+        if self.tags:
+            return [t.strip() for t in self.tags.split(',') if t.strip()]
+        return []
+
     pass
 
 db = SQLAlchemy(model_class=Base)
