@@ -252,14 +252,38 @@ def generate_recipe_ai(query: str, slim_context: list[dict] = None, chef_id: str
     except Exception as debug_err:
         print(f"⚠️  Debug parsing failed: {debug_err}")
     
+    # Normalization Helper
+    def normalize_recipe_data(data_dict):
+        # 1. Component Mismatch Fix (Single Component)
+        # If there is exactly 1 component and 1 ingredient group, force them to match.
+        # Priority is given to the Component Name (from instructions).
+        if 'components' in data_dict and 'ingredient_groups' in data_dict:
+            comps = data_dict['components']
+            ings = data_dict['ingredient_groups']
+            
+            if isinstance(comps, list) and isinstance(ings, list):
+                if len(comps) == 1 and len(ings) == 1:
+                    # Check for mismatch
+                    c_name = comps[0].get('name')
+                    i_name = ings[0].get('component')
+                    
+                    if c_name and i_name and c_name != i_name:
+                        print(f"🔧 Normalizing Component Mismatch: Ingredients '{i_name}' -> '{c_name}'")
+                        ings[0]['component'] = c_name
+        return data_dict
+
     # Original logic
     try:
         if response.parsed:
              # Convert Dict to Object for App Compatibility
-             return RecipeObj(**response.parsed)
+             data = response.parsed
+             if isinstance(data, dict):
+                 data = normalize_recipe_data(data)
+             return RecipeObj(**data)
         
         # Fallback if parsed is empty (rare with native schema)
         data = json.loads(response.text)
+        data = normalize_recipe_data(data)
         return RecipeObj(**data)
 
     except Exception as e:
