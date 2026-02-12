@@ -23,6 +23,8 @@ jobs:
   test:
     name: Lint & Test
     runs-on: ubuntu-latest
+    env:
+      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
