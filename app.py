@@ -1905,6 +1905,7 @@ def generate_ingredient_image():
         final_prompt = generator.get_prompt(ingredient_name, visual_details=user_input or "")
         print(f"DEBUG: Generating image for '{ingredient_name}' using Template. Final Prompt: {final_prompt[:50]}...")
         result = generator.generate_candidate(ingredient_name, final_prompt)
+        print(f"DEBUG: Generation Result for '{ingredient_name}': {result}") # ADDED LOG
     elif user_input:
         # STRATEGY B: Fallback (Raw Mode) - generate a temp name
         temp_name = f"unknown_{uuid.uuid4().hex[:6]}"
