@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6">{% if resource %}Edit Resource{% else %}New Resource{% endif %}</h1>
+
+    <div class="bg-white text-gray-800 rounded-lg shadow-xl p-6">
+        <form method="POST">
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Title</label>
+                <input type="text" name="title" value="{{ resource.title if resource else '' }}"
+                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    required>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Slug</label>
+                <input type="text" name="slug" value="{{ resource.slug if resource else '' }}"
+                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    placeholder="unique-url-slug" required>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Summary</label>
+                <textarea name="summary"
+                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    rows="3">{{ resource.summary if resource else '' }}</textarea>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Image Filename</label>
+                <input type="text" name="image_filename" value="{{ resource.image_filename if resource else '' }}"
+                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Tags (comma separated)</label>
+                <input type="text" name="tags" value="{{ resource.tags if resource else '' }}"
+                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    placeholder="skills, beginner">
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Content (Markdown)</label>
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+                <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+                <textarea name="content_markdown"
+                    id="markdown-editor">{{ resource.content_markdown if resource else '' }}</textarea>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Related Articles</label>
+                <div class="checkbox-list border rounded p-4 h-48 overflow-y-scroll">
+                    {% if all_resources %}
+                    {% for other in all_resources %}
+                    {% if not resource or other.id != resource.id %}
+                    <div class="flex items-center mb-2">
+                        <input type="checkbox" name="related_ids" value="{{ other.id }}" class="mr-2" {% if resource and
+                            other in resource.related_resources %}checked{% endif %}>
+                        <span>{{ other.title }}</span>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-gray-500">No other resources available to link.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <button type="submit"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Save
+                    Article</button>
+                <a href="{{ url_for('admin_resources_list') }}"
+                    class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    var simplemde = new SimpleMDE({ element: document.getElementById("markdown-editor") });
+</script>
+{% endblock %}
