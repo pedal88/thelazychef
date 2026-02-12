@@ -89,7 +89,6 @@
                 <a href="/ingredients" class="hover:text-orange-600 transition-colors">Ingredients</a>
                 <a href="/recipes" class="hover:text-orange-600 transition-colors">Recipes</a>
                 <a href="/become-a-chef" class="hover:text-orange-600 transition-colors">Become a Chef</a>
-                <a href="/recipes_list" class="hover:text-orange-600 transition-colors">Recipe Table</a>
 
                 {% if current_user.is_authenticated %}
                 {% if current_user.is_admin %}
@@ -130,6 +129,10 @@
                             <a href="/ingredient-images"
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
                                 🖼️ Ingredient Images
+                            </a>
+                            <a href="/recipes_list"
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
+                                📋 Recipe Table
                             </a>
                         </div>
                     </div>

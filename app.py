@@ -766,6 +766,8 @@ def recipes_list():
                          selected_proteins=selected_proteins)
 
 @app.route('/recipes_list')
+@login_required
+@admin_required
 def recipes_table_view():
     # 1. Load Filter Data Options
     # Use global load_json_option helper
