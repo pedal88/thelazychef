@@ -121,6 +121,7 @@ class GoogleCloudStorageProvider(StorageProvider):
             content_type=self._guess_content_type(filename)
         )
         blob.cache_control = "public, max-age=31536000"
+        blob.make_public()
         blob.patch()
 
         return blob.public_url
