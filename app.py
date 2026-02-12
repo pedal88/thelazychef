@@ -1407,10 +1407,12 @@ def generate_web_recipe():
         except:
              pantry_str = "[]"
              
-        recipe_data = generate_recipe_from_web_text(scraped_data['text'], pantry_str)
+        recipe_data = generate_recipe_from_web_text(scraped_data['text'], source_url=blog_url) # Pass URL
         
         if not recipe_data:
              return "AI could not extract a valid recipe from the page.", 400
+             
+        # 3. Process Image (Parallel-ish)
              
         # 3. Process Image (Parallel-ish)
         # We re-imagine the hero image from the blog
@@ -2026,6 +2028,28 @@ def admin_resource_edit(resource_id):
 
     all_resources = db.session.execute(db.select(Resource).order_by(Resource.title)).scalars().all()
     return render_template('admin/resource_editor.html', resource=resource, all_resources=all_resources)
+
+
+@app.route('/api/delete-recipe/<int:recipe_id>', methods=['DELETE'])
+@login_required
+@admin_required
+def delete_recipe_api(recipe_id):
+    try:
+        recipe = db.session.get(Recipe, recipe_id)
+        if not recipe:
+             return jsonify({'success': False, 'error': 'Recipe not found'}), 404
+             
+        # Delete the recipe (Cascades should handle children, but let's be safe if configured)
+        # SQLAlchemy models have cascade="all, delete-orphan", so deleting parent is enough.
+        db.session.delete(recipe)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': f"Recipe {recipe_id} deleted successfully."})
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Delete Recipe Error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
     with app.app_context():
