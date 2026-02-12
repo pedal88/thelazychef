@@ -17,6 +17,7 @@ def sync_images():
     """
     Iterates through local static/pantry images, uploads them to GCS,
     and updates the database records with the new GCS URLs.
+    Also uploads originals from static/pantry/originals.
     """
     
     # Check Environment
@@ -41,6 +42,23 @@ def sync_images():
 
     logger.info(f"Scanning {local_pantry_dir} for images...")
 
+    # Helper function for upload
+    def upload_blob(file_path, blob_path):
+        blob = bucket.blob(blob_path)
+        try:
+            if not blob.exists():
+                logger.info(f"Uploading to gs://{bucket_name}/{blob_path}...")
+                blob.upload_from_filename(file_path)
+                blob.cache_control = "public, max-age=31536000"
+                blob.patch()
+                return blob.public_url, True
+            else:
+                logger.info(f"Skipping {blob_path} (exists)")
+                return blob.public_url, False
+        except Exception as e:
+            logger.error(f"Error uploading {blob_path}: {e}")
+            return None, False
+
     with app.app_context():
         # Get all ingredients to match files against
         ingredients = db.session.execute(db.select(Ingredient)).scalars().all()
@@ -49,52 +67,47 @@ def sync_images():
         count_uploaded = 0
         count_updated = 0
 
+        # 1. Sync Main Pantry Images
+        logger.info(f"Scanning {local_pantry_dir} for MAIN images...")
         for filename in os.listdir(local_pantry_dir):
             if not filename.lower().endswith(('.png', '.jpg', '.jpeg')):
                 continue
 
             file_path = os.path.join(local_pantry_dir, filename)
-            
-            # Destination path in GCS
             blob_path = f"pantry/{filename}"
-            blob = bucket.blob(blob_path)
-
-            try:
-                # 1. Upload File
-                if not blob.exists():
-                    logger.info(f"Uploading {filename} to gs://{bucket_name}/{blob_path}...")
-                    blob.upload_from_filename(file_path)
-                    blob.cache_control = "public, max-age=31536000"
-                    blob.patch()
-                    count_uploaded += 1
-                else:
-                    logger.info(f"Skipping {filename} (already exists in GCS)")
-
-                # 2. Update Database
-                # Determine which ingredient this belongs to.
-                # Filename format: "{food_id}.png" or "{food_id}_{uuid}.png"
-                # We try to extract the food_id prefix.
+            
+            public_url, uploaded = upload_blob(file_path, blob_path)
+            if uploaded:
+                count_uploaded += 1
+            
+            if public_url:
+                # Update Database
                 parts = filename.split('_')
-                food_id_candidate = parts[0].split('.')[0] # handle "000123.png" case too
-                
-                # If filename is like "000123.png", parts=['000123.png'], split leads to '000123'
-                # If filename is "000123_uuid.png", parts=['000123', 'uuid.png'], first is '000123'
-                
+                food_id_candidate = parts[0].split('.')[0]
                 ing = ing_map.get(food_id_candidate)
+                
                 if ing:
-                    # New Public URL
-                    public_url = blob.public_url
-                    
-                    # Update if different
                     if ing.image_url != public_url:
-                        logger.info(f"Updating DB for {ing.name} ({ing.food_id}): {ing.image_url} -> {public_url}")
+                        logger.info(f"Updating DB for {ing.name} ({ing.food_id})")
                         ing.image_url = public_url
                         count_updated += 1
                 else:
-                    logger.warning(f"Could not find ingredient for file: {filename} (Extracted ID: {food_id_candidate})")
+                    logger.warning(f"Could not find ingredient for file: {filename}")
 
-            except Exception as e:
-                logger.error(f"Error processing {filename}: {e}")
+        # 2. Sync Original Images (No DB update, just upload)
+        local_originals_dir = os.path.join(local_pantry_dir, 'originals')
+        if os.path.exists(local_originals_dir):
+            logger.info(f"Scanning {local_originals_dir} for ORIGINAL images...")
+            for filename in os.listdir(local_originals_dir):
+                if not filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+                     continue
+                file_path = os.path.join(local_originals_dir, filename)
+                blob_path = f"pantry/originals/{filename}"
+                _, uploaded = upload_blob(file_path, blob_path)
+                if uploaded:
+                    count_uploaded += 1
+        else:
+            logger.warning("No 'originals' directory found locally.")
 
         # Commit changes
         if count_updated > 0:
@@ -102,7 +115,7 @@ def sync_images():
             db.session.commit()
         else:
             logger.info("No database updates needed.")
-
+            
     logger.info(f"Sync Complete. Uploaded: {count_uploaded}. Updated DB: {count_updated}.")
 
 if __name__ == "__main__":

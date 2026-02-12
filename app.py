@@ -1810,15 +1810,28 @@ def ingredient_dashboard():
                  item['images']['image_url'] = f"/static/{url}"
                  
         # 3. Check for Originals (Locked Assets)
-        # We assume original filename matches current filename (based on migration strategy)
         if 'images' in item and item['images'].get('image_url'):
-            current_url = item['images']['image_url'] # e.g. /static/pantry/000001.png
+            current_url = item['images']['image_url']
             basename = os.path.basename(current_url)
-            original_path = os.path.join(app.root_path, 'static', 'pantry', 'originals', basename)
-            if os.path.exists(original_path):
-                item['original_url'] = f"/static/pantry/originals/{basename}"
+            
+            # Smart Detection of Originals
+            # If we are using GCS, we assume the original exists if we have a main image (since we synced them)
+            # OR we could check if the main image is a GCS URL
+            
+            storage_backend = os.getenv('STORAGE_BACKEND', 'local')
+            bucket_name = os.getenv('GCS_BUCKET_NAME')
+            
+            if storage_backend == 'gcs' and bucket_name:
+                # GCS Mode: Construct URL directly
+                # Public URL format: https://storage.googleapis.com/BUCKET_NAME/OBJECT_NAME
+                item['original_url'] = f"https://storage.googleapis.com/{bucket_name}/pantry/originals/{basename}"
             else:
-                 item['original_url'] = None
+                # Local Mode: Check filesystem
+                original_path = os.path.join(app.root_path, 'static', 'pantry', 'originals', basename)
+                if os.path.exists(original_path):
+                    item['original_url'] = f"/static/pantry/originals/{basename}"
+                else:
+                    item['original_url'] = None
 
     return render_template('ingredient_dashboard.html', ingredients=pantry_items)
 
