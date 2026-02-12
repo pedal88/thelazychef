@@ -6,6 +6,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 
+class Base(DeclarativeBase):
+    pass
+
+db = SQLAlchemy(model_class=Base)
+
 # Association table for linking resources to each other
 resource_relations = db.Table('resource_relations',
     db.Column('source_id', db.Integer, db.ForeignKey('resource.id'), primary_key=True),
@@ -43,9 +48,16 @@ class Resource(db.Model):
             return [t.strip() for t in self.tags.split(',') if t.strip()]
         return []
 
-    pass
+    @property
+    def meta(self):
+        return {'read_time': self.calculate_read_time()}
 
-db = SQLAlchemy(model_class=Base)
+    def calculate_read_time(self):
+        if not self.content_markdown:
+             return 1
+        word_count = len(self.content_markdown.split())
+        return max(1, round(word_count / 200))
+
 
 class Ingredient(db.Model):
     __tablename__ = 'ingredient'
