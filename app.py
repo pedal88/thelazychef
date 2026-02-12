@@ -1434,6 +1434,19 @@ def generate_web_recipe():
         
         # 4. Save to DB (Reusing existing logic logic would be better but simple copy for now)
         with app.app_context():
+            # Validate Chef ID
+            # formatting: ensure chef_id checks db
+            valid_chef_id = None
+            if recipe_data.chef_id:
+                if db.session.get(Chef, recipe_data.chef_id):
+                    valid_chef_id = recipe_data.chef_id
+                elif db.session.get(Chef, 'gourmet'):
+                     print(f"Chef '{recipe_data.chef_id}' not found, falling back to 'gourmet'")
+                     valid_chef_id = 'gourmet'
+                else:
+                     print(f"Chef '{recipe_data.chef_id}' not found and default missing. Setting to None.")
+                     valid_chef_id = None
+            
             new_recipe = Recipe(
                 title=recipe_data.title,
                 cuisine=recipe_data.cuisine,
@@ -1443,7 +1456,7 @@ def generate_web_recipe():
                 protein_type=recipe_data.protein_type,
                 image_filename=final_image_filename,
                 # meal_types=json.dumps(recipe_data.meal_types) # DEPRECATED
-                chef_id=recipe_data.chef_id,
+                chef_id=valid_chef_id,
                 taste_level=recipe_data.taste_level,
                 prep_time_mins=recipe_data.prep_time_mins
             )
