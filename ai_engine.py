@@ -119,21 +119,31 @@ try:
 except Exception:
     protein_data = []
 
-def generate_recipe_from_web_text(text: str, source_url: str) -> RecipeObj:
+def generate_recipe_from_web_text(text: str, source_url: str, pantry_names: list[str] = None) -> RecipeObj:
     """
     Generates a recipe from raw text (e.g. from a website extract).
     """
+    if pantry_names:
+        pantry_list_str = ", ".join(pantry_names)
+    else:
+        # Fallback to static map if not provided (though we expect it to be provided)
+        pantry_list_str = ", ".join(list(pantry_map.keys()))
+    
     prompt = f"""
     ROLE: Data Engineer.
     TASK: Extract a structured recipe from this text content.
     SOURCE URL: {source_url}
+    
+    PANTRY INVENTORY (PRIORITIZE THESE EXACT NAMES):
+    {pantry_list_str}
+    
     CONTENT:
     {text[:15000]} # Limit context
     
-    CRITICAL:
+    CRITICAL RULES:
     1. Extract the title, cuisine, diet, etc.
     2. Infer numeric values for taste_level, prep_time_mins, etc.
-    3. Map ingredients to the best fit.
+    3. INGREDIENT MAPPING: Check the PANTRY INVENTORY list. If an ingredient in the text matches (even partially, e.g. "diced onions" -> "onions"), YOU MUST USE THE EXACT NAME from the inventory list. Only create a new name if it is truly unique.
     4. Structure instructions into Prep/Cook/Serve phases.
     """
     

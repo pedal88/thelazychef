@@ -13,7 +13,7 @@ Expects a RecipeIngredient object (ri) which has .ingredient relation and .amoun
 
 <div class="group flex flex-col items-center {% if size == 'xl' %}w-full{% endif %}">
     <div
-        class="relative {{ size_classes[size] }} {% if size != 'xl' %}rounded-lg border border-slate-100 p-1{% else %}rounded-md{% endif %} bg-white shadow-sm overflow-hidden transition-transform group-hover:scale-105 group-hover:shadow-md">
+        class="relative {{ size_classes[size] }} {% if size != 'xl' %}rounded-lg border {% if ingredient.main_category == 'Imported' %}border-red-500 border-2{% else %}border-slate-100{% endif %} p-1{% else %}rounded-md{% endif %} bg-white shadow-sm overflow-hidden transition-transform group-hover:scale-105 group-hover:shadow-md">
         {% if ingredient.image_url %}
         {% if ingredient.image_url.startswith('http://') or ingredient.image_url.startswith('https://') %}
         <img src="{{ ingredient.image_url }}" alt="{{ ingredient.name }}"
@@ -31,7 +31,7 @@ Expects a RecipeIngredient object (ri) which has .ingredient relation and .amoun
         {% endif %}
     </div>
     <span
-        class="mt-2 text-xs font-medium text-slate-600 text-center leading-tight {% if size != 'xl' %}max-w-[4rem] truncate{% endif %}">
+        class="mt-2 text-xs font-medium text-slate-600 text-center leading-tight {% if size != 'xl' %}w-20 break-words{% endif %}">
         {{ ingredient.name }}
     </span>
     {# Since we passed the Link Object (RecipeIngredient), we can access amount directly #}

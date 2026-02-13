@@ -1459,7 +1459,15 @@ def generate_web_recipe():
         except:
              pantry_str = "[]"
              
-        recipe_data = generate_recipe_from_web_text(scraped_data['text'], source_url=blog_url) # Pass URL
+        # Get all known ingredient names for AI mapping to prevent duplicates
+        all_ing_names = db.session.execute(db.select(Ingredient.name)).scalars().all()
+        pantry_names_list = list(all_ing_names) if all_ing_names else []
+
+        recipe_data = generate_recipe_from_web_text(
+            scraped_data['text'], 
+            source_url=blog_url, 
+            pantry_names=pantry_names_list
+        )
         
         if not recipe_data:
              return "AI could not extract a valid recipe from the page.", 400
