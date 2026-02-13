@@ -1384,6 +1384,58 @@ def merge_ingredients_api():
         print(f"Merge Error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+        print(f"Merge Error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+def find_best_ingredient_match(name):
+    """
+    Tries to find the best existing ingredient for a given name.
+    Strategies:
+    1. Exact match (case-insensitive)
+    2. Containment (e.g. 'Whole Eggs' -> 'Eggs')
+    3. Reverse Containment (e.g. 'Eggs' -> 'Whole Eggs' - risky, but useful)
+    """
+    # 1. Exact Match
+    exact = db.session.execute(
+        db.select(Ingredient).filter(Ingredient.name.ilike(name))
+    ).scalars().first()
+    if exact:
+        return exact
+
+    # 2. Simple word-based matching
+    # Split input into words, remove common stop words if needed (for now, just simple split)
+    # This is a naive implementation; for production, consider a full-text search or vector embedding.
+    
+    # Try finding an ingredient that matches the *last* word (often the noun) 
+    # e.g. "Chopped Onions" -> "Onions"
+    words = name.split()
+    if len(words) > 1:
+        last_word = words[-1]
+        if len(last_word) > 2: # Ignore short words
+            partial = db.session.execute(
+                db.select(Ingredient).filter(Ingredient.name.ilike(last_word))
+            ).scalars().first()
+            if partial:
+                print(f"Smart Match: '{name}' -> '{partial.name}' (Last Word)")
+                return partial
+
+    # 3. Try finding an ingredient that is contained in the name
+    # e.g. "Organic Baby Spinach" contains "Spinach" (if "Spinach" exists)
+    # This requires querying ALL ingredients is too slow? 
+    # Let's try a reverse ILIKE for common staples
+    
+    staples = ["eggs", "chicken", "beef", "rice", "pasta", "onion", "garlic", "salt", "pepper", "oil", "butter", "milk", "cheese"]
+    for staple in staples:
+        if staple in name.lower():
+             match = db.session.execute(
+                db.select(Ingredient).filter(Ingredient.name.ilike(staple))
+             ).scalars().first()
+             if match:
+                 print(f"Smart Match: '{name}' -> '{match.name}' (Staple)")
+                 return match
+                 
+    return None
+
 @app.route('/generate/web', methods=['POST'])
 def generate_web_recipe():
     blog_url = request.form.get('blog_url')
@@ -1485,14 +1537,20 @@ def generate_web_recipe():
             # Save Ingredients
             for group in recipe_data.ingredient_groups:
                 for ing in group.ingredients:
-                     # Match to existing ingredients? or Create?
-                     # Simple logic: check existing name, else create
-                     db_ing = Ingredient.query.filter(Ingredient.name.ilike(ing.name)).first()
+                     # Smart Linking Logic
+                     db_ing = find_best_ingredient_match(ing.name)
+
                      if not db_ing:
-                         # Create new ingredient entry (auto-add to pantry? maybe not)
-                         # Need a dummy food_id since it's required and unique. Using UUID or "IMP-{randint}"
+                         # Create new ingredient entry (Imported)
                          dummy_id = f"IMP-{uuid.uuid4().hex[:6]}"
-                         db_ing = Ingredient(name=ing.name, food_id=dummy_id, main_category="Imported", default_unit=ing.unit)
+                         db_ing = Ingredient(
+                             name=ing.name, 
+                             food_id=dummy_id, 
+                             main_category="Imported", 
+                             default_unit=ing.unit,
+                             # Created match for 
+                             created_at=datetime.datetime.now().isoformat()
+                         )
                          db.session.add(db_ing)
                          db.session.flush()
                      
