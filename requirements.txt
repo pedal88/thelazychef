@@ -16,3 +16,5 @@ flask-sqlalchemy
 Pillow
 yt-dlp
 flask-migrate
+thefuzz
+python-Levenshtein

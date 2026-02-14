@@ -1,8 +1,10 @@
 
 import os
+import re
 import json
 import uuid
 import typing_extensions as typing # For TypedDict compatibility
+from thefuzz import process as fuzz_process
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
@@ -26,6 +28,7 @@ class Ingredient(typing.TypedDict):
     name: str
     amount: float
     unit: str
+    pantry_id: typing.NotRequired[str]  # Optional: Pre-resolved pantry food_id from LLM
 
 class IngredientGroup(typing.TypedDict):
     component: str
@@ -104,8 +107,16 @@ def load_json(path):
 
 try:
     pantry_data = load_json("data/constraints/pantry.json")
-    pantry_map = {item['name'].lower(): item['id'] for item in pantry_data['ingredients']}
-except Exception:
+    # pantry.json is a flat list of dicts with 'food_name' and 'food_id' keys
+    if isinstance(pantry_data, list):
+        pantry_map = {item['food_name'].lower(): item['food_id'] for item in pantry_data if 'food_name' in item and 'food_id' in item}
+    elif isinstance(pantry_data, dict) and 'ingredients' in pantry_data:
+        pantry_map = {item.get('name', item.get('food_name', '')).lower(): item.get('id', item.get('food_id', '')) for item in pantry_data['ingredients']}
+    else:
+        pantry_map = {}
+    print(f"✅ pantry_map loaded with {len(pantry_map)} entries from pantry.json")
+except Exception as e:
+    print(f"⚠️  Failed to load pantry.json: {e}")
     pantry_map = {}
 
 # --- RESTORED EXPORTS FOR APP COMPATIBILITY ---
@@ -119,35 +130,51 @@ try:
 except Exception:
     protein_data = []
 
-def generate_recipe_from_web_text(text: str, source_url: str, pantry_names: list[str] = None) -> RecipeObj:
+def generate_recipe_from_web_text(text: str, source_url: str, slim_context: list[dict] = None) -> RecipeObj:
     """
     Generates a recipe from raw text (e.g. from a website extract).
+    Sends full pantry context (with food_ids) so the LLM can pre-resolve
+    ingredient matches via the pantry_id field.
     """
-    if pantry_names:
-        pantry_list_str = ", ".join(pantry_names)
+    if slim_context:
+        set_pantry_memory(slim_context)
+        pantry_str = json.dumps(slim_context)
     else:
-        # Fallback to static map if not provided (though we expect it to be provided)
-        pantry_list_str = ", ".join(list(pantry_map.keys()))
+        # Fallback to name-only list from static map
+        pantry_str = json.dumps([{"n": k, "i": v} for k, v in pantry_map.items()])
     
     prompt = f"""
     ROLE: Data Engineer.
     TASK: Extract a structured recipe from this text content.
     SOURCE URL: {source_url}
     
-    PANTRY INVENTORY (PRIORITIZE THESE EXACT NAMES):
-    {pantry_list_str}
+    PANTRY INVENTORY (JSON — 'i' = ingredient ID, 'n' = name):
+    {pantry_str}
     
     CONTENT:
-    {text[:15000]} # Limit context
+    {text[:15000]}
     
-    CRITICAL RULES:
+    PANTRY ID INJECTION RULE (CRITICAL):
+    For EACH ingredient in the recipe:
+    - Search the PANTRY INVENTORY above for a match (even partial, e.g. "diced onions" → pantry "onions").
+    - If it matches, you MUST:
+      1. Use the EXACT 'n' (name) value from the pantry as the ingredient name.
+      2. Include its 'i' value in the 'pantry_id' field.
+    - If the ingredient is truly NEW and not in the pantry, set 'pantry_id' to null and use a clean, generic name.
+    - ALWAYS prefer existing pantry names over creating new variations.
+    - Examples:
+      * "boneless skinless chicken breasts" → pantry has "chicken breast" → use name="chicken breast", pantry_id="000xxx"
+      * "English cucumber, diced" → pantry has "cucumber" → use name="cucumber", pantry_id="000xxx"  
+      * "feta cheese, crumbled" → pantry has "feta cheese" → use name="feta cheese", pantry_id="000xxx"
+      * "lemons, juiced" → pantry has "lemon" → use name="lemon", pantry_id="000xxx"
+    
+    OTHER RULES:
     1. Extract the title, cuisine, diet, etc.
-    2. Infer numeric values for taste_level, prep_time_mins, etc.
-    3. INGREDIENT MAPPING: Check the PANTRY INVENTORY list. If an ingredient in the text matches (even partially, e.g. "diced onions" -> "onions"), YOU MUST USE THE EXACT NAME from the inventory list. Only create a new name if it is truly unique.
-    4. Structure instructions into Prep/Cook/Serve phases.
+    2. Infer numeric values for taste_level, prep_time_mins, cleanup_factor, etc.
+    3. Structure instructions into Prep/Cook/Serve phases with separate components.
     """
     
-    print(f"DEBUG: Generating from Web Text via 'gemini-flash-latest'")
+    print(f"DEBUG: Generating from Web Text via 'gemini-flash-latest' (with pantry IDs)")
     response = client.models.generate_content(
         model='gemini-flash-latest',
         contents=prompt,
@@ -160,7 +187,6 @@ def generate_recipe_from_web_text(text: str, source_url: str, pantry_names: list
     try:
         if response.parsed:
              return RecipeObj(**response.parsed)
-        # import json # REMOVED: Redundant
 
         data = json.loads(response.text)
         return RecipeObj(**data)
@@ -168,35 +194,247 @@ def generate_recipe_from_web_text(text: str, source_url: str, pantry_names: list
         print(f"ERROR: Web Generation failed. Raw output: {response.text[:200]}")
         raise ValueError(f"AI Generation failed: {e}")
 
-def get_pantry_id(name: str):
-    # 1. Try Exact Match
-    n_lower = name.lower()
-    if n_lower in pantry_map:
-        return pantry_map[n_lower]
+# Fuzzy matching threshold — scores below this are rejected.
+# 85 works well for food names: "Lrg Eggs" → "Whole Eggs" (88), 
+# but "Salt" ≠ "Unsalted Butter" (45).
+FUZZY_MATCH_THRESHOLD = 85
+
+# Cooking qualifiers to strip before fuzzy matching.
+# These appear as adjectives/suffixes and add noise that dilutes match scores.
+COOKING_QUALIFIERS = {
+    # Preparation styles
+    'diced', 'chopped', 'minced', 'sliced', 'crushed', 'crumbled',
+    'grated', 'shredded', 'julienned', 'cubed', 'halved', 'quartered',
+    'torn', 'mashed', 'pureed', 'zested', 'peeled', 'deseeded',
+    'pitted', 'cored', 'trimmed', 'deboned', 'deveined', 'seeded',
+    # Temperature / State
+    'fresh', 'frozen', 'dried', 'canned', 'uncooked', 'cooked',
+    'raw', 'roasted', 'toasted', 'smoked', 'pickled', 'marinated',
+    'softened', 'melted', 'chilled', 'warmed', 'blanched', 'ripe',
+    # Size / Descriptor
+    'boneless', 'skinless', 'whole', 'large', 'small',
+    'medium', 'thin', 'thick', 'finely', 'roughly', 'thinly',
+    'extra', 'lrg', 'sml', 'med',
+    # Descriptor / Quality
+    'organic', 'pure', 'virgin', 'unsalted', 'salted',
+    'packed', 'loosely', 'firmly', 'light', 'dark',
+}
+
+def normalize_ingredient_name(name: str) -> str:
+    """
+    Strip cooking qualifiers and descriptors to get the core ingredient name.
+    Examples:
+      "English cucumber, diced"  → "english cucumber"
+      "feta cheese, crumbled"    → "feta cheese"
+      "chicken breasts, boneless and skinless" → "chicken breasts"
+      "lime juice"               → "lime juice"  (unchanged — 'juice' is meaningful)
+    """
+    if not name:
+        return name
+    n = name.lower().strip()
+    # 1. Remove parenthetical clarifiers: "pickled cucumbers (dill pickles)" → "pickled cucumbers"
+    n = re.sub(r'\(.*?\)', '', n).strip()
+    # 2. Split on comma — take only the first part (before ", diced" etc.)
+    n = n.split(',')[0].strip()
+    # 3. Remove remaining qualifying words
+    words = n.split()
+    cleaned = [w for w in words if w not in COOKING_QUALIFIERS]
+    return ' '.join(cleaned).strip() if cleaned else n
+
+def _fuzzy_match(query: str, pantry_keys: list[str]) -> str | None:
+    """
+    Run fuzzy matching against pantry_keys. Returns food_id or None.
+    Uses WRatio first, then token_set_ratio as fallback.
+    """
+    from thefuzz import fuzz as fuzz_scorer
     
-    # 2. Try 'exact word' match (e.g. "thyme" in "fresh thyme")
-    # We prefer short keys matching parts of the query (pantry="thyme", query="fresh thyme")
-    for key, pid in pantry_map.items():
-        # Check if pantry item is inside the query (e.g. key="thyme" in name="fresh thyme")
-        if key in n_lower: 
-            return pid
-            
-    # 3. Try query inside pantry item (e.g. name="beef" in key="beef chuck")
-    for key, pid in pantry_map.items():
-        if n_lower in key:
-            return pid
-            
+    # Stage A: WRatio (good for similar-length strings)
+    result = fuzz_process.extractOne(query, pantry_keys)
+    if result:
+        matched_key, score = result
+        if score >= FUZZY_MATCH_THRESHOLD:
+            print(f"🔗 Fuzzy Match (WRatio): '{query}' → '{matched_key}' (score: {score})")
+            return pantry_map[matched_key]
+
+    # Stage B: token_set_ratio (handles subsets: "feta" inside "feta cheese")
+    result_tsr = fuzz_process.extractOne(query, pantry_keys, scorer=fuzz_scorer.token_set_ratio)
+    if result_tsr:
+        matched_key_tsr, score_tsr = result_tsr
+        if score_tsr >= FUZZY_MATCH_THRESHOLD:
+            print(f"🔗 Fuzzy Match (token_set): '{query}' → '{matched_key_tsr}' (score: {score_tsr})")
+            return pantry_map[matched_key_tsr]
+    
     return None
 
+def get_pantry_id(name: str):
+    """
+    Resolves an ingredient name to a pantry food_id.
+    
+    When the name contains cooking qualifiers (normalization changes it),
+    the NORMALIZED version is tried first to prevent duplicate ingredients
+    from poisoning exact matches. For clean names, raw exact match fires first.
+    
+    Strategy:
+      If name has qualifiers (normalized ≠ raw):
+        1. Exact match on normalized name
+        2. Fuzzy match on normalized name
+        3. Exact match on raw name (fallback)
+        4. Fuzzy match on raw name (final fallback)
+      If name is already clean (normalized == raw):
+        1. Exact match on raw name
+        2. Fuzzy match on raw name
+    
+    Returns the food_id string or None if no confident match.
+    """
+    if not name:
+        return None
+    if not pantry_map:
+        print(f"⚠️  get_pantry_id called but pantry_map is EMPTY — cannot match '{name}'")
+        return None
+
+    n_lower = name.strip().lower()
+    n_clean = normalize_ingredient_name(name)
+    was_normalized = n_clean and n_clean != n_lower
+    pantry_keys = list(pantry_map.keys())
+
+    if was_normalized:
+        # --- Normalized name takes priority (prevents duplicate matches) ---
+        # 1. Exact match on normalized name
+        if n_clean in pantry_map:
+            print(f"🔗 Normalized Exact Match: '{name}' → '{n_clean}'")
+            return pantry_map[n_clean]
+
+        # 2. Fuzzy match on normalized name
+        result_clean = _fuzzy_match(n_clean, pantry_keys)
+        if result_clean:
+            print(f"    ↳ (after normalizing '{name}' → '{n_clean}')")
+            return result_clean
+
+    # 3. Exact match on raw name (first check for clean names, fallback for normalized)
+    if n_lower in pantry_map:
+        return pantry_map[n_lower]
+
+    # 4. Fuzzy match on raw name (final fallback)
+    result = _fuzzy_match(n_lower, pantry_keys)
+    if result:
+        return result
+
+    # Nothing matched
+    print(f"⚠️  No match for '{name}' (normalized: '{n_clean}') — threshold: {FUZZY_MATCH_THRESHOLD}")
+    return None
+
+def get_top_pantry_suggestions(name: str, top_n: int = 3) -> list[dict]:
+    """
+    Returns the top N fuzzy matches from pantry_map for a given ingredient name.
+    Unlike get_pantry_id (which returns only the best match above threshold),
+    this returns multiple ranked suggestions with scores — useful for
+    showing substitute candidates in the UI.
+    
+    Returns: [{"name": str, "food_id": str, "score": int}, ...]
+    """
+    if not name or not pantry_map:
+        return []
+    
+    from thefuzz import fuzz as fuzz_scorer
+    
+    n_lower = name.strip().lower()
+    n_clean = normalize_ingredient_name(name)
+    pantry_keys = list(pantry_map.keys())
+    
+    # Collect candidates from both raw and normalized names, both scorers
+    candidates = {}  # key → best_score
+    
+    queries = [n_lower]
+    if n_clean and n_clean != n_lower:
+        queries.append(n_clean)
+    
+    for query in queries:
+        # WRatio matches
+        results_wr = fuzz_process.extract(query, pantry_keys, limit=top_n * 2)
+        for matched_key, score in results_wr:
+            if matched_key not in candidates or score > candidates[matched_key]:
+                candidates[matched_key] = score
+        
+        # token_set_ratio matches
+        results_tsr = fuzz_process.extract(query, pantry_keys, scorer=fuzz_scorer.token_set_ratio, limit=top_n * 2)
+        for matched_key, score in results_tsr:
+            if matched_key not in candidates or score > candidates[matched_key]:
+                candidates[matched_key] = score
+    
+    # Sort by score descending, take top N
+    sorted_candidates = sorted(candidates.items(), key=lambda x: x[1], reverse=True)[:top_n]
+    
+    return [
+        {"name": key, "food_id": pantry_map[key], "score": score}
+        for key, score in sorted_candidates
+    ]
+
 def set_pantry_memory(slim_context):
-    # global pantry_map # Removed unused global
+    """
+    Populates pantry_map from DB ingredients via slim_context.
+    
+    CLEARS the map first to prevent accumulation across calls.
+    
+    Two-pass strategy:
+      Pass 1: Add all original pantry items (is_original=True).
+      Pass 2: Add non-original items ONLY if their normalized form
+              doesn't collide with an existing map entry.
+    
+    IMP- food_ids are ALWAYS rejected (auto-created duplicates).
+    """
+    pantry_map.clear()  # Prevent accumulation across calls
+    
+    added_orig = 0
+    added_user = 0
+    skipped = 0
+    
+    # Pass 1: Original pantry items take priority
     for item in slim_context:
-        # Handle minified keys from pantry_service (n=name, i=id)
         name = item.get('n', item.get('name'))
         pantry_id = item.get('i', item.get('id'))
+        is_original = item.get('o', item.get('is_original', True))
         
-        if name and pantry_id:
+        # Never add IMP- duplicates
+        if pantry_id and str(pantry_id).startswith('IMP-'):
+            skipped += 1
+            continue
+        
+        if name and pantry_id and is_original:
             pantry_map[name.lower()] = pantry_id
+            added_orig += 1
+    
+    # Pass 2: Non-original items — add only if not a decorated duplicate
+    for item in slim_context:
+        name = item.get('n', item.get('name'))
+        pantry_id = item.get('i', item.get('id'))
+        is_original = item.get('o', item.get('is_original', True))
+        
+        if not name or not pantry_id or is_original:
+            continue
+        
+        # Never add IMP- duplicates
+        if str(pantry_id).startswith('IMP-'):
+            skipped += 1
+            continue
+        
+        n_lower = name.lower()
+        n_clean = normalize_ingredient_name(name)
+        
+        # Skip if raw name already in map (original takes precedence)
+        if n_lower in pantry_map:
+            skipped += 1
+            continue
+        # Skip if normalized form already in map (it's a decorated duplicate)
+        if n_clean != n_lower and n_clean in pantry_map:
+            skipped += 1
+            continue
+        
+        # Clean user-created item — add it (e.g. "olive", "avocado")
+        pantry_map[n_lower] = pantry_id
+        added_user += 1
+    
+    total = added_orig + added_user
+    print(f"📦 set_pantry_memory: {total} items ({added_orig} original + {added_user} user-created), skipped {skipped} duplicates/imports")
 
 # --- Core Generation Function ---
 def generate_recipe_ai(query: str, slim_context: list[dict] = None, chef_id: str = "gourmet") -> RecipeObj:

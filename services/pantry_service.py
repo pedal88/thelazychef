@@ -11,13 +11,15 @@ def get_slim_pantry_context():
     c: main_category
     u: default_unit
     t: tags
+    o: is_original (bool)
     """
     stmt = db.select(
         Ingredient.food_id,
         Ingredient.name,
         Ingredient.main_category,
         Ingredient.default_unit,
-        Ingredient.tags
+        Ingredient.tags,
+        Ingredient.is_original
     )
     results = db.session.execute(stmt).all()
     
@@ -28,7 +30,8 @@ def get_slim_pantry_context():
             "n": row.name,
             "c": row.main_category if row.main_category else "",
             "u": row.default_unit if row.default_unit else "",
-            "t": row.tags if row.tags else ""
+            "t": row.tags if row.tags else "",
+            "o": bool(row.is_original)
         })
         
     return slim_context

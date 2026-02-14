@@ -15,7 +15,7 @@ from database.models import db, Ingredient, Recipe, Instruction, RecipeIngredien
 from utils.decorators import admin_required
 from sqlalchemy import or_
 from services.pantry_service import get_slim_pantry_context
-from ai_engine import generate_recipe_ai, get_pantry_id, chefs_data, generate_recipe_from_web_text, analyze_ingredient_ai
+from ai_engine import generate_recipe_ai, get_pantry_id, get_top_pantry_suggestions, chefs_data, generate_recipe_from_web_text, analyze_ingredient_ai
 from services.photographer_service import generate_visual_prompt, generate_actual_image, generate_visual_prompt_from_image, load_photographer_config, generate_image_variation, process_external_image
 from services.vertex_image_service import VertexImageGenerator
 from services.web_scraper_service import WebScraper
@@ -939,17 +939,123 @@ def search_ingredients_api():
         ).scalars().all()
         
         # Serialize results
-        items = [{
-            'id': i.id,
-            'name': i.name, 
-            'category': i.main_category,
-            'food_id': i.food_id
-        } for i in results]
+        items = []
+        for i in results:
+            img = None
+            if i.image_url:
+                if i.image_url.startswith('http'):
+                    img = i.image_url
+                else:
+                    img = url_for('static', filename=i.image_url)
+            items.append({
+                'id': i.id,
+                'name': i.name, 
+                'category': i.main_category,
+                'food_id': i.food_id,
+                'image_url': img
+            })
         
         return jsonify({'success': True, 'results': items})
         
     except Exception as e:
         print(f"Search API Error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/relink-ingredient', methods=['POST'])
+@login_required
+def relink_ingredient_api():
+    """Swap the ingredient linked to a RecipeIngredient row. Admin only."""
+    if not current_user.is_admin:
+        return jsonify({'success': False, 'error': 'Admin access required'}), 403
+    
+    try:
+        data = request.get_json()
+        ri_id = data.get('recipe_ingredient_id')
+        new_ing_id = data.get('new_ingredient_id')
+        
+        if not ri_id or not new_ing_id:
+            return jsonify({'success': False, 'error': 'Missing parameters'}), 400
+        
+        # Fetch the RecipeIngredient row
+        ri = db.session.get(RecipeIngredient, ri_id)
+        if not ri:
+            return jsonify({'success': False, 'error': 'Recipe ingredient link not found'}), 404
+        
+        # Verify the target ingredient exists
+        new_ingredient = db.session.get(Ingredient, new_ing_id)
+        if not new_ingredient:
+            return jsonify({'success': False, 'error': 'Target ingredient not found'}), 404
+        
+        old_name = ri.ingredient.name
+        ri.ingredient_id = new_ingredient.id
+        db.session.commit()
+        
+        print(f"🔗 Relinked: '{old_name}' → '{new_ingredient.name}' (recipe_ingredient #{ri_id})")
+        return jsonify({'success': True, 'old_name': old_name, 'new_name': new_ingredient.name})
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Relink API Error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/suggest-substitutes', methods=['POST'])
+def suggest_substitutes_api():
+    """Return top 3 pantry substitutes for a missing ingredient name."""
+    try:
+        data = request.get_json()
+        name = data.get('name', '').strip()
+        
+        if not name:
+            return jsonify({'success': True, 'suggestions': []})
+        
+        # Ensure pantry_map includes DB items (not just pantry.json)
+        from ai_engine import set_pantry_memory
+        slim_context = get_slim_pantry_context()
+        set_pantry_memory(slim_context)
+        
+        
+        # Get fuzzy suggestions (extra to account for filtered imports)
+        suggestions = get_top_pantry_suggestions(name, top_n=6)
+        
+        # Enrich with DB data (image, full name casing, category)
+        
+        enriched = []
+        for sug in suggestions:
+            if len(enriched) >= 3:
+                break
+                
+            ingredient = db.session.execute(
+                db.select(Ingredient).where(Ingredient.food_id == sug['food_id'])
+            ).scalars().first()
+            
+            if not ingredient:
+                continue
+            # Skip IMP-imported ingredients only (not all non-original)
+            if (ingredient.main_category or '').lower() == 'imported':
+                continue
+            if ingredient.food_id.startswith('IMP-'):
+                continue
+            
+            img = None
+            if ingredient.image_url:
+                if ingredient.image_url.startswith('http'):
+                    img = ingredient.image_url
+                else:
+                    img = url_for('static', filename=ingredient.image_url)
+            
+            enriched.append({
+                'id': ingredient.id,
+                'name': ingredient.name,
+                'food_id': ingredient.food_id,
+                'category': ingredient.main_category or 'Uncategorized',
+                'image_url': img,
+                'score': sug['score']
+            })
+        
+        return jsonify({'success': True, 'suggestions': enriched})
+        
+    except Exception as e:
+        print(f"Suggest Substitutes API Error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/analyze-ingredient', methods=['POST'])
@@ -1390,58 +1496,26 @@ def merge_ingredients_api():
 def find_best_ingredient_match(name):
     """
     Tries to find the best existing ingredient for a given name.
-    Strategies:
-    1. Exact match (case-insensitive)
-    2. Containment (e.g. 'Whole Eggs' -> 'Eggs')
-    3. Reverse Containment (e.g. 'Eggs' -> 'Whole Eggs' - risky, but useful)
+    Uses the robust fuzzy matching from ai_engine.get_pantry_id,
+    then resolves the food_id to a DB record.
+    Returns an Ingredient ORM object or None.
     """
-    # 1. Exact Match
-    exact = db.session.execute(
-        db.select(Ingredient).filter(Ingredient.name.ilike(name))
+    from ai_engine import get_pantry_id
+    
+    food_id_str = get_pantry_id(name)
+    if not food_id_str:
+        return None
+    
+    return db.session.execute(
+        db.select(Ingredient).where(Ingredient.food_id == food_id_str)
     ).scalars().first()
-    if exact:
-        return exact
-
-    # 2. Simple word-based matching
-    # Split input into words, remove common stop words if needed (for now, just simple split)
-    # This is a naive implementation; for production, consider a full-text search or vector embedding.
-    
-    # Try finding an ingredient that matches the *last* word (often the noun) 
-    # e.g. "Chopped Onions" -> "Onions"
-    words = name.split()
-    if len(words) > 1:
-        last_word = words[-1]
-        if len(last_word) > 2: # Ignore short words
-            partial = db.session.execute(
-                db.select(Ingredient).filter(Ingredient.name.ilike(last_word))
-            ).scalars().first()
-            if partial:
-                print(f"Smart Match: '{name}' -> '{partial.name}' (Last Word)")
-                return partial
-
-    # 3. Try finding an ingredient that is contained in the name
-    # e.g. "Organic Baby Spinach" contains "Spinach" (if "Spinach" exists)
-    # This requires querying ALL ingredients is too slow? 
-    # Let's try a reverse ILIKE for common staples
-    
-    staples = ["eggs", "chicken", "beef", "rice", "pasta", "onion", "garlic", "salt", "pepper", "oil", "butter", "milk", "cheese"]
-    for staple in staples:
-        if staple in name.lower():
-             match = db.session.execute(
-                db.select(Ingredient).filter(Ingredient.name.ilike(staple))
-             ).scalars().first()
-             if match:
-                 print(f"Smart Match: '{name}' -> '{match.name}' (Staple)")
-                 return match
-                 
-    return None
 
 @app.route('/generate/web', methods=['POST'])
 def generate_web_recipe():
     blog_url = request.form.get('blog_url')
     
     if not blog_url:
-        return redirect(url_for('home')) # Or show error
+        return redirect(url_for('index'))
     
     try:
         # 1. Scrape Content
@@ -1451,53 +1525,86 @@ def generate_web_recipe():
         if not scraped_data or not scraped_data['text']:
             return "Could not extract text from this URL", 400
             
-        # 2. Extract Recipe with Silent Swaps
+        # 2. Extract Recipe — pass full pantry context with food_ids
         slim_context = get_slim_pantry_context()
-        try:
-             import json
-             pantry_str = json.dumps(slim_context)
-        except:
-             pantry_str = "[]"
-             
-        # Get all known ingredient names for AI mapping to prevent duplicates
-        all_ing_names = db.session.execute(db.select(Ingredient.name)).scalars().all()
-        pantry_names_list = list(all_ing_names) if all_ing_names else []
+        
+        # Filter out IMP- duplicates so the LLM only sees real pantry items
+        clean_context = [item for item in slim_context if not str(item.get('i', '')).startswith('IMP-')]
 
         recipe_data = generate_recipe_from_web_text(
             scraped_data['text'], 
             source_url=blog_url, 
-            pantry_names=pantry_names_list
+            slim_context=clean_context
         )
         
         if not recipe_data:
              return "AI could not extract a valid recipe from the page.", 400
              
-        # 3. Process Image (Parallel-ish)
-             
-        # 3. Process Image (Parallel-ish)
-        # We re-imagine the hero image from the blog
+        # 3. Process Image
         image_url = scraped_data.get('image_url')
         print(f"Scraped Image URL: {image_url}")
         
         final_image_filename = None
         if image_url:
             try:
-                # Process external -> New AI Image
                 generated_pil = process_external_image(image_url)
                 if generated_pil:
-                     # Save it
                      unique_filename = f"web_import_{uuid.uuid4()}.png"
                      save_path = os.path.join(app.root_path, 'static', 'recipe_images', unique_filename)
                      generated_pil.save(save_path)
                      final_image_filename = unique_filename
             except Exception as e:
                 print(f"Image processing failed: {e}")
-                # Continue without image
         
-        # 4. Save to DB (Reusing existing logic logic would be better but simple copy for now)
+        # 4. Validate ALL ingredients BEFORE saving anything
+        #    Use get_pantry_id (fuzzy) for robust matching — NO auto-creation.
+        from ai_engine import get_pantry_id as resolve_pantry_id
+        
+        missing_ingredients = []
+        for group in recipe_data.ingredient_groups:
+            for ing in group.ingredients:
+                # First check if the LLM already provided a pantry_id
+                pre_resolved_id = getattr(ing, 'pantry_id', None) if hasattr(ing, 'pantry_id') else (ing.get('pantry_id') if isinstance(ing, dict) else None)
+                
+                if pre_resolved_id:
+                    # Reject IMP- duplicates even if LLM provided them
+                    if str(pre_resolved_id).startswith('IMP-'):
+                        pre_resolved_id = None
+                    else:
+                        # Verify LLM-provided ID actually exists in DB
+                        exists = db.session.execute(
+                            db.select(Ingredient).where(Ingredient.food_id == pre_resolved_id)
+                        ).scalars().first()
+                        if exists:
+                            continue  # Valid pre-resolved ID
+                
+                # Fallback: fuzzy match by name
+                food_id_str = resolve_pantry_id(ing.name)
+                if not food_id_str:
+                    if not any(m['name'] == ing.name for m in missing_ingredients):
+                        missing_ingredients.append({
+                            'name': ing.name,
+                            'amount': ing.amount,
+                            'unit': ing.unit,
+                            'component': group.component
+                        })
+        
+        # If we have missing ingredients, STOP and ask user to resolve
+        if missing_ingredients:
+            data_dir = os.path.join(app.root_path, 'data', 'constraints')
+            with open(os.path.join(data_dir, 'categories.json'), 'r') as f:
+                cat_data = json.load(f)
+            
+            return render_template('missing_ingredients_resolution.html', 
+                                 missing_items=missing_ingredients,
+                                 query=blog_url,
+                                 chef_id='gourmet',
+                                 main_categories=cat_data.get('main_categories', []),
+                                 sub_categories_map=cat_data.get('sub_categories', {}))
+        
+        # 5. All ingredients resolved — Save to DB
         with app.app_context():
             # Validate Chef ID
-            # formatting: ensure chef_id checks db
             valid_chef_id = None
             if recipe_data.chef_id:
                 if db.session.get(Chef, recipe_data.chef_id):
@@ -1517,7 +1624,6 @@ def generate_web_recipe():
                 cleanup_factor=recipe_data.cleanup_factor or 3,
                 protein_type=recipe_data.protein_type,
                 image_filename=final_image_filename,
-                # meal_types=json.dumps(recipe_data.meal_types) # DEPRECATED
                 chef_id=valid_chef_id,
                 taste_level=recipe_data.taste_level,
                 prep_time_mins=recipe_data.prep_time_mins
@@ -1542,39 +1648,44 @@ def generate_web_recipe():
                     )
                     db.session.add(instr)
 
-            # Save Ingredients
+            # Save Ingredients (all validated — no auto-creation)
             for group in recipe_data.ingredient_groups:
                 for ing in group.ingredients:
-                     # Smart Linking Logic
-                     db_ing = find_best_ingredient_match(ing.name)
-
-                     if not db_ing:
-                         # Create new ingredient entry (Imported)
-                         dummy_id = f"IMP-{uuid.uuid4().hex[:6]}"
-                         db_ing = Ingredient(
-                             name=ing.name, 
-                             food_id=dummy_id, 
-                             main_category="Imported", 
-                             default_unit=ing.unit,
-                             # Created match for 
-                             created_at=datetime.datetime.now().isoformat()
-                         )
-                         db.session.add(db_ing)
-                         db.session.flush()
-                     
-                     ri = RecipeIngredient(
-                         recipe_id=new_recipe.id,
-                         ingredient_id=db_ing.id,
-                         amount=ing.amount,
-                         unit=ing.unit,
-                         component=group.component
-                     )
-                     db.session.add(ri)
+                    # Try LLM-provided pantry_id first
+                    pre_resolved_id = getattr(ing, 'pantry_id', None) if hasattr(ing, 'pantry_id') else (ing.get('pantry_id') if isinstance(ing, dict) else None)
+                    db_ing = None
+                    
+                    if pre_resolved_id and not str(pre_resolved_id).startswith('IMP-'):
+                        db_ing = db.session.execute(
+                            db.select(Ingredient).where(Ingredient.food_id == pre_resolved_id)
+                        ).scalars().first()
+                    
+                    if not db_ing:
+                        # Fuzzy match fallback
+                        food_id_str = resolve_pantry_id(ing.name)
+                        if food_id_str:
+                            db_ing = db.session.execute(
+                                db.select(Ingredient).where(Ingredient.food_id == food_id_str)
+                            ).scalars().first()
+                    
+                    if not db_ing:
+                        # Should never happen — we validated above
+                        raise ValueError(f"System error: Ingredient '{ing.name}' passed validation but not found in DB.")
+                    
+                    ri = RecipeIngredient(
+                        recipe_id=new_recipe.id,
+                        ingredient_id=db_ing.id,
+                        amount=ing.amount,
+                        unit=ing.unit,
+                        component=group.component
+                    )
+                    db.session.add(ri)
             
             db.session.commit()
             return redirect(url_for('recipe_detail', recipe_id=new_recipe.id))
 
     except Exception as e:
+        db.session.rollback()
         print(f"Web Import Error: {e}")
         return f"Error processing web import: {e}", 500
 
@@ -1586,11 +1697,12 @@ def generate():
         return redirect(url_for('index'))
     
     try:
-        # Get Context for AI
+        # Get Context for AI — filter out IMP duplicates so LLM only sees real pantry items
         pantry_context = get_slim_pantry_context()
+        clean_context = [item for item in pantry_context if not str(item.get('i', '')).startswith('IMP-')]
         
-        # Call AI with context
-        recipe_data = generate_recipe_ai(query, pantry_context, chef_id=chef_id)
+        # Call AI with clean context
+        recipe_data = generate_recipe_ai(query, clean_context, chef_id=chef_id)
         
         # Save to DB
         new_recipe = Recipe(
@@ -1617,6 +1729,21 @@ def generate():
         missing_ingredients = []
         for group in recipe_data.ingredient_groups:
             for ing in group.ingredients:
+                # First: check if the LLM provided a pantry_id
+                pre_resolved_id = getattr(ing, 'pantry_id', None) if hasattr(ing, 'pantry_id') else (ing.get('pantry_id') if isinstance(ing, dict) else None)
+                
+                if pre_resolved_id:
+                    # Reject IMP- duplicates even if LLM provided them
+                    if str(pre_resolved_id).startswith('IMP-'):
+                        pre_resolved_id = None
+                    else:
+                        exists = db.session.execute(
+                            db.select(Ingredient).where(Ingredient.food_id == pre_resolved_id)
+                        ).scalars().first()
+                        if exists:
+                            continue  # Valid pre-resolved ID — skip fuzzy matching
+                
+                # Fallback: fuzzy match by name
                 food_id_str = get_pantry_id(ing.name)
                 if not food_id_str:
                      # Check if we already added it to missing list to avoid duplicates
@@ -1642,28 +1769,32 @@ def generate():
                                  main_categories=cat_data.get('main_categories', []),
                                  sub_categories_map=cat_data.get('sub_categories', {}))
 
-        # Step 2: Save to DB (All ingredients detected)
+        # Step 2: Save to DB (All ingredients resolved)
         for group in recipe_data.ingredient_groups:
             for ing in group.ingredients:
-                # ing.name is validated name from pantry
-                # get_pantry_id returns the food_id string (e.g. "000322")
-                food_id_str = get_pantry_id(ing.name)
+                # Priority 1: LLM-provided pantry_id
+                pre_resolved_id = getattr(ing, 'pantry_id', None) if hasattr(ing, 'pantry_id') else (ing.get('pantry_id') if isinstance(ing, dict) else None)
+                ingredient_record = None
                 
-                if not food_id_str:
-                     # Should not happen if logic above works, unless race condition
-                     raise ValueError(f"System error: ID not found for validated ingredient {ing.name}")
+                if pre_resolved_id and not str(pre_resolved_id).startswith('IMP-'):
+                    ingredient_record = db.session.execute(
+                        db.select(Ingredient).where(Ingredient.food_id == pre_resolved_id)
+                    ).scalars().first()
                 
-                # Find the internal Integer ID (PK) for this food_id
-                ingredient_record = db.session.execute(
-                    db.select(Ingredient).where(Ingredient.food_id == food_id_str)
-                ).scalar_one_or_none()
+                # Priority 2: Fuzzy name matching
+                if not ingredient_record:
+                    food_id_str = get_pantry_id(ing.name)
+                    if food_id_str:
+                        ingredient_record = db.session.execute(
+                            db.select(Ingredient).where(Ingredient.food_id == food_id_str)
+                        ).scalar_one_or_none()
                 
                 if not ingredient_record:
-                    raise ValueError(f"Database consistency error: Ingredient {ing.name} ({food_id_str}) not found in DB.")
+                    raise ValueError(f"System error: ID not found for validated ingredient {ing.name}")
 
                 recipe_ing = RecipeIngredient(
                     recipe_id=new_recipe.id,
-                    ingredient_id=ingredient_record.id, # Use Integer PK
+                    ingredient_id=ingredient_record.id,
                     amount=ing.amount,
                     unit=ing.unit,
                     component=group.component

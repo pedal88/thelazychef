@@ -11,9 +11,9 @@ Expects a RecipeIngredient object (ri) which has .ingredient relation and .amoun
 'xl': 'w-full aspect-square'
 } %}
 
-<div class="group flex flex-col items-center {% if size == 'xl' %}w-full{% endif %}">
+<div class="group/ing flex flex-col items-center {% if size == 'xl' %}w-full{% endif %}" data-ri-id="{{ ri.id }}">
     <div
-        class="relative {{ size_classes[size] }} {% if size != 'xl' %}rounded-lg border {% if ingredient.main_category == 'Imported' %}border-red-500 border-2{% else %}border-slate-100{% endif %} p-1{% else %}rounded-md{% endif %} bg-white shadow-sm overflow-hidden transition-transform group-hover:scale-105 group-hover:shadow-md">
+        class="relative {{ size_classes[size] }} {% if size != 'xl' %}rounded-lg border {% if ingredient.main_category == 'Imported' %}border-red-500 border-2{% else %}border-slate-100{% endif %} p-1{% else %}rounded-md{% endif %} bg-white shadow-sm overflow-hidden transition-transform group-hover/ing:scale-105 group-hover/ing:shadow-md">
         {% if ingredient.image_url %}
         {% if ingredient.image_url.startswith('http://') or ingredient.image_url.startswith('https://') %}
         <img src="{{ ingredient.image_url }}" alt="{{ ingredient.name }}"
@@ -28,6 +28,19 @@ Expects a RecipeIngredient object (ri) which has .ingredient relation and .amoun
             class="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-xs text-slate-400 font-bold">
             {{ ingredient.name[:2] | upper }}
         </div>
+        {% endif %}
+
+        {# Admin Relink Button — only visible to authenticated admins #}
+        {% if current_user.is_authenticated and current_user.is_admin %}
+        <button onclick="openRelinkModal({{ ri.id }}, '{{ ingredient.name|e }}')" title="Relink to different ingredient"
+            class="absolute top-0 right-0 w-5 h-5 bg-indigo-600/80 hover:bg-indigo-700 text-white rounded-bl-md flex items-center justify-center opacity-0 group-hover/ing:opacity-100 transition-opacity duration-200 cursor-pointer z-10">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" />
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M10.172 13.828a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.102 1.101" />
+            </svg>
+        </button>
         {% endif %}
     </div>
     <span
