@@ -172,6 +172,21 @@ def generate_recipe_from_web_text(text: str, source_url: str, slim_context: list
     1. Extract the title, cuisine, diet, etc.
     2. Infer numeric values for taste_level, prep_time_mins, cleanup_factor, etc.
     3. Structure instructions into Prep/Cook/Serve phases with separate components.
+    
+    COMPONENT SPLITTING LOGIC:
+    - If the recipe has distinct sub-parts (e.g. a sauce, a base, toppings), split into separate components.
+    - Simple dishes: use 1 component named "Main Dish".
+    - Complex dishes: split into logical components (e.g. "Chicken", "Rice", "Salad", "Dressing").
+    
+    CRITICAL COMPONENT NAME CONSISTENCY RULE:
+    The component names MUST BE IDENTICAL in both ingredient_groups and components arrays.
+    Use the SAME names for both ingredients AND instructions.
+    Example CORRECT:
+      ingredient_groups: [{{"component": "Chicken"}}, {{"component": "Rice"}}]
+      components: [{{"name": "Chicken"}}, {{"name": "Rice"}}]
+    Example WRONG:
+      ingredient_groups: [{{"component": "Marinade"}}, {{"component": "Bowl"}}]
+      components: [{{"name": "Chicken Prep"}}, {{"name": "Assembly"}}]
     """
     
     print(f"DEBUG: Generating from Web Text via 'gemini-flash-latest' (with pantry IDs)")

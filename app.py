@@ -1889,6 +1889,46 @@ def recipe_detail(recipe_id):
         if comp not in ingredients_by_component:
             ingredients_by_component[comp] = []
         ingredients_by_component[comp].append(recipe_ing)
+    
+    # DEFENSIVE: Reconcile mismatched component names
+    # If ingredient components don't match instruction components,
+    # ingredients become invisible in the template. Fix by redistributing.
+    instruction_comp_names = {name for name, _ in steps_by_component}
+    ingredient_comp_names = set(ingredients_by_component.keys())
+    orphaned_comps = ingredient_comp_names - instruction_comp_names
+    
+    if orphaned_comps:
+        print(f"⚠️  Component name mismatch for recipe {recipe_id}:")
+        print(f"   Instruction components: {instruction_comp_names}")
+        print(f"   Ingredient components:  {ingredient_comp_names}")
+        print(f"   Orphaned:               {orphaned_comps}")
+        
+        # Collect all orphaned ingredients
+        orphaned_ingredients = []
+        for comp in orphaned_comps:
+            orphaned_ingredients.extend(ingredients_by_component.pop(comp))
+        
+        if len(steps_by_component) == 1:
+            # Single instruction component — put all ingredients there
+            sole_comp = steps_by_component[0][0]
+            if sole_comp not in ingredients_by_component:
+                ingredients_by_component[sole_comp] = []
+            ingredients_by_component[sole_comp].extend(orphaned_ingredients)
+        elif len(steps_by_component) > 1 and not ingredients_by_component:
+            # No ingredients matched ANY component — distribute evenly by splitting
+            # based on ingredient order across the instruction components
+            comp_names = [name for name, _ in steps_by_component]
+            per_comp = max(1, len(orphaned_ingredients) // len(comp_names))
+            for idx, comp_name in enumerate(comp_names):
+                start = idx * per_comp
+                end = start + per_comp if idx < len(comp_names) - 1 else len(orphaned_ingredients)
+                ingredients_by_component[comp_name] = orphaned_ingredients[start:end]
+        else:
+            # Some matched, some didn't — attach orphans to "Other Ingredients"
+            ingredients_by_component["Other Ingredients"] = orphaned_ingredients
+            # Also add a pseudo-component for display if not already in steps
+            if not any(name == "Other Ingredients" for name, _ in steps_by_component):
+                steps_by_component.append(("Other Ingredients", []))
 
     return render_template('recipe.html', recipe=recipe, steps_by_phase=steps_by_phase, ingredients_by_component=ingredients_by_component, steps_by_component=steps_by_component)
 
