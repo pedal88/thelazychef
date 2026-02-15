@@ -202,6 +202,29 @@
                     </div>
                 </div>
 
+                <!-- Paste Nutrition Toggle -->
+                <div class="mt-3 bg-indigo-50 rounded p-2 border border-indigo-100">
+                    <button type="button"
+                        onclick="document.getElementById('modalPastePanel').classList.toggle('hidden')"
+                        class="text-xs font-bold text-indigo-700 hover:text-indigo-900 flex items-center gap-1 w-full justify-between">
+                        <span>📋 Paste Nutrition Text</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </button>
+                    <div id="modalPastePanel" class="hidden mt-2">
+                        <textarea id="modalPasteArea" rows="3"
+                            class="block w-full rounded-md border-indigo-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs text-slate-600 mb-2"
+                            placeholder="Paste text here... e.g. per 100g: 254kcal, Fat 12g..."></textarea>
+                        <div class="flex justify-end">
+                            <button type="button" onclick="extractNutrientsModal()" id="btnExtractModal"
+                                class="px-3 py-1 bg-indigo-600 text-white text-xs font-medium rounded hover:bg-indigo-700">Extract
+                                & Fill</button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Prompt -->
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Image Prompt</label>
@@ -448,6 +471,60 @@
 
     function retryGeneration() {
         document.getElementById('retryForm').submit();
+    }
+
+    async function extractNutrientsModal() {
+        const text = document.getElementById('modalPasteArea').value;
+        const name = document.getElementById('inputName').value;
+        const btn = document.getElementById('btnExtractModal');
+        const originalText = btn.innerText;
+
+        if (!text) return;
+
+        btn.innerText = "...";
+        btn.disabled = true;
+
+        try {
+            const response = await fetch('/api/extract-nutrients', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ raw_text: text, ingredient_name: name })
+            });
+            const res = await response.json();
+
+            if (res.success && res.nutrients) {
+                const n = res.nutrients;
+                // IDs are input-calories_per_100g etc.
+                const map = {
+                    'calories_per_100g': 'input-calories_per_100g',
+                    'kj_per_100g': 'input-kj_per_100g',
+                    'protein_per_100g': 'input-protein_per_100g',
+                    'fat_per_100g': 'input-fat_per_100g',
+                    'carbs_per_100g': 'input-carbs_per_100g',
+                    'sugar_per_100g': 'input-sugar_per_100g',
+                    'fiber_per_100g': 'input-fiber_per_100g',
+                    'sodium_mg_per_100g': 'input-sodium_mg_per_100g'
+                };
+
+                for (const [key, id] of Object.entries(map)) {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.value = n[key] || 0;
+                        el.classList.add('bg-green-100'); // highlight
+                        setTimeout(() => el.classList.remove('bg-green-100'), 1500);
+                    }
+                }
+                document.getElementById('modalPastePanel').classList.add('hidden');
+            } else {
+                alert("Failed: " + (res.error || 'Unknown error'));
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error: " + e);
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
     }
 </script>
 {% endblock %}

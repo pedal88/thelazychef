@@ -668,4 +668,72 @@ def analyze_ingredient_ai(prompt: str, valid_categories: dict) -> dict:
     except Exception as e:
         print(f"ERROR: Ingredient Analysis failed: {e}")
         raise ValueError(f"AI Analysis failed: {e}")
+
+
+# --- Nutrient Extraction from Text Dump ---
+class NutrientExtractionSchema(typing.TypedDict):
+    calories_per_100g: float
+    kj_per_100g: float
+    protein_per_100g: float
+    fat_per_100g: float
+    fat_saturated_per_100g: float
+    carbs_per_100g: float
+    sugar_per_100g: float
+    fiber_per_100g: float
+    sodium_mg_per_100g: float
+    serving_size_note: str
+
+def extract_nutrients_from_text(raw_text: str, ingredient_name: str = "") -> dict:
+    """
+    Extracts structured nutrition data from raw pasted text.
+    Handles nutrition labels, website copy, product packaging text, etc.
+    Normalises all values to per-100g.
+    """
+    print(f"🔬 Extracting nutrients from text dump for '{ingredient_name}'")
+
+    prompt = f"""
+    ROLE: Nutrition Data Analyst.
+    TASK: Extract nutritional information from the text below and return it **normalised to per 100g**.
+
+    INGREDIENT CONTEXT: {ingredient_name or "Unknown"}
+
+    RAW TEXT:
+    {raw_text[:8000]}
+
+    CRITICAL RULES:
+    1. The text may contain nutrition data in any format: tables, labels, prose, bullet points.
+    2. Data might be "per serving", "per 85g", "per 250ml", "per slice", etc. You MUST convert ALL values to per 100g.
+       - Example: If the label says "Calories: 140 per serving (50g)", then calories_per_100g = 140 * (100/50) = 280.
+       - Example: If the label says "Protein: 8g per 30g serving", then protein_per_100g = 8 * (100/30) = 26.67.
+    3. If a value is missing from the text, use 0.
+    4. If sodium is given in grams, convert to mg (multiply by 1000).
+    5. If salt is given instead of sodium, divide by 2.5 to get sodium.
+    6. If kJ is missing but kcal is present, compute: kJ = kcal * 4.184.
+    7. If kcal is missing but kJ is present, compute: kcal = kJ / 4.184.
+    8. Record what serving size the original data was in (for transparency).
+    9. Ignore any non-nutritional text (marketing, ingredients lists, allergens, etc.).
+    """
+
+    try:
+        response = client.models.generate_content(
+            model='gemini-flash-latest',
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=NutrientExtractionSchema
+            )
+        )
+
+        if response.parsed:
+            result = response.parsed
+        else:
+            result = json.loads(response.text)
+
+        print(f"✅ Nutrients extracted: {result.get('calories_per_100g', '?')} kcal/100g "
+              f"(source: {result.get('serving_size_note', 'unknown')})")
+        return result
+
+    except Exception as e:
+        print(f"ERROR: Nutrient extraction failed: {e}")
+        raise ValueError(f"Nutrient extraction failed: {e}")
 #

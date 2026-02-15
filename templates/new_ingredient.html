@@ -236,6 +236,33 @@
                                         </div>
                                     </div>
 
+                                    <!-- Paste Nutrition Section -->
+                                    <div class="sm:col-span-6 mt-2 border-t border-slate-100 pt-2">
+                                        <button type="button"
+                                            onclick="document.getElementById('pasteNutritionPanel').classList.toggle('hidden')"
+                                            class="flex items-center gap-2 text-xs font-bold text-indigo-600 hover:text-indigo-800 uppercase tracking-wide">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+                                                </path>
+                                            </svg>
+                                            Paste Nutrition Text
+                                        </button>
+                                        <div id="pasteNutritionPanel"
+                                            class="hidden mt-2 p-3 bg-indigo-50 rounded-lg border border-indigo-100">
+                                            <textarea id="nutritionPasteArea" rows="4"
+                                                class="block w-full rounded-md border-indigo-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs text-slate-600 mb-2"
+                                                placeholder="Paste raw text here... e.g. 'Energy 254kcal, Fat 12g (of which saturates 2g), Carbs 30g...'"></textarea>
+                                            <div class="flex justify-end">
+                                                <button type="button" onclick="extractNutrients()"
+                                                    id="btnExtractNutrients"
+                                                    class="px-3 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded hover:bg-indigo-700 transition">
+                                                    Extract & Fill
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
 
@@ -770,6 +797,59 @@
             }
         } catch (e) {
             alert("Error: " + e.message);
+        }
+    }
+
+    async function extractNutrients() {
+        const text = document.getElementById('nutritionPasteArea').value;
+        const name = document.getElementById('ingName').value;
+        if (!text) return;
+
+        const btn = document.getElementById('btnExtractNutrients');
+        const originalText = btn.innerText;
+        btn.innerText = "Extracting...";
+        btn.disabled = true;
+
+        try {
+            const response = await fetch('/api/extract-nutrients', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ raw_text: text, ingredient_name: name })
+            });
+            const res = await response.json();
+
+            if (res.success && res.nutrients) {
+                const n = res.nutrients;
+                document.getElementById('cal').value = n.calories_per_100g || 0;
+                document.getElementById('protein').value = n.protein_per_100g || 0;
+                document.getElementById('fat').value = n.fat_per_100g || 0;
+                document.getElementById('carbs').value = n.carbs_per_100g || 0;
+
+                // Hidden fields
+                document.getElementById('sugar').value = n.sugar_per_100g || 0;
+                document.getElementById('fiber').value = n.fiber_per_100g || 0;
+                document.getElementById('satFat').value = n.fat_saturated_per_100g || 0;
+                document.getElementById('sodium').value = n.sodium_mg_per_100g || 0;
+
+                // Show notification briefly or just hide panel
+                document.getElementById('pasteNutritionPanel').classList.add('hidden');
+
+                // Highlight fields to show they changed
+                ['cal', 'protein', 'fat', 'carbs'].forEach(id => {
+                    const el = document.getElementById(id);
+                    el.classList.add('ring-2', 'ring-green-500');
+                    setTimeout(() => el.classList.remove('ring-2', 'ring-green-500'), 2000);
+                });
+
+            } else {
+                alert("Could not extract nutrients: " + (res.error || 'Unknown error'));
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Extraction failed");
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
         }
     }
 </script>

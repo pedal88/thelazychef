@@ -15,7 +15,7 @@ from database.models import db, Ingredient, Recipe, Instruction, RecipeIngredien
 from utils.decorators import admin_required
 from sqlalchemy import or_
 from services.pantry_service import get_slim_pantry_context
-from ai_engine import generate_recipe_ai, get_pantry_id, get_top_pantry_suggestions, chefs_data, generate_recipe_from_web_text, analyze_ingredient_ai
+from ai_engine import generate_recipe_ai, get_pantry_id, get_top_pantry_suggestions, chefs_data, generate_recipe_from_web_text, analyze_ingredient_ai, extract_nutrients_from_text
 from services.recipe_service import process_recipe_workflow, STATUS_SUCCESS, STATUS_MISSING
 from services.photographer_service import generate_visual_prompt, generate_actual_image, generate_visual_prompt_from_image, load_photographer_config, generate_image_variation, process_external_image
 from services.vertex_image_service import VertexImageGenerator
@@ -1080,6 +1080,25 @@ def analyze_ingredient_api():
         
     except Exception as e:
         print(f"Analysis API Error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/extract-nutrients', methods=['POST'])
+def extract_nutrients_api():
+    try:
+        data = request.get_json()
+        raw_text = data.get('raw_text', '').strip()
+        ingredient_name = data.get('ingredient_name', '')
+
+        if not raw_text:
+            return jsonify({'success': False, 'error': 'No text provided'})
+
+        # Call AI
+        nutrients = extract_nutrients_from_text(raw_text, ingredient_name)
+        
+        return jsonify({'success': True, 'nutrients': nutrients})
+
+    except Exception as e:
+        print(f"Nutrient Extraction Error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/generate-ingredient-image', methods=['POST'])
