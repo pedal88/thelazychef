@@ -130,9 +130,9 @@ try:
 except Exception:
     protein_data = []
 
-def generate_recipe_from_web_text(text: str, source_url: str, slim_context: list[dict] = None) -> RecipeObj:
+def generate_recipe_from_web_text(text: str, source_url: str = "User Input", slim_context: list[dict] = None) -> RecipeObj:
     """
-    Generates a recipe from raw text (e.g. from a website extract).
+    Generates a recipe from raw text (e.g. from a website extract or manual paste).
     Sends full pantry context (with food_ids) so the LLM can pre-resolve
     ingredient matches via the pantry_id field.
     """
@@ -146,7 +146,11 @@ def generate_recipe_from_web_text(text: str, source_url: str, slim_context: list
     prompt = f"""
     ROLE: Data Engineer.
     TASK: Extract a structured recipe from this text content.
-    SOURCE URL: {source_url}
+    SOURCE: {source_url}
+    
+    CRITICAL: The input text may contain advertisements, navigation menus, cookie notices,
+    author bios, comment sections, and other unrelated content. You must IGNORE all such
+    noise and extract ONLY the recipe data (title, ingredients, instructions, metadata).
     
     PANTRY INVENTORY (JSON — 'i' = ingredient ID, 'n' = name):
     {pantry_str}
