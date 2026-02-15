@@ -1587,6 +1587,37 @@ def generate_web_recipe():
         import traceback; traceback.print_exc()
         return f"Error processing web import: {e}", 500
 
+@app.route('/generate/text', methods=['POST'])
+def generate_text_recipe():
+    recipe_text = request.form.get('recipe_text')
+    if not recipe_text:
+        return redirect(url_for('index'))
+
+    try:
+        # 1. Build clean pantry context (no IMP duplicates)
+        slim_context = get_slim_pantry_context()
+        clean_context = [item for item in slim_context if not str(item.get('i', '')).startswith('IMP-')]
+
+        # 2. Call AI
+        # Reuse web extraction logic as it's robust for unstructured text
+        recipe_data = generate_recipe_from_web_text(
+            recipe_text,
+            source_url="manual-text-entry",
+            slim_context=clean_context,
+        )
+        if not recipe_data:
+            return "AI could not extract a valid recipe from the text.", 400
+
+        # 3. Unified persistence pipeline
+        result = process_recipe_workflow(recipe_data, query_context="manual-text-entry", chef_id='gourmet')
+        return _handle_workflow_result(result, query_context="manual-text-entry", chef_id='gourmet')
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Text Import Error: {e}")
+        import traceback; traceback.print_exc()
+        return f"Error processing text import: {e}", 500
+
 @app.route('/generate')
 def generate():
     query = request.args.get('query')

@@ -62,6 +62,11 @@
                     class="w-full py-2 text-xs font-medium leading-5 rounded-md transition-all focus:outline-none">
                     Web Link
                 </button>
+                <button @click="tab = 'text'"
+                    :class="tab === 'text' ? 'bg-amber-600 text-white shadow' : 'text-slate-400 hover:text-amber-400'"
+                    class="w-full py-2 text-xs font-medium leading-5 rounded-md transition-all focus:outline-none">
+                    Paste Text
+                </button>
             </div>
 
             <!-- Tab Content -->
@@ -136,6 +141,26 @@
                         </button>
                     </div>
                     <p class="mt-2 text-xs text-slate-500">Imports recipe text and re-imagines the photo.</p>
+                </form>
+            </div>
+
+            <!-- 4. Paste Text -->
+            <div x-show="tab === 'text'" style="display: none;" class="transition-all duration-300">
+                <form action="/generate/text" method="POST" class="relative group" id="textForm"
+                    onsubmit="showLoading('Processing Text', 'The AI is reading your text and re-imagining the dish...')">
+                    <div class="relative flex flex-col bg-slate-800 rounded-lg p-1 shadow-lg border border-slate-700">
+                        <textarea name="recipe_text" rows="4" placeholder="Paste full recipe text here..."
+                            class="block w-full bg-transparent rounded-md border-0 py-3 pl-3 pr-4 text-white placeholder:text-slate-500 focus:ring-0 sm:text-sm focus:outline-none resize-none"></textarea>
+
+                        <div class="flex justify-end p-2 border-t border-slate-700/50">
+                            <button type="submit"
+                                class="rounded-md bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20 transition-colors">
+                                Parse & Create
+                            </button>
+                        </div>
+                    </div>
+                    <p class="mt-2 text-xs text-slate-500">Paste any recipe text, list of ingredients, or instructions.
+                    </p>
                 </form>
             </div>
 
