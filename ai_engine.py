@@ -555,9 +555,16 @@ def generate_recipe_ai(query: str, slim_context: list[dict] = None, chef_id: str
 
 # --- Video Generation (Retained for Safety) ---
 def generate_recipe_from_video(video_path: str, caption: str, slim_context: list[dict] = None, chef_id: str = "gourmet"):
-    # Reuse the same schema logic ideally, for now just a stub or basic version
-    # Since user emphasized 'Rewrite entire file', we keep a minimal working version
-    
+    """
+    Generates a structured recipe from a video file (TikTok/Reel).
+    Sends full pantry context so the LLM can pre-resolve ingredient IDs.
+    """
+    if slim_context:
+        set_pantry_memory(slim_context)
+        pantry_str = json.dumps(slim_context)
+    else:
+        pantry_str = json.dumps([{"n": k, "i": v} for k, v in pantry_map.items()])
+
     print(f"🎬 Uploading video to Gemini: {video_path}")
     file_ref = client.files.upload(file=video_path)
     
@@ -571,15 +578,51 @@ def generate_recipe_from_video(video_path: str, caption: str, slim_context: list
         time.sleep(2)
 
     prompt = f"""
-    Watch this video and create a structured recipe.
+    ROLE: Data Engineer and Recipe Analyst.
+    TASK: Watch this video carefully and create a structured recipe from what you observe.
     Caption: {caption}
     Chef ID: {chef_id}
     
-    CRITICAL: Follow the same strict multi-step rules:
+    PANTRY INVENTORY (JSON — 'i' = ingredient ID, 'n' = name):
+    {pantry_str}
+    
+    PANTRY ID INJECTION RULE (CRITICAL):
+    For EACH ingredient in the recipe:
+    - Search the PANTRY INVENTORY above for a match (even partial, e.g. "diced onions" → pantry "onions").
+    - If it matches, you MUST:
+      1. Use the EXACT 'n' (name) value from the pantry as the ingredient name.
+      2. Include its 'i' value in the 'pantry_id' field.
+    - If the ingredient is truly NEW and not in the pantry, set 'pantry_id' to null and use a clean, generic name.
+    - ALWAYS prefer existing pantry names over creating new variations.
+    - Examples:
+      * "boneless skinless chicken breasts" → pantry has "chicken breast" → use name="chicken breast", pantry_id="000xxx"
+      * "English cucumber, diced" → pantry has "cucumber" → use name="cucumber", pantry_id="000xxx"  
+      * "feta cheese, crumbled" → pantry has "feta cheese" → use name="feta cheese", pantry_id="000xxx"
+    
+    RECIPE EXTRACTION RULES:
     1. At least 5 distinct steps.
     2. Prep, Cook, Serve phases.
-    3. Estimate numeric amounts for ingredients.
+    3. Estimate numeric amounts for ingredients based on visual observation.
+    4. Extract title, cuisine, diet, difficulty, etc.
+    5. Infer numeric values for taste_level, prep_time_mins, cleanup_factor.
+    
+    COMPONENT SPLITTING LOGIC:
+    - If the recipe has distinct sub-parts (e.g. a sauce, a base, toppings), split into separate components.
+    - Simple dishes: use 1 component named "Main Dish".
+    - Complex dishes: split into logical components (e.g. "Chicken", "Rice", "Salad", "Dressing").
+    
+    CRITICAL COMPONENT NAME CONSISTENCY RULE:
+    The component names MUST BE IDENTICAL in both ingredient_groups and components arrays.
+    Use the SAME names for both ingredients AND instructions.
+    Example CORRECT:
+      ingredient_groups: [{{"component": "Chicken"}}, {{"component": "Rice"}}]
+      components: [{{"name": "Chicken"}}, {{"name": "Rice"}}]
+    Example WRONG:
+      ingredient_groups: [{{"component": "Marinade"}}, {{"component": "Bowl"}}]
+      components: [{{"name": "Chicken Prep"}}, {{"name": "Assembly"}}]
     """
+    
+    print(f"DEBUG: Generating from Video via 'gemini-flash-latest' (with pantry IDs)")
     
     response = client.models.generate_content(
         model='gemini-flash-latest',

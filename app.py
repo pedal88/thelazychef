@@ -16,6 +16,7 @@ from utils.decorators import admin_required
 from sqlalchemy import or_
 from services.pantry_service import get_slim_pantry_context
 from ai_engine import generate_recipe_ai, get_pantry_id, get_top_pantry_suggestions, chefs_data, generate_recipe_from_web_text, analyze_ingredient_ai
+from services.recipe_service import process_recipe_workflow, STATUS_SUCCESS, STATUS_MISSING
 from services.photographer_service import generate_visual_prompt, generate_actual_image, generate_visual_prompt_from_image, load_photographer_config, generate_image_variation, process_external_image
 from services.vertex_image_service import VertexImageGenerator
 from services.web_scraper_service import WebScraper
@@ -1510,183 +1511,61 @@ def find_best_ingredient_match(name):
         db.select(Ingredient).where(Ingredient.food_id == food_id_str)
     ).scalars().first()
 
+# ---------------------------------------------------------------------------
+# Helper: Handle the result dict from process_recipe_workflow
+# ---------------------------------------------------------------------------
+def _handle_workflow_result(result: dict, query_context: str, chef_id: str):
+    """Shared response handler for all generation routes."""
+    if result['status'] == STATUS_MISSING:
+        data_dir = os.path.join(app.root_path, 'data', 'constraints')
+        with open(os.path.join(data_dir, 'categories.json'), 'r') as f:
+            cat_data = json.load(f)
+        return render_template(
+            'missing_ingredients_resolution.html',
+            missing_items=result['missing_ingredients'],
+            query=query_context,
+            chef_id=chef_id,
+            main_categories=cat_data.get('main_categories', []),
+            sub_categories_map=cat_data.get('sub_categories', {}),
+        )
+    # STATUS_SUCCESS
+    return redirect(url_for('recipe_detail', recipe_id=result['recipe_id']))
+
+
 @app.route('/generate/web', methods=['POST'])
 def generate_web_recipe():
     blog_url = request.form.get('blog_url')
-    
     if not blog_url:
         return redirect(url_for('index'))
-    
+
     try:
-        # 1. Scrape Content
+        # 1. Scrape content
         scraper = WebScraper()
         scraped_data = scraper.scrape_url(blog_url)
-        
         if not scraped_data or not scraped_data['text']:
             return "Could not extract text from this URL", 400
-            
-        # 2. Extract Recipe — pass full pantry context with food_ids
+
+        # 2. Build clean pantry context (no IMP duplicates)
         slim_context = get_slim_pantry_context()
-        
-        # Filter out IMP- duplicates so the LLM only sees real pantry items
         clean_context = [item for item in slim_context if not str(item.get('i', '')).startswith('IMP-')]
 
+        # 3. Call AI
         recipe_data = generate_recipe_from_web_text(
-            scraped_data['text'], 
-            source_url=blog_url, 
-            slim_context=clean_context
+            scraped_data['text'],
+            source_url=blog_url,
+            slim_context=clean_context,
         )
-        
         if not recipe_data:
-             return "AI could not extract a valid recipe from the page.", 400
-             
-        # 3. Process Image
-        image_url = scraped_data.get('image_url')
-        print(f"Scraped Image URL: {image_url}")
-        
-        final_image_filename = None
-        if image_url:
-            try:
-                generated_pil = process_external_image(image_url)
-                if generated_pil:
-                     unique_filename = f"web_import_{uuid.uuid4()}.png"
-                     save_path = os.path.join(app.root_path, 'static', 'recipe_images', unique_filename)
-                     generated_pil.save(save_path)
-                     final_image_filename = unique_filename
-            except Exception as e:
-                print(f"Image processing failed: {e}")
-        
-        # 4. Validate ALL ingredients BEFORE saving anything
-        #    Use get_pantry_id (fuzzy) for robust matching — NO auto-creation.
-        from ai_engine import get_pantry_id as resolve_pantry_id
-        
-        missing_ingredients = []
-        for group in recipe_data.ingredient_groups:
-            for ing in group.ingredients:
-                # First check if the LLM already provided a pantry_id
-                pre_resolved_id = getattr(ing, 'pantry_id', None) if hasattr(ing, 'pantry_id') else (ing.get('pantry_id') if isinstance(ing, dict) else None)
-                
-                if pre_resolved_id:
-                    # Reject IMP- duplicates even if LLM provided them
-                    if str(pre_resolved_id).startswith('IMP-'):
-                        pre_resolved_id = None
-                    else:
-                        # Verify LLM-provided ID actually exists in DB
-                        exists = db.session.execute(
-                            db.select(Ingredient).where(Ingredient.food_id == pre_resolved_id)
-                        ).scalars().first()
-                        if exists:
-                            continue  # Valid pre-resolved ID
-                
-                # Fallback: fuzzy match by name
-                food_id_str = resolve_pantry_id(ing.name)
-                if not food_id_str:
-                    if not any(m['name'] == ing.name for m in missing_ingredients):
-                        missing_ingredients.append({
-                            'name': ing.name,
-                            'amount': ing.amount,
-                            'unit': ing.unit,
-                            'component': group.component
-                        })
-        
-        # If we have missing ingredients, STOP and ask user to resolve
-        if missing_ingredients:
-            data_dir = os.path.join(app.root_path, 'data', 'constraints')
-            with open(os.path.join(data_dir, 'categories.json'), 'r') as f:
-                cat_data = json.load(f)
-            
-            return render_template('missing_ingredients_resolution.html', 
-                                 missing_items=missing_ingredients,
-                                 query=blog_url,
-                                 chef_id='gourmet',
-                                 main_categories=cat_data.get('main_categories', []),
-                                 sub_categories_map=cat_data.get('sub_categories', {}))
-        
-        # 5. All ingredients resolved — Save to DB
-        with app.app_context():
-            # Validate Chef ID
-            valid_chef_id = None
-            if recipe_data.chef_id:
-                if db.session.get(Chef, recipe_data.chef_id):
-                    valid_chef_id = recipe_data.chef_id
-                elif db.session.get(Chef, 'gourmet'):
-                     print(f"Chef '{recipe_data.chef_id}' not found, falling back to 'gourmet'")
-                     valid_chef_id = 'gourmet'
-                else:
-                     print(f"Chef '{recipe_data.chef_id}' not found and default missing. Setting to None.")
-                     valid_chef_id = None
-            
-            new_recipe = Recipe(
-                title=recipe_data.title,
-                cuisine=recipe_data.cuisine,
-                diet=recipe_data.diet,
-                difficulty=recipe_data.difficulty,
-                cleanup_factor=recipe_data.cleanup_factor or 3,
-                protein_type=recipe_data.protein_type,
-                image_filename=final_image_filename,
-                chef_id=valid_chef_id,
-                taste_level=recipe_data.taste_level,
-                prep_time_mins=recipe_data.prep_time_mins
-            )
-            db.session.add(new_recipe)
-            db.session.flush()
-            
-            # Save Meal Types
-            if recipe_data.meal_types:
-                for mt in recipe_data.meal_types:
-                    db.session.add(RecipeMealType(recipe_id=new_recipe.id, meal_type=mt))
-            
-            # Save Instructions
-            for component in recipe_data.components:
-                for step in component.steps:
-                    instr = Instruction(
-                        recipe_id=new_recipe.id,
-                        step_number=step.step_number,
-                        text=step.text,
-                        phase=step.phase,
-                        component=component.name
-                    )
-                    db.session.add(instr)
+            return "AI could not extract a valid recipe from the page.", 400
 
-            # Save Ingredients (all validated — no auto-creation)
-            for group in recipe_data.ingredient_groups:
-                for ing in group.ingredients:
-                    # Try LLM-provided pantry_id first
-                    pre_resolved_id = getattr(ing, 'pantry_id', None) if hasattr(ing, 'pantry_id') else (ing.get('pantry_id') if isinstance(ing, dict) else None)
-                    db_ing = None
-                    
-                    if pre_resolved_id and not str(pre_resolved_id).startswith('IMP-'):
-                        db_ing = db.session.execute(
-                            db.select(Ingredient).where(Ingredient.food_id == pre_resolved_id)
-                        ).scalars().first()
-                    
-                    if not db_ing:
-                        # Fuzzy match fallback
-                        food_id_str = resolve_pantry_id(ing.name)
-                        if food_id_str:
-                            db_ing = db.session.execute(
-                                db.select(Ingredient).where(Ingredient.food_id == food_id_str)
-                            ).scalars().first()
-                    
-                    if not db_ing:
-                        # Should never happen — we validated above
-                        raise ValueError(f"System error: Ingredient '{ing.name}' passed validation but not found in DB.")
-                    
-                    ri = RecipeIngredient(
-                        recipe_id=new_recipe.id,
-                        ingredient_id=db_ing.id,
-                        amount=ing.amount,
-                        unit=ing.unit,
-                        component=group.component
-                    )
-                    db.session.add(ri)
-            
-            db.session.commit()
-            return redirect(url_for('recipe_detail', recipe_id=new_recipe.id))
+        # 4. Unified persistence pipeline
+        result = process_recipe_workflow(recipe_data, query_context=blog_url, chef_id='gourmet')
+        return _handle_workflow_result(result, query_context=blog_url, chef_id='gourmet')
 
     except Exception as e:
         db.session.rollback()
         print(f"Web Import Error: {e}")
+        import traceback; traceback.print_exc()
         return f"Error processing web import: {e}", 500
 
 @app.route('/generate')
@@ -1695,169 +1574,26 @@ def generate():
     chef_id = request.args.get('chef_id', 'gourmet')
     if not query:
         return redirect(url_for('index'))
-    
+
     try:
-        # Get Context for AI — filter out IMP duplicates so LLM only sees real pantry items
+        # 1. Build clean pantry context (no IMP duplicates)
         pantry_context = get_slim_pantry_context()
         clean_context = [item for item in pantry_context if not str(item.get('i', '')).startswith('IMP-')]
-        
-        # Call AI with clean context
+
+        # 2. Call AI
         recipe_data = generate_recipe_ai(query, clean_context, chef_id=chef_id)
-        
-        # Save to DB
-        new_recipe = Recipe(
-            title=recipe_data.title,
-            cuisine=recipe_data.cuisine,
-            diet=recipe_data.diet,
-            difficulty=recipe_data.difficulty,
-            protein_type=recipe_data.protein_type,
-            # meal_types=json.dumps(recipe_data.meal_types) # DEPRECATED
-            chef_id=recipe_data.chef_id,
-            taste_level=recipe_data.taste_level,
-            prep_time_mins=recipe_data.prep_time_mins,
-            cleanup_factor=recipe_data.cleanup_factor
-        )
-        db.session.add(new_recipe)
-        db.session.flush() # Get ID
-        
-        # Save Meal Types
-        if recipe_data.meal_types:
-            for mt in recipe_data.meal_types:
-                db.session.add(RecipeMealType(recipe_id=new_recipe.id, meal_type=mt))
-        
-        # Validate Ingredients - Step 1: Check for Missing Items
-        missing_ingredients = []
-        for group in recipe_data.ingredient_groups:
-            for ing in group.ingredients:
-                # First: check if the LLM provided a pantry_id
-                pre_resolved_id = getattr(ing, 'pantry_id', None) if hasattr(ing, 'pantry_id') else (ing.get('pantry_id') if isinstance(ing, dict) else None)
-                
-                if pre_resolved_id:
-                    # Reject IMP- duplicates even if LLM provided them
-                    if str(pre_resolved_id).startswith('IMP-'):
-                        pre_resolved_id = None
-                    else:
-                        exists = db.session.execute(
-                            db.select(Ingredient).where(Ingredient.food_id == pre_resolved_id)
-                        ).scalars().first()
-                        if exists:
-                            continue  # Valid pre-resolved ID — skip fuzzy matching
-                
-                # Fallback: fuzzy match by name
-                food_id_str = get_pantry_id(ing.name)
-                if not food_id_str:
-                     # Check if we already added it to missing list to avoid duplicates
-                     if not any(m['name'] == ing.name for m in missing_ingredients):
-                        missing_ingredients.append({
-                            'name': ing.name,
-                            'amount': ing.amount,
-                            'unit': ing.unit,
-                            'component': group.component
-                        })
-        
-        # If we have missing ingredients, STOP and ask user to resolve
-        if missing_ingredients:
-            # Load categories for the resolution UI dropdowns
-            data_dir = os.path.join(app.root_path, 'data', 'constraints')
-            with open(os.path.join(data_dir, 'categories.json'), 'r') as f:
-                cat_data = json.load(f)
-                
-            return render_template('missing_ingredients_resolution.html', 
-                                 missing_items=missing_ingredients,
-                                 query=query,
-                                 chef_id=chef_id,
-                                 main_categories=cat_data.get('main_categories', []),
-                                 sub_categories_map=cat_data.get('sub_categories', {}))
 
-        # Step 2: Save to DB (All ingredients resolved)
-        for group in recipe_data.ingredient_groups:
-            for ing in group.ingredients:
-                # Priority 1: LLM-provided pantry_id
-                pre_resolved_id = getattr(ing, 'pantry_id', None) if hasattr(ing, 'pantry_id') else (ing.get('pantry_id') if isinstance(ing, dict) else None)
-                ingredient_record = None
-                
-                if pre_resolved_id and not str(pre_resolved_id).startswith('IMP-'):
-                    ingredient_record = db.session.execute(
-                        db.select(Ingredient).where(Ingredient.food_id == pre_resolved_id)
-                    ).scalars().first()
-                
-                # Priority 2: Fuzzy name matching
-                if not ingredient_record:
-                    food_id_str = get_pantry_id(ing.name)
-                    if food_id_str:
-                        ingredient_record = db.session.execute(
-                            db.select(Ingredient).where(Ingredient.food_id == food_id_str)
-                        ).scalar_one_or_none()
-                
-                if not ingredient_record:
-                    raise ValueError(f"System error: ID not found for validated ingredient {ing.name}")
+        # 3. Unified persistence pipeline
+        result = process_recipe_workflow(recipe_data, query_context=query, chef_id=chef_id)
+        return _handle_workflow_result(result, query_context=query, chef_id=chef_id)
 
-                recipe_ing = RecipeIngredient(
-                    recipe_id=new_recipe.id,
-                    ingredient_id=ingredient_record.id,
-                    amount=ing.amount,
-                    unit=ing.unit,
-                    component=group.component
-                )
-                db.session.add(recipe_ing)
-            
-        # Instructions (NOW NESTED IN COMPONENTS)
-        for comp in recipe_data.components:
-            for step in comp.steps:
-                new_instr = Instruction(
-                    recipe_id=new_recipe.id,
-                    phase=step.phase,
-                    component=comp.name,  # NEW: Save component name
-                    step_number=step.step_number,
-                    text=step.text
-                )
-                db.session.add(new_instr)
-        
-        # Commit AFTER all instructions are added
-        db.session.commit()
-        
-        # 4. Calculate Nutrition
-        from services.nutrition_service import calculate_nutritional_totals
-        calculate_nutritional_totals(new_recipe.id)
-        
-        # 5. AUTO-GENERATE RECIPE IMAGE
-        try:
-            print(f"🎨 Auto-generating image for: {recipe_data.title}")
-            
-            # Create visual prompt from recipe title and cuisine
-            visual_context = f"{recipe_data.title} - {recipe_data.cuisine} cuisine"
-            visual_prompt = generate_visual_prompt(visual_context)
-            
-            # Generate actual image
-            img = generate_actual_image(visual_prompt)[0]
-            
-            # Save to static/recipes/
-            import uuid
-            unique_suffix = str(uuid.uuid4())[:8]
-            filename = f"recipe_{new_recipe.id}_{unique_suffix}.png"
-            filepath = os.path.join('static', 'recipes', filename)
-            
-            img.save(filepath, 'PNG')
-            
-            # Update recipe with image filename
-            new_recipe.image_filename = filename
-            db.session.commit()
-            
-            print(f"✅ Image saved: {filename}")
-            
-        except Exception as img_error:
-            print(f"⚠️  Image generation failed (non-critical): {img_error}")
-            # Continue without image - don't block recipe creation
-        
-        return redirect(url_for('recipe_detail', recipe_id=new_recipe.id))
-        
     except ValueError as ve:
-         flash(f"Validation Error: {str(ve)}", "error")
-         return redirect(url_for('index'))
+        flash(f"Validation Error: {str(ve)}", "error")
+        return redirect(url_for('index'))
     except Exception as e:
         db.session.rollback()
         flash(f"Error generating recipe: {str(e)}", "error")
-        # In production, log the full traceback
+        import traceback; traceback.print_exc()
         return redirect(url_for('index'))
 
 @app.route('/recipe/<int:recipe_id>')
@@ -1953,89 +1689,37 @@ from ai_engine import generate_recipe_ai, get_pantry_id, chefs_data, generate_re
 @app.route('/generate/video', methods=['POST'])
 def generate_from_video():
     video_url = request.form.get('video_url')
-    
     if not video_url:
         flash("Please provide a video URL", "error")
         return redirect(url_for('index'))
-        
+
     try:
-        # 1. Download Video
+        # 1. Download video
         extract_result = SocialMediaExtractor.download_video(video_url)
         video_path = extract_result['video_path']
-        caption = extract_result['caption']
-        
+        caption = extract_result.get('caption', '')
+
         try:
-            # 2. Analyze with AI
+            # 2. Build clean pantry context (no IMP duplicates)
             pantry_context = get_slim_pantry_context()
-            recipe_data = generate_recipe_from_video(video_path, caption, pantry_context)
-            
-            # 3. Save to DB (reusing logic from generate route - ideally refactor to service)
-            # Create Recipe Record
-            new_recipe = Recipe(
-                title=recipe_data.title,
-                cuisine=recipe_data.cuisine,
-                diet=recipe_data.diet,
-                difficulty=recipe_data.difficulty,
-                protein_type=recipe_data.protein_type,
-                meal_types=json.dumps(recipe_data.meal_types)
-            )
-            db.session.add(new_recipe)
-            db.session.flush()
+            clean_context = [item for item in pantry_context if not str(item.get('i', '')).startswith('IMP-')]
 
-            # Create Ingredients
-            for group in recipe_data.ingredient_groups:
-                for ing in group.ingredients:
-                    food_id_str = get_pantry_id(ing.name)
-                    if not food_id_str:
-                         raise ValueError(f"System error: ID not found for validated ingredient {ing.name}")
-                    
-                    ingredient_record = db.session.execute(
-                        db.select(Ingredient).where(Ingredient.food_id == food_id_str)
-                    ).scalar_one_or_none()
-                    
-                    if not ingredient_record:
-                        raise ValueError(f"Database consistency error: Ingredient {ing.name} not found.")
+            # 3. Call AI (video analysis)
+            recipe_data = generate_recipe_from_video(video_path, caption, clean_context)
 
-                    recipe_ing = RecipeIngredient(
-                        recipe_id=new_recipe.id,
-                        ingredient_id=ingredient_record.id,
-                        amount=ing.amount,
-                        unit=ing.unit,
-                        component=group.component
-                    )
-                    db.session.add(recipe_ing)
-            
-            # Create Instructions
-            for component in recipe_data.components:
-                for step in component.steps:
-                    new_instr = Instruction(
-                        recipe_id=new_recipe.id,
-                        phase=step.phase,
-                        step_number=step.step_number,
-                        text=step.text,
-                        component=component.name
-                    )
-                    db.session.add(new_instr)
+            # 4. Unified persistence pipeline
+            query_context = caption or f"Video Import: {video_url}"
+            result = process_recipe_workflow(recipe_data, query_context=query_context, chef_id='gourmet')
+            return _handle_workflow_result(result, query_context=query_context, chef_id='gourmet')
 
-            db.session.commit()
-            
-            # 4. Calculate Nutrition
-            from services.nutrition_service import calculate_nutritional_totals
-            calculate_nutritional_totals(new_recipe.id)
-            
-            # Success!
-            return redirect(url_for('recipe_detail', recipe_id=new_recipe.id))
-            
         finally:
             # Always cleanup the video file
             SocialMediaExtractor.cleanup(video_path)
-            
+
     except Exception as e:
         db.session.rollback()
-        # In case of error (and file still exists), cleanup provided it was downloaded
-        # video_path scope check? It's inside try, but if download fails it won't be set.
-        # If download succeeds but AI fails, we catch here.
         flash(f"Error processing video: {str(e)}", "error")
+        import traceback; traceback.print_exc()
         return redirect(url_for('index'))
 
 
