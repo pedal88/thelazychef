@@ -1588,6 +1588,7 @@ def generate_web_recipe():
         return f"Error processing web import: {e}", 500
 
 @app.route('/generate/text', methods=['POST'])
+@app.route('/generate/text', methods=['POST'])
 def generate_from_text():
     """Generate a recipe from raw pasted text (free-form text dump)."""
     raw_text = request.form.get('raw_text', '').strip()
