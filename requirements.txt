@@ -18,3 +18,5 @@ yt-dlp
 flask-migrate
 thefuzz
 python-Levenshtein
+python-slugify
+markdown

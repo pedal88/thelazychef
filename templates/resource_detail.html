@@ -31,7 +31,7 @@
             <!-- We will use a simple client-side markdown parser or just pre-wrap if no parser -->
             <!-- Simple markdown rendering (using JS or just treating as raw text with newlines for now) -->
             <!-- We will use a simple client-side markdown parser or just pre-wrap if no parser -->
-            <div id="content-body" class="whitespace-pre-wrap font-serif text-slate-800">{{ resource.content_markdown }}
+            <div id="content-body" class="font-serif text-slate-800">{{ resource.content_markdown | markdown | safe }}
             </div>
         </article>
 
@@ -41,18 +41,7 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const contentDiv = document.getElementById('content-body');
-        const rawContent = contentDiv.innerText;
-        // Check if marked is available
-        if (typeof marked !== 'undefined') {
-            contentDiv.innerHTML = marked.parse(rawContent);
-            contentDiv.classList.remove('whitespace-pre-wrap');
-        }
-    });
-</script>
+
 
 {% if related_resources %}
 <div class="bg-slate-50 py-12 border-t border-slate-200 mt-12">

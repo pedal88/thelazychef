@@ -29,6 +29,9 @@ class Resource(db.Model):
     # 1. Tag Column (User Choice: 1)
     tags = db.Column(db.String(255))
     
+    # Status (Draft vs Published)
+    status = db.Column(db.String(20), default='draft', index=True)
+    
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 

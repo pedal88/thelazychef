@@ -5,7 +5,7 @@
     <h1 class="text-3xl font-bold mb-6">{% if resource %}Edit Resource{% else %}New Resource{% endif %}</h1>
 
     <div class="bg-white text-gray-800 rounded-lg shadow-xl p-6">
-        <form method="POST">
+        <form method="POST" enctype="multipart/form-data">
             <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2">Title</label>
                 <input type="text" name="title" value="{{ resource.title if resource else '' }}"
@@ -14,10 +14,21 @@
             </div>
 
             <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Status</label>
+                <select name="status"
+                    class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <option value="draft" {% if not resource or resource.status=='draft' %}selected{% endif %}>Draft
+                    </option>
+                    <option value="published" {% if resource and resource.status=='published' %}selected{% endif %}>
+                        Published</option>
+                </select>
+            </div>
+
+            <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2">Slug</label>
                 <input type="text" name="slug" value="{{ resource.slug if resource else '' }}"
                     class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    placeholder="unique-url-slug" required>
+                    placeholder="Leave blank to auto-generate from title">
             </div>
 
             <div class="mb-4">
@@ -28,8 +39,13 @@
             </div>
 
             <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2">Image Filename</label>
-                <input type="text" name="image_filename" value="{{ resource.image_filename if resource else '' }}"
+                <label class="block text-gray-700 text-sm font-bold mb-2">Cover Image</label>
+                {% if resource and resource.image_filename %}
+                <div class="mb-2 text-sm text-gray-600">
+                    Currently: <span class="font-mono">{{ resource.image_filename }}</span>
+                </div>
+                {% endif %}
+                <input type="file" name="cover_image" accept="image/*"
                     class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
             </div>
 
@@ -42,8 +58,8 @@
 
             <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2">Content (Markdown)</label>
-                <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
-                <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+                <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
+                <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
                 <textarea name="content_markdown"
                     id="markdown-editor">{{ resource.content_markdown if resource else '' }}</textarea>
             </div>
@@ -79,6 +95,12 @@
 </div>
 
 <script>
-    var simplemde = new SimpleMDE({ element: document.getElementById("markdown-editor") });
+    var easyMDE = new EasyMDE({
+        element: document.getElementById("markdown-editor"),
+        uploadImage: true,
+        imageUploadEndpoint: "/api/cms/upload-image",
+        inputStyle: "contenteditable",
+        previewClass: "prose prose-slate max-w-none p-4", // Use Tailwind Typography for preview
+    });
 </script>
 {% endblock %}

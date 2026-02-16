@@ -9,8 +9,10 @@ print(f"--- CONFIG DEBUG: DB_BACKEND={os.getenv('DB_BACKEND', 'local')} ---")
 
 import uuid
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, abort
+from slugify import slugify
 from flask_migrate import Migrate
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+import markdown
 from database.db_connector import configure_database
 from database.models import db, Ingredient, Recipe, Instruction, RecipeIngredient, RecipeMealType, User, Resource, resource_relations, Chef
 from utils.decorators import admin_required
@@ -36,6 +38,11 @@ app = Flask(__name__)
 from routes.studio_routes import prompts_bp
 app.register_blueprint(prompts_bp)
 
+
+@app.template_filter('markdown')
+def parse_markdown(text):
+    if not text: return ""
+    return markdown.markdown(text)
 
 @app.template_filter('parse_chef_dna')
 def parse_chef_dna(prompt):
@@ -586,7 +593,7 @@ def load_resources():
 
 @app.route('/become-a-chef')
 def resources_list():
-    resources = db.session.execute(db.select(Resource).order_by(Resource.created_at.desc())).scalars().all()
+    resources = db.session.execute(db.select(Resource).where(Resource.status == 'published').order_by(Resource.created_at.desc())).scalars().all()
     return render_template('resources.html', resources=resources)
 
 @app.route('/become-a-chef/<slug>')
@@ -1963,10 +1970,22 @@ def admin_resource_new():
     if request.method == 'POST':
         title = request.form.get('title')
         slug = request.form.get('slug')
+        if not slug:
+            slug = slugify(title)
+            
         summary = request.form.get('summary')
         content_markdown = request.form.get('content_markdown')
-        image_filename = request.form.get('image_filename')
         tags = request.form.get('tags')
+        status = request.form.get('status', 'draft')
+        
+        # Image Upload
+        image_filename = None
+        file = request.files.get('cover_image')
+        if file and file.filename != '':
+            new_filename = f"resource_{uuid.uuid4().hex[:8]}_{file.filename}"
+            # Save returns the public URL (path for local, http url for GCS)
+            public_url = storage_provider.save(file.read(), new_filename, "resources")
+            image_filename = public_url
         
         resource = Resource(
             title=title,
@@ -1974,7 +1993,8 @@ def admin_resource_new():
             summary=summary,
             content_markdown=content_markdown,
             image_filename=image_filename,
-            tags=tags
+            tags=tags,
+            status=status
         )
         
         # Handle Relations
@@ -2007,11 +2027,23 @@ def admin_resource_edit(resource_id):
 
     if request.method == 'POST':
         resource.title = request.form.get('title')
-        resource.slug = request.form.get('slug')
+        
+        slug = request.form.get('slug')
+        if not slug:
+            slug = slugify(resource.title)
+        resource.slug = slug
+        
         resource.summary = request.form.get('summary')
         resource.content_markdown = request.form.get('content_markdown')
-        resource.image_filename = request.form.get('image_filename')
         resource.tags = request.form.get('tags')
+        resource.status = request.form.get('status', 'draft')
+        
+        # Image Upload
+        file = request.files.get('cover_image')
+        if file and file.filename != '':
+            new_filename = f"resource_{uuid.uuid4().hex[:8]}_{file.filename}"
+            public_url = storage_provider.save(file.read(), new_filename, "resources")
+            resource.image_filename = public_url
         
         # Handle Relations (Update: clear and re-add)
         resource.related_resources = [] # This empties the relationship
@@ -2053,6 +2085,27 @@ def delete_recipe_api(recipe_id):
         db.session.rollback()
         print(f"Delete Recipe Error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/cms/upload-image', methods=['POST'])
+@login_required
+@admin_required
+def cms_upload_image():
+    if 'image' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+        
+    file = request.files['image']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+        
+    if file:
+        filename = f"cms_{uuid.uuid4().hex[:8]}_{file.filename}"
+        public_url = storage_provider.save(file.read(), filename, "cms-uploads")
+        return jsonify({
+            'data': {
+                'filePath': public_url
+            }
+        })
+    return jsonify({'error': 'Upload failed'}), 500
 
 if __name__ == '__main__':
     with app.app_context():
