@@ -18,40 +18,70 @@
             What are we cooking today?
         </h1>
 
-        <!-- Chef Selector -->
-        <div class="mb-8 flex justify-center gap-2">
-            {% for chef in chefs %}
-            <div onclick="selectChef('{{ chef.id }}')" id="chef-{{ chef.id }}"
-                class="cursor-pointer group relative flex flex-col items-center gap-1 rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-2 w-24 hover:bg-slate-800 hover:border-slate-500 transition-all duration-300 {% if loop.first %}ring-1 ring-slate-500 bg-slate-800{% endif %}">
-                <div
-                    class="h-14 w-14 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden ring-2 ring-slate-600 mb-1">
-                    {% if chef.image_filename %}
-                    <img src="{{ url_for('static', filename='chefs/' + chef.image_filename) }}" alt="{{ chef.name }}"
-                        class="h-full w-full object-cover">
-                    {% else %}
-                    <span class="text-xl">{% if chef.id == 'gourmet' %}👨‍🍳{% else %}🚀{% endif %}</span>
-                    {% endif %}
+        <!-- === TOP SECTION: DESCRIBE & CHEF === -->
+        <div class="max-w-xl mx-auto mb-12 relative group/describe">
+
+            <!-- Chef Selector (Associated with Describe) -->
+            <div class="mb-6 flex justify-center gap-2">
+                {% for chef in chefs %}
+                <div onclick="selectChef('{{ chef.id }}')" id="chef-{{ chef.id }}"
+                    class="cursor-pointer group relative flex flex-col items-center gap-1 rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-2 w-24 hover:bg-slate-800 hover:border-slate-500 transition-all duration-300 {% if loop.first %}ring-1 ring-slate-500 bg-slate-800{% endif %}">
+                    <div
+                        class="h-14 w-14 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden ring-2 ring-slate-600 mb-1">
+                        {% if chef.image_filename %}
+                        <img src="{{ url_for('static', filename='chefs/' + chef.image_filename) }}"
+                            alt="{{ chef.name }}" class="h-full w-full object-cover">
+                        {% else %}
+                        <span class="text-xl">{% if chef.id == 'gourmet' %}👨‍🍳{% else %}🚀{% endif %}</span>
+                        {% endif %}
+                    </div>
+                    <div class="text-center">
+                        <p
+                            class="text-[10px] font-bold text-white group-hover:text-slate-200 transition-colors leading-tight">
+                            {{ chef.name
+                            }}</p>
+                    </div>
                 </div>
-                <div class="text-center">
-                    <p
-                        class="text-[10px] font-bold text-white group-hover:text-slate-200 transition-colors leading-tight">
-                        {{ chef.name
-                        }}</p>
-                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
+
+            <!-- Describe Form -->
+            <form action="{{ url_for('new_recipe') }}" method="POST" class="relative z-10">
+                <input type="hidden" name="chef_id" id="chefInput" value="gourmet">
+                <div class="relative flex bg-white rounded-lg p-1 shadow-lg shadow-slate-900/50">
+                    <input type="text" name="query"
+                        placeholder="Describe your idea... e.g. 'Spicy pasta carbonara with bacon'..."
+                        class="block w-full rounded-md border-0 py-4 pl-6 pr-4 text-slate-900 ring-0 placeholder:text-slate-400 focus:ring-0 text-base sm:leading-6 focus:outline-none"
+                        autofocus>
+                    <button type="submit"
+                        class="flex-none rounded-md bg-slate-900 px-6 py-2 text-sm font-bold text-white shadow-sm hover:bg-slate-700 transition-colors duration-200">
+                        Create
+                    </button>
+                </div>
+                <!-- Quick Suggestions -->
+                <div class="mt-4 flex flex-wrap justify-center gap-3 text-xs text-slate-400">
+                    <span>Try:</span>
+                    <button type="button" onclick="setInput('Classic French Omelette')"
+                        class="hover:text-slate-200 underline decoration-slate-600 underline-offset-2">French
+                        Omelette</button>
+                    <button type="button" onclick="setInput('Spaghetti Carbonara')"
+                        class="hover:text-slate-200 underline decoration-slate-600 underline-offset-2">Carbonara</button>
+                </div>
+            </form>
         </div>
 
-        <!-- === INPUT TABS === -->
-        <div class="max-w-xl mx-auto mb-8" x-data="{ tab: 'describe' }">
+        <!-- Divider -->
+        <div class="relative max-w-xl mx-auto mb-8 text-center flex items-center gap-4">
+            <div class="h-px bg-slate-700 flex-1"></div>
+            <span class="text-slate-500 text-xs font-medium uppercase tracking-wider">Or import from</span>
+            <div class="h-px bg-slate-700 flex-1"></div>
+        </div>
+
+        <!-- === BOTTOM SECTION: OTHER METHODS === -->
+        <div class="max-w-xl mx-auto mb-8" x-data="{ tab: 'social' }">
 
             <!-- Tab Navigation -->
             <div class="flex p-1 space-x-1 bg-slate-800/80 rounded-lg mb-4 backdrop-blur-sm border border-slate-700">
-                <button @click="tab = 'describe'"
-                    :class="tab === 'describe' ? 'bg-slate-700 text-white shadow' : 'text-slate-400 hover:text-white'"
-                    class="w-full py-2 text-xs font-medium leading-5 rounded-md transition-all focus:outline-none">
-                    Describe Idea
-                </button>
                 <button @click="tab = 'social'"
                     :class="tab === 'social' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-indigo-400'"
                     class="w-full py-2 text-xs font-medium leading-5 rounded-md transition-all focus:outline-none">
@@ -71,37 +101,10 @@
 
             <!-- Tab Content -->
 
-            <!-- 1. Describe It -->
-            <div x-show="tab === 'describe'" class="transition-all duration-300">
-                <form action="{{ url_for('new_recipe') }}" method="POST" class="relative group">
-                    <input type="hidden" name="chef_id" id="chefInput" value="gourmet">
-                    <!-- Glow Removed -->
-                    <div class="relative flex bg-white rounded-lg p-1 shadow-lg shadow-slate-900/50">
-                        <input type="text" name="query" placeholder="e.g. 'Spicy pasta carbonara with bacon'..."
-                            class="block w-full rounded-md border-0 py-3 pl-4 pr-4 text-slate-900 ring-0 placeholder:text-slate-400 focus:ring-0 text-sm sm:leading-6 focus:outline-none"
-                            autofocus>
-                        <button type="submit"
-                            class="flex-none rounded-md bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-slate-700 transition-colors duration-200">
-                            Create
-                        </button>
-                    </div>
-                    <!-- Quick Suggestions -->
-                    <div class="mt-4 flex flex-wrap justify-center gap-2 text-xs text-slate-400">
-                        <span>Try:</span>
-                        <button type="button" onclick="setInput('Classic French Omelette')"
-                            class="hover:text-slate-200 underline decoration-slate-600 underline-offset-2">French
-                            Omelette</button>
-                        <button type="button" onclick="setInput('Spaghetti Carbonara')"
-                            class="hover:text-slate-200 underline decoration-slate-600 underline-offset-2">Carbonara</button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- 2. Social Link -->
-            <div x-show="tab === 'social'" style="display: none;" class="transition-all duration-300">
+            <!-- 1. Social Link -->
+            <div x-show="tab === 'social'" class="transition-all duration-300">
                 <form action="/generate/video" method="POST" class="relative group" id="videoForm"
                     onsubmit="showLoading('Watching Video', 'The AI is watching the video and extracting the recipe...')">
-                    <!-- Glow Removed -->
                     <div class="relative flex bg-slate-800 rounded-lg p-1 shadow-lg border border-slate-700">
                         <div class="flex items-center pl-3 text-slate-400">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -120,11 +123,10 @@
                 </form>
             </div>
 
-            <!-- 3. Web Link -->
+            <!-- 2. Web Link -->
             <div x-show="tab === 'web'" style="display: none;" class="transition-all duration-300">
                 <form action="/generate/web" method="POST" class="relative group" id="webForm"
                     onsubmit="showLoading('Reading Website', 'The AI is reading the blog post and re-imagining the dish...')">
-                    <!-- Glow Removed -->
                     <div class="relative flex bg-slate-800 rounded-lg p-1 shadow-lg border border-slate-700">
                         <div class="flex items-center pl-3 text-slate-400">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -144,8 +146,7 @@
                 </form>
             </div>
 
-
-            <!-- 4. Free Text -->
+            <!-- 3. Free Text -->
             <div x-show="tab === 'text'" style="display: none;" class="transition-all duration-300">
                 <form action="/generate/text" method="POST" class="relative group" id="textForm"
                     onsubmit="showLoading('Reading Text', 'The AI is extracting the recipe from your text...')">
@@ -170,10 +171,8 @@
                     </div>
                     <p class="mt-2 text-xs text-slate-500">Works with any text — copy from WhatsApp, notes, screenshots,
                         etc.</p>
-
                 </form>
             </div>
-
         </div>
 
         <!-- Loading Overlay (Shared) -->

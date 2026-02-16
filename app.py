@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+import io
 
 # Load Environment Variables Forcefully BEFORE other imports might need them
 load_dotenv()
@@ -1113,14 +1114,20 @@ def generate_ingredient_image_api():
         images_list = generate_actual_image(prompt, number_of_images=4)
         
         results = []
-        temp_dir = os.path.join(app.root_path, 'static', 'temp')
-        os.makedirs(temp_dir, exist_ok=True)
-        
         for img in images_list:
             filename = f"ing_temp_{uuid.uuid4().hex}.png"
-            img.save(os.path.join(temp_dir, filename))
+            
+            # Save to BytesIO
+            img_io = io.BytesIO()
+            img.save(img_io, format='PNG')
+            img_io.seek(0)
+            
+            # Save via storage provider (Local or GCS)
+            # This ensures 'temp' folder exists on the correct provider
+            public_url = storage_provider.save(img_io.read(), filename, "temp")
+            
             results.append({
-                'url': url_for('static', filename=f'temp/{filename}'),
+                'url': public_url,
                 'filename': filename
             })
         

@@ -58,10 +58,11 @@
                                         class="sort-icon text-slate-300 group-hover:text-slate-500 text-[10px]">▲▼</span>
                                 </div>
                             </th>
+                            <th class="p-4 w-16 sticky top-0 bg-slate-50 z-10">Image</th>
                             <th class="p-4 w-1/4 cursor-pointer hover:bg-slate-100 group select-none sticky top-0 bg-slate-50 z-10"
                                 onclick="sortTable('name')">
                                 <div class="flex items-center gap-1">
-                                    Ingredient Name
+                                    Name
                                     <span
                                         class="sort-icon text-slate-300 group-hover:text-slate-500 text-[10px]">▲▼</span>
                                 </div>
@@ -96,7 +97,7 @@
                         <tr class="bg-slate-50 border-b border-slate-200">
                             <th class="p-2 sticky top-[50px] bg-slate-50 z-10">
                                 <div class="flex items-center gap-1">
-                                    <input type="text" placeholder="Filter..."
+                                    <input type="text" placeholder="Filter Category..."
                                         class="w-full text-xs border border-slate-300 rounded px-2 py-1 focus:ring-1 focus:ring-orange-500 focus:outline-none font-normal"
                                         oninput="updateTextFilter('category', this.value)">
                                     <button
@@ -112,7 +113,7 @@
                             </th>
                             <th class="p-2 sticky top-[50px] bg-slate-50 z-10">
                                 <div class="flex items-center gap-1">
-                                    <input type="text" placeholder="Filter..."
+                                    <input type="text" placeholder="Filter Sub-Cat..."
                                         class="w-full text-xs border border-slate-300 rounded px-2 py-1 focus:ring-1 focus:ring-orange-500 focus:outline-none font-normal"
                                         oninput="updateTextFilter('subcategory', this.value)">
                                     <button
@@ -126,8 +127,9 @@
                                     </button>
                                 </div>
                             </th>
+                            <th class="sticky top-[50px] bg-slate-50 z-10"></th>
                             <th class="p-2 sticky top-[50px] bg-slate-50 z-10">
-                                <input type="text" placeholder="Filter name..."
+                                <input type="text" placeholder="Search Name..."
                                     class="w-full text-xs border border-slate-300 rounded px-2 py-1 focus:ring-1 focus:ring-orange-500 focus:outline-none font-normal"
                                     oninput="updateTextFilter('name', this.value)">
                             </th>
@@ -164,201 +166,212 @@
                             <td class="p-4 text-xs text-slate-500 align-middle">{{ ing.sub_category or '-' }}</td>
 
                             <!-- C: Name & ID -->
-                            <td class="p-4 font-medium align-middle">
-                                <div class="flex items-center gap-3">
-                                    <div class="relative group/img">
-                                        {% if ing.image_url %}
-                                        {% if ing.image_url.startswith('http') %}
-                                        <img src="{{ ing.image_url }}" alt="{{ ing.name }}" id="img-row-{{ ing.id }}"
-                                            class="w-10 h-10 rounded-md object-cover bg-slate-100 shadow-sm border border-slate-100"
-                                            loading="lazy">
-                                        {% else %}
-                                        <img src="{{ url_for('static', filename=ing.image_url) }}" alt="{{ ing.name }}"
-                                            id="img-row-{{ ing.id }}"
-                                            class="w-10 h-10 rounded-md object-cover bg-slate-100 shadow-sm border border-slate-100"
-                                            loading="lazy">
-                                        {% endif %}
-                                        {% else %}
-                                        <div id="img-row-{{ ing.id }}"
-                                            class="w-10 h-10 rounded-md bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
-                                                </path>
-                                            </svg>
-                                        </div>
-                                        {% endif %}
+                            <!-- C1: Image -->
+                            <td class="p-4 align-middle w-16 text-center">
+                                <div class="relative group/img w-10 h-10 mx-auto">
+                                    {% if ing.image_url %}
+                                    {% if ing.image_url.startswith('http') %}
+                                    <img src="{{ ing.image_url }}" alt="{{ ing.name }}" id="img-row-{{ ing.id }}"
+                                        class="w-10 h-10 rounded-md object-cover bg-slate-100 shadow-sm border border-slate-100"
+                                        loading="lazy">
+                                    {% else %}
+                                    <img src="{{ url_for('static', filename=ing.image_url) }}" alt="{{ ing.name }}"
+                                        id="img-row-{{ ing.id }}"
+                                        class="w-10 h-10 rounded-md object-cover bg-slate-100 shadow-sm border border-slate-100"
+                                        loading="lazy">
+                                    {% endif %}
+                                    {% else %}
+                                    <div id="img-row-{{ ing.id }}"
+                                        class="w-10 h-10 rounded-md bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                            </path>
+                                        </svg>
+                                    </div>
+                                    {% endif %}
 
-                                        <!-- Hover Actions -->
-                                        <div
-                                            class="absolute -bottom-2 -right-2 flex gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity z-10">
-                                            <button onclick="openRegenModal('{{ ing.id }}')"
-                                                class="bg-white text-orange-600 rounded-full p-1 shadow border border-slate-200 hover:bg-orange-50"
-                                                title="Regenerate Image"><svg class="w-3 h-3" fill="none"
-                                                    viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                                                </svg></button>
-                                        </div>
+                                    <!-- Hover Actions -->
+                                    <div
+                                        class="absolute -bottom-2 -right-2 flex gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity z-10">
+                                        <button onclick="openRegenModal('{{ ing.id }}')"
+                                            class="bg-white text-orange-600 rounded-full p-1 shadow border border-slate-200 hover:bg-orange-50"
+                                            title="Regenerate Image"><svg class="w-3 h-3" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                                            </svg></button>
                                     </div>
                                 </div>
-            </div>
-            </td>
+                            </td>
 
-            <!-- Actions -->
-            <td class="p-4 text-center align-middle whitespace-nowrap bg-slate-50/20">
-                <div class="flex items-center justify-center gap-2">
-                    <a href="/new-ingredient?edit_id={{ ing.id }}"
-                        class="text-slate-400 hover:text-indigo-600 transition-colors p-1 rounded hover:bg-slate-100"
-                        title="Edit Ingredient">
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
-                            </path>
-                        </svg>
-                    </a>
-                    <button onclick="deleteIngredient('{{ ing.id }}', this.dataset.name)" data-name="{{ ing.name }}"
-                        class="text-slate-400 hover:text-red-600 transition-colors p-1 rounded hover:bg-red-50"
-                        title="Delete Ingredient">
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                            </path>
-                        </svg>
-                    </button>
-                </div>
-            </td>
+                            <!-- C2: Name -->
+                            <td class="p-4 font-medium align-middle">
+                                <span
+                                    class="name-text {{ 'text-slate-900 font-bold' if ing.is_basic_ingredient else 'text-slate-500 font-normal' }}">
+                                    {{ ing.name }}
+                                </span>
+                            </td>
 
-            <td class="p-4 text-xs text-slate-500 align-middle">{{ ing.default_unit }}</td>
+                            <!-- Actions -->
+                            <td class="p-4 text-center align-middle whitespace-nowrap bg-slate-50/20">
+                                <div class="flex items-center justify-center gap-2">
+                                    <a href="/new-ingredient?edit_id={{ ing.id }}"
+                                        class="text-slate-400 hover:text-indigo-600 transition-colors p-1 rounded hover:bg-slate-100"
+                                        title="Edit Ingredient">
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                            </path>
+                                        </svg>
+                                    </a>
+                                    <button onclick="deleteIngredient('{{ ing.id }}', this.dataset.name)"
+                                        data-name="{{ ing.name }}"
+                                        class="text-slate-400 hover:text-red-600 transition-colors p-1 rounded hover:bg-red-50"
+                                        title="Delete Ingredient">
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                            </path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
 
-            <!-- Nutrition Data -->
-            <td class="p-4 text-xs text-slate-600 text-center tabular-nums font-mono bg-slate-50/50 align-middle">
-                {{ ing.calories_per_100g|int if ing.calories_per_100g is not none else '-' }}</td>
-            <td class="p-4 text-xs text-slate-400 text-center tabular-nums font-mono align-middle">{{
-                ing.kj_per_100g|int if ing.kj_per_100g is not none else '-' }}</td>
-            <td class="p-4 text-xs text-slate-600 text-center tabular-nums font-mono bg-slate-50/50 align-middle">
-                {{ ing.protein_per_100g|round(1) if ing.protein_per_100g is not none else '-' }}</td>
-            <td class="p-4 text-xs text-slate-600 text-center tabular-nums font-mono align-middle">{{
-                ing.carbs_per_100g|round(1) if ing.carbs_per_100g is not none else '-' }}</td>
-            <td class="p-4 text-xs text-slate-600 text-center tabular-nums font-mono bg-slate-50/50 align-middle">
-                {{ ing.fat_per_100g|round(1) if ing.fat_per_100g is not none else '-' }}</td>
-            <td class="p-4 text-xs text-slate-400 text-center tabular-nums font-mono align-middle">{{
-                ing.sugar_per_100g|round(1) if ing.sugar_per_100g is not none else '-' }}</td>
-            <td class="p-4 text-xs text-slate-400 text-center tabular-nums font-mono bg-slate-50/50 align-middle">
-                {{ ing.fiber_per_100g|round(1) if ing.fiber_per_100g is not none else '-' }}</td>
-            <td class="p-4 text-xs text-slate-400 text-center tabular-nums font-mono align-middle">{{
-                ing.sodium_mg_per_100g|int if ing.sodium_mg_per_100g is not none else '-' }}</td>
+                            <td class="p-4 text-xs text-slate-500 align-middle">{{ ing.default_unit }}</td>
 
-            <!-- Date Added -->
-            <td class="p-4 text-xs text-slate-500 text-center align-middle whitespace-nowrap">
-                {{ ing.created_at[:10] if ing.created_at else '-' }}
-            </td>
+                            <!-- Nutrition Data -->
+                            <td
+                                class="p-4 text-xs text-slate-600 text-center tabular-nums font-mono bg-slate-50/50 align-middle">
+                                {{ ing.calories_per_100g|int if ing.calories_per_100g is not none else '-' }}</td>
+                            <td class="p-4 text-xs text-slate-400 text-center tabular-nums font-mono align-middle">{{
+                                ing.kj_per_100g|int if ing.kj_per_100g is not none else '-' }}</td>
+                            <td
+                                class="p-4 text-xs text-slate-600 text-center tabular-nums font-mono bg-slate-50/50 align-middle">
+                                {{ ing.protein_per_100g|round(1) if ing.protein_per_100g is not none else '-' }}</td>
+                            <td class="p-4 text-xs text-slate-600 text-center tabular-nums font-mono align-middle">{{
+                                ing.carbs_per_100g|round(1) if ing.carbs_per_100g is not none else '-' }}</td>
+                            <td
+                                class="p-4 text-xs text-slate-600 text-center tabular-nums font-mono bg-slate-50/50 align-middle">
+                                {{ ing.fat_per_100g|round(1) if ing.fat_per_100g is not none else '-' }}</td>
+                            <td class="p-4 text-xs text-slate-400 text-center tabular-nums font-mono align-middle">{{
+                                ing.sugar_per_100g|round(1) if ing.sugar_per_100g is not none else '-' }}</td>
+                            <td
+                                class="p-4 text-xs text-slate-400 text-center tabular-nums font-mono bg-slate-50/50 align-middle">
+                                {{ ing.fiber_per_100g|round(1) if ing.fiber_per_100g is not none else '-' }}</td>
+                            <td class="p-4 text-xs text-slate-400 text-center tabular-nums font-mono align-middle">{{
+                                ing.sodium_mg_per_100g|int if ing.sodium_mg_per_100g is not none else '-' }}</td>
 
-            <!-- Basic Toggle -->
-            <td class="p-4 text-center cursor-pointer select-none align-middle"
-                onclick="toggleBasic('{{ ing.id }}', this)">
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm transition-all duration-200 badge-status
+                            <!-- Date Added -->
+                            <td class="p-4 text-xs text-slate-500 text-center align-middle whitespace-nowrap">
+                                {{ ing.created_at[:10] if ing.created_at else '-' }}
+                            </td>
+
+                            <!-- Basic Toggle -->
+                            <td class="p-4 text-center cursor-pointer select-none align-middle"
+                                onclick="toggleBasic('{{ ing.id }}', this)">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm transition-all duration-200 badge-status
                                     {% if ing.is_basic_ingredient %}
                                         bg-green-100 text-green-700 font-bold
                                     {% else %}
                                         bg-slate-100 text-slate-400 font-normal hover:bg-slate-200
                                     {% endif %}" id="status-{{ ing.id }}">
-                    {% if ing.is_basic_ingredient %}Yes{% else %}No{% endif %}
-                </span>
-            </td>
+                                    {% if ing.is_basic_ingredient %}Yes{% else %}No{% endif %}
+                                </span>
+                            </td>
 
 
-            </tr>
-            {% endfor %}
-            </tbody>
-            </table>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
+
     </div>
 
-</div>
+    <!-- REGENERATE IMAGE MODAL -->
+    <div id="regenModal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"></div>
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
 
-<!-- REGENERATE IMAGE MODAL -->
-<div id="regenModal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
-    <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"></div>
-    <div class="fixed inset-0 z-10 overflow-y-auto">
-        <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-
-            <div
-                class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
-                <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-                    <div class="sm:flex sm:items-start">
-                        <div
-                            class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-orange-100 sm:mx-0 sm:h-10 sm:w-10">
-                            <svg class="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                            </svg>
-                        </div>
-                        <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
-                            <h3 class="text-base font-semibold leading-6 text-slate-900" id="modalTitle">Regenerate
-                                Image</h3>
-                            <div class="mt-2">
-                                <p class="text-xs text-slate-500 mb-2">Review the AI prompt and generate new 1:1
-                                    ingredient images.</p>
-                                <textarea id="modalPrompt" rows="3"
-                                    class="block w-full rounded-md border-0 py-1.5 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-xs sm:leading-6"></textarea>
-                                <div id="modalGrid" class="mt-4 grid grid-cols-2 gap-2">
-                                    <div
-                                        class="col-span-2 aspect-[1/1] bg-slate-50 rounded border border-dashed border-slate-300 flex items-center justify-center">
-                                        <span class="text-xs text-slate-400">Images will appear here</span>
+                <div
+                    class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                    <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div
+                                class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-orange-100 sm:mx-0 sm:h-10 sm:w-10">
+                                <svg class="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                                </svg>
+                            </div>
+                            <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
+                                <h3 class="text-base font-semibold leading-6 text-slate-900" id="modalTitle">Regenerate
+                                    Image</h3>
+                                <div class="mt-2">
+                                    <p class="text-xs text-slate-500 mb-2">Review the AI prompt and generate new 1:1
+                                        ingredient images.</p>
+                                    <textarea id="modalPrompt" rows="3"
+                                        class="block w-full rounded-md border-0 py-1.5 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-xs sm:leading-6"></textarea>
+                                    <div id="modalGrid" class="mt-4 grid grid-cols-2 gap-2">
+                                        <div
+                                            class="col-span-2 aspect-[1/1] bg-slate-50 rounded border border-dashed border-slate-300 flex items-center justify-center">
+                                            <span class="text-xs text-slate-400">Images will appear here</span>
+                                        </div>
                                     </div>
+                                    <input type="hidden" id="modalIngId">
+                                    <input type="hidden" id="modalTempFilename">
                                 </div>
-                                <input type="hidden" id="modalIngId">
-                                <input type="hidden" id="modalTempFilename">
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="bg-slate-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                    <button type="button" id="btnSaveModal" onclick="saveRegenImage()" disabled
-                        class="inline-flex w-full justify-center rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-slate-700 sm:ml-3 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed">
-                        Save Selection
-                    </button>
-                    <button type="button" id="btnGenModal" onclick="generateRegenImage()"
-                        class="mt-3 inline-flex w-full justify-center rounded-md bg-orange-600 px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-orange-300 hover:bg-orange-500 sm:mt-0 sm:ml-3 sm:w-auto">
-                        Generate
-                    </button>
-                    <button type="button" onclick="closeModal()"
-                        class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:mt-0 sm:w-auto">
-                        Cancel
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- JSON VIEWER MODAL -->
-<div id="jsonModal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
-    <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeJsonModal()"></div>
-    <div class="fixed inset-0 z-10 overflow-y-auto">
-        <div class="flex min-h-full items-center justify-center p-4 text-center">
-            <div
-                class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:w-full sm:max-w-2xl">
-                <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-                    <div class="flex justify-between items-start mb-4">
-                        <h3 class="text-base font-semibold leading-6 text-slate-900" id="jsonModalTitle">Ingredient
-                            Data</h3>
-                        <button onclick="closeJsonModal()" class="text-slate-400 hover:text-slate-500">
-                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M6 18L18 6M6 6l12 12" />
-                            </svg>
+                    <div class="bg-slate-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                        <button type="button" id="btnSaveModal" onclick="saveRegenImage()" disabled
+                            class="inline-flex w-full justify-center rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-slate-700 sm:ml-3 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed">
+                            Save Selection
+                        </button>
+                        <button type="button" id="btnGenModal" onclick="generateRegenImage()"
+                            class="mt-3 inline-flex w-full justify-center rounded-md bg-orange-600 px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-orange-300 hover:bg-orange-500 sm:mt-0 sm:ml-3 sm:w-auto">
+                            Generate
+                        </button>
+                        <button type="button" onclick="closeModal()"
+                            class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:mt-0 sm:w-auto">
+                            Cancel
                         </button>
                     </div>
-                    <div class="bg-slate-900 rounded-lg p-4 overflow-auto max-h-[600px]">
-                        <pre id="jsonContent" class="text-xs text-green-400 font-mono"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- JSON VIEWER MODAL -->
+    <div id="jsonModal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeJsonModal()"></div>
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4 text-center">
+                <div
+                    class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:w-full sm:max-w-2xl">
+                    <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-base font-semibold leading-6 text-slate-900" id="jsonModalTitle">Ingredient
+                                Data</h3>
+                            <button onclick="closeJsonModal()" class="text-slate-400 hover:text-slate-500">
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="bg-slate-900 rounded-lg p-4 overflow-auto max-h-[600px]">
+                            <pre id="jsonContent" class="text-xs text-green-400 font-mono"></pre>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 </div>
 {% endblock %}
 
