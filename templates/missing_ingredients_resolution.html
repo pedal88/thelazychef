@@ -71,18 +71,45 @@
                     </div>
                 </div>
             </div>
-            {% endfor %}
-        </div>
-    </div>
 
-    <!-- Navigation -->
-    <div class="flex justify-end gap-4">
-        <a href="/" class="px-6 py-2 text-slate-500 hover:text-slate-800 font-medium text-sm">Cancel</a>
-        <button onclick="retryGeneration()" id="continueBtn" disabled
-            class="px-6 py-2 bg-slate-900 text-white font-medium text-sm rounded-lg shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-800">
-            Continue & Save Recipe
-        </button>
+            <!-- Manual Search Toggle -->
+            <div class="mt-4 pt-3 border-t border-slate-100">
+                <button type="button" onclick="toggleManualSearch({{ loop.index }})"
+                    class="text-xs text-indigo-600 font-medium flex items-center gap-1 hover:text-indigo-800 transition-colors">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    Or search pantry manually...
+                </button>
+
+                <div id="manual-search-panel-{{ loop.index }}" class="hidden mt-2">
+                    <div class="relative">
+                        <input type="text" oninput="debouncedSearch({{ loop.index }}, this.value)"
+                            placeholder="Type ingredient name..."
+                            class="w-full text-sm border-slate-300 rounded-md pr-8 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm py-1.5 placeholder:text-slate-400">
+
+                        <div id="search-results-{{ loop.index }}"
+                            class="mt-2 space-y-1 max-h-40 overflow-y-auto hidden bg-white border border-slate-200 rounded-md shadow-lg absolute z-10 w-full left-0">
+                            <!-- Results populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        {% endfor %}
     </div>
+</div>
+
+<!-- Navigation -->
+<div class="flex justify-end gap-4">
+    <a href="/" class="px-6 py-2 text-slate-500 hover:text-slate-800 font-medium text-sm">Cancel</a>
+    <button onclick="retryGeneration()" id="continueBtn" disabled
+        class="px-6 py-2 bg-slate-900 text-white font-medium text-sm rounded-lg shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-800">
+        Continue & Save Recipe
+    </button>
+</div>
 </div>
 
 <!-- Retry Form (supports both /generate and /generate/web) -->
@@ -276,7 +303,7 @@
                                 : 'bg-slate-100 text-slate-600';
                         const escapedName = sug.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
                         return `
-                        <button onclick="selectSubstitute(${index}, ${sug.id}, '${escapedName}')"
+                        <button onclick="selectSubstitute(${index}, '${sug.food_id || sug.id}', '${escapedName}')"
                             class="group/sub flex items-center gap-3 p-3 rounded-lg bg-white border border-slate-200 hover:border-green-400 hover:bg-green-50 hover:shadow-md transition-all cursor-pointer text-left">
                             <div class="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
                                 ${sug.image_url
@@ -307,8 +334,95 @@
     });
 
     // ========== SELECT SUBSTITUTE ==========
-    function selectSubstitute(rowIndex, ingredientId, ingredientName) {
-        markRowLinked(rowIndex, ingredientName);
+    function selectSubstitute(rowIndex, foodId, ingredientName) {
+        linkIngredient(rowIndex, foodId, ingredientName);
+    }
+
+    // --- Manual Search & Linking Logic ---
+    const searchTimers = {};
+
+    function toggleManualSearch(index) {
+        const panel = document.getElementById(`manual-search-panel-${index}`);
+        panel.classList.toggle('hidden');
+        if (!panel.classList.contains('hidden')) {
+            panel.querySelector('input').focus();
+        }
+    }
+
+    function debouncedSearch(index, query) {
+        if (searchTimers[index]) clearTimeout(searchTimers[index]);
+        searchTimers[index] = setTimeout(() => performPantrySearch(index, query), 300);
+    }
+
+    async function performPantrySearch(index, query) {
+        const container = document.getElementById(`search-results-${index}`);
+        if (!query || query.length < 2) {
+            container.innerHTML = '';
+            container.classList.add('hidden');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/search-ingredients', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query: query })
+            });
+            const res = await response.json();
+
+            container.innerHTML = '';
+            if (res.results && res.results.length > 0) {
+                container.classList.remove('hidden');
+                res.results.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = "flex items-center gap-2 p-2 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0";
+                    div.innerHTML = `
+                        <div class="w-6 h-6 rounded bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-400 overflow-hidden flex-shrink-0">
+                            ${item.image_url ? `<img src="${item.image_url}" class="w-full h-full object-contain">` : (item.name ? item.name.substring(0, 1) : '?')}
+                        </div>
+                        <div class="text-sm font-medium text-slate-700 truncate">${item.name}</div>
+                    `;
+                    // Use item.food_id if available, fallback to item.id if API returns PK as id
+                    // search-ingredients returns explicit 'food_id'
+                    div.onclick = () => linkIngredient(index, item.food_id, item.name);
+                    container.appendChild(div);
+                });
+            } else {
+                container.innerHTML = '<div class="text-xs text-slate-400 p-2 italic text-center">No pantry matches found.</div>';
+                container.classList.remove('hidden');
+            }
+        } catch (e) {
+            console.error("Search error:", e);
+        }
+    }
+
+    async function linkIngredient(index, foodId, name) {
+        const missingNameEl = document.getElementById(`name-${index}`);
+        if (!missingNameEl) return;
+        const missingName = missingNameEl.innerText.trim();
+
+        // Optimistic UI Update
+        const originalContent = document.getElementById(`row-${index}`).innerHTML;
+
+        try {
+            // Call API to register synonym
+            const response = await fetch('/api/add-synonym', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: missingName, food_id: foodId })
+            });
+            const res = await response.json();
+
+            if (res.success) {
+                markRowLinked(index, name);
+                updateResolvableStatus();
+            } else {
+                alert("Failed to link ingredient: " + (res.error || "Unknown error"));
+                // Revert? (Not easy with innerHTML replacement, but alert is enough)
+            }
+        } catch (e) {
+            alert("System error linking ingredient: " + e);
+        }
     }
 
     // ========== EXISTING FUNCTIONS ==========

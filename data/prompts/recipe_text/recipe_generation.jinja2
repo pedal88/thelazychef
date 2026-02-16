@@ -12,6 +12,10 @@ For EACH ingredient in your recipe:
 - If the ingredient is truly NEW and not in the pantry, set 'pantry_id' to null.
 - ALWAYS prefer existing pantry names over creating new variations.
 
+SPICE MIX RULE (CRITICAL):
+- Do NOT use pre-made spice mixes (e.g. 'Taco Seasoning', 'Curry Powder', 'Italian Seasoning', 'Cajun Spice').
+- Instead, you MUST list the individual spices (e.g. 'Cumin', 'Paprika', 'Oregano', 'Turmeric') as separate ingredients with approximate amounts.
+
 1.  **Granularity**: You MUST generate at least 5-8 separate instruction steps PER COMPONENT.
 2.  **Phasing**: Separate "Prep", "Cook", and "Serve" phases explicitly within each component.
 3.  **Format**: Follow the exact JSON structure of the example below.

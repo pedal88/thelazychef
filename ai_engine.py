@@ -101,23 +101,43 @@ class RecipeObj:
                     comp.steps = [RecipeObj(**s) if isinstance(s, dict) else s for s in comp.steps]
 
 # --- Data Loading (Retaining Pantry/Chef Context) ---
+# --- Data Loading (Retaining Pantry/Chef Context) ---
+SYNONYMS_PATH = os.path.join(os.path.dirname(__file__), 'data', 'constraints', 'synonyms.json')
+
 def load_json(path):
     with open(path, 'r') as f:
         return json.load(f)
 
-try:
-    pantry_data = load_json("data/constraints/pantry.json")
-    # pantry.json is a flat list of dicts with 'food_name' and 'food_id' keys
-    if isinstance(pantry_data, list):
-        pantry_map = {item['food_name'].lower(): item['food_id'] for item in pantry_data if 'food_name' in item and 'food_id' in item}
-    elif isinstance(pantry_data, dict) and 'ingredients' in pantry_data:
-        pantry_map = {item.get('name', item.get('food_name', '')).lower(): item.get('id', item.get('food_id', '')) for item in pantry_data['ingredients']}
-    else:
-        pantry_map = {}
-    print(f"✅ pantry_map loaded with {len(pantry_map)} entries from pantry.json")
-except Exception as e:
-    print(f"⚠️  Failed to load pantry.json: {e}")
+def load_pantry_memory():
+    """Loads pantry data and user-defined synonyms into memory."""
+    global pantry_map
     pantry_map = {}
+    
+    # 1. Load Main Pantry (Seed Data)
+    try:
+        pantry_data = load_json("data/constraints/pantry.json")
+        for item in pantry_data:
+            # Handle both list formats if legacy exists
+            n = item.get('food_name', item.get('name', '')).lower()
+            i = item.get('food_id', item.get('id', ''))
+            if n and i:
+                pantry_map[n] = i
+    except Exception as e:
+        print(f"Warning: Error loading pantry.json: {e}")
+
+    # 2. Load User Synonyms (Overrides)
+    if os.path.exists(SYNONYMS_PATH):
+        try:
+            with open(SYNONYMS_PATH, 'r') as f:
+                syns = json.load(f)
+                for name, fid in syns.items():
+                    pantry_map[name.lower()] = fid
+        except Exception as e:
+            print(f"Warning: Error loading synonyms.json: {e}")
+
+# Initial Load
+load_pantry_memory()
+
 
 # --- RESTORED EXPORTS FOR APP COMPATIBILITY ---
 try:
@@ -284,6 +304,33 @@ def _fuzzy_match(query: str, pantry_keys: list[str]) -> str | None:
             return pantry_map[matched_key_tsr]
     
     return None
+
+def add_synonym(name: str, food_id: str):
+    """
+    Adds a manual synonym mapping (e.g. 'Soy Milk' -> '000123') and persists it.
+    This allows the AI to resolve missing ingredients to existing pantry items in future runs.
+    """
+    syns = {}
+    if os.path.exists(SYNONYMS_PATH):
+        try:
+            with open(SYNONYMS_PATH, 'r') as f:
+                syns = json.load(f)
+        except: pass
+        
+    syns[name.lower()] = food_id
+    
+    # Ensure directory exists
+    os.makedirs(os.path.dirname(SYNONYMS_PATH), exist_ok=True)
+    
+    with open(SYNONYMS_PATH, 'w') as f:
+        json.dump(syns, f, indent=2)
+        
+    # Update memory immediately
+    if 'pantry_map' in globals():
+        pantry_map[name.lower()] = food_id
+    print(f"✅ Added Synonym: '{name}' -> '{food_id}'")
+    return True
+
 
 def get_pantry_id(name: str):
     """

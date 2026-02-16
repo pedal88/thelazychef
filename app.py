@@ -1306,12 +1306,33 @@ def save_new_ingredient_api():
         db.session.add(new_ing)
         db.session.commit()
         
-        return jsonify({'success': True, 'id': new_ing.id}) # Changed 'food_id' to 'id'
+        return jsonify({'success': True, 'id': new_ing.id})
         
     except Exception as e:
-        db.session.rollback() # Added rollback
-        print(f"Save Ing Error: {e}") # Changed print message
+        db.session.rollback()
+        print(f"Save Ingredient Error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/add-synonym', methods=['POST'])
+@login_required
+def add_synonym_api():
+    try:
+        data = request.get_json()
+        name = data.get('name')
+        food_id = data.get('food_id')
+        
+        if not name or not food_id:
+            return jsonify({'success': False, 'error': 'Missing name or food_id'}), 400
+            
+        from ai_engine import add_synonym
+        add_synonym(name, food_id)
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"Synonym API Error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+        
+
 
 @app.route('/api/quick-add-ingredient', methods=['POST'])
 def quick_add_ingredient_api():
