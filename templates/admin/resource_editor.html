@@ -95,12 +95,95 @@
 </div>
 
 <script>
-    var easyMDE = new EasyMDE({
+    // Define toolbar to customize the Upload button
+    var toolbarOptions = [
+        "bold", "italic", "heading", "|",
+        "quote", "unordered-list", "ordered-list", "|",
+        "link",
+        {
+            name: "upload-image",
+            action: EasyMDE.drawUploadedImage,
+            className: "fa fa-cloud-upload", // Use upload icon
+            title: "Upload Image/Video",
+        },
+        "|",
+        "preview", "side-by-side", "fullscreen", "|", "guide"
+    ];
+
+    window.easyMDE = new EasyMDE({
         element: document.getElementById("markdown-editor"),
+        toolbar: toolbarOptions,
         uploadImage: true,
         imageUploadEndpoint: "/api/cms/upload-image",
+        imageAccept: "image/png, image/jpeg, image/gif, video/mp4, video/quicktime",
+        imageMaxSize: 10485760, // 10MB in bytes
+        imageValidate: function (file) {
+            if (file.size > 10 * 1024 * 1024) {
+                alert("File too big! Max 10MB.");
+                return false;
+            }
+            return (file.type && file.type.match(/(image|video)\/.*/)) ? true : false;
+        },
         inputStyle: "contenteditable",
-        previewClass: "prose prose-slate max-w-none p-4", // Use Tailwind Typography for preview
+        previewClass: "prose prose-slate max-w-none p-4",
     });
+
+    // Global Capture Handler for Drag and Drop
+    window.addEventListener("drop", function (e) {
+        // Check if drop is inside the CodeMirror editor
+        if (e.target.closest(".CodeMirror")) {
+            var files = e.dataTransfer.files;
+            if (files.length > 0) {
+                var file = files[0];
+                if (file.type.indexOf("video") === 0) {
+                    e.preventDefault();
+                    e.stopPropagation(); // Stop EasyMDE from seeing it
+
+                    if (file.size > 10 * 1024 * 1024) {
+                        alert("File too big! Max 10MB.");
+                        return;
+                    }
+
+                    // Show uploading text
+                    var doc = window.easyMDE.codemirror.getDoc();
+                    var cursor = doc.getCursor();
+                    doc.replaceRange("![Uploading video...]()", cursor);
+
+                    var formData = new FormData();
+                    formData.append("image", file);
+
+                    fetch("/api/cms/upload-image", {
+                        method: "POST",
+                        body: formData
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log("Upload Response:", data); // DEBUG
+                            if (data.data && data.data.filePath) {
+                                var content = doc.getValue();
+                                var filePath = data.data.filePath;
+
+                                // Safety: If filePath is already absolute, ensure we don't double-prefix?
+                                // Actually, just insert it as is.
+                                // But if it's appearing with local prefix in DB, maybe we should strip it if it happens?
+                                // No, let's just insert what we get (it should be correct).
+                                // The issue might be that it WAS relative before?
+
+                                var newContent = content.replace("![Uploading video...]()", "![](" + filePath + ")");
+                                doc.setValue(newContent);
+                            } else {
+                                alert("Upload failed: " + (data.error || "Unknown error"));
+                                var content = doc.getValue();
+                                doc.setValue(content.replace("![Uploading video...]()", ""));
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                            alert("Upload error");
+                        });
+                }
+            }
+        }
+    }, true); // Capture phase
 </script>
 {% endblock %}

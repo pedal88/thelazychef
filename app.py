@@ -33,16 +33,19 @@ from sqlalchemy import func
 from utils.prompt_manager import load_prompt
 
 app = Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = 20 * 1024 * 1024 # 20MB limit
 
 # Register Blueprints
 from routes.studio_routes import prompts_bp
 app.register_blueprint(prompts_bp)
 
 
+from utils.markdown_extensions import VideoExtension
+
 @app.template_filter('markdown')
 def parse_markdown(text):
     if not text: return ""
-    return markdown.markdown(text)
+    return markdown.markdown(text, extensions=['tables', VideoExtension()])
 
 @app.template_filter('parse_chef_dna')
 def parse_chef_dna(prompt):

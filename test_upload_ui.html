@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
+    <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
+</head>
+
+<body class="p-10">
+    <h1 class="text-2xl mb-4">Test EasyMDE Video Upload</h1>
+    <textarea id="markdown-editor"></textarea>
+
+    <script>
+        var easyMDE = new EasyMDE({
+            element: document.getElementById("markdown-editor"),
+            uploadImage: true,
+            imageUploadEndpoint: "http://127.0.0.1:8000/api/cms/upload-image", // Pointing to local backend
+            imageAccept: "image/png, image/jpeg, image/gif, video/mp4, video/quicktime",
+            imageValidate: function (file) {
+                console.log("Validating file:", file.name, file.type);
+                var valid = (file.type && file.type.match(/(image|video)\/.*/)) ? true : false;
+                console.log("Valid?", valid);
+                return valid;
+            },
+            imageTexts: {
+                sbInit: "Attach files (Image/Video)",
+                sbOnDragEnter: "Drop to upload",
+                sbOnDrop: "Uploading...",
+                sbProgress: "Uploading... (#progress#)",
+                sbOnUploaded: "Uploaded!",
+                sizeLimit: "File is too big!"
+            },
+        });
+    </script>
+</body>
+
+</html>
