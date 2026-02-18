@@ -135,8 +135,11 @@ def load_pantry_memory():
         except Exception as e:
             print(f"Warning: Error loading synonyms.json: {e}")
 
-# Initial Load
-load_pantry_memory()
+# Initialize empty - will be populated by app via set_pantry_memory(db_context)
+pantry_map = {}
+
+# DEPRECATED: We no longer load from JSON on import. Database source of truth only.
+# load_pantry_memory()
 
 
 # --- RESTORED EXPORTS FOR APP COMPATIBILITY ---

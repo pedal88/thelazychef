@@ -15,12 +15,12 @@ def migrate():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
 
-    # Locate pantry.json
-    pantry_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'pantry.json')
+    # Locate pantry_seed.json
+    pantry_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'constraints', 'pantry_seed.json')
     if not os.path.exists(pantry_path):
-        pantry_path = os.path.join(os.path.dirname(__file__), '..', 'pantry.json')
+        pantry_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'pantry_seed.json')
         if not os.path.exists(pantry_path):
-            print("Error: pantry.json not found.")
+            print("Error: pantry_seed.json not found.")
             return
 
     print(f"Reading from {pantry_path}...")

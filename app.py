@@ -1818,17 +1818,34 @@ def generate_from_video():
 # --- INGREDIENT DASHBOARD ROUTES ---
 @app.route('/ingredient-images')
 def ingredient_dashboard():
-    # 1. Load Pantry from JSON (Baseline)
-    pantry_path = os.path.join(app.root_path, 'data', 'constraints', 'pantry.json')
-    with open(pantry_path, 'r') as f:
-        pantry_items = json.load(f)
-        
-    # 2. Merge with Database (Truth)
+    # 1. Load ALL Ingredients from Database (Single Source of Truth)
     # The DB contains the updated GCS URLs from our sync script
-    db_ingredients = db.session.execute(db.select(Ingredient)).scalars().all()
+    # We map them to the dictionary format expected by the template
+    db_ingredients = db.session.execute(
+        db.select(Ingredient).order_by(Ingredient.food_id)
+    ).scalars().all()
+    
+    pantry_items = []
+    
+    # 2. Convert SQLAlchemy objects to Dicts for the template/logic below
+    for ing in db_ingredients:
+        item = {
+            'food_id': ing.food_id,
+            'food_name': ing.name,
+            'main_category': ing.main_category,
+            'images': {
+                'image_url': ing.image_url,
+                'image_prompt': ing.image_prompt
+            }
+        }
+        pantry_items.append(item)
+
+    # 3. Check for Candidates & Apply Overrides
+    # (Existing logic continues below relying on pantry_items list)
+    
+    # Create DB Map for O(1) lookup if needed, but we already have the items from DB
     db_map = {ing.food_id: ing.image_url for ing in db_ingredients}
     
-    # 3. Check for Candidates & Apply Overrides
     generator = VertexImageGenerator(storage_provider=storage_provider, root_path=app.root_path)
     
     for item in pantry_items:
