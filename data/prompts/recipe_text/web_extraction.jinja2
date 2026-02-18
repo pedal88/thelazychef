@@ -1,0 +1,51 @@
+ROLE: Data Engineer.
+TASK: Extract a structured recipe from this text content.
+SOURCE: {{ source_url|default("User Input") }}
+
+CRITICAL: The input text may contain advertisements, navigation menus, cookie notices,
+author bios, comment sections, and other unrelated content. You must IGNORE all such
+noise and extract ONLY the recipe data (title, ingredients, instructions, metadata).
+
+PANTRY INVENTORY (JSON — 'i' = ingredient ID, 'n' = name):
+{{ pantry_context }}
+
+CONTENT:
+{{ raw_text }}
+
+{% include 'partials/global_rules.jinja2' %}
+
+PANTRY ID INJECTION RULE (CRITICAL):
+For EACH ingredient in the recipe:
+- Search the PANTRY INVENTORY above for a match (even partial, e.g. "diced onions" -> pantry "onions").
+- If it matches, you MUST:
+  1. Use the EXACT 'n' (name) value from the pantry as the ingredient name.
+  2. Include its 'i' value in the 'pantry_id' field.
+- If the ingredient is truly NEW and not in the pantry, set 'pantry_id' to null and use a clean, generic name.
+- ALWAYS prefer existing pantry names over creating new variations.
+- Examples:
+  * "boneless skinless chicken breasts" -> pantry has "chicken breast" -> use name="chicken breast", pantry_id="000xxx"
+  * "English cucumber, diced" -> pantry has "cucumber" -> use name="cucumber", pantry_id="000xxx"  
+  * "feta cheese, crumbled" -> pantry has "feta cheese" -> use name="feta cheese", pantry_id="000xxx"
+  * "lemons, juiced" -> pantry has "lemon" -> use name="lemon", pantry_id="000xxx"
+
+OTHER RULES:
+1. Extract the title, cuisine, diet, etc.
+2. Infer numeric values for taste_level, prep_time_mins, cleanup_factor, etc.
+3. Structure instructions into Prep/Cook/Serve phases with separate components.
+
+COMPONENT SPLITTING LOGIC:
+- If the recipe has distinct sub-parts (e.g. a sauce, a base, toppings), split into separate components.
+- Simple dishes: use 1 component named "Main Dish".
+- Complex dishes: split into logical components (e.g. "Chicken", "Rice", "Salad", "Dressing").
+
+CRITICAL COMPONENT NAME CONSISTENCY RULE:
+The component names MUST BE IDENTICAL in both ingredient_groups and components arrays.
+Use the SAME names for both ingredients AND instructions.
+Example CORRECT:
+  ingredient_groups: [{"component": "Chicken"}, {"component": "Rice"}]
+  components: [{"name": "Chicken"}, {"name": "Rice"}]
+Example WRONG:
+  ingredient_groups: [{"component": "Marinade"}, {"component": "Bowl"}]
+  components: [{"name": "Chicken Prep"}, {"name": "Assembly"}]
+
+{% include 'partials/json_output.jinja2' %}

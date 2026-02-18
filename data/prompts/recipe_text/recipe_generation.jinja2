@@ -4,6 +4,7 @@ You are a precise Data Engineer Chef.
 GOAL: Generate a structured recipe for: "{{ query }}" using these ingredients: {{ pantry_context }}.
 
 STRICT OUTPUT RULES:
+{% include 'partials/global_rules.jinja2' %}
 
 PANTRY ID INJECTION RULE (CRITICAL):
 I have provided a pantry list where 'i' is the ingredient ID and 'n' is the name.
@@ -74,72 +75,6 @@ or "Swedish Meatballs & Gravy") in ingredient_groups.
 **CRITICAL**: Each component MUST be independently cookable with its own complete prep/cook/serve flow.
 Do NOT mix steps from different components together.
 
-EXAMPLE OF DESIRED OUTPUT (COMPLEX MULTI-COMPONENT DISH):
-{
-  "title": "Pan-Seared Ribeye with Garlic Herb Butter and Roasted Vegetables",
-  "cuisine": "American",
-  "diet": "Non-Vegetarian",
-  "difficulty": "Moderate",
-  "protein_type": "Beef",
-  "meal_types": ["Dinner"],
-  "chef_id": "gourmet",
-  "cleanup_factor": 3,
-  "taste_level": 4,
-  "prep_time_mins": 20,
-  "ingredient_groups": [
-    {
-        "component": "Steak", 
-        "ingredients": [
-            {"name": "Ribeye Steak", "amount": 300, "unit": "g", "pantry_id": "000045"},
-            {"name": "Olive Oil", "amount": 15, "unit": "ml", "pantry_id": "000012"},
-            {"name": "Salt", "amount": 5, "unit": "g", "pantry_id": "000001"},
-            {"name": "Black Pepper", "amount": 2, "unit": "g", "pantry_id": "000002"}
-        ]
-    },
-    {
-        "component": "Garlic Herb Butter",
-        "ingredients": [
-            {"name": "Butter", "amount": 50, "unit": "g", "pantry_id": "000008"},
-            {"name": "Garlic", "amount": 10, "unit": "g", "pantry_id": "000015"},
-            {"name": "Fresh Parsley", "amount": 5, "unit": "g", "pantry_id": null}
-        ]
-    },
-    {
-        "component": "Roasted Vegetables",
-        "ingredients": [
-            {"name": "Carrots", "amount": 150, "unit": "g", "pantry_id": "000031"},
-            {"name": "Broccoli", "amount": 150, "unit": "g", "pantry_id": "000032"}
-        ]
-    }
-  ],
-  "components": [
-    {
-      "name": "The Steak",
-      "steps": [
-        {"step_number": 1, "phase": "Prep", "text": "Pat the ribeye steak completely dry with paper towels and let rest at room temperature for 15 minutes."},
-        {"step_number": 2, "phase": "Prep", "text": "Season both sides generously with salt and black pepper."},
-        {"step_number": 3, "phase": "Cook", "text": "Heat olive oil in a cast-iron skillet over high heat until shimmering."},
-        {"step_number": 4, "phase": "Cook", "text": "Sear the steak for 3-4 minutes per side for medium-rare, flipping only once."},
-        {"step_number": 5, "phase": "Serve", "text": "Transfer to a plate and let rest for 5 minutes before slicing."}
-      ]
-    },
-    {
-      "name": "Garlic Herb Butter",
-      "steps": [
-        {"step_number": 1, "phase": "Prep", "text": "Finely mince the garlic and chop the parsley."},
-        {"step_number": 2, "phase": "Prep", "text": "Mash the softened butter with garlic and parsley until well combined."}
-      ]
-    },
-    {
-      "name": "Roasted Vegetables",
-      "steps": [
-        {"step_number": 1, "phase": "Prep", "text": "Cut carrots and broccoli into uniform bite-sized pieces."},
-        {"step_number": 2, "phase": "Cook", "text": "Toss with olive oil, salt, and pepper."},
-        {"step_number": 3, "phase": "Cook", "text": "Roast at 200°C for 20 minutes until caramelized and tender."}
-      ]
-    }
-  ],
-  "chef_note": "The key to a perfect steak is a screaming hot pan and patience!"
-}
+{% include 'partials/json_output.jinja2' %}
 
 Generate the JSON for the user's request now:

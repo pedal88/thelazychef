@@ -8,10 +8,15 @@ from thefuzz import process as fuzz_process
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
+from jinja2 import Environment, FileSystemLoader
 
 # Load Environment
 load_dotenv()
 api_key = os.getenv("GOOGLE_API_KEY")
+
+# Initialize Jinja2 Environment
+PROMPTS_DIR = os.path.join(os.path.dirname(__file__), 'data', 'prompts')
+env = Environment(loader=FileSystemLoader(PROMPTS_DIR))
 
 if not api_key:
     # In Cloud Run, this variable is injected via the job definition.
@@ -166,55 +171,17 @@ def generate_recipe_from_web_text(text: str, source_url: str = "User Input", sli
         # Fallback to name-only list from static map
         pantry_str = json.dumps([{"n": k, "i": v} for k, v in pantry_map.items()])
     
-    prompt = f"""
-    ROLE: Data Engineer.
-    TASK: Extract a structured recipe from this text content.
-    SOURCE: {source_url}
-    
-    CRITICAL: The input text may contain advertisements, navigation menus, cookie notices,
-    author bios, comment sections, and other unrelated content. You must IGNORE all such
-    noise and extract ONLY the recipe data (title, ingredients, instructions, metadata).
-    
-    PANTRY INVENTORY (JSON — 'i' = ingredient ID, 'n' = name):
-    {pantry_str}
-    
-    CONTENT:
-    {text[:15000]}
-    
-    PANTRY ID INJECTION RULE (CRITICAL):
-    For EACH ingredient in the recipe:
-    - Search the PANTRY INVENTORY above for a match (even partial, e.g. "diced onions" → pantry "onions").
-    - If it matches, you MUST:
-      1. Use the EXACT 'n' (name) value from the pantry as the ingredient name.
-      2. Include its 'i' value in the 'pantry_id' field.
-    - If the ingredient is truly NEW and not in the pantry, set 'pantry_id' to null and use a clean, generic name.
-    - ALWAYS prefer existing pantry names over creating new variations.
-    - Examples:
-      * "boneless skinless chicken breasts" → pantry has "chicken breast" → use name="chicken breast", pantry_id="000xxx"
-      * "English cucumber, diced" → pantry has "cucumber" → use name="cucumber", pantry_id="000xxx"  
-      * "feta cheese, crumbled" → pantry has "feta cheese" → use name="feta cheese", pantry_id="000xxx"
-      * "lemons, juiced" → pantry has "lemon" → use name="lemon", pantry_id="000xxx"
-    
-    OTHER RULES:
-    1. Extract the title, cuisine, diet, etc.
-    2. Infer numeric values for taste_level, prep_time_mins, cleanup_factor, etc.
-    3. Structure instructions into Prep/Cook/Serve phases with separate components.
-    
-    COMPONENT SPLITTING LOGIC:
-    - If the recipe has distinct sub-parts (e.g. a sauce, a base, toppings), split into separate components.
-    - Simple dishes: use 1 component named "Main Dish".
-    - Complex dishes: split into logical components (e.g. "Chicken", "Rice", "Salad", "Dressing").
-    
-    CRITICAL COMPONENT NAME CONSISTENCY RULE:
-    The component names MUST BE IDENTICAL in both ingredient_groups and components arrays.
-    Use the SAME names for both ingredients AND instructions.
-    Example CORRECT:
-      ingredient_groups: [{{"component": "Chicken"}}, {{"component": "Rice"}}]
-      components: [{{"name": "Chicken"}}, {{"name": "Rice"}}]
-    Example WRONG:
-      ingredient_groups: [{{"component": "Marinade"}}, {{"component": "Bowl"}}]
-      components: [{{"name": "Chicken Prep"}}, {{"name": "Assembly"}}]
-    """
+    # Use Jinja2 Template
+    try:
+        template = env.get_template('recipe_text/web_extraction.jinja2')
+        prompt = template.render(
+            source_url=source_url,
+            pantry_context=pantry_str,
+            raw_text=text
+        )
+    except Exception as e:
+        print(f"ERROR: Failed to render web_extraction template: {e}")
+        raise ValueError(f"Template rendering failed: {e}")
     
     print(f"DEBUG: Generating from Web Text via 'gemini-flash-latest' (with pantry IDs)")
     response = client.models.generate_content(
@@ -519,9 +486,8 @@ def generate_recipe_ai(query: str, slim_context: list[dict] = None, chef_id: str
 
     
     # Load Template
+    # Load Template
     try:
-        from jinja2 import Environment, FileSystemLoader
-        env = Environment(loader=FileSystemLoader(os.path.join(os.path.dirname(__file__), 'data', 'prompts')))
         template = env.get_template('recipe_text/recipe_generation.jinja2')
         prompt = template.render(
             chef_context=chef_context,
@@ -530,12 +496,7 @@ def generate_recipe_ai(query: str, slim_context: list[dict] = None, chef_id: str
         )
     except Exception as e:
         print(f"Error loading prompt template: {e}")
-        # Fallback (Safety)
-        prompt = f"""
-        You are a precise Data Engineer Chef.
-        {chef_context}
-        GOAL: Generate a structured recipe for: "{query}" using these ingredients: {pantry_str}.
-        """
+        raise ValueError(f"Template rendering failed: {e}")
 
 
 
@@ -631,50 +592,16 @@ def generate_recipe_from_video(video_path: str, caption: str, slim_context: list
             raise ValueError("Video processing failed")
         time.sleep(2)
 
-    prompt = f"""
-    ROLE: Data Engineer and Recipe Analyst.
-    TASK: Watch this video carefully and create a structured recipe from what you observe.
-    Caption: {caption}
-    Chef ID: {chef_id}
-    
-    PANTRY INVENTORY (JSON — 'i' = ingredient ID, 'n' = name):
-    {pantry_str}
-    
-    PANTRY ID INJECTION RULE (CRITICAL):
-    For EACH ingredient in the recipe:
-    - Search the PANTRY INVENTORY above for a match (even partial, e.g. "diced onions" → pantry "onions").
-    - If it matches, you MUST:
-      1. Use the EXACT 'n' (name) value from the pantry as the ingredient name.
-      2. Include its 'i' value in the 'pantry_id' field.
-    - If the ingredient is truly NEW and not in the pantry, set 'pantry_id' to null and use a clean, generic name.
-    - ALWAYS prefer existing pantry names over creating new variations.
-    - Examples:
-      * "boneless skinless chicken breasts" → pantry has "chicken breast" → use name="chicken breast", pantry_id="000xxx"
-      * "English cucumber, diced" → pantry has "cucumber" → use name="cucumber", pantry_id="000xxx"  
-      * "feta cheese, crumbled" → pantry has "feta cheese" → use name="feta cheese", pantry_id="000xxx"
-    
-    RECIPE EXTRACTION RULES:
-    1. At least 5 distinct steps.
-    2. Prep, Cook, Serve phases.
-    3. Estimate numeric amounts for ingredients based on visual observation.
-    4. Extract title, cuisine, diet, difficulty, etc.
-    5. Infer numeric values for taste_level, prep_time_mins, cleanup_factor.
-    
-    COMPONENT SPLITTING LOGIC:
-    - If the recipe has distinct sub-parts (e.g. a sauce, a base, toppings), split into separate components.
-    - Simple dishes: use 1 component named "Main Dish".
-    - Complex dishes: split into logical components (e.g. "Chicken", "Rice", "Salad", "Dressing").
-    
-    CRITICAL COMPONENT NAME CONSISTENCY RULE:
-    The component names MUST BE IDENTICAL in both ingredient_groups and components arrays.
-    Use the SAME names for both ingredients AND instructions.
-    Example CORRECT:
-      ingredient_groups: [{{"component": "Chicken"}}, {{"component": "Rice"}}]
-      components: [{{"name": "Chicken"}}, {{"name": "Rice"}}]
-    Example WRONG:
-      ingredient_groups: [{{"component": "Marinade"}}, {{"component": "Bowl"}}]
-      components: [{{"name": "Chicken Prep"}}, {{"name": "Assembly"}}]
-    """
+    try:
+        template = env.get_template('recipe_text/video_extraction.jinja2')
+        prompt = template.render(
+            caption=caption,
+            chef_id=chef_id,
+            pantry_context=pantry_str
+        )
+    except Exception as e:
+        print(f"ERROR: Failed to render video_extraction template: {e}")
+        raise ValueError(f"Template rendering failed: {e}")
     
     print(f"DEBUG: Generating from Video via 'gemini-flash-latest' (with pantry IDs)")
     
