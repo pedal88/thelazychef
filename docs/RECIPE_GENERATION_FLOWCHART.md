@@ -14,16 +14,16 @@ graph TD
 
     %% Define the AI Processing
     subgraph "AI Engine (The Brains)"
-        GenChef[generate_recipe_ai<br/>(Creative Persona)]
-        GenExtract[generate_from_web_text<br/>(Data Extractor)]
-        GenVision[generate_from_video<br/>(Visual Observer)]
+        GenChef["generate_recipe_ai<br/>(Creative Persona)"]
+        GenExtract["generate_from_web_text<br/>(Data Extractor)"]
+        GenVision["generate_from_video<br/>(Visual Observer)"]
     end
 
     %% The Unified Service
     subgraph "The Bottleneck (Shared Logic)"
         Service[[process_recipe_workflow]]
-        Fuzzy{Strict Match<br/>Ingredients?}
-        Missing[Missing Resolution<br/>Page]
+        Fuzzy{"Strict Match<br/>Ingredients?"}
+        Missing["Missing Resolution<br/>Page"]
         Save[(Database Save)]
     end
 
