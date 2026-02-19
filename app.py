@@ -702,12 +702,12 @@ def recipes_list():
     # 1. Load Filter Data Options
     # Use global load_json_option helper
 
-    cuisine_options = load_json_option('cuisines.json', 'cuisines')
-    diet_options = load_json_option('diets_tag.json', 'diets')
-    difficulty_options = load_json_option('difficulty_tag.json', 'difficulty')
+    cuisine_options = load_json_option('post_processing/cuisines.json', 'cuisines')
+    diet_options = load_json_option('constraints/diets.json', 'diets')
+    difficulty_options = load_json_option('constraints/difficulty.json', 'difficulty')
     
     # Protein Types (List of Dicts -> List of Strings)
-    pt_data = load_json_option('protein_types.json', 'protein_types')
+    pt_data = load_json_option('constraints/main_protein.json', 'protein_types')
     protein_options = []
     for p in pt_data:
         if 'examples' in p:
@@ -715,7 +715,7 @@ def recipes_list():
     protein_options = sorted(list(set(protein_options)))
     
     # Meal Types (Dict of Lists -> Flattened List)
-    mt_data = load_json_option('meal_types.json', 'meal_classification')
+    mt_data = load_json_option('constraints/meal_types.json', 'meal_classification')
     meal_type_options = []
     if isinstance(mt_data, dict):
         for category_list in mt_data.values():

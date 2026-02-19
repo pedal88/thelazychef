@@ -45,24 +45,34 @@
 
                     <!-- Dropdown Menu -->
                     <div id="dropdown-{{ id }}"
-                        class="hidden absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                        class="hidden absolute z-30 mt-1 max-h-80 w-full rounded-md bg-white text-base shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm flex flex-col overflow-hidden">
+
+                        <!-- Search Input -->
+                        <div class="p-2 border-b border-gray-100 bg-gray-50">
+                            <input type="text" placeholder="Search {{ label }}..."
+                                onkeyup="filterOptions('{{ id }}', this.value)"
+                                class="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-xs">
+                        </div>
+
                         <!-- Controls -->
                         <div
-                            class="sticky top-0 z-20 bg-gray-50 border-b border-gray-100 flex justify-between px-3 py-2 text-xs font-medium text-indigo-600 cursor-pointer">
-                            <span onclick="selectAll('{{ id }}')">Select All</span>
+                            class="flex justify-between px-3 py-2 text-xs font-medium text-indigo-600 border-b border-gray-100 bg-white">
+                            <span onclick="selectAll('{{ id }}')"
+                                class="cursor-pointer hover:underline hover:text-indigo-800">Select All</span>
                             <span onclick="selectNone('{{ id }}')"
-                                class="text-gray-500 hover:text-indigo-600">None</span>
+                                class="cursor-pointer hover:underline text-gray-500 hover:text-indigo-600">None</span>
                         </div>
 
                         <!-- Options -->
-                        <div class="py-1">
+                        <div class="overflow-y-auto flex-1 p-1">
                             {% for option in options %}
-                            <label class="relative flex cursor-pointer select-none py-2 pl-3 pr-9 hover:bg-gray-50">
+                            <label
+                                class="relative flex cursor-pointer select-none py-2 pl-3 pr-9 hover:bg-gray-50 rounded-sm">
                                 <input type="checkbox" name="{{ id }}" value="{{ option }}" {% if option in
                                     selected_values %}checked{% endif %} class="peer sr-only"
                                     onchange="updateDisplay('{{ id }}', '{{ label }}s', {{ options|length }})">
 
-                                <!-- Checkmark Icon (Visible when checked) -->
+                                <!-- Checkmark Icon -->
                                 <span
                                     class="absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600 opacity-0 peer-checked:opacity-100 transition-opacity">
                                     <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -152,6 +162,7 @@
                 }
             }
 
+
             // Close on click outside
             document.addEventListener('click', function (event) {
                 if (!event.target.closest('.dropdown-container')) {
@@ -160,6 +171,23 @@
                     });
                 }
             });
+
+            function filterOptions(id, query) {
+                const container = document.getElementById(`dropdown-${id}`);
+                const options = container.querySelectorAll('label'); // The label wraps the input and text
+                const lowerQuery = query.toLowerCase();
+
+                options.forEach(option => {
+                    const text = option.innerText.toLowerCase();
+                    if (text.includes(lowerQuery)) {
+                        option.classList.remove('hidden');
+                        option.classList.add('flex'); // Ensure it's flex as defined in class
+                    } else {
+                        option.classList.add('hidden');
+                        option.classList.remove('flex');
+                    }
+                });
+            }
         </script>
 
         <div class="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8 mt-12">
