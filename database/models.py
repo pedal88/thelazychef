@@ -16,12 +16,23 @@ resource_relations = db.Table('resource_relations',
     db.Column('related_id', db.Integer, db.ForeignKey('resource.id'), primary_key=True)
 )
 
-# Association table for User Favorites
-user_favorite_recipes = db.Table('user_favorite_recipes',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
-    db.Column('recipe_id', db.Integer, db.ForeignKey('recipe.id'), primary_key=True),
-    db.Column('saved_at', db.DateTime, default=datetime.datetime.utcnow)
-)
+# Association table for User Favorites - DEPRECATED (Replaced by UserRecipeInteraction)
+# user_favorite_recipes = db.Table('user_favorite_recipes',
+#     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+#     db.Column('recipe_id', db.Integer, db.ForeignKey('recipe.id'), primary_key=True),
+#     db.Column('saved_at', db.DateTime, default=datetime.datetime.utcnow)
+# )
+
+class UserRecipeInteraction(db.Model):
+    __tablename__ = 'user_recipe_interaction'
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
+    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id"), primary_key=True)
+    status: Mapped[str] = mapped_column(String, nullable=False) # "pass", "favorite"
+    is_super_like: Mapped[bool] = mapped_column(Boolean, default=False)
+    timestamp: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)
+
+    user: Mapped["User"] = relationship(back_populates="interactions")
+    recipe: Mapped["Recipe"] = relationship(back_populates="interactions")
 
 class Resource(db.Model):
     __tablename__ = 'resource'
@@ -161,6 +172,8 @@ class Recipe(db.Model):
     def meal_types_list(self):
         return [fmt.meal_type for fmt in self.meal_types]
 
+    interactions: Mapped[list["UserRecipeInteraction"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
+
 class Instruction(db.Model):
     __tablename__ = 'instruction'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -191,13 +204,13 @@ class User(UserMixin, db.Model):
     password_hash: Mapped[str] = mapped_column(String(256), nullable=False)
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    # Use 'select' loading for favorites as it's a specific, user-driven action
-    favorite_recipes: Mapped[list["Recipe"]] = relationship(
-        "Recipe",
-        secondary=user_favorite_recipes,
-        backref=db.backref('favorited_by', lazy='select'),
-        lazy='select'
-    )
+    # Relationship to interactions
+    interactions: Mapped[list["UserRecipeInteraction"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+
+    @property
+    def favorite_recipes(self):
+        """Backward compatibility: returns list of Recipe objects where status is 'favorite'"""
+        return [i.recipe for i in self.interactions if i.status == 'favorite']
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

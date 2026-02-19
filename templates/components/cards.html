@@ -72,6 +72,18 @@ Expects a RecipeIngredient object (ri) which has .ingredient relation and .amoun
         </div>
         {% endif %}
 
+        <!-- Super Like Badge (Top Left) -->
+        {% if recipe.is_super_liked %}
+        <div class="absolute top-2 left-2 z-20 bg-blue-500 text-white p-1.5 rounded-full shadow-lg border-2 border-white transform hover:scale-110 transition-transform"
+            title="Super Liked!">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"
+                stroke="none">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z">
+                </path>
+            </svg>
+        </div>
+        {% endif %}
+
         <!-- Favorite Button (Top Right) -->
         <div class="absolute top-2 right-2 z-20 flex gap-2">
             {% if show_inspector %}

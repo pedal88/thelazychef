@@ -14,9 +14,9 @@ from flask_migrate import Migrate
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 import markdown
 from database.db_connector import configure_database
-from database.models import db, Ingredient, Recipe, Instruction, RecipeIngredient, RecipeMealType, User, Resource, resource_relations, Chef, user_favorite_recipes
+from database.models import db, Ingredient, Recipe, Instruction, RecipeIngredient, RecipeMealType, User, Resource, resource_relations, Chef, UserRecipeInteraction
 from utils.decorators import admin_required
-from sqlalchemy import or_
+from sqlalchemy import or_, func
 from services.pantry_service import get_slim_pantry_context
 from ai_engine import generate_recipe_ai, get_pantry_id, get_top_pantry_suggestions, chefs_data, generate_recipe_from_web_text, analyze_ingredient_ai, extract_nutrients_from_text
 from services.recipe_service import process_recipe_workflow, STATUS_SUCCESS, STATUS_MISSING
@@ -211,7 +211,7 @@ def register():
 def logout():
     logout_user()
     flash('You have been logged out.', 'info')
-    return redirect(url_for('index'))
+    return redirect(url_for('discover'))
 
 @app.route('/api/me/favorites', methods=['GET'])
 @login_required
@@ -219,27 +219,115 @@ def get_user_favorites():
     """Returns a list of recipe IDs favorited by the current user."""
     # Efficiently fetch only the IDs
     # Using the relationship:
-    fav_ids = [r.id for r in current_user.favorite_recipes]
+    fav_ids = [i.recipe_id for i in current_user.interactions if i.status == 'favorite']
     return jsonify({'favorite_ids': fav_ids})
 
 @app.route('/api/recipes/<int:recipe_id>/favorite', methods=['POST'])
 @login_required
 def toggle_favorite_recipe(recipe_id):
     """Toggles the favorite status of a recipe for the current user."""
-    recipe = db.session.get(Recipe, recipe_id)
-    if not recipe:
-        return jsonify({'error': 'Recipe not found'}), 404
-    
-    # Check if exists
-    if recipe in current_user.favorite_recipes:
-        current_user.favorite_recipes.remove(recipe)
-        status = 'removed'
+    # Updated to use UserRecipeInteraction
+    stmt = db.select(UserRecipeInteraction).where(
+        UserRecipeInteraction.user_id == current_user.id,
+        UserRecipeInteraction.recipe_id == recipe_id
+    )
+    interaction = db.session.execute(stmt).scalar()
+
+    if interaction:
+        if interaction.status == 'favorite':
+            # Toggle OFF: Remove the favorite status (delete interaction to allow re-discovery or set to pass?)
+            # For now, deleting the interaction is safest for toggle behavior on list view
+            db.session.delete(interaction)
+            status = 'removed'
+        else:
+            # Update to favorite
+            interaction.status = 'favorite'
+            interaction.timestamp = datetime.datetime.utcnow()
+            status = 'added'
     else:
-        current_user.favorite_recipes.append(recipe)
+        # Create new favorite
+        interaction = UserRecipeInteraction(
+            user_id=current_user.id,
+            recipe_id=recipe_id,
+            status='favorite'
+        )
+        db.session.add(interaction)
         status = 'added'
         
     db.session.commit()
     return jsonify({'status': status, 'recipe_id': recipe_id})
+
+@app.route('/api/feed/recipes', methods=['GET'])
+def get_feed_recipes():
+    """Returns a list of random recipes for the feed (Tinder-style)."""
+    limit = 10
+    
+    if current_user.is_authenticated:
+        # Exclude recipes user has already interacted with
+        subq = db.select(UserRecipeInteraction.recipe_id).where(UserRecipeInteraction.user_id == current_user.id)
+        stmt = (
+            db.select(Recipe)
+            .where(Recipe.id.not_in(subq))
+            .order_by(func.random())
+            .limit(limit)
+        )
+    else:
+        # Anonymous: Random selection
+        stmt = db.select(Recipe).order_by(func.random()).limit(limit)
+        
+    recipes = db.session.execute(stmt).scalars().all()
+    
+    data = []
+    for r in recipes:
+        data.append({
+            'id': r.id,
+            'title': r.title,
+            'image_url': get_recipe_image_url(r),
+            'cuisine': r.cuisine,
+            'time_estimate': r.prep_time_mins or 30, # Default if missing
+            'difficulty': r.difficulty
+        })
+        
+    return jsonify({'recipes': data, 'has_more': len(data) == limit})
+
+@app.route('/api/interactions/recipe/<int:recipe_id>', methods=['POST'])
+@login_required
+def handle_interaction(recipe_id):
+    """Handle Tinder-style interactions: pass, like, super_like."""
+    data = request.get_json()
+    action = data.get('action') 
+    
+    if action not in ['pass', 'like', 'super_like']:
+        return jsonify({'error': 'Invalid action'}), 400
+        
+    # Map action to data model
+    if action == 'pass':
+        status = 'pass'
+        is_super = False
+    elif action == 'like':
+        status = 'favorite'
+        is_super = False
+    elif action == 'super_like':
+        status = 'favorite'
+        is_super = True
+        
+    # Upsert Interaction
+    interaction = db.session.get(UserRecipeInteraction, (current_user.id, recipe_id))
+    if interaction:
+        interaction.status = status
+        interaction.is_super_like = is_super
+        interaction.timestamp = datetime.datetime.utcnow()
+    else:
+        interaction = UserRecipeInteraction(
+            user_id=current_user.id, 
+            recipe_id=recipe_id, 
+            status=status, 
+            is_super_like=is_super
+        )
+        db.session.add(interaction)
+        
+    db.session.commit()
+    return jsonify({'success': True})
 
 @app.route('/my-favorites')
 @login_required
@@ -249,13 +337,23 @@ def my_favorites_view():
     # Get favorites ordered by saved_at (descending)
     
     stmt = (
-        db.select(Recipe)
-        .join(user_favorite_recipes)
-        .where(user_favorite_recipes.c.user_id == current_user.id)
-        .order_by(user_favorite_recipes.c.saved_at.desc())
+        db.select(Recipe, UserRecipeInteraction)
+        .join(UserRecipeInteraction)
+        .where(
+            UserRecipeInteraction.user_id == current_user.id,
+            UserRecipeInteraction.status == 'favorite'
+        )
+        .order_by(
+            UserRecipeInteraction.is_super_like.desc(),
+            UserRecipeInteraction.timestamp.desc()
+        )
     )
     
-    recipes = db.session.execute(stmt).scalars().all()
+    results = db.session.execute(stmt).all()
+    recipes = []
+    for r, interaction in results:
+        r.is_super_liked = interaction.is_super_like
+        recipes.append(r)
     
     # Reuse filter options logic
     cuisine_options = load_json_option('post_processing/cuisines.json', 'cuisines')
@@ -411,7 +509,7 @@ def save_recipe_image():
     
     if not filename or not recipe_id:
         flash("Missing data to save image", "error")
-        return redirect(url_for('index'))
+        return redirect(url_for('discover'))
         
     try:
         # Move file from temp to recipes
@@ -430,12 +528,12 @@ def save_recipe_image():
             return redirect(url_for('recipe_detail', recipe_id=recipe_id))
         else:
              flash("Recipe not found", "error")
-             return redirect(url_for('index'))
+             return redirect(url_for('discover'))
 
     except Exception as e:
         print(f"DEBUG SAVE ERROR: {e}")
         flash(f"Error saving image: {str(e)}", "error")
-        return redirect(url_for('index')) 
+        return redirect(url_for('discover')) 
 
 
 @app.route('/admin/studio/analyze', methods=['POST'])
@@ -543,12 +641,12 @@ def recipe_image_generation_view():
     recipe_id = request.args.get('recipe_id')
     if not recipe_id:
         flash("Recipe ID required", "error")
-        return redirect(url_for('index'))
+        return redirect(url_for('discover'))
     
     recipe = db.session.get(Recipe, int(recipe_id))
     if not recipe:
         flash("Recipe not found", "error")
-        return redirect(url_for('index'))
+        return redirect(url_for('discover'))
         
     return render_template('recipe_photographer.html', recipe=recipe)
 
@@ -656,7 +754,7 @@ def new_recipe():
     return render_template('index.html', recipes=recent_recipes, chefs=chefs_data)
 
 @app.route('/')
-def index():
+def discover():
     # Load Recent Recipes
     recent_recipes = db.session.execute(db.select(Recipe).order_by(Recipe.id.desc()).limit(8)).scalars().all()
     
@@ -1738,7 +1836,7 @@ def _handle_workflow_result(result: dict, query_context: str, chef_id: str):
 def generate_web_recipe():
     blog_url = request.form.get('blog_url')
     if not blog_url:
-        return redirect(url_for('index'))
+        return redirect(url_for('discover'))
 
     try:
         # 1. Scrape content
@@ -1810,7 +1908,7 @@ def generate():
     query = request.args.get('query')
     chef_id = request.args.get('chef_id', 'gourmet')
     if not query:
-        return redirect(url_for('index'))
+        return redirect(url_for('discover'))
 
     try:
         # 1. Build clean pantry context (no IMP duplicates)
@@ -1826,19 +1924,19 @@ def generate():
 
     except ValueError as ve:
         flash(f"Validation Error: {str(ve)}", "error")
-        return redirect(url_for('index'))
+        return redirect(url_for('discover'))
     except Exception as e:
         db.session.rollback()
         flash(f"Error generating recipe: {str(e)}", "error")
         import traceback; traceback.print_exc()
-        return redirect(url_for('index'))
+        return redirect(url_for('discover'))
 
 @app.route('/recipe/<int:recipe_id>')
 def recipe_detail(recipe_id):
     recipe = db.session.get(Recipe, recipe_id)
     if not recipe:
         flash("Recipe not found.", "error")
-        return redirect(url_for('index'))
+        return redirect(url_for('discover'))
     
     # Group instructions by phase for display
     instructions = Instruction.query.filter_by(recipe_id=recipe_id).order_by(Instruction.component, Instruction.phase, Instruction.step_number).all()
@@ -1928,7 +2026,7 @@ def generate_from_video():
     video_url = request.form.get('video_url')
     if not video_url:
         flash("Please provide a video URL", "error")
-        return redirect(url_for('index'))
+        return redirect(url_for('discover'))
 
     try:
         # 1. Download video
@@ -1957,7 +2055,7 @@ def generate_from_video():
         db.session.rollback()
         flash(f"Error processing video: {str(e)}", "error")
         import traceback; traceback.print_exc()
-        return redirect(url_for('index'))
+        return redirect(url_for('discover'))
 
 
 # --- INGREDIENT DASHBOARD ROUTES ---
@@ -2275,4 +2373,4 @@ def cms_upload_image():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all() # Ensure tables exist
-    app.run(debug=True, port=8000)
+    app.run(host='0.0.0.0', debug=True, port=8000)
