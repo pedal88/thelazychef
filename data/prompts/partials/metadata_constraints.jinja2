@@ -1,0 +1,13 @@
+STRICT USER CONSTRAINTS:
+{% if user_constraints.diet %}
+1. DIET: You MUST ensure the recipe strictly adheres to the '{{ user_constraints.diet }}' diet.
+{% endif %}
+{% if user_constraints.cuisine %}
+2. CUISINE: The flavor profile MUST be authentic to '{{ user_constraints.cuisine }}'.
+{% endif %}
+{% if user_constraints.cooking_method %}
+3. METHOD: The primary cooking technique MUST be '{{ user_constraints.cooking_method }}'.
+{% endif %}
+{% if user_constraints.protein %}
+4. PROTEIN: The dish MUST feature '{{ user_constraints.protein }}' as the main protein.
+{% endif %}

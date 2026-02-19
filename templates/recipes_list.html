@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% import "components/typography.html" as type %}
 {% import "components/cards.html" as card %}
+{% import "components/modals/recipe_inspector.html" as inspector %}
 
 {% block title %}All Recipes - The Lazy Chef{% endblock %}
 
@@ -163,9 +164,12 @@
 
         <div class="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8 mt-12">
             {% for recipe in recipes %}
-            {{ card.recipe_preview_card(recipe, recipe.id) }}
+            {{ card.recipe_preview_card(recipe, recipe.id, show_inspector=True) }}
             {% endfor %}
         </div>
     </div>
 </div>
+
+<!-- Render Modal Structure Once -->
+{{ inspector.recipe_inspector_modal() }}
 {% endblock %}

@@ -43,4 +43,9 @@ Example WRONG:
   ingredient_groups: [{"component": "Marinade"}, {"component": "Bowl"}]
   components: [{"name": "Chicken Prep"}, {"name": "Assembly"}]
 
+  components: [{"name": "Chicken Prep"}, {"name": "Assembly"}]
+
+{% include 'partials/metadata_context.jinja2' %}
+{% include 'partials/metadata_constraints.jinja2' %}
+
 {% include 'partials/json_output.jinja2' %}

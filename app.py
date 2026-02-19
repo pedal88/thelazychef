@@ -1484,6 +1484,71 @@ def update_ingredient_data_api():
         print(f"Update Ing Data Error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/api/recipe/<int:recipe_id>', methods=['GET'])
+@login_required
+def get_recipe_json(recipe_id):
+    if not current_user.is_admin:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+    
+    recipe = db.session.get(Recipe, recipe_id)
+    if not recipe:
+        return jsonify({'success': False, 'error': 'Recipe not found'}), 404
+        
+    try:
+        # Construct JSON
+        data = {
+            'id': recipe.id,
+            'title': recipe.title,
+            'cuisine': recipe.cuisine,
+            'diet': recipe.diet,
+            'difficulty': recipe.difficulty,
+            'protein_type': recipe.protein_type,
+            'meal_types': recipe.meal_types_list,
+            'chef_id': recipe.chef_id or 'gourmet',
+            'taste_level': recipe.taste_level,
+            'prep_time_mins': recipe.prep_time_mins,
+            'cleanup_factor': recipe.cleanup_factor,
+            'image_filename': recipe.image_filename,
+            'nutrition': {
+                'calories': recipe.total_calories,
+                'protein': recipe.total_protein,
+                'carbs': recipe.total_carbs,
+                'fat': recipe.total_fat,
+                'sugar': recipe.total_sugar,
+                'fiber': recipe.total_fiber
+            },
+            'ingredients': [],
+            'instructions': []
+        }
+        
+        # Serialize Ingredients
+        for ri in recipe.ingredients:
+            data['ingredients'].append({
+                'id': ri.id,
+                'name': ri.ingredient.name,
+                'amount': ri.amount,
+                'unit': ri.unit,
+                'component': ri.component,
+                'food_id': ri.ingredient.food_id,
+                'category': ri.ingredient.main_category
+            })
+            
+        # Serialize Instructions
+        sorted_instructions = sorted(recipe.instructions, key=lambda x: x.step_number)
+        for step in sorted_instructions:
+            data['instructions'].append({
+                'step': step.step_number,
+                'phase': step.phase,
+                'text': step.text,
+                'component': step.component
+            })
+            
+        return jsonify({'success': True, 'recipe': data})
+        
+    except Exception as e:
+        print(f"Error serializing recipe {recipe_id}: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @app.route('/api/merge-ingredients', methods=['POST'])
 def merge_ingredients_api():
     try:

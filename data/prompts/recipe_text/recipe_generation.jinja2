@@ -75,6 +75,11 @@ or "Swedish Meatballs & Gravy") in ingredient_groups.
 **CRITICAL**: Each component MUST be independently cookable with its own complete prep/cook/serve flow.
 Do NOT mix steps from different components together.
 
+Do NOT mix steps from different components together.
+
+{% include 'partials/metadata_context.jinja2' %}
+{% include 'partials/metadata_constraints.jinja2' %}
+
 {% include 'partials/json_output.jinja2' %}
 
 Generate the JSON for the user's request now:

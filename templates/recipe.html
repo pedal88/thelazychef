@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 {% import "components/typography.html" as type %}
 {% import "components/badges.html" as badge %}
+{% import "components/badges.html" as badge %}
 {% import "components/cards.html" as card with context %}
+{% import "components/modals/recipe_inspector.html" as inspector %}
 
 {% block title %}{{ recipe.title }} - The Lazy Chef{% endblock %}
 
@@ -59,6 +61,22 @@
         </div>
         {% endif %}
     </div>
+
+
+
+    <!-- Admin Inspector Trigger (Single Page) -->
+    {% if current_user.is_authenticated and current_user.is_admin %}
+    <div class="max-w-4xl mx-auto flex justify-end -mt-8 mb-8 relative z-10 px-4">
+        <button onclick="openInspector({{ recipe.id }})"
+            class="text-xs font-mono text-slate-400 hover:text-indigo-600 flex items-center gap-1 transition-colors bg-white/80 backdrop-blur px-3 py-1 rounded-full shadow-sm border border-slate-200">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+            </svg>
+            DEBUG DATA
+        </button>
+    </div>
+    {% endif %}
 
     <!-- Recipe Header Info -->
     <div class="flex flex-col items-center text-center max-w-4xl mx-auto mb-16">
@@ -173,7 +191,8 @@
                     <button onclick="closeRelinkModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12"></path>
+                                d="M6 18L18 6M6 6l12 12">
+                            </path>
                         </svg>
                     </button>
                 </div>
@@ -212,6 +231,9 @@
     {% endblock %}
 
     {% block scripts %}
+    <!-- Render Inspector Modal -->
+    {{ inspector.recipe_inspector_modal() }}
+
     {% if current_user.is_authenticated and current_user.is_admin %}
     <script>
         // ========== Relink Ingredient Logic ==========

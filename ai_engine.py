@@ -1,9 +1,9 @@
-
 import os
 import re
 import json
 import uuid
 import typing_extensions as typing # For TypedDict compatibility
+from pathlib import Path
 from thefuzz import process as fuzz_process
 from dotenv import load_dotenv
 from google import genai
@@ -158,6 +158,101 @@ try:
 except Exception:
     protein_data = []
 
+def load_controlled_vocabularies() -> dict:
+    """
+    Loads controlled vocabularies for metadata tagging from JSON files.
+    Returns a unified dictionary containing lists for all metadata fields.
+    """
+    base_constraints = Path(os.path.dirname(__file__)) / 'data' / 'constraints'
+    base_post = Path(os.path.dirname(__file__)) / 'data' / 'post_processing'
+    
+    vocab = {
+        "diets": [],
+        "cuisines": [],
+        "meal_types": [],
+        "cooking_methods": [],
+        "tastes": [],
+        "cleanup_factors": [],
+        "difficulty": [],
+        "time_intervals": []
+    }
+
+    try:
+        # 1. Diets
+        p = base_constraints / 'diets.json'
+        if p.exists():
+            data = json.loads(p.read_text(encoding='utf-8'))
+            vocab["diets"] = data.get('diets', data) if isinstance(data, dict) else data
+
+        # 2. Main Protein (Categories Only?)
+        # Need to check structure. Assuming flat list or dict with categories.
+        # User requested: "Extract just the category names or flattened examples"
+        p = base_constraints / 'main_protein.json'
+        if p.exists():
+            data = json.loads(p.read_text(encoding='utf-8'))
+            # If structure is {"protein_types": [{"category": "Beef", ...}]}
+            raw = data.get('protein_types', data) if isinstance(data, dict) else data
+            if isinstance(raw, list) and len(raw) > 0 and isinstance(raw[0], dict):
+                 vocab["protein_types"] = [item.get('category') for item in raw]
+            else:
+                 vocab["protein_types"] = raw
+
+        # 3. Meal Types (Flatten)
+        p = base_constraints / 'meal_types.json'
+        if p.exists():
+            data = json.loads(p.read_text(encoding='utf-8'))
+            # Assuming {"meal_types": ["Breakfast", ...]}
+            vocab["meal_types"] = data.get('meal_types', data) if isinstance(data, dict) else data
+
+        # 4. Difficulty
+        p = base_constraints / 'difficulty.json'
+        if p.exists():
+            data = json.loads(p.read_text(encoding='utf-8'))
+            vocab["difficulty"] = data.get('difficulty', data) if isinstance(data, dict) else data
+
+        # 5. Cuisines
+        p = base_post / 'cuisines.json'
+        if p.exists():
+            data = json.loads(p.read_text(encoding='utf-8'))
+            vocab["cuisines"] = data.get('cuisines', data) if isinstance(data, dict) else data
+
+        # 6. Cooking Methods
+        p = base_post / 'cooking_methods.json'
+        if p.exists():
+            data = json.loads(p.read_text(encoding='utf-8'))
+            # If list of objects, flatten to method names
+            raw = data.get('cooking_methods', data) if isinstance(data, dict) else data
+            if isinstance(raw, list) and len(raw) > 0 and isinstance(raw[0], dict):
+                vocab["cooking_methods"] = [m.get('method') for m in raw]
+            else:
+                 vocab["cooking_methods"] = raw
+
+        # 7. Taste
+        p = base_post / 'taste.json'
+        if p.exists():
+            data = json.loads(p.read_text(encoding='utf-8'))
+            vocab["tastes"] = data.get('tastes', data) if isinstance(data, dict) else data
+
+        # 8. Time Intervals
+        p = base_post / 'time_intervals.json'
+        if p.exists():
+            data = json.loads(p.read_text(encoding='utf-8'))
+            vocab["time_intervals"] = data.get('time_intervals', data) if isinstance(data, dict) else data
+
+        # 9. Cleanup Factors
+        p = base_post / 'cleanup_factors.json'
+        if p.exists():
+            data = json.loads(p.read_text(encoding='utf-8'))
+            # Assuming simple list or needing string conversion
+            raw = data.get('cleanup_factors', data) if isinstance(data, dict) else data
+            vocab["cleanup_factors"] = [str(x) for x in raw]
+
+        return vocab
+
+    except Exception as e:
+        print(f"⚠️ Warning: Error loading controlled vocabularies: {e}")
+        return vocab
+
 def generate_recipe_from_web_text(text: str, source_url: str = "User Input", slim_context: list[dict] = None) -> RecipeObj:
     """
     Generates a recipe from raw text (e.g. from a website extract or manual paste).
@@ -171,14 +266,25 @@ def generate_recipe_from_web_text(text: str, source_url: str = "User Input", sli
         # Fallback to name-only list from static map
         pantry_str = json.dumps([{"n": k, "i": v} for k, v in pantry_map.items()])
     
+    # Load Controlled Vocabularies
+    vocab = load_controlled_vocabularies()
+    
+    # Initialize basic user constraints - for web/video extraction we assume neutral constraints
+    # unless extracted, but the prompt handles classification.
+    # We pass an empty dict for strict constraints unless valid metadata is passed in.
+    user_constraints = {}
+
     # Use Jinja2 Template
     try:
         template = env.get_template('recipe_text/web_extraction.jinja2')
         prompt = template.render(
             source_url=source_url,
             pantry_context=pantry_str,
-            raw_text=text
+            raw_text=text,
+            vocab=vocab,
+            user_constraints=user_constraints
         )
+
     except Exception as e:
         print(f"ERROR: Failed to render web_extraction template: {e}")
         raise ValueError(f"Template rendering failed: {e}")
@@ -473,7 +579,15 @@ def set_pantry_memory(slim_context):
     print(f"📦 set_pantry_memory: {total} items ({added_orig} original + {added_user} user-created), skipped {skipped} duplicates/imports")
 
 # --- Core Generation Function ---
-def generate_recipe_ai(query: str, slim_context: list[dict] = None, chef_id: str = "gourmet") -> RecipeObj:
+def generate_recipe_ai(
+    query: str, 
+    slim_context: list[dict] = None, 
+    chef_id: str = "gourmet",
+    target_diet: str = None,
+    target_cuisine: str = None,
+    target_method: str = None,
+    target_protein: str = None
+) -> RecipeObj:
     
     if slim_context:
         set_pantry_memory(slim_context)
@@ -484,15 +598,26 @@ def generate_recipe_ai(query: str, slim_context: list[dict] = None, chef_id: str
     # Chef Context
     chef_context = f"You are acting as the Chef ID: {chef_id}."
 
+    # Load Vocabularies
+    vocab = load_controlled_vocabularies()
+
+    # Build User Constraints Dictionary for Template Injection
+    user_constraints = {
+        "diet": target_diet,
+        "cuisine": target_cuisine,
+        "cooking_method": target_method,
+        "protein": target_protein
+    }
     
-    # Load Template
     # Load Template
     try:
         template = env.get_template('recipe_text/recipe_generation.jinja2')
         prompt = template.render(
             chef_context=chef_context,
             query=query,
-            pantry_context=pantry_str
+            pantry_context=pantry_str,
+            vocab=vocab,
+            user_constraints=user_constraints
         )
     except Exception as e:
         print(f"Error loading prompt template: {e}")
@@ -592,12 +717,18 @@ def generate_recipe_from_video(video_path: str, caption: str, slim_context: list
             raise ValueError("Video processing failed")
         time.sleep(2)
 
+    # Load Controlled Vocabularies
+    vocab = load_controlled_vocabularies()
+    user_constraints = {} # Videos are extraction tasks, usually no pre-constraints
+
     try:
         template = env.get_template('recipe_text/video_extraction.jinja2')
         prompt = template.render(
             caption=caption,
             chef_id=chef_id,
-            pantry_context=pantry_str
+            pantry_context=pantry_str,
+            vocab=vocab,
+            user_constraints=user_constraints
         )
     except Exception as e:
         print(f"ERROR: Failed to render video_extraction template: {e}")

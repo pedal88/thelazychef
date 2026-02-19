@@ -7,9 +7,17 @@ EXAMPLE OF DESIRED OUTPUT (COMPLEX MULTI-COMPONENT DISH):
   "protein_type": "Beef",
   "meal_types": ["Dinner"],
   "chef_id": "gourmet",
-  "cleanup_factor": 3,
-  "taste_level": 4,
-  "prep_time_mins": 20,
+  "meta": {
+    "diet": "String (Best fit from Valid Diets)",
+    "cuisine": "String (Best fit from Valid Cuisines)",
+    "meal_type": ["String", "String"],
+    "cooking_method": "String (Best fit from Valid Cooking Methods)",
+    "main_protein_category": "String (Category from Valid Proteins)",
+    "taste": "String (Best fit from Valid Tastes)",
+    "time_estimate": "String (Best fit from Valid Time Intervals)",
+    "difficulty": "String (Best fit from Valid Difficulties)",
+    "cleanup": "String (Best fit from Valid Cleanup Tags)"
+  },
   "ingredient_groups": [
     {
         "component": "Steak", 

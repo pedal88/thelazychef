@@ -57,7 +57,7 @@ Expects a RecipeIngredient object (ri) which has .ingredient relation and .amoun
 </div>
 {% endmacro %}
 
-{% macro recipe_preview_card(recipe, id) %}
+{% macro recipe_preview_card(recipe, id, show_inspector=False) %}
 <a href="/recipe/{{ id }}"
     class="group block h-full bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-orange-200 transition-all duration-300 overflow-hidden flex flex-col">
     <!-- Image / Gradient Placeholder -->
@@ -69,6 +69,20 @@ Expects a RecipeIngredient object (ri) which has .ingredient relation and .amoun
         <!-- Contextual Placeholder -->
         <div class="absolute inset-0 bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center">
             <span class="text-4xl">🍳</span>
+        </div>
+        {% endif %}
+
+        {% if show_inspector %}
+        <div class="absolute top-2 right-2 z-20">
+            <button onclick="event.preventDefault(); event.stopPropagation(); openInspector({{ recipe.id }});"
+                type="button"
+                class="bg-black/40 hover:bg-black/70 text-white p-1.5 rounded-full backdrop-blur-sm transition-colors opacity-0 group-hover:opacity-100"
+                title="Inspect Data">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                </svg>
+            </button>
         </div>
         {% endif %}
     </div>
