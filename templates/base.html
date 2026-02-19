@@ -95,6 +95,11 @@
                 <a href="/become-a-chef" class="hover:text-orange-600 transition-colors">Become a Chef</a>
 
                 {% if current_user.is_authenticated %}
+                <a href="{{ url_for('my_favorites_view') }}"
+                    class="hover:text-orange-600 transition-colors font-medium text-orange-700">My Cookbook</a>
+                {% endif %}
+
+                {% if current_user.is_authenticated %}
                 {% if current_user.is_admin %}
                 <!-- Admin Dropdown -->
                 <div class="relative group">
@@ -157,9 +162,10 @@
                     <a href="{{ url_for('logout') }}" class="hover:text-orange-600 transition-colors">Logout</a>
                 </div>
                 {% else %}
-                <a href="{{ url_for('register') }}" class="hover:text-orange-600 transition-colors ml-4">Register</a>
-                <a href="{{ url_for('login') }}"
-                    class="hover:text-orange-600 transition-colors ml-4 font-semibold text-orange-600">Admin Login</a>
+                <a href="{{ url_for('login') }}" class="hover:text-orange-600 transition-colors ml-4">Login</a>
+                <a href="{{ url_for('register') }}"
+                    class="ml-4 px-4 py-2 rounded-full bg-orange-600 text-white text-sm font-semibold hover:bg-orange-700 transition-colors shadow-sm">Get
+                    Started</a>
                 {% endif %}
             </div>
         </nav>
@@ -193,6 +199,66 @@
     </footer>
 
     <!-- Scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const isLoggedIn = {{ current_user.is_authenticated | tojson
+        }};
+
+        if (isLoggedIn) {
+            // Initial Load: Fetch Favorites
+            fetch('/api/me/favorites')
+                .then(r => r.json())
+                .then(data => {
+                    data.favorite_ids.forEach(id => {
+                        const btn = document.querySelector(`.favorite-btn[data-recipe-id="${id}"]`);
+                        if (btn) updateHeartIcon(btn, true);
+                    });
+                })
+                .catch(err => console.error("Failed to load favorites", err));
+
+            // Event Delegation for Favorites
+            document.body.addEventListener('click', (e) => {
+                const btn = e.target.closest('.favorite-btn');
+                if (!btn) return;
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                const recipeId = btn.dataset.recipeId;
+                // Optimistic UI Update
+                const iconPath = btn.querySelector('path');
+                const isCurrentlyFav = iconPath.getAttribute('fill') === 'currentColor';
+                updateHeartIcon(btn, !isCurrentlyFav);
+
+                fetch(`/api/recipes/${recipeId}/favorite`, { method: 'POST' })
+                    .then(r => r.json())
+                    .then(data => {
+                        // Sync state if needed
+                        if (data.status === 'added') updateHeartIcon(btn, true);
+                        else updateHeartIcon(btn, false);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        // Revert on error
+                        updateHeartIcon(btn, isCurrentlyFav);
+                    });
+            });
+        }
+
+        function updateHeartIcon(btn, isFavorite) {
+            const iconPath = btn.querySelector('path');
+            if (isFavorite) {
+                iconPath.setAttribute('fill', 'currentColor');
+                btn.classList.add('text-red-500');
+                btn.classList.remove('text-slate-400');
+            } else {
+                iconPath.setAttribute('fill', 'none');
+                btn.classList.add('text-slate-400');
+                btn.classList.remove('text-red-500');
+            }
+        }
+        });
+    </script>
     {% block scripts %}{% endblock %}
 </body>
 

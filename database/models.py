@@ -1,8 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy import String, Integer, Boolean, Text, Float, ForeignKey
+from sqlalchemy import String, Integer, Boolean, Text, Float, ForeignKey, DateTime
 from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 
@@ -15,6 +14,13 @@ db = SQLAlchemy(model_class=Base)
 resource_relations = db.Table('resource_relations',
     db.Column('source_id', db.Integer, db.ForeignKey('resource.id'), primary_key=True),
     db.Column('related_id', db.Integer, db.ForeignKey('resource.id'), primary_key=True)
+)
+
+# Association table for User Favorites
+user_favorite_recipes = db.Table('user_favorite_recipes',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('recipe_id', db.Integer, db.ForeignKey('recipe.id'), primary_key=True),
+    db.Column('saved_at', db.DateTime, default=datetime.datetime.utcnow)
 )
 
 class Resource(db.Model):
@@ -185,9 +191,16 @@ class User(UserMixin, db.Model):
     password_hash: Mapped[str] = mapped_column(String(256), nullable=False)
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
 
+    # Use 'select' loading for favorites as it's a specific, user-driven action
+    favorite_recipes: Mapped[list["Recipe"]] = relationship(
+        "Recipe",
+        secondary=user_favorite_recipes,
+        backref=db.backref('favorited_by', lazy='select'),
+        lazy='select'
+    )
+
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
-

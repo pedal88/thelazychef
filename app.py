@@ -14,7 +14,7 @@ from flask_migrate import Migrate
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 import markdown
 from database.db_connector import configure_database
-from database.models import db, Ingredient, Recipe, Instruction, RecipeIngredient, RecipeMealType, User, Resource, resource_relations, Chef
+from database.models import db, Ingredient, Recipe, Instruction, RecipeIngredient, RecipeMealType, User, Resource, resource_relations, Chef, user_favorite_recipes
 from utils.decorators import admin_required
 from sqlalchemy import or_
 from services.pantry_service import get_slim_pantry_context
@@ -160,7 +160,7 @@ def load_user(user_id):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-         return redirect(url_for('studio_view'))
+         return redirect(url_for('studio_view') if current_user.is_admin else url_for('recipes_list'))
     
     if request.method == 'POST':
         email = request.form.get('email')
@@ -170,11 +170,42 @@ def login():
         if user and user.check_password(password):
             login_user(user)
             next_page = request.args.get('next')
-            return redirect(next_page or url_for('studio_view'))
+            # Intelligent Redirect based on Role
+            if not next_page:
+                next_page = url_for('studio_view') if user.is_admin else url_for('recipes_list')
+            return redirect(next_page)
         
         flash('Invalid email or password', 'error')
     
     return render_template('login.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+         return redirect(url_for('recipes_list'))
+    
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
+        # Validation
+        existing_user = db.session.execute(db.select(User).where(User.email == email)).scalar()
+        if existing_user:
+            flash('Email already registered', 'error')
+            return redirect(url_for('register'))
+            
+        # Create User
+        new_user = User(email=email, is_admin=False)
+        new_user.set_password(password)
+        db.session.add(new_user)
+        db.session.commit()
+        
+        # Auto Login
+        login_user(new_user)
+        flash('Account created successfully!', 'success')
+        return redirect(url_for('recipes_list'))
+        
+    return render_template('register.html')
 
 @app.route('/logout')
 def logout():
@@ -182,40 +213,89 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
 
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if current_user.is_authenticated:
-        return redirect(url_for('studio_view'))
-    
-    if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
-        
-        if not email or not password or not confirm_password:
-             flash('Please fill in all fields', 'error')
-             return render_template('register.html')
+@app.route('/api/me/favorites', methods=['GET'])
+@login_required
+def get_user_favorites():
+    """Returns a list of recipe IDs favorited by the current user."""
+    # Efficiently fetch only the IDs
+    # Using the relationship:
+    fav_ids = [r.id for r in current_user.favorite_recipes]
+    return jsonify({'favorite_ids': fav_ids})
 
-        if password != confirm_password:
-            flash('Passwords do not match', 'error')
-            return render_template('register.html')
-            
-        # Check if user exists
-        user_exists = db.session.execute(db.select(User).where(User.email == email)).scalar()
-        if user_exists:
-            flash('Email already registered', 'error')
-            return render_template('register.html')
-            
-        # Create user
-        new_user = User(email=email)
-        new_user.set_password(password)
-        db.session.add(new_user)
-        db.session.commit()
+@app.route('/api/recipes/<int:recipe_id>/favorite', methods=['POST'])
+@login_required
+def toggle_favorite_recipe(recipe_id):
+    """Toggles the favorite status of a recipe for the current user."""
+    recipe = db.session.get(Recipe, recipe_id)
+    if not recipe:
+        return jsonify({'error': 'Recipe not found'}), 404
+    
+    # Check if exists
+    if recipe in current_user.favorite_recipes:
+        current_user.favorite_recipes.remove(recipe)
+        status = 'removed'
+    else:
+        current_user.favorite_recipes.append(recipe)
+        status = 'added'
         
-        flash('Registration successful! Please login.', 'success')
-        return redirect(url_for('login'))
-        
-    return render_template('register.html')
+    db.session.commit()
+    return jsonify({'status': status, 'recipe_id': recipe_id})
+
+@app.route('/my-favorites')
+@login_required
+def my_favorites_view():
+    """Renders the user's favorite recipes."""
+    # Re-use the recipes_list template but with a constrained query
+    # Get favorites ordered by saved_at (descending)
+    
+    stmt = (
+        db.select(Recipe)
+        .join(user_favorite_recipes)
+        .where(user_favorite_recipes.c.user_id == current_user.id)
+        .order_by(user_favorite_recipes.c.saved_at.desc())
+    )
+    
+    recipes = db.session.execute(stmt).scalars().all()
+    
+    # Reuse filter options logic
+    cuisine_options = load_json_option('post_processing/cuisines.json', 'cuisines')
+    diet_options = load_json_option('constraints/diets.json', 'diets')
+    difficulty_options = load_json_option('constraints/difficulty.json', 'difficulty')
+    
+    pt_data = load_json_option('constraints/main_protein.json', 'protein_types')
+    protein_options = []
+    for p in pt_data:
+        if 'examples' in p:
+            protein_options.extend(p['examples'])
+    protein_options = sorted(list(set(protein_options)))
+    
+    mt_data = load_json_option('constraints/meal_types.json', 'meal_classification')
+    meal_type_options = []
+    if isinstance(mt_data, dict):
+        for category_list in mt_data.values():
+            if isinstance(category_list, list):
+                meal_type_options.extend(category_list)
+    meal_type_options = sorted(list(set(meal_type_options)))
+
+    return render_template(
+        'recipes_list.html', 
+        recipes=recipes,
+        page_title="My Cookbook",
+        page_subtitle="Your personal collection of favorite recipes.",
+        # Options
+        cuisine_options=sorted(cuisine_options),
+        diet_options=sorted(diet_options),
+        difficulty_options=difficulty_options,
+        protein_options=sorted(protein_options),
+        meal_type_options=meal_type_options,
+        # Default Empty Selections
+        selected_cuisines=[],
+        selected_diets=[],
+        selected_meal_types=[],
+        selected_difficulties=[],
+        selected_proteins=[]
+    )
+
 
 # PHOTOGRAPHER ROUTES
 
