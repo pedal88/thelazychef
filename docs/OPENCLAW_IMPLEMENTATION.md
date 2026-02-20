@@ -75,10 +75,10 @@ The agent utilizes a structured markdown file system to maintain persona, contex
 
 | Filename | Purpose |
 | :--- | :--- |
-| **`AGENTS.md`** | **Master Instructions.** The primary directive file. Defines high-level goals, behavioral constraints, and workflow priorities. |
-| **`SOUL.md`** | **Persona Definition.** Defines the agent's personality, tone (e.g., "Professional & Witty"), and ethical boundaries. |
-| **`MEMORY.md`** | **Long-Term Memory.** A curated log of major architectural decisions, user preferences, and project milestones. Unlike chat logs, this is permanent context. |
-| **`HEARTBEAT.md`** | **Background Tasks.** Defines autonomous health checks (e.g., "Check for uncommitted git changes every hour") executed without user prompt. |
+| **`agent/AGENTS.md`** | **Master Instructions.** The primary directive file. Defines high-level goals, behavioral constraints, and workflow priorities. |
+| **`agent/SOUL.md`** | **Persona Definition.** Defines the agent's personality, tone (e.g., "Professional & Witty"), and ethical boundaries. |
+| **`agent/MEMORY.md`** | **Long-Term Memory.** A curated log of major architectural decisions, user preferences, and project milestones. Unlike chat logs, this is permanent context. |
+| **`agent/HEARTBEAT.md`** | **Background Tasks.** Defines autonomous health checks (e.g., "Check for uncommitted git changes every hour") executed without user prompt. |
 
 ---
 
