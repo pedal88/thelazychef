@@ -200,4 +200,74 @@
 
 <!-- Render Modal Structure Once -->
 {{ inspector.recipe_inspector_modal() }}
+
+<!-- Bulk Actions Toolbar (Admin Only) -->
+{% if current_user.is_authenticated and current_user.is_admin %}
+<div id="bulk-action-bar"
+    class="fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] py-4 transform translate-y-full transition-transform duration-300 z-50 flex items-center justify-between pointer-events-none data-[visible=true]:translate-y-0 data-[visible=true]:pointer-events-auto">
+    <div class="max-w-7xl mx-auto w-full flex items-center justify-between px-6 lg:px-8">
+        <div class="flex items-center gap-4">
+            <span class="text-sm font-semibold text-gray-700" id="selection-count">0 Selected</span>
+            <button onclick="clearSelection()"
+                class="text-sm text-gray-500 hover:text-gray-900 underline">Cancel</button>
+        </div>
+        <button type="button" onclick="bulkDeleteRecipes()"
+            class="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 transition-colors">
+            Delete Selected
+        </button>
+    </div>
+</div>
+
+<script>
+    const selectedRecipeIds = new Set();
+    const bulkActionBar = document.getElementById('bulk-action-bar');
+    const selectionCount = document.getElementById('selection-count');
+
+    // Called by checkbox in cards.html
+    function toggleRecipeSelection(checkbox, id) {
+        if (checkbox.checked) {
+            selectedRecipeIds.add(id);
+        } else {
+            selectedRecipeIds.delete(id);
+        }
+        updateBulkUI();
+    }
+
+    function updateBulkUI() {
+        if (selectedRecipeIds.size > 0) {
+            bulkActionBar.setAttribute('data-visible', 'true');
+            selectionCount.textContent = `${selectedRecipeIds.size} Selected`;
+        } else {
+            bulkActionBar.setAttribute('data-visible', 'false');
+        }
+    }
+
+    function clearSelection() {
+        selectedRecipeIds.clear();
+        document.querySelectorAll('.recipe-select-cb').forEach(cb => cb.checked = false);
+        updateBulkUI();
+    }
+
+    async function bulkDeleteRecipes() {
+        if (!confirm(`Are you sure you want to delete ${selectedRecipeIds.size} recipes? This action cannot be undone.`)) return;
+
+        try {
+            const response = await fetch('/api/delete-recipes/bulk', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ recipe_ids: Array.from(selectedRecipeIds).map(Number) })
+            });
+            const data = await response.json();
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        } catch (e) {
+            alert('Request failed');
+            console.error(e);
+        }
+    }
+</script>
+{% endif %}
 {% endblock %}

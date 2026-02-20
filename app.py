@@ -2349,6 +2349,34 @@ def delete_recipe_api(recipe_id):
         print(f"Delete Recipe Error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/api/delete-recipes/bulk', methods=['POST'])
+@login_required
+@admin_required
+def delete_bulk_recipes():
+    data = request.get_json()
+    recipe_ids = data.get('recipe_ids', [])
+    
+    if not recipe_ids or not isinstance(recipe_ids, list):
+        return jsonify({'success': False, 'error': 'No valid recipe IDs provided'}), 400
+        
+    try:
+        deleted_count = 0
+        statement = db.select(Recipe).where(Recipe.id.in_(recipe_ids))
+        recipes_to_delete = db.session.execute(statement).scalars().all()
+        
+        for recipe in recipes_to_delete:
+            db.session.delete(recipe)
+            deleted_count += 1
+                
+        db.session.commit()
+        # Flash message for redirected page load, but we usually handle via JS
+        return jsonify({'success': True, 'count': deleted_count, 'message': f"Deleted {deleted_count} recipes."})
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Bulk Delete Error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @app.route('/api/cms/upload-image', methods=['POST'])
 @login_required
 @admin_required

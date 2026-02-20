@@ -111,6 +111,15 @@ Expects a RecipeIngredient object (ri) which has .ingredient relation and .amoun
             </button>
             {% endif %}
         </div>
+
+        <!-- Bulk Select Checkbox (Admin Only) -->
+        {% if current_user.is_authenticated and current_user.is_admin %}
+        <div class="absolute bottom-2 left-2 z-20" onclick="event.stopPropagation();">
+            <input type="checkbox" value="{{ recipe.id }}"
+                class="recipe-select-cb h-5 w-5 rounded border-gray-300 text-orange-600 focus:ring-orange-600 shadow-sm cursor-pointer"
+                onchange="toggleRecipeSelection(this, {{ recipe.id }})">
+        </div>
+        {% endif %}
     </div>
 
     <div class="p-5 flex flex-col flex-grow">

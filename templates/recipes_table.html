@@ -85,7 +85,7 @@
                                                         <div class="flex items-center px-4 py-2 hover:bg-gray-50">
                                                             <input type="checkbox" data-col="{{ id }}" value="{{ opt }}"
                                                                 {% if selected and opt in selected %}checked{% endif %}
-                                                                class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600">
+                                                                class="filter-cb h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600">
                                                             <label
                                                                 class="ml-3 block text-sm text-gray-700 whitespace-normal">{{
                                                                 opt }}</label>
@@ -98,6 +98,15 @@
                                         </div>
                                     </th>
                                     {% endmacro %}
+
+                                    <!-- Select Checkbox Header (Admin Only) -->
+                                    {% if current_user.is_authenticated and current_user.is_admin %}
+                                    <th scope="col" class="relative px-3 sm:w-12 sm:px-6">
+                                        <input type="checkbox"
+                                            class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600 sm:left-6"
+                                            onclick="toggleAllRecipes(this)">
+                                    </th>
+                                    {% endif %}
 
                                     <th scope="col"
                                         class="py-3.5 pl-4 pr-3 text-left text-xs font-semibold text-gray-900 sm:pl-6">
@@ -128,6 +137,18 @@
                             <tbody class="divide-y divide-gray-200 bg-white">
                                 {% for recipe in recipes %}
                                 <tr>
+                                    <!-- Select Checkbox Cell (Admin Only) -->
+                                    {% if current_user.is_authenticated and current_user.is_admin %}
+                                    <td class="relative px-3 sm:w-12 sm:px-6">
+                                        <div
+                                            class="absolute inset-y-0 left-0 w-0.5 bg-indigo-600 opacity-0 transition-opacity row-indicator">
+                                        </div>
+                                        <input type="checkbox"
+                                            class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600 sm:left-6 recipe-row-cb"
+                                            value="{{ recipe.id }}" onchange="toggleRowSelection(this)">
+                                    </td>
+                                    {% endif %}
+
                                     <!-- Image -->
                                     <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
                                         <div class="h-10 w-10 shrink-0">
@@ -251,8 +272,8 @@
         document.getElementById(menuId).classList.toggle('hidden');
     }
 
-    // Capture Checkbox Changes
-    document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    // Capture Checkbox Changes (Filters Only)
+    document.querySelectorAll('.filter-cb').forEach(cb => {
         cb.addEventListener('change', function () {
             document.getElementById('filter-actions').classList.remove('hidden');
         });
@@ -327,6 +348,91 @@
         }
     }
 </script>
+
+<!-- Bulk Actions Toolbar (Admin Only) -->
+{% if current_user.is_authenticated and current_user.is_admin %}
+<div id="bulk-action-bar"
+    class="fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] py-4 transform translate-y-full transition-transform duration-300 z-50 flex items-center justify-between pointer-events-none data-[visible=true]:translate-y-0 data-[visible=true]:pointer-events-auto">
+    <div class="max-w-7xl mx-auto w-full flex items-center justify-between px-6 lg:px-8">
+        <div class="flex items-center gap-4">
+            <span class="text-sm font-semibold text-gray-700" id="selection-count">0 Selected</span>
+            <button onclick="clearRowSelection()"
+                class="text-sm text-gray-500 hover:text-gray-900 underline">Cancel</button>
+        </div>
+        <button type="button" onclick="bulkDeleteAdmin()"
+            class="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 transition-colors">
+            Delete Selected
+        </button>
+    </div>
+</div>
+
+<script>
+    const selectedAdminRecipeIds = new Set();
+    const bulkActionBar = document.getElementById('bulk-action-bar');
+    const selectionCount = document.getElementById('selection-count');
+
+    function toggleRowSelection(checkbox) {
+        const id = checkbox.value;
+        const row = checkbox.closest('tr');
+
+        if (checkbox.checked) {
+            selectedAdminRecipeIds.add(id);
+            row.classList.add('bg-gray-50');
+        } else {
+            selectedAdminRecipeIds.delete(id);
+            row.classList.remove('bg-gray-50');
+        }
+        updateAdminBulkUI();
+    }
+
+    function toggleAllRecipes(masterCheckbox) {
+        const checkboxes = document.querySelectorAll('.recipe-row-cb');
+        checkboxes.forEach(cb => {
+            cb.checked = masterCheckbox.checked;
+            toggleRowSelection(cb);
+        });
+    }
+
+    function updateAdminBulkUI() {
+        if (selectedAdminRecipeIds.size > 0) {
+            bulkActionBar.setAttribute('data-visible', 'true');
+            selectionCount.textContent = `${selectedAdminRecipeIds.size} Selected`;
+        } else {
+            bulkActionBar.setAttribute('data-visible', 'false');
+        }
+    }
+
+    function clearRowSelection() {
+        selectedAdminRecipeIds.clear();
+        document.querySelectorAll('.recipe-row-cb').forEach(cb => {
+            cb.checked = false;
+            cb.closest('tr').classList.remove('bg-gray-50');
+        });
+        updateAdminBulkUI();
+    }
+
+    async function bulkDeleteAdmin() {
+        if (!confirm(`Are you sure you want to delete ${selectedAdminRecipeIds.size} recipes? This action cannot be undone.`)) return;
+
+        try {
+            const response = await fetch('/api/delete-recipes/bulk', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ recipe_ids: Array.from(selectedAdminRecipeIds).map(Number) })
+            });
+            const data = await response.json();
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        } catch (e) {
+            alert('Request failed');
+            console.error(e);
+        }
+    }
+</script>
+{% endif %}
 
 <!-- Render Inspector Modal -->
 {{ inspector.recipe_inspector_modal() }}
