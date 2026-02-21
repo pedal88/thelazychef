@@ -1,0 +1,790 @@
+{% extends "base.html" %}
+{% import "components/modals/recipe_inspector.html" as inspector %}
+
+{% block title %}Recipe QA Scoring - The Lazy Chef{% endblock %}
+
+{% block content %}
+<div class="bg-white py-8 max-w-[95%] mx-auto">
+    <div class="px-4 sm:px-6 lg:px-8">
+        <div class="sm:flex sm:items-center">
+            <div class="sm:flex-auto">
+                <h1 class="text-base font-semibold leading-6 text-gray-900">Recipe QA Scoring</h1>
+                <p class="mt-2 text-sm text-gray-700">A detailed view of recipe quality metrics from the LLM-as-a-Judge
+                    pipeline.</p>
+            </div>
+            <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+                <a href="{{ url_for('recipes_list') }}"
+                    class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Back
+                    to Grid</a>
+            </div>
+        </div>
+
+        <!-- Bulk scoring action buttons -->
+        <div class="mt-4 flex items-center gap-3">
+            <button id="score-all-btn" onclick="bulkScoreAll()"
+                class="inline-flex items-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+                </svg>
+                Score All Unscored
+            </button>
+            <button id="score-selected-btn" onclick="bulkScoreSelected()"
+                class="inline-flex items-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <polyline points="9 11 12 14 22 4" />
+                </svg>
+                Score Selected
+            </button>
+        </div>
+
+        <div class="mt-8 flow-root">
+            <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                    <!-- MAIN TABLE -->
+                    <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                        <table class="min-w-full divide-y divide-gray-300">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <!-- Define Columns Helper Macro -->
+                                    {% macro header_cell(id, label, options=None, selected=None) %}
+                                    <th scope="col"
+                                        class="py-3.5 pl-4 pr-3 text-left text-xs font-semibold text-gray-900 sm:pl-6 group relative whitespace-nowrap">
+                                        <div class="flex items-center gap-2">
+                                            <!-- Sort Link -->
+                                            <a href="{{ update_query_params(sort=id, dir='asc' if current_sort != id or current_dir == 'desc' else 'desc') }}"
+                                                class="flex items-center cursor-pointer hover:text-indigo-600">
+                                                {{ label }}
+                                                {% if current_sort == id %}
+                                                {% if current_dir == 'asc' %}
+                                                <span class="ml-1">▲</span>
+                                                {% else %}
+                                                <span class="ml-1">▼</span>
+                                                {% endif %}
+                                                {% else %}
+                                                <span
+                                                    class="ml-1 text-gray-400 opacity-0 group-hover:opacity-100">↕</span>
+                                                {% endif %}
+                                            </a>
+
+                                            <!-- Filter Menu Trigger (Only if options provided) -->
+                                            {% if options %}
+                                            <div class="relative inline-block text-left filter-dropdown-container">
+                                                <button type="button" onclick="toggleFilterMenu('menu-{{ id }}')"
+                                                    class="text-gray-400 hover:text-indigo-600 focus:outline-none">
+                                                    <svg class="h-4 w-4 {% if selected and selected|length > 0 %}text-indigo-600{% endif %}"
+                                                        fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                                        stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
+                                                    </svg>
+                                                </button>
+
+                                                <!-- Dropdown Menu -->
+                                                <div id="menu-{{ id }}"
+                                                    class="hidden absolute left-0 z-20 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                                    <div
+                                                        class="p-2 border-b border-gray-100 flex justify-between text-xs font-semibold text-indigo-600 bg-gray-50">
+                                                        <span class="cursor-pointer hover:underline"
+                                                            onclick="selectAllFilters('{{ id }}')">All</span>
+                                                        <span class="cursor-pointer hover:underline"
+                                                            onclick="clearFilters('{{ id }}')">None</span>
+                                                    </div>
+                                                    <form method="GET" action="{{ url_for('recipe_scoring_view') }}"
+                                                        class="max-h-60 overflow-y-auto p-1">
+                                                        <!-- Preserve other params -->
+                                                        <!-- We use JS to submit the main form usually, but here we can just do simple checkbox form for THIS column, but we lose others. 
+                                                             Better approach: Allow checking boxes then a generic 'Apply' button in the macro? 
+                                                             To keep it simple per requirements: "Filtering selected values".
+                                                             I will make these checkboxes submit on change or have an apply button. 
+                                                             Problem: multiple forms. 
+                                                             Solution: One Global Form for the table? No, Sort links are links.
+                                                             Let's make a JS helper that collects ALL filter states from page and reloads.
+                                                        -->
+                                                        {% for opt in options %}
+                                                        <div class="flex items-center px-4 py-2 hover:bg-gray-50">
+                                                            <input type="checkbox" data-col="{{ id }}" value="{{ opt }}"
+                                                                {% if selected and opt in selected %}checked{% endif %}
+                                                                class="filter-cb h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600">
+                                                            <label
+                                                                class="ml-3 block text-sm text-gray-700 whitespace-normal">{{
+                                                                opt }}</label>
+                                                        </div>
+                                                        {% endfor %}
+                                                    </form>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </th>
+                                    {% endmacro %}
+
+                                    {% macro score_color(score) %}
+                                    {%- if score is not none -%}
+                                    {%- if score < 80 -%} text-red-600 {%- elif score <=90 -%} text-orange-500 {%- else
+                                        -%} text-green-600 {%- endif -%} {%- else -%} text-gray-500 {%- endif -%} {%
+                                        endmacro %} <!-- Select Checkbox Header (Admin Only) -->
+                                        {% if current_user.is_authenticated and current_user.is_admin %}
+                                        <th scope="col" class="relative px-3 sm:w-12 sm:px-6">
+                                            <input type="checkbox"
+                                                class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600 sm:left-6"
+                                                onclick="toggleAllRecipes(this)">
+                                        </th>
+                                        {% endif %}
+
+                                        <th scope="col"
+                                            class="py-3.5 pl-4 pr-3 text-left text-xs font-semibold text-gray-900 sm:pl-6">
+                                            Image</th>
+                                        {{ header_cell('title', 'Name') }}
+                                        <th scope="col"
+                                            class="py-3.5 pl-3 pr-4 text-left text-xs font-semibold text-gray-900 whitespace-nowrap">
+                                            Publish Status</th>
+                                        <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                                            <span class="sr-only">Data</span>
+                                        </th>
+                                        <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                                            <span class="sr-only">Actions</span>
+                                        </th>
+                                        {{ header_cell('total_score', 'Total Score') }}
+                                        {{ header_cell('score_name', 'Name Fit') }}
+                                        {{ header_cell('score_ingredients', 'Ingredient Match') }}
+                                        {{ header_cell('score_components', 'Components') }}
+                                        {{ header_cell('score_amounts', 'Amounts') }}
+                                        {{ header_cell('score_steps', 'Steps Clarity') }}
+                                        {{ header_cell('score_image', 'Image Score') }}
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 bg-white">
+                                {% for recipe in recipes %}
+                                <tr data-recipe-id="{{ recipe.id }}"
+                                    data-has-score="{{ 'true' if recipe.evaluation else 'false' }}">
+                                    <!-- Select Checkbox Cell (Admin Only) -->
+                                    {% if current_user.is_authenticated and current_user.is_admin %}
+                                    <td class="relative px-3 sm:w-12 sm:px-6">
+                                        <div
+                                            class="absolute inset-y-0 left-0 w-0.5 bg-indigo-600 opacity-0 transition-opacity row-indicator">
+                                        </div>
+                                        <input type="checkbox"
+                                            class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600 sm:left-6 recipe-row-cb"
+                                            value="{{ recipe.id }}" onchange="toggleRowSelection(this)">
+                                    </td>
+                                    {% endif %}
+
+                                    <!-- Image -->
+                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
+                                        <div class="h-10 w-10 shrink-0">
+                                            {% if recipe.image_filename %}
+                                            <img class="h-10 w-10 rounded-full object-cover"
+                                                src="{{ get_recipe_image_url(recipe) }}" alt="">
+                                            {% else %}
+                                            <div
+                                                class="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center text-xs">
+                                                ?</div>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <!-- Title -->
+                                    <td
+                                        class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 max-w-xs truncate">
+                                        <a href="{{ url_for('recipe_detail', recipe_id=recipe.id) }}"
+                                            class="hover:text-indigo-600">
+                                            {{ recipe.title }}
+                                            {% if recipe.is_flagged_for_review %}
+                                            <span
+                                                class="ml-2 inline-flex items-center rounded-md bg-red-50 text-red-700 px-2 py-1 text-xs font-medium ring-1 ring-inset ring-red-600/10">QA
+                                                Flag</span>
+                                            {% endif %}
+                                        </a>
+                                    </td>
+                                    <!-- Publish Status Dropdown (right after Name) -->
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm">
+                                        <select
+                                            class="recipe-status-dropdown block w-full rounded-md border-0 py-1 pl-2 pr-7 text-xs font-semibold ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 transition-all"
+                                            data-recipe-id="{{ recipe.id }}" style="min-width:130px">
+                                            <option value="draft" {% if recipe.status=='draft' %}selected{% endif %}
+                                                class="text-gray-500">⏳ Draft</option>
+                                            <option value="approved" {% if recipe.status=='approved' %}selected{% endif
+                                                %} class="text-green-700">✅ Approved</option>
+                                            <option value="rejected" {% if recipe.status=='rejected' %}selected{% endif
+                                                %} class="text-red-700">❌ Rejected</option>
+                                        </select>
+                                    </td>
+                                    <td
+                                        class="relative whitespace-nowrap py-4 pl-3 pr-4 text-center text-sm font-medium sm:pr-6">
+                                        <button onclick="openInspector({{ recipe.id }})"
+                                            class="text-gray-400 hover:text-indigo-600 transition-colors"
+                                            title="Inspect Data">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                                stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                                            </svg>
+                                        </button>
+                                        <button onclick="evaluateQA({{ recipe.id }})"
+                                            class="ml-3 text-gray-400 hover:text-indigo-600 transition-colors"
+                                            title="Run LLM QA">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                                stroke-linecap="round" stroke-linejoin="round">
+                                                <path
+                                                    d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+                                            </svg>
+                                        </button>
+                                        {% if recipe.evaluation %}
+                                        <button
+                                            data-qa-details="{{ recipe.evaluation.evaluation_details | tojson | forceescape }}"
+                                            data-qa-title="{{ recipe.title }}"
+                                            data-qa-score="{{ recipe.evaluation.total_score|round(1) }}"
+                                            onclick="openQaReport(this)"
+                                            class="ml-3 text-blue-500 hover:text-blue-700 transition-colors"
+                                            title="View QA Report Reasoning">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                fill="currentColor" viewBox="0 0 16 16">
+                                                <path
+                                                    d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                                                <path
+                                                    d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
+                                            </svg>
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                    <td
+                                        class="relative whitespace-nowrap py-4 pl-3 pr-4 text-center text-sm font-medium sm:pr-6">
+                                        <button
+                                            onclick="deleteRecipe({{ recipe.id }}, '{{ recipe.title|replace("'", "\\'") }}')"
+                                            class="text-red-600 hover:text-red-900 transition-colors"
+                                            title="Delete Recipe">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                            </svg>
+                                        </button>
+                                    </td>
+                                    <!-- QA Score Data -->
+                                    <td
+                                        class="whitespace-nowrap px-3 py-4 text-sm font-bold {{ score_color(recipe.evaluation.total_score if recipe.evaluation else none) }}">
+                                        {{ recipe.evaluation.total_score|round(1) if recipe.evaluation and
+                                        recipe.evaluation.total_score is not none else '-' }}
+                                    </td>
+                                    <td
+                                        class="whitespace-nowrap px-3 py-4 text-sm font-bold {{ score_color(recipe.evaluation.score_name if recipe.evaluation else none) }}">
+                                        {{ recipe.evaluation.score_name if recipe.evaluation and
+                                        recipe.evaluation.score_name is not none else '-' }}
+                                    </td>
+                                    <td
+                                        class="whitespace-nowrap px-3 py-4 text-sm font-bold {{ score_color(recipe.evaluation.score_ingredients if recipe.evaluation else none) }}">
+                                        {{ recipe.evaluation.score_ingredients if recipe.evaluation and
+                                        recipe.evaluation.score_ingredients is not none else '-' }}
+                                    </td>
+                                    <td
+                                        class="whitespace-nowrap px-3 py-4 text-sm font-bold {{ score_color(recipe.evaluation.score_components if recipe.evaluation else none) }}">
+                                        {{ recipe.evaluation.score_components if recipe.evaluation and
+                                        recipe.evaluation.score_components is not none else '-' }}
+                                    </td>
+                                    <td
+                                        class="whitespace-nowrap px-3 py-4 text-sm font-bold {{ score_color(recipe.evaluation.score_amounts if recipe.evaluation else none) }}">
+                                        {{ recipe.evaluation.score_amounts if recipe.evaluation and
+                                        recipe.evaluation.score_amounts is not none else '-' }}
+                                    </td>
+                                    <td
+                                        class="whitespace-nowrap px-3 py-4 text-sm font-bold {{ score_color(recipe.evaluation.score_steps if recipe.evaluation else none) }}">
+                                        {{ recipe.evaluation.score_steps if recipe.evaluation and
+                                        recipe.evaluation.score_steps is not none else '-' }}
+                                    </td>
+                                    <td
+                                        class="whitespace-nowrap px-3 py-4 text-sm font-bold {{ score_color(recipe.evaluation.score_image if recipe.evaluation else none) }}">
+                                        {{ recipe.evaluation.score_image if recipe.evaluation and
+                                        recipe.evaluation.score_image is not none else 'N/A' }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pagination Controls -->
+{% if pagination.pages > 1 %}
+<div class="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8 mt-4 mb-10 flex items-center justify-between">
+    <p class="text-sm text-gray-600">
+        Showing <strong>{{ (pagination.page - 1) * pagination.per_page + 1 }}</strong>
+        &ndash;
+        <strong>{{ [(pagination.page * pagination.per_page), pagination.total] | min }}</strong>
+        of <strong>{{ pagination.total }}</strong> recipes
+    </p>
+    <div class="flex items-center gap-1">
+        {% if pagination.has_prev %}
+        <a href="{{ update_query_params(page=pagination.prev_num) }}"
+            class="px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition-colors">
+            &larr; Prev
+        </a>
+        {% endif %}
+        {% for p in pagination.iter_pages(left_edge=1, left_current=2, right_current=2, right_edge=1) %}
+        {% if p %}
+        <a href="{{ update_query_params(page=p) }}" class="px-3 py-1.5 text-sm font-medium rounded-md border transition-colors
+                          {% if p == pagination.page %}
+                              bg-indigo-600 text-white border-indigo-600
+                          {% else %}
+                              border-gray-300 bg-white text-gray-700 hover:bg-gray-50
+                          {% endif %}">
+            {{ p }}
+        </a>
+        {% else %}
+        <span class="px-2 text-gray-400">&hellip;</span>
+        {% endif %}
+        {% endfor %}
+        {% if pagination.has_next %}
+        <a href="{{ update_query_params(page=pagination.next_num) }}"
+            class="px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition-colors">
+            Next &rarr;
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Floating Apply Filters Button (Only visible if changes made? Or always visible?) -->
+<div id="filter-actions" class="fixed bottom-8 right-8 hidden z-50">
+    <button onclick="applyFilters()"
+        class="rounded-full bg-indigo-600 px-6 py-3 text-base font-semibold text-white shadow-xl hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-all flex items-center gap-2">
+        <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+                d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
+                clip-rule="evenodd" />
+        </svg>
+        Apply Changes
+    </button>
+</div>
+
+<script>
+    // State of filters
+    let pendingFilters = {};
+
+    function toggleFilterMenu(menuId) {
+        // Hide others
+        document.querySelectorAll('[id^="menu-"]').forEach(el => {
+            if (el.id !== menuId) el.classList.add('hidden');
+        });
+        document.getElementById(menuId).classList.toggle('hidden');
+    }
+
+    // Capture Checkbox Changes (Filters Only)
+    document.querySelectorAll('.filter-cb').forEach(cb => {
+        cb.addEventListener('change', function () {
+            document.getElementById('filter-actions').classList.remove('hidden');
+        });
+    });
+
+    function selectAllFilters(colId) {
+        const inputs = document.querySelectorAll(`input[data-col="${colId}"]`);
+        inputs.forEach(i => i.checked = true);
+        document.getElementById('filter-actions').classList.remove('hidden');
+    }
+
+    function clearFilters(colId) {
+        const inputs = document.querySelectorAll(`input[data-col="${colId}"]`);
+        inputs.forEach(i => i.checked = false);
+        document.getElementById('filter-actions').classList.remove('hidden');
+    }
+
+    function applyFilters() {
+        const urlParams = new URLSearchParams(window.location.search);
+
+        // Clear existing filter arrays from URL to rebuild them
+        ['cuisine', 'diet', 'meal_type', 'protein_type', 'difficulty'].forEach(k => urlParams.delete(k));
+
+        // Collect checked boxes
+        document.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
+            urlParams.append(cb.dataset.col, cb.value);
+        });
+
+        window.location.search = urlParams.toString();
+    }
+
+    // Close menus on outside click
+    document.addEventListener('click', function (event) {
+        if (!event.target.closest('.filter-dropdown-container')) {
+            document.querySelectorAll('[id^="menu-"]').forEach(el => {
+                el.classList.add('hidden');
+            });
+        }
+    });
+
+    async function deleteRecipe(id, title) {
+        if (!confirm(`Are you sure you want to delete "${title}"?\nThis action cannot be undone.`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/delete-recipe/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                // Remove the row from the table smoothly
+                const button = document.querySelector(`button[onclick*="deleteRecipe(${id}"]`);
+                if (button) {
+                    const row = button.closest('tr');
+                    row.style.transition = 'opacity 0.5s';
+                    row.style.opacity = '0';
+                    setTimeout(() => row.remove(), 500);
+                }
+                // Optional: Show a toast notification
+            } else {
+                alert(`Error deleting recipe: ${data.error || 'Unknown error'}`);
+            }
+        } catch (error) {
+            console.error('Delete error:', error);
+            alert('Failed to delete recipe. Check console for details.');
+        }
+    }
+    async function evaluateQA(id) {
+        if (!confirm('Run QA evaluation on this recipe?')) return;
+        try {
+            const response = await fetch(`/admin/recipes/${id}/evaluate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await response.json();
+            if (response.ok && data.status === 'success') {
+                alert(`Evaluation complete! Score: ${data.total_score}${data.is_flagged ? ' (FLAGGED)' : ''}`);
+                window.location.reload();
+            } else {
+                alert(`QA Error: ${data.error}`);
+            }
+        } catch (error) {
+            console.error('QA error:', error);
+            alert('QA Evaluation request failed.');
+        }
+    }
+
+    // ── Bulk QA helpers ────────────────────────────────────────────────────────
+
+    async function runBulkScore(ids, btnEl, label) {
+        if (ids.length === 0) {
+            alert('No recipes to score.');
+            return;
+        }
+        if (!confirm(`Run LLM QA on ${ids.length} recipe(s)? This may take a while.`)) return;
+
+        btnEl.disabled = true;
+        const originalText = btnEl.innerText.trim();
+        let done = 0;
+        const errors = [];
+
+        for (const id of ids) {
+            btnEl.innerText = `${label} ${done + 1}/${ids.length}…`;
+            try {
+                const res = await fetch(`/admin/recipes/${id}/evaluate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
+                if (!res.ok || data.status !== 'success') {
+                    errors.push(`#${id}: ${data.error || 'unknown error'}`);
+                }
+            } catch (e) {
+                errors.push(`#${id}: network error`);
+            }
+            done++;
+        }
+
+        btnEl.innerText = originalText;
+        btnEl.disabled = false;
+
+        if (errors.length > 0) {
+            alert(`Done with ${errors.length} error(s):\n${errors.join('\n')}`);
+        }
+        window.location.reload();
+    }
+
+    function bulkScoreAll() {
+        // Collect IDs of rows that have no score (data-has-score="false")
+        const ids = [];
+        document.querySelectorAll('tr[data-recipe-id][data-has-score="false"]').forEach(row => {
+            ids.push(row.dataset.recipeId);
+        });
+        const btn = document.getElementById('score-all-btn');
+        runBulkScore(ids, btn, 'Scoring');
+    }
+
+    function bulkScoreSelected() {
+        // Uses the existing selectedAdminRecipeIds Set from the bulk-action JS block
+        const ids = Array.from(
+            typeof selectedAdminRecipeIds !== 'undefined' ? selectedAdminRecipeIds : []
+        );
+        const btn = document.getElementById('score-selected-btn');
+        runBulkScore(ids, btn, 'Scoring');
+    }
+</script>
+
+
+<!-- Bulk Actions Toolbar (Admin Only) -->
+{% if current_user.is_authenticated and current_user.is_admin %}
+<div id="bulk-action-bar"
+    class="fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] py-4 transform translate-y-full transition-transform duration-300 z-50 flex items-center justify-between pointer-events-none data-[visible=true]:translate-y-0 data-[visible=true]:pointer-events-auto">
+    <div class="max-w-7xl mx-auto w-full flex items-center justify-between px-6 lg:px-8">
+        <div class="flex items-center gap-4">
+            <span class="text-sm font-semibold text-gray-700" id="selection-count">0 Selected</span>
+            <button onclick="clearRowSelection()"
+                class="text-sm text-gray-500 hover:text-gray-900 underline">Cancel</button>
+        </div>
+        <button type="button" onclick="bulkDeleteAdmin()"
+            class="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 transition-colors">
+            Delete Selected
+        </button>
+    </div>
+</div>
+
+<script>
+    const selectedAdminRecipeIds = new Set();
+    const bulkActionBar = document.getElementById('bulk-action-bar');
+    const selectionCount = document.getElementById('selection-count');
+
+    function toggleRowSelection(checkbox) {
+        const id = checkbox.value;
+        const row = checkbox.closest('tr');
+
+        if (checkbox.checked) {
+            selectedAdminRecipeIds.add(id);
+            row.classList.add('bg-gray-50');
+        } else {
+            selectedAdminRecipeIds.delete(id);
+            row.classList.remove('bg-gray-50');
+        }
+        updateAdminBulkUI();
+    }
+
+    function toggleAllRecipes(masterCheckbox) {
+        const checkboxes = document.querySelectorAll('.recipe-row-cb');
+        checkboxes.forEach(cb => {
+            cb.checked = masterCheckbox.checked;
+            toggleRowSelection(cb);
+        });
+    }
+
+    function updateAdminBulkUI() {
+        if (selectedAdminRecipeIds.size > 0) {
+            bulkActionBar.setAttribute('data-visible', 'true');
+            selectionCount.textContent = `${selectedAdminRecipeIds.size} Selected`;
+        } else {
+            bulkActionBar.setAttribute('data-visible', 'false');
+        }
+    }
+
+    function clearRowSelection() {
+        selectedAdminRecipeIds.clear();
+        document.querySelectorAll('.recipe-row-cb').forEach(cb => {
+            cb.checked = false;
+            cb.closest('tr').classList.remove('bg-gray-50');
+        });
+        updateAdminBulkUI();
+    }
+
+    async function bulkDeleteAdmin() {
+        if (!confirm(`Are you sure you want to delete ${selectedAdminRecipeIds.size} recipes? This action cannot be undone.`)) return;
+
+        try {
+            const response = await fetch('/api/delete-recipes/bulk', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ recipe_ids: Array.from(selectedAdminRecipeIds).map(Number) })
+            });
+            const data = await response.json();
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        } catch (e) {
+            alert('Request failed');
+            console.error(e);
+        }
+    }
+</script>
+{% endif %}
+
+<!-- Render Inspector Modal -->
+{{ inspector.recipe_inspector_modal() }}
+
+<!-- Custom QA CoT Reasoning Modal -->
+<div id="qa-report-modal" class="relative z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+    <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+        <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            <div
+                class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-xl sm:p-6">
+                <div class="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
+                    <button type="button" onclick="closeQaReport()"
+                        class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none">
+                        <span class="sr-only">Close</span>
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="sm:flex sm:items-start">
+                    <div
+                        class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <svg class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                        <h3 class="text-lg font-semibold leading-6 text-gray-900" id="qa-modal-title">QA Report
+                            Reasoning</h3>
+                        <div class="mt-2 text-sm text-gray-700">
+                            <p id="qa-modal-score" class="font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200">
+                                Total Score: -</p>
+                            <ul id="qa-modal-list" class="list-none space-y-4">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                    <button type="button" onclick="closeQaReport()"
+                        class="mt-3 inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-indigo-600 hover:bg-indigo-500 sm:mt-0 sm:w-auto">Dismiss</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openQaReport(btn) {
+        let details = {};
+        try {
+            // Unescape HTML entities before parsing JSON
+            const parser = new DOMParser();
+            const decodedStr = parser.parseFromString(btn.dataset.qaDetails, "text/html").documentElement.textContent;
+            details = JSON.parse(decodedStr);
+        } catch (e) {
+            console.error("Could not parse QA Details JSON", e);
+        }
+
+        const title = btn.dataset.qaTitle;
+        const score = btn.dataset.qaScore;
+
+        document.getElementById('qa-modal-title').innerText = "QA Report: " + title;
+        const scoreEl = document.getElementById('qa-modal-score');
+        scoreEl.innerText = "Total Score: " + score + " / 100";
+        scoreEl.classList.remove('text-gray-900', 'text-red-600', 'text-orange-500', 'text-green-600');
+        if (score < 80) {
+            scoreEl.classList.add('text-red-600');
+        } else if (score <= 90) {
+            scoreEl.classList.add('text-orange-500');
+        } else {
+            scoreEl.classList.add('text-green-600');
+        }
+        let listStr = "";
+        const mapping = [
+            { label: 'Name Fit', keys: ['reasoning_name', 'name_fit'] },
+            { label: 'Ingredient Match', keys: ['reasoning_ingredients', 'ingredient_fit'] },
+            { label: 'Components', keys: ['reasoning_components', 'component_logic'] },
+            { label: 'Amounts', keys: ['reasoning_amounts', 'amounts'] },
+            { label: 'Steps Clarity', keys: ['reasoning_steps', 'step_clarity'] },
+            { label: 'Image Quality', keys: ['reasoning_image', 'image_logic'] }
+        ];
+
+        for (const item of mapping) {
+            let val = details[item.keys[0]] || details[item.keys[1]];
+            if (val) {
+                listStr += "<li><strong class='text-gray-900'>" + item.label + ":</strong> " + val + "</li>";
+            }
+        }
+        document.getElementById('qa-modal-list').innerHTML = listStr;
+        document.getElementById('qa-report-modal').classList.remove('hidden');
+    }
+
+
+    function closeQaReport() {
+        document.getElementById('qa-report-modal').classList.add('hidden');
+    }
+</script>
+
+<!-- Async Status Dropdown Handler -->
+<script>
+    // Status colour ring: maps state -> Tailwind ring colour class
+    const STATUS_STYLES = {
+        draft: 'ring-gray-300 text-gray-600',
+        approved: 'ring-green-500 text-green-700',
+        rejected: 'ring-red-400 text-red-700',
+    };
+
+    function applyStatusStyle(select, status) {
+        // Remove all known status classes first
+        Object.values(STATUS_STYLES).forEach(cls =>
+            cls.split(' ').forEach(c => select.classList.remove(c))
+        );
+        (STATUS_STYLES[status] || STATUS_STYLES.draft).split(' ').forEach(c =>
+            select.classList.add(c)
+        );
+    }
+
+    // Initialise colours on page load
+    document.querySelectorAll('.recipe-status-dropdown').forEach(select => {
+        applyStatusStyle(select, select.value);
+    });
+
+    // Single delegated listener on document (works for all dropdowns on the page)
+    document.addEventListener('change', async function (e) {
+        const select = e.target.closest('.recipe-status-dropdown');
+        if (!select) return;
+
+        const recipeId = select.dataset.recipeId;
+        const newStatus = select.value;
+        const previousValue = select.dataset.previousValue || select.value;
+
+        // Optimistic UI: apply style immediately
+        applyStatusStyle(select, newStatus);
+        select.disabled = true;
+
+        try {
+            const res = await fetch(`/admin/recipes/${recipeId}/status`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus }),
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                // Flash green border to confirm save
+                select.classList.add('ring-2', 'ring-green-500');
+                setTimeout(() => {
+                    select.classList.remove('ring-2', 'ring-green-500');
+                    // Re-apply correct state colour
+                    applyStatusStyle(select, data.new_status);
+                }, 1200);
+                select.dataset.previousValue = data.new_status;
+            } else {
+                alert(`Failed to update status: ${data.error}`);
+                // Revert
+                select.value = previousValue;
+                applyStatusStyle(select, previousValue);
+            }
+        } catch (err) {
+            console.error('Status update failed:', err);
+            alert('Network error updating status.');
+            select.value = previousValue;
+            applyStatusStyle(select, previousValue);
+        } finally {
+            select.disabled = false;
+        }
+    });
+</script>
+
+{% endblock %}
