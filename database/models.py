@@ -1,9 +1,10 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy import String, Integer, Boolean, Text, Float, ForeignKey, DateTime
+from sqlalchemy import String, Integer, Boolean, Text, Float, ForeignKey, DateTime, JSON, Index
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
+from typing import Any
 
 class Base(DeclarativeBase):
     pass
@@ -151,6 +152,10 @@ class Recipe(db.Model):
 
     # New Metadata
     chef_id: Mapped[str] = mapped_column(ForeignKey("chef.id"), nullable=True)
+    is_flagged_for_review: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    # Publishing State Machine: 'draft' | 'approved' | 'rejected'
+    # Every AI-generated recipe starts as 'draft' — invisible to public routes.
+    status: Mapped[str] = mapped_column(String(20), default='draft', index=True, nullable=False, server_default='draft')
     taste_level: Mapped[int] = mapped_column(Integer, nullable=True) # 1-5
     prep_time_mins: Mapped[int] = mapped_column(Integer, nullable=True) # snapped to time.json
     cleanup_factor: Mapped[int] = mapped_column(Integer, nullable=True)
@@ -167,6 +172,7 @@ class Recipe(db.Model):
     ingredients: Mapped[list["RecipeIngredient"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
     chef: Mapped["Chef"] = relationship(back_populates="recipes")
     meal_types: Mapped[list["RecipeMealType"]] = relationship(cascade="all, delete-orphan")
+    evaluation: Mapped["RecipeEvaluation"] = relationship(back_populates="recipe", uselist=False, cascade="all, delete-orphan")
 
     @property
     def meal_types_list(self):
@@ -184,6 +190,24 @@ class Instruction(db.Model):
     text: Mapped[str] = mapped_column(Text, nullable=False)
 
     recipe: Mapped["Recipe"] = relationship(back_populates="instructions")
+
+class RecipeEvaluation(db.Model):
+    __tablename__ = 'recipe_evaluation'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id"), unique=True, nullable=False)
+    
+    score_name: Mapped[int] = mapped_column(Integer) # 1-100 scale
+    score_ingredients: Mapped[int] = mapped_column(Integer) # 1-100 scale
+    score_components: Mapped[int] = mapped_column(Integer) # 1-100 scale
+    score_amounts: Mapped[int] = mapped_column(Integer) # 1-100 scale
+    score_steps: Mapped[int] = mapped_column(Integer) # 1-100 scale
+    score_image: Mapped[int] = mapped_column(Integer, nullable=True) # 1-100 scale, nullable for text-only recipes
+    
+    total_score: Mapped[float] = mapped_column(Float)
+    
+    evaluation_details: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    
+    recipe: Mapped["Recipe"] = relationship(back_populates="evaluation")
 
 class RecipeIngredient(db.Model):
     __tablename__ = 'recipe_ingredient'

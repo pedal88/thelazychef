@@ -14,7 +14,7 @@ from flask_migrate import Migrate
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 import markdown
 from database.db_connector import configure_database
-from database.models import db, Ingredient, Recipe, Instruction, RecipeIngredient, RecipeMealType, User, Resource, resource_relations, Chef, UserRecipeInteraction
+from database.models import db, Ingredient, Recipe, Instruction, RecipeIngredient, RecipeMealType, User, Resource, resource_relations, Chef, UserRecipeInteraction, RecipeEvaluation
 from utils.decorators import admin_required
 from sqlalchemy import or_, func
 from services.pantry_service import get_slim_pantry_context
@@ -267,13 +267,14 @@ def get_feed_recipes():
         subq = db.select(UserRecipeInteraction.recipe_id).where(UserRecipeInteraction.user_id == current_user.id)
         stmt = (
             db.select(Recipe)
+            .where(Recipe.status == 'approved')  # Public guard
             .where(Recipe.id.not_in(subq))
             .order_by(func.random())
             .limit(limit)
         )
     else:
-        # Anonymous: Random selection
-        stmt = db.select(Recipe).order_by(func.random()).limit(limit)
+        # Anonymous: Random selection of approved only
+        stmt = db.select(Recipe).where(Recipe.status == 'approved').order_by(func.random()).limit(limit)
         
     recipes = db.session.execute(stmt).scalars().all()
     
@@ -341,7 +342,8 @@ def my_favorites_view():
         .join(UserRecipeInteraction)
         .where(
             UserRecipeInteraction.user_id == current_user.id,
-            UserRecipeInteraction.status == 'favorite'
+            UserRecipeInteraction.status == 'favorite',
+            Recipe.status == 'approved'  # Rejected recipes silently disappear from favorites
         )
         .order_by(
             UserRecipeInteraction.is_super_like.desc(),
@@ -749,14 +751,14 @@ def new_recipe():
         if query:
             return redirect(url_for('generate', query=query, chef_id=chef_id))
     
-    # Get recent recipes (Still passed but template might not use them if removed)
-    recent_recipes = db.session.execute(db.select(Recipe).order_by(Recipe.id.desc()).limit(10)).scalars().all()
+    # Get recent recipes (approved only for public display)
+    recent_recipes = db.session.execute(db.select(Recipe).where(Recipe.status == 'approved').order_by(Recipe.id.desc()).limit(10)).scalars().all()
     return render_template('index.html', recipes=recent_recipes, chefs=chefs_data)
 
 @app.route('/')
 def discover():
-    # Load Recent Recipes
-    recent_recipes = db.session.execute(db.select(Recipe).order_by(Recipe.id.desc()).limit(8)).scalars().all()
+    # Load Recent Recipes (approved only)
+    recent_recipes = db.session.execute(db.select(Recipe).where(Recipe.status == 'approved').order_by(Recipe.id.desc()).limit(8)).scalars().all()
     
     # Load Resources
     resources = load_resources()
@@ -918,8 +920,8 @@ def recipes_list():
     selected_difficulties = request.args.getlist('difficulty')
     selected_proteins = request.args.getlist('protein_type')
 
-    # 3. Build Filtered Query
-    stmt = db.select(Recipe).order_by(Recipe.id.desc())
+    # 3. Build Filtered Query — public route; only approved recipes surfaced
+    stmt = db.select(Recipe).where(Recipe.status == 'approved').order_by(Recipe.id.desc())
 
     if selected_cuisines:
         stmt = stmt.where(Recipe.cuisine.in_(selected_cuisines))
@@ -1059,6 +1061,84 @@ def recipes_table_view():
                          selected_meal_types=selected_meal_types,
                          current_sort=sort_col,
                          current_dir=sort_dir)
+
+@app.route('/recipe-scoring')
+@login_required
+@admin_required
+def recipe_scoring_view():
+    # Sorting & pagination parameters
+    sort_col = request.args.get('sort', 'id')
+    sort_dir = request.args.get('dir', 'desc')
+    page = request.args.get('page', 1, type=int)
+    per_page = 50
+
+    # Base query — LEFT JOIN so recipes with no evaluation still appear
+    stmt = db.select(Recipe).outerjoin(Recipe.evaluation)
+
+    # Apply sorting
+    valid_cols = {
+        'id': Recipe.id,
+        'title': Recipe.title,
+        'total_score': RecipeEvaluation.total_score,
+        'score_name': RecipeEvaluation.score_name,
+        'score_ingredients': RecipeEvaluation.score_ingredients,
+        'score_components': RecipeEvaluation.score_components,
+        'score_amounts': RecipeEvaluation.score_amounts,
+        'score_steps': RecipeEvaluation.score_steps,
+        'score_image': RecipeEvaluation.score_image
+    }
+    sort_attr = valid_cols.get(sort_col, Recipe.id)
+    stmt = stmt.order_by(sort_attr.asc() if sort_dir == 'asc' else sort_attr.desc())
+
+    # Paginate — fetches only `per_page` rows from DB per request
+    pagination = db.paginate(stmt, page=page, per_page=per_page, error_out=False)
+
+    return render_template(
+        'recipes_scoring_table.html',
+        recipes=pagination.items,
+        pagination=pagination,
+        current_sort=sort_col,
+        current_dir=sort_dir,
+    )
+
+@app.route('/admin/recipes/<int:recipe_id>/evaluate', methods=['POST'])
+@login_required
+@admin_required
+def evaluate_recipe_api(recipe_id):
+    from services.evaluation_service import evaluate_recipe
+    try:
+        result = evaluate_recipe(recipe_id)
+        return jsonify(result)
+    except Exception as e:
+        print(f"Error evaluating recipe: {e}")
+        return jsonify({'status': 'error', 'error': str(e)}), 500
+
+
+@app.route('/admin/recipes/<int:recipe_id>/status', methods=['POST'])
+@login_required
+@admin_required
+def update_recipe_status(recipe_id: int):
+    """Async endpoint to update a recipe's publishing status."""
+    VALID_STATUSES = {'draft', 'approved', 'rejected'}
+    try:
+        data = request.get_json()
+        new_status = data.get('status', '').strip().lower()
+        if new_status not in VALID_STATUSES:
+            return jsonify({'success': False, 'error': f'Invalid status. Must be one of: {VALID_STATUSES}'}), 400
+
+        recipe = db.session.get(Recipe, recipe_id)
+        if not recipe:
+            return jsonify({'success': False, 'error': 'Recipe not found'}), 404
+
+        recipe.status = new_status
+        db.session.commit()
+        print(f"Status update: Recipe #{recipe_id} -> '{new_status}'")
+        return jsonify({'success': True, 'new_status': recipe.status})
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Status update error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 
