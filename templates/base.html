@@ -92,6 +92,8 @@
                 <a href="/" class="hover:text-orange-600 transition-colors">Discover</a>
                 <a href="/ingredients" class="hover:text-orange-600 transition-colors">Ingredients</a>
                 <a href="/recipes" class="hover:text-orange-600 transition-colors">Recipes</a>
+                <a href="{{ url_for('collections_index') }}"
+                    class="hover:text-orange-600 transition-colors">Collections</a>
                 <a href="/become-a-chef" class="hover:text-orange-600 transition-colors">Become a Chef</a>
 
                 {% if current_user.is_authenticated %}
@@ -131,6 +133,10 @@
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
                                 📚 Manage Resources
                             </a>
+                            <a href="{{ url_for('collections.collections_list') }}"
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
+                                🗂️ Collections
+                            </a>
                             <div class="border-t border-slate-100 my-1"></div>
                             <a href="/admin/chefs"
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
@@ -151,6 +157,10 @@
                             <a href="/recipes_list"
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
                                 📋 Recipe Table
+                            </a>
+                            <a href="/recipe-scoring"
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
+                                ⚖️ Recipe QA Scoring
                             </a>
                         </div>
                     </div>

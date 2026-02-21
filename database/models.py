@@ -179,6 +179,7 @@ class Recipe(db.Model):
         return [fmt.meal_type for fmt in self.meal_types]
 
     interactions: Mapped[list["UserRecipeInteraction"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
+    collections: Mapped[list["CollectionItem"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
 
 class Instruction(db.Model):
     __tablename__ = 'instruction'
@@ -241,3 +242,48 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+
+# ---------------------------------------------------------------------------
+# Curated Collections
+# ---------------------------------------------------------------------------
+
+class RecipeCollection(db.Model):
+    """An editorial grouping of recipes (e.g. 'Summer BBQ Favourites')."""
+    __tablename__ = 'recipe_collection'
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    title: Mapped[str] = mapped_column(String(150), nullable=False)
+    slug: Mapped[str] = mapped_column(String(150), unique=True, index=True, nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=True)
+    image_filename: Mapped[str] = mapped_column(String(255), nullable=True)
+    is_published: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)
+
+    items: Mapped[list["CollectionItem"]] = relationship(
+        back_populates="collection",
+        cascade="all, delete-orphan",
+    )
+
+    @property
+    def approved_recipes(self) -> list["Recipe"]:
+        """Convenience accessor: only recipes with status='approved'."""
+        return [item.recipe for item in self.items if item.recipe.status == 'approved']
+
+
+class CollectionItem(db.Model):
+    """Association object linking a Recipe to a RecipeCollection."""
+    __tablename__ = 'collection_item'
+
+    collection_id: Mapped[int] = mapped_column(
+        ForeignKey('recipe_collection.id'), primary_key=True
+    )
+    recipe_id: Mapped[int] = mapped_column(
+        ForeignKey('recipe.id'), primary_key=True
+    )
+    added_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime, default=datetime.datetime.utcnow, nullable=False
+    )
+
+    collection: Mapped["RecipeCollection"] = relationship(back_populates="items")
+    recipe: Mapped["Recipe"] = relationship(back_populates="collections")

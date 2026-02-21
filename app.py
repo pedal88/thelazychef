@@ -14,7 +14,7 @@ from flask_migrate import Migrate
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 import markdown
 from database.db_connector import configure_database
-from database.models import db, Ingredient, Recipe, Instruction, RecipeIngredient, RecipeMealType, User, Resource, resource_relations, Chef, UserRecipeInteraction, RecipeEvaluation
+from database.models import db, Ingredient, Recipe, Instruction, RecipeIngredient, RecipeMealType, User, Resource, resource_relations, Chef, UserRecipeInteraction, RecipeEvaluation, RecipeCollection, CollectionItem
 from utils.decorators import admin_required
 from sqlalchemy import or_, func
 from services.pantry_service import get_slim_pantry_context
@@ -38,6 +38,9 @@ app.config['MAX_CONTENT_LENGTH'] = 20 * 1024 * 1024 # 20MB limit
 # Register Blueprints
 from routes.studio_routes import prompts_bp
 app.register_blueprint(prompts_bp)
+
+from routes.admin_collections_routes import collections_bp
+app.register_blueprint(collections_bp)
 
 
 from utils.markdown_extensions import VideoExtension
@@ -2477,6 +2480,50 @@ def cms_upload_image():
             }
         })
     return jsonify({'error': 'Upload failed'}), 500
+
+# ---------------------------------------------------------------------------
+# Public Collection Routes
+# ---------------------------------------------------------------------------
+
+@app.route('/collections')
+def collections_index():
+    """Public index of all published collections, with their approved recipes pre-loaded."""
+    raw = (
+        db.session.execute(
+            db.select(RecipeCollection)
+            .where(RecipeCollection.is_published.is_(True))
+            .order_by(RecipeCollection.created_at.desc())
+        )
+        .scalars()
+        .all()
+    )
+    # Build (collection, [recipe, ...]) pairs — filter approved at route level
+    rows = [
+        (col, [item.recipe for item in col.items if item.recipe.status == 'approved'])
+        for col in raw
+    ]
+    return render_template('collections_index.html', rows=rows)
+
+
+@app.route('/collections/<slug>')
+def collection_detail(slug: str):
+    """Public detail page for a single published collection."""
+    collection = db.session.execute(
+        db.select(RecipeCollection).where(RecipeCollection.slug == slug)
+    ).scalar_one_or_none()
+
+    if not collection or not collection.is_published:
+        abort(404)
+
+    # Filter only approved recipes at the route level (belt-and-suspenders)
+    recipes = [
+        item.recipe
+        for item in collection.items
+        if item.recipe.status == 'approved'
+    ]
+
+    return render_template('collection_detail.html', collection=collection, recipes=recipes)
+
 
 if __name__ == '__main__':
     with app.app_context():

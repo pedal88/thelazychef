@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% block title %}Collections — The Lazy Chef{% endblock %}
+
+{% block head %}
+<style>
+    /* Per-row carousel track */
+    .carousel-track {
+        display: flex;
+        gap: 1rem;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        /* Firefox */
+        padding-bottom: 4px;
+        /* prevent box-shadow clipping */
+    }
+
+    .carousel-track::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Each recipe card in the carousel */
+    .carousel-card {
+        flex: 0 0 260px;
+        scroll-snap-align: start;
+    }
+
+    @media (min-width: 640px) {
+        .carousel-card {
+            flex: 0 0 280px;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .carousel-card {
+            flex: 0 0 300px;
+        }
+    }
+
+    /* Arrow buttons */
+    .carousel-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.15s, opacity 0.2s;
+    }
+
+    .carousel-arrow:hover {
+        background: #fff;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+    }
+
+    .carousel-arrow.hidden {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .carousel-arrow-left {
+        left: -1.25rem;
+    }
+
+    .carousel-arrow-right {
+        right: -1.25rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% from "components/cards.html" import recipe_preview_card with context %}
+
+<!-- Hero -->
+<section class="bg-gradient-to-br from-orange-50 to-amber-100 border-b border-orange-100">
+    <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <h1 class="font-serif text-5xl font-bold text-slate-900 mb-3">Collections</h1>
+        <p class="text-lg text-slate-600 max-w-xl">
+            Handpicked recipe sets for every occasion, season, and craving.
+        </p>
+    </div>
+</section>
+
+<!-- Collections rows -->
+<div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
+
+    {% if rows %}
+    {% for collection, recipes in rows %}
+    <section aria-label="{{ collection.title }}">
+
+        <!-- Row header -->
+        <div class="flex items-end justify-between mb-5">
+            <div>
+                <h2 class="font-serif text-2xl font-bold text-slate-900">{{ collection.title }}</h2>
+                {% if collection.description %}
+                <p class="text-sm text-slate-500 mt-1 max-w-lg">{{ collection.description }}</p>
+                {% endif %}
+            </div>
+            <a href="{{ url_for('collection_detail', slug=collection.slug) }}"
+                class="flex-shrink-0 ml-6 text-sm font-semibold text-orange-600 hover:text-orange-800 transition-colors flex items-center gap-1">
+                See all <span aria-hidden="true">→</span>
+            </a>
+        </div>
+
+        {% if recipes %}
+        <!-- Carousel wrapper (relative so arrows can be absolutely positioned) -->
+        <div class="relative" data-carousel>
+
+            <!-- Left arrow -->
+            <button class="carousel-arrow carousel-arrow-left hidden" aria-label="Scroll left">
+                <svg class="w-4 h-4 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+
+            <!-- Scrollable track -->
+            <div class="carousel-track">
+                {% for recipe in recipes %}
+                <div class="carousel-card">
+                    {{ recipe_preview_card(recipe, recipe.id) }}
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Right arrow -->
+            <button class="carousel-arrow carousel-arrow-right" aria-label="Scroll right">
+                <svg class="w-4 h-4 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+
+        </div>
+        {% else %}
+        <p class="text-sm text-slate-400 italic">No approved recipes in this collection yet.</p>
+        {% endif %}
+
+    </section>
+    {% endfor %}
+
+    {% else %}
+    <div class="text-center py-32 text-slate-400">
+        <div class="text-6xl mb-4">🍳</div>
+        <p class="text-lg font-medium">No collections published yet.</p>
+        <p class="text-sm mt-1">Check back soon!</p>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.querySelectorAll('[data-carousel]').forEach(wrapper => {
+        const track = wrapper.querySelector('.carousel-track');
+        const btnL = wrapper.querySelector('.carousel-arrow-left');
+        const btnR = wrapper.querySelector('.carousel-arrow-right');
+
+        // Scroll by one card width
+        const STEP = () => wrapper.querySelector('.carousel-card')?.offsetWidth + 16 || 316;
+
+        btnL.addEventListener('click', () => track.scrollBy({ left: -STEP(), behavior: 'smooth' }));
+        btnR.addEventListener('click', () => track.scrollBy({ left: STEP(), behavior: 'smooth' }));
+
+        // Show/hide arrows based on scroll position
+        function syncArrows() {
+            const atStart = track.scrollLeft < 4;
+            const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
+            btnL.classList.toggle('hidden', atStart);
+            btnR.classList.toggle('hidden', atEnd);
+        }
+
+        track.addEventListener('scroll', syncArrows, { passive: true });
+        // Run once on load (right arrow hidden if content fits without scrolling)
+        syncArrows();
+    });
+</script>
+{% endblock %}

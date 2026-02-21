@@ -1,0 +1,342 @@
+{% extends "base.html" %}
+{% block title %}Builder — {{ collection.title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- Page Header -->
+    <div class="flex items-center gap-4 mb-8">
+        <a href="{{ url_for('collections.collections_list') }}"
+            class="text-slate-400 hover:text-slate-700 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+        </a>
+        <div>
+            <h1 class="font-serif text-2xl font-bold text-slate-900">{{ collection.title }}</h1>
+            <p class="text-xs text-slate-500 font-mono mt-0.5">/collections/{{ collection.slug }}</p>
+        </div>
+        <div class="ml-auto flex items-center gap-2">
+            {% if collection.is_published %}
+            <span
+                class="inline-flex items-center rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700 ring-1 ring-green-600/20">Published</span>
+            {% else %}
+            <span
+                class="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-500/20">Draft</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Metadata form + 2-col builder -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        <!-- Left sidebar: metadata + in-collection list -->
+        <div class="lg:col-span-1 space-y-6">
+
+            <!-- Edit Metadata -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+                <h2 class="text-sm font-semibold text-slate-700 mb-4 uppercase tracking-wide">Collection Details</h2>
+                <form action="{{ url_for('collections.collection_update', collection_id=collection.id) }}" method="POST"
+                    class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Title</label>
+                        <input type="text" name="title" value="{{ collection.title }}" required
+                            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-orange-400 focus:outline-none focus:ring-1 focus:ring-orange-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Description</label>
+                        <textarea name="description" rows="3"
+                            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-orange-400 focus:outline-none focus:ring-1 focus:ring-orange-400">{{ collection.description or '' }}</textarea>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" name="is_published" id="is_published" {% if collection.is_published
+                            %}checked{% endif %}
+                            class="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-600">
+                        <label for="is_published" class="text-sm text-slate-700 font-medium">Published</label>
+                    </div>
+                    <button type="submit"
+                        class="w-full rounded-lg bg-slate-800 text-white text-sm font-semibold py-2 hover:bg-slate-700 transition-colors">
+                        Save Details
+                    </button>
+                </form>
+            </div>
+
+            <!-- In Collection -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+                <h2 class="text-sm font-semibold text-slate-700 mb-1 uppercase tracking-wide">In This Collection</h2>
+                <p class="text-xs text-slate-400 mb-4">Click × to remove a recipe.</p>
+                <ul id="collection-list" class="space-y-2 max-h-[500px] overflow-y-auto pr-1">
+                    {% for item in collection.items %}
+                    {% set r = item.recipe %}
+                    <li id="col-item-{{ r.id }}"
+                        class="flex items-center gap-3 p-2 rounded-lg bg-slate-50 border border-slate-100 group">
+                        <div class="w-10 h-10 rounded-md bg-slate-200 flex-shrink-0 overflow-hidden">
+                            {% if r.image_filename %}
+                            <img src="{{ get_recipe_image_url(r) }}" alt="" class="w-full h-full object-cover">
+                            {% else %}
+                            <div class="w-full h-full flex items-center justify-center text-lg">🍳</div>
+                            {% endif %}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-slate-800 truncate">{{ r.title }}</p>
+                            <p class="text-xs text-slate-400">{{ r.cuisine or '' }}</p>
+                        </div>
+                        <button onclick="removeFromCollection({{ r.id }}, this)"
+                            class="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 transition-all p-1 flex-shrink-0"
+                            title="Remove">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </li>
+                    {% else %}
+                    <li id="empty-state" class="text-center py-8 text-slate-400 text-sm">
+                        <p>No recipes yet.</p>
+                        <p class="text-xs mt-1">Search on the right to add some.</p>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Right: Search & Add -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 sticky top-20">
+                <h2 class="text-sm font-semibold text-slate-700 mb-4 uppercase tracking-wide">Add Recipes</h2>
+
+                <!-- Search Input -->
+                <div class="relative mb-4">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M21 21l-4.35-4.35m0 0A7 7 0 1 0 6.65 6.65a7 7 0 0 0 10 10z" />
+                    </svg>
+                    <input id="recipe-search" type="text" placeholder="Search by title or cuisine…" autocomplete="off"
+                        class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 text-sm focus:border-orange-400 focus:outline-none focus:ring-1 focus:ring-orange-400">
+                </div>
+
+                <!-- Status / Spinner -->
+                <p id="search-status" class="text-xs text-slate-400 mb-3 h-4"></p>
+
+                <!-- Results -->
+                <div id="search-results" class="space-y-2 max-h-[550px] overflow-y-auto pr-1">
+                    <p class="text-sm text-slate-400 text-center py-10">Start typing to search approved recipes…</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // -----------------------------------------------------------------------
+    // Configuration
+    // -----------------------------------------------------------------------
+    const COLLECTION_ID = {{ collection.id }};
+    const SEARCH_URL = "{{ url_for('collections.api_recipe_search') }}";
+    const ADD_URL = (recipeId) => `/admin/collections/${COLLECTION_ID}/add/${recipeId}`;
+    const REMOVE_URL = (recipeId) => `/admin/collections/${COLLECTION_ID}/remove/${recipeId}`;
+
+    // Track which recipe IDs are already in the collection (for UI state)
+    const inCollection = new Set([
+        {% for item in collection.items %}{ { item.recipe_id } }, {% endfor %}
+    ]);
+
+    // -----------------------------------------------------------------------
+    // Search with debounce
+    // -----------------------------------------------------------------------
+    let debounceTimer = null;
+
+    document.getElementById('recipe-search').addEventListener('input', (e) => {
+        clearTimeout(debounceTimer);
+        const q = e.target.value.trim();
+
+        if (q.length === 0) {
+            document.getElementById('search-results').innerHTML =
+                '<p class="text-sm text-slate-400 text-center py-10">Start typing to search approved recipes…</p>';
+            setStatus('');
+            return;
+        }
+
+        setStatus('Searching…');
+        debounceTimer = setTimeout(() => doSearch(q), 350);
+    });
+
+    async function doSearch(q) {
+        try {
+            const res = await fetch(`${SEARCH_URL}?q=${encodeURIComponent(q)}`);
+            if (!res.ok) throw new Error('Search failed');
+            const recipes = await res.json();
+            renderResults(recipes);
+            setStatus(recipes.length === 0 ? 'No results.' : `${recipes.length} result${recipes.length !== 1 ? 's' : ''}`);
+        } catch (err) {
+            setStatus('Error searching. Try again.');
+            console.error(err);
+        }
+    }
+
+    function renderResults(recipes) {
+        const container = document.getElementById('search-results');
+        if (recipes.length === 0) {
+            container.innerHTML = '<p class="text-sm text-slate-400 text-center py-10">No matching approved recipes found.</p>';
+            return;
+        }
+
+        container.innerHTML = recipes.map(r => {
+            const already = inCollection.has(r.id);
+            return `
+            <div id="result-${r.id}" class="flex items-center gap-3 p-3 rounded-lg border ${already ? 'border-green-200 bg-green-50' : 'border-slate-100 bg-slate-50 hover:border-orange-200 hover:bg-orange-50'} transition-all duration-150">
+                <div class="w-12 h-12 rounded-md bg-slate-200 flex-shrink-0 overflow-hidden">
+                    <div class="w-full h-full flex items-center justify-center text-xl">🍳</div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-slate-800 truncate">${escHtml(r.title)}</p>
+                    <p class="text-xs text-slate-400">${escHtml(r.cuisine)} · ${escHtml(r.diet)}</p>
+                </div>
+                <button
+                    id="add-btn-${r.id}"
+                    onclick="addToCollection(${r.id})"
+                    ${already ? 'disabled' : ''}
+                    class="flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-150 ${already
+                    ? 'bg-green-100 text-green-700 cursor-default'
+                    : 'bg-orange-600 text-white hover:bg-orange-700 cursor-pointer'
+                }">
+                    ${already ? '✓ Added' : '+ Add'}
+                </button>
+            </div>`;
+        }).join('');
+    }
+
+    // -----------------------------------------------------------------------
+    // Add recipe to collection
+    // -----------------------------------------------------------------------
+    async function addToCollection(recipeId) {
+        const btn = document.getElementById(`add-btn-${recipeId}`);
+        if (!btn || btn.disabled) return;
+
+        btn.disabled = true;
+        btn.textContent = '…';
+
+        try {
+            const res = await fetch(ADD_URL(recipeId), { method: 'POST' });
+            if (!res.ok) throw new Error('Add failed');
+            const data = await res.json();
+
+            inCollection.add(recipeId);
+
+            // Update button in search results
+            btn.textContent = '✓ Added';
+            btn.className = 'flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg bg-green-100 text-green-700 cursor-default';
+            const card = btn.closest('div[id^="result-"]');
+            if (card) {
+                card.classList.remove('border-slate-100', 'bg-slate-50', 'hover:border-orange-200', 'hover:bg-orange-50');
+                card.classList.add('border-green-200', 'bg-green-50');
+            }
+
+            // Append to left column
+            if (data.recipe) {
+                appendToCollectionList(data.recipe);
+            }
+
+        } catch (err) {
+            btn.disabled = false;
+            btn.textContent = '+ Add';
+            console.error(err);
+            alert('Failed to add recipe. Please try again.');
+        }
+    }
+
+    function appendToCollectionList(recipe) {
+        // Remove empty state if present
+        const empty = document.getElementById('empty-state');
+        if (empty) empty.remove();
+
+        const list = document.getElementById('collection-list');
+        const li = document.createElement('li');
+        li.id = `col-item-${recipe.id}`;
+        li.className = 'flex items-center gap-3 p-2 rounded-lg bg-slate-50 border border-slate-100 group';
+        li.innerHTML = `
+            <div class="w-10 h-10 rounded-md bg-slate-200 flex-shrink-0 overflow-hidden">
+                <div class="w-full h-full flex items-center justify-center text-lg">🍳</div>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-slate-800 truncate">${escHtml(recipe.title)}</p>
+                <p class="text-xs text-slate-400">${escHtml(recipe.cuisine || '')}</p>
+            </div>
+            <button
+                onclick="removeFromCollection(${recipe.id}, this)"
+                class="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 transition-all p-1 flex-shrink-0"
+                title="Remove">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>`;
+        list.appendChild(li);
+    }
+
+    // -----------------------------------------------------------------------
+    // Remove recipe from collection
+    // -----------------------------------------------------------------------
+    async function removeFromCollection(recipeId, btn) {
+        const li = document.getElementById(`col-item-${recipeId}`);
+        if (!li) return;
+
+        // Optimistic UI
+        li.style.opacity = '0.4';
+        btn.disabled = true;
+
+        try {
+            const res = await fetch(REMOVE_URL(recipeId), { method: 'DELETE' });
+            if (!res.ok) throw new Error('Remove failed');
+
+            li.remove();
+            inCollection.delete(recipeId);
+
+            // Restore "Add" button in results if visible
+            const addBtn = document.getElementById(`add-btn-${recipeId}`);
+            if (addBtn) {
+                addBtn.disabled = false;
+                addBtn.textContent = '+ Add';
+                addBtn.className = 'flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg bg-orange-600 text-white hover:bg-orange-700 cursor-pointer transition-all duration-150';
+                const card = addBtn.closest('div[id^="result-"]');
+                if (card) {
+                    card.classList.remove('border-green-200', 'bg-green-50');
+                    card.classList.add('border-slate-100', 'bg-slate-50', 'hover:border-orange-200', 'hover:bg-orange-50');
+                }
+            }
+
+            // Show empty state if list is empty
+            if (document.getElementById('collection-list').children.length === 0) {
+                const list = document.getElementById('collection-list');
+                list.innerHTML = `
+                    <li id="empty-state" class="text-center py-8 text-slate-400 text-sm">
+                        <p>No recipes yet.</p>
+                        <p class="text-xs mt-1">Search on the right to add some.</p>
+                    </li>`;
+            }
+
+        } catch (err) {
+            li.style.opacity = '1';
+            btn.disabled = false;
+            console.error(err);
+            alert('Failed to remove recipe. Please try again.');
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Helpers
+    // -----------------------------------------------------------------------
+    function setStatus(msg) {
+        document.getElementById('search-status').textContent = msg;
+    }
+
+    function escHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+</script>
+{% endblock %}

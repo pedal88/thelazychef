@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Manage Collections — Admin{% endblock %}
+
+{% block content %}
+<div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="font-serif text-3xl font-bold text-slate-900">Curated Collections</h1>
+            <p class="text-sm text-slate-500 mt-1">Group approved recipes into editorial collections.</p>
+        </div>
+
+        <!-- New Collection form (inline) -->
+        <form action="{{ url_for('collections.collections_create') }}" method="POST" class="flex gap-2">
+            <input type="text" name="title" placeholder="New collection title…" required
+                class="rounded-lg border border-slate-300 px-4 py-2 text-sm shadow-sm focus:border-orange-400 focus:outline-none focus:ring-1 focus:ring-orange-400 w-64">
+            <button type="submit"
+                class="rounded-lg bg-orange-600 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-700 transition-colors shadow-sm">
+                + New
+            </button>
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        {% if collections %}
+        <table class="min-w-full divide-y divide-slate-200">
+            <thead class="bg-slate-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Title
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Slug
+                    </th>
+                    <th class="px-6 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        Recipes</th>
+                    <th class="px-6 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        Status</th>
+                    <th class="px-6 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for col in collections %}
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-6 py-4 font-medium text-slate-800">{{ col.title }}</td>
+                    <td class="px-6 py-4 text-slate-500 text-sm font-mono">{{ col.slug }}</td>
+                    <td class="px-6 py-4 text-center text-slate-600 text-sm">{{ col.items | length }}</td>
+                    <td class="px-6 py-4 text-center">
+                        {% if col.is_published %}
+                        <span
+                            class="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Published</span>
+                        {% else %}
+                        <span
+                            class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-500/10">Draft</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <div class="flex items-center justify-center gap-3">
+                            <a href="{{ url_for('collections.collection_builder', collection_id=col.id) }}"
+                                class="text-orange-600 hover:text-orange-800 text-sm font-medium transition-colors">
+                                ✏️ Builder
+                            </a>
+                            {% if col.is_published %}
+                            <a href="{{ url_for('collection_detail', slug=col.slug) }}" target="_blank"
+                                class="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors">
+                                👁 View
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="text-center py-20 text-slate-400">
+            <div class="text-5xl mb-4">📚</div>
+            <p class="font-medium">No collections yet.</p>
+            <p class="text-sm">Create one using the form above.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

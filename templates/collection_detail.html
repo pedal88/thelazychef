@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{ collection.title }} — The Lazy Chef{% endblock %}
+
+{% block content %}
+{% from "components/cards.html" import recipe_preview_card with context %}
+
+<!-- Hero Banner -->
+<section class="relative bg-slate-900 overflow-hidden">
+    {% if collection.image_filename %}
+    <img src="{{ url_for('static', filename='collections/' + collection.image_filename) }}" alt="{{ collection.title }}"
+        class="absolute inset-0 w-full h-full object-cover opacity-30">
+    {% else %}
+    <div class="absolute inset-0 bg-gradient-to-br from-orange-900/60 to-slate-900"></div>
+    {% endif %}
+    <div class="relative max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
+        <span class="inline-block text-xs font-bold uppercase tracking-widest text-orange-400 mb-4">Collection</span>
+        <h1 class="font-serif text-5xl md:text-6xl font-bold text-white mb-6">{{ collection.title }}</h1>
+        {% if collection.description %}
+        <p class="text-lg text-slate-300 max-w-2xl mx-auto">{{ collection.description }}</p>
+        {% endif %}
+        <p class="mt-6 text-sm text-slate-400">
+            {{ recipes | length }} recipe{% if recipes | length != 1 %}s{% endif %} in this collection
+        </p>
+    </div>
+</section>
+
+<!-- Recipe Grid -->
+<section class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    {% if recipes %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {% for recipe in recipes %}
+        <div>
+            {{ recipe_preview_card(recipe, recipe.id) }}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-24 text-slate-400">
+        <div class="text-6xl mb-4">🍳</div>
+        <p class="text-lg font-medium">No approved recipes in this collection yet.</p>
+    </div>
+    {% endif %}
+</section>
+
+<!-- Back link -->
+<div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+    <a href="{{ url_for('collections_index') }}" class="text-sm text-slate-500 hover:text-orange-600 transition-colors">
+        ← Back to Collections
+    </a>
+</div>
+{% endblock %}
