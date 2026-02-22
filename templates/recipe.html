@@ -83,7 +83,9 @@
         <div class="flex flex-wrap gap-2 mb-6 justify-center">
             {{ badge.difficulty_pill(recipe.difficulty) }}
             {{ badge.tag_pill(recipe.cuisine, 'orange') }}
-            {{ badge.tag_pill(recipe.diet, 'green') }}
+            {% for d in recipe.diets_list %}
+            {{ badge.tag_pill(d, 'green') }}
+            {% endfor %}
             {% if recipe.protein_type %}
             {{ badge.tag_pill(recipe.protein_type, 'blue') }}
             {% endif %}
@@ -110,7 +112,8 @@
         </h1>
 
         <p class="text-xl text-slate-600 font-light leading-relaxed max-w-2xl">
-            A {{ recipe.difficulty|lower }} {{ recipe.cuisine }} dish perfect for the {{ recipe.diet }} diet.
+            A {{ recipe.difficulty|lower }} {{ recipe.cuisine }} dish perfect for {{ recipe.diets_list|join(' and ') }}
+            diets.
             Using fresh ingredients from your pantry, customized by our World Class AI Chef.
         </p>
     </div>

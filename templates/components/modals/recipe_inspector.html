@@ -90,7 +90,7 @@
                 // 3. Populate Fields
                 document.getElementById('insp-chef').textContent = r.chef_id || 'N/A';
                 document.getElementById('insp-cuisine').textContent = r.cuisine;
-                document.getElementById('insp-diet').textContent = r.diet;
+                document.getElementById('insp-diet').textContent = (r.diets || []).join(', ');
 
                 // 4. Pretty Print JSON
                 jsonEl.textContent = JSON.stringify(r, null, 2);

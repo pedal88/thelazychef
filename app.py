@@ -670,7 +670,7 @@ def recipe_image_generation_prompt():
         
         recipe_text = f"Title: {recipe.title}\n"
         recipe_text += f"Cuisine: {recipe.cuisine}\n"
-        recipe_text += f"Diet: {recipe.diet}\n"
+        recipe_text += f"Diets: {', '.join(recipe.diets_list)}\n"
         
         # Generate Prompt
         prompt = generate_visual_prompt(recipe_text, ingredients_list)
@@ -1031,7 +1031,6 @@ def recipes_table_view():
         'id': Recipe.id,
         'title': Recipe.title,
         'cuisine': Recipe.cuisine,
-        'diet': Recipe.diet,
         'difficulty': Recipe.difficulty,
         'protein_type': Recipe.protein_type,
         'total_calories': Recipe.total_calories,
@@ -1761,7 +1760,7 @@ def get_recipe_json(recipe_id):
             'id': recipe.id,
             'title': recipe.title,
             'cuisine': recipe.cuisine,
-            'diet': recipe.diet,
+            'diets': recipe.diets_list,
             'difficulty': recipe.difficulty,
             'protein_type': recipe.protein_type,
             'meal_types': recipe.meal_types_list,
