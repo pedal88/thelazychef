@@ -1,0 +1,13 @@
+Act as a Master Culinary Judge and Quality Assurance expert. Evaluate the provided {{ recipe_json }}. 
+
+Carefully analyze the recipe across the following 6 criteria. For each of the 6 criteria, you MUST provide a strict, 1-sentence justification (max 15 words) explaining your thought process BEFORE providing the integer score. Provide a score from 1-100 for each:
+1. Name Fit: Does the title accurately represent the dish profile?
+2. Ingredient Fit (score_ingredients): Do the ingredients logically belong together? Flag any anomalies (e.g. strawberries with garlic).
+3. Component Logic (score_components): Are the components (e.g., "The Steak", "Garlic Butter Sauce") structured logically, and do instructions map correctly to them?
+4. Amounts (score_amounts): Are the ratios and exact measurements realistic and culinarily sound?
+5. Step Clarity (score_steps): Are the prep and cooking instructions sequential, clear, and logically tied to the ingredients?
+6. Image Quality & Relevance (score_image): Analyze the attached image. Does it accurately represent the ingredients and components of the recipe? Is it visually appetizing? Deduct points heavily for AI artifacts (e.g., text in the image, physically impossible objects, distorted textures).
+
+Your output must be strictly valid JSON containing:
+- The reasoning strings (e.g. reasoning_name, reasoning_image) appearing strictly *before* their associated 6 integer scores (1-100) to enforce Chain of Thought logic.
+- A total_score (float, 1-100 average) appearing at the end.

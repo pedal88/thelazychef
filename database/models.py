@@ -140,12 +140,23 @@ class RecipeMealType(db.Model):
     recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id"), primary_key=True)
     meal_type: Mapped[str] = mapped_column(String, primary_key=True)
 
+
+class RecipeDiet(db.Model):
+    """Many-to-many link between Recipe and diet labels.
+
+    Mirrors RecipeMealType: a recipe can satisfy multiple diets
+    (e.g. both 'vegan' and 'gluten-free').
+    """
+    __tablename__ = 'recipe_diet'
+    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id"), primary_key=True)
+    diet: Mapped[str] = mapped_column(String, primary_key=True)
+
 class Recipe(db.Model):
     __tablename__ = 'recipe'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     title: Mapped[str] = mapped_column(String, nullable=False)
     cuisine: Mapped[str] = mapped_column(String)
-    diet: Mapped[str] = mapped_column(String)
+    # diet column removed — replaced by RecipeDiet join table
     difficulty: Mapped[str] = mapped_column(String)
     protein_type: Mapped[str] = mapped_column(String, nullable=True)
     image_filename: Mapped[str] = mapped_column(String, nullable=True)
@@ -172,11 +183,16 @@ class Recipe(db.Model):
     ingredients: Mapped[list["RecipeIngredient"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
     chef: Mapped["Chef"] = relationship(back_populates="recipes")
     meal_types: Mapped[list["RecipeMealType"]] = relationship(cascade="all, delete-orphan")
+    diets: Mapped[list["RecipeDiet"]] = relationship(cascade="all, delete-orphan")
     evaluation: Mapped["RecipeEvaluation"] = relationship(back_populates="recipe", uselist=False, cascade="all, delete-orphan")
 
     @property
-    def meal_types_list(self):
+    def meal_types_list(self) -> list[str]:
         return [fmt.meal_type for fmt in self.meal_types]
+
+    @property
+    def diets_list(self) -> list[str]:
+        return [rd.diet for rd in self.diets]
 
     interactions: Mapped[list["UserRecipeInteraction"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
     collections: Mapped[list["CollectionItem"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")

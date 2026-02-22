@@ -14,7 +14,7 @@ from flask_migrate import Migrate
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 import markdown
 from database.db_connector import configure_database
-from database.models import db, Ingredient, Recipe, Instruction, RecipeIngredient, RecipeMealType, User, Resource, resource_relations, Chef, UserRecipeInteraction, RecipeEvaluation, RecipeCollection, CollectionItem
+from database.models import db, Ingredient, Recipe, Instruction, RecipeIngredient, RecipeMealType, RecipeDiet, User, Resource, resource_relations, Chef, UserRecipeInteraction, RecipeEvaluation, RecipeCollection, CollectionItem
 from utils.decorators import admin_required
 from sqlalchemy import or_, func
 from services.pantry_service import get_slim_pantry_context
@@ -930,7 +930,7 @@ def recipes_list():
         stmt = stmt.where(Recipe.cuisine.in_(selected_cuisines))
     
     if selected_diets:
-        stmt = stmt.where(Recipe.diet.in_(selected_diets))
+        stmt = stmt.where(Recipe.diets.any(RecipeDiet.diet.in_(selected_diets)))
 
     if selected_difficulties:
         stmt = stmt.where(Recipe.difficulty.in_(selected_difficulties))
@@ -1012,7 +1012,7 @@ def recipes_table_view():
     if selected_cuisines:
         stmt = stmt.where(Recipe.cuisine.in_(selected_cuisines))
     if selected_diets:
-        stmt = stmt.where(Recipe.diet.in_(selected_diets))
+        stmt = stmt.where(Recipe.diets.any(RecipeDiet.diet.in_(selected_diets)))
     if selected_difficulties:
         stmt = stmt.where(Recipe.difficulty.in_(selected_difficulties))
     if selected_proteins:

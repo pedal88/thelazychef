@@ -51,7 +51,7 @@ class ComponentSchema(typing.TypedDict):
 class RecipeSchema(typing.TypedDict):
     title: str
     cuisine: str
-    diet: str
+    diet: list[str]  # All diets that apply (e.g. ["vegan", "gluten-free"])
     difficulty: str
     protein_type: str
     meal_types: list[str]

@@ -2,13 +2,13 @@ EXAMPLE OF DESIRED OUTPUT (COMPLEX MULTI-COMPONENT DISH):
 {
   "title": "Pan-Seared Ribeye with Garlic Herb Butter and Roasted Vegetables",
   "cuisine": "American",
-  "diet": "Non-Vegetarian",
+  "diet": ["Non-Vegetarian", "Gluten-Free"],
   "difficulty": "Moderate",
   "protein_type": "Beef",
   "meal_types": ["Dinner"],
   "chef_id": "gourmet",
   "meta": {
-    "diet": "String (Best fit from Valid Diets)",
+    "diet": ["String", "String"],  // Array of ALL diets that apply from Valid Diets — be exhaustive, not just primary
     "cuisine": "String (Best fit from Valid Cuisines)",
     "meal_type": ["String", "String"],
     "cooking_method": "String (Best fit from Valid Cooking Methods)",

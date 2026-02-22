@@ -13,7 +13,7 @@ import uuid
 import json
 
 from database.models import (
-    db, Recipe, RecipeIngredient, RecipeMealType,
+    db, Recipe, RecipeIngredient, RecipeMealType, RecipeDiet,
     Instruction, Ingredient, Chef
 )
 from ai_engine import get_pantry_id
@@ -127,7 +127,7 @@ def process_recipe_workflow(recipe_data, query_context: str, chef_id: str) -> di
     new_recipe = Recipe(
         title=recipe_data.title,
         cuisine=getattr(recipe_data, 'cuisine', None),
-        diet=getattr(recipe_data, 'diet', None),
+        # diet is stored in recipe_diet join table — see Step 4a below
         difficulty=getattr(recipe_data, 'difficulty', None),
         protein_type=getattr(recipe_data, 'protein_type', None),
         chef_id=valid_chef_id,
@@ -143,6 +143,14 @@ def process_recipe_workflow(recipe_data, query_context: str, chef_id: str) -> di
     if meal_types:
         for mt in meal_types:
             db.session.add(RecipeMealType(recipe_id=new_recipe.id, meal_type=mt))
+
+    # ── Step 4a: Save Diets ─────────────────────────────────────────────────
+    raw_diets = getattr(recipe_data, 'diet', None)
+    if raw_diets:
+        # Normalise: the AI should return a list, but guard against a legacy string
+        diet_list: list[str] = raw_diets if isinstance(raw_diets, list) else [raw_diets]
+        for d in diet_list:
+            db.session.add(RecipeDiet(recipe_id=new_recipe.id, diet=d))
 
     # ── Step 5: Save Ingredients (all validated — no auto-creation) ───────
     for group in recipe_data.ingredient_groups:
