@@ -79,6 +79,22 @@ def sanitize_ai_ingredients(recipe_data) -> None:
     basics_results = db.session.execute(basics_stmt).all()
     basic_overrides = {row.name.strip().lower(): row.food_id for row in basics_results if row.name}
 
+    # Add manual synonym aliases for common utilities that cause Lexical Drift
+    if 'water' in basic_overrides:
+        water_id = basic_overrides['water']
+        for w in ['hot water', 'cold water', 'boiling water', 'warm water', 'pasta water', 'ice water', 'tap water']:
+            basic_overrides[w] = water_id
+            
+    if 'salt' in basic_overrides:
+        salt_id = basic_overrides['salt']
+        for s in ['sea salt', 'kosher salt', 'table salt', 'flaky sea salt', 'pinch of salt']:
+            basic_overrides[s] = salt_id
+
+    if 'black pepper' in basic_overrides:
+        bp_id = basic_overrides['black pepper']
+        for p in ['pepper', 'ground black pepper', 'freshly ground black pepper', 'cracked black pepper']:
+            basic_overrides[p] = bp_id
+
     if not basic_overrides:
         return
 
