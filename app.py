@@ -42,6 +42,9 @@ app.register_blueprint(prompts_bp)
 from routes.admin_collections_routes import collections_bp
 app.register_blueprint(collections_bp)
 
+from routes.admin_ingredients_routes import ingredients_bp
+app.register_blueprint(ingredients_bp)
+
 
 from utils.markdown_extensions import VideoExtension
 

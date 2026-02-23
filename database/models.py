@@ -100,6 +100,10 @@ class Ingredient(db.Model):
     is_basic_ingredient: Mapped[bool] = mapped_column(Boolean, default=False) # User preference: Staple ingredient?
     is_original: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[str] = mapped_column(String, nullable=True) # ISO format date string
+    # Lifecycle: 'active' | 'inactive' | 'pending'
+    # 'inactive' is a soft-delete — ingredient stays in DB to protect recipe FK relationships.
+    # 'pending' = newly imported, awaiting review.
+    status: Mapped[str] = mapped_column(String(20), default='active', index=True, nullable=False, server_default='active')
 
     # Payload (Flattened)
     image_url: Mapped[str] = mapped_column(String, nullable=True)
@@ -117,6 +121,32 @@ class Ingredient(db.Model):
     sodium_mg_per_100g: Mapped[float] = mapped_column(Float, nullable=True)
 
     recipe_ingredients: Mapped[list["RecipeIngredient"]] = relationship(back_populates="ingredient")
+    evaluation: Mapped["IngredientEvaluation"] = relationship(back_populates="ingredient", uselist=False, cascade="all, delete-orphan")
+
+
+class IngredientEvaluation(db.Model):
+    """LLM-as-a-Judge QA result for a single Ingredient (One-to-One)."""
+    __tablename__ = 'ingredient_evaluation'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    ingredient_id: Mapped[int] = mapped_column(ForeignKey("ingredient.id"), unique=True, nullable=False)
+
+    # Individual criterion scores (1-100)
+    score_image:      Mapped[int] = mapped_column(Integer, nullable=True)
+    score_nutrition:  Mapped[int] = mapped_column(Integer, nullable=True)
+    score_taxonomy:   Mapped[int] = mapped_column(Integer, nullable=True)
+    score_utility:    Mapped[int] = mapped_column(Integer, nullable=True)
+    # score_commonness is informational only — excluded from total_score average
+    score_commonness: Mapped[int] = mapped_column(Integer, nullable=True)
+
+    # Weighted average of (image, nutrition, taxonomy, utility) only
+    total_score: Mapped[float] = mapped_column(Float, nullable=True)
+
+    # Full Chain-of-Thought JSON blob
+    evaluation_details: Mapped[dict] = mapped_column(JSON, default=dict)
+
+    ingredient: Mapped["Ingredient"] = relationship(back_populates="evaluation")
+
+
 
 class Chef(db.Model):
     __tablename__ = 'chef'

@@ -59,47 +59,49 @@ class VertexImageGenerator:
     
     def generate_candidate(self, ingredient_name: str, prompt: str) -> dict:
         """
-        Generates an image using Imagen 3 and saves it to the candidates folder.
+        Generates an image using Imagen and saves it to the candidates folder.
+
+        Uses a timestamp-suffixed filename on every call so the resulting GCS URL
+        is always unique — this defeats CDN/browser caching that would otherwise
+        serve the old image when the blob path stays the same.
+
         Returns: { 'success': bool, 'image_url': str, 'error': str }
         """
+        import time
+
         if not self.client:
             return {'success': False, 'error': "Google API Key not configured"}
 
         try:
-            filename = self._get_safe_filename(ingredient_name)
-            
-            print(f"Generating candidate for {ingredient_name} using Prompt: {prompt[:50]}...")
-            
-            # Call Imagen 4 (via Gemini API wrapper)
+            # Timestamp suffix guarantees a fresh URL on every regeneration
+            ts = int(time.time())
+            base_name = self._get_safe_filename(ingredient_name).replace('.png', '')
+            filename = f"{base_name}_{ts}.png"
+
+            print(f"Generating candidate for {ingredient_name} → {filename} | Prompt: {prompt[:60]}...")
+
             response = self.client.models.generate_images(
                 model='imagen-4.0-generate-001',
                 prompt=prompt,
                 config=types.GenerateImagesConfig(
                     number_of_images=1,
-                    aspect_ratio='1:1' # Square for ingredients
+                    aspect_ratio='1:1'
                 )
             )
-            
+
             if response.generated_images:
-                genai_image = response.generated_images[0].image
-                # We can save bytes directly
-                image_bytes = genai_image.image_bytes
-                
-                # Save via Storage Provider
-                # Folder: pantry/candidates
+                image_bytes = response.generated_images[0].image.image_bytes
+
+                # New filename ⟹ new GCS blob ⟹ new public URL — no cache hit possible
                 public_url = self.storage.save(image_bytes, filename, "pantry/candidates")
-                
-                # For local dev, we might need the absolute path for some operations, but
-                # optimally we just return the URL. The previous code returned 'local_path'.
-                # We'll return the URL as the primary identifier now.
-                
+
                 return {
                     'success': True,
                     'image_url': public_url,
-                    'local_path': public_url # Backwards compat: use URL as path identifier
+                    'local_path': public_url  # Backwards compat
                 }
             else:
-                 return {'success': False, 'error': "No image returned from API"}
+                return {'success': False, 'error': "No image returned from API"}
 
         except Exception as e:
             print(f"Error generating candidate: {e}")
