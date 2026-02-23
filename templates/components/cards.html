@@ -109,6 +109,17 @@ Expects a RecipeIngredient object (ri) which has .ingredient relation and .amoun
                     </path>
                 </svg>
             </button>
+            <!-- Add to Queue button -->
+            <button type="button"
+                onclick="event.preventDefault(); event.stopPropagation(); addToQueue({{ recipe.id }}, this)"
+                class="queue-btn bg-white/90 hover:bg-white text-slate-400 hover:text-orange-500 p-1.5 rounded-full shadow-sm backdrop-blur-sm transition-all duration-200 transform hover:scale-110"
+                data-recipe-id="{{ recipe.id }}" title="Add to Cook Next">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+            </button>
             {% endif %}
         </div>
 

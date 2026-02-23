@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy import String, Integer, Boolean, Text, Float, ForeignKey, DateTime, JSON, Index
+from sqlalchemy import String, Integer, Boolean, Text, Float, ForeignKey, DateTime, JSON, Index, UniqueConstraint
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
@@ -226,6 +226,7 @@ class Recipe(db.Model):
 
     interactions: Mapped[list["UserRecipeInteraction"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
     collections: Mapped[list["CollectionItem"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
+    queue_items: Mapped[list["UserQueue"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
 
 class Instruction(db.Model):
     __tablename__ = 'instruction'
@@ -277,6 +278,7 @@ class User(UserMixin, db.Model):
 
     # Relationship to interactions
     interactions: Mapped[list["UserRecipeInteraction"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    queue_items: Mapped[list["UserQueue"]] = relationship(back_populates="user", cascade="all, delete-orphan", order_by="UserQueue.position")
 
     @property
     def favorite_recipes(self):
@@ -333,3 +335,26 @@ class CollectionItem(db.Model):
 
     collection: Mapped["RecipeCollection"] = relationship(back_populates="items")
     recipe: Mapped["Recipe"] = relationship(back_populates="collections")
+
+
+# ---------------------------------------------------------------------------
+# User Cook-Next Queue
+# ---------------------------------------------------------------------------
+
+class UserQueue(db.Model):
+    """A prioritized 'Cook Next' queue for a logged-in user."""
+    __tablename__ = 'user_queue'
+    __table_args__ = (
+        UniqueConstraint('user_id', 'recipe_id', name='uq_user_queue_recipe'),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False, index=True)
+    recipe_id: Mapped[int] = mapped_column(ForeignKey('recipe.id'), nullable=False)
+    position: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    added_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime, default=datetime.datetime.utcnow, nullable=False
+    )
+
+    user: Mapped["User"] = relationship(back_populates="queue_items")
+    recipe: Mapped["Recipe"] = relationship(back_populates="queue_items")

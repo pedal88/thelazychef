@@ -107,6 +107,9 @@
                             <a href="{{ url_for('saved_recipes_view') }}"
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">Saved
                                 Recipes</a>
+                            <a href="{{ url_for('queue.next_recipes_view') }}"
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">🍳
+                                Cook Next</a>
                             {% endif %}
                             <a href="/recipes"
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">All
@@ -358,6 +361,36 @@
     </style>
 
     {% block scripts %}{% endblock %}
+
+    <!-- Global Queue Toast -->
+    <div id="global-queue-toast"
+        class="hidden fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-lg bg-slate-900 px-4 py-3 text-sm text-white shadow-xl">
+        <svg class="w-4 h-4 text-orange-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"></circle>
+            <polyline points="12 6 12 12 16 14" stroke="currentColor" stroke-width="2"></polyline>
+        </svg>
+        <span id="global-queue-toast-msg">Added to queue!</span>
+        <a href="/next-recipes" class="ml-1 underline text-orange-300 hover:text-orange-200 text-xs">View Queue</a>
+    </div>
+
+    <script>
+        function addToQueue(recipeId, btnEl) {
+            fetch(`/api/queue/add/${recipeId}`, { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    const msg = data.already_queued ? 'Already in your queue!' : 'Added to Cook Next queue!';
+                    if (data.success && !data.already_queued && btnEl) {
+                        btnEl.classList.remove('text-slate-400');
+                        btnEl.classList.add('text-orange-500');
+                    }
+                    const toast = document.getElementById('global-queue-toast');
+                    document.getElementById('global-queue-toast-msg').textContent = msg;
+                    toast.classList.remove('hidden');
+                    setTimeout(() => toast.classList.add('hidden'), 3000);
+                })
+                .catch(() => { });
+        }
+    </script>
 </body>
 
 </html>

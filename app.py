@@ -46,6 +46,9 @@ app.register_blueprint(collections_bp)
 from routes.admin_ingredients_routes import ingredients_bp
 app.register_blueprint(ingredients_bp)
 
+from routes.queue_routes import queue_bp
+app.register_blueprint(queue_bp)
+
 
 from utils.markdown_extensions import VideoExtension
 

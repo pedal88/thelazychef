@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+
+{% block title %}Cook Next Queue — The Lazy Chef{% endblock %}
+
+{% block head %}
+<!-- SortableJS CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+    <!-- Header -->
+    <div class="sm:flex sm:items-center mb-8">
+        <div class="sm:flex-auto">
+            <h1 class="text-2xl font-serif font-bold text-slate-900">🍳 Cook Next Queue</h1>
+            <p class="mt-1 text-sm text-slate-500">Drag to reorder. Your next meal is at the top.</p>
+        </div>
+        <div class="mt-4 sm:mt-0">
+            <a href="/recipes"
+                class="inline-flex items-center gap-2 rounded-md bg-orange-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-orange-500 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Browse Recipes
+            </a>
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div id="queue-toast"
+        class="hidden fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-lg bg-slate-900 px-4 py-3 text-sm text-white shadow-xl transition-all">
+        <svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        <span id="queue-toast-msg">Order saved.</span>
+    </div>
+
+    <!-- Queue Table -->
+    {% if queue_entries %}
+    <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 w-10"></th>
+                    <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 w-16">#</th>
+                    <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Recipe</th>
+                    <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 hidden sm:table-cell">Cuisine
+                    </th>
+                    <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 hidden sm:table-cell">Diet</th>
+                    <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Added</th>
+                    <th class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 pr-6"></th>
+                </tr>
+            </thead>
+            <tbody id="queue-sortable" class="divide-y divide-gray-100 bg-white">
+                {% for entry in queue_entries %}
+                <tr class="group hover:bg-orange-50/40 transition-colors" data-recipe-id="{{ entry.recipe_id }}">
+                    <!-- Drag handle -->
+                    <td class="pl-4 pr-2 py-4 text-slate-400 cursor-grab active:cursor-grabbing drag-handle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                        </svg>
+                    </td>
+
+                    <!-- Position badge -->
+                    <td class="pl-4 pr-3 py-4 text-sm">
+                        <span class="queue-position inline-flex items-center justify-center w-6 h-6 rounded-full
+                            {% if loop.index == 1 %}bg-orange-100 text-orange-700 font-bold{% else %}bg-slate-100 text-slate-500{% endif %}
+                            text-xs font-semibold">
+                            {{ loop.index }}
+                        </span>
+                    </td>
+
+                    <!-- Recipe name + image -->
+                    <td class="px-3 py-4">
+                        <a href="/recipe/{{ entry.recipe_id }}" class="flex items-center gap-3 group/link">
+                            <div class="h-12 w-12 flex-shrink-0 rounded-lg overflow-hidden bg-slate-100 shadow-sm">
+                                {% if entry.recipe.image_filename %}
+                                <img src="{{ get_recipe_image_url(entry.recipe) }}" alt="{{ entry.recipe.title }}"
+                                    class="h-full w-full object-cover">
+                                {% else %}
+                                <div
+                                    class="h-full w-full flex items-center justify-center bg-gradient-to-br from-orange-50 to-orange-100 text-xl">
+                                    🍽️
+                                </div>
+                                {% endif %}
+                            </div>
+                            <span
+                                class="text-sm font-medium text-slate-900 group-hover/link:text-orange-600 transition-colors line-clamp-2">
+                                {{ entry.recipe.title }}
+                            </span>
+                        </a>
+                    </td>
+
+                    <!-- Cuisine -->
+                    <td class="px-3 py-4 text-sm text-slate-500 hidden sm:table-cell">
+                        {{ entry.recipe.cuisine or '—' }}
+                    </td>
+
+                    <!-- Diet -->
+                    <td class="px-3 py-4 hidden sm:table-cell">
+                        {% if entry.recipe.diets_list %}
+                        <span
+                            class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                            {{ entry.recipe.diets_list | join(', ') }}
+                        </span>
+                        {% else %}
+                        <span class="text-slate-400 text-xs">—</span>
+                        {% endif %}
+                    </td>
+
+                    <!-- Added date -->
+                    <td class="px-3 py-4 text-xs text-slate-400 whitespace-nowrap">
+                        {{ entry.added_at.strftime('%d %b %Y') }}
+                    </td>
+
+                    <!-- Remove button -->
+                    <td class="px-3 py-4 text-right pr-6">
+                        <button type="button" onclick="removeFromQueue({{ entry.recipe_id }}, this)"
+                            title="Remove from queue"
+                            class="inline-flex items-center rounded-md p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-20 border-2 border-dashed border-slate-200 rounded-xl">
+        <div class="text-5xl mb-4">🍽️</div>
+        <h3 class="text-lg font-semibold text-slate-700 mb-1">Your queue is empty</h3>
+        <p class="text-sm text-slate-400 mb-6">Browse recipes and click the clock icon to add them here.</p>
+        <a href="/recipes"
+            class="inline-flex items-center gap-2 rounded-full bg-orange-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-orange-500 transition-colors shadow-sm">
+            Browse Recipes →
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // ── Drag & Drop Reorder ──
+    const sortableEl = document.getElementById('queue-sortable');
+    if (sortableEl) {
+        Sortable.create(sortableEl, {
+            handle: '.drag-handle',
+            animation: 150,
+            ghostClass: 'bg-orange-50',
+            onEnd: () => {
+                const rows = sortableEl.querySelectorAll('tr[data-recipe-id]');
+                const orderedIds = Array.from(rows).map(r => parseInt(r.dataset.recipeId));
+
+                // Update visible position badges
+                rows.forEach((row, i) => {
+                    const badge = row.querySelector('.queue-position');
+                    if (badge) {
+                        badge.textContent = i + 1;
+                        badge.className = badge.className.replace(/bg-orange-100 text-orange-700 font-bold|bg-slate-100 text-slate-500/, '');
+                        badge.classList.add(i === 0 ? 'bg-orange-100' : 'bg-slate-100');
+                        badge.classList.add(i === 0 ? 'text-orange-700' : 'text-slate-500');
+                        if (i === 0) badge.classList.add('font-bold');
+                    }
+                });
+
+                // Persist order to backend
+                fetch('/api/queue/reorder', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ordered_ids: orderedIds })
+                })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) showToast('Order saved!');
+                    })
+                    .catch(() => showToast('Could not save order.'));
+            }
+        });
+    }
+
+    // ── Remove from queue ──
+    function removeFromQueue(recipeId, btn) {
+        const row = btn.closest('tr');
+        row.style.opacity = '0.4';
+
+        fetch(`/api/queue/remove/${recipeId}`, { method: 'DELETE' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    row.remove();
+                    // Re-index position badges
+                    const remaining = sortableEl ? sortableEl.querySelectorAll('tr[data-recipe-id]') : [];
+                    remaining.forEach((r, i) => {
+                        const badge = r.querySelector('.queue-position');
+                        if (badge) badge.textContent = i + 1;
+                    });
+                    if (remaining.length === 0) location.reload();
+                    showToast('Removed from queue.');
+                }
+            })
+            .catch(() => { row.style.opacity = '1'; });
+    }
+
+    // ── Toast ──
+    function showToast(msg) {
+        const toast = document.getElementById('queue-toast');
+        const msgEl = document.getElementById('queue-toast-msg');
+        msgEl.textContent = msg;
+        toast.classList.remove('hidden');
+        setTimeout(() => toast.classList.add('hidden'), 2500);
+    }
+</script>
+{% endblock %}
