@@ -20,7 +20,7 @@ def get_slim_pantry_context():
         Ingredient.default_unit,
         Ingredient.tags,
         Ingredient.is_original
-    ).where(Ingredient.status == 'active')
+    ).where(db.and_(Ingredient.status == 'active', Ingredient.is_original == True, Ingredient.main_category != 'Imported'))
     results = db.session.execute(stmt).all()
     
     slim_context = []
