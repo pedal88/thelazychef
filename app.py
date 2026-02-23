@@ -19,7 +19,7 @@ from utils.decorators import admin_required
 from sqlalchemy import or_, func
 from sqlalchemy.orm import joinedload
 from services.pantry_service import get_slim_pantry_context
-from ai_engine import generate_recipe_ai, get_pantry_id, get_top_pantry_suggestions, chefs_data, generate_recipe_from_web_text, analyze_ingredient_ai, extract_nutrients_from_text
+from ai_engine import generate_recipe_ai, get_pantry_id, get_top_pantry_suggestions, chefs_data, generate_recipe_from_web_text, analyze_ingredient_ai, extract_nutrients_from_text, load_controlled_vocabularies
 from services.recipe_service import process_recipe_workflow, STATUS_SUCCESS, STATUS_MISSING
 from services.photographer_service import generate_visual_prompt, generate_actual_image, generate_visual_prompt_from_image, load_photographer_config, generate_image_variation, process_external_image
 from services.vertex_image_service import VertexImageGenerator
@@ -28,6 +28,7 @@ from services.storage_service import get_storage_provider, GoogleCloudStoragePro
 from utils.image_helpers import generate_ingredient_placeholder
 import base64
 from io import BytesIO
+from urllib.parse import urlencode
 import shutil
 import datetime
 from sqlalchemy import func
@@ -1002,6 +1003,23 @@ def admin_recipes_management():
     search_term = request.args.get('search', '').lower().strip()
     per_page = 50
 
+    # Filter parameters
+    selected_cuisines = request.args.getlist('cuisine')
+    selected_diets = request.args.getlist('diet')
+    selected_meal_types = request.args.getlist('meal_type')
+    selected_proteins = request.args.getlist('protein')
+    selected_difficulties = request.args.getlist('difficulty')
+    selected_statuses = request.args.getlist('status')
+
+    # Load Vocabs for filters
+    vocab = load_controlled_vocabularies()
+    cuisine_options = vocab.get('cuisines', [])
+    diet_options = vocab.get('diets', [])
+    meal_type_options = vocab.get('meal_types', [])
+    protein_options = vocab.get('proteins', [])
+    difficulty_options = vocab.get('difficulties', [])
+    status_options = ['draft', 'approved', 'rejected']
+
     # Base query — LEFT JOIN so recipes with no evaluation still appear
     # Ensure optimal DB queries for diets and evaluations
     stmt = db.select(Recipe).outerjoin(Recipe.evaluation).options(
@@ -1017,6 +1035,20 @@ def admin_recipes_management():
                 func.lower(Recipe.cuisine).contains(search_term)
             )
         )
+
+    # Apply Filters
+    if selected_cuisines:
+        stmt = stmt.where(Recipe.cuisine.in_(selected_cuisines))
+    if selected_proteins:
+        stmt = stmt.where(Recipe.protein_type.in_(selected_proteins))
+    if selected_difficulties:
+        stmt = stmt.where(Recipe.difficulty.in_(selected_difficulties))
+    if selected_statuses:
+        stmt = stmt.where(Recipe.status.in_(selected_statuses))
+    if selected_diets:
+        stmt = stmt.where(Recipe.diets.any(RecipeDiet.diet.in_(selected_diets)))
+    if selected_meal_types:
+        stmt = stmt.where(Recipe.meal_types.any(RecipeMealType.meal_type.in_(selected_meal_types)))
 
     # Apply sorting
     valid_cols = {
@@ -1048,7 +1080,20 @@ def admin_recipes_management():
         pagination=pagination,
         current_sort=sort_col,
         current_dir=sort_dir,
-        current_search=search_term
+        current_search=search_term,
+        cuisine_options=cuisine_options,
+        diet_options=diet_options,
+        meal_type_options=meal_type_options,
+        protein_options=protein_options,
+        difficulty_options=difficulty_options,
+        status_options=status_options,
+        selected_cuisines=selected_cuisines,
+        selected_diets=selected_diets,
+        selected_meal_types=selected_meal_types,
+        selected_proteins=selected_proteins,
+        selected_difficulties=selected_difficulties,
+        selected_statuses=selected_statuses,
+        urlencode=lambda args: urlencode(args, doseq=True)
     )
 
 @app.route('/admin/recipes/<int:recipe_id>/evaluate', methods=['POST'])
