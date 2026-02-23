@@ -1,6 +1,34 @@
 {% extends "base.html" %}
 {% import "components/modals/recipe_inspector.html" as inspector %}
 
+
+{% macro sortable_th(label, col_id, classes="") %}
+<th scope="col" class="{{ classes }}">
+    <a href="?search={{ current_search }}&sort={{ col_id }}&dir={% if current_sort == col_id and current_dir == 'desc' %}asc{% else %}desc{% endif %}"
+       class="group inline-flex items-center space-x-1 w-full h-full text-indigo-600 hover:text-indigo-900 focus:outline-none">
+        <span>{{ label }}</span>
+        <span class="ml-1 flex-none rounded text-gray-400 group-hover:bg-gray-200">
+            {% if current_sort == col_id %}
+                {% if current_dir == 'asc' %}
+                <svg class="h-4 w-4 text-indigo-600" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
+                </svg>
+                {% else %}
+                <svg class="h-4 w-4 text-indigo-600" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+                {% endif %}
+            {% else %}
+                <!-- Inactive sort icon -->
+                <svg class="h-4 w-4 text-gray-400 opacity-0 group-hover:opacity-100" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+            {% endif %}
+        </span>
+    </a>
+</th>
+{% endmacro %}
+
 {% macro colored_score(score_val) %}
 {% if score_val and score_val != '-' and score_val != 'None' %}
 {% set s = score_val | float | int %}
@@ -99,10 +127,14 @@
                     class="inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold text-red-600 shadow-sm ring-1 ring-inset ring-red-300 hover:bg-red-50"
                     onclick="bulkDeleteAdmin()">Delete Selected</button>
             </div>
-            <div class="w-full sm:w-72">
-                <input type="text" id="recipeSearch" placeholder="Search recipes..."
+            
+            <form method="GET" action="{{ url_for('admin_recipes_management') }}" class="w-full sm:w-72">
+                <input type="hidden" name="sort" value="{{ current_sort }}">
+                <input type="hidden" name="dir" value="{{ current_dir }}">
+                <input type="text" name="search" id="recipeSearch" value="{{ current_search }}" placeholder="Search recipes (press Enter)..."
                     class="block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
-            </div>
+            </form>
+
         </div>
 
         <!-- Table -->
@@ -122,8 +154,7 @@
                                     <th scope="col" data-sort-method="none"
                                         class="py-3.5 pl-4 pr-3 text-left text-xs font-semibold text-gray-900 sm:pl-6 no-sort">
                                         Image</th>
-                                    <th scope="col"
-                                        class="py-3.5 pl-4 pr-3 text-left text-xs font-semibold text-gray-900">Name</th>
+                                    {{ sortable_th('Name', 'title', 'py-3.5 pl-4 pr-3 text-left text-xs font-semibold text-gray-900') }}
                                     <th scope="col" data-sort-method="none"
                                         class="py-3.5 px-3 text-left text-xs font-semibold text-gray-900 no-sort">
                                         Actions</th>
@@ -132,9 +163,7 @@
                                         Status</th>
 
                                     <!-- Categorization Columns -->
-                                    <th scope="col"
-                                        class="col-cat py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
-                                        Cuisines</th>
+                                    {{ sortable_th('Cuisines', 'cuisine', 'col-cat py-3.5 px-3 text-left text-xs font-semibold text-gray-900') }}
                                     <th scope="col"
                                         class="col-cat py-3.5 px-3 text-left text-xs font-semibold text-gray-900">Diets
                                     </th>
@@ -144,23 +173,13 @@
                                     <th scope="col"
                                         class="col-cat py-3.5 px-3 text-left text-xs font-semibold text-gray-900">Main
                                         Protein</th>
-                                    <th scope="col"
-                                        class="col-cat py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
-                                        Difficulty</th>
+                                    {{ sortable_th('Difficulty', 'difficulty', 'col-cat py-3.5 px-3 text-left text-xs font-semibold text-gray-900') }}
 
                                     <!-- Nutrition Columns (Hidden initially) -->
-                                    <th scope="col"
-                                        class="col-nut hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
-                                        Calories</th>
-                                    <th scope="col"
-                                        class="col-nut hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
-                                        Protein (g)</th>
-                                    <th scope="col"
-                                        class="col-nut hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
-                                        Fat (g)</th>
-                                    <th scope="col"
-                                        class="col-nut hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
-                                        Carbs (g)</th>
+                                    {{ sortable_th('Calories', 'total_calories', 'col-nut hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900') }}
+                                    {{ sortable_th('Protein (g)', 'total_protein', 'col-nut hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900') }}
+                                    {{ sortable_th('Fat (g)', 'total_fat', 'col-nut hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900') }}
+                                    {{ sortable_th('Carbs (g)', 'total_carbs', 'col-nut hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900') }}
                                     <th scope="col"
                                         class="col-nut hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
                                         Fiber (g)</th>
@@ -169,24 +188,12 @@
                                         Sugar (g)</th>
 
                                     <!-- QA Columns (Hidden initially) -->
-                                    <th scope="col"
-                                        class="col-qa col-cat py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
-                                        QA Score</th>
-                                    <th scope="col"
-                                        class="col-qa hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
-                                        Name Fit</th>
-                                    <th scope="col"
-                                        class="col-qa hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
-                                        Ing. Match</th>
-                                    <th scope="col"
-                                        class="col-qa hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
-                                        Components</th>
-                                    <th scope="col"
-                                        class="col-qa hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
-                                        Amounts</th>
-                                    <th scope="col"
-                                        class="col-qa hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
-                                        Steps</th>
+                                    {{ sortable_th('QA Score', 'total_score', 'col-qa col-cat py-3.5 px-3 text-left text-xs font-semibold text-gray-900') }}
+                                    {{ sortable_th('Name Fit', 'score_name', 'col-qa hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900') }}
+                                    {{ sortable_th('Ing. Match', 'score_ingredients', 'col-qa hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900') }}
+                                    {{ sortable_th('Components', 'score_components', 'col-qa hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900') }}
+                                    {{ sortable_th('Amounts', 'score_amounts', 'col-qa hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900') }}
+                                    {{ sortable_th('Steps', 'score_steps', 'col-qa hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900') }}
                                     <th scope="col"
                                         class="col-qa hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
                                         Image</th>
@@ -707,8 +714,7 @@
     }
 </script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.2.1/tablesort.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.2.1/sorts/tablesort.number.min.js"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Init TableSort on the main table

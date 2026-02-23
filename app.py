@@ -999,6 +999,7 @@ def admin_recipes_management():
     sort_col = request.args.get('sort', 'id')
     sort_dir = request.args.get('dir', 'desc')
     page = request.args.get('page', 1, type=int)
+    search_term = request.args.get('search', '').lower().strip()
     per_page = 50
 
     # Base query — LEFT JOIN so recipes with no evaluation still appear
@@ -1008,6 +1009,14 @@ def admin_recipes_management():
         joinedload(Recipe.evaluation),
         joinedload(Recipe.meal_types)
     )
+
+    if search_term:
+        stmt = stmt.where(
+            or_(
+                func.lower(Recipe.title).contains(search_term),
+                func.lower(Recipe.cuisine).contains(search_term)
+            )
+        )
 
     # Apply sorting
     valid_cols = {
@@ -1039,6 +1048,7 @@ def admin_recipes_management():
         pagination=pagination,
         current_sort=sort_col,
         current_dir=sort_dir,
+        current_search=search_term
     )
 
 @app.route('/admin/recipes/<int:recipe_id>/evaluate', methods=['POST'])
