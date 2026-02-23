@@ -67,6 +67,34 @@ def _resolve_ingredient(ing) -> Ingredient | None:
     return None
 
 
+def sanitize_ai_ingredients(recipe_data) -> None:
+    """
+    Interrogates the AI payload and deterministically forcibly overwrites matched
+    basic utility ingredients (e.g. 'salt', 'water') with their exact database 
+    'food_id' constants to prevent lexical drift or LLM hallucination mapping.
+    Modifies recipe_data in place.
+    """
+    # Dynamically fetch map of all basic ingredients from DB
+    basics_stmt = db.select(Ingredient.name, Ingredient.food_id).where(Ingredient.is_basic_ingredient == True)
+    basics_results = db.session.execute(basics_stmt).all()
+    basic_overrides = {row.name.strip().lower(): row.food_id for row in basics_results if row.name}
+
+    if not basic_overrides:
+        return
+
+    for group in getattr(recipe_data, 'ingredient_groups', []):
+        for ing in getattr(group, 'ingredients', []):
+            name = ing.name.strip().lower() if hasattr(ing, 'name') else ing.get('name', '').strip().lower()
+            if name in basic_overrides:
+                correct_id = basic_overrides[name]
+                if hasattr(ing, 'pantry_id'):
+                    ing.pantry_id = correct_id
+                elif isinstance(ing, dict):
+                    ing['pantry_id'] = correct_id
+                else:
+                    setattr(ing, 'pantry_id', correct_id)
+
+
 # ---------------------------------------------------------------------------
 # Main entry point
 # ---------------------------------------------------------------------------
@@ -86,6 +114,9 @@ def process_recipe_workflow(recipe_data, query_context: str, chef_id: str) -> di
             recipe_id:  (int) — only when status == SUCCESS
             missing_ingredients:  (list[dict]) — only when status == MISSING
     """
+
+    # ── Step 0: Sanitize Lexical Drift ────────────────────────────────────
+    sanitize_ai_ingredients(recipe_data)
 
     # ── Step 1: Pre-resolve and create missing ingredients ────────────────
     import datetime

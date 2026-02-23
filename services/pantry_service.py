@@ -20,7 +20,7 @@ def get_slim_pantry_context():
         Ingredient.default_unit,
         Ingredient.tags,
         Ingredient.is_original
-    )
+    ).where(Ingredient.status == 'active')
     results = db.session.execute(stmt).all()
     
     slim_context = []
