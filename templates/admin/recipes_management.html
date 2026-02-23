@@ -19,6 +19,42 @@
 {% block title %}Recipes Management - The Lazy Chef{% endblock %}
 
 {% block content %}
+<style>
+    th[role="columnheader"]:not(.no-sort) {
+        cursor: pointer;
+        user-select: none;
+    }
+
+    th[role="columnheader"]:not(.no-sort):hover {
+        background-color: #f3f4f6;
+    }
+
+    th[role="columnheader"]:not(.no-sort)::after {
+        content: '';
+        float: right;
+        margin-top: 5px;
+        border-width: 0 4px 4px;
+        border-style: solid;
+        border-color: #cbd5e1 transparent;
+        visibility: hidden;
+    }
+
+    th[role="columnheader"]:not(.no-sort):hover::after {
+        visibility: visible;
+    }
+
+    th[aria-sort="ascending"]:not(.no-sort)::after {
+        border-bottom: 4px solid #64748b;
+        border-top: none;
+        visibility: visible;
+    }
+
+    th[aria-sort="descending"]:not(.no-sort)::after {
+        border-top: 4px solid #64748b;
+        border-bottom: none;
+        visibility: visible;
+    }
+</style>
 <div class="bg-white py-8 max-w-[95%] mx-auto">
     <div class="px-4 sm:px-6 lg:px-8">
 
@@ -77,17 +113,19 @@
                         <table class="min-w-full divide-y divide-gray-300">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th scope="col" class="relative px-3 sm:w-12 sm:px-6">
+                                    <th scope="col" class="relative px-3 sm:w-12 sm:px-6 no-sort"
+                                        data-sort-method="none">
                                         <input type="checkbox" id="master-cb"
                                             class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600 sm:left-6"
                                             onchange="toggleAllRecipes(this)">
                                     </th>
-                                    <th scope="col"
-                                        class="py-3.5 pl-4 pr-3 text-left text-xs font-semibold text-gray-900 sm:pl-6">
+                                    <th scope="col" data-sort-method="none"
+                                        class="py-3.5 pl-4 pr-3 text-left text-xs font-semibold text-gray-900 sm:pl-6 no-sort">
                                         Image</th>
                                     <th scope="col"
                                         class="py-3.5 pl-4 pr-3 text-left text-xs font-semibold text-gray-900">Name</th>
-                                    <th scope="col" class="py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
+                                    <th scope="col" data-sort-method="none"
+                                        class="py-3.5 px-3 text-left text-xs font-semibold text-gray-900 no-sort">
                                         Actions</th>
                                     <th scope="col"
                                         class="py-3.5 pl-4 pr-3 text-left text-xs font-semibold text-gray-900">Publish
