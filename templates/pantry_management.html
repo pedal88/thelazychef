@@ -209,7 +209,8 @@
                             <td class="p-4 font-medium align-middle">
                                 <span
                                     class="name-text {{ 'text-slate-900 font-bold' if ing.is_basic_ingredient else 'text-slate-500 font-normal' }}">
-                                    {{ ing.name }}
+                                    {{ ing.name }} <span class="ml-1 text-xs text-slate-400 font-normal">#{{ ing.id
+                                        }}</span>
                                 </span>
                             </td>
 
