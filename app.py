@@ -1867,7 +1867,7 @@ def generate_web_recipe():
 
         # 2. Build clean pantry context (no IMP duplicates)
         slim_context = get_slim_pantry_context()
-        clean_context = [item for item in slim_context if not str(item.get('i', '')).startswith('IMP-')]
+        clean_context = slim_context
 
         # 3. Call AI
         recipe_data = generate_recipe_from_web_text(
@@ -1900,7 +1900,7 @@ def generate_from_text():
     try:
         # 1. Build clean pantry context (no IMP duplicates)
         slim_context = get_slim_pantry_context()
-        clean_context = [item for item in slim_context if not str(item.get('i', '')).startswith('IMP-')]
+        clean_context = slim_context
 
         # 2. Call AI — reuse web-text extractor (handles noisy input)
         recipe_data = generate_recipe_from_web_text(
@@ -1942,7 +1942,7 @@ def api_generate_single_idea():
     
     try:
         pantry_context = get_slim_pantry_context()
-        clean_context = [item for item in pantry_context if not str(item.get('i', '')).startswith('IMP-')]
+        clean_context = pantry_context
 
         recipe_data = generate_recipe_ai(query, clean_context, chef_id=chef_id)
         result = process_recipe_workflow(recipe_data, query_context=query, chef_id=chef_id)
@@ -1975,7 +1975,7 @@ def generate():
     try:
         # 1. Build clean pantry context (no IMP duplicates)
         pantry_context = get_slim_pantry_context()
-        clean_context = [item for item in pantry_context if not str(item.get('i', '')).startswith('IMP-')]
+        clean_context = pantry_context
 
         # 2. Call AI
         recipe_data = generate_recipe_ai(query, clean_context, chef_id=chef_id)
@@ -2099,7 +2099,7 @@ def generate_from_video():
         try:
             # 2. Build clean pantry context (no IMP duplicates)
             pantry_context = get_slim_pantry_context()
-            clean_context = [item for item in pantry_context if not str(item.get('i', '')).startswith('IMP-')]
+            clean_context = pantry_context
 
             # 3. Call AI (video analysis)
             recipe_data = generate_recipe_from_video(video_path, caption, clean_context)

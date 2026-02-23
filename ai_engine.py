@@ -536,10 +536,9 @@ def set_pantry_memory(slim_context):
         pantry_id = item.get('i', item.get('id'))
         is_original = item.get('o', item.get('is_original', True))
         
-        # Never add IMP- duplicates
-        if pantry_id and str(pantry_id).startswith('IMP-'):
-            skipped += 1
-            continue
+        # We now ALLOW IMP- IDs here because the upstream context generator
+        # (pantry_service) already filters by `status == 'active'`. If it's active,
+        # it's considered valid for injection.
         
         if name and pantry_id and is_original:
             pantry_map[name.lower()] = pantry_id
@@ -554,10 +553,7 @@ def set_pantry_memory(slim_context):
         if not name or not pantry_id or is_original:
             continue
         
-        # Never add IMP- duplicates
-        if str(pantry_id).startswith('IMP-'):
-            skipped += 1
-            continue
+        # We now ALLOW IMP- IDs here for valid, active non-original ingredients.
         
         n_lower = name.lower()
         n_clean = normalize_ingredient_name(name)

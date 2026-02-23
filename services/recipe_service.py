@@ -40,14 +40,14 @@ def _extract_pre_resolved_id(ing) -> str | None:
 def _resolve_ingredient(ing) -> Ingredient | None:
     """
     Try to resolve an ingredient to a DB record.
-    Priority 1: LLM-provided pantry_id (reject IMP-).
+    Priority 1: LLM-provided pantry_id.
     Priority 2: Fuzzy name match via get_pantry_id.
     Returns the Ingredient ORM object or None.
     """
     pre_id = _extract_pre_resolved_id(ing)
 
-    # Priority 1: Pre-resolved ID (reject IMP duplicates)
-    if pre_id and not str(pre_id).startswith('IMP-'):
+    # Priority 1: Pre-resolved ID (must exist in DB)
+    if pre_id:
         record = db.session.execute(
             db.select(Ingredient).where(Ingredient.food_id == pre_id)
         ).scalars().first()
