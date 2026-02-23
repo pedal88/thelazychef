@@ -197,7 +197,7 @@
                                             onclick="openQaReport(this)" title="View QA Report Reasoning"
                                             data-qa-title="{{ recipe.title | escape }}"
                                             data-qa-score="{{ recipe.evaluation.total_score }}"
-                                            data-qa-details="{{ recipe.evaluation.evaluation_details | tojson | escape }}">
+                                            data-qa-details="{{ recipe.evaluation.evaluation_details | tojson | forceescape }}">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                                 stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -279,7 +279,7 @@
                                                 {% else %}bg-green-50 text-green-700 ring-green-600/20{% endif %}"
                                             onclick="openQaReport(this)" data-qa-title="{{ recipe.title | escape }}"
                                             data-qa-score="{{ recipe.evaluation.total_score }}"
-                                            data-qa-details="{{ recipe.evaluation.evaluation_details | tojson | escape }}">
+                                            data-qa-details="{{ recipe.evaluation.evaluation_details | tojson | forceescape }}">
                                             {{ recipe.evaluation.total_score }}
                                         </span>
                                         {% else %}
