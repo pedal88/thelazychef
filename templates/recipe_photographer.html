@@ -101,14 +101,7 @@
                         <p class="text-sm font-medium opacity-50">No image generated yet</p>
                     </div>
 
-                    <!-- Loading State -->
-                    <div id="image-loading"
-                        class="hidden absolute inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center">
-                        <div class="text-center text-white">
-                            <div class="mb-4 text-4xl animate-bounce">👨‍🍳</div>
-                            <p class="font-bold">Developing...</p>
-                        </div>
-                    </div>
+
 
                     <!-- Save Actions -->
                     <div id="save-actions"
@@ -179,12 +172,11 @@
         if (!prompt) return;
 
         // UI State
-        const loader = document.getElementById('image-loading');
         const resultImg = document.getElementById('result-image');
         const placeholder = document.getElementById('image-placeholder');
         const saveActions = document.getElementById('save-actions');
 
-        loader.classList.remove('hidden');
+        showLoading('Cooking up pixels...', 'The AI is generating your photo...');
         saveActions.classList.add('hidden');
 
         try {
@@ -211,7 +203,7 @@
             console.error(e);
             alert('Failed to generate image.');
         } finally {
-            loader.classList.add('hidden');
+            hideLoading();
         }
     }
 

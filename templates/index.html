@@ -175,27 +175,7 @@
             </div>
         </div>
 
-        <!-- Loading Overlay (Shared) -->
-        <div id="loadingOverlay"
-            class="fixed inset-0 z-50 hidden bg-slate-900/90 backdrop-blur-sm flex items-center justify-center">
-            <div class="text-center max-w-sm px-4">
-                <div class="mb-6 relative mx-auto w-24 h-24">
-                    <div class="absolute inset-0 rounded-full border-t-2 border-r-2 border-white animate-spin">
-                    </div>
-                    <div
-                        class="absolute inset-2 rounded-full border-t-2 border-l-2 border-slate-500 animate-spin reverse">
-                    </div>
-                    <div class="absolute inset-0 flex items-center justify-center text-4xl" id="loadingIcon">👀
-                    </div>
-                </div>
-                <h3 class="text-xl font-serif font-bold text-white mb-2" id="loadingTitle">Processing...</h3>
-                <p class="text-slate-300" id="loadingText">Please wait.</p>
-                <!-- Progress emulation -->
-                <div class="mt-6 w-full bg-slate-700 rounded-full h-1.5 overflow-hidden">
-                    <div class="bg-white h-1.5 rounded-full animate-progress origin-left" style="width: 0%"></div>
-                </div>
-            </div>
-        </div>
+
 
     </div>
 </div>
@@ -232,30 +212,5 @@
     const chefParam = urlParams.get('chef');
     if (chefParam) selectChef(chefParam);
 
-    // Unified Loading Handler
-    function showLoading(title, text) {
-        document.getElementById('loadingOverlay').classList.remove('hidden');
-        document.getElementById('loadingTitle').innerText = title;
-        document.getElementById('loadingText').innerText = text;
-
-        const bar = document.querySelector('.animate-progress');
-        bar.style.transition = "width 20s cubic-bezier(0.1, 0.7, 1.0, 0.1)";
-        setTimeout(() => bar.style.width = "100%", 100);
-    }
 </script>
-<style>
-    @keyframes spin {
-        to {
-            transform: rotate(360deg);
-        }
-    }
-
-    .animate-spin {
-        animation: spin 1s linear infinite;
-    }
-
-    .reverse {
-        animation-direction: reverse;
-    }
-</style>
 {% endblock %}

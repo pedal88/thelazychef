@@ -269,20 +269,35 @@ def get_feed_recipes():
     limit = 10
     
     if current_user.is_authenticated:
-        # Exclude recipes user has already interacted with
-        subq = db.select(UserRecipeInteraction.recipe_id).where(UserRecipeInteraction.user_id == current_user.id)
+        # Priority 1: Exclude recipes user has interacted with (new ones only)
+        subq_all = db.select(UserRecipeInteraction.recipe_id).where(UserRecipeInteraction.user_id == current_user.id)
         stmt = (
             db.select(Recipe)
             .where(Recipe.status == 'approved')  # Public guard
-            .where(Recipe.id.not_in(subq))
+            .where(Recipe.id.not_in(subq_all))
             .order_by(func.random())
             .limit(limit)
         )
+        recipes = db.session.execute(stmt).scalars().all()
+        
+        # Priority 2: If we've seen everything, shuffle through the "no" stack
+        if not recipes:
+            subq_pass = db.select(UserRecipeInteraction.recipe_id).where(
+                UserRecipeInteraction.user_id == current_user.id,
+                UserRecipeInteraction.status == 'pass'
+            )
+            stmt = (
+                db.select(Recipe)
+                .where(Recipe.status == 'approved')
+                .where(Recipe.id.in_(subq_pass))
+                .order_by(func.random())
+                .limit(limit)
+            )
+            recipes = db.session.execute(stmt).scalars().all()
     else:
         # Anonymous: Random selection of approved only
         stmt = db.select(Recipe).where(Recipe.status == 'approved').order_by(func.random()).limit(limit)
-        
-    recipes = db.session.execute(stmt).scalars().all()
+        recipes = db.session.execute(stmt).scalars().all()
     
     data = []
     for r in recipes:
@@ -336,10 +351,10 @@ def handle_interaction(recipe_id):
     db.session.commit()
     return jsonify({'success': True})
 
-@app.route('/my-favorites')
+@app.route('/saved-recipes')
 @login_required
-def my_favorites_view():
-    """Renders the user's favorite recipes."""
+def saved_recipes_view():
+    """Renders the user's saved recipes."""
     # Re-use the recipes_list template but with a constrained query
     # Get favorites ordered by saved_at (descending)
     
