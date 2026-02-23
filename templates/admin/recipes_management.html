@@ -197,7 +197,13 @@
                                             onclick="openQaReport(this)" title="View QA Report Reasoning"
                                             data-qa-title="{{ recipe.title | escape }}"
                                             data-qa-score="{{ recipe.evaluation.total_score }}"
-                                            data-qa-details="{{ recipe.evaluation.evaluation_details | tojson | forceescape }}">
+                                            data-qa-details="{{ recipe.evaluation.evaluation_details | tojson | forceescape }}"
+                                            data-qa-s-name="{{ recipe.evaluation.score_name }}"
+                                            data-qa-s-ingredients="{{ recipe.evaluation.score_ingredients }}"
+                                            data-qa-s-components="{{ recipe.evaluation.score_components }}"
+                                            data-qa-s-amounts="{{ recipe.evaluation.score_amounts }}"
+                                            data-qa-s-steps="{{ recipe.evaluation.score_steps }}"
+                                            data-qa-s-image="{{ recipe.evaluation.score_image }}">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                                 stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -279,7 +285,13 @@
                                                 {% else %}bg-green-50 text-green-700 ring-green-600/20{% endif %}"
                                             onclick="openQaReport(this)" data-qa-title="{{ recipe.title | escape }}"
                                             data-qa-score="{{ recipe.evaluation.total_score }}"
-                                            data-qa-details="{{ recipe.evaluation.evaluation_details | tojson | forceescape }}">
+                                            data-qa-details="{{ recipe.evaluation.evaluation_details | tojson | forceescape }}"
+                                            data-qa-s-name="{{ recipe.evaluation.score_name }}"
+                                            data-qa-s-ingredients="{{ recipe.evaluation.score_ingredients }}"
+                                            data-qa-s-components="{{ recipe.evaluation.score_components }}"
+                                            data-qa-s-amounts="{{ recipe.evaluation.score_amounts }}"
+                                            data-qa-s-steps="{{ recipe.evaluation.score_steps }}"
+                                            data-qa-s-image="{{ recipe.evaluation.score_image }}">
                                             {{ recipe.evaluation.total_score }}
                                         </span>
                                         {% else %}
@@ -446,18 +458,23 @@
 
         let listStr = "";
         const mapping = [
-            { label: 'Name Fit', keys: ['reasoning_name', 'name_fit'] },
-            { label: 'Ingredient Match', keys: ['reasoning_ingredients', 'ingredient_fit'] },
-            { label: 'Components', keys: ['reasoning_components', 'component_logic'] },
-            { label: 'Amounts', keys: ['reasoning_amounts', 'amounts'] },
-            { label: 'Steps Clarity', keys: ['reasoning_steps', 'step_clarity'] },
-            { label: 'Image Quality', keys: ['reasoning_image', 'image_logic'] }
+            { label: 'Name Fit', keys: ['reasoning_name', 'name_fit'], scoreKey: 'qaSName' },
+            { label: 'Ingredient Match', keys: ['reasoning_ingredients', 'ingredient_fit'], scoreKey: 'qaSIngredients' },
+            { label: 'Components', keys: ['reasoning_components', 'component_logic'], scoreKey: 'qaSComponents' },
+            { label: 'Amounts', keys: ['reasoning_amounts', 'amounts'], scoreKey: 'qaSAmounts' },
+            { label: 'Steps Clarity', keys: ['reasoning_steps', 'step_clarity'], scoreKey: 'qaSSteps' },
+            { label: 'Image Quality', keys: ['reasoning_image', 'image_logic'], scoreKey: 'qaSImage' }
         ];
 
         for (const item of mapping) {
             let val = details[item.keys[0]] || details[item.keys[1]];
+            let score = btn.dataset[item.scoreKey];
+            let scoreStr = (score && score !== 'None')
+                ? ` <span class="ml-2 inline-flex items-center rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-700/10">${score}/100</span>`
+                : '';
+
             if (val) {
-                listStr += "<li><strong class='text-gray-900'>" + item.label + ":</strong> " + val + "</li><br/>";
+                listStr += "<li><strong class='text-gray-900'>" + item.label + "</strong>" + scoreStr + "<p class='mt-1 text-gray-600'>" + val + "</p></li><br/>";
             }
         }
         document.getElementById('qa-modal-list').innerHTML = listStr;
