@@ -1,0 +1,538 @@
+{% extends "base.html" %}
+{% import "components/modals/recipe_inspector.html" as inspector %}
+
+{% block title %}Recipes Management - The Lazy Chef{% endblock %}
+
+{% block content %}
+<div class="bg-white py-8 max-w-[95%] mx-auto">
+    <div class="px-4 sm:px-6 lg:px-8">
+
+        <!-- Header -->
+        <div class="sm:flex sm:items-center">
+            <div class="sm:flex-auto">
+                <h1 class="text-base font-semibold leading-6 text-gray-900">Recipes Management</h1>
+                <p class="mt-2 text-sm text-gray-700">Master dashboard for categorization, nutrition, and QA scoring.
+                </p>
+            </div>
+
+            <!-- Tailwind Tabs / Pills -->
+            <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+                <button type="button"
+                    class="view-toggle px-3 py-1.5 text-sm font-medium rounded-md text-gray-700 hover:text-gray-900 hover:bg-white transition-all shadow-sm bg-white"
+                    data-view="cat">
+                    Categorization
+                </button>
+                <button type="button"
+                    class="view-toggle px-3 py-1.5 text-sm font-medium rounded-md text-gray-500 hover:text-gray-900 hover:bg-white transition-all"
+                    data-view="nut">
+                    Nutrition
+                </button>
+                <button type="button"
+                    class="view-toggle px-3 py-1.5 text-sm font-medium rounded-md text-gray-500 hover:text-gray-900 hover:bg-white transition-all"
+                    data-view="qa">
+                    QA Scoring
+                </button>
+            </div>
+        </div>
+
+        <!-- Action Bar -->
+        <div class="mt-4 flex flex-wrap items-center gap-3">
+            <button id="score-selected-btn"
+                class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                onclick="bulkScoreSelected()">Score Selected</button>
+            <button id="score-all-btn"
+                class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                onclick="bulkScoreAll()">Score All Unscored</button>
+            <button id="delete-selected-btn"
+                class="inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold text-red-600 shadow-sm ring-1 ring-inset ring-red-300 hover:bg-red-50"
+                onclick="bulkDeleteAdmin()">Delete Selected</button>
+        </div>
+
+        <!-- Table -->
+        <div class="mt-8 flow-root">
+            <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                    <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                        <table class="min-w-full divide-y divide-gray-300">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="relative px-3 sm:w-12 sm:px-6">
+                                        <input type="checkbox" id="master-cb"
+                                            class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600 sm:left-6"
+                                            onchange="toggleAllRecipes(this)">
+                                    </th>
+                                    <th scope="col"
+                                        class="py-3.5 pl-4 pr-3 text-left text-xs font-semibold text-gray-900 sm:pl-6">
+                                        Image</th>
+                                    <th scope="col"
+                                        class="py-3.5 pl-4 pr-3 text-left text-xs font-semibold text-gray-900">Name</th>
+                                    <th scope="col"
+                                        class="py-3.5 pl-4 pr-3 text-left text-xs font-semibold text-gray-900">Publish
+                                        Status</th>
+
+                                    <!-- Categorization Columns -->
+                                    <th scope="col"
+                                        class="col-cat py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
+                                        Cuisines</th>
+                                    <th scope="col"
+                                        class="col-cat py-3.5 px-3 text-left text-xs font-semibold text-gray-900">Diets
+                                    </th>
+                                    <th scope="col"
+                                        class="col-cat py-3.5 px-3 text-left text-xs font-semibold text-gray-900">Meal
+                                        Type</th>
+                                    <th scope="col"
+                                        class="col-cat py-3.5 px-3 text-left text-xs font-semibold text-gray-900">Main
+                                        Protein</th>
+                                    <th scope="col"
+                                        class="col-cat py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
+                                        Difficulty</th>
+
+                                    <!-- Nutrition Columns (Hidden initially) -->
+                                    <th scope="col"
+                                        class="col-nut hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
+                                        Calories</th>
+                                    <th scope="col"
+                                        class="col-nut hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
+                                        Protein (g)</th>
+                                    <th scope="col"
+                                        class="col-nut hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
+                                        Fat (g)</th>
+                                    <th scope="col"
+                                        class="col-nut hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
+                                        Carbs (g)</th>
+
+                                    <!-- QA Columns (Hidden initially) -->
+                                    <th scope="col"
+                                        class="col-qa hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
+                                        QA Score</th>
+                                    <th scope="col"
+                                        class="col-qa hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
+                                        Name Fit</th>
+                                    <th scope="col"
+                                        class="col-qa hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
+                                        Ing. Match</th>
+                                    <th scope="col"
+                                        class="col-qa hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
+                                        Components</th>
+                                    <th scope="col"
+                                        class="col-qa hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
+                                        Amounts</th>
+                                    <th scope="col"
+                                        class="col-qa hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
+                                        Steps</th>
+                                    <th scope="col"
+                                        class="col-qa hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
+                                        Image</th>
+
+                                    <th scope="col" class="py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
+                                        Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 bg-white">
+                                {% for recipe in recipes %}
+                                <tr class="hover:bg-gray-50 recipe-row" data-recipe-id="{{ recipe.id }}"
+                                    data-has-score="{{ 'true' if recipe.evaluation else 'false' }}">
+                                    <td class="relative px-3 sm:w-12 sm:px-6">
+                                        <input
+                                            class="recipe-row-cb absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600 sm:left-6"
+                                            type="checkbox" value="{{ recipe.id }}" onchange="toggleRowSelection(this)">
+                                    </td>
+                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 sm:pl-6 text-sm">
+                                        {% if recipe.image_filename %}
+                                        <img src="{{ url_for('static', filename='recipes/' + recipe.image_filename) }}"
+                                            class="h-12 w-12 rounded-md object-cover" alt="Image">
+                                        {% else %}
+                                        <div
+                                            class="h-12 w-12 rounded-md bg-gray-100 flex items-center justify-center text-gray-400 text-xs text-center border border-gray-200">
+                                            No Img
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900">{{
+                                        recipe.title }}</td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                        <select
+                                            class="recipe-status-dropdown rounded-md border-0 py-1.5 pl-3 pr-8 text-sm ring-1 ring-inset focus:ring-2 focus:ring-inset sm:leading-6"
+                                            data-recipe-id="{{ recipe.id }}" data-prev="{{ recipe.status }}">
+                                            <option value="draft" {% if recipe.status=='draft' %}selected{% endif %}>
+                                                Draft</option>
+                                            <option value="approved" {% if recipe.status=='approved' %}selected{% endif
+                                                %}>Approved</option>
+                                            <option value="rejected" {% if recipe.status=='rejected' %}selected{% endif
+                                                %}>Rejected</option>
+                                        </select>
+                                    </td>
+
+                                    <!-- Cat -->
+                                    <td class="col-cat whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{
+                                        recipe.cuisine }}</td>
+                                    <td class="col-cat px-3 py-4 text-sm text-gray-500 max-w-xs truncate">
+                                        <div class="flex flex-wrap gap-1">
+                                            {% for diet in recipe.diets_list %}
+                                            <span
+                                                class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">{{
+                                                diet }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </td>
+                                    <td class="col-cat px-3 py-4 text-sm text-gray-500 max-w-xs truncate">
+                                        <div class="flex flex-wrap gap-1">
+                                            {% for mt in recipe.meal_types_list %}
+                                            <span
+                                                class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">{{
+                                                mt }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </td>
+                                    <td class="col-cat whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{
+                                        recipe.protein_type }}</td>
+                                    <td class="col-cat whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{
+                                        recipe.difficulty }}</td>
+
+                                    <!-- Nut -->
+                                    <td class="col-nut hidden whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{
+                                        recipe.total_calories | int if recipe.total_calories else 0 }}</td>
+                                    <td class="col-nut hidden whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{
+                                        recipe.total_protein | int if recipe.total_protein else 0 }}</td>
+                                    <td class="col-nut hidden whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{
+                                        recipe.total_fat | int if recipe.total_fat else 0 }}</td>
+                                    <td class="col-nut hidden whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{
+                                        recipe.total_carbs | int if recipe.total_carbs else 0 }}</td>
+
+                                    <!-- QA -->
+                                    <td class="col-qa hidden whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                        {% if recipe.evaluation %}
+                                        <span class="cursor-pointer inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset
+                                                {% if recipe.evaluation.total_score < 80 %}bg-red-50 text-red-700 ring-red-600/10
+                                                {% elif recipe.evaluation.total_score <= 90 %}bg-yellow-50 text-yellow-800 ring-yellow-600/20
+                                                {% else %}bg-green-50 text-green-700 ring-green-600/20{% endif %}"
+                                            onclick="openQaReport(this)" data-qa-title="{{ recipe.title | escape }}"
+                                            data-qa-score="{{ recipe.evaluation.total_score }}"
+                                            data-qa-details="{{ recipe.evaluation.evaluation_details | tojson | escape }}">
+                                            {{ recipe.evaluation.total_score }}
+                                        </span>
+                                        {% else %}
+                                        <button
+                                            class="rounded bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                                            onclick="runSingleScore('{{ recipe.id }}', this)">Run QA</button>
+                                        {% endif %}
+                                    </td>
+                                    <td class="col-qa hidden whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{
+                                        recipe.evaluation.score_name if recipe.evaluation else '-' }}</td>
+                                    <td class="col-qa hidden whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{
+                                        recipe.evaluation.score_ingredients if recipe.evaluation else '-' }}</td>
+                                    <td class="col-qa hidden whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{
+                                        recipe.evaluation.score_components if recipe.evaluation else '-' }}</td>
+                                    <td class="col-qa hidden whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{
+                                        recipe.evaluation.score_amounts if recipe.evaluation else '-' }}</td>
+                                    <td class="col-qa hidden whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{
+                                        recipe.evaluation.score_steps if recipe.evaluation else '-' }}</td>
+                                    <td class="col-qa hidden whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{
+                                        recipe.evaluation.score_image if recipe.evaluation else '-' }}</td>
+
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 text-right space-x-2">
+                                        <button class="text-indigo-600 hover:text-indigo-900 font-semibold"
+                                            onclick="openInspector('{{ recipe.id }}')">Inspect</button>
+                                        <a href="/recipe/{{ recipe.id }}" target="_blank"
+                                            class="text-gray-600 hover:text-gray-900 font-semibold">View</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination Controls -->
+                    <div
+                        class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4 rounded-lg shadow-sm">
+                        <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                            <div>
+                                <p class="text-sm text-gray-700">
+                                    Showing recipes {% if pagination.pages > 0 %}(Page <span class="font-medium">{{
+                                        pagination.page }}</span> of <span class="font-medium">{{ pagination.pages
+                                        }}</span>){% endif %}
+                                </p>
+                            </div>
+                            <div>
+                                {% if pagination.pages > 1 %}
+                                <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm"
+                                    aria-label="Pagination">
+                                    <a href="{% if pagination.has_prev %}{{ url_for('admin_recipes_management', page=pagination.prev_num) }}{% else %}#{% endif %}"
+                                        class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 {% if not pagination.has_prev %}pointer-events-none opacity-50{% endif %}">
+                                        <span class="sr-only">Previous</span>
+                                        <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                            <path fill-rule="evenodd"
+                                                d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                    </a>
+                                    <a href="{% if pagination.has_next %}{{ url_for('admin_recipes_management', page=pagination.next_num) }}{% else %}#{% endif %}"
+                                        class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 {% if not pagination.has_next %}pointer-events-none opacity-50{% endif %}">
+                                        <span class="sr-only">Next</span>
+                                        <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                            <path fill-rule="evenodd"
+                                                d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                    </a>
+                                </nav>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Render Inspector Modal -->
+{{ inspector.recipe_inspector_modal() }}
+
+<!-- Custom Tailwind QA Reasoning Modal -->
+<div id="qa-report-modal" class="relative z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+    <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+        <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            <div
+                class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-xl sm:p-6">
+                <!-- Close cross -->
+                <div class="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
+                    <button type="button" onclick="closeQaReport()"
+                        class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none">
+                        <span class="sr-only">Close</span>
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="sm:flex sm:items-start">
+                    <div
+                        class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <svg class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                        <h3 class="text-lg font-semibold leading-6 text-gray-900" id="qa-modal-title">QA Report
+                            Reasoning</h3>
+                        <div class="mt-2 text-sm text-gray-700">
+                            <p id="qa-modal-score" class="font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200">
+                                Total Score: -</p>
+                            <ul id="qa-modal-list" class="list-none space-y-4"></ul>
+                        </div>
+                    </div>
+                </div>
+                <!-- Action bar bottom -->
+                <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                    <button type="button" onclick="closeQaReport()"
+                        class="mt-3 inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 sm:mt-0 sm:w-auto">Dismiss</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 1. View Toggling Logic
+    const viewBtns = document.querySelectorAll('.view-toggle');
+    viewBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            viewBtns.forEach(b => {
+                b.classList.remove('bg-white', 'text-gray-900', 'shadow-sm');
+                b.classList.add('text-gray-500');
+            });
+            btn.classList.add('bg-white', 'text-gray-900', 'shadow-sm');
+            btn.classList.remove('text-gray-500');
+
+            const view = btn.dataset.view;
+            document.querySelectorAll('.col-cat, .col-nut, .col-qa').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll(`.col-${view}`).forEach(el => el.classList.remove('hidden'));
+        });
+    });
+
+    // 2. QA Modal Logic
+    function openQaReport(btn) {
+        let details = {};
+        try {
+            const parser = new DOMParser();
+            const decodedStr = parser.parseFromString(btn.dataset.qaDetails, "text/html").documentElement.textContent;
+            details = JSON.parse(decodedStr);
+        } catch (e) {
+            console.error("Could not parse QA Details JSON", e);
+        }
+
+        document.getElementById('qa-modal-title').innerText = "QA Report: " + btn.dataset.qaTitle;
+        const scoreEl = document.getElementById('qa-modal-score');
+        const score = parseInt(btn.dataset.qaScore, 10);
+        scoreEl.innerText = "Total Score: " + score + " / 100";
+
+        // Reset text colours
+        scoreEl.classList.remove('text-red-700', 'text-yellow-600', 'text-green-700');
+        if (score < 80) scoreEl.classList.add('text-red-700');
+        else if (score <= 90) scoreEl.classList.add('text-yellow-600');
+        else scoreEl.classList.add('text-green-700');
+
+        let listStr = "";
+        const mapping = [
+            { label: 'Name Fit', keys: ['reasoning_name', 'name_fit'] },
+            { label: 'Ingredient Match', keys: ['reasoning_ingredients', 'ingredient_fit'] },
+            { label: 'Components', keys: ['reasoning_components', 'component_logic'] },
+            { label: 'Amounts', keys: ['reasoning_amounts', 'amounts'] },
+            { label: 'Steps Clarity', keys: ['reasoning_steps', 'step_clarity'] },
+            { label: 'Image Quality', keys: ['reasoning_image', 'image_logic'] }
+        ];
+
+        for (const item of mapping) {
+            let val = details[item.keys[0]] || details[item.keys[1]];
+            if (val) {
+                listStr += "<li><strong class='text-gray-900'>" + item.label + ":</strong> " + val + "</li><br/>";
+            }
+        }
+        document.getElementById('qa-modal-list').innerHTML = listStr;
+        document.getElementById('qa-report-modal').classList.remove('hidden');
+    }
+
+    function closeQaReport() {
+        document.getElementById('qa-report-modal').classList.add('hidden');
+    }
+
+    // 3. Selection & Bulk Action Admin
+    const selectedRecipeIds = new Set();
+
+    function toggleAllRecipes(masterCb) {
+        const cbs = document.querySelectorAll('.recipe-row-cb');
+        cbs.forEach(cb => {
+            cb.checked = masterCb.checked;
+            toggleRowSelection(cb);
+        });
+    }
+
+    function toggleRowSelection(cb) {
+        const id = cb.value;
+        const row = cb.closest('tr');
+        if (cb.checked) {
+            selectedRecipeIds.add(id);
+            row.classList.add('bg-blue-50');
+        } else {
+            selectedRecipeIds.delete(id);
+            row.classList.remove('bg-blue-50');
+        }
+    }
+
+    async function bulkDeleteAdmin() {
+        if (selectedRecipeIds.size === 0) return alert("Select recipes to delete");
+        if (!confirm(`Delete ${selectedRecipeIds.size} recipes forever?`)) return;
+
+        try {
+            const res = await fetch('/api/delete-recipes/bulk', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ recipe_ids: Array.from(selectedRecipeIds).map(Number) })
+            });
+            const data = await res.json();
+            if (data.success) window.location.reload();
+            else alert('Error: ' + data.error);
+        } catch (e) {
+            console.error(e);
+            alert('Request failed');
+        }
+    }
+
+    // 4. Status Toggling (Tailwind styling updates dynamically)
+    const STATUS_STYLES = {
+        draft: 'ring-gray-300 text-gray-600',
+        approved: 'ring-green-500 text-green-700',
+        rejected: 'ring-red-400 text-red-700',
+    };
+
+    function applyStatusStyle(select, status) {
+        Object.values(STATUS_STYLES).forEach(cls => cls.split(' ').forEach(c => select.classList.remove(c)));
+        (STATUS_STYLES[status] || STATUS_STYLES.draft).split(' ').forEach(c => select.classList.add(c));
+    }
+
+    document.querySelectorAll('.recipe-status-dropdown').forEach(select => {
+        applyStatusStyle(select, select.value);
+    });
+
+    document.addEventListener('change', async function (e) {
+        if (!e.target.classList.contains('recipe-status-dropdown')) return;
+        const select = e.target;
+        const recipeId = select.dataset.recipeId;
+        const newStatus = select.value;
+        const prevStatus = select.dataset.prev || 'draft';
+        select.disabled = true;
+
+        applyStatusStyle(select, newStatus); // immediate UI change
+        try {
+            const res = await fetch(`/admin/recipes/${recipeId}/status`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            });
+            const data = await res.json();
+            if (data.success) {
+                select.dataset.prev = data.new_status || newStatus;
+                select.classList.add('ring-2', 'ring-green-500');
+                setTimeout(() => { select.classList.remove('ring-2', 'ring-green-500'); }, 1200);
+            } else {
+                alert('Error: ' + data.error);
+                select.value = prevStatus;
+                applyStatusStyle(select, prevStatus);
+            }
+        } catch (err) {
+            console.error(err);
+            select.value = prevStatus;
+            applyStatusStyle(select, prevStatus);
+        } finally {
+            select.disabled = false;
+        }
+    });
+
+    // 5. Recipe QA Actions
+    async function runBulkScore(ids, btnEl, actionText) {
+        if (ids.length === 0) return alert("No recipes selected for scoring.");
+        btnEl.disabled = true;
+        const origText = btnEl.innerText;
+        btnEl.innerText = actionText + "...";
+
+        for (const id of ids) {
+            try { await fetch(`/admin/recipes/${id}/evaluate`, { method: 'POST' }); }
+            catch (e) { console.error('Error on ', id, e); }
+        }
+        window.location.reload();
+    }
+
+    function bulkScoreSelected() {
+        runBulkScore(Array.from(selectedRecipeIds), document.getElementById('score-selected-btn'), 'Scoring');
+    }
+
+    function bulkScoreAll() {
+        const ids = [];
+        document.querySelectorAll('tr[data-has-score="false"]').forEach(tr => {
+            ids.push(tr.dataset.recipeId);
+        });
+        runBulkScore(ids, document.getElementById('score-all-btn'), 'Scoring');
+    }
+
+    async function runSingleScore(id, btn) {
+        btn.disabled = true;
+        btn.innerText = "Running...";
+        try {
+            const res = await fetch(`/admin/recipes/${id}/evaluate`, { method: 'POST' });
+            if (res.ok) window.location.reload();
+            else { alert("Failed to score."); btn.innerText = "Run QA"; btn.disabled = false; }
+        } catch (e) {
+            alert("Error");
+            btn.innerText = "Run QA";
+            btn.disabled = false;
+        }
+    }
+</script>
+{% endblock %}

@@ -17,6 +17,7 @@ from database.db_connector import configure_database
 from database.models import db, Ingredient, Recipe, Instruction, RecipeIngredient, RecipeMealType, RecipeDiet, User, Resource, resource_relations, Chef, UserRecipeInteraction, RecipeEvaluation, RecipeCollection, CollectionItem
 from utils.decorators import admin_required
 from sqlalchemy import or_, func
+from sqlalchemy.orm import joinedload
 from services.pantry_service import get_slim_pantry_context
 from ai_engine import generate_recipe_ai, get_pantry_id, get_top_pantry_suggestions, chefs_data, generate_recipe_from_web_text, analyze_ingredient_ai, extract_nutrients_from_text
 from services.recipe_service import process_recipe_workflow, STATUS_SUCCESS, STATUS_MISSING
@@ -987,105 +988,10 @@ def recipes_list():
                          selected_difficulties=selected_difficulties,
                          selected_proteins=selected_proteins)
 
-@app.route('/recipes_list')
+@app.route('/admin/recipes-management')
 @login_required
 @admin_required
-def recipes_table_view():
-    # 1. Load Filter Data Options
-    # Use global load_json_option helper
-
-    cuisine_options = load_json_option('post_processing/cuisines.json', 'cuisines')
-    diet_options = load_json_option('constraints/diets.json', 'diets')
-    difficulty_options = load_json_option('constraints/difficulty.json', 'difficulty')
-    
-    pt_data = load_json_option('constraints/main_protein.json', 'protein_types')
-    protein_options = []
-    for p in pt_data:
-        if 'examples' in p:
-            protein_options.extend(p['examples'])
-    protein_options = sorted(list(set(protein_options)))
-    
-    mt_data = load_json_option('constraints/meal_types.json', 'meal_classification')
-    meal_type_options = []
-    if isinstance(mt_data, dict):
-        for category_list in mt_data.values():
-            if isinstance(category_list, list):
-                meal_type_options.extend(category_list)
-    meal_type_options = sorted(list(set(meal_type_options)))
-
-    # 2. Handle Query Params
-    selected_cuisines = request.args.getlist('cuisine')
-    selected_diets = request.args.getlist('diet')
-    selected_meal_types = request.args.getlist('meal_type')
-    selected_difficulties = request.args.getlist('difficulty')
-    selected_proteins = request.args.getlist('protein_type')
-
-    # Sorting
-    sort_col = request.args.get('sort', 'id')
-    sort_dir = request.args.get('dir', 'desc')
-
-    # 3. Build Query
-    stmt = db.select(Recipe)
-
-    if selected_cuisines:
-        stmt = stmt.where(Recipe.cuisine.in_(selected_cuisines))
-    if selected_diets:
-        stmt = stmt.where(Recipe.diets.any(RecipeDiet.diet.in_(selected_diets)))
-    if selected_difficulties:
-        stmt = stmt.where(Recipe.difficulty.in_(selected_difficulties))
-    if selected_proteins:
-        clauses = []
-        for p in selected_proteins:
-            clauses.append(Recipe.ingredients.any(
-                RecipeIngredient.ingredient.has(Ingredient.name.ilike(f'%{p}%'))
-            ))
-        if clauses:
-             stmt = stmt.where(or_(*clauses))
-    if selected_meal_types:
-        stmt = stmt.where(Recipe.meal_types.any(RecipeMealType.meal_type.in_(selected_meal_types)))
-
-    # Apply Sorting
-    valid_cols = {
-        'id': Recipe.id,
-        'title': Recipe.title,
-        'cuisine': Recipe.cuisine,
-        'difficulty': Recipe.difficulty,
-        'protein_type': Recipe.protein_type,
-        'total_calories': Recipe.total_calories,
-        'total_protein': Recipe.total_protein,
-        'total_carbs': Recipe.total_carbs,
-        'total_fat': Recipe.total_fat,
-        'total_fiber': Recipe.total_fiber,
-        'total_sugar': Recipe.total_sugar
-    }
-    
-    sort_attr = valid_cols.get(sort_col, Recipe.id)
-    if sort_dir == 'asc':
-        stmt = stmt.order_by(sort_attr.asc())
-    else:
-        stmt = stmt.order_by(sort_attr.desc())
-
-    recipes = db.session.execute(stmt).scalars().all()
-
-    return render_template('recipes_table.html', 
-                         recipes=recipes,
-                         cuisine_options=sorted(cuisine_options),
-                         diet_options=sorted(diet_options),
-                         difficulty_options=difficulty_options,
-                         protein_options=sorted(protein_options),
-                         meal_type_options=meal_type_options,
-                         selected_cuisines=selected_cuisines,
-                         selected_diets=selected_diets,
-                         selected_difficulties=selected_difficulties,
-                         selected_proteins=selected_proteins,
-                         selected_meal_types=selected_meal_types,
-                         current_sort=sort_col,
-                         current_dir=sort_dir)
-
-@app.route('/recipe-scoring')
-@login_required
-@admin_required
-def recipe_scoring_view():
+def admin_recipes_management():
     # Sorting & pagination parameters
     sort_col = request.args.get('sort', 'id')
     sort_dir = request.args.get('dir', 'desc')
@@ -1093,19 +999,30 @@ def recipe_scoring_view():
     per_page = 50
 
     # Base query — LEFT JOIN so recipes with no evaluation still appear
-    stmt = db.select(Recipe).outerjoin(Recipe.evaluation)
+    # Ensure optimal DB queries for diets and evaluations
+    stmt = db.select(Recipe).outerjoin(Recipe.evaluation).options(
+        joinedload(Recipe.diets),
+        joinedload(Recipe.evaluation),
+        joinedload(Recipe.meal_types)
+    )
 
     # Apply sorting
     valid_cols = {
         'id': Recipe.id,
         'title': Recipe.title,
+        'cuisine': Recipe.cuisine,
+        'difficulty': Recipe.difficulty,
         'total_score': RecipeEvaluation.total_score,
         'score_name': RecipeEvaluation.score_name,
         'score_ingredients': RecipeEvaluation.score_ingredients,
         'score_components': RecipeEvaluation.score_components,
         'score_amounts': RecipeEvaluation.score_amounts,
         'score_steps': RecipeEvaluation.score_steps,
-        'score_image': RecipeEvaluation.score_image
+        'score_image': RecipeEvaluation.score_image,
+        'total_calories': Recipe.total_calories,
+        'total_protein': Recipe.total_protein,
+        'total_fat': Recipe.total_fat,
+        'total_carbs': Recipe.total_carbs
     }
     sort_attr = valid_cols.get(sort_col, Recipe.id)
     stmt = stmt.order_by(sort_attr.asc() if sort_dir == 'asc' else sort_attr.desc())
@@ -1114,7 +1031,7 @@ def recipe_scoring_view():
     pagination = db.paginate(stmt, page=page, per_page=per_page, error_out=False)
 
     return render_template(
-        'recipes_scoring_table.html',
+        'admin/recipes_management.html',
         recipes=pagination.items,
         pagination=pagination,
         current_sort=sort_col,
