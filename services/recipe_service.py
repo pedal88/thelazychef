@@ -87,31 +87,45 @@ def process_recipe_workflow(recipe_data, query_context: str, chef_id: str) -> di
             missing_ingredients:  (list[dict]) — only when status == MISSING
     """
 
-    # ── Step 1: Validate ALL ingredients before touching the DB ───────────
-    missing_ingredients = []
+    # ── Step 1: Pre-resolve and create missing ingredients ────────────────
+    import datetime
+
     for group in recipe_data.ingredient_groups:
         for ing in group.ingredients:
             record = _resolve_ingredient(ing)
             if not record:
-                name = ing.name if hasattr(ing, 'name') else ing.get('name', '')
-                amount = ing.amount if hasattr(ing, 'amount') else ing.get('amount', 0)
-                unit = ing.unit if hasattr(ing, 'unit') else ing.get('unit', '')
-                component = group.component if hasattr(group, 'component') else group.get('component', 'Main Dish')
-
-                # De-duplicate within the missing list
-                if not any(m['name'] == name for m in missing_ingredients):
-                    missing_ingredients.append({
-                        'name': name,
-                        'amount': amount,
-                        'unit': unit,
-                        'component': component,
-                    })
-
-    if missing_ingredients:
-        return {
-            'status': STATUS_MISSING,
-            'missing_ingredients': missing_ingredients,
-        }
+                name = ing.name if hasattr(ing, 'name') else ing.get('name', 'Unknown')
+                
+                # Create pending ingredient gracefully
+                new_food_id = f"pending-{uuid.uuid4().hex[:8]}"
+                record = Ingredient(
+                    food_id=new_food_id,
+                    name=name,
+                    status='pending',
+                    is_original=False,
+                    is_basic_ingredient=False,
+                    default_unit='g',
+                    calories_per_100g=0,
+                    kj_per_100g=0,
+                    protein_per_100g=0,
+                    carbs_per_100g=0,
+                    fat_per_100g=0,
+                    fat_saturated_per_100g=0,
+                    sugar_per_100g=0,
+                    fiber_per_100g=0,
+                    sodium_mg_per_100g=0,
+                    created_at=datetime.datetime.utcnow().isoformat()
+                )
+                db.session.add(record)
+                db.session.flush()
+                
+                # Attach to 'ing' so Step 5 finds it easily
+                if hasattr(ing, 'pantry_id'):
+                    ing.pantry_id = new_food_id
+                elif isinstance(ing, dict):
+                    ing['pantry_id'] = new_food_id
+                else:
+                    setattr(ing, 'pantry_id', new_food_id)
 
     # ── Step 2: Validate Chef ID ──────────────────────────────────────────
     valid_chef_id = None

@@ -65,7 +65,7 @@ def evaluate_recipe(recipe_id: int) -> dict:
     recipe_dict = {
         "title": recipe.title,
         "cuisine": recipe.cuisine,
-        "diet": recipe.diet,
+        "diet": recipe.diets_list,
         "difficulty": recipe.difficulty,
         "prep_time_mins": recipe.prep_time_mins,
         "ingredients": [

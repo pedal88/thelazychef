@@ -2003,6 +2003,48 @@ def generate_from_text():
         import traceback; traceback.print_exc()
         return redirect(url_for('new_recipe'))
 
+@app.route('/admin/bulk-generate')
+@login_required
+@admin_required
+def bulk_generate_view():
+    return render_template('admin/bulk_generate.html')
+
+@app.route('/admin/api/generate-single-idea', methods=['POST'])
+@login_required
+@admin_required
+def api_generate_single_idea():
+    data = request.get_json()
+    if not data or not data.get('idea'):
+        return jsonify({'success': False, 'error': 'No idea provided'}), 400
+        
+    query = data.get('idea')
+    chef_id = data.get('chef_id', 'gourmet')
+    
+    try:
+        pantry_context = get_slim_pantry_context()
+        clean_context = [item for item in pantry_context if not str(item.get('i', '')).startswith('IMP-')]
+
+        recipe_data = generate_recipe_ai(query, clean_context, chef_id=chef_id)
+        result = process_recipe_workflow(recipe_data, query_context=query, chef_id=chef_id)
+        
+        if result.get('status') == 'SUCCESS':
+            return jsonify({
+                'success': True,
+                'recipe_id': result['recipe_id'],
+                'recipe_title': recipe_data.title
+            })
+        else:
+            missing_names = [m['name'] for m in result.get('missing_ingredients', [])]
+            return jsonify({
+                'success': False, 
+                'error': f"Missing ingredients: {', '.join(missing_names)}"
+            })
+            
+    except Exception as e:
+        db.session.rollback()
+        import traceback; traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @app.route('/generate')
 def generate():
     query = request.args.get('query')
