@@ -584,7 +584,16 @@
     }
 
     function retryGeneration() {
-        document.getElementById('retryForm').submit();
+        const form = document.getElementById('retryForm');
+        // Prevent default submission and launch smart chain execution with UI copy updates
+        handleSmartGeneration(
+            { preventDefault: () => { } },
+            form,
+            'Finalizing Recipe (Step 1 of 2)',
+            'The AI is injecting the new pantry items...',
+            'Evaluating Quality (Step 2 of 2)',
+            'Scoring your newly generated recipe...'
+        );
     }
 
     async function extractNutrientsModal() {
