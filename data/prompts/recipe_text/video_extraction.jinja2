@@ -22,6 +22,7 @@ For EACH ingredient in the recipe:
   * "feta cheese, crumbled" -> pantry has "feta cheese" -> use name="feta cheese", pantry_id="000xxx"
 
 RECIPE EXTRACTION RULES:
+0. (CRITICAL) If the video clearly DOES NOT contain a recipe (e.g. it is just dancing, gaming, speaking without food, or completely unrelated), you MUST set "is_valid_recipe": false and provide a brief "error_reason". You do not need to fill out the rest of the arrays accurately if this is the case.
 1. At least 5 distinct steps.
 2. Prep, Cook, Serve phases.
 3. Estimate numeric amounts for ingredients based on visual observation.

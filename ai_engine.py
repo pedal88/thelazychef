@@ -64,6 +64,10 @@ class RecipeSchema(typing.TypedDict):
     ingredient_groups: list[IngredientGroup]
     components: list[ComponentSchema]  # CHANGED: From instructions to components
     chef_note: str
+    
+    # Safe Failure Flags (Optional)
+    is_valid_recipe: typing.NotRequired[bool]
+    error_reason: typing.NotRequired[str]
 
 class IngredientAnalysisSchema(typing.TypedDict):
     name: str # The standardized name
@@ -741,9 +745,15 @@ def generate_recipe_from_video(video_path: str, caption: str, slim_context: list
         )
     )
     
-    if response.parsed:
-        return RecipeObj(**response.parsed)
-    return RecipeObj(**json.loads(response.text))
+    
+    recipe_dict = response.parsed if response.parsed else json.loads(response.text)
+    
+    # Check if the AI explicitly flagged this as NOT a recipe
+    if recipe_dict.get('is_valid_recipe') is False:
+        reason = recipe_dict.get('error_reason', 'The provided media does not appear to contain a recipe.')
+        raise ValueError(f"AI rejected extraction: {reason}")
+        
+    return RecipeObj(**recipe_dict)
 
 # --- Ingredient Analysis ---
 def analyze_ingredient_ai(prompt: str, valid_categories: dict) -> dict:
