@@ -665,6 +665,8 @@ def studio_generate():
 
 # RECIPE IMAGE GENERATION FLOW
 @app.route('/recipe-image-generation')
+@login_required
+@admin_required
 def recipe_image_generation_view():
     recipe_id = request.args.get('recipe_id')
     if not recipe_id:
@@ -679,6 +681,8 @@ def recipe_image_generation_view():
     return render_template('recipe_photographer.html', recipe=recipe)
 
 @app.route('/recipe-image-generation/prompt', methods=['POST'])
+@login_required
+@admin_required
 def recipe_image_generation_prompt():
     try:
         data = request.get_json()
@@ -704,6 +708,8 @@ def recipe_image_generation_prompt():
         return jsonify({'success': False, 'error': str(e)})
 
 @app.route('/recipe-image-generation/generate', methods=['POST'])
+@login_required
+@admin_required
 def recipe_image_generation_create():
     try:
         data = request.get_json()
@@ -739,6 +745,8 @@ def recipe_image_generation_create():
         return jsonify({'success': False, 'error': str(e)})
 
 @app.route('/recipe-image-generation/save', methods=['POST'])
+@login_required
+@admin_required
 def recipe_image_generation_save():
     try:
         data = request.get_json()

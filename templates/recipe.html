@@ -28,12 +28,9 @@
         {% else %}
         <!-- Contextual Placeholder -->
         <div class="absolute inset-0 bg-gradient-to-br from-orange-50 to-white opacity-50"></div>
-        <div class="absolute inset-0 flex items-center justify-center">
-            <span
-                class="text-9xl opacity-20 transform group-hover:scale-110 transition-transform duration-700">🍽️</span>
-        </div>
         {% endif %}
 
+        {% if current_user.is_authenticated and current_user.is_admin %}
         <!-- Subtle Retake/Generate Button -->
         <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <a href="{{ url_for('recipe_image_generation_view', recipe_id=recipe.id) }}"
@@ -48,15 +45,6 @@
                 {% else %}
                 <span class="text-lg">📸</span>
                 {% endif %}
-            </a>
-        </div>
-
-        <!-- Generate Prompt Badge (if no image) -->
-        {% if not recipe.image_filename %}
-        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <a href="{{ url_for('recipe_image_generation_view', recipe_id=recipe.id) }}"
-                class="bg-white/80 backdrop-blur px-6 py-3 rounded-full text-sm font-bold text-slate-600 shadow-lg pointer-events-auto cursor-pointer group-hover:scale-105 transition-transform decoration-0">
-                ✨ Generate Recipe Photo
             </a>
         </div>
         {% endif %}
