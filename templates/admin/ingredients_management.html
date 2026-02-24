@@ -56,6 +56,28 @@
                     class="hidden inline-flex items-center gap-2 rounded-full bg-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition-colors">
                     Apply Filters
                 </button>
+                <button id="run-qa-missing-btn" onclick="runQAMissing()"
+                    class="inline-flex items-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="text-indigo-600">
+                        <polygon
+                            points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
+                        </polygon>
+                    </svg>
+                    Run QA (Missing)
+                </button>
+                <button id="run-qa-selected-btn" onclick="runQASelected()" disabled
+                    class="inline-flex items-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="text-indigo-600">
+                        <polygon
+                            points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
+                        </polygon>
+                    </svg>
+                    QA Selected
+                </button>
                 <button id="bulk-regen-btn" onclick="bulkRegenerate()" disabled
                     class="inline-flex items-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
@@ -715,9 +737,18 @@
 
     function updateBulkUI() {
         const n = selectedIds.size;
+        const qaBtn = document.getElementById('run-qa-selected-btn');
         selCount.textContent = `${n} Selected`;
-        if (n > 0) { bulkBar.setAttribute('data-visible', 'true'); if (bulkBtn) bulkBtn.disabled = false; }
-        else { bulkBar.setAttribute('data-visible', 'false'); if (bulkBtn) bulkBtn.disabled = true; }
+        if (n > 0) {
+            bulkBar.setAttribute('data-visible', 'true');
+            if (bulkBtn) bulkBtn.disabled = false;
+            if (qaBtn) qaBtn.disabled = false;
+        }
+        else {
+            bulkBar.setAttribute('data-visible', 'false');
+            if (bulkBtn) bulkBtn.disabled = true;
+            if (qaBtn) qaBtn.disabled = true;
+        }
     }
 
     // ── Bulk Regenerate (sequential) ──────────────────────────────
@@ -777,6 +808,74 @@
             showToast('Network error during QA.', 'error');
             btn.disabled = false; btn.innerHTML = orig;
         }
+    }
+
+    // ── Bulk QA ───────────────────────────────────────────────────
+    async function runQAMissing() {
+        if (!confirm("Run LLM QA on ALL unscored ingredients? This triggers batch requests to Gemini and takes time.")) return;
+        try {
+            const raw = await fetch('/admin/ingredients-management/api/unscored_ids');
+            const data = await raw.json();
+            if (!data.success) {
+                showToast(`Failed fetching missing IDs: ${data.error}`, 'error');
+                return;
+            }
+            const ids = data.unscored_ids;
+            if (!ids || ids.length === 0) {
+                showToast("No unscored ingredients found!", 'info');
+                return;
+            }
+            await processBatchQA(ids, "unscored");
+        } catch (e) {
+            showToast('Network error getting unscored list', 'error');
+        }
+    }
+
+    async function runQASelected() {
+        const ids = Array.from(selectedIds);
+        if (!ids.length) return;
+        if (!confirm(`Run QA on ${ids.length} selected ingredient(s)?`)) return;
+        await processBatchQA(ids, "selected");
+    }
+
+    async function processBatchQA(ids, type) {
+        showToast(`Starting bulk QA for ${ids.length} ingredients…`, 'info');
+        const bAll = document.getElementById('run-qa-missing-btn');
+        const bSel = document.getElementById('run-qa-selected-btn');
+        if (bAll) bAll.disabled = true;
+        if (bSel) bSel.disabled = true;
+
+        let ok = 0, fail = 0;
+
+        for (const id of ids) {
+            const cell = document.getElementById(`qa-cell-${id}`);
+            if (cell) {
+                cell.innerHTML = '<span class="text-xs text-gray-400"><svg class="inline animate-spin h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>QA</span>';
+            }
+
+            try {
+                const res = await fetch(`${API}/${id}/evaluate`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    ok++;
+                    if (cell) {
+                        const sc = data.total_score;
+                        cell.innerHTML = `<span class="font-bold ${sc >= 80 ? 'text-green-600' : sc >= 60 ? 'text-amber-500' : 'text-red-600'}">${sc.toFixed(1)}</span>`;
+                    }
+                } else {
+                    fail++;
+                    if (cell) cell.innerHTML = `<span class="text-xs text-red-500" title="${data.error || 'Failed'}">Failed</span>`;
+                }
+            } catch (e) {
+                fail++;
+                if (cell) cell.innerHTML = `<span class="text-xs text-red-500">Error</span>`;
+            }
+
+            await new Promise(r => setTimeout(r, 600));
+        }
+
+        showToast(`✅ QA Batch complete! ${ok} succeeded, ${fail} failed.`, fail > 0 ? 'warning' : 'success');
+        setTimeout(() => window.location.reload(), 2500);
     }
 
     // ── QA Report Modal ───────────────────────────────────────────

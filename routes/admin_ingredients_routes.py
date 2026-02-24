@@ -256,3 +256,20 @@ def evaluate_ingredient(ing_id: int):
     except ValueError as exc:
         return jsonify({"success": False, "error": str(exc)}), 500
 
+
+@ingredients_bp.route("/api/unscored_ids", methods=["GET"])
+@login_required
+@admin_required
+def get_unscored_ids():
+    """Return a list of ingredient IDs that have no evaluation record."""
+    from database.models import IngredientEvaluation
+    
+    # Select ingredients that don't have an evaluation record
+    stmt = db.select(Ingredient.id).outerjoin(IngredientEvaluation).where(IngredientEvaluation.id == None)
+    
+    unscored = db.session.execute(stmt).scalars().all()
+    
+    return jsonify({
+        "success": True,
+        "unscored_ids": unscored
+    })
