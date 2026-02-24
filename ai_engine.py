@@ -43,6 +43,8 @@ class Instruction(typing.TypedDict):
     step_number: int
     phase: str # 'Prep', 'Cook', 'Serve'
     text: str
+    estimated_minutes: int
+    global_order_index: int
 
 class ComponentSchema(typing.TypedDict):
     name: str # e.g., "The Steak", "Garlic Butter Sauce", "Main Dish"

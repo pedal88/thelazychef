@@ -4,7 +4,7 @@ from sqlalchemy import String, Integer, Boolean, Text, Float, ForeignKey, DateTi
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
-from typing import Any
+from typing import Any, Optional
 
 class Base(DeclarativeBase):
     pass
@@ -235,6 +235,8 @@ class Instruction(db.Model):
     component: Mapped[str] = mapped_column(String(100), nullable=False, default="Main Dish") # NEW: e.g., "The Steak", "The Sauce"
     step_number: Mapped[int] = mapped_column(Integer, nullable=False)
     text: Mapped[str] = mapped_column(Text, nullable=False)
+    estimated_minutes: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    global_order_index: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
 
     recipe: Mapped["Recipe"] = relationship(back_populates="instructions")
 

@@ -243,6 +243,8 @@ def process_recipe_workflow(recipe_data, query_context: str, chef_id: str) -> di
             phase = step.phase if hasattr(step, 'phase') else step.get('phase', 'Prep')
             step_num = step.step_number if hasattr(step, 'step_number') else step.get('step_number', 1)
             text = step.text if hasattr(step, 'text') else step.get('text', '')
+            estimated_minutes = step.estimated_minutes if hasattr(step, 'estimated_minutes') else step.get('estimated_minutes', 0)
+            global_order_index = step.global_order_index if hasattr(step, 'global_order_index') else step.get('global_order_index', 0)
 
             db.session.add(Instruction(
                 recipe_id=new_recipe.id,
@@ -250,6 +252,8 @@ def process_recipe_workflow(recipe_data, query_context: str, chef_id: str) -> di
                 component=comp_name,
                 step_number=step_num,
                 text=text,
+                estimated_minutes=estimated_minutes,
+                global_order_index=global_order_index,
             ))
 
     # ── Step 7: Commit ────────────────────────────────────────────────────
