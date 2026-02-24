@@ -37,6 +37,7 @@ def dashboard() -> str:
     selected_categories    = request.args.getlist("category")
     selected_sub_cats      = request.args.getlist("sub_category")
     selected_basic         = request.args.getlist("basic")   # "yes" | "no"
+    search_query           = request.args.get("search", "").strip()
     missing_images         = request.args.get("missing_images", "0") == "1"
 
     # ── Build query ─────────────────────────────────────────────────
@@ -56,6 +57,9 @@ def dashboard() -> str:
             stmt = stmt.where(Ingredient.is_staple == True)
         elif "no" in selected_basic and "yes" not in selected_basic:
             stmt = stmt.where(Ingredient.is_staple == False)
+
+    if search_query:
+        stmt = stmt.where(Ingredient.name.ilike(f"%{search_query}%"))
 
     if missing_images:
         stmt = stmt.where(
@@ -88,6 +92,7 @@ def dashboard() -> str:
         selected_categories=selected_categories,
         selected_sub_cats=selected_sub_cats,
         selected_basic=selected_basic,
+        search_query=search_query,
         missing_images=missing_images,
     )
 

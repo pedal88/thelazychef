@@ -36,6 +36,21 @@
             </a>
 
             <div class="ml-auto flex items-center gap-3">
+                <!-- Search Input -->
+                <div class="relative w-64">
+                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                        <svg class="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                            fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <input type="search" id="ingredient-search" name="search"
+                        class="block w-full rounded-md border-0 py-1.5 pl-9 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 transition-all shadow-sm"
+                        placeholder="Search ingredients..." value="{{ search_query }}">
+                </div>
+
                 <!-- Apply Filters button — shown when filter checkboxes change -->
                 <button id="apply-filters-btn" onclick="applyFilters()"
                     class="hidden inline-flex items-center gap-2 rounded-full bg-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition-colors">
@@ -481,6 +496,26 @@
 <script>
     const API = '/admin/ingredients-management/api';
 
+    // ── Search functionality ──────────────────────────────────────
+    let searchTimeout = null;
+    const searchInput = document.getElementById('ingredient-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                applyFilters();
+            }, 500);
+        });
+
+        // Move cursor to end of input if focused
+        if (searchInput.value) {
+            searchInput.focus();
+            const val = searchInput.value;
+            searchInput.value = '';
+            searchInput.value = val;
+        }
+    }
+
     // ── Filter menus ──────────────────────────────────────────────
     function toggleFilterMenu(menuId) {
         document.querySelectorAll('[id^="menu-"]').forEach(el => {
@@ -511,6 +546,11 @@
         // preserve missing_images
         const url = new URLSearchParams(window.location.search);
         if (url.get('missing_images') === '1') params.set('missing_images', '1');
+
+        const searchInput = document.getElementById('ingredient-search');
+        if (searchInput && searchInput.value.trim()) {
+            params.set('search', searchInput.value.trim());
+        }
 
         const colMap = {};
         document.querySelectorAll('.filter-cb:checked').forEach(cb => {
