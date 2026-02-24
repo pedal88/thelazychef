@@ -46,7 +46,8 @@
             </div>
 
             <!-- Describe Form -->
-            <form action="{{ url_for('new_recipe') }}" method="POST" class="relative z-10">
+            <form action="{{ url_for('new_recipe') }}" method="POST" class="relative z-10"
+                onsubmit="return handleSmartGeneration(event, this, 'Generating Recipe (Step 1 of 2)', 'The AI is interpreting your idea...', 'Evaluating Quality (Step 2 of 2)', 'Scoring your newly generated recipe...')">
                 <input type="hidden" name="chef_id" id="chefInput" value="gourmet">
                 <div class="relative flex bg-white rounded-lg p-1 shadow-lg shadow-slate-900/50">
                     <input type="text" name="query"
@@ -104,7 +105,7 @@
             <!-- 1. Social Link -->
             <div x-show="tab === 'social'" class="transition-all duration-300">
                 <form action="/generate/video" method="POST" class="relative group" id="videoForm"
-                    onsubmit="showLoading('Watching Video', 'The AI is watching the video and extracting the recipe...')">
+                    onsubmit="return handleSmartGeneration(event, this, 'Watching Video (Step 1 of 2)', 'The AI is watching the video and extracting the recipe...', 'Evaluating Recipe (Step 2 of 2)', 'Scoring the extracted recipe...')">
                     <div class="relative flex bg-slate-800 rounded-lg p-1 shadow-lg border border-slate-700">
                         <div class="flex items-center pl-3 text-slate-400">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -126,7 +127,7 @@
             <!-- 2. Web Link -->
             <div x-show="tab === 'web'" style="display: none;" class="transition-all duration-300">
                 <form action="/generate/web" method="POST" class="relative group" id="webForm"
-                    onsubmit="showLoading('Reading Website', 'The AI is reading the blog post and re-imagining the dish...')">
+                    onsubmit="return handleSmartGeneration(event, this, 'Reading Website (Step 1 of 2)', 'The AI is reading the blog post and re-imagining the dish...', 'Evaluating Quality (Step 2 of 2)', 'Scoring the generated recipe...')">
                     <div class="relative flex bg-slate-800 rounded-lg p-1 shadow-lg border border-slate-700">
                         <div class="flex items-center pl-3 text-slate-400">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -149,7 +150,7 @@
             <!-- 3. Free Text -->
             <div x-show="tab === 'text'" style="display: none;" class="transition-all duration-300">
                 <form action="/generate/text" method="POST" class="relative group" id="textForm"
-                    onsubmit="showLoading('Reading Text', 'The AI is extracting the recipe from your text...')">
+                    onsubmit="return handleSmartGeneration(event, this, 'Reading Text (Step 1 of 2)', 'The AI is extracting the recipe from your text...', 'Evaluating Quality (Step 2 of 2)', 'Scoring the text-based recipe...')">
                     <div class="relative bg-slate-800 rounded-lg p-1 shadow-lg border border-slate-700">
                         <div class="flex items-center px-3 pt-2 text-slate-400 gap-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

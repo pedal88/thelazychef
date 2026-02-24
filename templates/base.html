@@ -342,6 +342,74 @@
                 bar.style.width = '0%';
             }
         }
+
+        // Global Smart Client Pattern
+        async function autoEvaluateRecipe(recipeId) {
+            try {
+                const res = await fetch(`/admin/recipes/${recipeId}/evaluate`, {
+                    method: 'POST',
+                    headers: { 'Accept': 'application/json' }
+                });
+                return res.ok;
+            } catch (e) {
+                console.error("Auto Evaluation Error:", e);
+                return false;
+            }
+        }
+
+        async function handleSmartGeneration(event, formElement, title1, text1, title2, text2) {
+            event.preventDefault();
+
+            showLoading(title1 || 'Generating Recipe (Step 1 of 2)...', text1 || 'The AI is extracting the recipe...');
+
+            try {
+                const formData = new FormData(formElement);
+                const queryParams = new URLSearchParams(formData).toString();
+
+                let fetchOptions = {
+                    method: formElement.method || 'POST',
+                    headers: { 'Accept': 'application/json' } // Signals backend to return JSON
+                };
+
+                let url = formElement.action;
+                if (fetchOptions.method.toUpperCase() === 'GET') {
+                    if (url.includes('?')) url += '&' + queryParams;
+                    else url += '?' + queryParams;
+                } else {
+                    fetchOptions.body = formData;
+                }
+
+                const response = await fetch(url, fetchOptions);
+
+                if (!response.ok) {
+                    try {
+                        const errData = await response.json();
+                        alert("Error: " + (errData.error || response.statusText));
+                    } catch (e) {
+                        alert("Server Error.");
+                    }
+                    hideLoading();
+                    return false;
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showLoading(title2 || 'Evaluating Quality (Step 2 of 2)...', text2 || 'Scoring the generated recipe...');
+                    await autoEvaluateRecipe(data.recipe_id);
+                    window.location.href = `/recipe/${data.recipe_id}`;
+                } else {
+                    alert("Generation Failed: " + data.error);
+                    hideLoading();
+                }
+
+            } catch (e) {
+                console.error(e);
+                alert("Network Error.");
+                hideLoading();
+            }
+            return false;
+        }
     </script>
 
     <style>

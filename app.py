@@ -1891,7 +1891,16 @@ def find_best_ingredient_match(name):
 # ---------------------------------------------------------------------------
 def _handle_workflow_result(result: dict, query_context: str, chef_id: str):
     """Shared response handler for all generation routes."""
+    is_ajax = 'application/json' in request.headers.get('Accept', '')
+
     if result['status'] == STATUS_MISSING:
+        if is_ajax:
+            missing_names = [m['name'] for m in result.get('missing_ingredients', [])]
+            return jsonify({
+                'success': False, 
+                'error': f"Missing ingredients: {', '.join(missing_names)}"
+            })
+            
         data_dir = os.path.join(app.root_path, 'data', 'constraints')
         with open(os.path.join(data_dir, 'categories.json'), 'r') as f:
             cat_data = json.load(f)
@@ -1904,6 +1913,11 @@ def _handle_workflow_result(result: dict, query_context: str, chef_id: str):
             sub_categories_map=cat_data.get('sub_categories', {}),
         )
     # STATUS_SUCCESS
+    if is_ajax:
+        return jsonify({
+            'success': True,
+            'recipe_id': result['recipe_id']
+        })
     return redirect(url_for('recipe_detail', recipe_id=result['recipe_id']))
 
 
@@ -1941,6 +1955,8 @@ def generate_web_recipe():
         db.session.rollback()
         print(f"Web Import Error: {e}")
         import traceback; traceback.print_exc()
+        if 'application/json' in request.headers.get('Accept', ''):
+            return jsonify({'success': False, 'error': str(e)}), 500
         return f"Error processing web import: {e}", 500
 
 @app.route('/generate/text', methods=['POST'])
@@ -1974,8 +1990,10 @@ def generate_from_text():
 
     except Exception as e:
         db.session.rollback()
-        flash(f"Error processing text: {str(e)}", "error")
         import traceback; traceback.print_exc()
+        if 'application/json' in request.headers.get('Accept', ''):
+            return jsonify({'success': False, 'error': str(e)}), 500
+        flash(f"Error processing text: {str(e)}", "error")
         return redirect(url_for('new_recipe'))
 
 @app.route('/admin/bulk-generate')
@@ -2097,9 +2115,11 @@ def generate():
         return redirect(url_for('discover'))
     except Exception as e:
         db.session.rollback()
-        flash(f"Error generating recipe: {str(e)}", "error")
         import traceback; traceback.print_exc()
-        return redirect(url_for('discover'))
+        if 'application/json' in request.headers.get('Accept', ''):
+            return jsonify({'success': False, 'error': str(e)}), 500
+        flash(f"Generation error: {str(e)}", "error")
+        return redirect(url_for('new_recipe'))
 
 @app.route('/recipe/<int:recipe_id>')
 def recipe_detail(recipe_id):
@@ -2223,8 +2243,10 @@ def generate_from_video():
 
     except Exception as e:
         db.session.rollback()
-        flash(f"Error processing video: {str(e)}", "error")
         import traceback; traceback.print_exc()
+        if 'application/json' in request.headers.get('Accept', ''):
+            return jsonify({'success': False, 'error': str(e)}), 500
+        flash(f"Error processing video: {str(e)}", "error")
         return redirect(url_for('discover'))
 
 
