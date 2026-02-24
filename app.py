@@ -2020,6 +2020,59 @@ def api_generate_single_idea():
         import traceback; traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
 
+
+@app.route('/admin/api/generate-single-url', methods=['POST'])
+@login_required
+@admin_required
+def api_generate_single_url():
+    data = request.get_json()
+    if not data or not data.get('url'):
+        return jsonify({'success': False, 'error': 'No URL provided'}), 400
+        
+    url = data.get('url')
+    chef_id = data.get('chef_id', 'gourmet')
+    
+    try:
+        from services.social_media_service import SocialMediaExtractor
+        from ai_engine import generate_recipe_from_video
+
+        # Download video to temporary storage
+        extract_result = SocialMediaExtractor.download_video(url)
+        video_path = extract_result['video_path']
+        caption = extract_result.get('caption', '')
+        
+        try:
+            pantry_context = get_slim_pantry_context()
+            clean_context = pantry_context
+
+            # Generate via video pipeline
+            recipe_data = generate_recipe_from_video(video_path, caption, clean_context)
+            
+            query_context = caption or url
+            result = process_recipe_workflow(recipe_data, query_context=query_context, chef_id=chef_id)
+            
+            if result.get('status') == 'SUCCESS':
+                return jsonify({
+                    'success': True,
+                    'recipe_id': result['recipe_id'],
+                    'recipe_title': recipe_data.title
+                })
+            else:
+                missing_names = [m['name'] for m in result.get('missing_ingredients', [])]
+                return jsonify({
+                    'success': False, 
+                    'error': f"Missing ingredients: {', '.join(missing_names)}"
+                })
+        finally:
+            # Always ensure the temp video file is deleted
+            SocialMediaExtractor.cleanup(video_path)
+            
+    except Exception as e:
+        db.session.rollback()
+        import traceback; traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/generate')
 def generate():
     query = request.args.get('query')
