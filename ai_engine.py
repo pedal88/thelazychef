@@ -522,47 +522,47 @@ def set_pantry_memory(slim_context):
     CLEARS the map first to prevent accumulation across calls.
     
     Two-pass strategy:
-      Pass 1: Add all original pantry items (is_original=True).
-      Pass 2: Add non-original items ONLY if their normalized form
+      Pass 1: Add all staple pantry items (is_staple=True).
+      Pass 2: Add non-staple items ONLY if their normalized form
               doesn't collide with an existing map entry.
     
     IMP- food_ids are ALWAYS rejected (auto-created duplicates).
     """
     pantry_map.clear()  # Prevent accumulation across calls
     
-    added_orig = 0
-    added_user = 0
+    added_staple = 0
+    added_standard = 0
     skipped = 0
     
-    # Pass 1: Original pantry items take priority
+    # Pass 1: Staple pantry items take priority
     for item in slim_context:
         name = item.get('n', item.get('name'))
         pantry_id = item.get('i', item.get('id'))
-        is_original = item.get('o', item.get('is_original', True))
+        is_staple = item.get('s', item.get('is_staple', False))
         
         # We now ALLOW IMP- IDs here because the upstream context generator
         # (pantry_service) already filters by `status == 'active'`. If it's active,
         # it's considered valid for injection.
         
-        if name and pantry_id and is_original:
+        if name and pantry_id and is_staple:
             pantry_map[name.lower()] = pantry_id
-            added_orig += 1
+            added_staple += 1
     
-    # Pass 2: Non-original items — add only if not a decorated duplicate
+    # Pass 2: Non-staple items — add only if not a decorated duplicate
     for item in slim_context:
         name = item.get('n', item.get('name'))
         pantry_id = item.get('i', item.get('id'))
-        is_original = item.get('o', item.get('is_original', True))
+        is_staple = item.get('s', item.get('is_staple', False))
         
-        if not name or not pantry_id or is_original:
+        if not name or not pantry_id or is_staple:
             continue
         
-        # We now ALLOW IMP- IDs here for valid, active non-original ingredients.
+        # We now ALLOW IMP- IDs here for valid, active non-staple ingredients.
         
         n_lower = name.lower()
         n_clean = normalize_ingredient_name(name)
         
-        # Skip if raw name already in map (original takes precedence)
+        # Skip if raw name already in map (staple takes precedence)
         if n_lower in pantry_map:
             skipped += 1
             continue
@@ -571,12 +571,12 @@ def set_pantry_memory(slim_context):
             skipped += 1
             continue
         
-        # Clean user-created item — add it (e.g. "olive", "avocado")
+        # Clean standard item — add it (e.g. "olive", "avocado")
         pantry_map[n_lower] = pantry_id
-        added_user += 1
+        added_standard += 1
     
-    total = added_orig + added_user
-    print(f"📦 set_pantry_memory: {total} items ({added_orig} original + {added_user} user-created), skipped {skipped} duplicates/imports")
+    total = added_staple + added_standard
+    print(f"📦 set_pantry_memory: {total} items ({added_staple} staples + {added_standard} standard active), skipped {skipped} duplicates/imports")
 
 # --- Core Generation Function ---
 def generate_recipe_ai(

@@ -11,7 +11,7 @@ def get_slim_pantry_context():
     c: main_category
     u: default_unit
     t: tags
-    o: is_original (bool)
+    s: is_staple (bool)
     """
     stmt = db.select(
         Ingredient.food_id,
@@ -19,8 +19,8 @@ def get_slim_pantry_context():
         Ingredient.main_category,
         Ingredient.default_unit,
         Ingredient.tags,
-        Ingredient.is_original
-    ).where(db.and_(Ingredient.status == 'active', Ingredient.is_original == True, Ingredient.main_category != 'Imported'))
+        Ingredient.is_staple
+    ).where(db.and_(Ingredient.status == 'active', Ingredient.main_category != 'Imported'))
     results = db.session.execute(stmt).all()
     
     slim_context = []
@@ -31,7 +31,7 @@ def get_slim_pantry_context():
             "c": row.main_category if row.main_category else "",
             "u": row.default_unit if row.default_unit else "",
             "t": row.tags if row.tags else "",
-            "o": bool(row.is_original)
+            "s": bool(row.is_staple)
         })
         
     return slim_context

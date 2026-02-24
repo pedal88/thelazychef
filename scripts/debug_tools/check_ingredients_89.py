@@ -26,4 +26,4 @@ with app.app_context():
             
     print("\n--- Ingredient Details ---")
     for ri, ing in results:
-        print(f"ID {ing.id}: Created At: {ing.created_at}, Is Basic: {ing.is_basic_ingredient}")
+        print(f"ID {ing.id}: Created At: {ing.created_at}, Is Staple: {ing.is_staple}")

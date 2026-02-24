@@ -75,7 +75,7 @@ def sanitize_ai_ingredients(recipe_data) -> None:
     Modifies recipe_data in place.
     """
     # Dynamically fetch map of all basic ingredients from DB
-    basics_stmt = db.select(Ingredient.name, Ingredient.food_id).where(Ingredient.is_basic_ingredient == True)
+    basics_stmt = db.select(Ingredient.name, Ingredient.food_id).where(Ingredient.is_staple == True)
     basics_results = db.session.execute(basics_stmt).all()
     basic_overrides = {row.name.strip().lower(): row.food_id for row in basics_results if row.name}
 
@@ -149,8 +149,7 @@ def process_recipe_workflow(recipe_data, query_context: str, chef_id: str) -> di
                     food_id=new_food_id,
                     name=name,
                     status='pending',
-                    is_original=False,
-                    is_basic_ingredient=False,
+                    is_staple=False,
                     default_unit='g',
                     calories_per_100g=0,
                     kj_per_100g=0,

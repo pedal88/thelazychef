@@ -54,8 +54,7 @@ def seed_ingredients():
                 food_id=data["food_id"],
                 main_category=data["main_category"],
                 default_unit=data["default_unit"],
-                is_basic_ingredient=True,
-                is_original=True
+                is_staple=True
             )
             db.session.add(new_ingredient)
             count += 1

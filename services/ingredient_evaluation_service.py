@@ -96,7 +96,7 @@ def evaluate_ingredient(ingredient_id: int) -> dict:
         "sub_category": ing.sub_category,
         "default_unit": ing.default_unit,
         "average_g_per_unit": ing.average_g_per_unit,
-        "is_basic_ingredient": ing.is_basic_ingredient,
+        "is_staple": ing.is_staple,
         "tags": ing.tags,
         "aliases": ing.aliases,
         "status": ing.status,

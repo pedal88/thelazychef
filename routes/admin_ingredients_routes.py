@@ -53,9 +53,9 @@ def dashboard() -> str:
 
     if selected_basic:
         if "yes" in selected_basic and "no" not in selected_basic:
-            stmt = stmt.where(Ingredient.is_basic_ingredient == True)
+            stmt = stmt.where(Ingredient.is_staple == True)
         elif "no" in selected_basic and "yes" not in selected_basic:
-            stmt = stmt.where(Ingredient.is_basic_ingredient == False)
+            stmt = stmt.where(Ingredient.is_staple == False)
 
     if missing_images:
         stmt = stmt.where(
@@ -180,8 +180,7 @@ def inspect_ingredient(ing_id: int):
             "sub_category": ing.sub_category,
             "default_unit": ing.default_unit,
             "average_g_per_unit": ing.average_g_per_unit,
-            "is_basic_ingredient": ing.is_basic_ingredient,
-            "is_original": ing.is_original,
+            "is_staple": ing.is_staple,
             "image_url": ing.image_url,
             "image_prompt": ing.image_prompt,
             "aliases": ing.aliases,

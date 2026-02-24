@@ -97,8 +97,7 @@ class Ingredient(db.Model):
 
     # Intelligence
     aliases: Mapped[str] = mapped_column(Text, default='[]') # JSON list of synonyms
-    is_basic_ingredient: Mapped[bool] = mapped_column(Boolean, default=False) # User preference: Staple ingredient?
-    is_original: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_staple: Mapped[bool] = mapped_column(Boolean, default=False) # User preference: Staple ingredient?
     created_at: Mapped[str] = mapped_column(String, nullable=True) # ISO format date string
     # Lifecycle: 'active' | 'inactive' | 'pending'
     # 'inactive' is a soft-delete — ingredient stays in DB to protect recipe FK relationships.

@@ -156,7 +156,7 @@
                             data-unit="{{ ing.default_unit }}" data-cal="{{ ing.calories_per_100g or 0 }}"
                             data-prot="{{ ing.protein_per_100g or 0 }}" data-carb="{{ ing.carbs_per_100g or 0 }}"
                             data-fat="{{ ing.fat_per_100g or 0 }}" data-date="{{ ing.created_at or '' }}"
-                            data-basic="{{ 'yes' if ing.is_basic_ingredient else 'no' }}">
+                            data-basic="{{ 'yes' if ing.is_staple else 'no' }}">
 
                             <!-- A: Main Category -->
                             <td class="p-4 text-xs font-semibold text-slate-600 align-middle">{{ ing.main_category or
@@ -208,7 +208,7 @@
                             <!-- C2: Name -->
                             <td class="p-4 font-medium align-middle">
                                 <span
-                                    class="name-text {{ 'text-slate-900 font-bold' if ing.is_basic_ingredient else 'text-slate-500 font-normal' }}">
+                                    class="name-text {{ 'text-slate-900 font-bold' if ing.is_staple else 'text-slate-500 font-normal' }}">
                                     {{ ing.name }} <span class="ml-1 text-xs text-slate-400 font-normal">#{{ ing.id
                                         }}</span>
                                 </span>
@@ -272,12 +272,12 @@
                             <td class="p-4 text-center cursor-pointer select-none align-middle"
                                 onclick="toggleBasic('{{ ing.id }}', this)">
                                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm transition-all duration-200 badge-status
-                                    {% if ing.is_basic_ingredient %}
+                                    {% if ing.is_staple %}
                                         bg-green-100 text-green-700 font-bold
                                     {% else %}
                                         bg-slate-100 text-slate-400 font-normal hover:bg-slate-200
                                     {% endif %}" id="status-{{ ing.id }}">
-                                    {% if ing.is_basic_ingredient %}Yes{% else %}No{% endif %}
+                                    {% if ing.is_staple %}Yes{% else %}No{% endif %}
                                 </span>
                             </td>
 

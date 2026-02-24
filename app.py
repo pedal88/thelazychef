@@ -1161,7 +1161,7 @@ def toggle_basic_ingredient(id):
         return jsonify({'success': False, 'error': 'Ingredient not found'}), 404
     
     # Toggle
-    ing.is_basic_ingredient = not ing.is_basic_ingredient
+    ing.is_staple = not ing.is_staple
     db.session.commit()
     
     return jsonify({
