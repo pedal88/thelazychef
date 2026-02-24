@@ -1569,7 +1569,6 @@ def save_new_ingredient_api():
             # Metadata
             image_prompt=data.get('image_prompt'),
             image_url=image_url,
-            is_original=False,
             created_at=datetime.datetime.now().isoformat()
         )
         
@@ -1656,7 +1655,6 @@ def quick_add_ingredient_api():
             
             # Metadata
             image_prompt=analysis.get('image_prompt'),
-            is_original=False,
             created_at=datetime.datetime.now().isoformat()
         )
         
