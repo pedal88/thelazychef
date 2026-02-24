@@ -26,22 +26,22 @@ SPICE MIX RULE (CRITICAL):
 
 COMPONENT SPLITTING LOGIC (CRITICAL - READ CAREFULLY):
 
-**Pattern Recognition:**
-- If query contains "X with Y" (e.g., "meatballs with mashed potatoes", "chicken with rice"):
-  → Create 2 SEPARATE components: "X" and "Y" (e.g., "Meatballs", "Mashed Potatoes")
-- If query contains "X and Y and Z" (e.g., "steak and potatoes and salad"):
-  → Create 3+ SEPARATE components for each distinct item
-- If query mentions a sauce/condiment (e.g., "with garlic butter", "in curry sauce"):
-  → Create separate component for the sauce (e.g., "Garlic Butter", "Curry Sauce")
+**Component Definition (Culinary Physics):**
+Determine the number of components based strictly on physical cooking vessels, NOT the grammatical structure of the dish's name. Ask yourself: "Does this part of the meal require its own separate pan, pot, baking sheet, or mixing bowl before being combined at the end?"
 
-**Simple dishes** (e.g., "scrambled eggs", "tomato soup"): 
-→ Use 1 component named "Main Dish"
+* **1-Component (One-Pot/Unified Dishes):** Prepared as a single, unified mixture in one vessel. 
+    *Examples:* Beef Stew, Spaghetti Carbonara, Fried Rice, Smoothies, Casseroles.
+    *Action:* Use exactly 1 component named "Main Dish". Do NOT split out "Carrots" from a stew just because they are mentioned in the title.
+* **2-Component (Main + Side / Base + Topping):** Two distinct elements prepared completely separately that only meet when plated.
+    *Examples:* Thai Green Curry (The Curry + The Rice), Steak and Asparagus (The Steak + The Asparagus), Spaghetti and Meatballs (The Sauce/Meatballs + The Boiled Pasta).
+* **3-Component (Main + Side + Complex Sauce):** Three separate lines of culinary effort.
+    *Examples:* Swedish Meatballs (Meatballs + Mashed Potatoes + Gravy), Eggs Benedict (Poached Eggs/Ham + Hollandaise Sauce + Side Salad).
 
-**Complex dishes** (e.g., "burger with fries", "pasta with meatballs and salad"): 
-→ Split into logical components:
-  * Main proteins/carbs (e.g., "Burger Patty", "Pasta", "Meatballs")
-  * Sides (e.g., "French Fries", "Mashed Potatoes", "Side Salad")
-  * Sauces/Toppings (e.g., "Burger Sauce", "Tomato Sauce")
+**STRICT SPLITTING RULES:**
+- Do NOT separate items that are cooked together in the same vessel.
+- DO separate bases/carbs that are boiled or baked independently (e.g., Rice, Pasta, Pizza Dough).
+- DO separate complex sauces that require 2+ ingredients and a separate bowl/pan (e.g., Hollandaise, Spicy Mayo).
+- Do NOT create a component for simple garnishes (e.g., chopped parsley, a squeeze of lime). Add them to the primary component they are garnishing.
 
 **CRITICAL COMPONENT NAME CONSISTENCY RULE:**
 The component structure MUST BE IDENTICAL in both ingredient_groups and components arrays.
