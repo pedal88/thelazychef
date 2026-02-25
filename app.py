@@ -2246,7 +2246,6 @@ def generate_component_images(recipe_id):
     try:
         from io import BytesIO
         import uuid
-        from services.storage_service import storage_provider
         
         # Ensure dictionary exists
         if recipe.component_images is None:
