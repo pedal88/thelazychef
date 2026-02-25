@@ -2213,11 +2213,11 @@ def recipe_detail(recipe_id):
                     unique_components.append(step.component)
                     
             themes = [
-                {'color': 'bg-blue-50 text-blue-800', 'border': 'border-blue-200', 'indent': 'ml-0'},
-                {'color': 'bg-rose-50 text-rose-800', 'border': 'border-rose-200', 'indent': 'ml-4'},
-                {'color': 'bg-emerald-50 text-emerald-800', 'border': 'border-emerald-200', 'indent': 'ml-8'},
-                {'color': 'bg-amber-50 text-amber-800', 'border': 'border-amber-200', 'indent': 'ml-12'},
-                {'color': 'bg-purple-50 text-purple-800', 'border': 'border-purple-200', 'indent': 'ml-16'},
+                {'color': 'bg-blue-50 text-blue-800', 'border': 'border-blue-200', 'indent': 'ml-0 md:ml-0'},
+                {'color': 'bg-rose-50 text-rose-800', 'border': 'border-rose-200', 'indent': 'ml-4 md:ml-12'},
+                {'color': 'bg-emerald-50 text-emerald-800', 'border': 'border-emerald-200', 'indent': 'ml-8 md:ml-24'},
+                {'color': 'bg-amber-50 text-amber-800', 'border': 'border-amber-200', 'indent': 'ml-12 md:ml-36'},
+                {'color': 'bg-purple-50 text-purple-800', 'border': 'border-purple-200', 'indent': 'ml-16 md:ml-48'},
             ]
             
             for index, comp in enumerate(unique_components):
