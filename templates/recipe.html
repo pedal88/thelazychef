@@ -111,17 +111,7 @@
             Using fresh ingredients from your pantry, customized by our World Class AI Chef.
         </p>
 
-        <!-- Utility Buttons (Hidden on Print) -->
-        <div class="flex gap-4 mt-8 print:hidden">
-            <button onclick="window.print()"
-                class="px-5 py-2.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 text-sm font-bold rounded-xl shadow-sm transition-all flex items-center gap-2">
-                🖨️ Print (1-Pager)
-            </button>
-            <a href="{{ url_for('recipe_kitchen_mode', recipe_id=recipe.id) }}"
-                class="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold rounded-xl shadow-sm transition-all flex items-center gap-2">
-                📱 Kitchen Mode
-            </a>
-        </div>
+
     </div>
 
     <!-- COMPONENT COLUMNS LAYOUT -->
@@ -130,25 +120,39 @@
             {{ type.section_header('Cooking Steps', 'Each component prepared separately.') }}
         </div>
 
-        <!-- VIEW TOGGLE -->
-        {% if has_chronological_data %}
-        <div class="flex justify-center mb-8 print:hidden">
+        <!-- TOOLBAR: VIEW TOGGLE & UTILITIES -->
+        <div class="flex flex-col xl:flex-row items-center justify-between gap-4 mb-8 print:hidden">
+            {% if has_chronological_data %}
             <div
-                class="bg-slate-100 p-1 rounded-full inline-flex border border-slate-200 overflow-x-auto whitespace-nowrap hide-scrollbar">
+                class="bg-slate-100 p-1 rounded-full inline-flex border border-slate-200 overflow-x-auto whitespace-nowrap hide-scrollbar max-w-full">
                 <button onclick="toggleInstructionView('component')" id="btn-view-component"
-                    class="px-6 py-2 rounded-full text-sm font-bold shadow-sm bg-white text-slate-800 transition-all">By
+                    class="px-6 py-2 rounded-full text-sm font-bold shadow-sm bg-white text-slate-800 transition-all shrink-0">By
                     Component</button>
                 <button onclick="toggleInstructionView('chrono')" id="btn-view-chrono"
-                    class="px-6 py-2 rounded-full text-sm font-bold text-slate-500 hover:text-slate-800 transition-all">Chronological</button>
+                    class="px-6 py-2 rounded-full text-sm font-bold text-slate-500 hover:text-slate-800 transition-all shrink-0">Chronological</button>
                 <button onclick="toggleInstructionView('color')" id="btn-view-color"
-                    class="px-6 py-2 rounded-full text-sm font-bold text-slate-500 hover:text-slate-800 transition-all">Color</button>
+                    class="px-6 py-2 rounded-full text-sm font-bold text-slate-500 hover:text-slate-800 transition-all shrink-0">Color</button>
                 <button onclick="toggleInstructionView('chunked')" id="btn-view-chunked"
-                    class="px-6 py-2 rounded-full text-sm font-bold text-slate-500 hover:text-slate-800 transition-all">Chunked</button>
+                    class="px-6 py-2 rounded-full text-sm font-bold text-slate-500 hover:text-slate-800 transition-all shrink-0">Chunked</button>
                 <button onclick="toggleInstructionView('cascading')" id="btn-view-cascading"
-                    class="px-6 py-2 rounded-full text-sm font-bold text-slate-500 hover:text-slate-800 transition-all">Cascading</button>
+                    class="px-6 py-2 rounded-full text-sm font-bold text-slate-500 hover:text-slate-800 transition-all shrink-0">Cascading</button>
+            </div>
+            {% else %}
+            <div></div> <!-- Spacer -->
+            {% endif %}
+
+            <!-- Utility Buttons -->
+            <div class="flex gap-3 shrink-0">
+                <button onclick="window.print()"
+                    class="px-5 py-2.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 text-sm font-bold rounded-full shadow-sm transition-all flex items-center gap-2">
+                    🖨️ Print (1-Pager)
+                </button>
+                <a href="{{ url_for('recipe_kitchen_mode', recipe_id=recipe.id) }}"
+                    class="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold rounded-full shadow-sm transition-all flex items-center gap-2">
+                    📱 Kitchen Mode
+                </a>
             </div>
         </div>
-        {% endif %}
 
         <div id="view-component">
             <div
