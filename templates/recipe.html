@@ -227,7 +227,7 @@
                             {% set phase_steps = steps|selectattr('phase', 'equalto', phase)|list %}
                             {% if phase_steps %}
                             <div
-                                class="relative pl-6 border-l-2 {% if phase == 'Prep' %}border-blue-200{% elif phase == 'Cook' %}border-orange-300{% else %}border-green-200{% endif %} print:border-none print:p-0 print:m-0 {% if phase == 'Prep' %}print:mb-8{% endif %} print:pl-0 pt-1">
+                                class="relative pl-6 border-l-2 {% if phase == 'Prep' %}border-blue-200{% elif phase == 'Cook' %}border-orange-300{% else %}border-green-200{% endif %} print:border-none print:p-0 print:m-0 {% if phase == 'Prep' %}print:mb-20{% endif %} print:pl-0 pt-1">
 
                                 <span class="absolute -left-[9px] top-0 h-4 w-4 rounded-full border-2 border-white 
                                 {% if phase == 'Prep' %}bg-blue-400
