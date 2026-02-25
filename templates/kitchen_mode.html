@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cooking Mode: {{ recipe.title }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Hide scrollbars for cleaner aesthetic but keep functionality */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body class="h-screen w-screen overflow-hidden bg-slate-900 text-white flex flex-col font-sans select-none">
+
+    <!-- 1. HEADER (Fixed) -->
+    <header class="flex-none p-4 md:px-8 border-b border-white/10 flex justify-between items-center bg-slate-900 z-10">
+        <div>
+            <h1 class="text-3xl md:text-5xl font-bold font-serif leading-none tracking-tight text-white mb-2">{{
+                recipe.title }}</h1>
+            <div class="flex items-center gap-4 text-slate-400">
+                <span class="text-sm font-medium uppercase tracking-widest"><span
+                        class="text-orange-500 font-bold mr-1">⏱️</span> {% if recipe.prep_time_mins %}{{
+                    recipe.prep_time_mins }}m{% else %}N/A{% endif %}</span>
+                <span
+                    class="text-sm font-medium uppercase tracking-widest px-2 py-0.5 rounded-full border border-white/10 text-white/70">{{
+                    recipe.difficulty }}</span>
+            </div>
+        </div>
+        <a href="{{ url_for('recipe_detail', recipe_id=recipe.id) }}"
+            class="flex items-center justify-center w-14 h-14 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-colors group">
+            <svg class="w-6 h-6 text-slate-400 group-hover:text-white transition-colors" fill="none"
+                stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </a>
+    </header>
+
+    <!-- 2. MAIN GRID (Fills remaining height) -->
+    <main class="flex-grow flex flex-col md:flex-row h-[calc(100vh-100px)] overflow-hidden">
+
+        <!-- LEFT COLUMN: INGREDIENTS (33%) -->
+        <section
+            class="w-full md:w-1/3 h-full border-r border-white/5 bg-slate-900/50 p-6 md:p-8 overflow-y-auto mix-blend-plus-lighter">
+            <h2 class="text-sm font-bold uppercase tracking-widest text-orange-500 mb-6">Ingredients</h2>
+            <ul class="space-y-4">
+                {% for ring in recipe.ingredients %}
+                <li class="flex items-center justify-between border-b border-white/5 pb-4">
+                    <span class="text-lg text-slate-200 capitalize">{{ ring.ingredient.name }}</span>
+                    <span class="text-lg font-bold text-white tabular-nums">{{ ring.amount }} <span
+                            class="text-slate-500 text-sm ml-1">{{ ring.unit }}</span></span>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <!-- RIGHT COLUMN: CHRONOLOGICAL STEPS (67%) -->
+        <section class="w-full md:w-2/3 h-full bg-slate-800/20 p-6 md:p-12 overflow-y-auto">
+            <h2 class="text-sm font-bold uppercase tracking-widest text-slate-500 mb-8">Cooking Instructions</h2>
+
+            <div class="space-y-12 pb-24">
+                {% set sorted_steps = recipe.instructions|sort(attribute='global_order_index'|default('step_number')) %}
+                {% for step in sorted_steps %}
+                <div class="relative flex gap-6 group">
+                    <div
+                        class="flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-full font-bold text-lg bg-slate-800 text-slate-400 shadow-xl border border-white/5">
+                        {{ step.global_order_index|default(loop.index) }}
+                    </div>
+                    <div class="pt-2">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-orange-500/80">{{
+                                step.component }}</span>
+                            {% if step.estimated_minutes %}
+                            <span
+                                class="text-xs font-bold font-mono text-slate-500 bg-white/5 px-2 py-0.5 rounded border border-white/10">⏱️
+                                {{ step.estimated_minutes }}m</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-2xl font-medium leading-relaxed text-slate-100">{{ step.text }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Vanilla JS Screen Wake Lock Feature -->
+    <script>
+        let wakeLock = null;
+
+        const requestWakeLock = async () => {
+            try {
+                wakeLock = await navigator.wakeLock.request('screen');
+                console.log('Screen Wake Lock is active!');
+
+                // Optional: show subtle indicator that lock is active
+                document.body.classList.add('border-b-4', 'border-orange-500/30');
+
+                wakeLock.addEventListener('release', () => {
+                    console.log('Screen Wake Lock was released');
+                    document.body.classList.remove('border-b-4', 'border-orange-500/30');
+                });
+            } catch (err) {
+                console.warn(`${err.name}, ${err.message}`);
+                // Browser might not support it, or battery saver is on. Fail silently.
+            }
+        };
+
+        // Request immediately on load
+        requestWakeLock();
+
+        // Re-request if visibility changes (user tabs out and back in)
+        document.addEventListener('visibilitychange', () => {
+            if (wakeLock !== null && document.visibilityState === 'visible') {
+                requestWakeLock();
+            }
+        });
+    </script>
+</body>
+
+</html>

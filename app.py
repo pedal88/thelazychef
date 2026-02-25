@@ -2247,6 +2247,21 @@ def recipe_detail(recipe_id):
                             chrono_steps=chrono_steps,
                             component_meta=component_meta)
 
+@app.route('/recipe/<int:recipe_id>/kitchen')
+def recipe_kitchen_mode(recipe_id):
+    """A highly isolated, 1-screen landscape view for cooking on tablets."""
+    query = db.select(Recipe).where(Recipe.id == recipe_id).options(
+        joinedload(Recipe.ingredients).joinedload(RecipeIngredient.ingredient),
+        joinedload(Recipe.instructions)
+    )
+    recipe = db.session.execute(query).unique().scalar_one_or_none()
+
+    if not recipe:
+        flash("Recipe not found.", "error")
+        return redirect(url_for('index'))
+
+    return render_template('kitchen_mode.html', recipe=recipe)
+
 @app.route('/api/recipe/<int:recipe_id>/generate-components', methods=['POST'])
 @login_required
 @admin_required
