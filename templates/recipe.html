@@ -153,10 +153,10 @@
                 class="grid grid-cols-1 {% if steps_by_component|length == 2 %}md:grid-cols-2{% elif steps_by_component|length >= 3 %}md:grid-cols-3{% endif %} gap-8 mt-8 print:block print:w-full print:gap-0 print:m-0 print:p-0">
                 {% for component_name, steps in steps_by_component %}
                 <div
-                    class="component-card bg-white border-2 border-slate-200 rounded-2xl p-6 hover:border-slate-300 transition-colors print:border-none print:p-0 print:m-0 print:block print:w-full print:mb-4">
+                    class="component-card bg-white border-2 border-slate-200 rounded-2xl p-6 hover:border-slate-300 transition-colors print:border-none print:p-0 print:flex print:flex-col print:w-full print:gap-1 print:mb-6 print:break-inside-avoid">
                     <!-- Component Header -->
                     <div
-                        class="flex items-center justify-start gap-4 border-b-2 border-orange-200 mb-6 pb-3 print:border-none print:m-0 print:p-0 print:mb-2 text-slate-900 font-bold font-serif text-2xl print:text-sm print:uppercase print:tracking-widest">
+                        class="flex items-center justify-start gap-4 border-b-2 border-orange-200 mb-6 pb-3 print:border-none print:m-0 print:p-0 print:mb-2 text-slate-900 font-bold font-serif text-2xl print:text-sm print:uppercase print:tracking-widest print:w-full">
                         <h2>
                             {{ component_name }}
                         </h2>
@@ -166,7 +166,7 @@
                         {% endif %}
                     </div>
 
-                    <div class="print:flex print:flex-row print:w-full print:gap-4 print:m-0 print:p-0">
+                    <div class="print:flex print:flex-row print:w-full print:gap-6 print:m-0 print:p-0">
 
                         <!-- Component-Specific Visual Ingredients -->
                         {% if ingredients_by_component[component_name] %}
@@ -182,12 +182,24 @@
                             </div>
 
                             <!-- Print Ingredients -->
-                            <div class="hidden print:flex print:flex-col print:gap-1 print:m-0 print:p-0">
+                            <div class="hidden print:flex print:flex-col print:space-y-1 print:m-0 print:p-0">
                                 {% for item in ingredients_by_component[component_name] %}
                                 <div
-                                    class="print:text-[11px] print:leading-tight print:break-inside-avoid print:m-0 print:p-0 text-slate-800">
-                                    &bull; <span class="font-bold">{{ item.amount|round|int if item.amount % 1 == 0 else
-                                        item.amount }} {{ item.unit }}</span> {{ item.ingredient.name }}
+                                    class="print:flex print:flex-row print:items-center print:justify-start print:gap-2 print:m-0 print:p-0 print:break-inside-avoid">
+                                    {% if item.ingredient.image_url %}
+                                    <img src="{{ item.ingredient.image_url if item.ingredient.image_url.startswith('http') else url_for('static', filename=item.ingredient.image_url) }}"
+                                        class="print:w-6 print:h-6 print:object-cover print:rounded-sm print:m-0">
+                                    {% else %}
+                                    <div
+                                        class="print:w-6 print:h-6 print:rounded-sm print:bg-slate-200 print:text-[8px] print:flex print:items-center print:justify-center print:font-bold print:text-slate-500 print:m-0">
+                                        {{ item.ingredient.name[:2] | upper }}
+                                    </div>
+                                    {% endif %}
+                                    <span
+                                        class="print:text-[10px] print:leading-none print:text-left print:m-0 text-slate-800">
+                                        {{ item.ingredient.name }} - <span class="font-bold">{{ item.amount|round|int if
+                                            item.amount % 1 == 0 else item.amount|round(1) }}{{ item.unit }}</span>
+                                    </span>
                                 </div>
                                 {% endfor %}
                             </div>
@@ -215,16 +227,16 @@
                                     {{ phase }}
                                 </h4>
 
-                                <div class="space-y-4 print:space-y-1 print:m-0 print:p-0">
+                                <div class="space-y-4 print:space-y-2 print:m-0 print:p-0">
                                     {% for step in phase_steps %}
                                     <div
-                                        class="group flex gap-3 print:gap-1.5 print:break-inside-avoid print:m-0 print:p-0 print:mb-1.5">
+                                        class="group flex gap-3 print:gap-2 print:break-inside-avoid print:m-0 print:p-0">
                                         <span
                                             class="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-xs font-bold transition-colors print:hidden">
                                             {{ step.step_number }}
                                         </span>
                                         <p
-                                            class="text-sm text-slate-700 leading-relaxed print:text-[11px] print:leading-tight print:m-0 print:p-0">
+                                            class="text-sm text-slate-700 leading-relaxed print:text-xs print:leading-snug print:m-0 print:p-0">
                                             <span class="hidden print:inline font-bold">{{ step.step_number }}.</span>
                                             {{ step.text }}
                                         </p>
