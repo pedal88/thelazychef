@@ -153,10 +153,10 @@
                 class="grid grid-cols-1 {% if steps_by_component|length == 2 %}md:grid-cols-2{% elif steps_by_component|length >= 3 %}md:grid-cols-3{% endif %} gap-8 mt-8 print:block print:w-full print:gap-0 print:m-0 print:p-0">
                 {% for component_name, steps in steps_by_component %}
                 <div
-                    class="component-card bg-white border-2 border-slate-200 rounded-2xl p-6 hover:border-slate-300 transition-colors print:border-none print:p-0 print:flex print:flex-col print:w-full print:gap-1 print:mb-6 print:break-inside-avoid">
+                    class="component-card bg-white border-2 border-slate-200 rounded-2xl p-6 hover:border-slate-300 transition-colors print:border-none print:p-0 print:flex print:flex-col print:w-full print:gap-0 print:mb-3 print:break-inside-avoid">
                     <!-- Component Header -->
                     <div
-                        class="flex items-center justify-start gap-4 border-b-2 border-orange-200 mb-6 pb-3 print:border-none print:m-0 print:p-0 print:mb-2 text-slate-900 font-bold font-serif text-2xl print:text-sm print:uppercase print:tracking-widest print:w-full">
+                        class="flex items-center justify-start gap-4 border-b-2 border-orange-200 mb-6 pb-3 print:border-none print:m-0 print:p-0 print:mb-1 text-slate-900 font-bold font-serif text-2xl print:text-xs print:uppercase print:tracking-widest print:w-full print:border-b print:border-slate-300 print:pb-1">
                         <h2>
                             {{ component_name }}
                         </h2>
@@ -227,16 +227,16 @@
                                     {{ phase }}
                                 </h4>
 
-                                <div class="space-y-4 print:space-y-2 print:m-0 print:p-0">
+                                <div class="space-y-4 print:space-y-0.5 print:m-0 print:p-0">
                                     {% for step in phase_steps %}
                                     <div
-                                        class="group flex gap-3 print:gap-2 print:break-inside-avoid print:m-0 print:p-0">
+                                        class="group flex gap-3 print:gap-1.5 print:break-inside-avoid print:m-0 print:p-0">
                                         <span
                                             class="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-xs font-bold transition-colors print:hidden">
                                             {{ step.step_number }}
                                         </span>
                                         <p
-                                            class="text-sm text-slate-700 leading-relaxed print:text-xs print:leading-snug print:m-0 print:p-0">
+                                            class="text-sm text-slate-700 leading-relaxed print:text-[11px] print:leading-tight print:m-0 print:p-0">
                                             <span class="hidden print:inline font-bold">{{ step.step_number }}.</span>
                                             {{ step.text }}
                                         </p>
