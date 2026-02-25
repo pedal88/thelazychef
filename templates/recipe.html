@@ -32,7 +32,12 @@
 
         {% if current_user.is_authenticated and current_user.is_admin %}
         <!-- Subtle Retake/Generate Button -->
-        <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div
+            class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center gap-2">
+            <button onclick="generateComponentImages({{ recipe.id }})" title="Generate Component Images"
+                class="px-3 h-10 bg-black/50 hover:bg-black/70 backdrop-blur text-white text-xs font-bold rounded-full flex items-center justify-center transition-all shadow-sm">
+                <span id="comp-gen-text">📸 Components</span>
+            </button>
             <a href="{{ url_for('recipe_image_generation_view', recipe_id=recipe.id) }}"
                 title="{% if recipe.image_filename %}Retake Photo{% else %}Generate Photo{% endif %}"
                 class="h-10 w-10 bg-black/50 hover:bg-black/70 backdrop-blur text-white rounded-full flex items-center justify-center transition-all shadow-sm">
@@ -137,9 +142,15 @@
                 <div
                     class="component-card bg-white border-2 border-slate-200 rounded-2xl p-6 hover:border-slate-300 transition-colors">
                     <!-- Component Header -->
-                    <h2 class="text-2xl font-serif font-bold text-slate-900 mb-6 pb-3 border-b-2 border-orange-200">
-                        {{ component_name }}
-                    </h2>
+                    <div class="flex items-center justify-between border-b-2 border-orange-200 mb-6 pb-3">
+                        <h2 class="text-2xl font-serif font-bold text-slate-900">
+                            {{ component_name }}
+                        </h2>
+                        {% if recipe.component_images and recipe.component_images.get(component_name) %}
+                        <img src="{{ get_image_url(recipe.component_images[component_name]) }}"
+                            class="w-10 h-10 rounded-full object-cover shadow-sm">
+                        {% endif %}
+                    </div>
 
                     <!-- Component-Specific Visual Ingredients -->
                     {% if ingredients_by_component[component_name] %}
@@ -203,11 +214,20 @@
             <div
                 class="relative flex gap-4 p-5 rounded-xl border border-slate-100 bg-white hover:border-slate-200 hover:shadow-sm transition-all group">
                 <!-- Step Indicator -->
-                <div class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full font-bold text-white shadow-sm mt-0.5
-                    {% if step.phase == 'Prep' %}bg-blue-500
-                    {% elif step.phase == 'Cook' %}bg-orange-500
-                    {% else %}bg-green-500{% endif %}">
-                    {{ step.global_order_index }}
+                <div class="relative w-10 h-10 rounded-full overflow-hidden shadow-sm shrink-0 mt-0.5">
+                    {% if recipe.component_images and recipe.component_images.get(step.component) %}
+                    <img src="{{ get_image_url(recipe.component_images[step.component]) }}"
+                        class="absolute inset-0 w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-black/40"></div>
+                    {% else %}
+                    <div
+                        class="absolute inset-0 {% if step.phase == 'Prep' %}bg-blue-500{% elif step.phase == 'Cook' %}bg-orange-500{% else %}bg-green-500{% endif %}">
+                    </div>
+                    {% endif %}
+                    <span
+                        class="relative z-10 flex items-center justify-center h-full w-full text-white font-bold text-sm">
+                        {{ step.global_order_index }}
+                    </span>
                 </div>
                 <!-- Content -->
                 <div class="flex-grow">
@@ -234,8 +254,22 @@
                 class="relative flex gap-4 p-5 rounded-xl border {{ component_meta[step.component].border }} {{ component_meta[step.component].color }} hover:shadow-sm transition-all group">
                 <!-- Step Indicator -->
                 <div
-                    class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full font-bold bg-white text-slate-800 shadow-sm mt-0.5">
-                    {{ step.global_order_index }}
+                    class="relative w-10 h-10 rounded-full overflow-hidden shadow-sm shrink-0 mt-0.5 border border-black/10">
+                    {% if recipe.component_images and recipe.component_images.get(step.component) %}
+                    <img src="{{ get_image_url(recipe.component_images[step.component]) }}"
+                        class="absolute inset-0 w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-black/40"></div>
+                    <span
+                        class="relative z-10 flex items-center justify-center h-full w-full text-white font-bold text-sm">
+                        {{ step.global_order_index }}
+                    </span>
+                    {% else %}
+                    <div class="absolute inset-0 bg-white"></div>
+                    <span
+                        class="relative z-10 flex items-center justify-center h-full w-full text-slate-800 font-bold text-sm">
+                        {{ step.global_order_index }}
+                    </span>
+                    {% endif %}
                 </div>
                 <!-- Content -->
                 <div class="flex-grow">
@@ -259,9 +293,14 @@
             {% for step in chrono_steps %}
             {% set prev_comp = chrono_steps[loop.index0 - 1].component if loop.index0 > 0 else None %}
             {% if step.component != prev_comp %}
-            <h3
-                class="text-lg font-bold mb-4 mt-8 {{ component_meta[step.component].color }} px-3 py-1 rounded inline-block">
-                {{ step.component }}</h3>
+            <div class="flex items-center justify-between mb-4 mt-8">
+                <h3 class="text-lg font-bold {{ component_meta[step.component].color }} px-3 py-1 rounded inline-block">
+                    {{ step.component }}</h3>
+                {% if recipe.component_images and recipe.component_images.get(step.component) %}
+                <img src="{{ get_image_url(recipe.component_images[step.component]) }}"
+                    class="w-10 h-10 rounded-full object-cover shadow-sm">
+                {% endif %}
+            </div>
             <div class="border-l-4 {{ component_meta[step.component].border }} pl-4 mb-6 space-y-4">
                 {% endif %}
                 <!-- Step content -->
@@ -297,9 +336,15 @@
             {% set prev_comp = chrono_steps[loop.index0 - 1].component if loop.index0 > 0 else None %}
             {% if step.component != prev_comp %}
             <div class="{{ component_meta[step.component].indent }} w-full">
-                <h3
-                    class="text-lg font-bold mb-4 mt-8 {{ component_meta[step.component].color }} px-3 py-1 rounded inline-block shadow-sm">
-                    {{ step.component }}</h3>
+                <div class="flex items-center justify-between mb-4 mt-8">
+                    <h3
+                        class="text-lg font-bold {{ component_meta[step.component].color }} px-3 py-1 rounded inline-block shadow-sm">
+                        {{ step.component }}</h3>
+                    {% if recipe.component_images and recipe.component_images.get(step.component) %}
+                    <img src="{{ get_image_url(recipe.component_images[step.component]) }}"
+                        class="w-10 h-10 rounded-full object-cover shadow-sm">
+                    {% endif %}
+                </div>
                 <div class="border-l-4 {{ component_meta[step.component].border }} pl-4 mb-6 space-y-4">
                     {% endif %}
                     <!-- Step content -->
@@ -517,6 +562,33 @@
         });
     </script>
     {% endif %}
+    <script>
+        async function generateComponentImages(recipeId) {
+            const btnText = document.getElementById('comp-gen-text');
+            if (!btnText) return;
+
+            const originalText = btnText.innerText;
+            btnText.innerText = "⏳ Gen...";
+
+            try {
+                const response = await fetch(`/api/recipe/${recipeId}/generate-components`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert('Generation failed: ' + (data.error || 'Unknown error'));
+                    btnText.innerText = originalText;
+                }
+            } catch (e) {
+                alert('System error: ' + e.message);
+                btnText.innerText = originalText;
+            }
+        }
+    </script>
     <script>
         function toggleInstructionView(viewType) {
             const views = ['component', 'chrono', 'color', 'chunked', 'cascading'];

@@ -2235,6 +2235,62 @@ def recipe_detail(recipe_id):
                             chrono_steps=chrono_steps,
                             component_meta=component_meta)
 
+@app.route('/api/recipe/<int:recipe_id>/generate-components', methods=['POST'])
+@login_required
+@admin_required
+def generate_component_images(recipe_id):
+    recipe = db.session.get(Recipe, recipe_id)
+    if not recipe:
+        return jsonify({'success': False, 'error': 'Recipe not found'}), 404
+        
+    try:
+        from io import BytesIO
+        import uuid
+        from services.storage_service import storage_provider
+        
+        # Ensure dictionary exists
+        if recipe.component_images is None:
+            recipe.component_images = {}
+            
+        new_images = dict(recipe.component_images)
+        components = {i.component for i in recipe.instructions if i.component}
+        
+        from services.photographer_service import generate_actual_image
+        
+        generated_count = 0
+        for comp in components:
+            if comp not in new_images:
+                prompt_text = f"A close up, highly appetizing food photography shot of {comp} being prepared, isolated, professional cookbook style, 4k resolution, warm studio lighting."
+                try:
+                    images = generate_actual_image(prompt_text, number_of_images=1)
+                    if images and len(images) > 0:
+                        img = images[0]
+                        filename = f"comp_{recipe_id}_{uuid.uuid4().hex[:8]}.png"
+                        
+                        img_byte_arr = BytesIO()
+                        img.save(img_byte_arr, format='PNG')
+                        
+                        # Save directly to recipes folder
+                        storage_provider.save(img_byte_arr.getvalue(), filename, "recipes")
+                        
+                        new_images[comp] = filename
+                        generated_count += 1
+                except Exception as e:
+                    print(f"Failed to generate image for component {comp}: {e}")
+                    
+        if generated_count > 0:
+            recipe.component_images = new_images
+            from sqlalchemy.orm.attributes import flag_modified
+            flag_modified(recipe, "component_images")
+            db.session.commit()
+            
+        return jsonify({'success': True, 'generated': generated_count})
+        
+    except Exception as e:
+        print(f"Gen Error in generate-components: {e}")
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @app.route('/api/placeholder/ingredient/\u003cfood_id\u003e')
 def ingredient_placeholder(food_id):
     """Generate a dynamic SVG placeholder for an ingredient without an image."""

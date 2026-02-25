@@ -207,6 +207,9 @@ class Recipe(db.Model):
     total_fat: Mapped[float] = mapped_column(Float, nullable=True)
     total_fiber: Mapped[float] = mapped_column(Float, nullable=True)
     total_sugar: Mapped[float] = mapped_column(Float, nullable=True)
+    
+    # Nested mapping of component names to image URLs/filenames
+    component_images: Mapped[dict] = mapped_column(JSON, default=dict, server_default='{}')
 
     instructions: Mapped[list["Instruction"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
     ingredients: Mapped[list["RecipeIngredient"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
