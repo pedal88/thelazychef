@@ -156,7 +156,7 @@
                     class="component-card bg-white border-2 border-slate-200 rounded-2xl p-6 hover:border-slate-300 transition-colors print:border-none print:p-0 print:flex print:flex-col print:w-full print:gap-0 print:mb-3 print:break-inside-avoid">
                     <!-- Component Header -->
                     <div
-                        class="flex items-center justify-start gap-4 border-b-2 border-orange-200 mb-6 pb-3 print:border-none print:m-0 print:p-0 print:mb-1 text-slate-900 font-bold font-serif text-2xl print:text-xs print:uppercase print:tracking-widest print:w-full print:border-b print:border-slate-300 print:pb-1">
+                        class="flex items-center justify-start gap-4 border-b-2 border-orange-200 mb-6 pb-3 print:border-none print:m-0 print:p-0 print:mb-2 text-slate-900 font-bold font-serif text-2xl print:text-sm print:uppercase print:tracking-widest print:w-full print:text-black">
                         <h2>
                             {{ component_name }}
                         </h2>
@@ -221,11 +221,10 @@
                                 {% else %}bg-green-500{% endif %} print:hidden">
                                 </span>
 
-                                <h4
-                                    class="text-xs font-bold uppercase tracking-widest mb-3
+                                <h4 class="text-xs font-bold uppercase tracking-widest mb-3
                                 {% if phase == 'Prep' %}text-blue-600
                                 {% elif phase == 'Cook' %}text-orange-600
-                                {% else %}text-green-600{% endif %} print:text-[10px] print:text-black print:mb-0.5 print:mt-1">
+                                {% else %}text-green-600{% endif %} print:hidden">
                                     {{ phase }}
                                 </h4>
 
