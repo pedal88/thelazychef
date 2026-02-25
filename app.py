@@ -2271,7 +2271,7 @@ def generate_component_images(recipe_id):
         generated_count = 0
         for comp in components:
             if comp not in new_images:
-                prompt_text = f"A close up, highly appetizing food photography shot of {comp} being prepared, isolated, professional cookbook style, 4k resolution, warm studio lighting."
+                prompt_text = f"A clean, minimalist 4k product photo of just {comp} alone, explicitly isolated on a pure solid white background. Strictly NO other components, NO distracting plates or utensils, NO background clutter, highly appetizing."
                 try:
                     images = generate_actual_image(prompt_text, number_of_images=1)
                     if images and len(images) > 0:

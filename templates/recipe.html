@@ -142,7 +142,7 @@
                 <div
                     class="component-card bg-white border-2 border-slate-200 rounded-2xl p-6 hover:border-slate-300 transition-colors">
                     <!-- Component Header -->
-                    <div class="flex items-center justify-between border-b-2 border-orange-200 mb-6 pb-3">
+                    <div class="flex items-center justify-start gap-4 border-b-2 border-orange-200 mb-6 pb-3">
                         <h2 class="text-2xl font-serif font-bold text-slate-900">
                             {{ component_name }}
                         </h2>
@@ -293,7 +293,7 @@
             {% for step in chrono_steps %}
             {% set prev_comp = chrono_steps[loop.index0 - 1].component if loop.index0 > 0 else None %}
             {% if step.component != prev_comp %}
-            <div class="flex items-center justify-between mb-4 mt-8">
+            <div class="flex items-center justify-start gap-3 mb-4 mt-8">
                 <h3 class="text-lg font-bold {{ component_meta[step.component].color }} px-3 py-1 rounded inline-block">
                     {{ step.component }}</h3>
                 {% if recipe.component_images and recipe.component_images.get(step.component) %}
@@ -336,7 +336,7 @@
             {% set prev_comp = chrono_steps[loop.index0 - 1].component if loop.index0 > 0 else None %}
             {% if step.component != prev_comp %}
             <div class="{{ component_meta[step.component].indent }} w-full">
-                <div class="flex items-center justify-between mb-4 mt-8">
+                <div class="flex items-center justify-start gap-3 mb-4 mt-8">
                     <h3
                         class="text-lg font-bold {{ component_meta[step.component].color }} px-3 py-1 rounded inline-block shadow-sm">
                         {{ step.component }}</h3>
