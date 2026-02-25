@@ -149,74 +149,92 @@
 
         <div id="view-component">
             <div
-                class="grid grid-cols-1 {% if steps_by_component|length == 2 %}md:grid-cols-2{% elif steps_by_component|length >= 3 %}md:grid-cols-3{% endif %} gap-8 mt-8 print:grid-cols-1 print:gap-4">
+                class="grid grid-cols-1 {% if steps_by_component|length == 2 %}md:grid-cols-2{% elif steps_by_component|length >= 3 %}md:grid-cols-3{% endif %} gap-8 mt-8 print:block print:w-full print:gap-0 print:m-0 print:p-0">
                 {% for component_name, steps in steps_by_component %}
                 <div
-                    class="component-card bg-white border-2 border-slate-200 rounded-2xl p-6 hover:border-slate-300 transition-colors print:border-none print:p-0 print:grid print:grid-cols-3 print:gap-4">
+                    class="component-card bg-white border-2 border-slate-200 rounded-2xl p-6 hover:border-slate-300 transition-colors print:border-none print:p-0 print:m-0 print:block print:w-full print:mb-4">
                     <!-- Component Header -->
-                    <div class="flex items-center justify-start gap-4 border-b-2 border-orange-200 mb-6 pb-3">
-                        <h2 class="text-2xl font-serif font-bold text-slate-900">
+                    <div
+                        class="flex items-center justify-start gap-4 border-b-2 border-orange-200 mb-6 pb-3 print:border-none print:m-0 print:p-0 print:mb-2 text-slate-900 font-bold font-serif text-2xl print:text-sm print:uppercase print:tracking-widest">
+                        <h2>
                             {{ component_name }}
                         </h2>
                         {% if recipe.component_images and recipe.component_images.get(component_name) %}
                         <img src="{{ get_image_url(recipe.component_images[component_name]) }}"
-                            class="w-10 h-10 rounded-full object-cover shadow-sm">
+                            class="w-10 h-10 rounded-full object-cover shadow-sm print:hidden">
                         {% endif %}
                     </div>
 
-                    <!-- Component-Specific Visual Ingredients -->
-                    {% if ingredients_by_component[component_name] %}
-                    <div class="mb-6 print:col-span-1 print:mb-0">
-                        <h3 class="text-sm font-bold uppercase tracking-wide text-slate-500 mb-3 print:hidden">
-                            Ingredients</h3>
-                        <h3 class="hidden print:block text-xs font-bold uppercase tracking-wide text-slate-500 mb-2">
-                            Ingredients</h3>
-                        <!-- Visual Grid with Images, Names, and Amounts -->
-                        <div class="grid grid-cols-4 gap-0.5 print:grid-cols-1 print:gap-1">
-                            {% for item in ingredients_by_component[component_name] %}
-                            {{ card.visual_ingredient(item, size='md') }}
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% endif %}
+                    <div class="print:flex print:flex-row print:w-full print:gap-4 print:m-0 print:p-0">
 
-                    <!-- Steps within this component, grouped by phase -->
-                    <div class="space-y-6 print:col-span-2 print:space-y-4">
-                        {% for phase in ['Prep', 'Cook', 'Serve'] %}
-                        {% set phase_steps = steps|selectattr('phase', 'equalto', phase)|list %}
-                        {% if phase_steps %}
-                        <div
-                            class="relative pl-6 border-l-2 {% if phase == 'Prep' %}border-blue-200{% elif phase == 'Cook' %}border-orange-300{% else %}border-green-200{% endif %}">
-                            <span class="absolute -left-[9px] top-0 h-4 w-4 rounded-full border-2 border-white 
-                                {% if phase == 'Prep' %}bg-blue-400
-                                {% elif phase == 'Cook' %}bg-orange-500
-                                {% else %}bg-green-500{% endif %}">
-                            </span>
+                        <!-- Component-Specific Visual Ingredients -->
+                        {% if ingredients_by_component[component_name] %}
+                        <div class="mb-6 print:w-1/3 print:m-0 print:p-0 text-slate-500">
+                            <h3 class="text-sm font-bold uppercase tracking-wide mb-3 print:hidden">
+                                Ingredients</h3>
 
-                            <h4 class="text-xs font-bold uppercase tracking-widest mb-3
-                                {% if phase == 'Prep' %}text-blue-600
-                                {% elif phase == 'Cook' %}text-orange-600
-                                {% else %}text-green-600{% endif %}">
-                                {{ phase }}
-                            </h4>
+                            <!-- Regular Screen Ingredients -->
+                            <div class="grid grid-cols-4 gap-0.5 print:hidden">
+                                {% for item in ingredients_by_component[component_name] %}
+                                {{ card.visual_ingredient(item, size='md') }}
+                                {% endfor %}
+                            </div>
 
-                            <div class="space-y-4 print:space-y-2">
-                                {% for step in phase_steps %}
-                                <div class="group flex gap-3 print:gap-2">
-                                    <span
-                                        class="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-xs font-bold group-hover:bg-slate-900 group-hover:text-white transition-colors print:bg-white print:border print:border-slate-300 print:text-slate-800 print:w-4 print:h-4 print:text-[10px]">
-                                        {{ step.step_number }}
-                                    </span>
-                                    <p class="text-sm text-slate-700 leading-relaxed print:text-xs print:leading-tight">
-                                        {{ step.text }}
-                                    </p>
+                            <!-- Print Ingredients -->
+                            <div class="hidden print:flex print:flex-col print:gap-1 print:m-0 print:p-0">
+                                {% for item in ingredients_by_component[component_name] %}
+                                <div
+                                    class="print:text-[11px] print:leading-tight print:break-inside-avoid print:m-0 print:p-0 text-slate-800">
+                                    &bull; <span class="font-bold">{{ item.amount|round|int if item.amount % 1 == 0 else
+                                        item.amount }} {{ item.unit }}</span> {{ item.ingredient.name }}
                                 </div>
                                 {% endfor %}
                             </div>
                         </div>
                         {% endif %}
-                        {% endfor %}
-                    </div>
+
+                        <!-- Steps within this component, grouped by phase -->
+                        <div class="space-y-6 print:w-2/3 print:space-y-1 print:m-0 print:p-0">
+                            {% for phase in ['Prep', 'Cook', 'Serve'] %}
+                            {% set phase_steps = steps|selectattr('phase', 'equalto', phase)|list %}
+                            {% if phase_steps %}
+                            <div
+                                class="relative pl-6 border-l-2 {% if phase == 'Prep' %}border-blue-200{% elif phase == 'Cook' %}border-orange-300{% else %}border-green-200{% endif %} print:border-none print:p-0 print:m-0 print:pl-0 pt-1">
+
+                                <span class="absolute -left-[9px] top-0 h-4 w-4 rounded-full border-2 border-white 
+                                {% if phase == 'Prep' %}bg-blue-400
+                                {% elif phase == 'Cook' %}bg-orange-500
+                                {% else %}bg-green-500{% endif %} print:hidden">
+                                </span>
+
+                                <h4 class="text-xs font-bold uppercase tracking-widest mb-3
+                                {% if phase == 'Prep' %}text-blue-600
+                                {% elif phase == 'Cook' %}text-orange-600
+                                {% else %}text-green-600{% endif %} print:hidden">
+                                    {{ phase }}
+                                </h4>
+
+                                <div class="space-y-4 print:space-y-1 print:m-0 print:p-0">
+                                    {% for step in phase_steps %}
+                                    <div
+                                        class="group flex gap-3 print:gap-1.5 print:break-inside-avoid print:m-0 print:p-0 print:mb-1.5">
+                                        <span
+                                            class="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-xs font-bold transition-colors print:hidden">
+                                            {{ step.step_number }}
+                                        </span>
+                                        <p
+                                            class="text-sm text-slate-700 leading-relaxed print:text-[11px] print:leading-tight print:m-0 print:p-0">
+                                            <span class="hidden print:inline font-bold">{{ step.step_number }}.</span>
+                                            {{ step.text }}
+                                        </p>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div> <!-- End Wrapper -->
                 </div>
                 {% endfor %}
             </div>
