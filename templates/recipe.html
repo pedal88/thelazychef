@@ -12,7 +12,7 @@
 
     <!-- Navigation Back -->
     <a href="/"
-        class="inline-flex items-center text-sm font-medium text-slate-500 hover:text-orange-600 mb-8 transition-colors">
+        class="inline-flex items-center text-sm font-medium text-slate-500 hover:text-orange-600 mb-8 transition-colors print:hidden">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
             <path d="m15 18-6-6 6-6" />
@@ -100,11 +100,12 @@
             {% endif %}
         </div>
 
-        <h1 class="font-serif text-5xl md:text-7xl font-bold text-slate-900 leading-tight mb-6">
+        <h1
+            class="font-serif text-5xl md:text-7xl font-bold text-slate-900 leading-tight mb-6 print:text-2xl print:mb-2 text-center">
             {{ recipe.title }}
         </h1>
 
-        <p class="text-xl text-slate-600 font-light leading-relaxed max-w-2xl print:text-sm print:mb-4">
+        <p class="text-xl text-slate-600 font-light leading-relaxed max-w-2xl print:hidden">
             A {{ recipe.difficulty|lower }} {{ recipe.cuisine }} dish perfect for {{ recipe.diets_list|join(' and ') }}
             diets.
             Using fresh ingredients from your pantry, customized by our World Class AI Chef.
@@ -129,7 +130,7 @@
 
         <!-- VIEW TOGGLE -->
         {% if has_chronological_data %}
-        <div class="flex justify-center mb-8">
+        <div class="flex justify-center mb-8 print:hidden">
             <div
                 class="bg-slate-100 p-1 rounded-full inline-flex border border-slate-200 overflow-x-auto whitespace-nowrap hide-scrollbar">
                 <button onclick="toggleInstructionView('component')" id="btn-view-component"

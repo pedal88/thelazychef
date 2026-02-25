@@ -27,19 +27,19 @@
 
     <!-- 1. HEADER (Fixed) -->
     <header
-        class="flex-none p-4 md:px-8 border-b border-white/10 flex justify-between items-center bg-slate-900 z-10 w-full">
+        class="flex-none p-2 md:px-6 border-b border-white/10 flex justify-between items-center bg-slate-900 z-10 w-full">
         <!-- Text Group (Left Side) -->
-        <div class="flex flex-col gap-2 flex-grow pr-4">
+        <div class="flex flex-row items-center gap-4 flex-grow pr-4">
             <h1
-                class="text-3xl md:text-5xl font-bold font-serif leading-none tracking-tight text-white m-0 break-words">
+                class="text-sm md:text-base font-bold font-serif uppercase tracking-widest text-orange-500 m-0 break-words line-clamp-1">
                 {{ recipe.title }}</h1>
-            <div class="flex items-center gap-4 text-slate-400">
-                <span class="text-sm font-medium uppercase tracking-widest flex items-center gap-1">
+            <div class="hidden md:flex items-center gap-3 text-slate-400 border-l border-white/10 pl-4">
+                <span class="text-xs font-medium uppercase tracking-widest flex items-center gap-1">
                     <span class="text-orange-500 font-bold">⏱️</span>
                     {% if recipe.prep_time_mins %}{{ recipe.prep_time_mins }}m{% else %}N/A{% endif %}
                 </span>
                 <span
-                    class="text-sm font-medium uppercase tracking-widest px-2 py-0.5 rounded-full border border-white/10 text-white/70">
+                    class="text-[10px] font-medium uppercase tracking-widest px-2 py-0.5 rounded-full border border-white/10 text-white/70">
                     {{ recipe.difficulty }}
                 </span>
             </div>
@@ -47,8 +47,8 @@
 
         <!-- Exit Button (Right Side, Fixed Size) -->
         <a href="{{ url_for('recipe_detail', recipe_id=recipe.id) }}"
-            class="flex-shrink-0 flex items-center justify-center w-14 h-14 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-colors group">
-            <svg class="w-6 h-6 text-slate-400 group-hover:text-white transition-colors" fill="none"
+            class="flex-shrink-0 flex items-center justify-center w-8 h-8 md:w-10 md:h-10 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-colors group">
+            <svg class="w-4 h-4 md:w-5 md:h-5 text-slate-400 group-hover:text-white transition-colors" fill="none"
                 stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
@@ -56,7 +56,7 @@
     </header>
 
     <!-- 2. MAIN GRID (Fills remaining height) -->
-    <main class="flex-grow flex flex-col md:flex-row h-[calc(100vh-100px)] overflow-hidden">
+    <main class="flex-grow flex flex-col md:flex-row h-[calc(100vh-60px)] overflow-hidden">
 
         <!-- LEFT COLUMN: INGREDIENTS (33%) -->
         <section
