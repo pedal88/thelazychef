@@ -2196,8 +2196,22 @@ def recipe_detail(recipe_id):
             # Also add a pseudo-component for display if not already in steps
             if not any(name == "Other Ingredients" for name, _ in steps_by_component):
                 steps_by_component.append(("Other Ingredients", []))
+    # NEW: Chronological Sequence (Parallel Dashboard)
+    has_chronological_data = False
+    chrono_steps = []
+    
+    if len(instructions) > 0:
+        has_chronological_data = all(i.global_order_index is not None for i in instructions)
+        if has_chronological_data:
+            chrono_steps = sorted(instructions, key=lambda x: x.global_order_index)
 
-    return render_template('recipe.html', recipe=recipe, steps_by_phase=steps_by_phase, ingredients_by_component=ingredients_by_component, steps_by_component=steps_by_component)
+    return render_template('recipe.html', 
+                            recipe=recipe, 
+                            steps_by_phase=steps_by_phase, 
+                            ingredients_by_component=ingredients_by_component, 
+                            steps_by_component=steps_by_component,
+                            has_chronological_data=has_chronological_data,
+                            chrono_steps=chrono_steps)
 
 @app.route('/api/placeholder/ingredient/\u003cfood_id\u003e')
 def ingredient_placeholder(food_id):

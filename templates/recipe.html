@@ -110,69 +110,116 @@
     <div class="border-t border-slate-200 pt-12">
         {{ type.section_header('Cooking Steps', 'Each component prepared separately.') }}
 
-        <div
-            class="grid grid-cols-1 {% if steps_by_component|length == 2 %}md:grid-cols-2{% elif steps_by_component|length >= 3 %}md:grid-cols-3{% endif %} gap-8 mt-8">
-            {% for component_name, steps in steps_by_component %}
+        <!-- VIEW TOGGLE -->
+        {% if has_chronological_data %}
+        <div class="flex justify-center mb-8">
+            <div class="bg-slate-100 p-1 rounded-full inline-flex border border-slate-200">
+                <button onclick="toggleInstructionView('component')" id="btn-view-component"
+                    class="px-6 py-2 rounded-full text-sm font-bold shadow-sm bg-white text-slate-800 transition-all">By
+                    Component</button>
+                <button onclick="toggleInstructionView('chrono')" id="btn-view-chrono"
+                    class="px-6 py-2 rounded-full text-sm font-bold text-slate-500 hover:text-slate-800 transition-all">Chronological</button>
+            </div>
+        </div>
+        {% endif %}
+
+        <div id="view-component">
             <div
-                class="component-card bg-white border-2 border-slate-200 rounded-2xl p-6 hover:border-slate-300 transition-colors">
-                <!-- Component Header -->
-                <h2 class="text-2xl font-serif font-bold text-slate-900 mb-6 pb-3 border-b-2 border-orange-200">
-                    {{ component_name }}
-                </h2>
+                class="grid grid-cols-1 {% if steps_by_component|length == 2 %}md:grid-cols-2{% elif steps_by_component|length >= 3 %}md:grid-cols-3{% endif %} gap-8 mt-8">
+                {% for component_name, steps in steps_by_component %}
+                <div
+                    class="component-card bg-white border-2 border-slate-200 rounded-2xl p-6 hover:border-slate-300 transition-colors">
+                    <!-- Component Header -->
+                    <h2 class="text-2xl font-serif font-bold text-slate-900 mb-6 pb-3 border-b-2 border-orange-200">
+                        {{ component_name }}
+                    </h2>
 
-                <!-- Component-Specific Visual Ingredients -->
-                {% if ingredients_by_component[component_name] %}
-                <div class="mb-6">
-                    <h3 class="text-sm font-bold uppercase tracking-wide text-slate-500 mb-3">Ingredients</h3>
-                    <!-- Visual Grid with Images, Names, and Amounts -->
-                    <div class="grid grid-cols-4 gap-0.5">
-                        {% for item in ingredients_by_component[component_name] %}
-                        {{ card.visual_ingredient(item, size='md') }}
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-
-                <!-- Steps within this component, grouped by phase -->
-                <div class="space-y-6">
-                    {% for phase in ['Prep', 'Cook', 'Serve'] %}
-                    {% set phase_steps = steps|selectattr('phase', 'equalto', phase)|list %}
-                    {% if phase_steps %}
-                    <div
-                        class="relative pl-6 border-l-2 {% if phase == 'Prep' %}border-blue-200{% elif phase == 'Cook' %}border-orange-300{% else %}border-green-200{% endif %}">
-                        <span class="absolute -left-[9px] top-0 h-4 w-4 rounded-full border-2 border-white 
-                                {% if phase == 'Prep' %}bg-blue-400
-                                {% elif phase == 'Cook' %}bg-orange-500
-                                {% else %}bg-green-500{% endif %}">
-                        </span>
-
-                        <h4 class="text-xs font-bold uppercase tracking-widest mb-3
-                                {% if phase == 'Prep' %}text-blue-600
-                                {% elif phase == 'Cook' %}text-orange-600
-                                {% else %}text-green-600{% endif %}">
-                            {{ phase }}
-                        </h4>
-
-                        <div class="space-y-4">
-                            {% for step in phase_steps %}
-                            <div class="group flex gap-3">
-                                <span
-                                    class="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-xs font-bold group-hover:bg-slate-900 group-hover:text-white transition-colors">
-                                    {{ step.step_number }}
-                                </span>
-                                <p class="text-sm text-slate-700 leading-relaxed">
-                                    {{ step.text }}
-                                </p>
-                            </div>
+                    <!-- Component-Specific Visual Ingredients -->
+                    {% if ingredients_by_component[component_name] %}
+                    <div class="mb-6">
+                        <h3 class="text-sm font-bold uppercase tracking-wide text-slate-500 mb-3">Ingredients</h3>
+                        <!-- Visual Grid with Images, Names, and Amounts -->
+                        <div class="grid grid-cols-4 gap-0.5">
+                            {% for item in ingredients_by_component[component_name] %}
+                            {{ card.visual_ingredient(item, size='md') }}
                             {% endfor %}
                         </div>
                     </div>
                     {% endif %}
-                    {% endfor %}
+
+                    <!-- Steps within this component, grouped by phase -->
+                    <div class="space-y-6">
+                        {% for phase in ['Prep', 'Cook', 'Serve'] %}
+                        {% set phase_steps = steps|selectattr('phase', 'equalto', phase)|list %}
+                        {% if phase_steps %}
+                        <div
+                            class="relative pl-6 border-l-2 {% if phase == 'Prep' %}border-blue-200{% elif phase == 'Cook' %}border-orange-300{% else %}border-green-200{% endif %}">
+                            <span class="absolute -left-[9px] top-0 h-4 w-4 rounded-full border-2 border-white 
+                                {% if phase == 'Prep' %}bg-blue-400
+                                {% elif phase == 'Cook' %}bg-orange-500
+                                {% else %}bg-green-500{% endif %}">
+                            </span>
+
+                            <h4 class="text-xs font-bold uppercase tracking-widest mb-3
+                                {% if phase == 'Prep' %}text-blue-600
+                                {% elif phase == 'Cook' %}text-orange-600
+                                {% else %}text-green-600{% endif %}">
+                                {{ phase }}
+                            </h4>
+
+                            <div class="space-y-4">
+                                {% for step in phase_steps %}
+                                <div class="group flex gap-3">
+                                    <span
+                                        class="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-xs font-bold group-hover:bg-slate-900 group-hover:text-white transition-colors">
+                                        {{ step.step_number }}
+                                    </span>
+                                    <p class="text-sm text-slate-700 leading-relaxed">
+                                        {{ step.text }}
+                                    </p>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- CHRONOLOGICAL VIEW -->
+        {% if has_chronological_data %}
+        <div id="view-chrono" class="hidden max-w-3xl mx-auto mt-8 space-y-4">
+            {% for step in chrono_steps %}
+            <div
+                class="relative flex gap-4 p-5 rounded-xl border border-slate-100 bg-white hover:border-slate-200 hover:shadow-sm transition-all group">
+                <!-- Step Indicator -->
+                <div class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full font-bold text-white shadow-sm mt-0.5
+                    {% if step.phase == 'Prep' %}bg-blue-500
+                    {% elif step.phase == 'Cook' %}bg-orange-500
+                    {% else %}bg-green-500{% endif %}">
+                    {{ step.global_order_index }}
+                </div>
+                <!-- Content -->
+                <div class="flex-grow">
+                    <div class="flex justify-between items-start mb-2 pt-1">
+                        <span
+                            class="text-xs font-bold uppercase tracking-wider text-slate-500 group-hover:text-slate-700 transition-colors">[
+                            {{ step.component }} ]</span>
+                        {% if step.estimated_minutes %}
+                        <span
+                            class="text-xs font-bold font-mono text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-100 group-hover:border-slate-200 transition-colors">⏱️
+                            {{ step.estimated_minutes }} min</span>
+                        {% endif %}
+                    </div>
+                    <p class="text-sm text-slate-700 leading-relaxed">{{ step.text }}</p>
                 </div>
             </div>
             {% endfor %}
         </div>
+        {% endif %}
     </div>
 
     {# ============ ADMIN RELINK MODAL ============ #}
@@ -360,4 +407,32 @@
         });
     </script>
     {% endif %}
+    <script>
+        function toggleInstructionView(viewType) {
+            const btnComp = document.getElementById('btn-view-component');
+            const btnChrono = document.getElementById('btn-view-chrono');
+            const viewComp = document.getElementById('view-component');
+            const viewChrono = document.getElementById('view-chrono');
+
+            if (!viewComp || !viewChrono) return; // Legacy fallback shield
+
+            if (viewType === 'component') {
+                btnComp.classList.add('bg-white', 'shadow-sm', 'text-slate-800');
+                btnComp.classList.remove('text-slate-500', 'hover:text-slate-800');
+                btnChrono.classList.remove('bg-white', 'shadow-sm', 'text-slate-800');
+                btnChrono.classList.add('text-slate-500', 'hover:text-slate-800');
+
+                viewComp.classList.remove('hidden');
+                viewChrono.classList.add('hidden');
+            } else {
+                btnChrono.classList.add('bg-white', 'shadow-sm', 'text-slate-800');
+                btnChrono.classList.remove('text-slate-500', 'hover:text-slate-800');
+                btnComp.classList.remove('bg-white', 'shadow-sm', 'text-slate-800');
+                btnComp.classList.add('text-slate-500', 'hover:text-slate-800');
+
+                viewChrono.classList.remove('hidden');
+                viewComp.classList.add('hidden');
+            }
+        }
+    </script>
     {% endblock %}
