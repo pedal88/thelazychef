@@ -33,6 +33,7 @@ class Ingredient(typing.TypedDict):
     name: str
     amount: float
     unit: str
+    gram_weight_estimate: float
     pantry_id: typing.NotRequired[str]  # Optional: Pre-resolved pantry food_id from LLM
 
 class IngredientGroup(typing.TypedDict):

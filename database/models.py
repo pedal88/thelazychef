@@ -268,6 +268,7 @@ class RecipeIngredient(db.Model):
     ingredient_id: Mapped[int] = mapped_column(ForeignKey("ingredient.id"), nullable=False)
     amount: Mapped[float] = mapped_column(Float)
     unit: Mapped[str] = mapped_column(String)
+    gram_weight: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     component: Mapped[str] = mapped_column(String, default="Main", nullable=False)
 
     recipe: Mapped["Recipe"] = relationship(back_populates="ingredients")

@@ -226,12 +226,22 @@ def process_recipe_workflow(recipe_data, query_context: str, chef_id: str) -> di
             amount = ing.amount if hasattr(ing, 'amount') else ing.get('amount', 0)
             unit = ing.unit if hasattr(ing, 'unit') else ing.get('unit', '')
             component = group.component if hasattr(group, 'component') else group.get('component', 'Main Dish')
+            
+            # Smart Fallback: AI Estimate vs Physics Override
+            ai_gram_estimate = float(ing.get('gram_weight_estimate', 0.0)) if isinstance(ing, dict) else float(getattr(ing, 'gram_weight_estimate', 0.0))
+            final_gram_weight = ai_gram_estimate
+            
+            # Rule A: The Override
+            if ingredient_record.average_g_per_unit and ingredient_record.default_unit:
+                if str(unit).lower().strip() == str(ingredient_record.default_unit).lower().strip():
+                     final_gram_weight = float(amount) * float(ingredient_record.average_g_per_unit)
 
             db.session.add(RecipeIngredient(
                 recipe_id=new_recipe.id,
                 ingredient_id=ingredient_record.id,
                 amount=amount,
                 unit=unit,
+                gram_weight=final_gram_weight,
                 component=component,
             ))
 
