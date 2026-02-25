@@ -8,7 +8,7 @@
 {% block title %}{{ recipe.title }} - The Lazy Chef{% endblock %}
 
 {% block content %}
-<div class="max-w-screen-2xl mx-auto px-4 py-8 lg:py-12">
+<div class="max-w-screen-2xl mx-auto px-4 py-8 lg:py-12 print:py-0">
 
     <!-- Navigation Back -->
     <a href="/"
@@ -72,8 +72,8 @@
     {% endif %}
 
     <!-- Recipe Header Info -->
-    <div class="flex flex-col items-center text-center max-w-4xl mx-auto mb-16">
-        <div class="flex flex-wrap gap-2 mb-6 justify-center">
+    <div class="flex flex-col items-center text-center max-w-4xl mx-auto mb-16 print:mb-4">
+        <div class="flex flex-wrap gap-2 mb-6 justify-center print:mb-2">
             {{ badge.difficulty_pill(recipe.difficulty) }}
             {{ badge.tag_pill(recipe.cuisine, 'orange') }}
             {% for d in recipe.diets_list %}
@@ -101,7 +101,7 @@
         </div>
 
         <h1
-            class="font-serif text-5xl md:text-7xl font-bold text-slate-900 leading-tight mb-6 print:text-2xl print:mb-2 text-center">
+            class="font-serif text-5xl md:text-7xl font-bold text-slate-900 leading-tight mb-6 print:text-2xl print:mb-1 text-center print:leading-none">
             {{ recipe.title }}
         </h1>
 
@@ -125,8 +125,10 @@
     </div>
 
     <!-- COMPONENT COLUMNS LAYOUT -->
-    <div class="border-t border-slate-200 pt-12">
-        {{ type.section_header('Cooking Steps', 'Each component prepared separately.') }}
+    <div class="border-t border-slate-200 pt-12 print:border-none print:pt-4">
+        <div class="print:hidden">
+            {{ type.section_header('Cooking Steps', 'Each component prepared separately.') }}
+        </div>
 
         <!-- VIEW TOGGLE -->
         {% if has_chronological_data %}
