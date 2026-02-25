@@ -26,21 +26,28 @@
 <body class="h-screen w-screen overflow-hidden bg-slate-900 text-white flex flex-col font-sans select-none">
 
     <!-- 1. HEADER (Fixed) -->
-    <header class="flex-none p-4 md:px-8 border-b border-white/10 flex justify-between items-center bg-slate-900 z-10">
-        <div>
-            <h1 class="text-3xl md:text-5xl font-bold font-serif leading-none tracking-tight text-white mb-2">{{
-                recipe.title }}</h1>
+    <header
+        class="flex-none p-4 md:px-8 border-b border-white/10 flex justify-between items-center bg-slate-900 z-10 w-full">
+        <!-- Text Group (Left Side) -->
+        <div class="flex flex-col gap-2 flex-grow pr-4">
+            <h1
+                class="text-3xl md:text-5xl font-bold font-serif leading-none tracking-tight text-white m-0 break-words">
+                {{ recipe.title }}</h1>
             <div class="flex items-center gap-4 text-slate-400">
-                <span class="text-sm font-medium uppercase tracking-widest"><span
-                        class="text-orange-500 font-bold mr-1">⏱️</span> {% if recipe.prep_time_mins %}{{
-                    recipe.prep_time_mins }}m{% else %}N/A{% endif %}</span>
+                <span class="text-sm font-medium uppercase tracking-widest flex items-center gap-1">
+                    <span class="text-orange-500 font-bold">⏱️</span>
+                    {% if recipe.prep_time_mins %}{{ recipe.prep_time_mins }}m{% else %}N/A{% endif %}
+                </span>
                 <span
-                    class="text-sm font-medium uppercase tracking-widest px-2 py-0.5 rounded-full border border-white/10 text-white/70">{{
-                    recipe.difficulty }}</span>
+                    class="text-sm font-medium uppercase tracking-widest px-2 py-0.5 rounded-full border border-white/10 text-white/70">
+                    {{ recipe.difficulty }}
+                </span>
             </div>
         </div>
+
+        <!-- Exit Button (Right Side, Fixed Size) -->
         <a href="{{ url_for('recipe_detail', recipe_id=recipe.id) }}"
-            class="flex items-center justify-center w-14 h-14 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-colors group">
+            class="flex-shrink-0 flex items-center justify-center w-14 h-14 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-colors group">
             <svg class="w-6 h-6 text-slate-400 group-hover:text-white transition-colors" fill="none"
                 stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
