@@ -252,7 +252,7 @@
                                             {{ step.step_number }}
                                         </span>
                                         <p
-                                            class="text-sm text-slate-700 leading-relaxed print:text-[11px] print:leading-tight print:m-0 print:p-0">
+                                            class="text-sm text-slate-700 leading-relaxed print:text-[11px] print:leading-tight print:m-0 print:p-0 {% if phase == 'Prep' %}print:italic print:text-slate-500{% endif %}">
                                             <span class="hidden print:inline font-bold">{{ step.step_number }}.</span>
                                             {{ step.text }}
                                         </p>
