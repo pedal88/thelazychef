@@ -148,6 +148,18 @@ def get_recipe_image_url(recipe):
         # Local Flask Static
         return url_for('static', filename='recipes/' + recipe.image_filename)
 
+@app.template_global()
+def get_image_url(filename):
+    """Translates a raw filename to its full public URL based on the active storage backend."""
+    if not filename:
+        return ""
+    
+    is_gcs = isinstance(storage_provider, GoogleCloudStorageProvider)
+    if is_gcs:
+        return f"https://storage.googleapis.com/{storage_provider.bucket_name}/recipes/{filename}"
+    else:
+        return url_for('static', filename='recipes/' + filename)
+
 db.init_app(app)
 
 # Initialize Storage Provider
