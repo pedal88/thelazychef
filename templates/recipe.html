@@ -113,12 +113,19 @@
         <!-- VIEW TOGGLE -->
         {% if has_chronological_data %}
         <div class="flex justify-center mb-8">
-            <div class="bg-slate-100 p-1 rounded-full inline-flex border border-slate-200">
+            <div
+                class="bg-slate-100 p-1 rounded-full inline-flex border border-slate-200 overflow-x-auto whitespace-nowrap hide-scrollbar">
                 <button onclick="toggleInstructionView('component')" id="btn-view-component"
                     class="px-6 py-2 rounded-full text-sm font-bold shadow-sm bg-white text-slate-800 transition-all">By
                     Component</button>
                 <button onclick="toggleInstructionView('chrono')" id="btn-view-chrono"
                     class="px-6 py-2 rounded-full text-sm font-bold text-slate-500 hover:text-slate-800 transition-all">Chronological</button>
+                <button onclick="toggleInstructionView('color')" id="btn-view-color"
+                    class="px-6 py-2 rounded-full text-sm font-bold text-slate-500 hover:text-slate-800 transition-all">Color</button>
+                <button onclick="toggleInstructionView('chunked')" id="btn-view-chunked"
+                    class="px-6 py-2 rounded-full text-sm font-bold text-slate-500 hover:text-slate-800 transition-all">Chunked</button>
+                <button onclick="toggleInstructionView('cascading')" id="btn-view-cascading"
+                    class="px-6 py-2 rounded-full text-sm font-bold text-slate-500 hover:text-slate-800 transition-all">Cascading</button>
             </div>
         </div>
         {% endif %}
@@ -217,6 +224,109 @@
                     <p class="text-sm text-slate-700 leading-relaxed">{{ step.text }}</p>
                 </div>
             </div>
+            {% endfor %}
+        </div>
+
+        <!-- 3. COLOR VIEW -->
+        <div id="view-color" class="hidden max-w-3xl mx-auto mt-8 space-y-4">
+            {% for step in chrono_steps %}
+            <div
+                class="relative flex gap-4 p-5 rounded-xl border {{ component_meta[step.component].border }} {{ component_meta[step.component].color }} hover:shadow-sm transition-all group">
+                <!-- Step Indicator -->
+                <div
+                    class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full font-bold bg-white text-slate-800 shadow-sm mt-0.5">
+                    {{ step.global_order_index }}
+                </div>
+                <!-- Content -->
+                <div class="flex-grow">
+                    <div class="flex justify-between items-start mb-2 pt-1">
+                        <span class="text-xs font-bold uppercase tracking-wider opacity-60">Phase: {{ step.phase }} - {{
+                            step.component }}</span>
+                        {% if step.estimated_minutes %}
+                        <span
+                            class="text-xs font-bold font-mono opacity-60 bg-white/30 px-2 py-1 rounded border border-black/5">⏱️
+                            {{ step.estimated_minutes }} min</span>
+                        {% endif %}
+                    </div>
+                    <p class="text-sm font-medium leading-relaxed">{{ step.text }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- 4. CHUNKED VIEW -->
+        <div id="view-chunked" class="hidden max-w-3xl mx-auto mt-8">
+            {% for step in chrono_steps %}
+            {% set prev_comp = chrono_steps[loop.index0 - 1].component if loop.index0 > 0 else None %}
+            {% if step.component != prev_comp %}
+            <h3
+                class="text-lg font-bold mb-4 mt-8 {{ component_meta[step.component].color }} px-3 py-1 rounded inline-block">
+                {{ step.component }}</h3>
+            <div class="border-l-4 {{ component_meta[step.component].border }} pl-4 mb-6 space-y-4">
+                {% endif %}
+                <!-- Step content -->
+                <div class="relative flex gap-4 group">
+                    <div
+                        class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full font-bold bg-slate-100 text-slate-500 shadow-sm mt-0.5 group-hover:bg-slate-900 group-hover:text-white transition-colors">
+                        {{ step.global_order_index }}
+                    </div>
+                    <div
+                        class="flex-grow bg-white p-4 rounded-xl border border-slate-100 group-hover:border-slate-200 transition-all group-hover:shadow-sm">
+                        <div class="flex justify-between items-start mb-2 pt-1">
+                            <span
+                                class="text-xs font-bold uppercase tracking-wider text-slate-500 group-hover:text-slate-700 transition-colors">{{
+                                step.phase }}</span>
+                            {% if step.estimated_minutes %}
+                            <span
+                                class="text-xs font-bold font-mono text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-100 group-hover:border-slate-200 transition-colors">⏱️
+                                {{ step.estimated_minutes }} min</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-sm text-slate-700 leading-relaxed">{{ step.text }}</p>
+                    </div>
+                </div>
+                {% if loop.last or chrono_steps[loop.index0 + 1].component != step.component %}
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+
+        <!-- 5. CASCADING VIEW -->
+        <div id="view-cascading" class="hidden max-w-4xl mx-auto mt-8">
+            {% for step in chrono_steps %}
+            {% set prev_comp = chrono_steps[loop.index0 - 1].component if loop.index0 > 0 else None %}
+            {% if step.component != prev_comp %}
+            <div class="{{ component_meta[step.component].indent }} w-full">
+                <h3
+                    class="text-lg font-bold mb-4 mt-8 {{ component_meta[step.component].color }} px-3 py-1 rounded inline-block shadow-sm">
+                    {{ step.component }}</h3>
+                <div class="border-l-4 {{ component_meta[step.component].border }} pl-4 mb-6 space-y-4">
+                    {% endif %}
+                    <!-- Step content -->
+                    <div class="relative flex gap-4 group">
+                        <div
+                            class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full font-bold bg-slate-100 text-slate-500 shadow-sm mt-0.5 group-hover:bg-slate-900 group-hover:text-white transition-colors">
+                            {{ step.global_order_index }}
+                        </div>
+                        <div
+                            class="flex-grow bg-white p-4 rounded-xl border border-slate-100 group-hover:border-slate-200 transition-all group-hover:shadow-sm">
+                            <div class="flex justify-between items-start mb-2 pt-1">
+                                <span
+                                    class="text-xs font-bold uppercase tracking-wider text-slate-500 group-hover:text-slate-700 transition-colors">{{
+                                    step.phase }}</span>
+                                {% if step.estimated_minutes %}
+                                <span
+                                    class="text-xs font-bold font-mono text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-100 group-hover:border-slate-200 transition-colors">⏱️
+                                    {{ step.estimated_minutes }} min</span>
+                                {% endif %}
+                            </div>
+                            <p class="text-sm text-slate-700 leading-relaxed">{{ step.text }}</p>
+                        </div>
+                    </div>
+                    {% if loop.last or chrono_steps[loop.index0 + 1].component != step.component %}
+                </div>
+            </div>
+            {% endif %}
             {% endfor %}
         </div>
         {% endif %}
@@ -409,30 +519,23 @@
     {% endif %}
     <script>
         function toggleInstructionView(viewType) {
-            const btnComp = document.getElementById('btn-view-component');
-            const btnChrono = document.getElementById('btn-view-chrono');
-            const viewComp = document.getElementById('view-component');
-            const viewChrono = document.getElementById('view-chrono');
+            const views = ['component', 'chrono', 'color', 'chunked', 'cascading'];
 
-            if (!viewComp || !viewChrono) return; // Legacy fallback shield
+            views.forEach(v => {
+                const btn = document.getElementById('btn-view-' + v);
+                const view = document.getElementById('view-' + v);
+                if (!btn || !view) return;
 
-            if (viewType === 'component') {
-                btnComp.classList.add('bg-white', 'shadow-sm', 'text-slate-800');
-                btnComp.classList.remove('text-slate-500', 'hover:text-slate-800');
-                btnChrono.classList.remove('bg-white', 'shadow-sm', 'text-slate-800');
-                btnChrono.classList.add('text-slate-500', 'hover:text-slate-800');
-
-                viewComp.classList.remove('hidden');
-                viewChrono.classList.add('hidden');
-            } else {
-                btnChrono.classList.add('bg-white', 'shadow-sm', 'text-slate-800');
-                btnChrono.classList.remove('text-slate-500', 'hover:text-slate-800');
-                btnComp.classList.remove('bg-white', 'shadow-sm', 'text-slate-800');
-                btnComp.classList.add('text-slate-500', 'hover:text-slate-800');
-
-                viewChrono.classList.remove('hidden');
-                viewComp.classList.add('hidden');
-            }
+                if (v === viewType) {
+                    btn.classList.add('bg-white', 'shadow-sm', 'text-slate-800');
+                    btn.classList.remove('text-slate-500', 'hover:text-slate-800');
+                    view.classList.remove('hidden');
+                } else {
+                    btn.classList.remove('bg-white', 'shadow-sm', 'text-slate-800');
+                    btn.classList.add('text-slate-500', 'hover:text-slate-800');
+                    view.classList.add('hidden');
+                }
+            });
         }
     </script>
     {% endblock %}

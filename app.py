@@ -2199,11 +2199,32 @@ def recipe_detail(recipe_id):
     # NEW: Chronological Sequence (Parallel Dashboard)
     has_chronological_data = False
     chrono_steps = []
+    component_meta = {}
     
     if len(instructions) > 0:
         has_chronological_data = all(i.global_order_index is not None for i in instructions)
         if has_chronological_data:
             chrono_steps = sorted(instructions, key=lambda x: x.global_order_index)
+            
+            # Phase 1: Backend metadata for sandbox Views
+            unique_components = []
+            for step in chrono_steps:
+                if step.component not in unique_components:
+                    unique_components.append(step.component)
+                    
+            themes = [
+                {'color': 'bg-blue-50 text-blue-800', 'border': 'border-blue-200', 'indent': 'ml-0'},
+                {'color': 'bg-rose-50 text-rose-800', 'border': 'border-rose-200', 'indent': 'ml-4'},
+                {'color': 'bg-emerald-50 text-emerald-800', 'border': 'border-emerald-200', 'indent': 'ml-8'},
+                {'color': 'bg-amber-50 text-amber-800', 'border': 'border-amber-200', 'indent': 'ml-12'},
+                {'color': 'bg-purple-50 text-purple-800', 'border': 'border-purple-200', 'indent': 'ml-16'},
+            ]
+            
+            for index, comp in enumerate(unique_components):
+                if index < len(themes):
+                    component_meta[comp] = themes[index]
+                else:
+                    component_meta[comp] = themes[-1]
 
     return render_template('recipe.html', 
                             recipe=recipe, 
@@ -2211,7 +2232,8 @@ def recipe_detail(recipe_id):
                             ingredients_by_component=ingredients_by_component, 
                             steps_by_component=steps_by_component,
                             has_chronological_data=has_chronological_data,
-                            chrono_steps=chrono_steps)
+                            chrono_steps=chrono_steps,
+                            component_meta=component_meta)
 
 @app.route('/api/placeholder/ingredient/\u003cfood_id\u003e')
 def ingredient_placeholder(food_id):
