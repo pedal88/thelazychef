@@ -324,8 +324,13 @@ def recalculate_recipe_nutrition(recipe_id: int, db_session) -> None:
     recipe.total_protein = 0.0
     recipe.total_carbs = 0.0
     recipe.total_fat = 0.0
+    recipe.total_saturated_fat = 0.0
     recipe.total_fiber = 0.0
     recipe.total_sugar = 0.0
+    recipe.total_cholesterol_mg = 0.0
+    recipe.total_sodium_mg = 0.0
+    recipe.total_calcium_mg = 0.0
+    recipe.total_potassium_mg = 0.0
     
     for r_ing in recipe.ingredients:
         base_item = r_ing.ingredient
@@ -338,8 +343,13 @@ def recalculate_recipe_nutrition(recipe_id: int, db_session) -> None:
         if base_item.protein_per_100g: recipe.total_protein += (base_item.protein_per_100g * multiplier)
         if base_item.carbs_per_100g: recipe.total_carbs += (base_item.carbs_per_100g * multiplier)
         if base_item.fat_per_100g: recipe.total_fat += (base_item.fat_per_100g * multiplier)
+        if base_item.fat_saturated_per_100g: recipe.total_saturated_fat += (base_item.fat_saturated_per_100g * multiplier)
         if base_item.fiber_per_100g: recipe.total_fiber += (base_item.fiber_per_100g * multiplier)
         if base_item.sugar_per_100g: recipe.total_sugar += (base_item.sugar_per_100g * multiplier)
+        if base_item.cholesterol_mg_per_100g: recipe.total_cholesterol_mg += (base_item.cholesterol_mg_per_100g * multiplier)
+        if base_item.sodium_mg_per_100g: recipe.total_sodium_mg += (base_item.sodium_mg_per_100g * multiplier)
+        if base_item.calcium_mg_per_100g: recipe.total_calcium_mg += (base_item.calcium_mg_per_100g * multiplier)
+        if base_item.potassium_mg_per_100g: recipe.total_potassium_mg += (base_item.potassium_mg_per_100g * multiplier)
 
     db_session.add(recipe)
     db_session.flush()

@@ -209,8 +209,13 @@ class Recipe(db.Model):
     total_protein: Mapped[float] = mapped_column(Float, nullable=True)
     total_carbs: Mapped[float] = mapped_column(Float, nullable=True)
     total_fat: Mapped[float] = mapped_column(Float, nullable=True)
+    total_saturated_fat: Mapped[float] = mapped_column(Float, nullable=True)
     total_fiber: Mapped[float] = mapped_column(Float, nullable=True)
     total_sugar: Mapped[float] = mapped_column(Float, nullable=True)
+    total_cholesterol_mg: Mapped[float] = mapped_column(Float, nullable=True)
+    total_sodium_mg: Mapped[float] = mapped_column(Float, nullable=True)
+    total_calcium_mg: Mapped[float] = mapped_column(Float, nullable=True)
+    total_potassium_mg: Mapped[float] = mapped_column(Float, nullable=True)
     
     # Nested mapping of component names to image URLs/filenames
     component_images: Mapped[dict] = mapped_column(JSON, default=dict, server_default='{}')

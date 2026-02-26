@@ -128,6 +128,76 @@
         <span class="text-sm text-slate-500">Servings</span>
     </div>
 
+    <!-- NUTRITION FACTS UI -->
+    {% set srv = recipe.base_servings|default(4) %}
+    <div
+        class="max-w-xs mx-auto mb-10 bg-white border border-slate-300 p-4 shadow-sm font-sans text-slate-900 print:hidden">
+        <h2 class="text-3xl font-black border-b-[10px] border-slate-900 pb-1 mb-2 tracking-tighter">Nutrition Facts</h2>
+        <div class="flex justify-between font-bold border-b border-slate-900 pb-1 text-sm">
+            <span>Amount Per Serving</span>
+        </div>
+
+        <div class="flex justify-between items-end border-b-[5px] border-slate-900 py-1">
+            <span class="text-2xl font-bold">Calories</span>
+            <span class="text-4xl font-black leading-none"><span class="scalable"
+                    data-original="{{ (recipe.total_calories or 0) / srv }}">{{ ((recipe.total_calories or 0) /
+                    srv)|round|int }}</span></span>
+        </div>
+
+        <div class="text-[13px] font-medium leading-snug">
+            <div class="flex justify-between border-b border-slate-300 py-1">
+                <span class="font-bold tracking-tight">Total Fat <span class="font-normal"><span class="scalable"
+                            data-original="{{ (recipe.total_fat or 0) / srv }}">{{ ((recipe.total_fat or 0) /
+                            srv)|round(1) }}</span>g</span></span>
+            </div>
+            <div class="flex justify-between border-b border-slate-300 py-1 pl-4">
+                <span>Saturated Fat <span class="scalable"
+                        data-original="{{ (recipe.total_saturated_fat or 0) / srv }}">{{ ((recipe.total_saturated_fat or
+                        0) / srv)|round(1) }}</span>g</span>
+            </div>
+            <div class="flex justify-between border-b border-slate-300 py-1 pl-4">
+                <span>Trans Fat <span class="scalable" data-original="0">0</span>g</span>
+            </div>
+            <div class="flex justify-between border-b border-slate-300 py-1">
+                <span class="font-bold tracking-tight">Cholesterol <span class="font-normal"><span class="scalable"
+                            data-original="{{ (recipe.total_cholesterol_mg or 0) / srv }}">{{
+                            ((recipe.total_cholesterol_mg or 0) / srv)|round|int }}</span>mg</span></span>
+            </div>
+            <div class="flex justify-between border-b border-slate-300 py-1">
+                <span class="font-bold tracking-tight">Sodium <span class="font-normal"><span class="scalable"
+                            data-original="{{ (recipe.total_sodium_mg or 0) / srv }}">{{ ((recipe.total_sodium_mg or 0)
+                            / srv)|round|int }}</span>mg</span></span>
+            </div>
+            <div class="flex justify-between border-b border-slate-300 py-1">
+                <span class="font-bold tracking-tight">Total Carbohydrate <span class="font-normal"><span
+                            class="scalable" data-original="{{ (recipe.total_carbs or 0) / srv }}">{{
+                            ((recipe.total_carbs or 0) / srv)|round|int }}</span>g</span></span>
+            </div>
+            <div class="flex justify-between border-b border-slate-300 py-1 pl-4">
+                <span>Dietary Fiber <span class="scalable" data-original="{{ (recipe.total_fiber or 0) / srv }}">{{
+                        ((recipe.total_fiber or 0) / srv)|round(1) }}</span>g</span>
+            </div>
+            <div class="flex justify-between border-b border-slate-300 py-1 pl-4">
+                <span>Total Sugars <span class="scalable" data-original="{{ (recipe.total_sugar or 0) / srv }}">{{
+                        ((recipe.total_sugar or 0) / srv)|round(1) }}</span>g</span>
+            </div>
+            <div class="flex justify-between border-b-[5px] border-slate-900 py-1">
+                <span class="font-bold tracking-tight">Protein <span class="font-normal"><span class="scalable"
+                            data-original="{{ (recipe.total_protein or 0) / srv }}">{{ ((recipe.total_protein or 0) /
+                            srv)|round(1) }}</span>g</span></span>
+            </div>
+
+            <div class="flex justify-between border-b border-slate-300 py-1 text-slate-600">
+                <span>Calcium <span class="scalable" data-original="{{ (recipe.total_calcium_mg or 0) / srv }}">{{
+                        ((recipe.total_calcium_mg or 0) / srv)|round|int }}</span>mg</span>
+            </div>
+            <div class="flex justify-between border-b border-slate-300 py-1 text-slate-600">
+                <span>Potassium <span class="scalable" data-original="{{ (recipe.total_potassium_mg or 0) / srv }}">{{
+                        ((recipe.total_potassium_mg or 0) / srv)|round|int }}</span>mg</span>
+            </div>
+        </div>
+    </div>
+
     <div class="border-t border-slate-200 pt-12 print:border-none print:pt-4">
         <div class="print:hidden">
             {{ type.section_header('Cooking Steps', 'Each component prepared separately.') }}
@@ -546,7 +616,7 @@
             // Scale all amounts client-side
             document.querySelectorAll('span[data-original]').forEach(container => {
                 let original = parseFloat(container.getAttribute('data-original'));
-                let scaleEl = container.querySelector('.scalable');
+                let scaleEl = container.classList.contains('scalable') ? container : container.querySelector('.scalable');
                 if (!isNaN(original) && scaleEl) {
                     let scaled = original * ratio;
                     scaleEl.innerText = scaled % 1 === 0 ? scaled.toFixed(0) : scaled.toFixed(1);
