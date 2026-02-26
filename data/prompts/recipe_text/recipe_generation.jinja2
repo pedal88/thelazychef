@@ -19,6 +19,9 @@ For EACH ingredient in your recipe:
 GRAM WEIGHT ESTIMATE RULE (CRITICAL):
 For every ingredient, you MUST provide a `gram_weight_estimate`. If the unit is a volume (like cups, tbsp, or 'a pinch'), calculate a highly accurate estimate of what that specific ingredient weighs in grams. If the unit is already grams, simply repeat the amount.
 
+SERVINGS RULE:
+Extract the number of servings or yield for this recipe. If the source text specifies a range (e.g., '4-6 servings'), extract the lower number (4). If the text does not specify servings, you MUST default to 4.
+
 SPICE MIX RULE (CRITICAL):
 - Do NOT use pre-made spice mixes (e.g. 'Taco Seasoning', 'Curry Powder', 'Italian Seasoning', 'Cajun Spice').
 - Instead, you MUST list the individual spices (e.g. 'Cumin', 'Paprika', 'Oregano', 'Turmeric') as separate ingredients with approximate amounts.

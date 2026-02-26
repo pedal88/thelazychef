@@ -58,6 +58,7 @@ class RecipeSchema(typing.TypedDict):
     difficulty: str
     protein_type: str
     meal_types: list[str]
+    servings: int
     chef_id: str
     # Numeric metadata (Critical for App Compatibility)
     cleanup_factor: int 

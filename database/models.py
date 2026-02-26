@@ -191,6 +191,7 @@ class Recipe(db.Model):
     image_filename: Mapped[str] = mapped_column(String, nullable=True)
 
     # New Metadata
+    base_servings: Mapped[int] = mapped_column(Integer, default=4, server_default='4')
     chef_id: Mapped[str] = mapped_column(ForeignKey("chef.id"), nullable=True)
     is_flagged_for_review: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
     # Publishing State Machine: 'draft' | 'approved' | 'rejected'

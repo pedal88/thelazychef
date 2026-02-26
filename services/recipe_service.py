@@ -192,6 +192,7 @@ def process_recipe_workflow(recipe_data, query_context: str, chef_id: str) -> di
         difficulty=getattr(recipe_data, 'difficulty', None),
         protein_type=getattr(recipe_data, 'protein_type', None),
         chef_id=valid_chef_id,
+        base_servings=getattr(recipe_data, 'servings', 4) if getattr(recipe_data, 'servings', None) is not None else recipe_data.get('servings', 4) if isinstance(recipe_data, dict) else 4,
         taste_level=getattr(recipe_data, 'taste_level', None),
         prep_time_mins=getattr(recipe_data, 'prep_time_mins', None),
         cleanup_factor=getattr(recipe_data, 'cleanup_factor', None) or 3,
