@@ -1155,8 +1155,36 @@ def update_recipe_status(recipe_id: int):
         print(f"Status update error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/admin/api/recipes/<int:recipe_id>/clone', methods=['POST'])
+@login_required
+@admin_required
+def clone_recipe_api(recipe_id: int):
+    """Admin endpoint to deep-clone a recipe with ingredient overrides."""
+    from services.recipe_service import clone_recipe
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'No JSON payload provided'}), 400
+            
+        new_title = data.get('new_title')
+        if not new_title:
+            return jsonify({'success': False, 'error': 'new_title is required'}), 400
+            
+        ingredient_overrides = data.get('ingredient_overrides', {})
+        
+        # Perform the deep clone using our new Python utility
+        new_recipe_id = clone_recipe(recipe_id, new_title, ingredient_overrides, db.session)
+        
+        return jsonify({
+            'success': True, 
+            'new_recipe_id': new_recipe_id,
+            'message': 'Recipe cloned successfully!'
+        })
 
-
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error cloning recipe: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 @app.route('/ingredients')
 def pantry_management():
     # Fetch all ingredients sorted by Category then Name
