@@ -310,3 +310,114 @@ def process_recipe_workflow(recipe_data, query_context: str, chef_id: str) -> di
         'status': STATUS_SUCCESS,
         'recipe_id': new_recipe.id,
     }
+
+def recalculate_recipe_nutrition(recipe_id: int, db_session) -> None:
+    """
+    Recalculates macroscopic nutrition properties directly from the gram weight approximations 
+    attached to physical RecipeIngredients. Overwrites existing recipe totals in place.
+    """
+    recipe = db_session.get(Recipe, recipe_id)
+    if not recipe:
+        return
+        
+    recipe.total_calories = 0.0
+    recipe.total_protein = 0.0
+    recipe.total_carbs = 0.0
+    recipe.total_fat = 0.0
+    recipe.total_fiber = 0.0
+    recipe.total_sugar = 0.0
+    
+    for r_ing in recipe.ingredients:
+        base_item = r_ing.ingredient
+        if not base_item or r_ing.gram_weight is None or r_ing.gram_weight <= 0:
+            continue
+            
+        multiplier = r_ing.gram_weight / 100.0
+        
+        if base_item.calories_per_100g: recipe.total_calories += (base_item.calories_per_100g * multiplier)
+        if base_item.protein_per_100g: recipe.total_protein += (base_item.protein_per_100g * multiplier)
+        if base_item.carbs_per_100g: recipe.total_carbs += (base_item.carbs_per_100g * multiplier)
+        if base_item.fat_per_100g: recipe.total_fat += (base_item.fat_per_100g * multiplier)
+        if base_item.fiber_per_100g: recipe.total_fiber += (base_item.fiber_per_100g * multiplier)
+        if base_item.sugar_per_100g: recipe.total_sugar += (base_item.sugar_per_100g * multiplier)
+
+    db_session.add(recipe)
+    db_session.flush()
+
+def clone_recipe(original_recipe_id: int, new_title: str, ingredient_overrides: dict, db_session) -> int:
+    """
+    Performs a deep relational clone of a target recipe, including all instructions and ingredients.
+    Injects overridden ingredient math into the clone dynamically, allowing Admin tweaks.
+    """
+    original = db_session.get(Recipe, original_recipe_id)
+    if not original:
+        raise ValueError(f"Recipe ID {original_recipe_id} not found.")
+
+    # 1. Base Clone
+    new_recipe = Recipe(
+        title=new_title,
+        cuisine=original.cuisine,
+        difficulty=original.difficulty,
+        protein_type=original.protein_type,
+        chef_id=original.chef_id,
+        taste_level=original.taste_level,
+        prep_time_mins=original.prep_time_mins,
+        cleanup_factor=original.cleanup_factor,
+        base_servings=original.base_servings,
+        image_filename=original.image_filename,
+        component_images=original.component_images.copy() if original.component_images else {},
+        status='draft' # Always start clones in stealth 
+    )
+    db_session.add(new_recipe)
+    db_session.flush()
+
+    # 2. Join Relationships
+    for mt in original.meal_types:
+        db_session.add(RecipeMealType(recipe_id=new_recipe.id, meal_type=mt.meal_type))
+    for diet in original.diets:
+        db_session.add(RecipeDiet(recipe_id=new_recipe.id, diet=diet.diet))
+
+    # 3. Instruction Clones
+    for instr in original.instructions:
+        db_session.add(Instruction(
+            recipe_id=new_recipe.id,
+            component=instr.component,
+            phase=instr.phase,
+            step_number=instr.step_number,
+            text=instr.text,
+            estimated_minutes=instr.estimated_minutes,
+            global_order_index=instr.global_order_index,
+        ))
+
+    # 4. Ingredient Clones (With Overrides)
+    for r_ing in original.ingredients:
+        # Default fallback variables
+        target_amt = r_ing.amount
+        target_unit = r_ing.unit
+        target_gw = r_ing.gram_weight
+
+        override_key = str(r_ing.id)
+        if override_key in ingredient_overrides:
+            override_obj = ingredient_overrides[override_key]
+            
+            if 'amount' in override_obj: target_amt = override_obj['amount']
+            if 'unit' in override_obj: target_unit = override_obj['unit']
+            if 'gram_weight' in override_obj: target_gw = override_obj['gram_weight']
+
+        new_r_ing = RecipeIngredient(
+            recipe_id=new_recipe.id,
+            ingredient_id=r_ing.ingredient_id,
+            component=r_ing.component,
+            amount=target_amt,
+            unit=target_unit,
+            gram_weight=target_gw
+        )
+        db_session.add(new_r_ing)
+
+    # 5. Flush and Math Trigger
+    db_session.flush()
+    recalculate_recipe_nutrition(new_recipe.id, db_session)
+    db_session.commit()
+
+    return new_recipe.id
+
