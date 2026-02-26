@@ -18,6 +18,7 @@ from database.models import (
 )
 from ai_engine import get_pantry_id
 from services.nutrition_service import calculate_nutritional_totals
+from utils.unit_helpers import normalize_unit
 from services.photographer_service import generate_visual_prompt, generate_actual_image
 
 
@@ -233,7 +234,7 @@ def process_recipe_workflow(recipe_data, query_context: str, chef_id: str) -> di
             
             # Rule A: The Override
             if ingredient_record.average_g_per_unit and ingredient_record.default_unit:
-                if str(unit).lower().strip() == str(ingredient_record.default_unit).lower().strip():
+                if normalize_unit(str(unit)) == normalize_unit(str(ingredient_record.default_unit)):
                      final_gram_weight = float(amount) * float(ingredient_record.average_g_per_unit)
 
             db.session.add(RecipeIngredient(
