@@ -118,6 +118,9 @@ class Ingredient(db.Model):
     sugar_per_100g: Mapped[float] = mapped_column(Float, nullable=True)
     fiber_per_100g: Mapped[float] = mapped_column(Float, nullable=True)
     sodium_mg_per_100g: Mapped[float] = mapped_column(Float, nullable=True)
+    cholesterol_mg_per_100g: Mapped[float] = mapped_column(Float, nullable=True)
+    calcium_mg_per_100g: Mapped[float] = mapped_column(Float, nullable=True)
+    potassium_mg_per_100g: Mapped[float] = mapped_column(Float, nullable=True)
 
     recipe_ingredients: Mapped[list["RecipeIngredient"]] = relationship(back_populates="ingredient")
     evaluation: Mapped["IngredientEvaluation"] = relationship(back_populates="ingredient", uselist=False, cascade="all, delete-orphan")
