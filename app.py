@@ -1827,6 +1827,7 @@ def get_recipe_json(recipe_id):
                 'name': ri.ingredient.name,
                 'amount': ri.amount,
                 'unit': ri.unit,
+                'gram_weight': ri.gram_weight,
                 'component': ri.component,
                 'food_id': ri.ingredient.food_id,
                 'category': ri.ingredient.main_category

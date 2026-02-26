@@ -115,6 +115,19 @@
     </div>
 
     <!-- COMPONENT COLUMNS LAYOUT -->
+    <div class="flex items-center space-x-4 mb-8 justify-center print:hidden">
+        <span class="text-sm font-medium text-slate-700">Yield:</span>
+        <div class="flex items-center border border-slate-300 rounded-md bg-white shadow-sm overflow-hidden">
+            <button onclick="updateServings(-1)"
+                class="px-3 py-1 bg-slate-50 hover:bg-slate-100 border-r border-slate-300 text-slate-600 font-bold transition-colors select-none">&minus;</button>
+            <div id="currentServings" class="px-4 py-1 font-bold text-slate-800 text-center min-w-[3rem]"
+                data-base="{{ recipe.base_servings|default(4) }}">{{ recipe.base_servings|default(4) }}</div>
+            <button onclick="updateServings(1)"
+                class="px-3 py-1 bg-slate-50 hover:bg-slate-100 border-l border-slate-300 text-slate-600 font-bold transition-colors select-none">&plus;</button>
+        </div>
+        <span class="text-sm text-slate-500">Servings</span>
+    </div>
+
     <div class="border-t border-slate-200 pt-12 print:border-none print:pt-4">
         <div class="print:hidden">
             {{ type.section_header('Cooking Steps', 'Each component prepared separately.') }}
@@ -207,8 +220,17 @@
                                     {% endif %}
                                     <span
                                         class="print:text-[10px] print:leading-none print:text-left print:m-0 text-slate-800">
-                                        {{ item.ingredient.name }} - <span class="font-bold">{{ item.amount|round|int if
-                                            item.amount % 1 == 0 else item.amount|round(1) }}{{ item.unit }}</span>
+                                        {{ item.ingredient.name }} - <span class="font-bold">
+                                            <span class="unit-us" data-original="{{ item.amount }}"><span
+                                                    class="scalable">{{ item.amount|round|int if item.amount % 1 == 0
+                                                    else item.amount|round(1) }}</span><span class="ml-0.5">{{ item.unit
+                                                    }}</span></span>
+                                            {% if item.gram_weight %}
+                                            <span class="unit-eu hidden" data-original="{{ item.gram_weight }}"><span
+                                                    class="scalable">{{ item.gram_weight|round|int }}</span><span
+                                                    class="ml-0.5">g</span></span>
+                                            {% endif %}
+                                        </span>
                                     </span>
                                 </div>
                                 {% endfor %}
@@ -505,6 +527,33 @@
     {% block scripts %}
     <!-- Render Inspector Modal -->
     {{ inspector.recipe_inspector_modal() }}
+
+    <script>
+        function updateServings(change) {
+            let currentServingsEl = document.getElementById('currentServings');
+            if (!currentServingsEl) return;
+
+            let baseServings = parseInt(currentServingsEl.getAttribute('data-base')) || 4;
+            let current = parseInt(currentServingsEl.innerText) || baseServings;
+            let newServings = current + change;
+
+            if (newServings < 1) newServings = 1;
+            if (newServings === current) return;
+
+            let ratio = newServings / baseServings;
+            currentServingsEl.innerText = newServings;
+
+            // Scale all amounts client-side
+            document.querySelectorAll('span[data-original]').forEach(container => {
+                let original = parseFloat(container.getAttribute('data-original'));
+                let scaleEl = container.querySelector('.scalable');
+                if (!isNaN(original) && scaleEl) {
+                    let scaled = original * ratio;
+                    scaleEl.innerText = scaled % 1 === 0 ? scaled.toFixed(0) : scaled.toFixed(1);
+                }
+            });
+        }
+    </script>
 
     {% if current_user.is_authenticated and current_user.is_admin %}
     <script>

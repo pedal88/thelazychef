@@ -49,9 +49,14 @@ Expects a RecipeIngredient object (ri) which has .ingredient relation and .amoun
     </span>
     {# Since we passed the Link Object (RecipeIngredient), we can access amount directly #}
     {% if ri.amount %}
-    <span class="text-[10px] text-slate-400 font-medium">
-        {{ ri.amount|int if ri.amount == ri.amount|int else ri.amount }} <span class="text-[9px] uppercase">{{ ri.unit
-            }}</span>
+    <span class="text-[10px] text-slate-400 font-medium whitespace-nowrap overflow-hidden text-ellipsis">
+        <span class="unit-us" data-original="{{ ri.amount }}"><span class="scalable">{{ ri.amount|round|int if ri.amount
+                % 1 == 0 else ri.amount|round(1) }}</span> <span class="text-[9px] uppercase">{{ ri.unit
+                }}</span></span>
+        {% if ri.gram_weight %}
+        <span class="unit-eu hidden" data-original="{{ ri.gram_weight }}"><span class="scalable">{{
+                ri.gram_weight|round|int }}</span> <span class="text-[9px] uppercase">g</span></span>
+        {% endif %}
     </span>
     {% endif %}
 </div>

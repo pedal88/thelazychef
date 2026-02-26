@@ -47,6 +47,44 @@
                             </div>
                         </div>
 
+                        <!-- Admin Tweaker (Clone & Override) -->
+                        <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-md">
+                            <h4 class="text-xs font-bold text-indigo-800 uppercase tracking-widest mb-3">Ingredient
+                                Tweaker</h4>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-sm text-slate-700">
+                                    <thead>
+                                        <tr class="border-b border-indigo-200">
+                                            <th class="py-1">Ingredient</th>
+                                            <th class="py-1">Amount</th>
+                                            <th class="py-1">Unit</th>
+                                            <th class="py-1">Grams</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="insp-tweaker-tbody">
+                                        <!-- Injected by JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="mt-4">
+                                <label class="block text-xs font-medium text-slate-600 mb-1">Clone Into New
+                                    Variant:</label>
+                                <input type="text" id="cloneNewTitle"
+                                    class="w-full border border-slate-300 rounded px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                    placeholder="New Title..." />
+                                <button onclick="submitCloneVariant()" id="btnCloneVariant"
+                                    class="mt-3 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition-colors text-sm shadow-sm flex items-center justify-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2">
+                                        </path>
+                                    </svg>
+                                    Clone & Save Variant
+                                </button>
+                                <div id="cloneStatus" class="mt-2 text-xs font-medium text-center hidden"></div>
+                            </div>
+                        </div>
+
                         <!-- JSON Dump Area -->
                         <div>
                             <label class="block text-sm font-medium leading-6 text-gray-900">Raw Data (JSON)</label>
@@ -92,6 +130,30 @@
                 document.getElementById('insp-cuisine').textContent = r.cuisine;
                 document.getElementById('insp-diet').textContent = (r.diets || []).join(', ');
 
+                // 3.5 Populate Admin Tweaker
+                const tweakerBody = document.getElementById('insp-tweaker-tbody');
+                tweakerBody.innerHTML = '';
+                r.ingredients.forEach(item => {
+                    tweakerBody.innerHTML += `
+                        <tr class="border-b border-indigo-100 last:border-0 hover:bg-white/50 transition-colors group">
+                            <td class="py-2 pr-2 font-medium truncate max-w-[150px]" title="${item.name}">${item.name}</td>
+                            <td class="py-2 pr-2">
+                                <input type="number" step="any" class="admin-override-amount w-16 border border-slate-300 rounded px-1 py-1 text-xs" data-id="${item.id}" data-unit="${item.unit}" value="${item.amount}">
+                            </td>
+                            <td class="py-2 pr-2 text-xs text-slate-500 uppercase">${item.unit}</td>
+                            <td class="py-2">
+                                <div class="flex items-center gap-1">
+                                    <input type="number" step="any" class="admin-override-weight w-16 border border-slate-300 rounded px-1 py-1 text-xs" data-id="${item.id}" value="${item.gram_weight || 0}">
+                                    <span class="text-[10px] text-slate-400">g</span>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+                document.getElementById('cloneNewTitle').value = `${r.title} (Clone)`;
+                document.getElementById('btnCloneVariant').setAttribute('data-recipe-id', r.id);
+                document.getElementById('cloneStatus').classList.add('hidden');
+
                 // 4. Pretty Print JSON
                 jsonEl.textContent = JSON.stringify(r, null, 2);
             } else {
@@ -110,5 +172,59 @@
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') closeInspector();
     });
+
+    async function submitCloneVariant() {
+        const btn = document.getElementById('btnCloneVariant');
+        const statusEl = document.getElementById('cloneStatus');
+        const recipeId = btn.getAttribute('data-recipe-id');
+
+        if (!recipeId) return;
+
+        btn.disabled = true;
+        btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Cloning...`;
+
+        try {
+            let overrides = {};
+            document.querySelectorAll('.admin-override-amount').forEach(amountInput => {
+                const id = amountInput.getAttribute('data-id');
+                const unit = amountInput.getAttribute('data-unit');
+                const weightInput = document.querySelector(`.admin-override-weight[data-id="${id}"]`);
+
+                overrides[id] = {
+                    amount: parseFloat(amountInput.value) || 0,
+                    unit: unit,
+                    gram_weight: parseFloat(weightInput.value) || 0
+                };
+            });
+
+            const payload = {
+                new_title: document.getElementById('cloneNewTitle').value,
+                ingredient_overrides: overrides
+            };
+
+            const response = await fetch(`/admin/api/recipes/${recipeId}/clone`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const res = await response.json();
+
+            statusEl.classList.remove('hidden');
+            if (res.success) {
+                statusEl.className = 'mt-2 text-xs font-bold text-center text-green-600';
+                statusEl.textContent = 'Success! Redirecting...';
+                setTimeout(() => window.location.href = `/recipe/${res.new_recipe_id}`, 1000);
+            } else {
+                throw new Error(res.error || 'Unknown error');
+            }
+        } catch (err) {
+            statusEl.classList.remove('hidden');
+            statusEl.className = 'mt-2 text-xs font-bold text-center text-red-600';
+            statusEl.textContent = 'Failed: ' + err.message;
+            btn.disabled = false;
+            btn.innerHTML = 'Clone & Save Variant';
+        }
+    }
 </script>
 {% endmacro %}
