@@ -2,8 +2,36 @@ import time
 import requests
 import re
 import sys
+import os
+import json
+from datetime import datetime
+from google import genai
+from google.genai import types
 from app import app
 from database.models import db, Ingredient
+
+_api_key = os.getenv("GOOGLE_API_KEY")
+gemini_client = genai.Client(api_key=_api_key) if _api_key else None
+
+def generate_nutrition_estimate(ingredient_name):
+    """Fallback LLM-based macro estimator."""
+    if not gemini_client:
+        return None
+        
+    prompt = f"Provide a scientific nutritional estimate for 100g of {ingredient_name}. Return ONLY simple JSON with these exact numeric keys: weight (average weight in grams of 1 logical unit, default 1.0), calories, protein, fat, fat_saturated, carbs, sugar, fiber, sodium, cholesterol, calcium, potassium. Use only raw numbers."
+    try:
+        response = gemini_client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                temperature=0.0,
+            ),
+        )
+        return json.loads(response.text)
+    except Exception as e:
+        print(f"  ⚠️ Gemini Fallback failed: {e}")
+        return None
 
 def fetch_edamam_data(ingredient_name, default_unit):
     # Sanitize the name: Strip parentheses from ingredient names
@@ -113,35 +141,48 @@ def main():
             
             try:
                 result = fetch_edamam_data(ing.name, ing.default_unit)
+                source_label = 'edamam_enterprise'
+                
+                if not result:
+                    print(f"  🔍 Unmapped by Edamam. Triggering AI Fallback...")
+                    result = generate_nutrition_estimate(ing.name)
+                    source_label = 'ai_fallback'
                 
                 if result:
-                    ing.average_g_per_unit = result['weight']
-                    ing.calories_per_100g = result['calories']
-                    ing.protein_per_100g = result['protein']
-                    ing.fat_per_100g = result['fat']
-                    ing.fat_saturated_per_100g = result['fat_saturated']
-                    ing.carbs_per_100g = result['carbs']
-                    ing.sugar_per_100g = result['sugar']
-                    ing.fiber_per_100g = result['fiber']
-                    ing.sodium_mg_per_100g = result['sodium']
-                    ing.cholesterol_mg_per_100g = result['cholesterol']
-                    ing.calcium_mg_per_100g = result['calcium']
-                    ing.potassium_mg_per_100g = result['potassium']
-                    ing.data_source = 'edamam_enterprise'
+                    ing.average_g_per_unit = float(result.get('weight', 1.0))
+                    ing.calories_per_100g = float(result.get('calories', 0))
+                    ing.protein_per_100g = float(result.get('protein', 0))
+                    ing.fat_per_100g = float(result.get('fat', 0))
+                    ing.fat_saturated_per_100g = float(result.get('fat_saturated', 0))
+                    ing.carbs_per_100g = float(result.get('carbs', 0))
+                    ing.sugar_per_100g = float(result.get('sugar', 0))
+                    ing.fiber_per_100g = float(result.get('fiber', 0))
+                    ing.sodium_mg_per_100g = float(result.get('sodium', 0))
+                    ing.cholesterol_mg_per_100g = float(result.get('cholesterol', 0))
+                    ing.calcium_mg_per_100g = float(result.get('calcium', 0))
+                    ing.potassium_mg_per_100g = float(result.get('potassium', 0))
+                    ing.data_source = source_label
                     
                     db.session.add(ing)
-                    db.session.commit() # Commit after every successful ingredient
-                    print(f"  ✓ Saved! avg_g_per_unit={result['weight']:.2f} | {result['calories']:.1f} kcal/100g")
+                    db.session.commit()
+                    
+                    if source_label == 'ai_fallback':
+                        os.makedirs('logs', exist_ok=True)
+                        with open('logs/unmapped_ingredients.log', 'a') as log_f:
+                            log_f.write(f"[{datetime.now().isoformat()}] {ing.name} solved via AI Fallback.\n")
+                        print(f"  🟢 AI Saved! avg_g_per_unit={ing.average_g_per_unit:.2f} | {ing.calories_per_100g:.1f} kcal/100g")
+                    else:
+                        print(f"  ✓ API Saved! avg_g_per_unit={ing.average_g_per_unit:.2f} | {ing.calories_per_100g:.1f} kcal/100g")
                 else:
-                    print(f"  ❌ Unmapped by Edamam.")
+                    print(f"  ❌ Still unmapped after Fallback.")
             except Exception as e:
                 if isinstance(e, SystemExit):
                     sys.exit(1)
                 print(f"  ⚠️ Critical loop failure for item '{ing.name}': {e}")
                 db.session.rollback()
                 
-            # Enterprise Basic Speed: 1.2s Buffer (~50 calls/min)
-            time.sleep(1.2)
+            # Enterprise Basic Speed: 1.5s Buffer (~40 calls/min) constraints requested by user
+            time.sleep(1.5)
             
         print("\nAll Done.")
 
