@@ -687,6 +687,7 @@
                 document.getElementById('insp-cat').textContent = i.main_category || '—';
                 document.getElementById('insp-recipes').textContent = i.recipe_count;
 
+                const sourceBadge = document.getElementById('insp-source');
                 if (i.data_source === 'edamam_rapidapi') {
                     sourceBadge.innerHTML = `<span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">RapidAPI</span>`;
                 } else if (i.data_source === 'edamam_enterprise') {
