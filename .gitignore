@@ -39,3 +39,4 @@ data/pantry_*.json
 google-cloud-sdk/
 google-cloud-cli-darwin-arm.tar.gz
 
+logs/
