@@ -166,6 +166,11 @@
                                     {{ header_cell('sub_category', 'Sub-Category', sub_category_options,
                                     selected_sub_cats) }}
                                     {{ header_cell('staple', 'Staple?', ['yes','no'], selected_basic) }}
+                                    <!-- Actions -->
+                                    <th scope="col"
+                                        class="py-3.5 pl-3 pr-4 text-left text-xs font-semibold text-gray-900 whitespace-nowrap sm:pr-6">
+                                        Actions
+                                    </th>
                                     <!-- QA Score Columns -->
                                     <th scope="col"
                                         class="py-3.5 pl-3 pr-2 text-left text-xs font-semibold text-gray-900 whitespace-nowrap">
@@ -185,10 +190,6 @@
                                     <th scope="col"
                                         class="py-3.5 px-2 text-left text-xs font-semibold text-gray-400 whitespace-nowrap"
                                         title="Global Commonness (informational)">🌍 Com</th>
-                                    <!-- Actions -->
-                                    <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                                        <span class="sr-only">Actions</span>
-                                    </th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 bg-white">
@@ -240,7 +241,7 @@
                                         <select
                                             class="ing-status-dropdown block w-full rounded-md border-0 py-1 pl-2 pr-7 text-xs font-semibold ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 transition-all"
                                             data-ing-id="{{ ing.id }}" data-previous-value="{{ ing.status }}"
-                                            style="min-width:135px">
+                                            style="min-width:110px">
                                             <option value="active" {% if ing.status=='active' %}selected{% endif %}>✅
                                                 Active</option>
                                             <option value="pending" {% if ing.status=='pending' %}selected{% endif %}>⏳
@@ -251,13 +252,17 @@
                                     </td>
 
                                     <!-- Category -->
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                        {{ ing.main_category or '—' }}
+                                    <td class="px-3 py-4 text-sm text-gray-500">
+                                        <div class="line-clamp-2 break-words max-w-[120px]">
+                                            {{ ing.main_category or '—' }}
+                                        </div>
                                     </td>
 
                                     <!-- Sub-Category (separate column) -->
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-400">
-                                        {{ ing.sub_category or '—' }}
+                                    <td class="px-3 py-4 text-sm text-gray-400">
+                                        <div class="line-clamp-2 break-words max-w-[120px]">
+                                            {{ ing.sub_category or '—' }}
+                                        </div>
                                     </td>
 
                                     <!-- Staple? -->
@@ -269,6 +274,63 @@
                                         {% else %}
                                         <span class="text-gray-300">—</span>
                                         {% endif %}
+                                    </td>
+
+                                    <!-- Actions -->
+                                    <td
+                                        class="relative whitespace-nowrap py-4 pl-3 pr-4 text-center text-sm font-medium sm:pr-6">
+                                        <!-- Inspector -->
+                                        <button onclick="inspectIngredient({{ ing.id }})"
+                                            class="text-gray-400 hover:text-indigo-600 transition-colors"
+                                            title="Inspect raw data">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                                stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                                            </svg>
+                                        </button>
+                                        <!-- QA reasoning report (only when evaluation exists) -->
+                                        {% if ing.evaluation %}
+                                        <button data-ing-id="{{ ing.id }}" data-ing-name="{{ ing.name|e }}"
+                                            data-qa-score="{{ ing.evaluation.total_score }}"
+                                            data-qa-details="{{ ing.evaluation.evaluation_details | tojson | forceescape }}"
+                                            onclick="openQaReport(this)"
+                                            class="ml-3 text-blue-400 hover:text-blue-600 transition-colors"
+                                            title="View QA Reasoning">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                fill="currentColor" viewBox="0 0 16 16">
+                                                <path
+                                                    d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                                                <path
+                                                    d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
+                                            </svg>
+                                        </button>
+                                        {% else %}
+                                        <span class="ml-3 w-4 inline-block"></span>
+                                        {% endif %}
+                                        <!-- Regen image -->
+                                        <button onclick="regenImage({{ ing.id }}, this)"
+                                            class="ml-3 text-gray-400 hover:text-indigo-600 transition-colors"
+                                            title="Regenerate image">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                                stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="23 4 23 10 17 10" />
+                                                <polyline points="1 20 1 14 7 14" />
+                                                <path
+                                                    d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                                            </svg>
+                                        </button>
+                                        <!-- Delete / archive -->
+                                        <button onclick="deleteIngredient({{ ing.id }}, '{{ ing.name|e }}')"
+                                            class="ml-3 text-red-400 hover:text-red-700 transition-colors"
+                                            title="Delete or archive">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                            </svg>
+                                        </button>
                                     </td>
 
                                     {% if ing.evaluation %}
@@ -337,63 +399,6 @@
                                     <td class="text-gray-200 px-2 py-4 text-sm">—</td>
                                     <td class="text-gray-200 px-2 py-4 text-sm">—</td>
                                     {% endif %}
-
-                                    <!-- Actions -->
-                                    <td
-                                        class="relative whitespace-nowrap py-4 pl-3 pr-4 text-center text-sm font-medium sm:pr-6">
-                                        <!-- Inspector -->
-                                        <button onclick="inspectIngredient({{ ing.id }})"
-                                            class="text-gray-400 hover:text-indigo-600 transition-colors"
-                                            title="Inspect raw data">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                                stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                                            </svg>
-                                        </button>
-                                        <!-- QA reasoning report (only when evaluation exists) -->
-                                        {% if ing.evaluation %}
-                                        <button data-ing-id="{{ ing.id }}" data-ing-name="{{ ing.name|e }}"
-                                            data-qa-score="{{ ing.evaluation.total_score }}"
-                                            data-qa-details="{{ ing.evaluation.evaluation_details | tojson | forceescape }}"
-                                            onclick="openQaReport(this)"
-                                            class="ml-3 text-blue-400 hover:text-blue-600 transition-colors"
-                                            title="View QA Reasoning">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                fill="currentColor" viewBox="0 0 16 16">
-                                                <path
-                                                    d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                                                <path
-                                                    d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
-                                            </svg>
-                                        </button>
-                                        {% else %}
-                                        <span class="ml-3 w-4 inline-block"></span>
-                                        {% endif %}
-                                        <!-- Regen image -->
-                                        <button onclick="regenImage({{ ing.id }}, this)"
-                                            class="ml-3 text-gray-400 hover:text-indigo-600 transition-colors"
-                                            title="Regenerate image">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                                stroke-linecap="round" stroke-linejoin="round">
-                                                <polyline points="23 4 23 10 17 10" />
-                                                <polyline points="1 20 1 14 7 14" />
-                                                <path
-                                                    d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-                                            </svg>
-                                        </button>
-                                        <!-- Delete / archive -->
-                                        <button onclick="deleteIngredient({{ ing.id }}, '{{ ing.name|e }}')"
-                                            class="ml-3 text-red-400 hover:text-red-700 transition-colors"
-                                            title="Delete or archive">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                                            </svg>
-                                        </button>
-                                    </td>
                                 </tr>
                                 {% else %}
                                 <tr>
