@@ -29,61 +29,71 @@ def fetch_edamam_data(ingredient_name, default_unit):
         'ingr': query
     }
     
-    try:
-        response = requests.get(url, params=params, timeout=10)
-        
-        # RATE LIMIT HIT
-        if response.status_code == 429:
-            print(f"\n  🛑 RATE LIMIT HIT (HTTP 429). Exiting safely.")
-            sys.exit(1)
+    max_retries = 3
+    retries = 0
+    
+    while retries < max_retries:
+        try:
+            response = requests.get(url, params=params, timeout=10)
             
-        if response.status_code == 200:
-            try:
-                data = response.json()
-            except Exception as json_err:
-                # Catch JSON parsing to skip unmappable items without crashing
-                print(f"  ⚠️ JSON Parse Error: {json_err}")
-                return None
-            
-            # ARCHITECTURAL OVERRIDE: RapidAPI flattens the response structure.
-            # It DOES NOT return `data['ingredients'][0]['parsed']` like the free tier does. 
-            # We MUST use `totalWeight` and `totalNutrients` at the root layer.
-            total_returned_weight = data.get('totalWeight')
-            
-            if total_returned_weight and total_returned_weight > 0:
-                nutrients = data.get('totalNutrients', {})
+            # Continuous Loop Logic
+            if response.status_code == 429:
+                print(f"  ⏳ Rate Limit Hit (HTTP 429). Sleeping for 60 seconds before retrying...")
+                time.sleep(60)
+                retries += 1
+                continue
                 
-                # Normalize ALL macros to 'per 100g' using: (nutrient_quantity / weight) * 100
-                def per_100g(key):
-                    val = nutrients.get(key, {}).get('quantity', 0)
-                    return (val / total_returned_weight) * 100
+            if response.status_code == 200:
+                try:
+                    data = response.json()
+                except Exception as json_err:
+                    # Catch JSON parsing to skip unmappable items without crashing
+                    print(f"  ⚠️ JSON Parse Error: {json_err}")
+                    return None
                 
-                # Actual weight per physical 1 unit
-                avg_weight = total_returned_weight / query_amount
+                # ARCHITECTURAL OVERRIDE: RapidAPI flattens the response structure.
+                # It DOES NOT return `data['ingredients'][0]['parsed']` like the free tier does. 
+                # We MUST use `totalWeight` and `totalNutrients` at the root layer.
+                total_returned_weight = data.get('totalWeight')
                 
-                return {
-                    'weight': avg_weight,
-                    'calories': per_100g('ENERC_KCAL'),
-                    'protein': per_100g('PROCNT'),
-                    'fat': per_100g('FAT'),
-                    'fat_saturated': per_100g('FASAT'),
-                    'carbs': per_100g('CHOCDF'),
-                    'sugar': per_100g('SUGAR'),
-                    'fiber': per_100g('FIBTG'),
-                    'sodium': per_100g('NA'),
-                    'cholesterol': per_100g('CHOLE'),
-                    'calcium': per_100g('CA'),
-                    'potassium': per_100g('K')
-                }
+                if total_returned_weight and total_returned_weight > 0:
+                    nutrients = data.get('totalNutrients', {})
+                    
+                    # Normalize ALL macros to 'per 100g' using: (nutrient_quantity / weight) * 100
+                    def per_100g(key):
+                        val = nutrients.get(key, {}).get('quantity', 0)
+                        return (val / total_returned_weight) * 100
+                    
+                    # Actual weight per physical 1 unit
+                    avg_weight = total_returned_weight / query_amount
+                    
+                    return {
+                        'weight': avg_weight,
+                        'calories': per_100g('ENERC_KCAL'),
+                        'protein': per_100g('PROCNT'),
+                        'fat': per_100g('FAT'),
+                        'fat_saturated': per_100g('FASAT'),
+                        'carbs': per_100g('CHOCDF'),
+                        'sugar': per_100g('SUGAR'),
+                        'fiber': per_100g('FIBTG'),
+                        'sodium': per_100g('NA'),
+                        'cholesterol': per_100g('CHOLE'),
+                        'calcium': per_100g('CA'),
+                        'potassium': per_100g('K')
+                    }
+                else:
+                    return None
             else:
                 return None
-        else:
-            return None
-    except Exception as e:
-        if isinstance(e, SystemExit):
-            raise e
-        print(f"  ❌ Network/Timeout Error: {e}")
-        return None
+        except Exception as e:
+            if isinstance(e, SystemExit):
+                raise e
+            print(f"  ❌ Network/Timeout Error: {e}")
+            retries += 1
+            time.sleep(5) # Small backoff for standard network errors
+            
+    print(f"  🛑 Failed after {max_retries} attempts. Giving up on {ingredient_name}.")
+    return None
 
 def main():
     with app.app_context():
