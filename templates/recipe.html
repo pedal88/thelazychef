@@ -111,6 +111,18 @@
             Using fresh ingredients from your pantry, customized by our World Class AI Chef.
         </p>
 
+        {% if recipe.source_input %}
+        <div
+            class="mt-8 text-sm text-slate-500 bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm print:hidden">
+            {% if recipe.source_type == 'social' or recipe.source_type == 'web' %}
+            🔗 <a href="{{ recipe.source_input }}" target="_blank" rel="noopener noreferrer"
+                class="hover:text-indigo-600 hover:underline font-medium break-all">{{ recipe.source_input }}</a>
+            {% else %}
+            💡 Inspired by: <span class="italic text-slate-600 font-medium">"{{ recipe.source_input[:80] }}{% if
+                recipe.source_input|length > 80 %}...{% endif %}"</span>
+            {% endif %}
+        </div>
+        {% endif %}
 
     </div>
 

@@ -184,7 +184,15 @@ def process_recipe_workflow(recipe_data, query_context: str, chef_id: str) -> di
             print(f"⚠️  Chef '{target_chef}' not found — falling back to 'gourmet'")
             valid_chef_id = 'gourmet'
 
-    # ── Step 3: Create Recipe record ──────────────────────────────────────
+    # ── Step 3: Source Tracking Sniffing ──────────────────────────────────
+    source_type = 'description'
+    query_lower = (query_context or '').lower()
+    if 'tiktok.com' in query_lower or 'instagram.com' in query_lower:
+        source_type = 'social'
+    elif query_lower.startswith('http'):
+        source_type = 'web'
+
+    # ── Step 4: Create Recipe record ──────────────────────────────────────
     new_recipe = Recipe(
         title=recipe_data.title,
         cuisine=getattr(recipe_data, 'cuisine', None),
@@ -196,6 +204,8 @@ def process_recipe_workflow(recipe_data, query_context: str, chef_id: str) -> di
         taste_level=getattr(recipe_data, 'taste_level', None),
         prep_time_mins=getattr(recipe_data, 'prep_time_mins', None),
         cleanup_factor=getattr(recipe_data, 'cleanup_factor', None) or 3,
+        source_input=query_context,
+        source_type=source_type,
     )
     db.session.add(new_recipe)
     db.session.flush()  # get new_recipe.id

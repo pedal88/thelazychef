@@ -205,6 +205,10 @@ class Recipe(db.Model):
     prep_time_mins: Mapped[int] = mapped_column(Integer, nullable=True) # snapped to time.json
     cleanup_factor: Mapped[int] = mapped_column(Integer, nullable=True)
 
+    # Source Tracking (Manual vs AI URL vs AI Prompt)
+    source_input: Mapped[str] = mapped_column(String(500), nullable=True)
+    source_type: Mapped[str] = mapped_column(String(50), default='manual', server_default='manual')
+
     # Nutrition Totals (Calculated)
     total_calories: Mapped[float] = mapped_column(Float, nullable=True)
     total_protein: Mapped[float] = mapped_column(Float, nullable=True)
