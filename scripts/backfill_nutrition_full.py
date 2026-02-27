@@ -131,8 +131,8 @@ def main():
                 print(f"  ⚠️ Critical loop failure for item '{ing.name}': {e}")
                 db.session.rollback()
                 
-            # MAX SPEED: 0.5s Buffer
-            time.sleep(0.5) 
+            # Safe Speed: 2s Buffer
+            time.sleep(2) 
             
         print("\nAll Done.")
 
