@@ -489,14 +489,16 @@
                     </button>
                 </div>
                 <div class="px-4 py-4 sm:px-6">
-                    <div class="grid grid-cols-2 gap-4 sm:grid-cols-4 bg-gray-50 p-4 rounded-md mb-4">
+                    <div class="grid grid-cols-2 gap-4 sm:grid-cols-5 bg-gray-50 p-4 rounded-md mb-4">
                         <div><span class="block text-xs font-medium text-gray-500">ID</span><span
                                 class="block text-sm font-bold text-gray-900" id="insp-id">—</span></div>
                         <div><span class="block text-xs font-medium text-gray-500">Status</span><span
                                 class="block text-sm font-bold text-gray-900" id="insp-status">—</span></div>
                         <div><span class="block text-xs font-medium text-gray-500">Category</span><span
                                 class="block text-sm font-bold text-gray-900" id="insp-cat">—</span></div>
-                        <div><span class="block text-xs font-medium text-gray-500">Used in Recipes</span><span
+                        <div><span class="block text-xs font-medium text-gray-500">Data Source</span><span
+                                class="block text-sm font-bold text-gray-900" id="insp-source">—</span></div>
+                        <div><span class="block text-xs font-medium text-gray-500">Recipes</span><span
                                 class="block text-sm font-bold text-gray-900" id="insp-recipes">—</span></div>
                     </div>
                     <div class="bg-slate-900 rounded-md p-4 overflow-auto max-h-[500px]">
@@ -673,7 +675,7 @@
     // ── Inspector ─────────────────────────────────────────────────
     async function inspectIngredient(id) {
         document.getElementById('insp-json').textContent = 'Loading…';
-        ['insp-id', 'insp-status', 'insp-cat', 'insp-recipes'].forEach(el => document.getElementById(el).textContent = '—');
+        ['insp-id', 'insp-status', 'insp-cat', 'insp-source', 'insp-recipes'].forEach(el => document.getElementById(el).textContent = '—');
         document.getElementById('inspector-modal').classList.remove('hidden');
         try {
             const res = await fetch(`${API}/${id}/inspect`);
@@ -684,6 +686,16 @@
                 document.getElementById('insp-status').textContent = i.status;
                 document.getElementById('insp-cat').textContent = i.main_category || '—';
                 document.getElementById('insp-recipes').textContent = i.recipe_count;
+
+                const sourceBadge = document.getElementById('insp-source');
+                if (i.data_source === 'edamam_rapidapi') {
+                    sourceBadge.innerHTML = `<span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">RapidAPI</span>`;
+                } else if (i.data_source === 'edamam_enterprise') {
+                    sourceBadge.innerHTML = `<span class="inline-flex items-center rounded-md bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-700/10">Enterprise</span>`;
+                } else {
+                    sourceBadge.innerHTML = `<span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">Placeholder</span>`;
+                }
+
                 document.getElementById('insp-json').textContent = JSON.stringify(i, null, 2);
             } else {
                 document.getElementById('insp-json').textContent = `Error: ${data.error}`;
