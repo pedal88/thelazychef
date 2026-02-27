@@ -125,9 +125,12 @@ def fetch_edamam_data(ingredient_name, default_unit):
 
 def main():
     with app.app_context():
-        # Only query items that haven't been successfully evaluated
+        # Target unscored items OR items mapped under the old legacy RapidAPI payload
         targets = db.session.query(Ingredient).filter(
-            Ingredient.average_g_per_unit.is_(None)
+            db.or_(
+                Ingredient.average_g_per_unit.is_(None),
+                Ingredient.data_source == 'edamam_rapidapi'
+            )
         ).all()
         
         total = len(targets)
