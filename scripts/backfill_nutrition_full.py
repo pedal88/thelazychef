@@ -22,17 +22,15 @@ def fetch_edamam_data(ingredient_name, default_unit):
     else:
         query = f"{query_amount} {query_unit} {clean_name}"
         
-    url = "https://edamam-edamam-nutrition-analysis.p.rapidapi.com/api/nutrition-data"
-    headers = {
-        "x-rapidapi-key": "54e49fbee7msh8dea1330c6927d2p1ccfeajsncffb62a4508a",
-        "x-rapidapi-host": "edamam-edamam-nutrition-analysis.p.rapidapi.com"
-    }
+    url = "https://api.edamam.com/api/nutrition-data"
     params = {
+        'app_id': '144a8231',
+        'app_key': 'f4b119e11be9443f14e7f042d5e80eef',
         'ingr': query
     }
     
     try:
-        response = requests.get(url, headers=headers, params=params, timeout=10)
+        response = requests.get(url, params=params, timeout=10)
         
         # RATE LIMIT HIT
         if response.status_code == 429:
@@ -95,7 +93,7 @@ def main():
         ).all()
         
         total = len(targets)
-        print(f"--- Starting RapidAPI Hydration for {total} Pantry Items ---")
+        print(f"--- Starting Edamam Enterprise Hydration for {total} Pantry Items ---")
         
         for idx, ing in enumerate(targets, 1):
             if not ing.default_unit:
@@ -119,7 +117,7 @@ def main():
                     ing.cholesterol_mg_per_100g = result['cholesterol']
                     ing.calcium_mg_per_100g = result['calcium']
                     ing.potassium_mg_per_100g = result['potassium']
-                    ing.data_source = 'edamam_rapidapi'
+                    ing.data_source = 'edamam_enterprise'
                     
                     db.session.add(ing)
                     db.session.commit() # Commit after every successful ingredient
@@ -132,8 +130,8 @@ def main():
                 print(f"  ⚠️ Critical loop failure for item '{ing.name}': {e}")
                 db.session.rollback()
                 
-            # Safe Speed: 2s Buffer
-            time.sleep(2) 
+            # Enterprise Speed: 0.2s Buffer
+            time.sleep(0.2) 
             
         print("\nAll Done.")
 
