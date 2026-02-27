@@ -125,7 +125,7 @@ def main():
                 print(f"  ⚠️ Critical loop failure for item '{ing.name}': {e}")
                 db.session.rollback()
                 
-            time.sleep(2) # Safe 2-second buffer
+            time.sleep(0.5) # Fast 0.5-second buffer for RapidAPI
             
         print("\nAll Done.")
 
