@@ -696,7 +696,42 @@
                     sourceBadge.innerHTML = `<span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">Placeholder</span>`;
                 }
 
-                document.getElementById('insp-json').textContent = JSON.stringify(i, null, 2);
+                const logicalOrder = {
+                    id: i.id,
+                    food_id: i.food_id,
+                    name: i.name,
+                    image_url: i.image_url,
+
+                    main_category: i.main_category,
+                    sub_category: i.sub_category,
+                    aliases: i.aliases,
+                    status: i.status,
+                    is_staple: i.is_staple,
+
+                    default_unit: i.default_unit,
+                    average_g_per_unit: i.average_g_per_unit,
+                    recipe_count: i.recipe_count,
+                    data_source: i.data_source,
+
+                    calories_per_100g: i.calories_per_100g,
+                    protein_per_100g: i.protein_per_100g,
+                    fat_per_100g: i.fat_per_100g,
+                    carbs_per_100g: i.carbs_per_100g,
+                    sugar_per_100g: i.sugar_per_100g,
+                    fiber_per_100g: i.fiber_per_100g,
+                    fat_saturated_per_100g: i.fat_saturated_per_100g,
+                    sodium_mg_per_100g: i.sodium_mg_per_100g,
+                    cholesterol_mg_per_100g: i.cholesterol_mg_per_100g,
+                    calcium_mg_per_100g: i.calcium_mg_per_100g,
+                    potassium_mg_per_100g: i.potassium_mg_per_100g,
+
+                    image_prompt: i.image_prompt
+                };
+
+                // Strip any keys the API did not return to keep UI clean
+                Object.keys(logicalOrder).forEach(key => logicalOrder[key] === undefined && delete logicalOrder[key]);
+
+                document.getElementById('insp-json').textContent = JSON.stringify(logicalOrder, null, 2);
             } else {
                 document.getElementById('insp-json').textContent = `Error: ${data.error}`;
             }
