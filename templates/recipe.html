@@ -71,141 +71,156 @@
     </div>
     {% endif %}
 
-    <!-- Recipe Header Info -->
-    <div class="flex flex-col items-center text-center max-w-4xl mx-auto mb-16 print:mb-4">
-        <div class="flex flex-wrap gap-2 mb-6 justify-center print:mb-2">
-            {{ badge.difficulty_pill(recipe.difficulty) }}
-            {{ badge.tag_pill(recipe.cuisine, 'orange') }}
-            {% for d in recipe.diets_list %}
-            {{ badge.tag_pill(d, 'green') }}
-            {% endfor %}
-            {% if recipe.protein_type %}
-            {{ badge.tag_pill(recipe.protein_type, 'blue') }}
-            {% endif %}
-            {% for tag in recipe.meal_types_list %}
-            {{ badge.tag_pill(tag, 'purple') }}
-            {% endfor %}
-            {% if current_user.is_authenticated %}
-            <button type="button"
-                class="favorite-btn bg-white border border-slate-200 text-slate-400 hover:text-red-500 hover:border-red-200 px-3 py-1 rounded-full shadow-sm transition-all duration-200 flex items-center gap-2 group"
-                data-recipe-id="{{ recipe.id }}">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path
-                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
-                    </path>
-                </svg>
-                <span class="text-xs font-medium group-hover:text-red-600 text-slate-600">Favorite</span>
-            </button>
-            {% endif %}
-        </div>
-
-        <h1
-            class="font-serif text-5xl md:text-7xl font-bold text-slate-900 leading-tight mb-6 print:text-2xl print:mb-1 text-center print:leading-none">
-            {{ recipe.title }}
-        </h1>
-
-        <p class="text-xl text-slate-600 font-light leading-relaxed max-w-2xl print:hidden">
-            A {{ recipe.difficulty|lower }} {{ recipe.cuisine }} dish perfect for {{ recipe.diets_list|join(' and ') }}
-            diets.
-            Using fresh ingredients from your pantry, customized by our World Class AI Chef.
-        </p>
-
-        {% if recipe.source_input %}
-        <div
-            class="mt-8 text-sm text-slate-500 bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm print:hidden">
-            {% if recipe.source_type == 'social' or recipe.source_type == 'web' %}
-            🔗 <a href="{{ recipe.source_input }}" target="_blank" rel="noopener noreferrer"
-                class="hover:text-indigo-600 hover:underline font-medium break-all">{{ recipe.source_input }}</a>
-            {% else %}
-            💡 Inspired by: <span class="italic text-slate-600 font-medium">"{{ recipe.source_input[:80] }}{% if
-                recipe.source_input|length > 80 %}...{% endif %}"</span>
-            {% endif %}
-        </div>
-        {% endif %}
-
-    </div>
-
-    <!-- COMPONENT COLUMNS LAYOUT -->
-    <div class="flex items-center space-x-4 mb-8 justify-center print:hidden">
-        <span class="text-sm font-medium text-slate-700">Yield:</span>
-        <div class="flex items-center border border-slate-300 rounded-md bg-white shadow-sm overflow-hidden">
-            <button onclick="updateServings(-1)"
-                class="px-3 py-1 bg-slate-50 hover:bg-slate-100 border-r border-slate-300 text-slate-600 font-bold transition-colors select-none">&minus;</button>
-            <div id="currentServings" class="px-4 py-1 font-bold text-slate-800 text-center min-w-[3rem]"
-                data-base="{{ recipe.base_servings|default(4) }}">{{ recipe.base_servings|default(4) }}</div>
-            <button onclick="updateServings(1)"
-                class="px-3 py-1 bg-slate-50 hover:bg-slate-100 border-l border-slate-300 text-slate-600 font-bold transition-colors select-none">&plus;</button>
-        </div>
-        <span class="text-sm text-slate-500">Servings</span>
-    </div>
-
-    <!-- NUTRITION FACTS UI -->
-    {% set srv = recipe.base_servings|default(4) %}
+    <!-- Main Hero Body & Nutrition Grid -->
     <div
-        class="max-w-xs mx-auto mb-10 bg-white border border-slate-300 p-4 shadow-sm font-sans text-slate-900 print:hidden">
-        <h2 class="text-3xl font-black border-b-[10px] border-slate-900 pb-1 mb-2 tracking-tighter">Nutrition Facts</h2>
-        <div class="flex justify-between font-bold border-b border-slate-900 pb-1 text-sm">
-            <span>Amount Per Serving</span>
+        class="max-w-7xl mx-auto mb-16 flex flex-col xl:flex-row gap-12 xl:gap-24 items-center xl:items-start print:mb-4">
+
+        <!-- Left Column: Title, Taxonomies, Yield -->
+        <div class="flex-1 flex flex-col items-center xl:items-start text-center xl:text-left">
+            <div class="flex flex-wrap gap-2 mb-6 justify-center xl:justify-start print:mb-2 w-full">
+                {{ badge.difficulty_pill(recipe.difficulty) }}
+                {{ badge.tag_pill(recipe.cuisine, 'orange') }}
+                {% for d in recipe.diets_list %}
+                {{ badge.tag_pill(d, 'green') }}
+                {% endfor %}
+                {% if recipe.protein_type %}
+                {{ badge.tag_pill(recipe.protein_type, 'blue') }}
+                {% endif %}
+                {% for tag in recipe.meal_types_list %}
+                {{ badge.tag_pill(tag, 'purple') }}
+                {% endfor %}
+                {% if current_user.is_authenticated %}
+                <button type="button"
+                    class="favorite-btn bg-white border border-slate-200 text-slate-400 hover:text-red-500 hover:border-red-200 px-3 py-1 rounded-full shadow-sm transition-all duration-200 flex items-center gap-2 group"
+                    data-recipe-id="{{ recipe.id }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path
+                            d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+                        </path>
+                    </svg>
+                    <span class="text-xs font-medium group-hover:text-red-600 text-slate-600">Favorite</span>
+                </button>
+                {% endif %}
+            </div>
+
+            <h1
+                class="font-serif text-5xl md:text-7xl font-bold text-slate-900 leading-tight mb-6 print:text-2xl print:mb-1 print:leading-none">
+                {{ recipe.title }}
+            </h1>
+
+            <p class="text-xl text-slate-600 font-light leading-relaxed max-w-2xl print:hidden">
+                A {{ recipe.difficulty|lower }} {{ recipe.cuisine }} dish perfect for {{ recipe.diets_list|join(' and ')
+                }}
+                diets.
+                Using fresh ingredients from your pantry, customized by our World Class AI Chef.
+            </p>
+
+            {% if recipe.source_input %}
+            <div
+                class="mt-8 text-sm text-slate-500 bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm print:hidden">
+                {% if recipe.source_type == 'social' or recipe.source_type == 'web' %}
+                🔗 <a href="{{ recipe.source_input }}" target="_blank" rel="noopener noreferrer"
+                    class="hover:text-indigo-600 hover:underline font-medium break-all">{{ recipe.source_input }}</a>
+                {% else %}
+                💡 Inspired by: <span class="italic text-slate-600 font-medium">"{{ recipe.source_input[:80] }}{% if
+                    recipe.source_input|length > 80 %}...{% endif %}"</span>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Yield Widget -->
+            <div class="flex items-center space-x-4 mt-10 justify-center xl:justify-start print:hidden">
+                <span class="text-sm font-medium text-slate-700">Yield:</span>
+                <div class="flex items-center border border-slate-300 rounded-md bg-white shadow-sm overflow-hidden">
+                    <button onclick="updateServings(-1)"
+                        class="px-3 py-1 bg-slate-50 hover:bg-slate-100 border-r border-slate-300 text-slate-600 font-bold transition-colors select-none">&minus;</button>
+                    <div id="currentServings" class="px-4 py-1 font-bold text-slate-800 text-center min-w-[3rem]"
+                        data-base="{{ recipe.base_servings|default(4) }}">{{ recipe.base_servings|default(4) }}</div>
+                    <button onclick="updateServings(1)"
+                        class="px-3 py-1 bg-slate-50 hover:bg-slate-100 border-l border-slate-300 text-slate-600 font-bold transition-colors select-none">&plus;</button>
+                </div>
+                <span class="text-sm text-slate-500">Servings</span>
+            </div>
         </div>
 
-        <div class="flex justify-between items-end border-b-[5px] border-slate-900 py-1">
-            <span class="text-2xl font-bold">Calories</span>
-            <span class="text-4xl font-black leading-none"><span class="scalable"
-                    data-original="{{ (recipe.total_calories or 0) / srv }}">{{ ((recipe.total_calories or 0) /
-                    srv)|round|int }}</span></span>
-        </div>
+        <!-- Right Column: Nutrition Facts -->
+        <div class="shrink-0 w-full max-w-xs print:hidden">
+            {% set srv = recipe.base_servings|default(4) %}
+            <div class="bg-white border border-slate-300 p-4 shadow-sm font-sans text-slate-900 w-full">
+                <h2 class="text-3xl font-black border-b-[10px] border-slate-900 pb-1 mb-2 tracking-tighter">Nutrition
+                    Facts</h2>
+                <div class="flex justify-between font-bold border-b border-slate-900 pb-1 text-sm">
+                    <span>Amount Per Serving</span>
+                </div>
 
-        <div class="text-[13px] font-medium leading-snug">
-            <div class="flex justify-between border-b border-slate-300 py-1">
-                <span class="font-bold tracking-tight">Total Fat <span class="font-normal"><span class="scalable"
-                            data-original="{{ (recipe.total_fat or 0) / srv }}">{{ ((recipe.total_fat or 0) /
-                            srv)|round(1) }}</span>g</span></span>
-            </div>
-            <div class="flex justify-between border-b border-slate-300 py-1 pl-4">
-                <span>Saturated Fat <span class="scalable"
-                        data-original="{{ (recipe.total_saturated_fat or 0) / srv }}">{{ ((recipe.total_saturated_fat or
-                        0) / srv)|round(1) }}</span>g</span>
-            </div>
-            <div class="flex justify-between border-b border-slate-300 py-1 pl-4">
-                <span>Trans Fat <span class="scalable" data-original="0">0</span>g</span>
-            </div>
-            <div class="flex justify-between border-b border-slate-300 py-1">
-                <span class="font-bold tracking-tight">Cholesterol <span class="font-normal"><span class="scalable"
-                            data-original="{{ (recipe.total_cholesterol_mg or 0) / srv }}">{{
-                            ((recipe.total_cholesterol_mg or 0) / srv)|round|int }}</span>mg</span></span>
-            </div>
-            <div class="flex justify-between border-b border-slate-300 py-1">
-                <span class="font-bold tracking-tight">Sodium <span class="font-normal"><span class="scalable"
-                            data-original="{{ (recipe.total_sodium_mg or 0) / srv }}">{{ ((recipe.total_sodium_mg or 0)
-                            / srv)|round|int }}</span>mg</span></span>
-            </div>
-            <div class="flex justify-between border-b border-slate-300 py-1">
-                <span class="font-bold tracking-tight">Total Carbohydrate <span class="font-normal"><span
-                            class="scalable" data-original="{{ (recipe.total_carbs or 0) / srv }}">{{
-                            ((recipe.total_carbs or 0) / srv)|round|int }}</span>g</span></span>
-            </div>
-            <div class="flex justify-between border-b border-slate-300 py-1 pl-4">
-                <span>Dietary Fiber <span class="scalable" data-original="{{ (recipe.total_fiber or 0) / srv }}">{{
-                        ((recipe.total_fiber or 0) / srv)|round(1) }}</span>g</span>
-            </div>
-            <div class="flex justify-between border-b border-slate-300 py-1 pl-4">
-                <span>Total Sugars <span class="scalable" data-original="{{ (recipe.total_sugar or 0) / srv }}">{{
-                        ((recipe.total_sugar or 0) / srv)|round(1) }}</span>g</span>
-            </div>
-            <div class="flex justify-between border-b-[5px] border-slate-900 py-1">
-                <span class="font-bold tracking-tight">Protein <span class="font-normal"><span class="scalable"
-                            data-original="{{ (recipe.total_protein or 0) / srv }}">{{ ((recipe.total_protein or 0) /
-                            srv)|round(1) }}</span>g</span></span>
-            </div>
+                <div class="flex justify-between items-end border-b-[5px] border-slate-900 py-1">
+                    <span class="text-2xl font-bold">Calories</span>
+                    <span class="text-4xl font-black leading-none"><span class="scalable"
+                            data-original="{{ (recipe.total_calories or 0) / srv }}">{{ ((recipe.total_calories or 0) /
+                            srv)|round|int }}</span></span>
+                </div>
 
-            <div class="flex justify-between border-b border-slate-300 py-1 text-slate-600">
-                <span>Calcium <span class="scalable" data-original="{{ (recipe.total_calcium_mg or 0) / srv }}">{{
-                        ((recipe.total_calcium_mg or 0) / srv)|round|int }}</span>mg</span>
-            </div>
-            <div class="flex justify-between border-b border-slate-300 py-1 text-slate-600">
-                <span>Potassium <span class="scalable" data-original="{{ (recipe.total_potassium_mg or 0) / srv }}">{{
-                        ((recipe.total_potassium_mg or 0) / srv)|round|int }}</span>mg</span>
+                <div class="text-[13px] font-medium leading-snug">
+                    <div class="flex justify-between border-b border-slate-300 py-1">
+                        <span class="font-bold tracking-tight">Total Fat <span class="font-normal"><span
+                                    class="scalable" data-original="{{ (recipe.total_fat or 0) / srv }}">{{
+                                    ((recipe.total_fat or 0) /
+                                    srv)|round(1) }}</span>g</span></span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-300 py-1 pl-4">
+                        <span>Saturated Fat <span class="scalable"
+                                data-original="{{ (recipe.total_saturated_fat or 0) / srv }}">{{
+                                ((recipe.total_saturated_fat or
+                                0) / srv)|round(1) }}</span>g</span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-300 py-1 pl-4">
+                        <span>Trans Fat <span class="scalable" data-original="0">0</span>g</span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-300 py-1">
+                        <span class="font-bold tracking-tight">Cholesterol <span class="font-normal"><span
+                                    class="scalable" data-original="{{ (recipe.total_cholesterol_mg or 0) / srv }}">{{
+                                    ((recipe.total_cholesterol_mg or 0) / srv)|round|int }}</span>mg</span></span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-300 py-1">
+                        <span class="font-bold tracking-tight">Sodium <span class="font-normal"><span class="scalable"
+                                    data-original="{{ (recipe.total_sodium_mg or 0) / srv }}">{{
+                                    ((recipe.total_sodium_mg or 0)
+                                    / srv)|round|int }}</span>mg</span></span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-300 py-1">
+                        <span class="font-bold tracking-tight">Total Carbohydrate <span class="font-normal"><span
+                                    class="scalable" data-original="{{ (recipe.total_carbs or 0) / srv }}">{{
+                                    ((recipe.total_carbs or 0) / srv)|round|int }}</span>g</span></span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-300 py-1 pl-4">
+                        <span>Dietary Fiber <span class="scalable"
+                                data-original="{{ (recipe.total_fiber or 0) / srv }}">{{
+                                ((recipe.total_fiber or 0) / srv)|round(1) }}</span>g</span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-300 py-1 pl-4">
+                        <span>Total Sugars <span class="scalable"
+                                data-original="{{ (recipe.total_sugar or 0) / srv }}">{{
+                                ((recipe.total_sugar or 0) / srv)|round(1) }}</span>g</span>
+                    </div>
+                    <div class="flex justify-between border-b-[5px] border-slate-900 py-1">
+                        <span class="font-bold tracking-tight">Protein <span class="font-normal"><span class="scalable"
+                                    data-original="{{ (recipe.total_protein or 0) / srv }}">{{ ((recipe.total_protein or
+                                    0) /
+                                    srv)|round(1) }}</span>g</span></span>
+                    </div>
+
+                    <div class="flex justify-between border-b border-slate-300 py-1 text-slate-600">
+                        <span>Calcium <span class="scalable"
+                                data-original="{{ (recipe.total_calcium_mg or 0) / srv }}">{{
+                                ((recipe.total_calcium_mg or 0) / srv)|round|int }}</span>mg</span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-300 py-1 text-slate-600">
+                        <span>Potassium <span class="scalable"
+                                data-original="{{ (recipe.total_potassium_mg or 0) / srv }}">{{
+                                ((recipe.total_potassium_mg or 0) / srv)|round|int }}</span>mg</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -304,12 +319,15 @@
                                         class="print:text-[10px] print:leading-none print:text-left print:m-0 text-slate-800">
                                         {{ item.ingredient.name }} - <span class="font-bold">
                                             <span class="unit-us" data-original="{{ item.amount }}"><span
-                                                    class="scalable">{{ item.amount|round|int if item.amount % 1 == 0
-                                                    else item.amount|round(1) }}</span><span class="ml-0.5">{{ item.unit
+                                                    class="scalable">{{ item.amount|round|int if item.amount % 1
+                                                    == 0
+                                                    else item.amount|round(1) }}</span><span class="ml-0.5">{{
+                                                    item.unit
                                                     }}</span></span>
                                             {% if item.gram_weight %}
                                             <span class="unit-eu hidden" data-original="{{ item.gram_weight }}"><span
-                                                    class="scalable">{{ item.gram_weight|round|int }}</span><span
+                                                    class="scalable">{{
+                                                    item.gram_weight|round|int }}</span><span
                                                     class="ml-0.5">g</span></span>
                                             {% endif %}
                                         </span>
@@ -357,7 +375,8 @@
                                         </span>
                                         <p
                                             class="text-sm text-slate-700 leading-relaxed print:text-[11px] print:leading-tight print:m-0 print:p-0 {% if phase == 'Prep' %}print:italic print:text-slate-500{% endif %}">
-                                            <span class="hidden print:inline font-bold">{{ step.step_number }}.</span>
+                                            <span class="hidden print:inline font-bold">{{ step.step_number
+                                                }}.</span>
                                             {{ step.text }}
                                         </p>
                                     </div>
@@ -444,7 +463,8 @@
                 <!-- Content -->
                 <div class="flex-grow">
                     <div class="flex justify-between items-start mb-2 pt-1">
-                        <span class="text-xs font-bold uppercase tracking-wider opacity-60">Phase: {{ step.phase }} - {{
+                        <span class="text-xs font-bold uppercase tracking-wider opacity-60">Phase: {{ step.phase
+                            }} - {{
                             step.component }}</span>
                         {% if step.estimated_minutes %}
                         <span
@@ -561,7 +581,8 @@
                     <div>
                         <h3 class="text-lg font-bold text-slate-900">Relink Ingredient</h3>
                         <p class="text-xs text-slate-500 mt-0.5">
-                            Replace <strong id="relinkCurrentName" class="text-red-600">—</strong> with a pantry item
+                            Replace <strong id="relinkCurrentName" class="text-red-600">—</strong> with a pantry
+                            item
                         </p>
                     </div>
                     <button onclick="closeRelinkModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
