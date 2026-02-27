@@ -116,16 +116,45 @@
                 Using fresh ingredients from your pantry, customized by our World Class AI Chef.
             </p>
 
-            {% if recipe.source_input %}
+            <!-- Source Tracking & Chef Attribution -->
+            {% if recipe.source_input or (recipe.chef_id and recipe.chef_id != 'gourmet') %}
             <div
-                class="mt-8 text-sm text-slate-500 bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm print:hidden">
-                {% if recipe.source_type == 'social' or recipe.source_type == 'web' %}
-                🔗 <a href="{{ recipe.source_input }}" target="_blank" rel="noopener noreferrer"
-                    class="hover:text-indigo-600 hover:underline font-medium break-all">{{ recipe.source_input }}</a>
-                {% else %}
-                💡 Inspired by: <span class="italic text-slate-600 font-medium">"{{ recipe.source_input[:80] }}{% if
-                    recipe.source_input|length > 80 %}...{% endif %}"</span>
+                class="mt-8 flex flex-col sm:flex-row flex-wrap gap-4 items-center xl:items-start justify-center xl:justify-start print:hidden">
+
+                <!-- Chef Pill -->
+                {% if recipe.chef_id and recipe.chef_id != 'gourmet' %}
+                <div
+                    class="flex items-center gap-2 text-sm text-slate-700 bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm">
+                    {% if recipe.chef and recipe.chef.image_filename %}
+                    <img src="{{ url_for('static', filename='chefs/' + recipe.chef.image_filename) }}"
+                        alt="{{ recipe.chef.name }}" class="w-6 h-6 rounded-full object-cover">
+                    {% else %}
+                    <span class="text-lg">👨‍🍳</span>
+                    {% endif %}
+                    <span>By Chef <strong class="text-slate-900">{{ recipe.chef.name if recipe.chef else
+                            recipe.chef_id|title }}</strong></span>
+                </div>
                 {% endif %}
+
+                <!-- Source Pill -->
+                {% if recipe.source_input %}
+                <div
+                    class="flex items-center text-sm text-slate-500 bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm">
+                    {% if recipe.source_type == 'social' or recipe.source_type == 'web' %}
+                    <span class="mr-2">🔗</span>
+                    <a href="{{ recipe.source_input }}" target="_blank" rel="noopener noreferrer"
+                        class="hover:text-indigo-600 hover:underline font-medium break-all max-w-[200px] sm:max-w-xs xl:max-w-md truncate">
+                        {{ recipe.source_input }}
+                    </a>
+                    {% else %}
+                    <span class="mr-2">💡</span>
+                    <span class="whitespace-nowrap">Inspired by:</span>
+                    <span class="italic text-slate-600 font-medium ml-1">"{{ recipe.source_input[:60] }}{% if
+                        recipe.source_input|length > 60 %}...{% endif %}"</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+
             </div>
             {% endif %}
 
