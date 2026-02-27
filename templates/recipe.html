@@ -175,79 +175,84 @@
 
         <!-- Right Column: Nutrition Facts -->
         <div class="shrink-0 w-full max-w-xs print:hidden">
-            {% set srv = recipe.base_servings|default(4) %}
+            {% set base_srv = recipe.base_servings|default(4) %}
+            {% set wgt = recipe.total_weight_g if recipe.total_weight_g > 0 else 1 %}
+
+            {% macro nut_val(total_val, places=0) %}
+            {% set v = total_val or 0 %}
+            {% set v100 = (v / wgt * 100) %}
+            {% set v1 = (v / base_srv) %}
+            {% set v4 = (v / base_srv * 4) %}
+            <span class="nutrition-val" data-100g="{{ v100|round(places) if places else v100|round|int }}"
+                data-1srv="{{ v1|round(places) if places else v1|round|int }}"
+                data-4srv="{{ v4|round(places) if places else v4|round|int }}">
+                {{ v100|round(places) if places else v100|round|int }}
+            </span>
+            {% endmacro %}
+
+            <div class="flex gap-1 bg-slate-100 p-1 rounded-md mb-2 text-xs font-bold text-slate-500 shadow-inner">
+                <button onclick="setNutritionMode('100g', this)"
+                    class="nuxt-btn flex-1 py-1.5 rounded-sm bg-white text-slate-900 shadow-sm transition-all focus:outline-none">100g</button>
+                <button onclick="setNutritionMode('1srv', this)"
+                    class="nuxt-btn flex-1 py-1.5 rounded-sm hover:bg-white hover:text-slate-900 transition-all focus:outline-none">1
+                    Srv</button>
+                <button onclick="setNutritionMode('4srv', this)"
+                    class="nuxt-btn flex-1 py-1.5 rounded-sm hover:bg-white hover:text-slate-900 transition-all focus:outline-none">4
+                    Srv</button>
+            </div>
+
             <div class="bg-white border border-slate-300 p-4 shadow-sm font-sans text-slate-900 w-full">
                 <h2 class="text-3xl font-black border-b-[10px] border-slate-900 pb-1 mb-2 tracking-tighter">Nutrition
                     Facts</h2>
                 <div class="flex justify-between font-bold border-b border-slate-900 pb-1 text-sm">
-                    <span>Amount Per Serving</span>
+                    <span id="nutrition-amount-label">Amount Per 100g</span>
                 </div>
 
                 <div class="flex justify-between items-end border-b-[5px] border-slate-900 py-1">
                     <span class="text-2xl font-bold">Calories</span>
-                    <span class="text-4xl font-black leading-none"><span class="scalable"
-                            data-original="{{ (recipe.total_calories or 0) / srv }}">{{ ((recipe.total_calories or 0) /
-                            srv)|round|int }}</span></span>
+                    <span class="text-4xl font-black leading-none">{{ nut_val(recipe.total_calories, 0) }}</span>
                 </div>
 
                 <div class="text-[13px] font-medium leading-snug">
                     <div class="flex justify-between border-b border-slate-300 py-1">
-                        <span class="font-bold tracking-tight">Total Fat <span class="font-normal"><span
-                                    class="scalable" data-original="{{ (recipe.total_fat or 0) / srv }}">{{
-                                    ((recipe.total_fat or 0) /
-                                    srv)|round(1) }}</span>g</span></span>
+                        <span class="font-bold tracking-tight">Total Fat <span class="font-normal">{{
+                                nut_val(recipe.total_fat, 1) }}g</span></span>
                     </div>
                     <div class="flex justify-between border-b border-slate-300 py-1 pl-4">
-                        <span>Saturated Fat <span class="scalable"
-                                data-original="{{ (recipe.total_saturated_fat or 0) / srv }}">{{
-                                ((recipe.total_saturated_fat or
-                                0) / srv)|round(1) }}</span>g</span>
+                        <span>Saturated Fat {{ nut_val(recipe.total_saturated_fat, 1) }}g</span>
                     </div>
                     <div class="flex justify-between border-b border-slate-300 py-1 pl-4">
-                        <span>Trans Fat <span class="scalable" data-original="0">0</span>g</span>
+                        <span>Trans Fat <span class="nutrition-val" data-100g="0" data-1srv="0"
+                                data-4srv="0">0</span>g</span>
                     </div>
                     <div class="flex justify-between border-b border-slate-300 py-1">
-                        <span class="font-bold tracking-tight">Cholesterol <span class="font-normal"><span
-                                    class="scalable" data-original="{{ (recipe.total_cholesterol_mg or 0) / srv }}">{{
-                                    ((recipe.total_cholesterol_mg or 0) / srv)|round|int }}</span>mg</span></span>
+                        <span class="font-bold tracking-tight">Cholesterol <span class="font-normal">{{
+                                nut_val(recipe.total_cholesterol_mg, 0) }}mg</span></span>
                     </div>
                     <div class="flex justify-between border-b border-slate-300 py-1">
-                        <span class="font-bold tracking-tight">Sodium <span class="font-normal"><span class="scalable"
-                                    data-original="{{ (recipe.total_sodium_mg or 0) / srv }}">{{
-                                    ((recipe.total_sodium_mg or 0)
-                                    / srv)|round|int }}</span>mg</span></span>
+                        <span class="font-bold tracking-tight">Sodium <span class="font-normal">{{
+                                nut_val(recipe.total_sodium_mg, 0) }}mg</span></span>
                     </div>
                     <div class="flex justify-between border-b border-slate-300 py-1">
-                        <span class="font-bold tracking-tight">Total Carbohydrate <span class="font-normal"><span
-                                    class="scalable" data-original="{{ (recipe.total_carbs or 0) / srv }}">{{
-                                    ((recipe.total_carbs or 0) / srv)|round|int }}</span>g</span></span>
+                        <span class="font-bold tracking-tight">Total Carbohydrate <span class="font-normal">{{
+                                nut_val(recipe.total_carbs, 0) }}g</span></span>
                     </div>
                     <div class="flex justify-between border-b border-slate-300 py-1 pl-4">
-                        <span>Dietary Fiber <span class="scalable"
-                                data-original="{{ (recipe.total_fiber or 0) / srv }}">{{
-                                ((recipe.total_fiber or 0) / srv)|round(1) }}</span>g</span>
+                        <span>Dietary Fiber {{ nut_val(recipe.total_fiber, 1) }}g</span>
                     </div>
                     <div class="flex justify-between border-b border-slate-300 py-1 pl-4">
-                        <span>Total Sugars <span class="scalable"
-                                data-original="{{ (recipe.total_sugar or 0) / srv }}">{{
-                                ((recipe.total_sugar or 0) / srv)|round(1) }}</span>g</span>
+                        <span>Total Sugars {{ nut_val(recipe.total_sugar, 1) }}g</span>
                     </div>
                     <div class="flex justify-between border-b-[5px] border-slate-900 py-1">
-                        <span class="font-bold tracking-tight">Protein <span class="font-normal"><span class="scalable"
-                                    data-original="{{ (recipe.total_protein or 0) / srv }}">{{ ((recipe.total_protein or
-                                    0) /
-                                    srv)|round(1) }}</span>g</span></span>
+                        <span class="font-bold tracking-tight">Protein <span class="font-normal">{{
+                                nut_val(recipe.total_protein, 1) }}g</span></span>
                     </div>
 
                     <div class="flex justify-between border-b border-slate-300 py-1 text-slate-600">
-                        <span>Calcium <span class="scalable"
-                                data-original="{{ (recipe.total_calcium_mg or 0) / srv }}">{{
-                                ((recipe.total_calcium_mg or 0) / srv)|round|int }}</span>mg</span>
+                        <span>Calcium {{ nut_val(recipe.total_calcium_mg, 0) }}mg</span>
                     </div>
                     <div class="flex justify-between border-b border-slate-300 py-1 text-slate-600">
-                        <span>Potassium <span class="scalable"
-                                data-original="{{ (recipe.total_potassium_mg or 0) / srv }}">{{
-                                ((recipe.total_potassium_mg or 0) / srv)|round|int }}</span>mg</span>
+                        <span>Potassium {{ nut_val(recipe.total_potassium_mg, 0) }}mg</span>
                     </div>
                 </div>
             </div>
@@ -661,6 +666,35 @@
     {{ inspector.recipe_inspector_modal() }}
 
     <script>
+        function setNutritionMode(mode, btnElement) {
+            // Update the display numbers
+            document.querySelectorAll('.nutrition-val').forEach(el => {
+                let val = parseFloat(el.getAttribute('data-' + mode));
+                if (!isNaN(val)) {
+                    el.innerText = val;
+                }
+            });
+
+            // Update Header Title depending on mode
+            const labelEl = document.getElementById('nutrition-amount-label');
+            if (labelEl) {
+                if (mode === '100g') labelEl.innerText = 'Amount Per 100g';
+                else if (mode === '1srv') labelEl.innerText = 'Amount Per Serving';
+                else if (mode === '4srv') labelEl.innerText = 'Amount Per 4 Servings';
+            }
+
+            // Update toggle button styling
+            if (btnElement) {
+                const group = btnElement.parentElement;
+                Array.from(group.children).forEach(btn => {
+                    btn.classList.remove('bg-white', 'text-slate-900', 'shadow-sm');
+                    btn.classList.add('hover:bg-white', 'hover:text-slate-900');
+                });
+                btnElement.classList.add('bg-white', 'text-slate-900', 'shadow-sm');
+                btnElement.classList.remove('hover:bg-white', 'hover:text-slate-900');
+            }
+        }
+
         function updateServings(change) {
             let currentServingsEl = document.getElementById('currentServings');
             if (!currentServingsEl) return;

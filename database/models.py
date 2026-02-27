@@ -240,6 +240,11 @@ class Recipe(db.Model):
     def diets_list(self) -> list[str]:
         return [rd.diet for rd in self.diets]
 
+    @property
+    def total_weight_g(self) -> float:
+        """Sums up the physical gram weight of all ingredients for 'per 100g' nutrition calculations."""
+        return sum([float(i.gram_weight) for i in self.ingredients if i.gram_weight]) or 0.0
+
     interactions: Mapped[list["UserRecipeInteraction"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
     collections: Mapped[list["CollectionItem"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
     queue_items: Mapped[list["UserQueue"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
