@@ -11,11 +11,19 @@ def fetch_edamam_data(ingredient_name, default_unit):
     # Sanitize the name by removing everything in parentheses
     clean_name = re.sub(r'\(.*?\)', '', ingredient_name).strip()
     
-    # If the unit is an abstract counting term, omit it from the string
+    query_unit = default_unit
+    query_amount = 1
+    
+    # Normalize grams/ml to 100 for sufficient API mapping volume
+    if default_unit.lower() in ['g', 'gram', 'grams', 'ml', 'milliliter', 'milliliters']:
+        query_amount = 100
+        # Expand abbreviations for Edamam's parsing engine
+        query_unit = 'grams' if default_unit.lower().startswith('g') else 'milliliters'
+        
     if default_unit.lower() in ['unit', 'units', 'pcs', 'piece', 'pieces']:
-        query = f"1 {clean_name}"
+        query = f"{query_amount} {clean_name}"
     else:
-        query = f"1 {default_unit} {clean_name}"
+        query = f"{query_amount} {query_unit} {clean_name}"
         
     url = "https://api.edamam.com/api/nutrition-data"
     params = {
@@ -49,8 +57,11 @@ def fetch_edamam_data(ingredient_name, default_unit):
                     val = nutrients.get(key, {}).get('quantity', 0)
                     return (val / weight) * 100
                 
+                # Actual weight per physical 1 unit
+                avg_weight = weight / query_amount
+                
                 return {
-                    'weight': weight,
+                    'weight': avg_weight,
                     'calories': per_100g('ENERC_KCAL'),
                     'protein': per_100g('PROCNT'),
                     'fat': per_100g('FAT'),
@@ -65,6 +76,8 @@ def fetch_edamam_data(ingredient_name, default_unit):
                 }
             else:
                 return None
+        elif response.status_code == 429:
+            raise Exception("API Limit Exceeded (HTTP 429). You have hit the Edamam rate/monthly limit.")
         else:
             return None
     except Exception as e:
@@ -111,6 +124,10 @@ def main():
                 else:
                     print(f"  ❌ Unmapped by Edamam.")
             except Exception as e:
+                # If we specifically hit the API limit, break the loop entirely
+                if '429' in str(e):
+                    print(f"\n  🛑 HALTING SCRIPT: {e}")
+                    break
                 print(f"  ⚠️ Critical loop failure for item '{ing.name}': {e}")
                 db.session.rollback()
                 
