@@ -1,11 +1,9 @@
 import time
 import requests
 import re
+import sys
 from app import app
 from database.models import db, Ingredient
-
-EDAMAM_APP_ID = "abe08a7b"
-EDAMAM_APP_KEY = "5114c5d8f2d86f403004020932f5b6bf"
 
 def fetch_edamam_data(ingredient_name, default_unit):
     # Sanitize the name by removing everything in parentheses
@@ -25,40 +23,35 @@ def fetch_edamam_data(ingredient_name, default_unit):
     else:
         query = f"{query_amount} {query_unit} {clean_name}"
         
-    url = "https://api.edamam.com/api/nutrition-data"
+    url = "https://edamam-edamam-nutrition-analysis.p.rapidapi.com/api/nutrition-data"
+    headers = {
+        "x-rapidapi-key": "54e49fbee7msh8dea1330c6927d2p1ccfeajsncffb62a4508a",
+        "x-rapidapi-host": "edamam-edamam-nutrition-analysis.p.rapidapi.com"
+    }
     params = {
-        'app_id': EDAMAM_APP_ID,
-        'app_key': EDAMAM_APP_KEY,
         'ingr': query
     }
     
     try:
-        response = requests.get(url, params=params, timeout=10)
+        response = requests.get(url, headers=headers, params=params, timeout=10)
         
         if response.status_code == 200:
             data = response.json()
             
-            ingredients = data.get('ingredients', [])
-            if not ingredients:
-                return None
-                
-            parsed = ingredients[0].get('parsed', [])
-            if not parsed:
-                return None
-                
-            match = parsed[0]
-            weight = match.get('weight')
+            # The RapidAPI payload has totalWeight and totalNutrients at the root!
+            total_returned_weight = data.get('totalWeight')
             
-            if weight and weight > 0:
-                nutrients = match.get('nutrients', {})
+            if total_returned_weight and total_returned_weight > 0:
+                nutrients = data.get('totalNutrients', {})
                 
                 # Helper to calculate per 100g 
                 def per_100g(key):
                     val = nutrients.get(key, {}).get('quantity', 0)
-                    return (val / weight) * 100
+                    return (val / total_returned_weight) * 100
                 
                 # Actual weight per physical 1 unit
-                avg_weight = weight / query_amount
+                # If queried 100g/ml, avg_weight = total_returned_weight / 100 (which is 1.0 if total_returned_weight == 100.0)
+                avg_weight = total_returned_weight / query_amount
                 
                 return {
                     'weight': avg_weight,
@@ -77,10 +70,13 @@ def fetch_edamam_data(ingredient_name, default_unit):
             else:
                 return None
         elif response.status_code == 429:
-            raise Exception("API Limit Exceeded (HTTP 429). You have hit the Edamam rate/monthly limit.")
+            print(f"\n  🛑 HALTING SCRIPT: RapidAPI Limit Reached (HTTP 429)")
+            sys.exit(1)
         else:
             return None
     except Exception as e:
+        if isinstance(e, SystemExit):
+            raise e
         print(f"  ❌ Network/Timeout Error: {e}")
         return None
 
@@ -91,7 +87,7 @@ def main():
         ).all()
         
         total = len(targets)
-        print(f"--- Starting Full Spectrum Hydration for {total} Pantry Items ---")
+        print(f"--- Starting RapidAPI Hydration for {total} Pantry Items ---")
         
         for idx, ing in enumerate(targets, 1):
             # Safe skip if no default unit is assigned
@@ -120,18 +116,16 @@ def main():
                     
                     db.session.add(ing)
                     db.session.commit()
-                    print(f"  ✓ Saved! {result['weight']}g | {result['calories']:.1f} kcal")
+                    print(f"  ✓ Saved! avg_g_per_unit={result['weight']:.2f} | {result['calories']:.1f} kcal/100g")
                 else:
                     print(f"  ❌ Unmapped by Edamam.")
             except Exception as e:
-                # If we specifically hit the API limit, break the loop entirely
-                if '429' in str(e):
-                    print(f"\n  🛑 HALTING SCRIPT: {e}")
-                    break
+                if isinstance(e, SystemExit):
+                    raise e
                 print(f"  ⚠️ Critical loop failure for item '{ing.name}': {e}")
                 db.session.rollback()
                 
-            time.sleep(2) # 40 calls/minute constraint mapping
+            time.sleep(2) # Safe 2-second buffer
             
         print("\nAll Done.")
 
