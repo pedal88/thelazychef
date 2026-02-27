@@ -687,11 +687,12 @@
                 document.getElementById('insp-cat').textContent = i.main_category || '—';
                 document.getElementById('insp-recipes').textContent = i.recipe_count;
 
-                const sourceBadge = document.getElementById('insp-source');
                 if (i.data_source === 'edamam_rapidapi') {
                     sourceBadge.innerHTML = `<span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">RapidAPI</span>`;
                 } else if (i.data_source === 'edamam_enterprise') {
                     sourceBadge.innerHTML = `<span class="inline-flex items-center rounded-md bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-700/10">Enterprise</span>`;
+                } else if (i.data_source === 'ai_generated') {
+                    sourceBadge.innerHTML = `<span class="inline-flex items-center rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/10">AI Generated</span>`;
                 } else {
                     sourceBadge.innerHTML = `<span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">Placeholder</span>`;
                 }
