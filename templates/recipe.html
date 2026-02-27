@@ -126,6 +126,7 @@
                     <h2 class="text-sm font-black border-b-[3px] border-black pb-0.5 mb-1 tracking-tighter">Nutrition
                         Facts</h2>
                     <div class="font-bold border-b border-black pb-0.5 mb-1">Amount Per Serving</div>
+                    {% set base_srv = recipe.base_servings|default(4) %}
                     <div class="flex justify-between items-end border-b-[3px] border-black py-0.5">
                         <span class="font-bold text-xs">Calories</span>
                         <span class="font-black text-sm leading-none">{{ ((recipe.total_calories or 0) /
