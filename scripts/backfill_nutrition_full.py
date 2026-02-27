@@ -119,6 +119,7 @@ def main():
                     ing.cholesterol_mg_per_100g = result['cholesterol']
                     ing.calcium_mg_per_100g = result['calcium']
                     ing.potassium_mg_per_100g = result['potassium']
+                    ing.data_source = 'edamam_rapidapi'
                     
                     db.session.add(ing)
                     db.session.commit() # Commit after every successful ingredient

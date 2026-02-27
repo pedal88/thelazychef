@@ -107,6 +107,7 @@ class Ingredient(db.Model):
     # Payload (Flattened)
     image_url: Mapped[str] = mapped_column(String, nullable=True)
     image_prompt: Mapped[str] = mapped_column(Text, nullable=True)
+    data_source: Mapped[str] = mapped_column(String(50), nullable=False, default='placeholder', server_default='placeholder')
 
     # Nutrition Columns
     calories_per_100g: Mapped[float] = mapped_column(Float, nullable=True)

@@ -196,6 +196,7 @@ def inspect_ingredient(ing_id: int):
             "fiber_per_100g": ing.fiber_per_100g,
             "sugar_per_100g": ing.sugar_per_100g,
             "sodium_mg_per_100g": ing.sodium_mg_per_100g,
+            "data_source": ing.data_source,
             "recipe_count": recipe_count,
         },
     })
