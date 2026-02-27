@@ -6,16 +6,15 @@ from app import app
 from database.models import db, Ingredient
 
 def fetch_edamam_data(ingredient_name, default_unit):
-    # Sanitize the name by removing everything in parentheses
+    # Sanitize the name: Strip parentheses from ingredient names
     clean_name = re.sub(r'\(.*?\)', '', ingredient_name).strip()
     
     query_unit = default_unit
     query_amount = 1
     
-    # Normalize grams/ml to 100 for sufficient API mapping volume
+    # 100g RECALIBRATION: Normalize volume queries to 100 multipliers
     if default_unit.lower() in ['g', 'gram', 'grams', 'ml', 'milliliter', 'milliliters']:
         query_amount = 100
-        # Expand abbreviations for Edamam's parsing engine
         query_unit = 'grams' if default_unit.lower().startswith('g') else 'milliliters'
         
     if default_unit.lower() in ['unit', 'units', 'pcs', 'piece', 'pieces']:
@@ -35,22 +34,33 @@ def fetch_edamam_data(ingredient_name, default_unit):
     try:
         response = requests.get(url, headers=headers, params=params, timeout=10)
         
-        if response.status_code == 200:
-            data = response.json()
+        # RATE LIMIT HIT
+        if response.status_code == 429:
+            print(f"\n  🛑 RATE LIMIT HIT (HTTP 429). Exiting safely.")
+            sys.exit(1)
             
-            # The RapidAPI payload has totalWeight and totalNutrients at the root!
+        if response.status_code == 200:
+            try:
+                data = response.json()
+            except Exception as json_err:
+                # Catch JSON parsing to skip unmappable items without crashing
+                print(f"  ⚠️ JSON Parse Error: {json_err}")
+                return None
+            
+            # ARCHITECTURAL OVERRIDE: RapidAPI flattens the response structure.
+            # It DOES NOT return `data['ingredients'][0]['parsed']` like the free tier does. 
+            # We MUST use `totalWeight` and `totalNutrients` at the root layer.
             total_returned_weight = data.get('totalWeight')
             
             if total_returned_weight and total_returned_weight > 0:
                 nutrients = data.get('totalNutrients', {})
                 
-                # Helper to calculate per 100g 
+                # Normalize ALL macros to 'per 100g' using: (nutrient_quantity / weight) * 100
                 def per_100g(key):
                     val = nutrients.get(key, {}).get('quantity', 0)
                     return (val / total_returned_weight) * 100
                 
                 # Actual weight per physical 1 unit
-                # If queried 100g/ml, avg_weight = total_returned_weight / 100 (which is 1.0 if total_returned_weight == 100.0)
                 avg_weight = total_returned_weight / query_amount
                 
                 return {
@@ -69,9 +79,6 @@ def fetch_edamam_data(ingredient_name, default_unit):
                 }
             else:
                 return None
-        elif response.status_code == 429:
-            print(f"\n  🛑 HALTING SCRIPT: RapidAPI Limit Reached (HTTP 429)")
-            sys.exit(1)
         else:
             return None
     except Exception as e:
@@ -82,6 +89,7 @@ def fetch_edamam_data(ingredient_name, default_unit):
 
 def main():
     with app.app_context():
+        # Only query items that haven't been successfully evaluated
         targets = db.session.query(Ingredient).filter(
             Ingredient.average_g_per_unit.is_(None)
         ).all()
@@ -90,9 +98,7 @@ def main():
         print(f"--- Starting RapidAPI Hydration for {total} Pantry Items ---")
         
         for idx, ing in enumerate(targets, 1):
-            # Safe skip if no default unit is assigned
             if not ing.default_unit:
-                print(f"[{idx}/{total}] Skipping '{ing.name}' (No default unit)")
                 continue
                 
             print(f"[{idx}/{total}] GET {ing.default_unit} {ing.name}...")
@@ -115,17 +121,18 @@ def main():
                     ing.potassium_mg_per_100g = result['potassium']
                     
                     db.session.add(ing)
-                    db.session.commit()
+                    db.session.commit() # Commit after every successful ingredient
                     print(f"  ✓ Saved! avg_g_per_unit={result['weight']:.2f} | {result['calories']:.1f} kcal/100g")
                 else:
                     print(f"  ❌ Unmapped by Edamam.")
             except Exception as e:
                 if isinstance(e, SystemExit):
-                    raise e
+                    sys.exit(1)
                 print(f"  ⚠️ Critical loop failure for item '{ing.name}': {e}")
                 db.session.rollback()
                 
-            time.sleep(0.5) # Fast 0.5-second buffer for RapidAPI
+            # MAX SPEED: 0.5s Buffer
+            time.sleep(0.5) 
             
         print("\nAll Done.")
 
