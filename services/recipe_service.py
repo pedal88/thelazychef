@@ -204,7 +204,7 @@ def process_recipe_workflow(recipe_data, query_context: str, chef_id: str) -> di
         taste_level=getattr(recipe_data, 'taste_level', None),
         prep_time_mins=getattr(recipe_data, 'prep_time_mins', None),
         cleanup_factor=getattr(recipe_data, 'cleanup_factor', None) or 3,
-        source_input=query_context,
+        source_input=(query_context or '')[:500],
         source_type=source_type,
     )
     db.session.add(new_recipe)
