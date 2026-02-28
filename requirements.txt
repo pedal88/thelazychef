@@ -14,6 +14,7 @@ pg8000
 cloud-sql-python-connector[pg8000]
 flask-sqlalchemy
 Pillow
+pillow-heif
 yt-dlp
 flask-migrate
 thefuzz

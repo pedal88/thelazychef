@@ -87,8 +87,8 @@
                 </span>
             </a>
 
-            <!-- Links -->
-            <div class="flex items-center gap-6 text-sm font-medium text-slate-600">
+            <!-- Desktop Links (hidden on mobile) -->
+            <div class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
                 <a href="/" class="hover:text-orange-600 transition-colors">Discover</a>
 
                 <!-- Recipes Dropdown -->
@@ -200,7 +200,87 @@
                     Started</a>
                 {% endif %}
             </div>
+
+            <!-- Hamburger button (mobile only) -->
+            <button id="mobile-menu-btn"
+                class="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-orange-600 transition-colors focus:outline-none"
+                aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+                <!-- Hamburger icon -->
+                <svg id="hamburger-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+                <!-- Close icon (hidden by default) -->
+                <svg id="hamburger-close" class="hidden w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
         </nav>
+
+        <!-- Mobile Menu Panel (hidden by default) -->
+        <div id="mobile-menu" class="hidden md:hidden border-t border-slate-100 bg-white shadow-lg">
+            <div class="px-4 py-4 space-y-1 text-sm font-medium text-slate-700">
+                <a href="/" class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">Discover</a>
+                <a href="/recipes" class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">All
+                    Recipes</a>
+                <a href="{{ url_for('collections_index') }}"
+                    class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">Collections</a>
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('saved_recipes_view') }}"
+                    class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">💚 Saved Recipes</a>
+                <a href="{{ url_for('queue.next_recipes_view') }}"
+                    class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">🍳 Cook Next</a>
+                {% endif %}
+                <a href="/become-a-chef"
+                    class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">Become a Chef</a>
+                <a href="/ingredients"
+                    class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">Ingredients</a>
+                {% if current_user.is_authenticated %}
+                {% if current_user.is_admin %}
+                <div class="border-t border-slate-100 pt-2 mt-2">
+                    <p class="px-3 py-1 text-xs font-semibold text-slate-400 uppercase tracking-wider">Admin</p>
+                    <a href="/new-recipe" class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">🍳
+                        New Recipe</a>
+                    <a href="/admin/bulk-generate"
+                        class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">🚀 Bulk Generate</a>
+                    <a href="/admin/recipes-management"
+                        class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">📋 Recipes
+                        Management</a>
+                    <a href="{{ url_for('admin_resources_list') }}"
+                        class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">📚 Manage
+                        Resources</a>
+                </div>
+                {% endif %}
+                <div class="border-t border-slate-100 pt-2 mt-2 flex items-center justify-between px-3">
+                    <span class="text-xs text-slate-400 truncate">{{ current_user.email }}</span>
+                    <a href="{{ url_for('logout') }}" class="text-sm text-orange-600 font-semibold">Logout</a>
+                </div>
+                {% else %}
+                <div class="border-t border-slate-100 pt-2 mt-2 flex gap-3 px-3">
+                    <a href="{{ url_for('login') }}"
+                        class="flex-1 text-center py-2 rounded-lg border border-slate-200 hover:bg-slate-50">Login</a>
+                    <a href="{{ url_for('register') }}"
+                        class="flex-1 text-center py-2 rounded-full bg-orange-600 text-white font-semibold hover:bg-orange-700">Get
+                        Started</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <script>
+                (function () {
+                    const btn = document.getElementById('mobile-menu-btn');
+                    const menu = document.getElementById('mobile-menu');
+                    const iconOpen = document.getElementById('hamburger-icon');
+                    const iconClose = document.getElementById('hamburger-close');
+                    btn.addEventListener('click', () => {
+                        const isOpen = !menu.classList.contains('hidden');
+                        menu.classList.toggle('hidden', isOpen);
+                        iconOpen.classList.toggle('hidden', !isOpen);
+                        iconClose.classList.toggle('hidden', isOpen);
+                        btn.setAttribute('aria-expanded', String(!isOpen));
+                    });
+                })();
+        </script>
     </header>
 
     <!-- Main Content -->
@@ -446,10 +526,17 @@
             fetch(`/api/queue/add/${recipeId}`, { method: 'POST' })
                 .then(r => r.json())
                 .then(data => {
-                    const msg = data.already_queued ? 'Already in your queue!' : 'Added to Cook Next queue!';
-                    if (data.success && !data.already_queued && btnEl) {
-                        btnEl.classList.remove('text-slate-400');
-                        btnEl.classList.add('text-orange-500');
+                    if (!data.success) return;
+                    const removed = data.action === 'removed';
+                    const msg = removed ? 'Removed from Cook Next queue' : 'Added to Cook Next queue!';
+                    if (btnEl) {
+                        if (removed) {
+                            btnEl.classList.remove('text-orange-500');
+                            btnEl.classList.add('text-slate-400');
+                        } else {
+                            btnEl.classList.remove('text-slate-400');
+                            btnEl.classList.add('text-orange-500');
+                        }
                     }
                     const toast = document.getElementById('global-queue-toast');
                     document.getElementById('global-queue-toast-msg').textContent = msg;
