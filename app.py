@@ -14,10 +14,11 @@ from flask_migrate import Migrate
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 import markdown
 from database.db_connector import configure_database
-from database.models import db, Ingredient, Recipe, Instruction, RecipeIngredient, RecipeMealType, RecipeDiet, User, Resource, resource_relations, Chef, UserRecipeInteraction, RecipeEvaluation, RecipeCollection, CollectionItem
+from database.models import db, Ingredient, Recipe, Instruction, RecipeIngredient, RecipeMealType, RecipeDiet, User, Resource, resource_relations, Chef, UserRecipeInteraction, RecipeEvaluation, RecipeCollection, CollectionItem, UserQueue
 from utils.decorators import admin_required
 from sqlalchemy import or_, func
 from sqlalchemy.orm import joinedload
+from sqlalchemy.orm.attributes import flag_modified
 from services.pantry_service import get_slim_pantry_context
 from ai_engine import generate_recipe_ai, get_pantry_id, get_top_pantry_suggestions, chefs_data, generate_recipe_from_web_text, analyze_ingredient_ai, extract_nutrients_from_text, load_controlled_vocabularies
 from services.recipe_service import process_recipe_workflow, STATUS_SUCCESS, STATUS_MISSING
@@ -368,71 +369,153 @@ def handle_interaction(recipe_id):
     db.session.commit()
     return jsonify({'success': True})
 
+
+@app.route('/api/interactions/recipe/<int:recipe_id>/made', methods=['PATCH'])
+@login_required
+def toggle_made(recipe_id):
+    """Toggle the is_made flag on an existing interaction (must already be a favorite)."""
+    interaction = db.session.get(UserRecipeInteraction, (current_user.id, recipe_id))
+    if not interaction:
+        # Create a minimal interaction so we can track made status
+        interaction = UserRecipeInteraction(
+            user_id=current_user.id,
+            recipe_id=recipe_id,
+            status='pass',  # Not a favorite, just cooked
+            is_super_like=False
+        )
+        db.session.add(interaction)
+
+    interaction.is_made = not interaction.is_made
+    db.session.commit()
+    return jsonify({'success': True, 'is_made': interaction.is_made})
+
+
+@app.route('/api/interactions/recipe/<int:recipe_id>/feedback', methods=['POST'])
+@login_required
+def save_feedback(recipe_id):
+    """Save user feedback: star rating, comment, and optional photo uploads.
+
+    Accepts JPG, PNG, GIF, WEBP, and HEIC/HEIF (Apple iPhone format).
+    HEIC files are converted to JPEG before storage because browsers
+    cannot natively render HEIC.
+    """
+    # Register HEIF/HEIC support into Pillow (idempotent; safe to call each request)
+    import pillow_heif
+    pillow_heif.register_heif_opener()
+    from PIL import Image as PilImage
+
+    # Get or create interaction
+    interaction = db.session.get(UserRecipeInteraction, (current_user.id, recipe_id))
+    if not interaction:
+        interaction = UserRecipeInteraction(
+            user_id=current_user.id,
+            recipe_id=recipe_id,
+            status='pass',
+            is_super_like=False
+        )
+        db.session.add(interaction)
+
+    # Update feedback fields
+    rating_raw = request.form.get('rating')
+    if rating_raw and rating_raw.isdigit():
+        rating_int = int(rating_raw)
+        if 1 <= rating_int <= 5:
+            interaction.rating = rating_int
+
+    comment_raw = request.form.get('comment', '').strip()
+    if comment_raw:
+        interaction.comment = comment_raw
+
+    # Handle photo uploads
+    ALLOWED_EXTS = {'jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif'}
+    HEIC_EXTS    = {'heic', 'heif'}
+
+    # `keep_photos` is a JSON list of previously saved URLs the user chose to keep.
+    # If the client sends it, use it as the base. This allows photo deletion:
+    # the frontend simply omits the deleted URL from keep_photos.
+    # If not sent (e.g. old clients), fall back to the full existing list.
+    import json as _json
+    keep_raw = request.form.get('keep_photos')
+    if keep_raw is not None:
+        try:
+            base_urls: list[str] = _json.loads(keep_raw)
+            # Sanity-check: only keep URLs that were actually in the stored list
+            stored = set(interaction.user_photos or [])
+            base_urls = [u for u in base_urls if u in stored]
+        except (ValueError, TypeError):
+            base_urls = list(interaction.user_photos or [])
+    else:
+        base_urls = list(interaction.user_photos or [])
+
+    new_urls: list[str] = base_urls
+    photos = request.files.getlist('photos')
+
+    for photo in photos[:5]:  # Cap at 5 new uploads per submission
+        if not photo or not photo.filename:
+            continue
+        ext = photo.filename.rsplit('.', 1)[-1].lower()
+        if ext not in ALLOWED_EXTS:
+            continue
+
+        file_bytes = photo.read()
+
+        # Convert HEIC/HEIF → JPEG so browsers can display the result
+        if ext in HEIC_EXTS:
+            try:
+                img = PilImage.open(io.BytesIO(file_bytes))
+                buf = io.BytesIO()
+                img.convert('RGB').save(buf, format='JPEG', quality=90)
+                file_bytes = buf.getvalue()
+                ext = 'jpg'
+            except Exception as e:
+                print(f"HEIC conversion error for {photo.filename}: {e}")
+                continue
+
+        filename = f"user_{current_user.id}_recipe_{recipe_id}_{uuid.uuid4().hex[:8]}.{ext}"
+        try:
+            url = storage_provider.save(file_bytes, filename, 'user_uploads')
+            new_urls.append(url)
+        except Exception as e:
+            print(f"Photo upload error: {e}")
+
+    interaction.user_photos = new_urls
+    flag_modified(interaction, 'user_photos')  # Force SQLAlchemy to dirty-track JSON column
+    db.session.commit()
+    return jsonify({'success': True})
+
+
+@app.route('/api/interactions/recipe/<int:recipe_id>', methods=['GET'])
+@login_required
+def get_interaction(recipe_id):
+    """Returns stored interaction data for the current user + recipe.
+    
+    Used by the feedback drawer to pre-populate rating, comment, and photos.
+    """
+    interaction = db.session.get(UserRecipeInteraction, (current_user.id, recipe_id))
+    if not interaction:
+        return jsonify({
+            'exists': False,
+            'rating': None,
+            'comment': None,
+            'user_photos': [],
+            'is_made': False,
+        })
+    return jsonify({
+        'exists': True,
+        'rating': interaction.rating,
+        'comment': interaction.comment or '',
+        'user_photos': interaction.user_photos or [],
+        'is_made': interaction.is_made,
+        'is_super_like': interaction.is_super_like,
+    })
+
+
 @app.route('/saved-recipes')
 @login_required
 def saved_recipes_view():
-    """Renders the user's saved recipes."""
-    # Re-use the recipes_list template but with a constrained query
-    # Get favorites ordered by saved_at (descending)
+    """Legacy route: Redirects to the unified library view."""
+    return redirect(url_for('recipes_list', view='saved'))
     
-    stmt = (
-        db.select(Recipe, UserRecipeInteraction)
-        .join(UserRecipeInteraction)
-        .where(
-            UserRecipeInteraction.user_id == current_user.id,
-            UserRecipeInteraction.status == 'favorite',
-            Recipe.status == 'approved'  # Rejected recipes silently disappear from favorites
-        )
-        .order_by(
-            UserRecipeInteraction.is_super_like.desc(),
-            UserRecipeInteraction.timestamp.desc()
-        )
-    )
-    
-    results = db.session.execute(stmt).all()
-    recipes = []
-    for r, interaction in results:
-        r.is_super_liked = interaction.is_super_like
-        recipes.append(r)
-    
-    # Reuse filter options logic
-    cuisine_options = load_json_option('post_processing/cuisines.json', 'cuisines')
-    diet_options = load_json_option('constraints/diets.json', 'diets')
-    difficulty_options = load_json_option('constraints/difficulty.json', 'difficulty')
-    
-    pt_data = load_json_option('constraints/main_protein.json', 'protein_types')
-    protein_options = []
-    for p in pt_data:
-        if 'examples' in p:
-            protein_options.extend(p['examples'])
-    protein_options = sorted(list(set(protein_options)))
-    
-    mt_data = load_json_option('constraints/meal_types.json', 'meal_classification')
-    meal_type_options = []
-    if isinstance(mt_data, dict):
-        for category_list in mt_data.values():
-            if isinstance(category_list, list):
-                meal_type_options.extend(category_list)
-    meal_type_options = sorted(list(set(meal_type_options)))
-
-    return render_template(
-        'recipes_list.html', 
-        recipes=recipes,
-        page_title="My Cookbook",
-        page_subtitle="Your personal collection of favorite recipes.",
-        # Options
-        cuisine_options=sorted(cuisine_options),
-        diet_options=sorted(diet_options),
-        difficulty_options=difficulty_options,
-        protein_options=sorted(protein_options),
-        meal_type_options=meal_type_options,
-        # Default Empty Selections
-        selected_cuisines=[],
-        selected_diets=[],
-        selected_meal_types=[],
-        selected_difficulties=[],
-        selected_proteins=[]
-    )
 
 
 # PHOTOGRAPHER ROUTES
@@ -966,23 +1049,64 @@ def recipes_list():
     selected_difficulties = request.args.getlist('difficulty')
     selected_proteins = request.args.getlist('protein_type')
 
-    # 3. Build Filtered Query — public route; only approved recipes surfaced
-    stmt = db.select(Recipe).where(Recipe.status == 'approved').order_by(Recipe.id.desc())
-
-    if selected_cuisines:
-        stmt = stmt.where(Recipe.cuisine.in_(selected_cuisines))
+    # 3. Handle View Mode & Base Query
+    view_mode = request.args.get('view', 'discover')
     
-    if selected_diets:
+    # Session Persistence for View Style
+    if 'style' in request.args:
+        from flask import session
+        session['view_style'] = request.args.get('style')
+        
+    # Get current style from session or default to grid
+    from flask import session
+    view_style = session.get('view_style', 'grid')
+
+    if view_mode == 'saved' and current_user.is_authenticated:
+        # Base query for Saved Recipes
+        stmt = (
+            db.select(Recipe, UserRecipeInteraction)
+            .join(UserRecipeInteraction)
+            .where(
+                UserRecipeInteraction.user_id == current_user.id,
+                UserRecipeInteraction.status == 'favorite',
+                Recipe.status == 'approved'
+            )
+            .order_by(
+                UserRecipeInteraction.is_super_like.desc(),
+                UserRecipeInteraction.timestamp.desc()
+            )
+        )
+    elif view_mode == 'next' and current_user.is_authenticated:
+        # Base query for Queue
+        from database.models import UserQueue
+        stmt = (
+            db.select(Recipe, UserQueue)
+            .join(UserQueue)
+            .where(
+                UserQueue.user_id == current_user.id,
+                Recipe.status == 'approved'
+            )
+            .order_by(UserQueue.position.asc())
+        )
+    else:
+        # Default Discover query
+        view_mode = 'discover'
+        stmt = db.select(Recipe).where(Recipe.status == 'approved').order_by(Recipe.id.desc())
+
+    # 4. Apply Filters — only when the user has chosen a STRICT SUBSET of the available options.
+    # The default "select all" state should not restrict results at all.
+    # Using .any() with a full option list would exclude recipes that have NO tags,
+    # which is incorrect for newly added recipes that lack meal_types or diets.
+    if selected_cuisines and len(selected_cuisines) < len(cuisine_options):
+        stmt = stmt.where(Recipe.cuisine.in_(selected_cuisines))
+
+    if selected_diets and len(selected_diets) < len(diet_options):
         stmt = stmt.where(Recipe.diets.any(RecipeDiet.diet.in_(selected_diets)))
 
     if selected_difficulties:
         stmt = stmt.where(Recipe.difficulty.in_(selected_difficulties))
 
     if selected_proteins:
-        # Filter by INGREDIENTS that match the selected protein names
-        # We join to RecipeIngredient -> Ingredient and check for partial matches
-        # or exact matches to the protein examples.
-        # Since 'Beef' might match 'Ground Beef', ILIKE is good.
         clauses = []
         for p in selected_proteins:
             clauses.append(Recipe.ingredients.any(
@@ -991,15 +1115,32 @@ def recipes_list():
         if clauses:
              stmt = stmt.where(or_(*clauses))
 
-    if selected_meal_types:
-        # Filter by related RecipeMealType
-        # We want recipes that have ANY of the selected tags
+    if selected_meal_types and len(selected_meal_types) < len(meal_type_options):
         stmt = stmt.where(Recipe.meal_types.any(RecipeMealType.meal_type.in_(selected_meal_types)))
 
-    recipes = db.session.execute(stmt).scalars().all()
+    # Fetch results
+    results = db.session.execute(stmt).all()
+    
+    recipes = []
+    if view_mode in ['saved', 'next']:
+        for item in results:
+            r = item[0]
+            # Attach interaction data to recipe object for template
+            if view_mode == 'saved':
+                interaction = item[1]
+                r.is_super_liked = interaction.is_super_like
+                r.interaction = interaction
+            elif view_mode == 'next':
+                queue_item = item[1]
+                r.queue_position = queue_item.position
+            recipes.append(r)
+    else:
+        recipes = [item[0] for item in results]
 
     return render_template('recipes_list.html', 
                          recipes=recipes,
+                         current_view=view_mode,
+                         view_style=view_style,
                          cuisine_options=sorted(cuisine_options),
                          diet_options=sorted(diet_options),
                          difficulty_options=difficulty_options,
@@ -2698,28 +2839,54 @@ def delete_recipe_api(recipe_id):
 @login_required
 @admin_required
 def delete_bulk_recipes():
-    data = request.get_json()
+    """Permanently delete one or more recipes and all their child records.
+
+    Uses SQLAlchemy ORM delete() + .in_() rather than raw text() SQL because
+    pg8000 cannot bind a Python tuple as a single IN-list parameter.
+    SQLAlchemy expands the IN list correctly for every driver.
+    """
+    from sqlalchemy import delete as sql_delete
+
+    data = request.get_json(silent=True) or {}
     recipe_ids = data.get('recipe_ids', [])
-    
+
     if not recipe_ids or not isinstance(recipe_ids, list):
         return jsonify({'success': False, 'error': 'No valid recipe IDs provided'}), 400
-        
+
     try:
-        deleted_count = 0
-        statement = db.select(Recipe).where(Recipe.id.in_(recipe_ids))
-        recipes_to_delete = db.session.execute(statement).scalars().all()
-        
-        for recipe in recipes_to_delete:
-            db.session.delete(recipe)
-            deleted_count += 1
-                
+        recipe_ids = [int(rid) for rid in recipe_ids]
+    except (ValueError, TypeError) as e:
+        return jsonify({'success': False, 'error': f'Invalid recipe ID: {e}'}), 400
+
+    if not recipe_ids:
+        return jsonify({'success': False, 'error': 'No valid integer IDs after parsing'}), 400
+
+    try:
+        # Delete child tables in FK-safe order (children before parent).
+        # ORM delete() + .in_() lets SQLAlchemy build the correct parameterized
+        # IN clause regardless of driver (pg8000, psycopg2, etc.).
+        db.session.execute(sql_delete(UserRecipeInteraction).where(UserRecipeInteraction.recipe_id.in_(recipe_ids)))
+        db.session.execute(sql_delete(UserQueue).where(UserQueue.recipe_id.in_(recipe_ids)))
+        db.session.execute(sql_delete(RecipeIngredient).where(RecipeIngredient.recipe_id.in_(recipe_ids)))
+        db.session.execute(sql_delete(Instruction).where(Instruction.recipe_id.in_(recipe_ids)))
+        db.session.execute(sql_delete(RecipeEvaluation).where(RecipeEvaluation.recipe_id.in_(recipe_ids)))
+        db.session.execute(sql_delete(RecipeMealType).where(RecipeMealType.recipe_id.in_(recipe_ids)))
+        db.session.execute(sql_delete(RecipeDiet).where(RecipeDiet.recipe_id.in_(recipe_ids)))
+        db.session.execute(sql_delete(CollectionItem).where(CollectionItem.recipe_id.in_(recipe_ids)))
+
+        # Delete parent recipes last
+        result = db.session.execute(sql_delete(Recipe).where(Recipe.id.in_(recipe_ids)))
+        deleted_count = result.rowcount
         db.session.commit()
-        # Flash message for redirected page load, but we usually handle via JS
-        return jsonify({'success': True, 'count': deleted_count, 'message': f"Deleted {deleted_count} recipes."})
-        
+
+        print(f"[Bulk Delete] Deleted {deleted_count} recipes: {recipe_ids}")
+        return jsonify({'success': True, 'count': deleted_count,
+                        'message': f"Deleted {deleted_count} recipes."})
+
     except Exception as e:
         db.session.rollback()
-        print(f"Bulk Delete Error: {e}")
+        import traceback
+        print(f"[Bulk Delete ERROR] {e}\n{traceback.format_exc()}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/cms/upload-image', methods=['POST'])

@@ -27,17 +27,9 @@ queue_bp = Blueprint("queue", __name__)
 @queue_bp.route("/next-recipes")
 @login_required
 def next_recipes_view() -> str:
-    """Renders the user's prioritized Cook Next queue page."""
-    queue_entries = (
-        db.session.execute(
-            db.select(UserQueue)
-            .where(UserQueue.user_id == current_user.id)
-            .order_by(UserQueue.position.asc())
-        )
-        .scalars()
-        .all()
-    )
-    return render_template("next_recipes.html", queue_entries=queue_entries)
+    """Legacy route: Redirects to the unified library view."""
+    from flask import redirect, url_for
+    return redirect(url_for('recipes_list', view='next'))
 
 
 # ---------------------------------------------------------------------------
@@ -47,19 +39,14 @@ def next_recipes_view() -> str:
 @queue_bp.route("/api/queue/add/<int:recipe_id>", methods=["POST"])
 @login_required
 def queue_add(recipe_id: int):
-    """
-    Idempotently appends a recipe to the current user's queue.
+    """Toggle a recipe in the current user's queue.
 
-    If the recipe is already in the queue, returns a 200 with 'already_queued'
-    set to True — no error is raised.
-
-    Args:
-        recipe_id: The primary key of the Recipe to add.
+    If the recipe is NOT in the queue it is added (appended to the end).
+    If it IS already in the queue it is REMOVED — acting as a de-queue.
 
     Returns:
-        JSON with keys: success (bool), already_queued (bool).
+        JSON with keys: success (bool), action ('added' | 'removed').
     """
-    # Verify the recipe exists and is published
     recipe = db.session.get(Recipe, recipe_id)
     if not recipe:
         abort(404)
@@ -72,9 +59,12 @@ def queue_add(recipe_id: int):
     ).scalars().first()
 
     if existing:
-        return jsonify(success=True, already_queued=True)
+        # Already queued → remove it
+        db.session.delete(existing)
+        db.session.commit()
+        return jsonify(success=True, action='removed')
 
-    # Determine the next position (max + 1)
+    # Not queued → add at the end
     max_pos_result = db.session.execute(
         db.select(func.max(UserQueue.position)).where(UserQueue.user_id == current_user.id)
     ).scalar()
@@ -89,7 +79,7 @@ def queue_add(recipe_id: int):
     db.session.add(entry)
     db.session.commit()
 
-    return jsonify(success=True, already_queued=False)
+    return jsonify(success=True, action='added')
 
 
 # ---------------------------------------------------------------------------

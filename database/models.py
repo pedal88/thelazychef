@@ -31,6 +31,12 @@ class UserRecipeInteraction(db.Model):
     status: Mapped[str] = mapped_column(String, nullable=False) # "pass", "favorite"
     is_super_like: Mapped[bool] = mapped_column(Boolean, default=False)
     timestamp: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)
+    
+    # New Unified Recipe Library Fields
+    is_made: Mapped[bool] = mapped_column(Boolean, default=False, server_default='0')
+    rating: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    comment: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    user_photos: Mapped[list] = mapped_column(JSON, default=list, server_default='[]')
 
     user: Mapped["User"] = relationship(back_populates="interactions")
     recipe: Mapped["Recipe"] = relationship(back_populates="interactions")
