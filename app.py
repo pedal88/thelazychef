@@ -1957,6 +1957,52 @@ def update_ingredient_data_api():
         print(f"Update Ing Data Error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/explore/galaxy')
+def explore_galaxy():
+    """Renders the full-screen interactive D3 graph of all recipes."""
+    return render_template('explore_galaxy.html')
+
+@app.route('/api/graph/galaxy', methods=['GET'])
+def get_global_galaxy_graph():
+    """Returns nodes and links for ALL approved recipes linked to their cuisines & proteins."""
+    recipes = db.session.execute(
+        db.select(Recipe).where(Recipe.status == 'approved')
+    ).scalars().all()
+    
+    nodes_dict = {}
+    links = []
+    
+    for r in recipes:
+        # Add the recipe node itself
+        rec_id = f"recipe_{r.id}"
+        nodes_dict[rec_id] = {
+            'id': rec_id,
+            'name': r.title,
+            'group': 'recipe',
+            'image': get_recipe_image_url(r) if r.image_filename else None,
+            'url': url_for('recipe_detail', recipe_id=r.id)
+        }
+        
+        # Determine attributes
+        c_attr = r.cuisine
+        p_attr = r.protein_type
+        
+        # Link to Cuisine
+        if c_attr:
+            c_id = f"attr_cuisine_{c_attr}"
+            if c_id not in nodes_dict:
+                nodes_dict[c_id] = {'id': c_id, 'name': c_attr, 'group': 'cuisine'}
+            links.append({'source': rec_id, 'target': c_id, 'weight': 1.0})
+            
+        # Link to Protein
+        if p_attr:
+            p_id = f"attr_protein_{p_attr}"
+            if p_id not in nodes_dict:
+                nodes_dict[p_id] = {'id': p_id, 'name': p_attr, 'group': 'protein'}
+            links.append({'source': rec_id, 'target': p_id, 'weight': 1.0})
+
+    return jsonify({'nodes': list(nodes_dict.values()), 'links': links})
+
 @app.route('/api/graph/orbital/<int:recipe_id>', methods=['GET'])
 def get_orbital_graph(recipe_id):
     target = db.session.get(Recipe, recipe_id)

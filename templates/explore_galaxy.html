@@ -1,0 +1,564 @@
+{% extends "base.html" %}
+
+{% block title %}Flavor Galaxy Explorer{% endblock %}
+
+{% block head %}
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+    /* Remove body scroll since we want a full screen map under the navbar */
+    body {
+        overflow: hidden;
+    }
+
+    .link {
+        transition: stroke-opacity 0.2s;
+    }
+
+    .node circle {
+        transition: r 0.2s, fill 0.2s;
+    }
+
+    /* Apple-like neutral light-mode glows */
+    .glow-recipe {
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    }
+
+    .glow-cuisine {
+        filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.08));
+    }
+
+    .glow-protein {
+        filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.08));
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Use a wrapper that takes remaining height minus navbar -->
+<div class="relative w-full" style="height: calc(100vh - 64px);">
+
+    <!-- UI Overlay (Fixed inside the wrapper) -->
+    <div class="absolute top-0 left-0 right-0 p-4 flex justify-between items-start z-10 pointer-events-none">
+
+        <!-- Left: Branding & Search -->
+        <div class="pointer-events-auto w-full max-w-sm space-y-4">
+            <div class="bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl p-5 shadow-sm">
+                <h1 class="text-2xl font-semibold text-slate-900 tracking-tight mb-1 flex items-center gap-2">
+                    Flavor Galaxy
+                </h1>
+                <p class="text-sm text-slate-500 mb-4">Explore the culinary universe.</p>
+                <div class="relative">
+                    <input type="text" id="search-input" placeholder="Search a recipe to locate..."
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-4 pr-4 text-sm text-slate-900 focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 placeholder-slate-400">
+                    <div id="search-dropdown"
+                        class="hidden absolute top-full mt-2 w-full bg-white border border-slate-200 rounded-xl max-h-64 overflow-y-auto shadow-xl z-20">
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl p-2 shadow-sm inline-flex flex-col gap-1">
+                <button id="btn-recenter"
+                    class="flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-xl px-4 py-2 text-sm font-medium">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Center Map
+                </button>
+                <button id="btn-physics"
+                    class="flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-xl px-4 py-2 text-sm font-medium">
+                    <svg class="w-4 h-4" id="icon-pause" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span id="label-physics">Pause Physics</span>
+                </button>
+                <button id="btn-settings"
+                    class="flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-xl px-4 py-2 text-sm font-medium">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+                        </path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    Mechanics
+                </button>
+            </div>
+
+            <!-- Settings Panel -->
+            <div id="settings-panel"
+                class="hidden bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl p-5 shadow-sm text-sm space-y-4 transition-all">
+                <h3 class="font-semibold text-slate-800 border-b border-slate-100 pb-2">Galaxy Mechanics</h3>
+
+                <div>
+                    <label class="flex justify-between text-xs text-slate-500 mb-1">
+                        <span>Center Gravity (X/Y)</span> <span id="val-gravity">0.015</span>
+                    </label>
+                    <input type="range" id="slide-gravity" min="0" max="0.1" step="0.005" value="0.015"
+                        class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+                </div>
+                <div>
+                    <label class="flex justify-between text-xs text-slate-500 mb-1">
+                        <span>Repel Force</span> <span id="val-repel">-150</span>
+                    </label>
+                    <input type="range" id="slide-repel" min="-500" max="-10" step="10" value="-150"
+                        class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+                </div>
+                <div>
+                    <label class="flex justify-between text-xs text-slate-500 mb-1">
+                        <span>Link Distance</span> <span id="val-link-dist">1.0x</span>
+                    </label>
+                    <input type="range" id="slide-link-dist" min="0.2" max="3.0" step="0.1" value="1.0"
+                        class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+                </div>
+                <div>
+                    <label class="flex justify-between text-xs text-slate-500 mb-1">
+                        <span>Node Size</span> <span id="val-node-size">1.0x</span>
+                    </label>
+                    <input type="range" id="slide-node-size" min="0.2" max="3.0" step="0.1" value="1.0"
+                        class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+                </div>
+                <div>
+                    <label class="flex justify-between text-xs text-slate-500 mb-1">
+                        <span>Link Thickness</span> <span id="val-link-thick">1.5x</span>
+                    </label>
+                    <input type="range" id="slide-link-thick" min="0.1" max="5.0" step="0.1" value="1.5"
+                        class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+                </div>
+                <div>
+                    <label class="flex justify-between text-xs text-slate-500 mb-1">
+                        <span>Text Fade Scaling</span> <span id="val-zoom-fade">0.3</span>
+                    </label>
+                    <input type="range" id="slide-zoom-fade" min="0.0" max="1.0" step="0.05" value="0.3"
+                        class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Legend -->
+        <div
+            class="pointer-events-auto bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl p-4 shadow-sm text-xs w-48">
+            <h3 class="font-semibold text-slate-400 mb-3 uppercase tracking-wider text-[10px]">Legend</h3>
+            <div class="space-y-3">
+                <div class="flex items-center gap-3">
+                    <span class="w-3.5 h-3.5 rounded-full bg-slate-800 shadow-sm border border-slate-900"></span>
+                    <span class="text-slate-600 font-medium">Cuisine</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="w-3.5 h-3.5 rounded-full bg-slate-400 shadow-sm border border-slate-500"></span>
+                    <span class="text-slate-600 font-medium">Protein Type</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="w-3.5 h-3.5 rounded-full bg-white shadow-sm border border-slate-300"></span>
+                    <span class="text-slate-600 font-medium">Recipe</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graph Container -->
+    <div id="galaxy-container" class="w-full h-full bg-slate-50 relative cursor-grab active:cursor-grabbing">
+        <div id="loading"
+            class="absolute inset-0 flex items-center justify-center text-slate-400 text-sm font-medium animate-pulse">
+            Mapping connections...
+        </div>
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const container = document.getElementById('galaxy-container');
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+
+        let simulation, svg, g, zoom;
+        let nodesData = [], linksData = [];
+        let physicsEnabled = true;
+
+        // Mutable Configurations via UI
+        let cfg = {
+            gravity: 0.015,
+            repel: -150,
+            linkDist: 1.0,
+            nodeSize: 1.0,
+            linkThick: 1.5,
+            fadeStart: 0.3
+        };
+
+        // Apple-like neutral colors
+        const colorMap = {
+            'cuisine': '#1e293b', // slate-800
+            'protein': '#94a3b8', // slate-400
+            'recipe': '#ffffff'   // white
+        };
+
+        const radiusMap = {
+            'cuisine': 30,
+            'protein': 24,
+            'recipe': 14
+        };
+
+        const glowMap = {
+            'cuisine': 'glow-cuisine',
+            'protein': 'glow-protein',
+            'recipe': 'glow-recipe'
+        };
+
+        fetch('/api/graph/galaxy')
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('loading').remove();
+                nodesData = data.nodes;
+                linksData = data.links;
+                initGraph();
+                initSearch();
+            });
+
+        function initGraph() {
+            zoom = d3.zoom()
+                .scaleExtent([0.15, 3]) // limits zoom
+                .on('zoom', (event) => {
+                    g.attr('transform', event.transform);
+
+                    // TEXT FADE LOGIC: Map the scale to an opacity (0 out when zoomed out far)
+                    const scale = event.transform.k;
+                    // Scale fade start based on cfg
+                    let fadeOutPoint = cfg.fadeStart;
+                    let fullVisiblePoint = fadeOutPoint + 0.5;
+                    let textOpacity = (scale - fadeOutPoint) / (fullVisiblePoint - fadeOutPoint);
+                    textOpacity = Math.max(0, Math.min(1, textOpacity));
+
+                    // Apply to recipe texts only (keep cuisine/protein visible longer if desired, but here applying to all)
+                    g.selectAll('text').style('opacity', d => {
+                        // Cuisines/Proteins stay visible longer
+                        if (d.group !== 'recipe') {
+                            let catOpacity = (scale - 0.2) / (0.5 - 0.2);
+                            return Math.max(0, Math.min(1, catOpacity));
+                        }
+                        return textOpacity;
+                    });
+                });
+
+            svg = d3.select('#galaxy-container').append('svg')
+                .attr('width', width)
+                .attr('height', height)
+                .call(zoom);
+
+            g = svg.append('g');
+
+            // Force Physics Configuration
+            simulation = d3.forceSimulation(nodesData)
+                .velocityDecay(0.06)
+
+                // Link force: distance determines target length of lines. 
+                // Cuisines push farther away from each other to form distinct zones.
+                .force('link', d3.forceLink(linksData).id(d => d.id).distance(d => {
+                    let base = (d.source.group === 'cuisine' || d.target.group === 'cuisine') ? 160 : 90;
+                    return base * cfg.linkDist;
+                }))
+
+                // Repel force: negative strength pushes nodes apart. Keeps clusters breathing.
+                .force('charge', d3.forceManyBody().strength(() => cfg.repel))
+
+                // Centering force
+                .force('center', d3.forceCenter(width / 2, height / 2))
+
+                // Collide force prevents physical overlaps
+                .force('collide', d3.forceCollide().radius(d => (radiusMap[d.group] * cfg.nodeSize) + 8).iterations(2))
+
+                // Gentle X/Y gravitation to stop the network expanding indefinitely
+                .force('x', d3.forceX(width / 2).strength(() => cfg.gravity))
+                .force('y', d3.forceY(height / 2).strength(() => cfg.gravity));
+
+            const link = g.append('g')
+                .attr('stroke', '#cbd5e1') // slate-300 connecting lines
+                .attr('stroke-opacity', 0.6)
+                .selectAll('line')
+                .data(linksData)
+                .join('line')
+                .attr('stroke-width', d => Math.sqrt(d.weight) * cfg.linkThick) // Link thickness
+                .attr('class', 'link');
+
+            const nodeGroup = g.append('g')
+                .selectAll('.node')
+                .data(nodesData)
+                .join('g')
+                .attr('class', 'node cursor-pointer')
+                .on('click', (event, d) => {
+                    if (d.group === 'recipe' && d.url) {
+                        window.open(d.url, '_blank');
+                    }
+                })
+                .call(d3.drag()
+                    .on('start', dragstarted)
+                    .on('drag', dragged)
+                    .on('end', dragended));
+
+            // Base circles
+            nodeGroup.append('circle')
+                .attr('r', d => radiusMap[d.group] * cfg.nodeSize) // Node Size 
+                .attr('fill', d => colorMap[d.group])
+                .attr('class', d => glowMap[d.group])
+                .attr('stroke', d => d.group === 'recipe' ? '#cbd5e1' : 'transparent') // border for white recipe nodes
+                .attr('stroke-width', 1.5);
+
+            // Images logic (only for recipes)
+            nodeGroup.filter(d => d.image)
+                .append('image')
+                .attr('href', d => d.image)
+                .attr('x', d => -(radiusMap[d.group] * cfg.nodeSize))
+                .attr('y', d => -(radiusMap[d.group] * cfg.nodeSize))
+                .attr('width', d => (radiusMap[d.group] * cfg.nodeSize) * 2)
+                .attr('height', d => (radiusMap[d.group] * cfg.nodeSize) * 2)
+                .attr('clip-path', d => `circle(${radiusMap[d.group] * cfg.nodeSize}px at ${radiusMap[d.group] * cfg.nodeSize}px ${radiusMap[d.group] * cfg.nodeSize}px)`);
+
+            // Text configuration
+            nodeGroup.append('text')
+                .attr('dy', d => (radiusMap[d.group] * cfg.nodeSize) + 16)
+                .attr('text-anchor', 'middle')
+                .text(d => d.name)
+                .attr('fill', '#475569') // slate-600 text
+                .style('font-size', d => d.group === 'recipe' ? '12px' : '14px')
+                .style('font-weight', d => d.group === 'recipe' ? '500' : '600')
+                .style('font-family', 'Inter, sans-serif')
+                .style('pointer-events', 'none')
+                .style('text-shadow', '0 2px 4px rgba(255,255,255,0.8)'); // white shadow for readability
+
+            nodeGroup.on('mouseover', function (event, d) {
+                nodeGroup.style('opacity', 0.2);
+                link.style('stroke-opacity', 0.1);
+
+                const connected = new Set([d.id]);
+                link.filter(l => l.source.id === d.id || l.target.id === d.id)
+                    .style('stroke-opacity', 1)
+                    .style('stroke', '#64748b') // slate-500 hover stroke
+                    .each(l => {
+                        connected.add(l.source.id);
+                        connected.add(l.target.id);
+                    });
+
+                nodeGroup.filter(n => connected.has(n.id))
+                    .style('opacity', 1)
+                    .select('circle')
+                    .attr('stroke', '#94a3b8');
+
+                d3.select(this).raise();
+            })
+                .on('mouseout', function () {
+                    nodeGroup.style('opacity', 1)
+                        .select('circle')
+                        .attr('stroke', d => d.group === 'recipe' ? '#cbd5e1' : 'transparent');
+                    link.style('stroke-opacity', 0.6).style('stroke', '#cbd5e1');
+                });
+
+            simulation.on('tick', () => {
+                link
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+
+                nodeGroup
+                    .attr('transform', d => `translate(${d.x},${d.y})`);
+            });
+
+            // Initial camera entry animation
+            svg.transition().duration(2000).call(zoom.transform, d3.zoomIdentity.translate(width / 2, height / 2).scale(0.5).translate(-width / 2, -height / 2));
+
+            initSettings();
+        }
+
+        function initSettings() {
+            // UI Toggle
+            document.getElementById('btn-settings').addEventListener('click', () => {
+                const panel = document.getElementById('settings-panel');
+                panel.classList.toggle('hidden');
+            });
+
+            // Sliders bindings
+            const bindSlider = (id, valId, key, updateFn, isForce = true, suffix = '') => {
+                const slide = document.getElementById(id);
+                const disp = document.getElementById(valId);
+                slide.addEventListener('input', (e) => {
+                    const v = parseFloat(e.target.value);
+                    disp.textContent = v + suffix;
+                    cfg[key] = v;
+                    if (updateFn) updateFn();
+                    if (isForce && physicsEnabled) simulation.alpha(0.3).restart();
+                });
+            };
+
+            // 1. Center Gravity
+            bindSlider('slide-gravity', 'val-gravity', 'gravity', () => {
+                simulation.force('x').strength(() => cfg.gravity);
+                simulation.force('y').strength(() => cfg.gravity);
+            });
+
+            // 2. Repel
+            bindSlider('slide-repel', 'val-repel', 'repel', () => {
+                simulation.force('charge').strength(() => cfg.repel);
+            });
+
+            // 3. Link Distance
+            bindSlider('slide-link-dist', 'val-link-dist', 'linkDist', () => {
+                simulation.force('link').distance(d => {
+                    let base = (d.source.group === 'cuisine' || d.target.group === 'cuisine') ? 160 : 90;
+                    return base * cfg.linkDist;
+                });
+            }, true, 'x');
+
+            // 4. Node Size (Redraw elements)
+            bindSlider('slide-node-size', 'val-node-size', 'nodeSize', () => {
+                g.selectAll('circle').attr('r', d => radiusMap[d.group] * cfg.nodeSize);
+                g.selectAll('image')
+                    .attr('x', d => -(radiusMap[d.group] * cfg.nodeSize))
+                    .attr('y', d => -(radiusMap[d.group] * cfg.nodeSize))
+                    .attr('width', d => (radiusMap[d.group] * cfg.nodeSize) * 2)
+                    .attr('height', d => (radiusMap[d.group] * cfg.nodeSize) * 2)
+                    .attr('clip-path', d => `circle(${radiusMap[d.group] * cfg.nodeSize}px at ${radiusMap[d.group] * cfg.nodeSize}px ${radiusMap[d.group] * cfg.nodeSize}px)`);
+                g.selectAll('text').attr('dy', d => (radiusMap[d.group] * cfg.nodeSize) + 16);
+
+                simulation.force('collide', d3.forceCollide().radius(d => (radiusMap[d.group] * cfg.nodeSize) + 8).iterations(2));
+            }, true, 'x');
+
+            // 5. Link Thickness
+            bindSlider('slide-link-thick', 'val-link-thick', 'linkThick', () => {
+                g.selectAll('line').attr('stroke-width', d => Math.sqrt(d.weight) * cfg.linkThick);
+            }, false, 'x');
+
+            // 6. Fade Point
+            bindSlider('slide-zoom-fade', 'val-zoom-fade', 'fadeStart', () => {
+                // To trigger zoom text update manually, dispatch a fake zoom event natively via d3 transform
+                const currentTransform = d3.zoomTransform(svg.node());
+                g.attr('transform', currentTransform);
+                const scale = currentTransform.k;
+                let fadeOutPoint = cfg.fadeStart;
+                let fullVisiblePoint = fadeOutPoint + 0.5;
+                let textOpacity = (scale - fadeOutPoint) / (fullVisiblePoint - fadeOutPoint);
+                textOpacity = Math.max(0, Math.min(1, textOpacity));
+                g.selectAll('text').style('opacity', d => {
+                    if (d.group !== 'recipe') {
+                        let catOpacity = (scale - 0.2) / (0.5 - 0.2);
+                        return Math.max(0, Math.min(1, catOpacity));
+                    }
+                    return textOpacity;
+                });
+            }, false);
+        }
+
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+        // Controls
+        document.getElementById('btn-recenter').addEventListener('click', () => {
+            svg.transition().duration(1000).call(zoom.transform, d3.zoomIdentity.translate(width / 2, height / 2).scale(0.5).translate(-width / 2, -height / 2));
+        });
+
+        document.getElementById('btn-physics').addEventListener('click', (e) => {
+            physicsEnabled = !physicsEnabled;
+            if (physicsEnabled) {
+                simulation.alpha(0.1).restart();
+                document.getElementById('label-physics').textContent = 'Pause Physics';
+                document.getElementById('icon-pause').innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />';
+            } else {
+                simulation.stop();
+                document.getElementById('label-physics').textContent = 'Resume Physics';
+                document.getElementById('icon-pause').innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />';
+            }
+        });
+
+        // Search logic
+        function initSearch() {
+            const input = document.getElementById('search-input');
+            const drop = document.getElementById('search-dropdown');
+
+            input.addEventListener('input', (e) => {
+                const q = e.target.value.toLowerCase();
+                drop.innerHTML = '';
+                if (q.length < 2) {
+                    drop.classList.add('hidden');
+                    return;
+                }
+
+                const recipes = nodesData.filter(n => n.group === 'recipe' && n.name.toLowerCase().includes(q)).slice(0, 10);
+
+                if (recipes.length === 0) {
+                    drop.innerHTML = '<div class="p-4 text-sm text-slate-500 text-center">No recipes found.</div>';
+                } else {
+                    recipes.forEach(r => {
+                        const div = document.createElement('div');
+                        div.className = 'p-3 hover:bg-slate-50 cursor-pointer text-sm text-slate-700 border-b border-slate-100 last:border-0 flex items-center gap-3 transition-colors';
+
+                        const imgHTML = r.image
+                            ? `<img src="${r.image}" class="w-8 h-8 rounded-full border border-slate-200 object-cover shadow-sm">`
+                            : `<div class="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 text-xs shadow-sm">🍳</div>`;
+
+                        div.innerHTML = `${imgHTML} <span class="font-medium truncate">${r.name}</span>`;
+                        div.onclick = () => {
+                            teleportTo(r);
+                            input.value = r.name;
+                            drop.classList.add('hidden');
+                        };
+                        drop.appendChild(div);
+                    });
+                }
+                drop.classList.remove('hidden');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('#search-input') && !e.target.closest('#search-dropdown')) {
+                    drop.classList.add('hidden');
+                }
+            });
+        }
+
+        function teleportTo(node) {
+            const x = node.x;
+            const y = node.y;
+
+            svg.transition().duration(1500)
+                .call(zoom.transform, d3.zoomIdentity
+                    .translate(width / 2, height / 2)
+                    .scale(1.8) // zoom in close
+                    .translate(-x, -y)
+                );
+
+            g.selectAll('.node').filter(n => n.id === node.id)
+                .select('circle')
+                .transition().duration(200)
+                .attr('stroke', '#f97316') // orange-500 pulse
+                .attr('stroke-width', 4)
+                .transition().duration(2000)
+                .attr('stroke', '#cbd5e1')
+                .attr('stroke-width', 1.5);
+        }
+
+        window.addEventListener('resize', () => {
+            const w = container.clientWidth;
+            const h = container.clientHeight;
+            svg.attr('width', w).attr('height', h);
+            simulation.force('center', d3.forceCenter(w / 2, h / 2))
+                .force('x', d3.forceX(w / 2).strength(0.015))
+                .force('y', d3.forceY(h / 2).strength(0.015));
+            if (physicsEnabled) simulation.alpha(0.3).restart();
+        });
+    });
+</script>
+{% endblock %}

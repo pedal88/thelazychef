@@ -91,6 +91,10 @@
             <div class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
                 <a href="/" class="hover:text-orange-600 transition-colors">Discover</a>
 
+                <a href="/explore/galaxy" class="hover:text-orange-600 transition-colors flex items-center gap-1">
+                    <span>🌌</span> Galaxy
+                </a>
+
                 <!-- Recipes Dropdown -->
                 <div class="relative group">
                     <button class="flex items-center gap-1 hover:text-orange-600 transition-colors focus:outline-none">
@@ -220,6 +224,8 @@
         <div id="mobile-menu" class="hidden md:hidden border-t border-slate-100 bg-white shadow-lg">
             <div class="px-4 py-4 space-y-1 text-sm font-medium text-slate-700">
                 <a href="/" class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">Discover</a>
+                <a href="/explore/galaxy" class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">🌌
+                    Galaxy Map</a>
                 <a href="/recipes" class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">All
                     Recipes</a>
                 <a href="{{ url_for('collections_index') }}"
