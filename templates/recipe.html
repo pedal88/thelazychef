@@ -191,6 +191,29 @@
                     </svg>
                     <span class="text-xs font-medium group-hover:text-red-600 text-slate-600">Favorite</span>
                 </button>
+
+                {# Made checkbox #}
+                <label id="made-label"
+                    class="flex items-center gap-2 cursor-pointer bg-white border border-slate-200 px-3 py-1 rounded-full shadow-sm hover:border-green-300 transition-all duration-200 select-none"
+                    title="Mark as cooked">
+                    <input type="checkbox" id="made-checkbox" class="sr-only" {% if user_interaction and
+                        user_interaction.is_made %}checked{% endif %} onchange="toggleMade(this)">
+                    <span id="made-icon" class="text-lg leading-none">{% if user_interaction and
+                        user_interaction.is_made %}✅{% else %}🍳{% endif %}</span>
+                    <span class="text-xs font-medium text-slate-600">{% if user_interaction and user_interaction.is_made
+                        %}Made it!{% else %}Made it?{% endif %}</span>
+                </label>
+
+                {# Feedback button #}
+                <button type="button" onclick="openFeedbackDrawer()"
+                    class="flex items-center gap-2 bg-white border border-slate-200 text-slate-500 hover:text-orange-600 hover:border-orange-300 px-3 py-1 rounded-full shadow-sm transition-all duration-200">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                    </svg>
+                    <span class="text-xs font-medium">{% if user_interaction and user_interaction.rating %}{{
+                        user_interaction.rating }}★ Feedback{% else %}Leave Feedback{% endif %}</span>
+                </button>
                 {% endif %}
             </div>
 
@@ -411,8 +434,10 @@
                         {% if ingredients_by_component[component_name] %}
                         <div class="mb-6 print:w-1/3 print:m-0 print:p-0 text-slate-500">
                             <h3 class="text-sm font-bold uppercase tracking-wide mb-3 print:hidden">
-                                Ingredients</h3>
-
+                                Ingredients{% if substitutes %}<a href="#substitute-section"
+                                    class="ml-1.5 text-[11px] font-normal normal-case tracking-normal text-slate-400 hover:text-slate-600 transition-colors">substitutes</a>{%
+                                endif %}
+                            </h3>
                             <!-- Regular Screen Ingredients -->
                             <div class="grid grid-cols-4 gap-0.5 print:hidden">
                                 {% for item in ingredients_by_component[component_name] %}
@@ -690,7 +715,86 @@
         {% endif %}
     </div>
 
-    {# ============ ADMIN RELINK MODAL ============ #}
+    {# ============ SUBSTITUTE SECTION ============ #}
+    {% if substitutes %}
+    <div id="substitute-section" class="mt-16 pt-10 border-t border-slate-200 print:hidden">
+        <div class="flex items-center gap-3 mb-2">
+            <span class="text-2xl">🔄</span>
+            <h2 class="text-2xl font-bold font-serif text-slate-900">Ingredient Substitutes</h2>
+        </div>
+        <p class="text-sm text-slate-500 mb-8">Can't find an ingredient? Here are smart swaps from the same family,
+            staples listed first.</p>
+
+        <div class="space-y-8">
+            {% for ri in recipe.ingredients %}
+            {% if ri.id in substitutes %}
+            {% set sub = substitutes[ri.id] %}
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                {# Original ingredient header #}
+                <div class="flex items-center gap-3 mb-4">
+                    {% if sub.original.image_url %}
+                    <img src="{{ sub.original.image_url }}"
+                        class="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-sm"
+                        alt="{{ sub.original.name }}">
+                    {% else %}
+                    <div
+                        class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-sm border border-slate-200">
+                        {{ sub.original.name[:2]|upper }}
+                    </div>
+                    {% endif %}
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Instead of</p>
+                        <p class="font-bold text-slate-900">{{ sub.original.name }}</p>
+                    </div>
+                    <span
+                        class="ml-auto text-xs text-slate-400 bg-slate-50 px-2 py-1 rounded-full border border-slate-100 font-medium">{{
+                        sub.original.sub_category }}</span>
+                </div>
+
+                {# Chef's tip #}
+                {% if sub.tip %}
+                <div class="flex items-start gap-2 mb-5 bg-orange-50 border border-orange-100 rounded-xl px-4 py-3">
+                    <span class="text-orange-500 text-lg leading-tight shrink-0">👨‍🍳</span>
+                    <p class="text-sm text-orange-800 italic leading-relaxed">{{ sub.tip }}.</p>
+                </div>
+                {% endif %}
+
+                {# Alternatives grid #}
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {% for alt in sub.alts %}
+                    <div
+                        class="flex items-center gap-3 bg-slate-50 rounded-xl px-4 py-3 border border-slate-100 hover:bg-green-50 hover:border-green-200 transition-colors group">
+                        {% if alt.image_url %}
+                        <img src="{{ alt.image_url }}"
+                            class="w-9 h-9 rounded-full object-cover shrink-0 border border-slate-200"
+                            alt="{{ alt.name }}">
+                        {% else %}
+                        <div
+                            class="w-9 h-9 rounded-full bg-white flex items-center justify-center text-slate-400 font-bold text-xs border border-slate-200 shrink-0">
+                            {{ alt.name[:2]|upper }}
+                        </div>
+                        {% endif %}
+                        <div class="min-w-0">
+                            <p class="font-semibold text-sm text-slate-800 truncate group-hover:text-green-800">{{
+                                alt.name }}</p>
+                            {% if alt.is_staple %}
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-green-600">Pantry Staple</p>
+                            {% else %}
+                            <p class="text-[10px] text-slate-400 uppercase tracking-wider">{{ alt.main_category or
+                                'Substitute' }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+
     {% if current_user.is_authenticated and current_user.is_admin %}
     <div id="relinkModal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
         <!-- Backdrop -->
@@ -733,7 +837,6 @@
             <!-- Results List -->
             <div class="overflow-y-auto max-h-80 divide-y divide-slate-100" id="relinkResults">
                 <div class="px-6 py-12 text-center text-slate-400 text-sm">
-                    Type to search your pantry...
                 </div>
             </div>
 
@@ -746,6 +849,194 @@
             </div>
         </div>
     </div>
+    {% endif %}
+
+    {# ============ FEEDBACK DRAWER (logged-in users) ============ #}
+    {% if current_user.is_authenticated %}
+    <div id="feedback-backdrop" class="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm hidden"
+        onclick="closeFeedbackDrawer()"></div>
+
+    <div id="feedback-drawer" class="fixed bottom-0 inset-x-0 z-50 translate-y-full transition-transform duration-300 ease-in-out
+               bg-white rounded-t-3xl shadow-2xl border-t border-slate-200 max-h-[90vh] overflow-y-auto print:hidden">
+
+        <div class="px-6 pt-5 pb-8 max-w-2xl mx-auto">
+            <div class="w-10 h-1 bg-slate-300 rounded-full mx-auto mb-5"></div>
+
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold font-serif text-slate-900">Your Feedback</h3>
+                <button onclick="closeFeedbackDrawer()" class="text-slate-400 hover:text-slate-700 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            {# Star rating #}
+            <div class="mb-6">
+                <label class="block text-sm font-semibold text-slate-700 mb-3">Rating</label>
+                <div id="star-row" class="flex gap-2">
+                    {% for i in range(1, 6) %}
+                    <button type="button" onclick="setRating({{ i }})" data-val="{{ i }}"
+                        class="star-btn text-3xl transition-transform hover:scale-110 focus:outline-none"
+                        aria-label="{{ i }} stars">
+                        {% if user_interaction and user_interaction.rating and user_interaction.rating >= i %}⭐{% else
+                        %}☆{% endif %}
+                    </button>
+                    {% endfor %}
+                </div>
+                <input type="hidden" id="fb-rating"
+                    value="{{ user_interaction.rating if user_interaction and user_interaction.rating else '' }}">
+            </div>
+
+            {# Comment #}
+            <div class="mb-6">
+                <label class="block text-sm font-semibold text-slate-700 mb-2" for="fb-comment">Comment</label>
+                <textarea id="fb-comment" rows="3" placeholder="What did you think? Any tweaks?"
+                    class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none resize-none transition-all">{{ user_interaction.comment if user_interaction and user_interaction.comment else '' }}</textarea>
+            </div>
+
+            {# Photo upload #}
+            <div class="mb-8">
+                <label class="block text-sm font-semibold text-slate-700 mb-3">Your Photos</label>
+                <div id="saved-photos-row" class="flex flex-wrap gap-3 mb-3">
+                    {% if user_interaction and user_interaction.user_photos %}
+                    {% for url in user_interaction.user_photos %}
+                    <div class="relative w-20 h-20 rounded-xl overflow-hidden border border-slate-200 group shadow-sm"
+                        data-url="{{ url }}">
+                        <img src="{{ url }}" class="w-full h-full object-cover">
+                        <button type="button" onclick="removeExistingPhoto(this)"
+                            class="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+                <label for="fb-photos"
+                    class="inline-flex items-center gap-2 cursor-pointer px-4 py-2 rounded-xl border-2 border-dashed border-slate-300 hover:border-orange-400 text-sm text-slate-500 hover:text-orange-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Add Photos
+                </label>
+                <input type="file" id="fb-photos" multiple accept="image/*,.heic,.heif" class="sr-only">
+                <div id="new-photos-preview" class="flex flex-wrap gap-3 mt-3"></div>
+            </div>
+
+            <button onclick="saveFeedback()" id="fb-save-btn"
+                class="w-full py-3 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm transition-colors flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                Save Feedback
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const RECIPE_ID = {{ recipe.id }};
+
+        // ── Made toggle ────────────────────────────────────────────────────
+        function toggleMade(cb) {
+            const icon = document.getElementById('made-icon');
+            const label = cb.closest('label').querySelector('span:last-child');
+            fetch(`/api/interactions/recipe/${RECIPE_ID}/made`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ is_made: cb.checked })
+            })
+                .then(r => r.json())
+                .then(() => {
+                    icon.textContent = cb.checked ? '✅' : '🍳';
+                    label.textContent = cb.checked ? 'Made it!' : 'Made it?';
+                })
+                .catch(() => { cb.checked = !cb.checked; }); // revert on error
+        }
+
+        // ── Feedback Drawer ────────────────────────────────────────────────
+        function openFeedbackDrawer() {
+            document.getElementById('feedback-backdrop').classList.remove('hidden');
+            requestAnimationFrame(() => {
+                document.getElementById('feedback-drawer').classList.remove('translate-y-full');
+            });
+        }
+
+        function closeFeedbackDrawer() {
+            document.getElementById('feedback-drawer').classList.add('translate-y-full');
+            setTimeout(() => document.getElementById('feedback-backdrop').classList.add('hidden'), 300);
+        }
+
+        // ── Star rating ────────────────────────────────────────────────────
+        function setRating(val) {
+            document.getElementById('fb-rating').value = val;
+            document.querySelectorAll('.star-btn').forEach(btn => {
+                btn.textContent = parseInt(btn.dataset.val) <= val ? '⭐' : '☆';
+            });
+        }
+
+        // ── Remove existing saved photo ────────────────────────────────────
+        function removeExistingPhoto(btn) {
+            btn.closest('[data-url]').remove();
+        }
+
+        // ── New photo preview ──────────────────────────────────────────────
+        document.getElementById('fb-photos').addEventListener('change', function () {
+            const preview = document.getElementById('new-photos-preview');
+            preview.innerHTML = '';
+            Array.from(this.files).forEach(file => {
+                const url = URL.createObjectURL(file);
+                const div = document.createElement('div');
+                div.className = 'w-20 h-20 rounded-xl overflow-hidden border border-slate-200 shadow-sm';
+                div.innerHTML = `<img src="${url}" class="w-full h-full object-cover">`;
+                preview.appendChild(div);
+            });
+        });
+
+        // ── Save feedback ──────────────────────────────────────────────────
+        async function saveFeedback() {
+            const btn = document.getElementById('fb-save-btn');
+            btn.disabled = true;
+            btn.textContent = 'Saving…';
+
+            const fd = new FormData();
+            fd.append('rating', document.getElementById('fb-rating').value || '');
+            fd.append('comment', document.getElementById('fb-comment').value || '');
+
+            // Kept (un-deleted) existing photos
+            const keptUrls = Array.from(
+                document.querySelectorAll('#saved-photos-row [data-url]')
+            ).map(el => el.dataset.url);
+            fd.append('keep_photos', JSON.stringify(keptUrls));
+
+            // New files
+            const files = document.getElementById('fb-photos').files;
+            Array.from(files).forEach(f => fd.append('photos', f));
+
+            try {
+                const res = await fetch(`/api/interactions/recipe/${RECIPE_ID}/feedback`, {
+                    method: 'POST',
+                    body: fd
+                });
+                const data = await res.json();
+                if (data.success) {
+                    closeFeedbackDrawer();
+                    // Update button label with new rating
+                    const rating = document.getElementById('fb-rating').value;
+                    const fbBtnSpan = document.querySelector('[onclick="openFeedbackDrawer()"] span');
+                    if (fbBtnSpan) fbBtnSpan.textContent = rating ? `${rating}★ Feedback` : 'Leave Feedback';
+                } else {
+                    alert('Save failed: ' + (data.error || 'Unknown error'));
+                }
+            } catch (e) {
+                alert('Network error. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Save Feedback';
+            }
+        }
+    </script>
     {% endif %}
 
     {% endblock %}

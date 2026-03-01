@@ -2358,14 +2358,9 @@ def recipe_detail(recipe_id):
             orphaned_ingredients.extend(ingredients_by_component.pop(comp))
         
         if len(steps_by_component) == 1:
-            # Single instruction component — put all ingredients there
-            sole_comp = steps_by_component[0][0]
-            if sole_comp not in ingredients_by_component:
-                ingredients_by_component[sole_comp] = []
-            ingredients_by_component[sole_comp].extend(orphaned_ingredients)
-        elif len(steps_by_component) > 1 and not ingredients_by_component:
-            # No ingredients matched ANY component — distribute evenly by splitting
-            # based on ingredient order across the instruction components
+            comp_names = [name for name, _ in steps_by_component]
+            ingredients_by_component[comp_names[0]] = orphaned_ingredients
+        elif len(steps_by_component) > 1:
             comp_names = [name for name, _ in steps_by_component]
             per_comp = max(1, len(orphaned_ingredients) // len(comp_names))
             for idx, comp_name in enumerate(comp_names):
@@ -2408,6 +2403,65 @@ def recipe_detail(recipe_id):
                 else:
                     component_meta[comp] = themes[-1]
 
+    # ------------------------------------------------------------------ #
+    # SMART SUBSTITUTION ENGINE                                            #
+    # For each ingredient that has a sub_category, find up to 3 alts from #
+    # the same sub_category (excluding itself), sorted staples-first.     #
+    # Also ask Gemini for a one-sentence Chef's Tip per ingredient.       #
+    # ------------------------------------------------------------------ #
+    substitutes: dict[int, dict] = {}  # keyed by RecipeIngredient.id
+
+    for ri in recipe.ingredients:
+        ing = ri.ingredient
+        if not ing or not ing.sub_category:
+            continue
+
+        alts = db.session.execute(
+            db.select(Ingredient)
+            .where(
+                Ingredient.sub_category == ing.sub_category,
+                Ingredient.id != ing.id,
+                Ingredient.status == 'active',
+            )
+            .order_by(Ingredient.is_staple.desc(), Ingredient.name.asc())
+            .limit(3)
+        ).scalars().all()
+
+        if not alts:
+            continue
+
+        # Ask Gemini for a Chef's Tip — keep it cheap: single sentence, flash model
+        chef_tip = ""
+        try:
+            from ai_engine import client as ai_client
+            tip_prompt = (
+                f"Give a single short sentence (max 20 words) chef's tip about substituting "
+                f"{ing.name} in a {recipe.title} recipe. Be practical and specific."
+            )
+            tip_resp = ai_client.models.generate_content(
+                model='gemini-2.0-flash-lite',
+                contents=tip_prompt,
+            )
+            chef_tip = tip_resp.text.strip().rstrip('.')
+        except Exception:
+            pass  # Tip is non-critical; silently skip on error
+
+        substitutes[ri.id] = {
+            'original': ing,
+            'alts': alts,
+            'tip': chef_tip,
+        }
+
+    # Load current user's interaction for the feedback drawer
+    user_interaction = None
+    if current_user.is_authenticated:
+        user_interaction = db.session.execute(
+            db.select(UserRecipeInteraction).where(
+                UserRecipeInteraction.user_id == current_user.id,
+                UserRecipeInteraction.recipe_id == recipe_id,
+            )
+        ).scalars().first()
+
     return render_template('recipe.html', 
                             recipe=recipe, 
                             steps_by_phase=steps_by_phase, 
@@ -2415,7 +2469,9 @@ def recipe_detail(recipe_id):
                             steps_by_component=steps_by_component,
                             has_chronological_data=has_chronological_data,
                             chrono_steps=chrono_steps,
-                            component_meta=component_meta)
+                            component_meta=component_meta,
+                            substitutes=substitutes,
+                            user_interaction=user_interaction)
 
 @app.route('/recipe/<int:recipe_id>/kitchen')
 def recipe_kitchen_mode(recipe_id):
