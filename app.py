@@ -1343,6 +1343,30 @@ def pantry_management():
 
     return render_template('pantry_management.html', ingredients=ingredients, sub_categories_map=sub_categories_map)
 
+@app.route('/api/ingredient/<int:id>/link-recipe', methods=['PATCH'])
+@login_required
+def link_recipe_to_ingredient(id: int):
+    """Set (or clear) sub_recipe_id on an ingredient from the admin UI."""
+    if not current_user.is_admin:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+    ing = db.session.get(Ingredient, id)
+    if not ing:
+        return jsonify({'success': False, 'error': 'Ingredient not found'}), 404
+    data = request.get_json()
+    recipe_id = data.get('recipe_id')  # int or None
+    if recipe_id:
+        recipe = db.session.get(Recipe, recipe_id)
+        if not recipe:
+            return jsonify({'success': False, 'error': 'Recipe not found'}), 404
+        ing.sub_recipe_id = recipe_id
+        db.session.commit()
+        return jsonify({'success': True, 'ingredient_name': ing.name, 'recipe_title': recipe.title})
+    else:
+        ing.sub_recipe_id = None
+        db.session.commit()
+        return jsonify({'success': True, 'ingredient_name': ing.name, 'recipe_title': None})
+
+
 @app.route('/api/ingredient/<int:id>/toggle_basic', methods=['POST'])
 def toggle_basic_ingredient(id):
     ing = db.session.get(Ingredient, id)
@@ -1616,7 +1640,10 @@ def get_ingredient_details_api(id):
             'fiber_per_100g': ingredient.fiber_per_100g,
             'fat_saturated_per_100g': ingredient.fat_saturated_per_100g,
             'sodium_mg_per_100g': ingredient.sodium_mg_per_100g,
-            'kj_per_100g': ingredient.kj_per_100g
+            'kj_per_100g': ingredient.kj_per_100g,
+            # Sub-recipe link
+            'sub_recipe_id': ingredient.sub_recipe_id,
+            'sub_recipe_title': ingredient.sub_recipe.title if ingredient.sub_recipe else None,
         })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -1736,7 +1763,6 @@ def save_new_ingredient_api():
                 
                 image_url = f"pantry/{new_filename}"
 
-        # 3. Create Object
         new_ing = Ingredient(
             food_id=new_food_id,
             name=data.get('name'),
@@ -1744,7 +1770,7 @@ def save_new_ingredient_api():
             sub_category=data.get('sub_category'),
             default_unit=data.get('unit'),
             average_g_per_unit=data.get('average_g_per_unit'),
-            
+
             # Nutrition
             calories_per_100g=data.get('calories_per_100g'),
             protein_per_100g=data.get('protein_per_100g'),
@@ -1754,11 +1780,14 @@ def save_new_ingredient_api():
             fiber_per_100g=data.get('fiber_per_100g'),
             sodium_mg_per_100g=data.get('sodium_mg_per_100g'),
             fat_saturated_per_100g=data.get('fat_saturated_per_100g'),
-            
+
             # Metadata
             image_prompt=data.get('image_prompt'),
             image_url=image_url,
-            created_at=datetime.datetime.now().isoformat()
+            created_at=datetime.datetime.now().isoformat(),
+
+            # Sub-recipe link (Direction B)
+            sub_recipe_id=data.get('sub_recipe_id') or None,
         )
         
         db.session.add(new_ing)
@@ -1916,6 +1945,10 @@ def update_ingredient_data_api():
                 
                 ingredient.image_url = f"pantry/{new_filename}"
         
+        # Sub-recipe link (Direction B)
+        sub_recipe_id = data.get('sub_recipe_id')
+        ingredient.sub_recipe_id = int(sub_recipe_id) if sub_recipe_id else None
+
         db.session.commit()
         return jsonify({'success': True})
         
@@ -1989,6 +2022,181 @@ def get_recipe_json(recipe_id):
     except Exception as e:
         print(f"Error serializing recipe {recipe_id}: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/sub-recipe/<int:recipe_id>', methods=['GET'])
+def get_sub_recipe(recipe_id):
+    """Public read-only endpoint for the sub-recipe modal viewer.
+    Returns only approved recipes (or any recipe whose id is referenced as
+    a sub_recipe_id — admin may link draft sub-recipes intentionally)."""
+    recipe = db.session.get(Recipe, recipe_id)
+    if not recipe:
+        return jsonify({'success': False, 'error': 'Sub-recipe not found'}), 404
+
+    # Build image URL helper (reuse existing context function)
+    image_url = get_recipe_image_url(recipe) if recipe.image_filename else None
+
+    # Ingredients grouped by component
+    components: dict[str, list] = {}
+    for ri in recipe.ingredients:
+        comp = ri.component or 'Main'
+        if comp not in components:
+            components[comp] = []
+        components[comp].append({
+            'name': ri.ingredient.name,
+            'amount': ri.amount,
+            'unit': ri.unit,
+            'gram_weight': ri.gram_weight,
+            'image_url': ri.ingredient.image_url or None,
+        })
+
+    # Instructions grouped by component, sorted by step_number
+    steps_by_comp: dict[str, list] = {}
+    sorted_steps = sorted(recipe.instructions, key=lambda s: (s.component or '', s.step_number))
+    for step in sorted_steps:
+        comp = step.component or 'Main'
+        if comp not in steps_by_comp:
+            steps_by_comp[comp] = []
+        steps_by_comp[comp].append({
+            'step': step.step_number,
+            'phase': step.phase,
+            'text': step.text,
+        })
+
+    return jsonify({
+        'success': True,
+        'recipe': {
+            'id': recipe.id,
+            'title': recipe.title,
+            'cuisine': recipe.cuisine,
+            'image_url': image_url,
+            'base_servings': recipe.base_servings,
+            'components': list(components.keys()),
+            'ingredients_by_component': components,
+            'steps_by_component': steps_by_comp,
+        }
+    })
+
+@app.route('/api/search-recipes', methods=['GET'])
+@login_required
+def search_recipes_api():
+    """Live-search endpoint for the sub-recipe picker on the ingredient form."""
+    if not current_user.is_admin:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+    q = request.args.get('q', '').strip()
+    if len(q) < 2:
+        return jsonify({'results': []})
+    results = db.session.execute(
+        db.select(Recipe.id, Recipe.title, Recipe.cuisine, Recipe.status)
+        .where(Recipe.title.ilike(f'%{q}%'))
+        .order_by(Recipe.title.asc())
+        .limit(10)
+    ).all()
+    return jsonify({
+        'results': [
+            {'id': r.id, 'title': r.title, 'cuisine': r.cuisine or '', 'status': r.status}
+            for r in results
+        ]
+    })
+
+
+@app.route('/api/admin/search-ingredients', methods=['GET'])
+@login_required
+def search_ingredients_admin_api():
+    """Live-search endpoint for the recipe→ingredient link modal."""
+    if not current_user.is_admin:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+    q = request.args.get('q', '').strip()
+    if len(q) < 2:
+        return jsonify({'results': []})
+    results = db.session.execute(
+        db.select(Ingredient)
+        .where(Ingredient.name.ilike(f'%{q}%'))
+        .where(Ingredient.status != 'inactive')
+        .order_by(Ingredient.name.asc())
+        .limit(10)
+    ).scalars().all()
+    return jsonify({
+        'results': [
+            {
+                'id': i.id,
+                'name': i.name,
+                'main_category': i.main_category or '',
+                'sub_recipe_id': i.sub_recipe_id,
+            }
+            for i in results
+        ]
+    })
+
+
+
+@app.route('/api/admin/set-pending-link/<int:ingredient_id>', methods=['GET'])
+@login_required
+def set_pending_link(ingredient_id: int):
+    """Store ingredient_id in session so the next recipe save auto-links it."""
+    if not current_user.is_admin:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+    ing = db.session.get(Ingredient, ingredient_id)
+    if not ing:
+        return jsonify({'success': False, 'error': 'Ingredient not found'}), 404
+    session['pending_link_ingredient_id'] = ingredient_id
+    query_url = url_for('generate', query=ing.name)
+    return jsonify({'success': True, 'redirect_url': query_url, 'ingredient_name': ing.name})
+
+
+@app.route('/api/recipe/<int:recipe_id>/promote-to-ingredient', methods=['POST'])
+@login_required
+def promote_recipe_to_ingredient(recipe_id: int):
+    """Direction A: take a recipe and link it to an existing matching ingredient
+    (or create a minimal stub if none exists), then set ingredient.sub_recipe_id."""
+    if not current_user.is_admin:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+
+    recipe = db.session.get(Recipe, recipe_id)
+    if not recipe:
+        return jsonify({'success': False, 'error': 'Recipe not found'}), 404
+
+    # Try to find an existing ingredient by exact name (case-insensitive)
+    existing = db.session.execute(
+        db.select(Ingredient)
+        .where(db.func.lower(Ingredient.name) == recipe.title.lower())
+        .limit(1)
+    ).scalars().first()
+
+    if existing:
+        existing.sub_recipe_id = recipe_id
+        db.session.commit()
+        return jsonify({
+            'success': True,
+            'action': 'linked',
+            'ingredient_id': existing.id,
+            'ingredient_name': existing.name,
+        })
+
+    # No match — create a minimal stub with category = 'Prepared / Sauce'
+    all_ids = db.session.execute(db.select(Ingredient.food_id)).scalars().all()
+    max_id = max((int(fid) for fid in all_ids if fid.isdigit()), default=0)
+    new_food_id = f"{max_id + 1:06d}"
+
+    stub = Ingredient(
+        food_id=new_food_id,
+        name=recipe.title,
+        main_category='Prepared',
+        sub_category='sauce',
+        default_unit='tbsp',
+        image_url=get_recipe_image_url(recipe) if recipe.image_filename else None,
+        sub_recipe_id=recipe_id,
+        created_at=datetime.datetime.now().isoformat(),
+        status='active',
+    )
+    db.session.add(stub)
+    db.session.commit()
+    return jsonify({
+        'success': True,
+        'action': 'created',
+        'ingredient_id': stub.id,
+        'ingredient_name': stub.name,
+    })
+
 
 @app.route('/api/merge-ingredients', methods=['POST'])
 def merge_ingredients_api():
@@ -2101,12 +2309,23 @@ def _handle_workflow_result(result: dict, query_context: str, chef_id: str):
             sub_categories_map=cat_data.get('sub_categories', {}),
         )
     # STATUS_SUCCESS
+    recipe_id = result['recipe_id']
+
+    # ── Pending sub-recipe link (from ingredient → generate flow) ──────────
+    pending_ing_id = session.pop('pending_link_ingredient_id', None)
+    if pending_ing_id:
+        try:
+            pending_ing = db.session.get(Ingredient, int(pending_ing_id))
+            if pending_ing:
+                pending_ing.sub_recipe_id = recipe_id
+                db.session.commit()
+                flash(f'Recipe automatically linked to ingredient "{pending_ing.name}".', 'success')
+        except Exception:
+            pass  # Non-fatal; user can link manually
+
     if is_ajax:
-        return jsonify({
-            'success': True,
-            'recipe_id': result['recipe_id']
-        })
-    return redirect(url_for('recipe_detail', recipe_id=result['recipe_id']))
+        return jsonify({'success': True, 'recipe_id': recipe_id})
+    return redirect(url_for('recipe_detail', recipe_id=recipe_id))
 
 
 @app.route('/generate/web', methods=['POST'])

@@ -274,6 +274,44 @@
                         <input type="hidden" id="satFat" value="0">
                         <input type="hidden" id="sodium" value="0">
 
+                        <!-- Sub-recipe link (Direction B) -->
+                        <div class="mt-6 border-t border-slate-100 pt-6">
+                            <label
+                                class="block text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Sub-recipe
+                                Link <span class="font-normal normal-case text-slate-400">(optional)</span></label>
+                            <p class="text-xs text-slate-500 mb-3">Link this ingredient to a recipe that explains how to
+                                make it (e.g. "Chilli Mayo", "Tortilla"). The ⓘ badge will appear on recipe pages.</p>
+                            <div class="relative max-w-md">
+                                <input type="text" id="subRecipeSearch" placeholder="Search recipes by name…"
+                                    autocomplete="off" oninput="searchSubRecipe(this.value)"
+                                    class="block w-full rounded-md border-slate-300 py-2 pl-3 pr-10 text-sm text-slate-900 shadow-sm focus:border-orange-500 focus:ring-orange-500">
+                                <button type="button" onclick="clearSubRecipe()" id="subRecipeClearBtn"
+                                    class="hidden absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 transition-colors"
+                                    title="Remove link">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                                <!-- Dropdown -->
+                                <div id="subRecipeDropdown"
+                                    class="hidden absolute z-20 mt-1 w-full bg-white rounded-lg shadow-lg border border-slate-200 divide-y divide-slate-100 max-h-52 overflow-y-auto">
+                                </div>
+                            </div>
+                            <!-- Linked badge -->
+                            <div id="subRecipeLinked" class="hidden mt-2 flex items-center gap-2">
+                                <span
+                                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 border border-orange-200 text-xs font-semibold text-orange-700">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Linked: <span id="subRecipeLinkedName"></span>
+                                </span>
+                            </div>
+                            <input type="hidden" id="subRecipeId">
+                        </div>
+
                         <div class="mt-8 flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
                             <button type="button" onclick="window.location.reload()"
                                 class="rounded-md bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50">
@@ -677,7 +715,7 @@
         if (!mainCat) { alert("Please select a main category."); return; }
 
         const data = {
-            id: EDIT_ID, // Only used if updating
+            id: EDIT_ID,
             name: name,
             main_category: mainCat,
             sub_category: document.getElementById('subCategory').value,
@@ -696,7 +734,10 @@
             kj_per_100g: 0,
 
             image_prompt: document.getElementById('imagePrompt').value,
-            temp_image_filename: document.getElementById('tempImageFilename').value
+            temp_image_filename: document.getElementById('tempImageFilename').value,
+
+            // Direction B: sub-recipe link
+            sub_recipe_id: document.getElementById('subRecipeId').value || null,
         };
 
         const endpoint = EDIT_ID ? '/api/update-ingredient-data' : '/api/save-ingredient';
@@ -807,7 +848,7 @@
 
         const btn = document.getElementById('btnExtractNutrients');
         const originalText = btn.innerText;
-        btn.innerText = "Extracting...";
+        btn.innerText = 'Extracting...';
         btn.disabled = true;
 
         try {
@@ -824,33 +865,97 @@
                 document.getElementById('protein').value = n.protein_per_100g || 0;
                 document.getElementById('fat').value = n.fat_per_100g || 0;
                 document.getElementById('carbs').value = n.carbs_per_100g || 0;
-
-                // Hidden fields
                 document.getElementById('sugar').value = n.sugar_per_100g || 0;
                 document.getElementById('fiber').value = n.fiber_per_100g || 0;
                 document.getElementById('satFat').value = n.fat_saturated_per_100g || 0;
                 document.getElementById('sodium').value = n.sodium_mg_per_100g || 0;
-
-                // Show notification briefly or just hide panel
                 document.getElementById('pasteNutritionPanel').classList.add('hidden');
-
-                // Highlight fields to show they changed
                 ['cal', 'protein', 'fat', 'carbs'].forEach(id => {
                     const el = document.getElementById(id);
                     el.classList.add('ring-2', 'ring-green-500');
                     setTimeout(() => el.classList.remove('ring-2', 'ring-green-500'), 2000);
                 });
-
             } else {
-                alert("Could not extract nutrients: " + (res.error || 'Unknown error'));
+                alert('Could not extract nutrients: ' + (res.error || 'Unknown error'));
             }
         } catch (e) {
             console.error(e);
-            alert("Extraction failed");
+            alert('Extraction failed');
         } finally {
             btn.innerText = originalText;
             btn.disabled = false;
         }
     }
+
+    // ── Sub-recipe live search (Direction B) ────────────────────────────────
+    let _srTimer = null;
+    function searchSubRecipe(q) {
+        clearTimeout(_srTimer);
+        const drop = document.getElementById('subRecipeDropdown');
+        if (q.length < 2) { drop.classList.add('hidden'); return; }
+        _srTimer = setTimeout(async () => {
+            try {
+                const res = await fetch(`/api/search-recipes?q=${encodeURIComponent(q)}`);
+                const data = await res.json();
+                drop.innerHTML = '';
+                if (!data.results || !data.results.length) {
+                    drop.innerHTML = '<div class="px-4 py-3 text-xs text-slate-500">No recipes found</div>';
+                } else {
+                    data.results.forEach(r => {
+                        const div = document.createElement('div');
+                        div.className = 'px-4 py-2.5 hover:bg-orange-50 cursor-pointer flex items-center justify-between group';
+                        const statusClass = r.status === 'approved'
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-slate-100 text-slate-500';
+                        div.innerHTML = `
+                            <span class="text-sm font-medium text-slate-900 group-hover:text-orange-700">${r.title}</span>
+                            <span class="text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider ${statusClass}">${r.status}</span>`;
+                        div.onclick = () => selectSubRecipe(r);
+                        drop.appendChild(div);
+                    });
+                }
+                drop.classList.remove('hidden');
+            } catch (e) { console.error(e); }
+        }, 250);
+    }
+
+    function selectSubRecipe(r) {
+        document.getElementById('subRecipeId').value = r.id;
+        document.getElementById('subRecipeSearch').value = r.title;
+        document.getElementById('subRecipeDropdown').classList.add('hidden');
+        document.getElementById('subRecipeClearBtn').classList.remove('hidden');
+        document.getElementById('subRecipeLinkedName').textContent = r.title;
+        document.getElementById('subRecipeLinked').classList.remove('hidden');
+    }
+
+    function clearSubRecipe() {
+        document.getElementById('subRecipeId').value = '';
+        document.getElementById('subRecipeSearch').value = '';
+        document.getElementById('subRecipeClearBtn').classList.add('hidden');
+        document.getElementById('subRecipeLinked').classList.add('hidden');
+    }
+
+    // Close dropdown on outside click
+    document.addEventListener('click', e => {
+        if (!e.target.closest('#subRecipeSearch') && !e.target.closest('#subRecipeDropdown')) {
+            document.getElementById('subRecipeDropdown').classList.add('hidden');
+        }
+    });
+
+    // Pre-populate sub-recipe field on edit-mode load
+    const _origPopulateForm = typeof populateForm === 'function' ? populateForm : null;
+    window.addEventListener('DOMContentLoaded', () => {
+        // Patch: after main DOMContentLoaded loads the ingredient, check sub_recipe_id
+        const origFetch = window._editIngredientFetch;
+        // Simpler: observe EDIT_ID after load and fetch sub-recipe title if set
+    });
+    // We hook into the existing DOMContentLoaded fetch result via populateForm augmentation
+    const _basePF = populateForm;
+    window.populateForm = function (d) {
+        _basePF(d);
+        if (d.sub_recipe_id && d.sub_recipe_title) {
+            selectSubRecipe({ id: d.sub_recipe_id, title: d.sub_recipe_title });
+        }
+    };
 </script>
 {% endblock %}

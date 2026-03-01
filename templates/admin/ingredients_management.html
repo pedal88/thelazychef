@@ -321,6 +321,17 @@
                                                     d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
                                             </svg>
                                         </button>
+                                        <!-- Link to sub-recipe (Direction A) -->
+                                        <button
+                                            onclick="openLinkModal({{ ing.id }}, '{{ ing.name|e }}', {{ ing.sub_recipe_id or 'null' }})"
+                                            class="ml-3 transition-colors {% if ing.sub_recipe_id %}text-orange-500 hover:text-orange-700{% else %}text-gray-300 hover:text-orange-500{% endif %}"
+                                            title="{% if ing.sub_recipe_id %}Linked to sub-recipe{% else %}Link to sub-recipe{% endif %}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m4.656-4.656a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" />
+                                            </svg>
+                                        </button>
                                         <!-- Delete / archive -->
                                         <button onclick="deleteIngredient({{ ing.id }}, '{{ ing.name|e }}')"
                                             class="ml-3 text-red-400 hover:text-red-700 transition-colors"
@@ -520,6 +531,70 @@
         </div>
     </div>
 </div>
+
+<!-- ── Link Sub-Recipe Modal (Direction A) ─────────────────────── -->
+<div id="link-modal" class="fixed inset-0 z-[70] flex items-center justify-center hidden">
+    <div class="absolute inset-0 bg-gray-900/60" onclick="closeLinkModal()"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div>
+                <p class="text-[10px] font-bold uppercase tracking-widest text-orange-500">Sub-recipe Link</p>
+                <h3 id="lm-title" class="text-base font-semibold text-gray-900"></h3>
+            </div>
+            <button onclick="closeLinkModal()" class="text-gray-400 hover:text-gray-700">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div class="px-5 py-4 space-y-3">
+            <!-- Current link state -->
+            <div id="lm-current" class="hidden text-sm">
+                <p class="text-gray-500 mb-1">Currently linked to:</p>
+                <div
+                    class="flex items-center justify-between bg-orange-50 border border-orange-200 rounded-lg px-3 py-2">
+                    <span id="lm-current-name" class="font-semibold text-orange-700 text-sm"></span>
+                    <button onclick="clearRecipeLink()"
+                        class="text-xs text-red-500 hover:text-red-700 font-medium">Remove link</button>
+                </div>
+            </div>
+            <!-- Search -->
+            <div class="relative">
+                <label class="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Link to existing
+                    recipe</label>
+                <input type="text" id="lm-search" placeholder="Search recipes by name…" autocomplete="off"
+                    oninput="lmSearch(this.value)"
+                    class="block w-full rounded-lg border-gray-300 py-2 pl-3 pr-4 text-sm shadow-sm focus:border-orange-500 focus:ring-orange-500">
+                <div id="lm-dropdown"
+                    class="hidden absolute z-10 mt-1 w-full bg-white rounded-lg shadow-lg border border-gray-200 divide-y divide-gray-100 max-h-52 overflow-y-auto">
+                </div>
+            </div>
+            <!-- Divider -->
+            <div class="flex items-center gap-3">
+                <div class="flex-1 h-px bg-gray-200"></div>
+                <span class="text-xs text-gray-400 font-medium">or</span>
+                <div class="flex-1 h-px bg-gray-200"></div>
+            </div>
+            <!-- Generate recipe -->
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Generate a
+                    recipe</label>
+                <button id="lm-generate-btn" onclick="lmGenerateRecipe()"
+                    class="w-full flex items-center justify-center gap-2 rounded-lg border border-dashed border-orange-400 bg-orange-50 hover:bg-orange-100 px-4 py-3 text-sm font-semibold text-orange-700 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    Generate recipe for this ingredient
+                </button>
+                <p class="mt-1.5 text-xs text-gray-400">Generates a recipe using the AI chef and automatically links it
+                    back on save.</p>
+            </div>
+            <p class="text-xs text-gray-400">The ⓘ badge will appear wherever this ingredient is used.</p>
+        </div>
+    </div>
+</div>
+
 
 <!-- ── Scripts ────────────────────────────────────────────────── -->
 <script>
@@ -1041,5 +1116,167 @@
         </div>
     </div>
 </div>
+
+<script>
+    // ── Link Sub-Recipe Modal (Direction A) ───────────────────────────────
+    let _lmIngId = null;
+    let _lmTimer = null;
+
+    function openLinkModal(ingId, ingName, currentRecipeId) {
+        _lmIngId = ingId;
+        document.getElementById('lm-title').textContent = ingName;
+        document.getElementById('lm-search').value = '';
+        document.getElementById('lm-dropdown').innerHTML = '';
+        document.getElementById('lm-dropdown').classList.add('hidden');
+
+        // Show current link if any
+        const currentEl = document.getElementById('lm-current');
+        if (currentRecipeId) {
+            // Fetch title for display
+            fetch(`/api/sub-recipe/${currentRecipeId}`)
+                .then(r => r.json())
+                .then(d => {
+                    if (d.success) {
+                        document.getElementById('lm-current-name').textContent = d.recipe.title;
+                        currentEl.classList.remove('hidden');
+                    }
+                }).catch(() => { });
+        } else {
+            currentEl.classList.add('hidden');
+        }
+
+        document.getElementById('link-modal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => document.getElementById('lm-search').focus(), 50);
+    }
+
+    function closeLinkModal() {
+        document.getElementById('link-modal').classList.add('hidden');
+        document.body.style.overflow = '';
+        _lmIngId = null;
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeLinkModal();
+    });
+
+    document.addEventListener('click', e => {
+        if (!e.target.closest('#lm-search') && !e.target.closest('#lm-dropdown')) {
+            document.getElementById('lm-dropdown').classList.add('hidden');
+        }
+    });
+
+    function lmSearch(q) {
+        clearTimeout(_lmTimer);
+        const drop = document.getElementById('lm-dropdown');
+        if (q.length < 2) { drop.classList.add('hidden'); return; }
+        _lmTimer = setTimeout(async () => {
+            try {
+                const res = await fetch(`/api/search-recipes?q=${encodeURIComponent(q)}`);
+                const data = await res.json();
+                drop.innerHTML = '';
+                if (!data.results || !data.results.length) {
+                    drop.innerHTML = '<div class="px-4 py-3 text-xs text-gray-500">No recipes found</div>';
+                } else {
+                    data.results.forEach(r => {
+                        const div = document.createElement('div');
+                        div.className = 'px-4 py-2.5 hover:bg-orange-50 cursor-pointer flex items-center justify-between group';
+                        const badge = r.status === 'approved'
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-gray-100 text-gray-500';
+                        div.innerHTML = `
+                            <span class="text-sm font-medium text-gray-900 group-hover:text-orange-700">${r.title}</span>
+                            <span class="text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider ${badge}">${r.status}</span>`;
+                        div.onclick = () => selectRecipeLink(r);
+                        drop.appendChild(div);
+                    });
+                }
+                drop.classList.remove('hidden');
+            } catch (e) { console.error(e); }
+        }, 250);
+    }
+
+    async function selectRecipeLink(r) {
+        if (!_lmIngId) return;
+        document.getElementById('lm-dropdown').classList.add('hidden');
+        try {
+            const res = await fetch(`/api/ingredient/${_lmIngId}/link-recipe`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ recipe_id: r.id }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(`✅ "${data.ingredient_name}" linked to "${data.recipe_title}"`);
+                // Update button colour in table row
+                const row = document.getElementById(`row-${_lmIngId}`);
+                if (row) {
+                    const btn = row.querySelector('button[title="Link to sub-recipe"], button[title="Linked to sub-recipe"]');
+                    if (btn) {
+                        btn.classList.remove('text-gray-300');
+                        btn.classList.add('text-orange-500');
+                        btn.title = 'Linked to sub-recipe';
+                    }
+                }
+                // Show current in modal
+                document.getElementById('lm-current-name').textContent = r.title;
+                document.getElementById('lm-current').classList.remove('hidden');
+                document.getElementById('lm-search').value = '';
+                closeLinkModal();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        } catch (e) { alert('Network error: ' + e.message); }
+    }
+
+    async function clearRecipeLink() {
+        if (!_lmIngId) return;
+        try {
+            const res = await fetch(`/api/ingredient/${_lmIngId}/link-recipe`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ recipe_id: null }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(`Link removed from "${data.ingredient_name}"`);
+                const row = document.getElementById(`row-${_lmIngId}`);
+                if (row) {
+                    const btn = row.querySelector('button[title="Linked to sub-recipe"]');
+                    if (btn) {
+                        btn.classList.remove('text-orange-500');
+                        btn.classList.add('text-gray-300');
+                        btn.title = 'Link to sub-recipe';
+                    }
+                }
+                document.getElementById('lm-current').classList.add('hidden');
+                closeLinkModal();
+            } else { alert('Error: ' + data.error); }
+        } catch (e) { alert('Network error: ' + e.message); }
+    }
+
+    async function lmGenerateRecipe() {
+        if (!_lmIngId) return;
+        const btn = document.getElementById('lm-generate-btn');
+        btn.disabled = true;
+        btn.innerHTML = `<svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg> Setting up…`;
+        try {
+            const res = await fetch(`/api/admin/set-pending-link/${_lmIngId}`);
+            const data = await res.json();
+            if (data.success) {
+                // Redirect to the generate page — the session will auto-link after save
+                window.location.href = data.redirect_url;
+            } else {
+                btn.disabled = false;
+                btn.textContent = 'Generate recipe for this ingredient';
+                alert('Error: ' + data.error);
+            }
+        } catch (e) {
+            btn.disabled = false;
+            btn.textContent = 'Generate recipe for this ingredient';
+            alert('Network error: ' + e.message);
+        }
+    }
+</script>
 
 {% endblock %}
