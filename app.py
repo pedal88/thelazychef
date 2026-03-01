@@ -1957,6 +1957,73 @@ def update_ingredient_data_api():
         print(f"Update Ing Data Error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/api/graph/orbital/<int:recipe_id>', methods=['GET'])
+def get_orbital_graph(recipe_id):
+    target = db.session.get(Recipe, recipe_id)
+    if not target:
+        return jsonify({'error': 'Recipe not found'}), 404
+        
+    nodes = []
+    links = []
+    
+    # 1. Add center node (The Sun)
+    nodes.append({
+        'id': f"recipe_{target.id}",
+        'name': target.title,
+        'group': 'center',
+        'image': get_recipe_image_url(target) if target.image_filename else None,
+        'url': url_for('recipe_detail', recipe_id=target.id) 
+    })
+    
+    c_attr = target.cuisine
+    p_attr = target.protein_type
+    
+    # 2. Add Attribute Nodes (Planets)
+    if c_attr:
+        nodes.append({'id': f"attr_cuisine_{c_attr}", 'name': c_attr, 'group': 'cuisine'})
+        links.append({'source': f"attr_cuisine_{c_attr}", 'target': f"recipe_{target.id}", 'weight': 5.0}) 
+        
+    if p_attr:
+        nodes.append({'id': f"attr_protein_{p_attr}", 'name': p_attr, 'group': 'protein'})
+        links.append({'source': f"attr_protein_{p_attr}", 'target': f"recipe_{target.id}", 'weight': 5.0}) 
+
+    # 3. Discover Siblings (Moons)
+    if c_attr or p_attr:
+        conditions = []
+        if c_attr: conditions.append(Recipe.cuisine == c_attr)
+        if p_attr: conditions.append(Recipe.protein_type == p_attr)
+        
+        query = db.select(Recipe).where(
+            Recipe.id != target.id,
+            Recipe.status == 'approved',
+            or_(*conditions)
+        ).limit(10)
+        
+        siblings = db.session.execute(query).scalars().all()
+        
+        for sib in siblings:
+            nodes.append({
+                'id': f"recipe_{sib.id}",
+                'name': sib.title,
+                'group': 'sibling',
+                'image': get_recipe_image_url(sib) if sib.image_filename else None,
+                'url': url_for('recipe_detail', recipe_id=sib.id)
+            })
+            
+            matches_c = (sib.cuisine == c_attr) and c_attr
+            matches_p = (sib.protein_type == p_attr) and p_attr
+            
+            if matches_c and matches_p:
+                links.append({'source': f"recipe_{sib.id}", 'target': f"attr_cuisine_{c_attr}", 'weight': 2.0})
+                links.append({'source': f"recipe_{sib.id}", 'target': f"attr_protein_{p_attr}", 'weight': 2.0})
+            else:
+                if matches_c:
+                    links.append({'source': f"recipe_{sib.id}", 'target': f"attr_cuisine_{c_attr}", 'weight': 1.0})
+                if matches_p:
+                    links.append({'source': f"recipe_{sib.id}", 'target': f"attr_protein_{p_attr}", 'weight': 1.0})
+
+    return jsonify({'nodes': nodes, 'links': links})
+
 @app.route('/api/recipe/<int:recipe_id>', methods=['GET'])
 @login_required
 def get_recipe_json(recipe_id):
@@ -2681,16 +2748,22 @@ def recipe_detail(recipe_id):
             )
         ).scalars().first()
 
-    return render_template('recipe.html', 
-                            recipe=recipe, 
-                            steps_by_phase=steps_by_phase, 
-                            ingredients_by_component=ingredients_by_component, 
+    # Check if any ingredient already points to this recipe as a sub-recipe
+    linked_ingredient = db.session.execute(
+        db.select(Ingredient).where(Ingredient.sub_recipe_id == recipe_id)
+    ).scalars().first()
+
+    return render_template('recipe.html',
+                            recipe=recipe,
+                            steps_by_phase=steps_by_phase,
+                            ingredients_by_component=ingredients_by_component,
                             steps_by_component=steps_by_component,
                             has_chronological_data=has_chronological_data,
                             chrono_steps=chrono_steps,
                             component_meta=component_meta,
                             substitutes=substitutes,
-                            user_interaction=user_interaction)
+                            user_interaction=user_interaction,
+                            linked_ingredient=linked_ingredient)
 
 @app.route('/recipe/<int:recipe_id>/kitchen')
 def recipe_kitchen_mode(recipe_id):

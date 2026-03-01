@@ -62,6 +62,16 @@
     <div class="max-w-4xl mx-auto flex justify-end items-center gap-3 -mt-8 mb-8 relative z-10 px-4">
 
         {# Direction A: Promote recipe → ingredient #}
+        {% if linked_ingredient %}
+        <button id="promote-to-ing-btn" disabled
+            class="text-xs font-mono text-green-700 flex items-center gap-1 bg-green-50 border border-green-300 px-3 py-1 rounded-full shadow-sm cursor-default"
+            title="Already linked to ingredient '{{ linked_ingredient.name|e }}'">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            Linked to ingredient: {{ linked_ingredient.name }}
+        </button>
+        {% else %}
         <button id="promote-to-ing-btn"
             class="text-xs font-mono text-slate-400 hover:text-green-600 flex items-center gap-1 transition-colors bg-white/80 backdrop-blur px-3 py-1 rounded-full shadow-sm border border-slate-200"
             title="Link this recipe to a matching ingredient (or create a stub)"
@@ -72,6 +82,8 @@
             </svg>
             Use as ingredient
         </button>
+        {% endif %}
+
 
         <button onclick="openInspector({{ recipe.id }})"
             class="text-xs font-mono text-slate-400 hover:text-indigo-600 flex items-center gap-1 transition-colors bg-white/80 backdrop-blur px-3 py-1 rounded-full shadow-sm border border-slate-200">
@@ -730,6 +742,21 @@
             {% endfor %}
         </div>
         {% endif %}
+    </div>
+
+    <!-- ==================== ORBITAL GRAPH ==================== -->
+    <div id="flavor-galaxy-section" class="mt-16 pt-10 border-t border-slate-200 print:hidden">
+        <div class="flex items-center gap-3 mb-6">
+            <span class="text-2xl">🌌</span>
+            <h2 class="text-2xl font-bold font-sans text-slate-900">Explore the Flavor Galaxy</h2>
+        </div>
+        <div id="flavor-galaxy-container"
+            class="w-full h-96 bg-slate-900 rounded-xl overflow-hidden relative border border-slate-700 mt-8">
+            <div id="galaxy-loading"
+                class="absolute inset-0 flex items-center justify-center text-slate-400 font-medium">
+                Scanning the universe...
+            </div>
+        </div>
     </div>
 
     {# ============ SUBSTITUTE SECTION ============ #}
@@ -1656,5 +1683,208 @@
                 }
             });
         }
+    </script>
+    <!-- ORBITAL GRAPH SCRIPT -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const container = document.getElementById("flavor-galaxy-container");
+            if (!container) return;
+
+            fetch(`/api/graph/orbital/{{ recipe.id }}`)
+                .then(res => res.json())
+                .then(data => {
+                    const loadingMsg = document.getElementById("galaxy-loading");
+                    if (loadingMsg) loadingMsg.remove();
+
+                    if (data.error || (!data.nodes || data.nodes.length <= 1)) {
+                        container.innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-slate-500 text-sm">Not enough data to map the galaxy.</div>';
+                        return;
+                    }
+
+                    const width = container.clientWidth;
+                    const height = container.clientHeight;
+
+                    const svg = d3.select("#flavor-galaxy-container")
+                        .append("svg")
+                        .attr("width", width)
+                        .attr("height", height)
+                        .attr("viewBox", [0, 0, width, height])
+                        .attr("style", "max-width: 100%; height: auto; display: block; cursor: grab;")
+                        .call(d3.zoom().scaleExtent([0.5, 4]).on("zoom", (event) => g.attr("transform", event.transform)))
+                        .on("mousedown", () => svg.style("cursor", "grabbing"))
+                        .on("mouseup", () => svg.style("cursor", "grab"));
+
+                    const g = svg.append("g");
+
+                    // Float animation to make UI feel alive
+                    const simulation = d3.forceSimulation(data.nodes)
+                        .velocityDecay(0.05) // Subtle float
+                        .force("link", d3.forceLink(data.links).id(d => d.id).distance(d => d.group === 'cuisine' || d.group === 'protein' ? 120 : 160))
+                        .force("charge", d3.forceManyBody().strength(-300))
+                        .force("center", d3.forceCenter(width / 2, height / 2))
+                        .force("collide", d3.forceCollide().radius(d => d.group === 'center' ? 60 : (d.group === 'cuisine' || d.group === 'protein' ? 40 : 30)).iterations(2));
+
+                    // Keep target recipe fixed at absolute center
+                    const centerNode = data.nodes.find(n => n.group === 'center');
+                    if (centerNode) {
+                        centerNode.fx = width / 2;
+                        centerNode.fy = height / 2;
+                    }
+
+                    const link = g.append("g")
+                        .attr("stroke", "#475569") // slate-600
+                        .attr("stroke-opacity", 0.6)
+                        .selectAll("line")
+                        .data(data.links)
+                        .join("line")
+                        .attr("stroke-width", d => Math.sqrt(d.weight) * 1.5)
+                        .attr("class", d => `link src-${d.source.id} tgt-${d.target.id}`);
+
+                    const node = g.append("g")
+                        .attr("stroke", "#fff")
+                        .attr("stroke-width", 1.5)
+                        .selectAll("g")
+                        .data(data.nodes)
+                        .join("g")
+                        .style("cursor", d => d.url ? "pointer" : "default")
+                        .on("click", (event, d) => {
+                            if (d.url) window.location.href = d.url;
+                        });
+
+                    // Node colors mapped
+                    const colorMap = {
+                        'center': '#3b82f6', // Blue
+                        'cuisine': '#f59e0b', // Amber
+                        'protein': '#e11d48', // Rose/Red
+                        'sibling': '#14b8a6'  // Teal
+                    };
+
+                    const radiusMap = {
+                        'center': 40,
+                        'cuisine': 25,
+                        'protein': 25,
+                        'sibling': 18
+                    };
+
+                    // Circles
+                    node.append("circle")
+                        .attr("r", d => radiusMap[d.group] || 20)
+                        .attr("fill", d => colorMap[d.group] || "#94a3b8");
+
+                    // Images for center / siblings if available
+                    node.filter(d => d.image)
+                        .append("image")
+                        .attr("href", d => d.image)
+                        .attr("x", d => -(radiusMap[d.group] || 20))
+                        .attr("y", d => -(radiusMap[d.group] || 20))
+                        .attr("width", d => (radiusMap[d.group] || 20) * 2)
+                        .attr("height", d => (radiusMap[d.group] || 20) * 2)
+                        .attr("clip-path", d => `circle(${radiusMap[d.group] || 20}px at ${radiusMap[d.group] || 20}px ${radiusMap[d.group] || 20}px)`);
+
+                    // Labels
+                    node.append("text")
+                        .attr("dy", d => (radiusMap[d.group] || 20) + 14)
+                        .attr("text-anchor", "middle")
+                        .text(d => d.name)
+                        .attr("fill", "#f8fafc")
+                        .attr("stroke", "none")
+                        .style("font-size", d => d.group === 'center' ? "14px" : "11px")
+                        .style("font-weight", d => d.group === 'center' ? "bold" : "normal")
+                        .style("font-family", "sans-serif")
+                        .style("text-shadow", "0px 2px 4px rgba(0,0,0,0.8)");
+
+                    // Hover interactions
+                    node.on("mouseover", function (event, d) {
+                        // Dim all
+                        node.style("opacity", 0.3);
+                        link.style("stroke-opacity", 0.1);
+
+                        // Highlight connected
+                        const connectedIds = new Set([d.id]);
+                        link.filter(l => l.source.id === d.id || l.target.id === d.id)
+                            .style("stroke-opacity", 1)
+                            .style("stroke", "#fcd34d")
+                            .each(l => {
+                                connectedIds.add(l.source.id);
+                                connectedIds.add(l.target.id);
+                            });
+
+                        // If sibling, also highlight path to center
+                        if (d.group === 'sibling') {
+                            const connectedPlanets = data.links.filter(l => l.source.id === d.id || l.target.id === d.id)
+                                .map(l => l.source.id === d.id ? l.target : l.source);
+
+                            connectedPlanets.forEach(planet => {
+                                link.filter(l => (l.source.id === planet.id && l.target.group === 'center') || (l.target.id === planet.id && l.source.group === 'center'))
+                                    .style("stroke-opacity", 1)
+                                    .style("stroke", "#fcd34d");
+
+                                connectedIds.add(`recipe_{{ recipe.id }}`);
+                            });
+                        }
+
+                        node.filter(n => connectedIds.has(n.id))
+                            .style("opacity", 1);
+                    })
+                        .on("mouseout", function () {
+                            node.style("opacity", 1);
+                            link.style("stroke-opacity", 0.6).style("stroke", "#475569");
+                        });
+
+                    node.call(d3.drag()
+                        .on("start", dragstarted)
+                        .on("drag", dragged)
+                        .on("end", dragended));
+
+                    simulation.on("tick", () => {
+                        link
+                            .attr("x1", d => d.source.x)
+                            .attr("y1", d => d.source.y)
+                            .attr("x2", d => d.target.x)
+                            .attr("y2", d => d.target.y);
+
+                        node
+                            .attr("transform", d => `translate(${d.x},${d.y})`);
+                    });
+
+                    function dragstarted(event, d) {
+                        if (!event.active) simulation.alphaTarget(0.3).restart();
+                        d.fx = d.x;
+                        d.fy = d.y;
+                    }
+
+                    function dragged(event, d) {
+                        if (d.group === 'center') return;
+                        d.fx = event.x;
+                        d.fy = event.y;
+                    }
+
+                    function dragended(event, d) {
+                        if (!event.active) simulation.alphaTarget(0);
+                        if (d.group !== 'center') {
+                            d.fx = null;
+                            d.fy = null;
+                        }
+                    }
+
+                    // Window resize handler
+                    window.addEventListener('resize', () => {
+                        const w = container.clientWidth;
+                        const h = container.clientHeight;
+                        svg.attr("width", w).attr("height", h).attr("viewBox", [0, 0, w, h]);
+                        simulation.force("center", d3.forceCenter(w / 2, h / 2));
+                        if (centerNode) {
+                            centerNode.fx = w / 2;
+                            centerNode.fy = h / 2;
+                        }
+                        simulation.alpha(0.3).restart();
+                    });
+                })
+                .catch(err => {
+                    console.error("Galaxy load error:", err);
+                    container.innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-red-400 text-sm">Failed to connect to the Flavor Galaxy.</div>';
+                });
+        });
     </script>
     {% endblock %}
