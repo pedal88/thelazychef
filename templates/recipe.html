@@ -777,9 +777,9 @@
                 {% if ri.id in substitutes %}
                 {% set sub = substitutes[ri.id] %}
                 <div
-                    class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm hover:shadow-md transition-shadow">
+                    class="bg-white border border-slate-200 rounded-xl p-2.5 shadow-sm hover:shadow-md transition-shadow flex flex-col xl:flex-row xl:items-center gap-3">
                     {# Original ingredient header #}
-                    <div class="flex items-center gap-2 mb-2">
+                    <div class="flex items-center gap-2 shrink-0 xl:w-1/3 xl:border-r border-slate-100 pr-2">
                         {% if sub.original.image_url %}
                         <img src="{{ sub.original.image_url }}"
                             class="w-7 h-7 rounded-full object-cover border border-slate-200 shadow-sm"
@@ -790,51 +790,31 @@
                             {{ sub.original.name[:2]|upper }}
                         </div>
                         {% endif %}
-                        <div class="leading-tight">
-                            <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Instead of</p>
-                            <p class="text-sm font-bold text-slate-900">{{ sub.original.name }}</p>
+                        <div class="leading-tight min-w-0">
+                            <p class="text-[9px] font-semibold uppercase tracking-wider text-slate-400">Instead of</p>
+                            <p class="text-sm font-bold text-slate-900 truncate">{{ sub.original.name }}</p>
                         </div>
-                        <span
-                            class="ml-auto text-[10px] text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100 font-medium">{{
-                            sub.original.sub_category }}</span>
+                        {% if sub.tip %}
+                        <span class="ml-1 text-orange-500 text-sm cursor-help" title="{{ sub.tip }}">👨‍🍳</span>
+                        {% endif %}
                     </div>
 
-                    {# Chef's tip #}
-                    {% if sub.tip %}
-                    <div
-                        class="flex items-start gap-1.5 mb-2.5 bg-orange-50 border border-orange-100 rounded-lg px-2.5 py-1.5">
-                        <span class="text-orange-500 text-sm leading-tight shrink-0">👨‍🍳</span>
-                        <p class="text-[11px] text-orange-800 italic leading-snug">{{ sub.tip }}.</p>
-                    </div>
-                    {% endif %}
-
-                    {# Alternatives grid #}
-                    <div class="grid grid-cols-2 gap-2">
+                    {# Alternatives (Inline Wrap) #}
+                    <div class="flex-1 flex flex-wrap items-center gap-2">
                         {% for alt in sub.alts %}
                         <div
-                            class="flex items-center gap-2 bg-slate-50 rounded-lg px-2 py-1.5 border border-slate-100 hover:bg-green-50 hover:border-green-200 transition-colors group">
+                            class="flex items-center gap-1.5 bg-slate-50 rounded-lg px-2 py-1 border border-slate-100 hover:bg-green-50 hover:border-green-200 transition-colors group">
                             {% if alt.image_url %}
                             <img src="{{ alt.image_url }}"
-                                class="w-6 h-6 rounded-full object-cover shrink-0 border border-slate-200"
+                                class="w-5 h-5 rounded-full object-cover shrink-0 border border-slate-200"
                                 alt="{{ alt.name }}">
                             {% else %}
                             <div
-                                class="w-6 h-6 rounded-full bg-white flex items-center justify-center text-slate-400 font-bold text-[9px] border border-slate-200 shrink-0">
+                                class="w-5 h-5 rounded-full bg-white flex items-center justify-center text-slate-400 font-bold text-[8px] border border-slate-200 shrink-0">
                                 {{ alt.name[:2]|upper }}
                             </div>
                             {% endif %}
-                            <div class="min-w-0 leading-tight">
-                                <p class="font-semibold text-xs text-slate-800 truncate group-hover:text-green-800">{{
-                                    alt.name }}</p>
-                                {% if alt.is_staple %}
-                                <p class="text-[9px] font-bold uppercase tracking-wider text-green-600">Pantry Staple
-                                </p>
-                                {% else %}
-                                <p class="text-[9px] text-slate-400 uppercase tracking-wider truncate">{{
-                                    alt.main_category or
-                                    'Substitute' }}</p>
-                                {% endif %}
-                            </div>
+                            <p class="font-medium text-xs text-slate-700 group-hover:text-green-800">{{ alt.name }}</p>
                         </div>
                         {% endfor %}
                     </div>
