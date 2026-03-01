@@ -89,11 +89,27 @@
 
             <!-- Desktop Links (hidden on mobile) -->
             <div class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
-                <a href="/" class="hover:text-orange-600 transition-colors">Discover</a>
-
-                <a href="/explore/galaxy" class="hover:text-orange-600 transition-colors flex items-center gap-1">
-                    <span>🌌</span> Galaxy
-                </a>
+                <!-- Discover Dropdown -->
+                <div class="relative group">
+                    <button class="flex items-center gap-1 hover:text-orange-600 transition-colors focus:outline-none">
+                        <span>Discover</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </button>
+                    <div
+                        class="absolute left-0 mt-0 w-48 bg-white border border-slate-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[110] transform origin-top-left">
+                        <div class="py-1">
+                            <a href="/"
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">Discover
+                                Recipes</a>
+                            <a href="/explore/galaxy"
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">Galaxy
+                                Map</a>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Recipes Dropdown -->
                 <div class="relative group">
@@ -223,9 +239,10 @@
         <!-- Mobile Menu Panel (hidden by default) -->
         <div id="mobile-menu" class="hidden md:hidden border-t border-slate-100 bg-white shadow-lg">
             <div class="px-4 py-4 space-y-1 text-sm font-medium text-slate-700">
-                <a href="/" class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">Discover</a>
-                <a href="/explore/galaxy" class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">🌌
-                    Galaxy Map</a>
+                <a href="/" class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">Discover
+                    Recipes</a>
+                <a href="/explore/galaxy"
+                    class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">Galaxy Map</a>
                 <a href="/recipes" class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">All
                     Recipes</a>
                 <a href="{{ url_for('collections_index') }}"
