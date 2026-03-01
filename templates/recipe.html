@@ -744,92 +744,98 @@
         {% endif %}
     </div>
 
-    <!-- ==================== ORBITAL GRAPH ==================== -->
-    <div id="flavor-galaxy-section" class="mt-16 pt-10 border-t border-slate-200 print:hidden">
-        <div class="flex items-center gap-3 mb-6">
-            <span class="text-2xl">🌌</span>
-            <h2 class="text-2xl font-bold font-sans text-slate-900">Explore the Flavor Galaxy</h2>
-        </div>
-        <div id="flavor-galaxy-container"
-            class="w-full h-96 bg-slate-900 rounded-xl overflow-hidden relative border border-slate-700 mt-8">
-            <div id="galaxy-loading"
-                class="absolute inset-0 flex items-center justify-center text-slate-400 font-medium">
-                Scanning the universe...
+    <!-- ==================== ORBITAL GRAPH & SUBSTITUTES ==================== -->
+    <div
+        class="grid grid-cols-1 {% if substitutes %}lg:grid-cols-2{% endif %} gap-8 mt-16 pt-10 border-t border-slate-200 print:hidden items-start">
+
+        <!-- Left: Orbital Graph -->
+        <div id="flavor-galaxy-section" class="w-full">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="text-2xl">🌌</span>
+                <h2 class="text-2xl font-bold font-sans text-slate-900">Explore the Flavor Galaxy</h2>
+            </div>
+            <div id="flavor-galaxy-container"
+                class="w-full h-96 bg-slate-900 rounded-xl overflow-hidden relative border border-slate-700 mt-8">
+                <div id="galaxy-loading"
+                    class="absolute inset-0 flex items-center justify-center text-slate-400 font-medium">
+                    Scanning the universe...
+                </div>
             </div>
         </div>
-    </div>
 
-    {# ============ SUBSTITUTE SECTION ============ #}
-    {% if substitutes %}
-    <div id="substitute-section" class="mt-16 pt-10 border-t border-slate-200 print:hidden">
-        <div class="flex items-center gap-3 mb-2">
-            <span class="text-2xl">🔄</span>
-            <h2 class="text-2xl font-bold font-serif text-slate-900">Ingredient Substitutes</h2>
-        </div>
-        <p class="text-sm text-slate-500 mb-8">Can't find an ingredient? Here are smart swaps from the same family,
-            staples listed first.</p>
+        {# Right: Substitute Section #}
+        {% if substitutes %}
+        <div id="substitute-section" class="w-full">
+            <div class="flex items-center gap-3 mb-2">
+                <span class="text-2xl">🔄</span>
+                <h2 class="text-2xl font-bold font-serif text-slate-900">Ingredient Substitutes</h2>
+            </div>
+            <p class="text-sm text-slate-500 mb-8">Can't find an ingredient? Here are smart swaps.</p>
 
-        <div class="space-y-8">
-            {% for ri in recipe.ingredients %}
-            {% if ri.id in substitutes %}
-            {% set sub = substitutes[ri.id] %}
-            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                {# Original ingredient header #}
-                <div class="flex items-center gap-3 mb-4">
-                    {% if sub.original.image_url %}
-                    <img src="{{ sub.original.image_url }}"
-                        class="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-sm"
-                        alt="{{ sub.original.name }}">
-                    {% else %}
-                    <div
-                        class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-sm border border-slate-200">
-                        {{ sub.original.name[:2]|upper }}
-                    </div>
-                    {% endif %}
-                    <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Instead of</p>
-                        <p class="font-bold text-slate-900">{{ sub.original.name }}</p>
-                    </div>
-                    <span
-                        class="ml-auto text-xs text-slate-400 bg-slate-50 px-2 py-1 rounded-full border border-slate-100 font-medium">{{
-                        sub.original.sub_category }}</span>
-                </div>
-
-                {# Chef's tip #}
-                {% if sub.tip %}
-                <div class="flex items-start gap-2 mb-5 bg-orange-50 border border-orange-100 rounded-xl px-4 py-3">
-                    <span class="text-orange-500 text-lg leading-tight shrink-0">👨‍🍳</span>
-                    <p class="text-sm text-orange-800 italic leading-relaxed">{{ sub.tip }}.</p>
-                </div>
-                {% endif %}
-
-                {# Alternatives grid #}
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {% for alt in sub.alts %}
-                    <div
-                        class="flex items-center gap-3 bg-slate-50 rounded-xl px-4 py-3 border border-slate-100 hover:bg-green-50 hover:border-green-200 transition-colors group">
-                        {% if alt.image_url %}
-                        <img src="{{ alt.image_url }}"
-                            class="w-9 h-9 rounded-full object-cover shrink-0 border border-slate-200"
-                            alt="{{ alt.name }}">
+            <div class="space-y-6 overflow-y-auto pr-2" style="max-height: 28rem;">
+                {% for ri in recipe.ingredients %}
+                {% if ri.id in substitutes %}
+                {% set sub = substitutes[ri.id] %}
+                <div
+                    class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                    {# Original ingredient header #}
+                    <div class="flex items-center gap-3 mb-4">
+                        {% if sub.original.image_url %}
+                        <img src="{{ sub.original.image_url }}"
+                            class="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-sm"
+                            alt="{{ sub.original.name }}">
                         {% else %}
                         <div
-                            class="w-9 h-9 rounded-full bg-white flex items-center justify-center text-slate-400 font-bold text-xs border border-slate-200 shrink-0">
-                            {{ alt.name[:2]|upper }}
+                            class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-sm border border-slate-200">
+                            {{ sub.original.name[:2]|upper }}
                         </div>
                         {% endif %}
-                        <div class="min-w-0">
-                            <p class="font-semibold text-sm text-slate-800 truncate group-hover:text-green-800">{{
-                                alt.name }}</p>
-                            {% if alt.is_staple %}
-                            <p class="text-[10px] font-bold uppercase tracking-wider text-green-600">Pantry Staple</p>
-                            {% else %}
-                            <p class="text-[10px] text-slate-400 uppercase tracking-wider">{{ alt.main_category or
-                                'Substitute' }}</p>
-                            {% endif %}
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Instead of</p>
+                            <p class="font-bold text-slate-900">{{ sub.original.name }}</p>
                         </div>
+                        <span
+                            class="ml-auto text-xs text-slate-400 bg-slate-50 px-2 py-1 rounded-full border border-slate-100 font-medium">{{
+                            sub.original.sub_category }}</span>
                     </div>
-                    {% endfor %}
+
+                    {# Chef's tip #}
+                    {% if sub.tip %}
+                    <div class="flex items-start gap-2 mb-5 bg-orange-50 border border-orange-100 rounded-xl px-4 py-3">
+                        <span class="text-orange-500 text-lg leading-tight shrink-0">👨‍🍳</span>
+                        <p class="text-sm text-orange-800 italic leading-relaxed">{{ sub.tip }}.</p>
+                    </div>
+                    {% endif %}
+
+                    {# Alternatives grid #}
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        {% for alt in sub.alts %}
+                        <div
+                            class="flex items-center gap-3 bg-slate-50 rounded-xl px-4 py-3 border border-slate-100 hover:bg-green-50 hover:border-green-200 transition-colors group">
+                            {% if alt.image_url %}
+                            <img src="{{ alt.image_url }}"
+                                class="w-9 h-9 rounded-full object-cover shrink-0 border border-slate-200"
+                                alt="{{ alt.name }}">
+                            {% else %}
+                            <div
+                                class="w-9 h-9 rounded-full bg-white flex items-center justify-center text-slate-400 font-bold text-xs border border-slate-200 shrink-0">
+                                {{ alt.name[:2]|upper }}
+                            </div>
+                            {% endif %}
+                            <div class="min-w-0">
+                                <p class="font-semibold text-sm text-slate-800 truncate group-hover:text-green-800">{{
+                                    alt.name }}</p>
+                                {% if alt.is_staple %}
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-green-600">Pantry Staple
+                                </p>
+                                {% else %}
+                                <p class="text-[10px] text-slate-400 uppercase tracking-wider">{{ alt.main_category or
+                                    'Substitute' }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
             {% endif %}
@@ -837,746 +843,743 @@
         </div>
     </div>
     {% endif %}
+</div>
 
 
-    {% if current_user.is_authenticated and current_user.is_admin %}
-    <div id="relinkModal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
-        <!-- Backdrop -->
-        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeRelinkModal()"></div>
+{% if current_user.is_authenticated and current_user.is_admin %}
+<div id="relinkModal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeRelinkModal()"></div>
 
-        <!-- Modal Content -->
-        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
-            <!-- Header -->
-            <div class="px-6 py-4 border-b border-slate-100 bg-slate-50">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h3 class="text-lg font-bold text-slate-900">Relink Ingredient</h3>
-                        <p class="text-xs text-slate-500 mt-0.5">
-                            Replace <strong id="relinkCurrentName" class="text-red-600">—</strong> with a pantry
-                            item
-                        </p>
-                    </div>
-                    <button onclick="closeRelinkModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12">
-                            </path>
-                        </svg>
-                    </button>
+    <!-- Modal Content -->
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
+        <!-- Header -->
+        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900">Relink Ingredient</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        Replace <strong id="relinkCurrentName" class="text-red-600">—</strong> with a pantry
+                        item
+                    </p>
                 </div>
-
-                <!-- Search Input -->
-                <div class="mt-4 relative">
-                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none"
-                        stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                <button onclick="closeRelinkModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
                     </svg>
-                    <input type="text" id="relinkSearchInput" placeholder="Search pantry..."
-                        oninput="debounceRelinkSearch()"
-                        class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm font-medium text-slate-900 placeholder-slate-400 outline-none transition-all">
-                </div>
-            </div>
-
-            <!-- Results List -->
-            <div class="overflow-y-auto max-h-80 divide-y divide-slate-100" id="relinkResults">
-                <div class="px-6 py-12 text-center text-slate-400 text-sm">
-                </div>
-            </div>
-
-            <!-- Footer -->
-            <div class="px-6 py-3 border-t border-slate-100 bg-slate-50 flex justify-end">
-                <button onclick="closeRelinkModal()"
-                    class="px-4 py-2 text-sm text-slate-500 hover:text-slate-700 font-medium">
-                    Cancel
                 </button>
+            </div>
+
+            <!-- Search Input -->
+            <div class="mt-4 relative">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none"
+                    stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <input type="text" id="relinkSearchInput" placeholder="Search pantry..."
+                    oninput="debounceRelinkSearch()"
+                    class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm font-medium text-slate-900 placeholder-slate-400 outline-none transition-all">
             </div>
         </div>
-    </div>
-    {% endif %}
 
-    {# ============ FEEDBACK DRAWER (logged-in users) ============ #}
-    {% if current_user.is_authenticated %}
-    <div id="feedback-backdrop" class="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm hidden"
-        onclick="closeFeedbackDrawer()"></div>
-
-    <div id="feedback-drawer" class="fixed bottom-0 inset-x-0 z-50 translate-y-full transition-transform duration-300 ease-in-out
-               bg-white rounded-t-3xl shadow-2xl border-t border-slate-200 max-h-[90vh] overflow-y-auto print:hidden">
-
-        <div class="px-6 pt-5 pb-8 max-w-2xl mx-auto">
-            <div class="w-10 h-1 bg-slate-300 rounded-full mx-auto mb-5"></div>
-
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-bold font-serif text-slate-900">Your Feedback</h3>
-                <button onclick="closeFeedbackDrawer()" class="text-slate-400 hover:text-slate-700 transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+        <!-- Results List -->
+        <div class="overflow-y-auto max-h-80 divide-y divide-slate-100" id="relinkResults">
+            <div class="px-6 py-12 text-center text-slate-400 text-sm">
             </div>
+        </div>
 
-            {# Star rating #}
-            <div class="mb-6">
-                <label class="block text-sm font-semibold text-slate-700 mb-3">Rating</label>
-                <div id="star-row" class="flex gap-2">
-                    {% for i in range(1, 6) %}
-                    <button type="button" onclick="setRating({{ i }})" data-val="{{ i }}"
-                        class="star-btn text-3xl transition-transform hover:scale-110 focus:outline-none"
-                        aria-label="{{ i }} stars">
-                        {% if user_interaction and user_interaction.rating and user_interaction.rating >= i %}⭐{% else
-                        %}☆{% endif %}
-                    </button>
-                    {% endfor %}
-                </div>
-                <input type="hidden" id="fb-rating"
-                    value="{{ user_interaction.rating if user_interaction and user_interaction.rating else '' }}">
-            </div>
-
-            {# Comment #}
-            <div class="mb-6">
-                <label class="block text-sm font-semibold text-slate-700 mb-2" for="fb-comment">Comment</label>
-                <textarea id="fb-comment" rows="3" placeholder="What did you think? Any tweaks?"
-                    class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none resize-none transition-all">{{ user_interaction.comment if user_interaction and user_interaction.comment else '' }}</textarea>
-            </div>
-
-            {# Photo upload #}
-            <div class="mb-8">
-                <label class="block text-sm font-semibold text-slate-700 mb-3">Your Photos</label>
-                <div id="saved-photos-row" class="flex flex-wrap gap-3 mb-3">
-                    {% if user_interaction and user_interaction.user_photos %}
-                    {% for url in user_interaction.user_photos %}
-                    <div class="relative w-20 h-20 rounded-xl overflow-hidden border border-slate-200 group shadow-sm"
-                        data-url="{{ url }}">
-                        <img src="{{ url }}" class="w-full h-full object-cover">
-                        <button type="button" onclick="removeExistingPhoto(this)"
-                            class="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
-                    </div>
-                    {% endfor %}
-                    {% endif %}
-                </div>
-                <label for="fb-photos"
-                    class="inline-flex items-center gap-2 cursor-pointer px-4 py-2 rounded-xl border-2 border-dashed border-slate-300 hover:border-orange-400 text-sm text-slate-500 hover:text-orange-600 transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    Add Photos
-                </label>
-                <input type="file" id="fb-photos" multiple accept="image/*,.heic,.heif" class="sr-only">
-                <div id="new-photos-preview" class="flex flex-wrap gap-3 mt-3"></div>
-            </div>
-
-            <button onclick="saveFeedback()" id="fb-save-btn"
-                class="w-full py-3 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm transition-colors flex items-center justify-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                Save Feedback
+        <!-- Footer -->
+        <div class="px-6 py-3 border-t border-slate-100 bg-slate-50 flex justify-end">
+            <button onclick="closeRelinkModal()"
+                class="px-4 py-2 text-sm text-slate-500 hover:text-slate-700 font-medium">
+                Cancel
             </button>
         </div>
     </div>
+</div>
+{% endif %}
 
-    <script>
-        const RECIPE_ID = {{ recipe.id }};
+{# ============ FEEDBACK DRAWER (logged-in users) ============ #}
+{% if current_user.is_authenticated %}
+<div id="feedback-backdrop" class="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm hidden"
+    onclick="closeFeedbackDrawer()"></div>
 
-        // ── Made toggle ────────────────────────────────────────────────────
-        function toggleMade(cb) {
-            const icon = document.getElementById('made-icon');
-            const label = cb.closest('label').querySelector('span:last-child');
-            fetch(`/api/interactions/recipe/${RECIPE_ID}/made`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ is_made: cb.checked })
-            })
-                .then(r => r.json())
-                .then(() => {
-                    icon.textContent = cb.checked ? '✅' : '🍳';
-                    label.textContent = cb.checked ? 'Made it!' : 'Made it?';
-                })
-                .catch(() => { cb.checked = !cb.checked; }); // revert on error
-        }
+<div id="feedback-drawer" class="fixed bottom-0 inset-x-0 z-50 translate-y-full transition-transform duration-300 ease-in-out
+               bg-white rounded-t-3xl shadow-2xl border-t border-slate-200 max-h-[90vh] overflow-y-auto print:hidden">
 
-        // ── Feedback Drawer ────────────────────────────────────────────────
-        function openFeedbackDrawer() {
-            document.getElementById('feedback-backdrop').classList.remove('hidden');
-            requestAnimationFrame(() => {
-                document.getElementById('feedback-drawer').classList.remove('translate-y-full');
-            });
-        }
+    <div class="px-6 pt-5 pb-8 max-w-2xl mx-auto">
+        <div class="w-10 h-1 bg-slate-300 rounded-full mx-auto mb-5"></div>
 
-        function closeFeedbackDrawer() {
-            document.getElementById('feedback-drawer').classList.add('translate-y-full');
-            setTimeout(() => document.getElementById('feedback-backdrop').classList.add('hidden'), 300);
-        }
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold font-serif text-slate-900">Your Feedback</h3>
+            <button onclick="closeFeedbackDrawer()" class="text-slate-400 hover:text-slate-700 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
 
-        // ── Star rating ────────────────────────────────────────────────────
-        function setRating(val) {
-            document.getElementById('fb-rating').value = val;
-            document.querySelectorAll('.star-btn').forEach(btn => {
-                btn.textContent = parseInt(btn.dataset.val) <= val ? '⭐' : '☆';
-            });
-        }
-
-        // ── Remove existing saved photo ────────────────────────────────────
-        function removeExistingPhoto(btn) {
-            btn.closest('[data-url]').remove();
-        }
-
-        // ── New photo preview ──────────────────────────────────────────────
-        document.getElementById('fb-photos').addEventListener('change', function () {
-            const preview = document.getElementById('new-photos-preview');
-            preview.innerHTML = '';
-            Array.from(this.files).forEach(file => {
-                const url = URL.createObjectURL(file);
-                const div = document.createElement('div');
-                div.className = 'w-20 h-20 rounded-xl overflow-hidden border border-slate-200 shadow-sm';
-                div.innerHTML = `<img src="${url}" class="w-full h-full object-cover">`;
-                preview.appendChild(div);
-            });
-        });
-
-        // ── Save feedback ──────────────────────────────────────────────────
-        async function saveFeedback() {
-            const btn = document.getElementById('fb-save-btn');
-            btn.disabled = true;
-            btn.textContent = 'Saving…';
-
-            const fd = new FormData();
-            fd.append('rating', document.getElementById('fb-rating').value || '');
-            fd.append('comment', document.getElementById('fb-comment').value || '');
-
-            // Kept (un-deleted) existing photos
-            const keptUrls = Array.from(
-                document.querySelectorAll('#saved-photos-row [data-url]')
-            ).map(el => el.dataset.url);
-            fd.append('keep_photos', JSON.stringify(keptUrls));
-
-            // New files
-            const files = document.getElementById('fb-photos').files;
-            Array.from(files).forEach(f => fd.append('photos', f));
-
-            try {
-                const res = await fetch(`/api/interactions/recipe/${RECIPE_ID}/feedback`, {
-                    method: 'POST',
-                    body: fd
-                });
-                const data = await res.json();
-                if (data.success) {
-                    closeFeedbackDrawer();
-                    // Update button label with new rating
-                    const rating = document.getElementById('fb-rating').value;
-                    const fbBtnSpan = document.querySelector('[onclick="openFeedbackDrawer()"] span');
-                    if (fbBtnSpan) fbBtnSpan.textContent = rating ? `${rating}★ Feedback` : 'Leave Feedback';
-                } else {
-                    alert('Save failed: ' + (data.error || 'Unknown error'));
-                }
-            } catch (e) {
-                alert('Network error. Please try again.');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Save Feedback';
-            }
-        }
-    </script>
-    {% endif %}
-
-    {# ============ SUB-RECIPE MODAL ============ #}
-    <div id="sub-recipe-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden print:hidden"
-        role="dialog" aria-modal="true" aria-labelledby="srm-title">
-
-        {# Backdrop #}
-        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeSubRecipeModal()"></div>
-
-        {# Panel #}
-        <div
-            class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col mx-4">
-
-            {# Header #}
-            <div class="px-6 py-4 border-b border-slate-100 flex items-start gap-4">
-                <div id="srm-image-wrap"
-                    class="hidden shrink-0 w-14 h-14 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
-                    <img id="srm-image" src="" alt="" class="w-full h-full object-cover">
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-[10px] font-bold uppercase tracking-widest text-orange-500 mb-0.5">Sub-recipe</p>
-                    <h3 id="srm-title" class="text-xl font-bold font-serif text-slate-900 leading-tight"></h3>
-                    <p id="srm-meta" class="text-xs text-slate-400 mt-0.5"></p>
-                </div>
-                <button onclick="closeSubRecipeModal()"
-                    class="shrink-0 text-slate-400 hover:text-slate-700 transition-colors mt-0.5">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+        {# Star rating #}
+        <div class="mb-6">
+            <label class="block text-sm font-semibold text-slate-700 mb-3">Rating</label>
+            <div id="star-row" class="flex gap-2">
+                {% for i in range(1, 6) %}
+                <button type="button" onclick="setRating({{ i }})" data-val="{{ i }}"
+                    class="star-btn text-3xl transition-transform hover:scale-110 focus:outline-none"
+                    aria-label="{{ i }} stars">
+                    {% if user_interaction and user_interaction.rating and user_interaction.rating >= i %}⭐{% else
+                    %}☆{% endif %}
                 </button>
+                {% endfor %}
+            </div>
+            <input type="hidden" id="fb-rating"
+                value="{{ user_interaction.rating if user_interaction and user_interaction.rating else '' }}">
+        </div>
+
+        {# Comment #}
+        <div class="mb-6">
+            <label class="block text-sm font-semibold text-slate-700 mb-2" for="fb-comment">Comment</label>
+            <textarea id="fb-comment" rows="3" placeholder="What did you think? Any tweaks?"
+                class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none resize-none transition-all">{{ user_interaction.comment if user_interaction and user_interaction.comment else '' }}</textarea>
+        </div>
+
+        {# Photo upload #}
+        <div class="mb-8">
+            <label class="block text-sm font-semibold text-slate-700 mb-3">Your Photos</label>
+            <div id="saved-photos-row" class="flex flex-wrap gap-3 mb-3">
+                {% if user_interaction and user_interaction.user_photos %}
+                {% for url in user_interaction.user_photos %}
+                <div class="relative w-20 h-20 rounded-xl overflow-hidden border border-slate-200 group shadow-sm"
+                    data-url="{{ url }}">
+                    <img src="{{ url }}" class="w-full h-full object-cover">
+                    <button type="button" onclick="removeExistingPhoto(this)"
+                        class="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+            <label for="fb-photos"
+                class="inline-flex items-center gap-2 cursor-pointer px-4 py-2 rounded-xl border-2 border-dashed border-slate-300 hover:border-orange-400 text-sm text-slate-500 hover:text-orange-600 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Add Photos
+            </label>
+            <input type="file" id="fb-photos" multiple accept="image/*,.heic,.heif" class="sr-only">
+            <div id="new-photos-preview" class="flex flex-wrap gap-3 mt-3"></div>
+        </div>
+
+        <button onclick="saveFeedback()" id="fb-save-btn"
+            class="w-full py-3 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm transition-colors flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            Save Feedback
+        </button>
+    </div>
+</div>
+
+<script>
+    const RECIPE_ID = {{ recipe.id }};
+
+    // ── Made toggle ────────────────────────────────────────────────────
+    function toggleMade(cb) {
+        const icon = document.getElementById('made-icon');
+        const label = cb.closest('label').querySelector('span:last-child');
+        fetch(`/api/interactions/recipe/${RECIPE_ID}/made`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ is_made: cb.checked })
+        })
+            .then(r => r.json())
+            .then(() => {
+                icon.textContent = cb.checked ? '✅' : '🍳';
+                label.textContent = cb.checked ? 'Made it!' : 'Made it?';
+            })
+            .catch(() => { cb.checked = !cb.checked; }); // revert on error
+    }
+
+    // ── Feedback Drawer ────────────────────────────────────────────────
+    function openFeedbackDrawer() {
+        document.getElementById('feedback-backdrop').classList.remove('hidden');
+        requestAnimationFrame(() => {
+            document.getElementById('feedback-drawer').classList.remove('translate-y-full');
+        });
+    }
+
+    function closeFeedbackDrawer() {
+        document.getElementById('feedback-drawer').classList.add('translate-y-full');
+        setTimeout(() => document.getElementById('feedback-backdrop').classList.add('hidden'), 300);
+    }
+
+    // ── Star rating ────────────────────────────────────────────────────
+    function setRating(val) {
+        document.getElementById('fb-rating').value = val;
+        document.querySelectorAll('.star-btn').forEach(btn => {
+            btn.textContent = parseInt(btn.dataset.val) <= val ? '⭐' : '☆';
+        });
+    }
+
+    // ── Remove existing saved photo ────────────────────────────────────
+    function removeExistingPhoto(btn) {
+        btn.closest('[data-url]').remove();
+    }
+
+    // ── New photo preview ──────────────────────────────────────────────
+    document.getElementById('fb-photos').addEventListener('change', function () {
+        const preview = document.getElementById('new-photos-preview');
+        preview.innerHTML = '';
+        Array.from(this.files).forEach(file => {
+            const url = URL.createObjectURL(file);
+            const div = document.createElement('div');
+            div.className = 'w-20 h-20 rounded-xl overflow-hidden border border-slate-200 shadow-sm';
+            div.innerHTML = `<img src="${url}" class="w-full h-full object-cover">`;
+            preview.appendChild(div);
+        });
+    });
+
+    // ── Save feedback ──────────────────────────────────────────────────
+    async function saveFeedback() {
+        const btn = document.getElementById('fb-save-btn');
+        btn.disabled = true;
+        btn.textContent = 'Saving…';
+
+        const fd = new FormData();
+        fd.append('rating', document.getElementById('fb-rating').value || '');
+        fd.append('comment', document.getElementById('fb-comment').value || '');
+
+        // Kept (un-deleted) existing photos
+        const keptUrls = Array.from(
+            document.querySelectorAll('#saved-photos-row [data-url]')
+        ).map(el => el.dataset.url);
+        fd.append('keep_photos', JSON.stringify(keptUrls));
+
+        // New files
+        const files = document.getElementById('fb-photos').files;
+        Array.from(files).forEach(f => fd.append('photos', f));
+
+        try {
+            const res = await fetch(`/api/interactions/recipe/${RECIPE_ID}/feedback`, {
+                method: 'POST',
+                body: fd
+            });
+            const data = await res.json();
+            if (data.success) {
+                closeFeedbackDrawer();
+                // Update button label with new rating
+                const rating = document.getElementById('fb-rating').value;
+                const fbBtnSpan = document.querySelector('[onclick="openFeedbackDrawer()"] span');
+                if (fbBtnSpan) fbBtnSpan.textContent = rating ? `${rating}★ Feedback` : 'Leave Feedback';
+            } else {
+                alert('Save failed: ' + (data.error || 'Unknown error'));
+            }
+        } catch (e) {
+            alert('Network error. Please try again.');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Save Feedback';
+        }
+    }
+</script>
+{% endif %}
+
+{# ============ SUB-RECIPE MODAL ============ #}
+<div id="sub-recipe-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden print:hidden"
+    role="dialog" aria-modal="true" aria-labelledby="srm-title">
+
+    {# Backdrop #}
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeSubRecipeModal()"></div>
+
+    {# Panel #}
+    <div
+        class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col mx-4">
+
+        {# Header #}
+        <div class="px-6 py-4 border-b border-slate-100 flex items-start gap-4">
+            <div id="srm-image-wrap"
+                class="hidden shrink-0 w-14 h-14 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+                <img id="srm-image" src="" alt="" class="w-full h-full object-cover">
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-[10px] font-bold uppercase tracking-widest text-orange-500 mb-0.5">Sub-recipe</p>
+                <h3 id="srm-title" class="text-xl font-bold font-serif text-slate-900 leading-tight"></h3>
+                <p id="srm-meta" class="text-xs text-slate-400 mt-0.5"></p>
+            </div>
+            <button onclick="closeSubRecipeModal()"
+                class="shrink-0 text-slate-400 hover:text-slate-700 transition-colors mt-0.5">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        {# Scrollable body #}
+        <div class="overflow-y-auto flex-1 px-6 py-5 space-y-6">
+
+            {# Loading state #}
+            <div id="srm-loading" class="flex items-center justify-center py-12">
+                <svg class="animate-spin w-8 h-8 text-orange-400" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                </svg>
             </div>
 
-            {# Scrollable body #}
-            <div class="overflow-y-auto flex-1 px-6 py-5 space-y-6">
-
-                {# Loading state #}
-                <div id="srm-loading" class="flex items-center justify-center py-12">
-                    <svg class="animate-spin w-8 h-8 text-orange-400" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                    </svg>
+            {# Content (hidden until loaded) #}
+            <div id="srm-content" class="hidden space-y-6">
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Ingredients</h4>
+                    <div id="srm-ingredients" class="space-y-4"></div>
                 </div>
-
-                {# Content (hidden until loaded) #}
-                <div id="srm-content" class="hidden space-y-6">
-                    <div>
-                        <h4 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Ingredients</h4>
-                        <div id="srm-ingredients" class="space-y-4"></div>
-                    </div>
-                    <div>
-                        <h4 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Steps</h4>
-                        <div id="srm-steps" class="space-y-3"></div>
-                    </div>
-                </div>
-
-                {# Error state #}
-                <div id="srm-error" class="hidden text-center py-8">
-                    <p class="text-sm text-red-500">Could not load sub-recipe. Try again.</p>
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Steps</h4>
+                    <div id="srm-steps" class="space-y-3"></div>
                 </div>
             </div>
 
-            {# Footer #}
-            <div class="px-6 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
-                <a id="srm-link" href="#" target="_blank"
-                    class="text-sm font-semibold text-orange-600 hover:text-orange-700 flex items-center gap-1 transition-colors">
-                    Open full recipe
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                </a>
-                <button onclick="closeSubRecipeModal()"
-                    class="text-sm text-slate-500 hover:text-slate-700 font-medium">Close</button>
+            {# Error state #}
+            <div id="srm-error" class="hidden text-center py-8">
+                <p class="text-sm text-red-500">Could not load sub-recipe. Try again.</p>
             </div>
         </div>
+
+        {# Footer #}
+        <div class="px-6 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+            <a id="srm-link" href="#" target="_blank"
+                class="text-sm font-semibold text-orange-600 hover:text-orange-700 flex items-center gap-1 transition-colors">
+                Open full recipe
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+            </a>
+            <button onclick="closeSubRecipeModal()"
+                class="text-sm text-slate-500 hover:text-slate-700 font-medium">Close</button>
+        </div>
     </div>
+</div>
 
-    <script>
-        // In-memory cache: same sub-recipe won't be re-fetched on repeat opens
-        const _srCache = {};
+<script>
+    // In-memory cache: same sub-recipe won't be re-fetched on repeat opens
+    const _srCache = {};
 
-        function openSubRecipeModal(recipeId) {
-            const modal = document.getElementById('sub-recipe-modal');
-            modal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
+    function openSubRecipeModal(recipeId) {
+        const modal = document.getElementById('sub-recipe-modal');
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
 
-            // Reset to loading state
-            document.getElementById('srm-loading').classList.remove('hidden');
-            document.getElementById('srm-content').classList.add('hidden');
-            document.getElementById('srm-error').classList.add('hidden');
-            document.getElementById('srm-title').textContent = '';
-            document.getElementById('srm-meta').textContent = '';
-            document.getElementById('srm-image-wrap').classList.add('hidden');
-            document.getElementById('srm-link').href = `/recipe/${recipeId}`;
+        // Reset to loading state
+        document.getElementById('srm-loading').classList.remove('hidden');
+        document.getElementById('srm-content').classList.add('hidden');
+        document.getElementById('srm-error').classList.add('hidden');
+        document.getElementById('srm-title').textContent = '';
+        document.getElementById('srm-meta').textContent = '';
+        document.getElementById('srm-image-wrap').classList.add('hidden');
+        document.getElementById('srm-link').href = `/recipe/${recipeId}`;
 
-            if (_srCache[recipeId]) {
-                _renderSubRecipe(_srCache[recipeId]);
-                return;
+        if (_srCache[recipeId]) {
+            _renderSubRecipe(_srCache[recipeId]);
+            return;
+        }
+
+        fetch(`/api/sub-recipe/${recipeId}`)
+            .then(r => r.json())
+            .then(data => {
+                if (!data.success) throw new Error(data.error || 'API error');
+                _srCache[recipeId] = data.recipe;
+                _renderSubRecipe(data.recipe);
+            })
+            .catch(() => {
+                document.getElementById('srm-loading').classList.add('hidden');
+                document.getElementById('srm-error').classList.remove('hidden');
+            });
+    }
+
+    function closeSubRecipeModal() {
+        document.getElementById('sub-recipe-modal').classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    // ESC closes modal
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeSubRecipeModal();
+    });
+
+    function _renderSubRecipe(r) {
+        document.getElementById('srm-loading').classList.add('hidden');
+
+        // Header
+        document.getElementById('srm-title').textContent = r.title;
+        document.getElementById('srm-meta').textContent =
+            [r.cuisine, r.base_servings ? `${r.base_servings} servings` : null]
+                .filter(Boolean).join(' · ');
+
+        if (r.image_url) {
+            document.getElementById('srm-image').src = r.image_url;
+            document.getElementById('srm-image').alt = r.title;
+            document.getElementById('srm-image-wrap').classList.remove('hidden');
+        }
+
+        // Ingredients by component
+        const ingEl = document.getElementById('srm-ingredients');
+        ingEl.innerHTML = '';
+        const comps = r.components || Object.keys(r.ingredients_by_component);
+        comps.forEach(comp => {
+            const items = (r.ingredients_by_component || {})[comp] || [];
+            if (!items.length) return;
+            const section = document.createElement('div');
+            if (comps.length > 1) {
+                const lbl = document.createElement('p');
+                lbl.className = 'text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5';
+                lbl.textContent = comp;
+                section.appendChild(lbl);
             }
-
-            fetch(`/api/sub-recipe/${recipeId}`)
-                .then(r => r.json())
-                .then(data => {
-                    if (!data.success) throw new Error(data.error || 'API error');
-                    _srCache[recipeId] = data.recipe;
-                    _renderSubRecipe(data.recipe);
-                })
-                .catch(() => {
-                    document.getElementById('srm-loading').classList.add('hidden');
-                    document.getElementById('srm-error').classList.remove('hidden');
-                });
-        }
-
-        function closeSubRecipeModal() {
-            document.getElementById('sub-recipe-modal').classList.add('hidden');
-            document.body.style.overflow = '';
-        }
-
-        // ESC closes modal
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') closeSubRecipeModal();
+            const ul = document.createElement('ul');
+            ul.className = 'space-y-1.5';
+            items.forEach(ing => {
+                const li = document.createElement('li');
+                li.className = 'flex items-center gap-2.5 text-sm text-slate-700';
+                const thumb = ing.image_url
+                    ? `<img src="${ing.image_url}" class="w-6 h-6 rounded-full object-cover border border-slate-200 shrink-0" loading="lazy">`
+                    : `<span class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[9px] font-bold text-slate-400 border border-slate-200 shrink-0">${ing.name.slice(0, 2).toUpperCase()}</span>`;
+                const amt = ing.amount != null
+                    ? `${Number.isInteger(ing.amount) ? ing.amount : ing.amount.toFixed(1)} ${ing.unit || ''}`.trim()
+                    : '';
+                li.innerHTML = `${thumb}<span><strong>${ing.name}</strong>${amt ? ' — ' + amt : ''}</span>`;
+                ul.appendChild(li);
+            });
+            section.appendChild(ul);
+            ingEl.appendChild(section);
         });
 
-        function _renderSubRecipe(r) {
-            document.getElementById('srm-loading').classList.add('hidden');
-
-            // Header
-            document.getElementById('srm-title').textContent = r.title;
-            document.getElementById('srm-meta').textContent =
-                [r.cuisine, r.base_servings ? `${r.base_servings} servings` : null]
-                    .filter(Boolean).join(' · ');
-
-            if (r.image_url) {
-                document.getElementById('srm-image').src = r.image_url;
-                document.getElementById('srm-image').alt = r.title;
-                document.getElementById('srm-image-wrap').classList.remove('hidden');
+        // Steps by component
+        const stepsEl = document.getElementById('srm-steps');
+        stepsEl.innerHTML = '';
+        const stepComps = r.components || Object.keys(r.steps_by_component || {});
+        let n = 1;
+        stepComps.forEach(comp => {
+            const steps = (r.steps_by_component || {})[comp] || [];
+            if (!steps.length) return;
+            if (stepComps.length > 1) {
+                const lbl = document.createElement('p');
+                lbl.className = 'text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5 mt-3';
+                lbl.textContent = comp;
+                stepsEl.appendChild(lbl);
             }
-
-            // Ingredients by component
-            const ingEl = document.getElementById('srm-ingredients');
-            ingEl.innerHTML = '';
-            const comps = r.components || Object.keys(r.ingredients_by_component);
-            comps.forEach(comp => {
-                const items = (r.ingredients_by_component || {})[comp] || [];
-                if (!items.length) return;
-                const section = document.createElement('div');
-                if (comps.length > 1) {
-                    const lbl = document.createElement('p');
-                    lbl.className = 'text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5';
-                    lbl.textContent = comp;
-                    section.appendChild(lbl);
-                }
-                const ul = document.createElement('ul');
-                ul.className = 'space-y-1.5';
-                items.forEach(ing => {
-                    const li = document.createElement('li');
-                    li.className = 'flex items-center gap-2.5 text-sm text-slate-700';
-                    const thumb = ing.image_url
-                        ? `<img src="${ing.image_url}" class="w-6 h-6 rounded-full object-cover border border-slate-200 shrink-0" loading="lazy">`
-                        : `<span class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[9px] font-bold text-slate-400 border border-slate-200 shrink-0">${ing.name.slice(0, 2).toUpperCase()}</span>`;
-                    const amt = ing.amount != null
-                        ? `${Number.isInteger(ing.amount) ? ing.amount : ing.amount.toFixed(1)} ${ing.unit || ''}`.trim()
-                        : '';
-                    li.innerHTML = `${thumb}<span><strong>${ing.name}</strong>${amt ? ' — ' + amt : ''}</span>`;
-                    ul.appendChild(li);
-                });
-                section.appendChild(ul);
-                ingEl.appendChild(section);
-            });
-
-            // Steps by component
-            const stepsEl = document.getElementById('srm-steps');
-            stepsEl.innerHTML = '';
-            const stepComps = r.components || Object.keys(r.steps_by_component || {});
-            let n = 1;
-            stepComps.forEach(comp => {
-                const steps = (r.steps_by_component || {})[comp] || [];
-                if (!steps.length) return;
-                if (stepComps.length > 1) {
-                    const lbl = document.createElement('p');
-                    lbl.className = 'text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5 mt-3';
-                    lbl.textContent = comp;
-                    stepsEl.appendChild(lbl);
-                }
-                steps.forEach(step => {
-                    const div = document.createElement('div');
-                    div.className = 'flex gap-3';
-                    div.innerHTML = `
+            steps.forEach(step => {
+                const div = document.createElement('div');
+                div.className = 'flex gap-3';
+                div.innerHTML = `
                         <span class="shrink-0 w-6 h-6 rounded-full bg-orange-100 text-orange-700 text-xs font-bold flex items-center justify-center mt-0.5">${n++}</span>
                         <p class="text-sm text-slate-700 leading-relaxed">${step.text}</p>`;
-                    stepsEl.appendChild(div);
-                });
+                stepsEl.appendChild(div);
             });
+        });
 
-            document.getElementById('srm-content').classList.remove('hidden');
-        }
-    </script>
+        document.getElementById('srm-content').classList.remove('hidden');
+    }
+</script>
 
-    {% endblock %}
+{% endblock %}
 
-    {% block scripts %}
-    <!-- Promote-to-ingredient modal (Direction A) -->
-    <div id="promote-modal" class="fixed inset-0 z-[70] flex items-start justify-center pt-20 hidden">
-        <div class="absolute inset-0 bg-gray-900/60" onclick="closePromoteModal()"></div>
-        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
-            <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-                <div>
-                    <p class="text-[10px] font-bold uppercase tracking-widest text-green-600">Use as Ingredient</p>
-                    <h3 id="pm-recipe-title" class="text-base font-semibold text-gray-900"></h3>
-                </div>
-                <button onclick="closePromoteModal()" class="text-gray-400 hover:text-gray-700">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+{% block scripts %}
+<!-- Promote-to-ingredient modal (Direction A) -->
+<div id="promote-modal" class="fixed inset-0 z-[70] flex items-start justify-center pt-20 hidden">
+    <div class="absolute inset-0 bg-gray-900/60" onclick="closePromoteModal()"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div>
+                <p class="text-[10px] font-bold uppercase tracking-widest text-green-600">Use as Ingredient</p>
+                <h3 id="pm-recipe-title" class="text-base font-semibold text-gray-900"></h3>
             </div>
-            <div class="px-5 py-4 space-y-4">
-                <!-- Search existing -->
-                <div>
-                    <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Link to existing
-                        ingredient</label>
-                    <div class="relative">
-                        <input type="text" id="pm-search" placeholder="Search ingredients by name…" autocomplete="off"
-                            oninput="pmSearch(this.value)"
-                            class="block w-full rounded-lg border-gray-300 py-2 pl-3 pr-4 text-sm shadow-sm focus:border-green-500 focus:ring-green-500">
-                        <div id="pm-dropdown"
-                            class="hidden absolute z-10 mt-1 w-full bg-white rounded-lg shadow-lg border border-gray-200 divide-y divide-gray-100 max-h-48 overflow-y-auto">
-                        </div>
+            <button onclick="closePromoteModal()" class="text-gray-400 hover:text-gray-700">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div class="px-5 py-4 space-y-4">
+            <!-- Search existing -->
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Link to existing
+                    ingredient</label>
+                <div class="relative">
+                    <input type="text" id="pm-search" placeholder="Search ingredients by name…" autocomplete="off"
+                        oninput="pmSearch(this.value)"
+                        class="block w-full rounded-lg border-gray-300 py-2 pl-3 pr-4 text-sm shadow-sm focus:border-green-500 focus:ring-green-500">
+                    <div id="pm-dropdown"
+                        class="hidden absolute z-10 mt-1 w-full bg-white rounded-lg shadow-lg border border-gray-200 divide-y divide-gray-100 max-h-48 overflow-y-auto">
                     </div>
                 </div>
-                <!-- Divider -->
-                <div class="flex items-center gap-3">
-                    <div class="flex-1 h-px bg-gray-200"></div>
-                    <span class="text-xs text-gray-400 font-medium">or</span>
-                    <div class="flex-1 h-px bg-gray-200"></div>
-                </div>
-                <!-- Create stub -->
-                <div>
-                    <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Create as new
-                        ingredient</label>
-                    <button id="pm-create-btn" onclick="pmCreateStub()"
-                        class="w-full flex items-center justify-center gap-2 rounded-lg border border-dashed border-green-400 bg-green-50 hover:bg-green-100 px-4 py-3 text-sm font-semibold text-green-700 transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Create stub ingredient for this recipe
-                    </button>
-                    <p class="mt-1.5 text-xs text-gray-400">Creates a minimal ingredient entry (category: Prepared /
-                        tbsp) linked to this recipe.</p>
-                </div>
+            </div>
+            <!-- Divider -->
+            <div class="flex items-center gap-3">
+                <div class="flex-1 h-px bg-gray-200"></div>
+                <span class="text-xs text-gray-400 font-medium">or</span>
+                <div class="flex-1 h-px bg-gray-200"></div>
+            </div>
+            <!-- Create stub -->
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Create as new
+                    ingredient</label>
+                <button id="pm-create-btn" onclick="pmCreateStub()"
+                    class="w-full flex items-center justify-center gap-2 rounded-lg border border-dashed border-green-400 bg-green-50 hover:bg-green-100 px-4 py-3 text-sm font-semibold text-green-700 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Create stub ingredient for this recipe
+                </button>
+                <p class="mt-1.5 text-xs text-gray-400">Creates a minimal ingredient entry (category: Prepared /
+                    tbsp) linked to this recipe.</p>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Render Inspector Modal -->
-    {{ inspector.recipe_inspector_modal() }}
+<!-- Render Inspector Modal -->
+{{ inspector.recipe_inspector_modal() }}
 
-    <script>
-        // ── Direction A: Use as ingredient modal ────────────────────────────
-        let _pmRecipeId = null;
-        let _pmTimer = null;
+<script>
+    // ── Direction A: Use as ingredient modal ────────────────────────────
+    let _pmRecipeId = null;
+    let _pmTimer = null;
 
-        function openPromoteModal(recipeId, recipeTitle) {
-            _pmRecipeId = recipeId;
-            document.getElementById('pm-recipe-title').textContent = recipeTitle;
-            document.getElementById('pm-search').value = '';
-            document.getElementById('pm-dropdown').innerHTML = '';
+    function openPromoteModal(recipeId, recipeTitle) {
+        _pmRecipeId = recipeId;
+        document.getElementById('pm-recipe-title').textContent = recipeTitle;
+        document.getElementById('pm-search').value = '';
+        document.getElementById('pm-dropdown').innerHTML = '';
+        document.getElementById('pm-dropdown').classList.add('hidden');
+        document.getElementById('pm-create-btn').disabled = false;
+        document.getElementById('pm-create-btn').textContent = 'Create stub ingredient for this recipe';
+        document.getElementById('promote-modal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        // Pre-search with recipe title
+        document.getElementById('pm-search').value = '{{ recipe.title|e }}';
+        pmSearch('{{ recipe.title|e }}');
+        setTimeout(() => document.getElementById('pm-search').focus(), 50);
+    }
+
+    function closePromoteModal() {
+        document.getElementById('promote-modal').classList.add('hidden');
+        document.body.style.overflow = '';
+        _pmRecipeId = null;
+    }
+
+    document.addEventListener('click', e => {
+        if (!e.target.closest('#pm-search') && !e.target.closest('#pm-dropdown')) {
             document.getElementById('pm-dropdown').classList.add('hidden');
-            document.getElementById('pm-create-btn').disabled = false;
-            document.getElementById('pm-create-btn').textContent = 'Create stub ingredient for this recipe';
-            document.getElementById('promote-modal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-            // Pre-search with recipe title
-            document.getElementById('pm-search').value = '{{ recipe.title|e }}';
-            pmSearch('{{ recipe.title|e }}');
-            setTimeout(() => document.getElementById('pm-search').focus(), 50);
         }
+    });
 
-        function closePromoteModal() {
-            document.getElementById('promote-modal').classList.add('hidden');
-            document.body.style.overflow = '';
-            _pmRecipeId = null;
-        }
-
-        document.addEventListener('click', e => {
-            if (!e.target.closest('#pm-search') && !e.target.closest('#pm-dropdown')) {
-                document.getElementById('pm-dropdown').classList.add('hidden');
-            }
-        });
-
-        function pmSearch(q) {
-            clearTimeout(_pmTimer);
-            const drop = document.getElementById('pm-dropdown');
-            if (q.length < 2) { drop.classList.add('hidden'); return; }
-            _pmTimer = setTimeout(async () => {
-                try {
-                    const res = await fetch(`/api/admin/search-ingredients?q=${encodeURIComponent(q)}`);
-                    const data = await res.json();
-                    drop.innerHTML = '';
-                    if (!data.results || !data.results.length) {
-                        drop.innerHTML = '<div class="px-4 py-3 text-xs text-gray-500">No ingredients found</div>';
-                    } else {
-                        data.results.forEach(ing => {
-                            const div = document.createElement('div');
-                            div.className = 'px-4 py-2.5 hover:bg-green-50 cursor-pointer flex items-center justify-between group';
-                            const linkedBadge = ing.sub_recipe_id
-                                ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 font-semibold">linked</span>`
-                                : '';
-                            div.innerHTML = `
+    function pmSearch(q) {
+        clearTimeout(_pmTimer);
+        const drop = document.getElementById('pm-dropdown');
+        if (q.length < 2) { drop.classList.add('hidden'); return; }
+        _pmTimer = setTimeout(async () => {
+            try {
+                const res = await fetch(`/api/admin/search-ingredients?q=${encodeURIComponent(q)}`);
+                const data = await res.json();
+                drop.innerHTML = '';
+                if (!data.results || !data.results.length) {
+                    drop.innerHTML = '<div class="px-4 py-3 text-xs text-gray-500">No ingredients found</div>';
+                } else {
+                    data.results.forEach(ing => {
+                        const div = document.createElement('div');
+                        div.className = 'px-4 py-2.5 hover:bg-green-50 cursor-pointer flex items-center justify-between group';
+                        const linkedBadge = ing.sub_recipe_id
+                            ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 font-semibold">linked</span>`
+                            : '';
+                        div.innerHTML = `
                                 <span class="text-sm font-medium text-gray-900 group-hover:text-green-700">${ing.name}</span>
                                 <span class="flex items-center gap-1 text-xs text-gray-400">${ing.main_category} ${linkedBadge}</span>`;
-                            div.onclick = () => pmSelectIngredient(ing);
-                            drop.appendChild(div);
-                        });
-                    }
-                    drop.classList.remove('hidden');
-                } catch (e) { console.error(e); }
-            }, 200);
-        }
-
-        async function pmSelectIngredient(ing) {
-            if (!_pmRecipeId) return;
-            document.getElementById('pm-dropdown').classList.add('hidden');
-            try {
-                const res = await fetch(`/api/ingredient/${ing.id}/link-recipe`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ recipe_id: _pmRecipeId }),
-                });
-                const data = await res.json();
-                if (data.success) {
-                    _pmMarkLinked(data.ingredient_name);
-                } else { alert('Error: ' + data.error); }
-            } catch (e) { alert('Network error: ' + e.message); }
-        }
-
-        async function pmCreateStub() {
-            if (!_pmRecipeId) return;
-            const btn = document.getElementById('pm-create-btn');
-            btn.disabled = true;
-            btn.textContent = 'Creating…';
-            try {
-                const res = await fetch(`/api/recipe/${_pmRecipeId}/promote-to-ingredient`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                });
-                const data = await res.json();
-                if (data.success) {
-                    _pmMarkLinked(data.ingredient_name);
-                } else {
-                    btn.disabled = false;
-                    btn.textContent = 'Create stub ingredient for this recipe';
-                    alert('Error: ' + data.error);
+                        div.onclick = () => pmSelectIngredient(ing);
+                        drop.appendChild(div);
+                    });
                 }
-            } catch (e) {
+                drop.classList.remove('hidden');
+            } catch (e) { console.error(e); }
+        }, 200);
+    }
+
+    async function pmSelectIngredient(ing) {
+        if (!_pmRecipeId) return;
+        document.getElementById('pm-dropdown').classList.add('hidden');
+        try {
+            const res = await fetch(`/api/ingredient/${ing.id}/link-recipe`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ recipe_id: _pmRecipeId }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                _pmMarkLinked(data.ingredient_name);
+            } else { alert('Error: ' + data.error); }
+        } catch (e) { alert('Network error: ' + e.message); }
+    }
+
+    async function pmCreateStub() {
+        if (!_pmRecipeId) return;
+        const btn = document.getElementById('pm-create-btn');
+        btn.disabled = true;
+        btn.textContent = 'Creating…';
+        try {
+            const res = await fetch(`/api/recipe/${_pmRecipeId}/promote-to-ingredient`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+            });
+            const data = await res.json();
+            if (data.success) {
+                _pmMarkLinked(data.ingredient_name);
+            } else {
                 btn.disabled = false;
                 btn.textContent = 'Create stub ingredient for this recipe';
-                alert('Network error: ' + e.message);
+                alert('Error: ' + data.error);
             }
+        } catch (e) {
+            btn.disabled = false;
+            btn.textContent = 'Create stub ingredient for this recipe';
+            alert('Network error: ' + e.message);
         }
+    }
 
-        function _pmMarkLinked(ingredientName) {
-            closePromoteModal();
-            const btn = document.getElementById('promote-to-ing-btn');
-            btn.innerHTML = `
+    function _pmMarkLinked(ingredientName) {
+        closePromoteModal();
+        const btn = document.getElementById('promote-to-ing-btn');
+        btn.innerHTML = `
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                 </svg>
                 Linked: ${ingredientName}`;
-            btn.className = btn.className
-                .replace('text-slate-400', 'text-green-700')
-                .replace('border-slate-200', 'border-green-300')
-                .replace('hover:text-green-600', '');
-            btn.disabled = true;
-        }
+        btn.className = btn.className
+            .replace('text-slate-400', 'text-green-700')
+            .replace('border-slate-200', 'border-green-300')
+            .replace('hover:text-green-600', '');
+        btn.disabled = true;
+    }
 
-        function setNutritionMode(mode, btnElement) {
-            // Update the display numbers
-            document.querySelectorAll('.nutrition-val').forEach(el => {
-                let val = parseFloat(el.getAttribute('data-' + mode));
-                if (!isNaN(val)) {
-                    el.innerText = val;
-                }
-            });
-
-            // Update Header Title depending on mode
-            const labelEl = document.getElementById('nutrition-amount-label');
-            if (labelEl) {
-                if (mode === '100g') labelEl.innerText = 'Amount Per 100g';
-                else if (mode === '1srv') labelEl.innerText = 'Amount Per Serving';
-                else if (mode === '4srv') labelEl.innerText = 'Amount Per 4 Servings';
+    function setNutritionMode(mode, btnElement) {
+        // Update the display numbers
+        document.querySelectorAll('.nutrition-val').forEach(el => {
+            let val = parseFloat(el.getAttribute('data-' + mode));
+            if (!isNaN(val)) {
+                el.innerText = val;
             }
+        });
 
-            // Update toggle button styling
-            if (btnElement) {
-                const group = btnElement.parentElement;
-                Array.from(group.children).forEach(btn => {
-                    btn.classList.remove('bg-white', 'text-slate-900', 'shadow-sm');
-                    btn.classList.add('hover:bg-white', 'hover:text-slate-900');
-                });
-                btnElement.classList.add('bg-white', 'text-slate-900', 'shadow-sm');
-                btnElement.classList.remove('hover:bg-white', 'hover:text-slate-900');
-            }
+        // Update Header Title depending on mode
+        const labelEl = document.getElementById('nutrition-amount-label');
+        if (labelEl) {
+            if (mode === '100g') labelEl.innerText = 'Amount Per 100g';
+            else if (mode === '1srv') labelEl.innerText = 'Amount Per Serving';
+            else if (mode === '4srv') labelEl.innerText = 'Amount Per 4 Servings';
         }
 
-        function updateServings(change) {
-            let currentServingsEl = document.getElementById('currentServings');
-            if (!currentServingsEl) return;
-
-            let baseServings = parseInt(currentServingsEl.getAttribute('data-base')) || 4;
-            let current = parseInt(currentServingsEl.innerText) || baseServings;
-            let newServings = current + change;
-
-            if (newServings < 1) newServings = 1;
-            if (newServings === current) return;
-
-            let ratio = newServings / baseServings;
-            currentServingsEl.innerText = newServings;
-
-            // Scale all amounts client-side
-            document.querySelectorAll('span[data-original]').forEach(container => {
-                let original = parseFloat(container.getAttribute('data-original'));
-                let scaleEl = container.classList.contains('scalable') ? container : container.querySelector('.scalable');
-                if (!isNaN(original) && scaleEl) {
-                    let scaled = original * ratio;
-                    scaleEl.innerText = scaled % 1 === 0 ? scaled.toFixed(0) : scaled.toFixed(1);
-                }
+        // Update toggle button styling
+        if (btnElement) {
+            const group = btnElement.parentElement;
+            Array.from(group.children).forEach(btn => {
+                btn.classList.remove('bg-white', 'text-slate-900', 'shadow-sm');
+                btn.classList.add('hover:bg-white', 'hover:text-slate-900');
             });
+            btnElement.classList.add('bg-white', 'text-slate-900', 'shadow-sm');
+            btnElement.classList.remove('hover:bg-white', 'hover:text-slate-900');
         }
-    </script>
+    }
 
-    {% if current_user.is_authenticated and current_user.is_admin %}
-    <script>
-        // ========== Relink Ingredient Logic ==========
-        let relinkRiId = null;
-        let relinkDebounceTimer = null;
+    function updateServings(change) {
+        let currentServingsEl = document.getElementById('currentServings');
+        if (!currentServingsEl) return;
 
-        function openRelinkModal(riId, currentName) {
-            relinkRiId = riId;
-            document.getElementById('relinkCurrentName').textContent = currentName;
-            document.getElementById('relinkSearchInput').value = '';
-            document.getElementById('relinkResults').innerHTML = `
+        let baseServings = parseInt(currentServingsEl.getAttribute('data-base')) || 4;
+        let current = parseInt(currentServingsEl.innerText) || baseServings;
+        let newServings = current + change;
+
+        if (newServings < 1) newServings = 1;
+        if (newServings === current) return;
+
+        let ratio = newServings / baseServings;
+        currentServingsEl.innerText = newServings;
+
+        // Scale all amounts client-side
+        document.querySelectorAll('span[data-original]').forEach(container => {
+            let original = parseFloat(container.getAttribute('data-original'));
+            let scaleEl = container.classList.contains('scalable') ? container : container.querySelector('.scalable');
+            if (!isNaN(original) && scaleEl) {
+                let scaled = original * ratio;
+                scaleEl.innerText = scaled % 1 === 0 ? scaled.toFixed(0) : scaled.toFixed(1);
+            }
+        });
+    }
+</script>
+
+{% if current_user.is_authenticated and current_user.is_admin %}
+<script>
+    // ========== Relink Ingredient Logic ==========
+    let relinkRiId = null;
+    let relinkDebounceTimer = null;
+
+    function openRelinkModal(riId, currentName) {
+        relinkRiId = riId;
+        document.getElementById('relinkCurrentName').textContent = currentName;
+        document.getElementById('relinkSearchInput').value = '';
+        document.getElementById('relinkResults').innerHTML = `
             <div class="px-6 py-12 text-center text-slate-400 text-sm">
                 Type to search your pantry...
             </div>`;
-            document.getElementById('relinkModal').classList.remove('hidden');
-            // Auto-focus the search input
-            setTimeout(() => document.getElementById('relinkSearchInput').focus(), 100);
-        }
+        document.getElementById('relinkModal').classList.remove('hidden');
+        // Auto-focus the search input
+        setTimeout(() => document.getElementById('relinkSearchInput').focus(), 100);
+    }
 
-        function closeRelinkModal() {
-            document.getElementById('relinkModal').classList.add('hidden');
-            relinkRiId = null;
-        }
+    function closeRelinkModal() {
+        document.getElementById('relinkModal').classList.add('hidden');
+        relinkRiId = null;
+    }
 
-        function debounceRelinkSearch() {
-            clearTimeout(relinkDebounceTimer);
-            relinkDebounceTimer = setTimeout(performRelinkSearch, 250);
-        }
+    function debounceRelinkSearch() {
+        clearTimeout(relinkDebounceTimer);
+        relinkDebounceTimer = setTimeout(performRelinkSearch, 250);
+    }
 
-        async function performRelinkSearch() {
-            const query = document.getElementById('relinkSearchInput').value.trim();
-            const resultsEl = document.getElementById('relinkResults');
+    async function performRelinkSearch() {
+        const query = document.getElementById('relinkSearchInput').value.trim();
+        const resultsEl = document.getElementById('relinkResults');
 
-            if (query.length < 2) {
-                resultsEl.innerHTML = `
+        if (query.length < 2) {
+            resultsEl.innerHTML = `
                 <div class="px-6 py-12 text-center text-slate-400 text-sm">
                     Type at least 2 characters...
                 </div>`;
-                return;
-            }
+            return;
+        }
 
-            resultsEl.innerHTML = `
+        resultsEl.innerHTML = `
             <div class="px-6 py-8 flex justify-center">
                 <div class="animate-spin h-6 w-6 border-2 border-indigo-600 border-t-transparent rounded-full"></div>
             </div>`;
 
-            try {
-                const response = await fetch('/api/search-ingredients', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ query })
-                });
-                const data = await response.json();
+        try {
+            const response = await fetch('/api/search-ingredients', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query })
+            });
+            const data = await response.json();
 
-                if (data.success && data.results.length > 0) {
-                    resultsEl.innerHTML = data.results.map(ing => `
+            if (data.success && data.results.length > 0) {
+                resultsEl.innerHTML = data.results.map(ing => `
                     <button onclick="selectRelinkTarget(${ing.id}, '${ing.name.replace(/'/g, "\\'")}')"
                         class="w-full px-6 py-3 flex items-center gap-4 hover:bg-indigo-50 transition-colors text-left group/item cursor-pointer">
                         <div class="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200 flex-shrink-0 flex items-center justify-center overflow-hidden">
                             ${ing.image_url
-                            ? `<img src="${ing.image_url}" class="w-full h-full object-contain" />`
-                            : `<span class="text-xs font-bold text-slate-400">${ing.name.substring(0, 2).toUpperCase()}</span>`
-                        }
+                        ? `<img src="${ing.image_url}" class="w-full h-full object-contain" />`
+                        : `<span class="text-xs font-bold text-slate-400">${ing.name.substring(0, 2).toUpperCase()}</span>`
+                    }
                         </div>
                         <div class="flex-grow min-w-0">
                             <div class="text-sm font-semibold text-slate-900 group-hover/item:text-indigo-700 truncate">${ing.name}</div>
@@ -1587,304 +1590,304 @@
                         </svg>
                     </button>
                 `).join('');
-                } else {
-                    resultsEl.innerHTML = `
+            } else {
+                resultsEl.innerHTML = `
                     <div class="px-6 py-12 text-center text-slate-400 text-sm">
                         No ingredients found for "<strong class="text-slate-600">${query}</strong>"
                     </div>`;
-                }
-            } catch (e) {
-                resultsEl.innerHTML = `
+            }
+        } catch (e) {
+            resultsEl.innerHTML = `
                 <div class="px-6 py-8 text-center text-red-500 text-sm">
                     Search failed: ${e.message}
                 </div>`;
-            }
         }
+    }
 
-        async function selectRelinkTarget(targetIngredientId, targetName) {
-            if (!relinkRiId) return;
+    async function selectRelinkTarget(targetIngredientId, targetName) {
+        if (!relinkRiId) return;
 
-            const currentName = document.getElementById('relinkCurrentName').textContent;
-            if (!confirm(`Replace "${currentName}" → "${targetName}"?`)) return;
+        const currentName = document.getElementById('relinkCurrentName').textContent;
+        if (!confirm(`Replace "${currentName}" → "${targetName}"?`)) return;
 
-            try {
-                const response = await fetch('/api/relink-ingredient', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        recipe_ingredient_id: relinkRiId,
-                        new_ingredient_id: targetIngredientId
-                    })
-                });
+        try {
+            const response = await fetch('/api/relink-ingredient', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    recipe_ingredient_id: relinkRiId,
+                    new_ingredient_id: targetIngredientId
+                })
+            });
 
-                const data = await response.json();
-                if (data.success) {
-                    closeRelinkModal();
-                    // Reload to reflect the change
-                    window.location.reload();
-                } else {
-                    alert('Relink failed: ' + (data.error || 'Unknown error'));
-                }
-            } catch (e) {
-                alert('System error: ' + e.message);
+            const data = await response.json();
+            if (data.success) {
+                closeRelinkModal();
+                // Reload to reflect the change
+                window.location.reload();
+            } else {
+                alert('Relink failed: ' + (data.error || 'Unknown error'));
             }
+        } catch (e) {
+            alert('System error: ' + e.message);
         }
+    }
 
-        // Close modal on Escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeRelinkModal();
-        });
-    </script>
-    {% endif %}
-    <script>
-        async function generateComponentImages(recipeId) {
-            const btnText = document.getElementById('comp-gen-text');
-            if (!btnText) return;
+    // Close modal on Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeRelinkModal();
+    });
+</script>
+{% endif %}
+<script>
+    async function generateComponentImages(recipeId) {
+        const btnText = document.getElementById('comp-gen-text');
+        if (!btnText) return;
 
-            const originalText = btnText.innerText;
-            btnText.innerText = "⏳ Gen...";
+        const originalText = btnText.innerText;
+        btnText.innerText = "⏳ Gen...";
 
-            try {
-                const response = await fetch(`/api/recipe/${recipeId}/generate-components`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
+        try {
+            const response = await fetch(`/api/recipe/${recipeId}/generate-components`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
 
-                const data = await response.json();
-                if (data.success) {
-                    window.location.reload();
-                } else {
-                    alert('Generation failed: ' + (data.error || 'Unknown error'));
-                    btnText.innerText = originalText;
-                }
-            } catch (e) {
-                alert('System error: ' + e.message);
+            const data = await response.json();
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('Generation failed: ' + (data.error || 'Unknown error'));
                 btnText.innerText = originalText;
             }
+        } catch (e) {
+            alert('System error: ' + e.message);
+            btnText.innerText = originalText;
         }
-    </script>
-    <script>
-        function toggleInstructionView(viewType) {
-            const views = ['component', 'chrono', 'color', 'chunked', 'cascading'];
+    }
+</script>
+<script>
+    function toggleInstructionView(viewType) {
+        const views = ['component', 'chrono', 'color', 'chunked', 'cascading'];
 
-            views.forEach(v => {
-                const btn = document.getElementById('btn-view-' + v);
-                const view = document.getElementById('view-' + v);
-                if (!btn || !view) return;
+        views.forEach(v => {
+            const btn = document.getElementById('btn-view-' + v);
+            const view = document.getElementById('view-' + v);
+            if (!btn || !view) return;
 
-                if (v === viewType) {
-                    btn.classList.add('bg-white', 'shadow-sm', 'text-slate-800');
-                    btn.classList.remove('text-slate-500', 'hover:text-slate-800');
-                    view.classList.remove('hidden');
-                } else {
-                    btn.classList.remove('bg-white', 'shadow-sm', 'text-slate-800');
-                    btn.classList.add('text-slate-500', 'hover:text-slate-800');
-                    view.classList.add('hidden');
-                }
-            });
-        }
-    </script>
-    <!-- ORBITAL GRAPH SCRIPT -->
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const container = document.getElementById("flavor-galaxy-container");
-            if (!container) return;
-
-            fetch(`/api/graph/orbital/{{ recipe.id }}`)
-                .then(res => res.json())
-                .then(data => {
-                    const loadingMsg = document.getElementById("galaxy-loading");
-                    if (loadingMsg) loadingMsg.remove();
-
-                    if (data.error || (!data.nodes || data.nodes.length <= 1)) {
-                        container.innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-slate-500 text-sm">Not enough data to map the galaxy.</div>';
-                        return;
-                    }
-
-                    const width = container.clientWidth;
-                    const height = container.clientHeight;
-
-                    const svg = d3.select("#flavor-galaxy-container")
-                        .append("svg")
-                        .attr("width", width)
-                        .attr("height", height)
-                        .attr("viewBox", [0, 0, width, height])
-                        .attr("style", "max-width: 100%; height: auto; display: block; cursor: grab;")
-                        .call(d3.zoom().scaleExtent([0.5, 4]).on("zoom", (event) => g.attr("transform", event.transform)))
-                        .on("mousedown", () => svg.style("cursor", "grabbing"))
-                        .on("mouseup", () => svg.style("cursor", "grab"));
-
-                    const g = svg.append("g");
-
-                    // Float animation to make UI feel alive
-                    const simulation = d3.forceSimulation(data.nodes)
-                        .velocityDecay(0.05) // Subtle float
-                        .force("link", d3.forceLink(data.links).id(d => d.id).distance(d => d.group === 'cuisine' || d.group === 'protein' ? 120 : 160))
-                        .force("charge", d3.forceManyBody().strength(-300))
-                        .force("center", d3.forceCenter(width / 2, height / 2))
-                        .force("collide", d3.forceCollide().radius(d => d.group === 'center' ? 60 : (d.group === 'cuisine' || d.group === 'protein' ? 40 : 30)).iterations(2));
-
-                    // Keep target recipe fixed at absolute center
-                    const centerNode = data.nodes.find(n => n.group === 'center');
-                    if (centerNode) {
-                        centerNode.fx = width / 2;
-                        centerNode.fy = height / 2;
-                    }
-
-                    const link = g.append("g")
-                        .attr("stroke", "#475569") // slate-600
-                        .attr("stroke-opacity", 0.6)
-                        .selectAll("line")
-                        .data(data.links)
-                        .join("line")
-                        .attr("stroke-width", d => Math.sqrt(d.weight) * 1.5)
-                        .attr("class", d => `link src-${d.source.id} tgt-${d.target.id}`);
-
-                    const node = g.append("g")
-                        .attr("stroke", "#fff")
-                        .attr("stroke-width", 1.5)
-                        .selectAll("g")
-                        .data(data.nodes)
-                        .join("g")
-                        .style("cursor", d => d.url ? "pointer" : "default")
-                        .on("click", (event, d) => {
-                            if (d.url) window.location.href = d.url;
-                        });
-
-                    // Node colors mapped
-                    const colorMap = {
-                        'center': '#3b82f6', // Blue
-                        'cuisine': '#f59e0b', // Amber
-                        'protein': '#e11d48', // Rose/Red
-                        'sibling': '#14b8a6'  // Teal
-                    };
-
-                    const radiusMap = {
-                        'center': 40,
-                        'cuisine': 25,
-                        'protein': 25,
-                        'sibling': 18
-                    };
-
-                    // Circles
-                    node.append("circle")
-                        .attr("r", d => radiusMap[d.group] || 20)
-                        .attr("fill", d => colorMap[d.group] || "#94a3b8");
-
-                    // Images for center / siblings if available
-                    node.filter(d => d.image)
-                        .append("image")
-                        .attr("href", d => d.image)
-                        .attr("x", d => -(radiusMap[d.group] || 20))
-                        .attr("y", d => -(radiusMap[d.group] || 20))
-                        .attr("width", d => (radiusMap[d.group] || 20) * 2)
-                        .attr("height", d => (radiusMap[d.group] || 20) * 2)
-                        .attr("clip-path", d => `circle(${radiusMap[d.group] || 20}px at ${radiusMap[d.group] || 20}px ${radiusMap[d.group] || 20}px)`);
-
-                    // Labels
-                    node.append("text")
-                        .attr("dy", d => (radiusMap[d.group] || 20) + 14)
-                        .attr("text-anchor", "middle")
-                        .text(d => d.name)
-                        .attr("fill", "#f8fafc")
-                        .attr("stroke", "none")
-                        .style("font-size", d => d.group === 'center' ? "14px" : "11px")
-                        .style("font-weight", d => d.group === 'center' ? "bold" : "normal")
-                        .style("font-family", "sans-serif")
-                        .style("text-shadow", "0px 2px 4px rgba(0,0,0,0.8)");
-
-                    // Hover interactions
-                    node.on("mouseover", function (event, d) {
-                        // Dim all
-                        node.style("opacity", 0.3);
-                        link.style("stroke-opacity", 0.1);
-
-                        // Highlight connected
-                        const connectedIds = new Set([d.id]);
-                        link.filter(l => l.source.id === d.id || l.target.id === d.id)
-                            .style("stroke-opacity", 1)
-                            .style("stroke", "#fcd34d")
-                            .each(l => {
-                                connectedIds.add(l.source.id);
-                                connectedIds.add(l.target.id);
-                            });
-
-                        // If sibling, also highlight path to center
-                        if (d.group === 'sibling') {
-                            const connectedPlanets = data.links.filter(l => l.source.id === d.id || l.target.id === d.id)
-                                .map(l => l.source.id === d.id ? l.target : l.source);
-
-                            connectedPlanets.forEach(planet => {
-                                link.filter(l => (l.source.id === planet.id && l.target.group === 'center') || (l.target.id === planet.id && l.source.group === 'center'))
-                                    .style("stroke-opacity", 1)
-                                    .style("stroke", "#fcd34d");
-
-                                connectedIds.add(`recipe_{{ recipe.id }}`);
-                            });
-                        }
-
-                        node.filter(n => connectedIds.has(n.id))
-                            .style("opacity", 1);
-                    })
-                        .on("mouseout", function () {
-                            node.style("opacity", 1);
-                            link.style("stroke-opacity", 0.6).style("stroke", "#475569");
-                        });
-
-                    node.call(d3.drag()
-                        .on("start", dragstarted)
-                        .on("drag", dragged)
-                        .on("end", dragended));
-
-                    simulation.on("tick", () => {
-                        link
-                            .attr("x1", d => d.source.x)
-                            .attr("y1", d => d.source.y)
-                            .attr("x2", d => d.target.x)
-                            .attr("y2", d => d.target.y);
-
-                        node
-                            .attr("transform", d => `translate(${d.x},${d.y})`);
-                    });
-
-                    function dragstarted(event, d) {
-                        if (!event.active) simulation.alphaTarget(0.3).restart();
-                        d.fx = d.x;
-                        d.fy = d.y;
-                    }
-
-                    function dragged(event, d) {
-                        if (d.group === 'center') return;
-                        d.fx = event.x;
-                        d.fy = event.y;
-                    }
-
-                    function dragended(event, d) {
-                        if (!event.active) simulation.alphaTarget(0);
-                        if (d.group !== 'center') {
-                            d.fx = null;
-                            d.fy = null;
-                        }
-                    }
-
-                    // Window resize handler
-                    window.addEventListener('resize', () => {
-                        const w = container.clientWidth;
-                        const h = container.clientHeight;
-                        svg.attr("width", w).attr("height", h).attr("viewBox", [0, 0, w, h]);
-                        simulation.force("center", d3.forceCenter(w / 2, h / 2));
-                        if (centerNode) {
-                            centerNode.fx = w / 2;
-                            centerNode.fy = h / 2;
-                        }
-                        simulation.alpha(0.3).restart();
-                    });
-                })
-                .catch(err => {
-                    console.error("Galaxy load error:", err);
-                    container.innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-red-400 text-sm">Failed to connect to the Flavor Galaxy.</div>';
-                });
+            if (v === viewType) {
+                btn.classList.add('bg-white', 'shadow-sm', 'text-slate-800');
+                btn.classList.remove('text-slate-500', 'hover:text-slate-800');
+                view.classList.remove('hidden');
+            } else {
+                btn.classList.remove('bg-white', 'shadow-sm', 'text-slate-800');
+                btn.classList.add('text-slate-500', 'hover:text-slate-800');
+                view.classList.add('hidden');
+            }
         });
-    </script>
-    {% endblock %}
+    }
+</script>
+<!-- ORBITAL GRAPH SCRIPT -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const container = document.getElementById("flavor-galaxy-container");
+        if (!container) return;
+
+        fetch(`/api/graph/orbital/{{ recipe.id }}`)
+            .then(res => res.json())
+            .then(data => {
+                const loadingMsg = document.getElementById("galaxy-loading");
+                if (loadingMsg) loadingMsg.remove();
+
+                if (data.error || (!data.nodes || data.nodes.length <= 1)) {
+                    container.innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-slate-500 text-sm">Not enough data to map the galaxy.</div>';
+                    return;
+                }
+
+                const width = container.clientWidth;
+                const height = container.clientHeight;
+
+                const svg = d3.select("#flavor-galaxy-container")
+                    .append("svg")
+                    .attr("width", width)
+                    .attr("height", height)
+                    .attr("viewBox", [0, 0, width, height])
+                    .attr("style", "max-width: 100%; height: auto; display: block; cursor: grab;")
+                    .call(d3.zoom().scaleExtent([0.5, 4]).on("zoom", (event) => g.attr("transform", event.transform)))
+                    .on("mousedown", () => svg.style("cursor", "grabbing"))
+                    .on("mouseup", () => svg.style("cursor", "grab"));
+
+                const g = svg.append("g");
+
+                // Float animation to make UI feel alive
+                const simulation = d3.forceSimulation(data.nodes)
+                    .velocityDecay(0.05) // Subtle float
+                    .force("link", d3.forceLink(data.links).id(d => d.id).distance(d => d.group === 'cuisine' || d.group === 'protein' ? 120 : 160))
+                    .force("charge", d3.forceManyBody().strength(-300))
+                    .force("center", d3.forceCenter(width / 2, height / 2))
+                    .force("collide", d3.forceCollide().radius(d => d.group === 'center' ? 60 : (d.group === 'cuisine' || d.group === 'protein' ? 40 : 30)).iterations(2));
+
+                // Keep target recipe fixed at absolute center
+                const centerNode = data.nodes.find(n => n.group === 'center');
+                if (centerNode) {
+                    centerNode.fx = width / 2;
+                    centerNode.fy = height / 2;
+                }
+
+                const link = g.append("g")
+                    .attr("stroke", "#475569") // slate-600
+                    .attr("stroke-opacity", 0.6)
+                    .selectAll("line")
+                    .data(data.links)
+                    .join("line")
+                    .attr("stroke-width", d => Math.sqrt(d.weight) * 1.5)
+                    .attr("class", d => `link src-${d.source.id} tgt-${d.target.id}`);
+
+                const node = g.append("g")
+                    .attr("stroke", "#fff")
+                    .attr("stroke-width", 1.5)
+                    .selectAll("g")
+                    .data(data.nodes)
+                    .join("g")
+                    .style("cursor", d => d.url ? "pointer" : "default")
+                    .on("click", (event, d) => {
+                        if (d.url) window.location.href = d.url;
+                    });
+
+                // Node colors mapped
+                const colorMap = {
+                    'center': '#3b82f6', // Blue
+                    'cuisine': '#f59e0b', // Amber
+                    'protein': '#e11d48', // Rose/Red
+                    'sibling': '#14b8a6'  // Teal
+                };
+
+                const radiusMap = {
+                    'center': 40,
+                    'cuisine': 25,
+                    'protein': 25,
+                    'sibling': 18
+                };
+
+                // Circles
+                node.append("circle")
+                    .attr("r", d => radiusMap[d.group] || 20)
+                    .attr("fill", d => colorMap[d.group] || "#94a3b8");
+
+                // Images for center / siblings if available
+                node.filter(d => d.image)
+                    .append("image")
+                    .attr("href", d => d.image)
+                    .attr("x", d => -(radiusMap[d.group] || 20))
+                    .attr("y", d => -(radiusMap[d.group] || 20))
+                    .attr("width", d => (radiusMap[d.group] || 20) * 2)
+                    .attr("height", d => (radiusMap[d.group] || 20) * 2)
+                    .attr("clip-path", d => `circle(${radiusMap[d.group] || 20}px at ${radiusMap[d.group] || 20}px ${radiusMap[d.group] || 20}px)`);
+
+                // Labels
+                node.append("text")
+                    .attr("dy", d => (radiusMap[d.group] || 20) + 14)
+                    .attr("text-anchor", "middle")
+                    .text(d => d.name)
+                    .attr("fill", "#f8fafc")
+                    .attr("stroke", "none")
+                    .style("font-size", d => d.group === 'center' ? "14px" : "11px")
+                    .style("font-weight", d => d.group === 'center' ? "bold" : "normal")
+                    .style("font-family", "sans-serif")
+                    .style("text-shadow", "0px 2px 4px rgba(0,0,0,0.8)");
+
+                // Hover interactions
+                node.on("mouseover", function (event, d) {
+                    // Dim all
+                    node.style("opacity", 0.3);
+                    link.style("stroke-opacity", 0.1);
+
+                    // Highlight connected
+                    const connectedIds = new Set([d.id]);
+                    link.filter(l => l.source.id === d.id || l.target.id === d.id)
+                        .style("stroke-opacity", 1)
+                        .style("stroke", "#fcd34d")
+                        .each(l => {
+                            connectedIds.add(l.source.id);
+                            connectedIds.add(l.target.id);
+                        });
+
+                    // If sibling, also highlight path to center
+                    if (d.group === 'sibling') {
+                        const connectedPlanets = data.links.filter(l => l.source.id === d.id || l.target.id === d.id)
+                            .map(l => l.source.id === d.id ? l.target : l.source);
+
+                        connectedPlanets.forEach(planet => {
+                            link.filter(l => (l.source.id === planet.id && l.target.group === 'center') || (l.target.id === planet.id && l.source.group === 'center'))
+                                .style("stroke-opacity", 1)
+                                .style("stroke", "#fcd34d");
+
+                            connectedIds.add(`recipe_{{ recipe.id }}`);
+                        });
+                    }
+
+                    node.filter(n => connectedIds.has(n.id))
+                        .style("opacity", 1);
+                })
+                    .on("mouseout", function () {
+                        node.style("opacity", 1);
+                        link.style("stroke-opacity", 0.6).style("stroke", "#475569");
+                    });
+
+                node.call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended));
+
+                simulation.on("tick", () => {
+                    link
+                        .attr("x1", d => d.source.x)
+                        .attr("y1", d => d.source.y)
+                        .attr("x2", d => d.target.x)
+                        .attr("y2", d => d.target.y);
+
+                    node
+                        .attr("transform", d => `translate(${d.x},${d.y})`);
+                });
+
+                function dragstarted(event, d) {
+                    if (!event.active) simulation.alphaTarget(0.3).restart();
+                    d.fx = d.x;
+                    d.fy = d.y;
+                }
+
+                function dragged(event, d) {
+                    if (d.group === 'center') return;
+                    d.fx = event.x;
+                    d.fy = event.y;
+                }
+
+                function dragended(event, d) {
+                    if (!event.active) simulation.alphaTarget(0);
+                    if (d.group !== 'center') {
+                        d.fx = null;
+                        d.fy = null;
+                    }
+                }
+
+                // Window resize handler
+                window.addEventListener('resize', () => {
+                    const w = container.clientWidth;
+                    const h = container.clientHeight;
+                    svg.attr("width", w).attr("height", h).attr("viewBox", [0, 0, w, h]);
+                    simulation.force("center", d3.forceCenter(w / 2, h / 2));
+                    if (centerNode) {
+                        centerNode.fx = w / 2;
+                        centerNode.fy = h / 2;
+                    }
+                    simulation.alpha(0.3).restart();
+                });
+            })
+            .catch(err => {
+                console.error("Galaxy load error:", err);
+                container.innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-red-400 text-sm">Failed to connect to the Flavor Galaxy.</div>';
+            });
+    });
+</script>
+{% endblock %}
