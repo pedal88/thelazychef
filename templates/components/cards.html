@@ -42,6 +42,19 @@ Expects a RecipeIngredient object (ri) which has .ingredient relation and .amoun
             </svg>
         </button>
         {% endif %}
+
+        {# Sub-recipe ⓘ badge — visible to everyone when ingredient links to a sub-recipe #}
+        {% if ingredient.sub_recipe_id %}
+        <button onclick="event.stopPropagation(); openSubRecipeModal({{ ingredient.sub_recipe_id }})"
+            title="View sub-recipe: {{ ingredient.name }}"
+            class="sub-recipe-trigger absolute bottom-0 left-0 w-5 h-5 bg-orange-500/90 hover:bg-orange-600 text-white rounded-tr-md flex items-center justify-center transition-colors duration-150 cursor-pointer z-10"
+            data-sub-recipe-id="{{ ingredient.sub_recipe_id }}">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        </button>
+        {% endif %}
     </div>
     <span
         class="mt-2 text-xs font-medium text-slate-600 text-center leading-tight {% if size != 'xl' %}w-20 break-words{% endif %}">

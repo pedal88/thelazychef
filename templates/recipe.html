@@ -59,7 +59,20 @@
 
     <!-- Admin Inspector Trigger (Single Page) -->
     {% if current_user.is_authenticated and current_user.is_admin %}
-    <div class="max-w-4xl mx-auto flex justify-end -mt-8 mb-8 relative z-10 px-4">
+    <div class="max-w-4xl mx-auto flex justify-end items-center gap-3 -mt-8 mb-8 relative z-10 px-4">
+
+        {# Direction A: Promote recipe → ingredient #}
+        <button id="promote-to-ing-btn"
+            class="text-xs font-mono text-slate-400 hover:text-green-600 flex items-center gap-1 transition-colors bg-white/80 backdrop-blur px-3 py-1 rounded-full shadow-sm border border-slate-200"
+            title="Link this recipe to a matching ingredient (or create a stub)"
+            onclick="openPromoteModal({{ recipe.id }}, '{{ recipe.title|e }}')">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m4.656-4.656a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" />
+            </svg>
+            Use as ingredient
+        </button>
+
         <button onclick="openInspector({{ recipe.id }})"
             class="text-xs font-mono text-slate-400 hover:text-indigo-600 flex items-center gap-1 transition-colors bg-white/80 backdrop-blur px-3 py-1 rounded-full shadow-sm border border-slate-200">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
@@ -465,7 +478,11 @@
                                     {% endif %}
                                     <span
                                         class="print:text-[10px] print:leading-none print:text-left print:m-0 text-slate-800">
-                                        {{ item.ingredient.name }} - <span class="font-bold">
+                                        {{ item.ingredient.name }}
+                                        {% if item.ingredient.sub_recipe_id %}<span
+                                            class="hidden print:inline text-[8px] font-bold uppercase tracking-wider text-orange-600 ml-1">[PREP
+                                            ↗]</span>{% endif %}
+                                        - <span class="font-bold">
                                             <span class="unit-us" data-original="{{ item.amount }}"><span
                                                     class="scalable">{{ item.amount|round|int if item.amount % 1
                                                     == 0
@@ -1039,13 +1056,382 @@
     </script>
     {% endif %}
 
+    {# ============ SUB-RECIPE MODAL ============ #}
+    <div id="sub-recipe-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden print:hidden"
+        role="dialog" aria-modal="true" aria-labelledby="srm-title">
+
+        {# Backdrop #}
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeSubRecipeModal()"></div>
+
+        {# Panel #}
+        <div
+            class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col mx-4">
+
+            {# Header #}
+            <div class="px-6 py-4 border-b border-slate-100 flex items-start gap-4">
+                <div id="srm-image-wrap"
+                    class="hidden shrink-0 w-14 h-14 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+                    <img id="srm-image" src="" alt="" class="w-full h-full object-cover">
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-orange-500 mb-0.5">Sub-recipe</p>
+                    <h3 id="srm-title" class="text-xl font-bold font-serif text-slate-900 leading-tight"></h3>
+                    <p id="srm-meta" class="text-xs text-slate-400 mt-0.5"></p>
+                </div>
+                <button onclick="closeSubRecipeModal()"
+                    class="shrink-0 text-slate-400 hover:text-slate-700 transition-colors mt-0.5">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            {# Scrollable body #}
+            <div class="overflow-y-auto flex-1 px-6 py-5 space-y-6">
+
+                {# Loading state #}
+                <div id="srm-loading" class="flex items-center justify-center py-12">
+                    <svg class="animate-spin w-8 h-8 text-orange-400" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                    </svg>
+                </div>
+
+                {# Content (hidden until loaded) #}
+                <div id="srm-content" class="hidden space-y-6">
+                    <div>
+                        <h4 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Ingredients</h4>
+                        <div id="srm-ingredients" class="space-y-4"></div>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Steps</h4>
+                        <div id="srm-steps" class="space-y-3"></div>
+                    </div>
+                </div>
+
+                {# Error state #}
+                <div id="srm-error" class="hidden text-center py-8">
+                    <p class="text-sm text-red-500">Could not load sub-recipe. Try again.</p>
+                </div>
+            </div>
+
+            {# Footer #}
+            <div class="px-6 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+                <a id="srm-link" href="#" target="_blank"
+                    class="text-sm font-semibold text-orange-600 hover:text-orange-700 flex items-center gap-1 transition-colors">
+                    Open full recipe
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                </a>
+                <button onclick="closeSubRecipeModal()"
+                    class="text-sm text-slate-500 hover:text-slate-700 font-medium">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // In-memory cache: same sub-recipe won't be re-fetched on repeat opens
+        const _srCache = {};
+
+        function openSubRecipeModal(recipeId) {
+            const modal = document.getElementById('sub-recipe-modal');
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+
+            // Reset to loading state
+            document.getElementById('srm-loading').classList.remove('hidden');
+            document.getElementById('srm-content').classList.add('hidden');
+            document.getElementById('srm-error').classList.add('hidden');
+            document.getElementById('srm-title').textContent = '';
+            document.getElementById('srm-meta').textContent = '';
+            document.getElementById('srm-image-wrap').classList.add('hidden');
+            document.getElementById('srm-link').href = `/recipe/${recipeId}`;
+
+            if (_srCache[recipeId]) {
+                _renderSubRecipe(_srCache[recipeId]);
+                return;
+            }
+
+            fetch(`/api/sub-recipe/${recipeId}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.success) throw new Error(data.error || 'API error');
+                    _srCache[recipeId] = data.recipe;
+                    _renderSubRecipe(data.recipe);
+                })
+                .catch(() => {
+                    document.getElementById('srm-loading').classList.add('hidden');
+                    document.getElementById('srm-error').classList.remove('hidden');
+                });
+        }
+
+        function closeSubRecipeModal() {
+            document.getElementById('sub-recipe-modal').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        // ESC closes modal
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeSubRecipeModal();
+        });
+
+        function _renderSubRecipe(r) {
+            document.getElementById('srm-loading').classList.add('hidden');
+
+            // Header
+            document.getElementById('srm-title').textContent = r.title;
+            document.getElementById('srm-meta').textContent =
+                [r.cuisine, r.base_servings ? `${r.base_servings} servings` : null]
+                    .filter(Boolean).join(' · ');
+
+            if (r.image_url) {
+                document.getElementById('srm-image').src = r.image_url;
+                document.getElementById('srm-image').alt = r.title;
+                document.getElementById('srm-image-wrap').classList.remove('hidden');
+            }
+
+            // Ingredients by component
+            const ingEl = document.getElementById('srm-ingredients');
+            ingEl.innerHTML = '';
+            const comps = r.components || Object.keys(r.ingredients_by_component);
+            comps.forEach(comp => {
+                const items = (r.ingredients_by_component || {})[comp] || [];
+                if (!items.length) return;
+                const section = document.createElement('div');
+                if (comps.length > 1) {
+                    const lbl = document.createElement('p');
+                    lbl.className = 'text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5';
+                    lbl.textContent = comp;
+                    section.appendChild(lbl);
+                }
+                const ul = document.createElement('ul');
+                ul.className = 'space-y-1.5';
+                items.forEach(ing => {
+                    const li = document.createElement('li');
+                    li.className = 'flex items-center gap-2.5 text-sm text-slate-700';
+                    const thumb = ing.image_url
+                        ? `<img src="${ing.image_url}" class="w-6 h-6 rounded-full object-cover border border-slate-200 shrink-0" loading="lazy">`
+                        : `<span class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[9px] font-bold text-slate-400 border border-slate-200 shrink-0">${ing.name.slice(0, 2).toUpperCase()}</span>`;
+                    const amt = ing.amount != null
+                        ? `${Number.isInteger(ing.amount) ? ing.amount : ing.amount.toFixed(1)} ${ing.unit || ''}`.trim()
+                        : '';
+                    li.innerHTML = `${thumb}<span><strong>${ing.name}</strong>${amt ? ' — ' + amt : ''}</span>`;
+                    ul.appendChild(li);
+                });
+                section.appendChild(ul);
+                ingEl.appendChild(section);
+            });
+
+            // Steps by component
+            const stepsEl = document.getElementById('srm-steps');
+            stepsEl.innerHTML = '';
+            const stepComps = r.components || Object.keys(r.steps_by_component || {});
+            let n = 1;
+            stepComps.forEach(comp => {
+                const steps = (r.steps_by_component || {})[comp] || [];
+                if (!steps.length) return;
+                if (stepComps.length > 1) {
+                    const lbl = document.createElement('p');
+                    lbl.className = 'text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5 mt-3';
+                    lbl.textContent = comp;
+                    stepsEl.appendChild(lbl);
+                }
+                steps.forEach(step => {
+                    const div = document.createElement('div');
+                    div.className = 'flex gap-3';
+                    div.innerHTML = `
+                        <span class="shrink-0 w-6 h-6 rounded-full bg-orange-100 text-orange-700 text-xs font-bold flex items-center justify-center mt-0.5">${n++}</span>
+                        <p class="text-sm text-slate-700 leading-relaxed">${step.text}</p>`;
+                    stepsEl.appendChild(div);
+                });
+            });
+
+            document.getElementById('srm-content').classList.remove('hidden');
+        }
+    </script>
+
     {% endblock %}
 
     {% block scripts %}
+    <!-- Promote-to-ingredient modal (Direction A) -->
+    <div id="promote-modal" class="fixed inset-0 z-[70] flex items-start justify-center pt-20 hidden">
+        <div class="absolute inset-0 bg-gray-900/60" onclick="closePromoteModal()"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-green-600">Use as Ingredient</p>
+                    <h3 id="pm-recipe-title" class="text-base font-semibold text-gray-900"></h3>
+                </div>
+                <button onclick="closePromoteModal()" class="text-gray-400 hover:text-gray-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="px-5 py-4 space-y-4">
+                <!-- Search existing -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Link to existing
+                        ingredient</label>
+                    <div class="relative">
+                        <input type="text" id="pm-search" placeholder="Search ingredients by name…" autocomplete="off"
+                            oninput="pmSearch(this.value)"
+                            class="block w-full rounded-lg border-gray-300 py-2 pl-3 pr-4 text-sm shadow-sm focus:border-green-500 focus:ring-green-500">
+                        <div id="pm-dropdown"
+                            class="hidden absolute z-10 mt-1 w-full bg-white rounded-lg shadow-lg border border-gray-200 divide-y divide-gray-100 max-h-48 overflow-y-auto">
+                        </div>
+                    </div>
+                </div>
+                <!-- Divider -->
+                <div class="flex items-center gap-3">
+                    <div class="flex-1 h-px bg-gray-200"></div>
+                    <span class="text-xs text-gray-400 font-medium">or</span>
+                    <div class="flex-1 h-px bg-gray-200"></div>
+                </div>
+                <!-- Create stub -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Create as new
+                        ingredient</label>
+                    <button id="pm-create-btn" onclick="pmCreateStub()"
+                        class="w-full flex items-center justify-center gap-2 rounded-lg border border-dashed border-green-400 bg-green-50 hover:bg-green-100 px-4 py-3 text-sm font-semibold text-green-700 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Create stub ingredient for this recipe
+                    </button>
+                    <p class="mt-1.5 text-xs text-gray-400">Creates a minimal ingredient entry (category: Prepared /
+                        tbsp) linked to this recipe.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Render Inspector Modal -->
     {{ inspector.recipe_inspector_modal() }}
 
     <script>
+        // ── Direction A: Use as ingredient modal ────────────────────────────
+        let _pmRecipeId = null;
+        let _pmTimer = null;
+
+        function openPromoteModal(recipeId, recipeTitle) {
+            _pmRecipeId = recipeId;
+            document.getElementById('pm-recipe-title').textContent = recipeTitle;
+            document.getElementById('pm-search').value = '';
+            document.getElementById('pm-dropdown').innerHTML = '';
+            document.getElementById('pm-dropdown').classList.add('hidden');
+            document.getElementById('pm-create-btn').disabled = false;
+            document.getElementById('pm-create-btn').textContent = 'Create stub ingredient for this recipe';
+            document.getElementById('promote-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            // Pre-search with recipe title
+            document.getElementById('pm-search').value = '{{ recipe.title|e }}';
+            pmSearch('{{ recipe.title|e }}');
+            setTimeout(() => document.getElementById('pm-search').focus(), 50);
+        }
+
+        function closePromoteModal() {
+            document.getElementById('promote-modal').classList.add('hidden');
+            document.body.style.overflow = '';
+            _pmRecipeId = null;
+        }
+
+        document.addEventListener('click', e => {
+            if (!e.target.closest('#pm-search') && !e.target.closest('#pm-dropdown')) {
+                document.getElementById('pm-dropdown').classList.add('hidden');
+            }
+        });
+
+        function pmSearch(q) {
+            clearTimeout(_pmTimer);
+            const drop = document.getElementById('pm-dropdown');
+            if (q.length < 2) { drop.classList.add('hidden'); return; }
+            _pmTimer = setTimeout(async () => {
+                try {
+                    const res = await fetch(`/api/admin/search-ingredients?q=${encodeURIComponent(q)}`);
+                    const data = await res.json();
+                    drop.innerHTML = '';
+                    if (!data.results || !data.results.length) {
+                        drop.innerHTML = '<div class="px-4 py-3 text-xs text-gray-500">No ingredients found</div>';
+                    } else {
+                        data.results.forEach(ing => {
+                            const div = document.createElement('div');
+                            div.className = 'px-4 py-2.5 hover:bg-green-50 cursor-pointer flex items-center justify-between group';
+                            const linkedBadge = ing.sub_recipe_id
+                                ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 font-semibold">linked</span>`
+                                : '';
+                            div.innerHTML = `
+                                <span class="text-sm font-medium text-gray-900 group-hover:text-green-700">${ing.name}</span>
+                                <span class="flex items-center gap-1 text-xs text-gray-400">${ing.main_category} ${linkedBadge}</span>`;
+                            div.onclick = () => pmSelectIngredient(ing);
+                            drop.appendChild(div);
+                        });
+                    }
+                    drop.classList.remove('hidden');
+                } catch (e) { console.error(e); }
+            }, 200);
+        }
+
+        async function pmSelectIngredient(ing) {
+            if (!_pmRecipeId) return;
+            document.getElementById('pm-dropdown').classList.add('hidden');
+            try {
+                const res = await fetch(`/api/ingredient/${ing.id}/link-recipe`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ recipe_id: _pmRecipeId }),
+                });
+                const data = await res.json();
+                if (data.success) {
+                    _pmMarkLinked(data.ingredient_name);
+                } else { alert('Error: ' + data.error); }
+            } catch (e) { alert('Network error: ' + e.message); }
+        }
+
+        async function pmCreateStub() {
+            if (!_pmRecipeId) return;
+            const btn = document.getElementById('pm-create-btn');
+            btn.disabled = true;
+            btn.textContent = 'Creating…';
+            try {
+                const res = await fetch(`/api/recipe/${_pmRecipeId}/promote-to-ingredient`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                });
+                const data = await res.json();
+                if (data.success) {
+                    _pmMarkLinked(data.ingredient_name);
+                } else {
+                    btn.disabled = false;
+                    btn.textContent = 'Create stub ingredient for this recipe';
+                    alert('Error: ' + data.error);
+                }
+            } catch (e) {
+                btn.disabled = false;
+                btn.textContent = 'Create stub ingredient for this recipe';
+                alert('Network error: ' + e.message);
+            }
+        }
+
+        function _pmMarkLinked(ingredientName) {
+            closePromoteModal();
+            const btn = document.getElementById('promote-to-ing-btn');
+            btn.innerHTML = `
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                Linked: ${ingredientName}`;
+            btn.className = btn.className
+                .replace('text-slate-400', 'text-green-700')
+                .replace('border-slate-200', 'border-green-300')
+                .replace('hover:text-green-600', '');
+            btn.disabled = true;
+        }
+
         function setNutritionMode(mode, btnElement) {
             // Update the display numbers
             document.querySelectorAll('.nutrition-val').forEach(el => {

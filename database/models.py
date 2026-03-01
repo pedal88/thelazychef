@@ -132,6 +132,14 @@ class Ingredient(db.Model):
     recipe_ingredients: Mapped[list["RecipeIngredient"]] = relationship(back_populates="ingredient")
     evaluation: Mapped["IngredientEvaluation"] = relationship(back_populates="ingredient", uselist=False, cascade="all, delete-orphan")
 
+    # Sub-recipe link: if set, this ingredient IS a recipe (e.g. "Chilli Mayo")
+    sub_recipe_id: Mapped[Optional[int]] = mapped_column(ForeignKey("recipe.id"), nullable=True)
+    sub_recipe: Mapped[Optional["Recipe"]] = relationship(
+        "Recipe",
+        foreign_keys=[sub_recipe_id],
+        primaryjoin="Ingredient.sub_recipe_id == Recipe.id",
+    )
+
 
 class IngredientEvaluation(db.Model):
     """LLM-as-a-Judge QA result for a single Ingredient (One-to-One)."""

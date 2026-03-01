@@ -350,6 +350,16 @@
                                                     d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
                                             </svg>
                                         </button>
+                                        <!-- Link to ingredient (Direction B) -->
+                                        <button onclick="openRmLinkModal({{ recipe.id }}, '{{ recipe.title|e }}')"
+                                            class="text-gray-300 hover:text-orange-500 transition-colors inline-block"
+                                            title="Link recipe to an ingredient's sub-recipe">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m4.656-4.656a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" />
+                                            </svg>
+                                        </button>
                                         <!-- View -->
                                         <a href="/recipe/{{ recipe.id }}" target="_blank"
                                             class="text-gray-500 hover:text-gray-900 transition-colors inline-block"
@@ -894,6 +904,119 @@
         }
     });
 
+</script>
+
+<!-- ── Link Ingredient Modal (Direction B / Recipes side) ──────────── -->
+<div id="rm-link-modal" class="fixed inset-0 z-[70] flex items-center justify-center hidden">
+    <div class="absolute inset-0 bg-gray-900/60" onclick="closeRmLinkModal()"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div>
+                <p class="text-[10px] font-bold uppercase tracking-widest text-orange-500">Link Recipe → Ingredient</p>
+                <h3 id="rm-lm-recipe-title" class="text-base font-semibold text-gray-900"></h3>
+            </div>
+            <button onclick="closeRmLinkModal()" class="text-gray-400 hover:text-gray-700">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div class="px-5 py-4 space-y-3">
+            <p class="text-sm text-gray-500">Search for the ingredient this recipe should power. The ⓘ badge will appear
+                when that ingredient is used in other recipes.</p>
+            <div class="relative">
+                <input type="text" id="rm-lm-search" placeholder="Search ingredients by name…" autocomplete="off"
+                    oninput="rmLmSearch(this.value)"
+                    class="block w-full rounded-lg border-gray-300 py-2 pl-3 pr-4 text-sm shadow-sm focus:border-orange-500 focus:ring-orange-500">
+                <div id="rm-lm-dropdown"
+                    class="hidden absolute z-10 mt-1 w-full bg-white rounded-lg shadow-lg border border-gray-200 divide-y divide-gray-100 max-h-52 overflow-y-auto">
+                </div>
+            </div>
+            <p class="text-xs text-gray-400">Tip: For a new ingredient, create it at <a href="/new-ingredient"
+                    target="_blank" class="text-indigo-600 hover:underline">/new-ingredient</a> first, then come back
+                here to link.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ── Link Recipe → Ingredient Modal (Direction B, Recipes side) ────────
+    let _rmLmRecipeId = null;
+    let _rmLmTimer = null;
+
+    function openRmLinkModal(recipeId, recipeTitle) {
+        _rmLmRecipeId = recipeId;
+        document.getElementById('rm-lm-recipe-title').textContent = recipeTitle;
+        document.getElementById('rm-lm-search').value = '';
+        document.getElementById('rm-lm-dropdown').innerHTML = '';
+        document.getElementById('rm-lm-dropdown').classList.add('hidden');
+        document.getElementById('rm-link-modal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => document.getElementById('rm-lm-search').focus(), 50);
+    }
+
+    function closeRmLinkModal() {
+        document.getElementById('rm-link-modal').classList.add('hidden');
+        document.body.style.overflow = '';
+        _rmLmRecipeId = null;
+    }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeRmLinkModal(); });
+
+    document.addEventListener('click', e => {
+        if (!e.target.closest('#rm-lm-search') && !e.target.closest('#rm-lm-dropdown')) {
+            document.getElementById('rm-lm-dropdown').classList.add('hidden');
+        }
+    });
+
+    function rmLmSearch(q) {
+        clearTimeout(_rmLmTimer);
+        const drop = document.getElementById('rm-lm-dropdown');
+        if (q.length < 2) { drop.classList.add('hidden'); return; }
+        _rmLmTimer = setTimeout(async () => {
+            try {
+                const res = await fetch(`/api/admin/search-ingredients?q=${encodeURIComponent(q)}`);
+                const data = await res.json();
+                drop.innerHTML = '';
+                if (!data.results || !data.results.length) {
+                    drop.innerHTML = '<div class="px-4 py-3 text-xs text-gray-500">No ingredients found</div>';
+                } else {
+                    data.results.forEach(ing => {
+                        const div = document.createElement('div');
+                        div.className = 'px-4 py-2.5 hover:bg-orange-50 cursor-pointer flex items-center justify-between group';
+                        const linked = ing.sub_recipe_id
+                            ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 font-semibold">linked</span>`
+                            : '';
+                        div.innerHTML = `
+                            <span class="text-sm font-medium text-gray-900 group-hover:text-orange-700">${ing.name}</span>
+                            <span class="flex items-center gap-1 text-xs text-gray-400">${ing.main_category || ''} ${linked}</span>`;
+                        div.onclick = () => rmLmSelect(ing);
+                        drop.appendChild(div);
+                    });
+                }
+                drop.classList.remove('hidden');
+            } catch (e) { console.error(e); }
+        }, 250);
+    }
+
+    async function rmLmSelect(ing) {
+        if (!_rmLmRecipeId) return;
+        document.getElementById('rm-lm-dropdown').classList.add('hidden');
+        try {
+            const res = await fetch(`/api/ingredient/${ing.id}/link-recipe`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ recipe_id: _rmLmRecipeId }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(`✅ "${data.ingredient_name}" now links to "${data.recipe_title}"`);
+                closeRmLinkModal();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        } catch (e) { alert('Network error: ' + e.message); }
+    }
 </script>
 
 {% endblock %}
