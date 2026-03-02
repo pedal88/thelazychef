@@ -1,0 +1,26 @@
+{
+    "cuisines": {
+        "Italian": "it",
+        "Mexican": "mx",
+        "Japanese": "jp",
+        "American": "us",
+        "Indian": "in",
+        "French": "fr",
+        "Thai": "th",
+        "Mediterranean": "gr",
+        "Norwegian": "no",
+        "Other": "un"
+    },
+    "proteins": {
+        "Chicken": "https://img.icons8.com/color/96/chicken.png",
+        "Beef": "https://img.icons8.com/color/96/steak.png",
+        "Pork": "https://img.icons8.com/color/96/cut-of-meat.png",
+        "Fish": "https://img.icons8.com/color/96/fish-food.png",
+        "Seafood": "https://img.icons8.com/color/96/fish-food.png",
+        "Vegetarian": "https://img.icons8.com/color/96/vegetarian-food.png",
+        "Vegan": "https://img.icons8.com/color/96/vegan-food.png",
+        "Turkey": "https://img.icons8.com/color/96/roast.png",
+        "Lamb": "https://img.icons8.com/color/96/rack-of-lamb.png",
+        "Other": "https://img.icons8.com/color/96/food-receiver.png"
+    }
+}

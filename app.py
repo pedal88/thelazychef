@@ -35,6 +35,24 @@ import datetime
 from sqlalchemy import func
 from utils.prompt_manager import load_prompt
 
+import json
+
+graph_metadata_path = os.path.join(os.path.dirname(__file__), 'data', 'constraints', 'graph_metadata.json')
+try:
+    with open(graph_metadata_path, 'r') as f:
+        GRAPH_METADATA = json.load(f)
+except Exception as e:
+    print(f"Warning: Could not load graph metadata: {e}")
+    GRAPH_METADATA = {"cuisines": {}, "proteins": {}}
+
+def get_node_image(group_type, name):
+    if group_type == 'cuisine':
+        code = GRAPH_METADATA.get('cuisines', {}).get(name) or GRAPH_METADATA.get('cuisines', {}).get('Other', 'un')
+        return f"https://flagcdn.com/w80/{code}.png"
+    elif group_type == 'protein':
+        return GRAPH_METADATA.get('proteins', {}).get(name) or GRAPH_METADATA.get('proteins', {}).get('Other')
+    return None
+
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 20 * 1024 * 1024 # 20MB limit
 
@@ -1991,14 +2009,20 @@ def get_global_galaxy_graph():
         if c_attr:
             c_id = f"attr_cuisine_{c_attr}"
             if c_id not in nodes_dict:
-                nodes_dict[c_id] = {'id': c_id, 'name': c_attr, 'group': 'cuisine'}
+                nodes_dict[c_id] = {
+                    'id': c_id, 'name': c_attr, 'group': 'cuisine',
+                    'image': get_node_image('cuisine', c_attr)
+                }
             links.append({'source': rec_id, 'target': c_id, 'weight': 1.0})
             
         # Link to Protein
         if p_attr:
             p_id = f"attr_protein_{p_attr}"
             if p_id not in nodes_dict:
-                nodes_dict[p_id] = {'id': p_id, 'name': p_attr, 'group': 'protein'}
+                nodes_dict[p_id] = {
+                    'id': p_id, 'name': p_attr, 'group': 'protein',
+                    'image': get_node_image('protein', p_attr)
+                }
             links.append({'source': rec_id, 'target': p_id, 'weight': 1.0})
 
     return jsonify({'nodes': list(nodes_dict.values()), 'links': links})
@@ -2026,11 +2050,17 @@ def get_orbital_graph(recipe_id):
     
     # 2. Add Attribute Nodes (Planets)
     if c_attr:
-        nodes.append({'id': f"attr_cuisine_{c_attr}", 'name': c_attr, 'group': 'cuisine'})
+        nodes.append({
+            'id': f"attr_cuisine_{c_attr}", 'name': c_attr, 'group': 'cuisine',
+            'image': get_node_image('cuisine', c_attr)
+        })
         links.append({'source': f"attr_cuisine_{c_attr}", 'target': f"recipe_{target.id}", 'weight': 5.0}) 
         
     if p_attr:
-        nodes.append({'id': f"attr_protein_{p_attr}", 'name': p_attr, 'group': 'protein'})
+        nodes.append({
+            'id': f"attr_protein_{p_attr}", 'name': p_attr, 'group': 'protein',
+            'image': get_node_image('protein', p_attr)
+        })
         links.append({'source': f"attr_protein_{p_attr}", 'target': f"recipe_{target.id}", 'weight': 5.0}) 
 
     # 3. Discover Siblings (Moons)

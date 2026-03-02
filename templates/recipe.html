@@ -474,7 +474,7 @@
                             <div class="hidden print:flex print:flex-col print:space-y-0.5 print:m-0 print:p-0 pt-1">
                                 <h3
                                     class="print:text-[10px] print:text-black print:font-bold print:uppercase print:tracking-widest print:mb-1.5 print:border-b print:border-slate-300 print:pb-1">
-                                    Ingredients</h3>
+                                    {{ component_name }}</h3>
 
                                 {% for item in ingredients_by_component[component_name] %}
                                 <div
@@ -1638,6 +1638,20 @@
                     headers: { 'Content-Type': 'application/json' }
                 });
 
+                // Guard: if the response is HTML (login redirect after session expiry),
+                // bail out with a friendly message before calling .json() — which would
+                // throw "Unexpected token '<', <!doctype..." otherwise.
+                const contentType = response.headers.get('content-type') || '';
+                if (contentType.includes('text/html') || !response.ok) {
+                    if (response.status === 403 || response.status === 401 || contentType.includes('text/html')) {
+                        alert('Access denied or session expired. Please refresh and log in again.');
+                    } else {
+                        alert(`Generation failed (HTTP ${response.status}).`);
+                    }
+                    btnText.innerText = originalText;
+                    return;
+                }
+
                 const data = await response.json();
                 if (data.success) {
                     window.location.reload();
@@ -1646,7 +1660,7 @@
                     btnText.innerText = originalText;
                 }
             } catch (e) {
-                alert('System error: ' + e.message);
+                alert('Error: ' + e.message);
                 btnText.innerText = originalText;
             }
         }

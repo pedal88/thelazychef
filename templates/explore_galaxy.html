@@ -18,6 +18,25 @@
         transition: r 0.2s, fill 0.2s;
     }
 
+    /* Thin scrollbar for settings panel */
+    .galaxy-scroll::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .galaxy-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .galaxy-scroll::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+
+    .galaxy-scroll {
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 transparent;
+    }
+
     /* Apple-like neutral light-mode glows */
     .glow-recipe {
         filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
@@ -41,15 +60,16 @@
     <div class="absolute top-0 left-0 right-0 p-4 flex justify-between items-start z-10 pointer-events-none">
 
         <!-- Left: Branding & Search -->
-        <div class="pointer-events-auto w-full max-w-sm space-y-4">
-            <div class="bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl p-5 shadow-sm">
-                <h1 class="text-2xl font-semibold text-slate-900 tracking-tight mb-1 flex items-center gap-2">
+        <div
+            class="pointer-events-auto w-full max-w-sm space-y-2 max-h-[calc(100vh-80px)] overflow-y-auto galaxy-scroll">
+            <div class="bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl p-3 shadow-sm">
+                <h1 class="text-xl font-semibold text-slate-900 tracking-tight mb-0.5 flex items-center gap-2">
                     Flavor Galaxy
                 </h1>
-                <p class="text-sm text-slate-500 mb-4">Explore the culinary universe.</p>
+                <p class="text-xs text-slate-500 mb-2">Explore the culinary universe.</p>
                 <div class="relative">
                     <input type="text" id="search-input" placeholder="Search a recipe to locate..."
-                        class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-4 pr-4 text-sm text-slate-900 focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 placeholder-slate-400">
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-3 pr-3 text-sm text-slate-900 focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 placeholder-slate-400">
                     <div id="search-dropdown"
                         class="hidden absolute top-full mt-2 w-full bg-white border border-slate-200 rounded-xl max-h-64 overflow-y-auto shadow-xl z-20">
                     </div>
@@ -57,26 +77,26 @@
             </div>
 
             <div
-                class="bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl p-2 shadow-sm inline-flex flex-col gap-1">
+                class="bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl p-1.5 shadow-sm inline-flex flex-col gap-0.5">
                 <button id="btn-recenter"
-                    class="flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-xl px-4 py-2 text-sm font-medium">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    class="flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-xl px-3 py-1.5 text-xs font-medium">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
                     Center Map
                 </button>
                 <button id="btn-physics"
-                    class="flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-xl px-4 py-2 text-sm font-medium">
-                    <svg class="w-4 h-4" id="icon-pause" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    class="flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-xl px-3 py-1.5 text-xs font-medium">
+                    <svg class="w-3.5 h-3.5" id="icon-pause" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <span id="label-physics">Pause Physics</span>
                 </button>
                 <button id="btn-settings"
-                    class="flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-xl px-4 py-2 text-sm font-medium">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    class="flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-xl px-3 py-1.5 text-xs font-medium">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
                         </path>
@@ -89,51 +109,65 @@
 
             <!-- Settings Panel -->
             <div id="settings-panel"
-                class="hidden bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl p-5 shadow-sm text-sm space-y-4 transition-all">
-                <h3 class="font-semibold text-slate-800 border-b border-slate-100 pb-2">Galaxy Mechanics</h3>
+                class="hidden bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl p-3 shadow-sm text-sm space-y-1.5 transition-all">
+                <h3 class="font-semibold text-slate-800 border-b border-slate-100 pb-1 text-xs">Galaxy Mechanics</h3>
 
                 <div>
-                    <label class="flex justify-between text-xs text-slate-500 mb-1">
-                        <span>Center Gravity (X/Y)</span> <span id="val-gravity">0.015</span>
+                    <label class="flex justify-between text-[11px] text-slate-500">
+                        <span>Center Gravity</span> <span id="val-gravity">0.015</span>
                     </label>
                     <input type="range" id="slide-gravity" min="0" max="0.1" step="0.005" value="0.015"
                         class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer">
                 </div>
                 <div>
-                    <label class="flex justify-between text-xs text-slate-500 mb-1">
+                    <label class="flex justify-between text-[11px] text-slate-500">
                         <span>Repel Force</span> <span id="val-repel">-150</span>
                     </label>
                     <input type="range" id="slide-repel" min="-500" max="-10" step="10" value="-150"
                         class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer">
                 </div>
                 <div>
-                    <label class="flex justify-between text-xs text-slate-500 mb-1">
+                    <label class="flex justify-between text-[11px] text-slate-500">
                         <span>Link Distance</span> <span id="val-link-dist">1.0x</span>
                     </label>
                     <input type="range" id="slide-link-dist" min="0.2" max="3.0" step="0.1" value="1.0"
                         class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer">
                 </div>
                 <div>
-                    <label class="flex justify-between text-xs text-slate-500 mb-1">
+                    <label class="flex justify-between text-[11px] text-slate-500">
                         <span>Node Size</span> <span id="val-node-size">1.0x</span>
                     </label>
                     <input type="range" id="slide-node-size" min="0.2" max="3.0" step="0.1" value="1.0"
                         class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer">
                 </div>
                 <div>
-                    <label class="flex justify-between text-xs text-slate-500 mb-1">
+                    <label class="flex justify-between text-[11px] text-slate-500">
                         <span>Link Thickness</span> <span id="val-link-thick">1.5x</span>
                     </label>
                     <input type="range" id="slide-link-thick" min="0.1" max="5.0" step="0.1" value="1.5"
                         class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer">
                 </div>
                 <div>
-                    <label class="flex justify-between text-xs text-slate-500 mb-1">
-                        <span>Text Fade Scaling</span> <span id="val-zoom-fade">0.3</span>
+                    <label class="flex justify-between text-[11px] text-slate-500">
+                        <span>Text Fade</span> <span id="val-zoom-fade">0.3</span>
                     </label>
                     <input type="range" id="slide-zoom-fade" min="0.0" max="1.0" step="0.05" value="0.3"
                         class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer">
                 </div>
+
+                <h3 class="font-semibold text-slate-800 border-b border-slate-100 pb-1 pt-1 text-xs">Node Images</h3>
+                <label class="flex items-center justify-between cursor-pointer">
+                    <span class="text-[11px] text-slate-500">Cuisine Flags</span>
+                    <input type="checkbox" id="toggle-cuisine-img" checked
+                        class="w-8 h-4 bg-slate-200 rounded-full appearance-none relative cursor-pointer checked:bg-amber-500
+                               after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-3 after:h-3 after:bg-white after:rounded-full after:transition-transform checked:after:translate-x-4">
+                </label>
+                <label class="flex items-center justify-between cursor-pointer">
+                    <span class="text-[11px] text-slate-500">Protein Icons</span>
+                    <input type="checkbox" id="toggle-protein-img" checked
+                        class="w-8 h-4 bg-slate-200 rounded-full appearance-none relative cursor-pointer checked:bg-rose-500
+                               after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-3 after:h-3 after:bg-white after:rounded-full after:transition-transform checked:after:translate-x-4">
+                </label>
             </div>
         </div>
 
@@ -143,15 +177,15 @@
             <h3 class="font-semibold text-slate-400 mb-3 uppercase tracking-wider text-[10px]">Legend</h3>
             <div class="space-y-3">
                 <div class="flex items-center gap-3">
-                    <span class="w-3.5 h-3.5 rounded-full bg-slate-800 shadow-sm border border-slate-900"></span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-slate-800 shadow-sm border-2 border-amber-500"></span>
                     <span class="text-slate-600 font-medium">Cuisine</span>
                 </div>
                 <div class="flex items-center gap-3">
-                    <span class="w-3.5 h-3.5 rounded-full bg-slate-400 shadow-sm border border-slate-500"></span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-slate-400 shadow-sm border-2 border-rose-500"></span>
                     <span class="text-slate-600 font-medium">Protein Type</span>
                 </div>
                 <div class="flex items-center gap-3">
-                    <span class="w-3.5 h-3.5 rounded-full bg-white shadow-sm border border-slate-300"></span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-white shadow-sm border-2 border-blue-500"></span>
                     <span class="text-slate-600 font-medium">Recipe</span>
                 </div>
             </div>
@@ -185,7 +219,9 @@
             linkDist: 1.0,
             nodeSize: 1.0,
             linkThick: 1.5,
-            fadeStart: 0.3
+            fadeStart: 0.3,
+            showCuisineImages: true,
+            showProteinImages: true
         };
 
         // Apple-like neutral colors
@@ -196,8 +232,8 @@
         };
 
         const radiusMap = {
-            'cuisine': 30,
-            'protein': 24,
+            'cuisine': 40,
+            'protein': 28,
             'recipe': 14
         };
 
@@ -302,10 +338,14 @@
                 .attr('r', d => radiusMap[d.group] * cfg.nodeSize) // Node Size 
                 .attr('fill', d => colorMap[d.group])
                 .attr('class', d => glowMap[d.group])
-                .attr('stroke', d => d.group === 'recipe' ? '#cbd5e1' : 'transparent') // border for white recipe nodes
-                .attr('stroke-width', 1.5);
+                .attr('stroke', d => {
+                    if (d.group === 'cuisine') return '#f59e0b';
+                    if (d.group === 'protein') return '#f43f5e';
+                    return '#3b82f6';
+                })
+                .attr('stroke-width', 2);
 
-            // Images logic (only for recipes)
+            // Images logic (applies to any node with an image)
             nodeGroup.filter(d => d.image)
                 .append('image')
                 .attr('href', d => d.image)
@@ -313,7 +353,12 @@
                 .attr('y', d => -(radiusMap[d.group] * cfg.nodeSize))
                 .attr('width', d => (radiusMap[d.group] * cfg.nodeSize) * 2)
                 .attr('height', d => (radiusMap[d.group] * cfg.nodeSize) * 2)
-                .attr('clip-path', d => `circle(${radiusMap[d.group] * cfg.nodeSize}px at ${radiusMap[d.group] * cfg.nodeSize}px ${radiusMap[d.group] * cfg.nodeSize}px)`);
+                .attr('clip-path', d => `circle(${radiusMap[d.group] * cfg.nodeSize}px at ${radiusMap[d.group] * cfg.nodeSize}px ${radiusMap[d.group] * cfg.nodeSize}px)`)
+                .style('display', d => {
+                    if (d.group === 'cuisine' && !cfg.showCuisineImages) return 'none';
+                    if (d.group === 'protein' && !cfg.showProteinImages) return 'none';
+                    return null;
+                });
 
             // Text configuration
             nodeGroup.append('text')
@@ -343,14 +388,22 @@
                 nodeGroup.filter(n => connected.has(n.id))
                     .style('opacity', 1)
                     .select('circle')
-                    .attr('stroke', '#94a3b8');
+                    .attr('stroke', d => {
+                        if (d.group === 'cuisine') return '#fbbf24';
+                        if (d.group === 'protein') return '#fb7185';
+                        return '#60a5fa';
+                    });
 
                 d3.select(this).raise();
             })
                 .on('mouseout', function () {
                     nodeGroup.style('opacity', 1)
                         .select('circle')
-                        .attr('stroke', d => d.group === 'recipe' ? '#cbd5e1' : 'transparent');
+                        .attr('stroke', d => {
+                            if (d.group === 'cuisine') return '#f59e0b';
+                            if (d.group === 'protein') return '#f43f5e';
+                            return '#3b82f6';
+                        });
                     link.style('stroke-opacity', 0.6).style('stroke', '#cbd5e1');
                 });
 
@@ -447,6 +500,34 @@
                     return textOpacity;
                 });
             }, false);
+
+            // 7. Cuisine image toggle
+            document.getElementById('toggle-cuisine-img').addEventListener('change', (e) => {
+                cfg.showCuisineImages = e.target.checked;
+                refreshNodeImages();
+            });
+
+            // 8. Protein image toggle
+            document.getElementById('toggle-protein-img').addEventListener('change', (e) => {
+                cfg.showProteinImages = e.target.checked;
+                refreshNodeImages();
+            });
+        }
+
+        function refreshNodeImages() {
+            // Toggle image visibility per group
+            g.selectAll('.node image').style('display', d => {
+                if (d.group === 'cuisine' && !cfg.showCuisineImages) return 'none';
+                if (d.group === 'protein' && !cfg.showProteinImages) return 'none';
+                return null;
+            });
+
+            // Reset circle fill: show flat color when images are hidden
+            g.selectAll('.node circle').attr('fill', d => {
+                if (d.group === 'cuisine' && !cfg.showCuisineImages) return colorMap['cuisine'];
+                if (d.group === 'protein' && !cfg.showProteinImages) return colorMap['protein'];
+                return d.image ? colorMap[d.group] : colorMap[d.group];
+            });
         }
 
         function dragstarted(event, d) {
