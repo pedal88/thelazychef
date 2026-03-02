@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% import "components/typography.html" as type %}
+{% import "components/cards.html" as card with context %}
+
+{% block title %}Shared Palate with {{ partner_name }} — The Lazy Chef{% endblock %}
+
+{% block content %}
+<div class="bg-white py-12">
+    <div class="mx-auto max-w-7xl px-6 lg:px-8">
+
+        {# Back link #}
+        <a href="/mirror?skip_redirect=1"
+            class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-indigo-600 transition-colors mb-6">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Mirror Hub
+        </a>
+
+        {# Header with default toggle #}
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+            <div>
+                <h1 class="font-serif text-3xl font-bold tracking-tight text-slate-900">
+                    Shared Palate with {{ partner_name }}
+                </h1>
+                <p class="mt-1 text-slate-500 text-sm">Recipes you both favorited — your culinary common ground.</p>
+            </div>
+
+            {# Default toggle #}
+            <label class="flex items-center gap-3 cursor-pointer shrink-0 select-none group" id="default-toggle-label">
+                <span class="text-sm text-slate-500 group-hover:text-slate-700 transition-colors">Default mirror</span>
+                <input type="checkbox" id="default-toggle" {% if is_default %}checked{% endif %}
+                    onchange="toggleDefault()" class="w-10 h-5 bg-slate-200 rounded-full appearance-none relative cursor-pointer
+                           checked:bg-indigo-600 transition-colors
+                           after:content-[''] after:absolute after:top-0.5 after:left-0.5
+                           after:w-4 after:h-4 after:bg-white after:rounded-full
+                           after:transition-transform checked:after:translate-x-5 after:shadow-sm">
+            </label>
+        </div>
+
+        {% if recipes %}
+        <div class="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-8">
+            {% for recipe in recipes %}
+            <div class="group relative flex flex-col">
+                {{ card.recipe_preview_card(recipe, recipe.id) }}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="mt-12 flex flex-col items-center justify-center py-20 text-center">
+            <div class="text-6xl mb-4">🪞</div>
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">No matches yet</h3>
+            <p class="text-gray-500 mb-6 max-w-sm">
+                You and {{ partner_name }} haven't favorited any of the same recipes yet.
+                Keep exploring — the overlaps will come!
+            </p>
+            <a href="/"
+                class="rounded-full bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition-colors">
+                Discover Recipes
+            </a>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+<script>
+    async function toggleDefault() {
+        const toggle = document.getElementById('default-toggle');
+        try {
+            const resp = await fetch('/api/mirror/set-default/{{ partner_id }}', { method: 'POST' });
+            const data = await resp.json();
+            if (data.success) {
+                toggle.checked = data.is_default;
+            } else {
+                toggle.checked = !toggle.checked; // revert
+            }
+        } catch {
+            toggle.checked = !toggle.checked; // revert on error
+        }
+    }
+</script>
+{% endblock %}

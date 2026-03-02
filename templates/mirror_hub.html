@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% import "components/typography.html" as type %}
+
+{% block title %}Recipe Mirror — The Lazy Chef{% endblock %}
+
+{% block content %}
+<div class="bg-white py-12">
+    <div class="mx-auto max-w-2xl px-6 lg:px-8">
+
+        {{ type.page_header('Recipe Mirror', 'Find out which recipes you and a friend both love.') }}
+
+        {# ---------- Your Pairing Code ---------- #}
+        <div
+            class="mt-10 bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-2xl border border-indigo-100 p-6 shadow-sm">
+            <h2 class="text-sm font-semibold text-indigo-900 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10.172 13.828a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.102 1.101" />
+                </svg>
+                Your Pairing Code
+            </h2>
+            <p class="text-sm text-slate-500 mb-4">Share this code with a friend so they can connect with you.</p>
+
+            <div class="flex items-center gap-3">
+                <code id="my-pairing-code"
+                    class="flex-1 text-center text-2xl font-mono font-bold tracking-[0.3em] text-indigo-700 bg-white border border-indigo-200 rounded-xl py-3 shadow-inner select-all">
+                    {{ pairing_code }}
+                </code>
+                <button onclick="copyCode()"
+                    class="shrink-0 rounded-xl bg-indigo-600 text-white px-4 py-3 text-sm font-semibold hover:bg-indigo-500 transition-colors shadow-sm"
+                    title="Copy to clipboard" id="copy-btn">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                </button>
+                <button onclick="regenerateCode()"
+                    class="shrink-0 rounded-xl bg-white text-slate-600 border border-slate-200 px-4 py-3 text-sm font-semibold hover:bg-slate-50 transition-colors shadow-sm"
+                    title="Generate new code" id="regen-btn">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                </button>
+            </div>
+            <p id="copy-feedback" class="text-xs text-indigo-500 mt-2 opacity-0 transition-opacity">Copied!</p>
+        </div>
+
+        {# ---------- Enter Partner Code ---------- #}
+        <div class="mt-6 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+            <h2 class="text-sm font-semibold text-slate-800 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <svg class="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m9 5.197v1" />
+                </svg>
+                Connect with a Partner
+            </h2>
+            <p class="text-sm text-slate-500 mb-4">Enter the code your friend shared with you.</p>
+
+            <div class="flex gap-3">
+                <input type="text" id="partner-code-input" placeholder="e.g. AB12CD34" maxlength="8"
+                    class="flex-1 rounded-xl border border-slate-300 bg-slate-50 py-2.5 px-4 text-center text-lg font-mono tracking-widest uppercase placeholder-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                <button onclick="acceptCode()" id="accept-btn"
+                    class="shrink-0 rounded-xl bg-orange-600 text-white px-6 py-2.5 text-sm font-semibold hover:bg-orange-500 transition-colors shadow-sm disabled:opacity-50">
+                    Pair
+                </button>
+            </div>
+            <p id="accept-feedback" class="text-sm mt-3 hidden"></p>
+        </div>
+
+        {# ---------- Active Partners ---------- #}
+        <div class="mt-8">
+            <h2 class="text-sm font-semibold text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <svg class="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Active Partners
+            </h2>
+
+            {% if partners %}
+            <div class="space-y-3">
+                {% for p in partners %}
+                <div
+                    class="flex items-center justify-between bg-white rounded-xl border {{ 'border-indigo-300 ring-1 ring-indigo-100' if p.is_default else 'border-slate-200' }} px-5 py-4 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-bold text-sm">
+                            {{ p.email[0]|upper }}
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-slate-800 flex items-center gap-1.5">
+                                {{ p.email.split('@')[0] }}
+                                {% if p.is_default %}
+                                <span
+                                    class="text-indigo-500 text-xs font-semibold bg-indigo-50 px-1.5 py-0.5 rounded-full">Default</span>
+                                {% endif %}
+                            </p>
+                            <p class="text-xs text-slate-400">{{ p.email }}</p>
+                        </div>
+                    </div>
+                    <a href="/api/graph/mirror/{{ p.id }}"
+                        class="rounded-lg bg-indigo-600 text-white px-4 py-2 text-sm font-semibold hover:bg-indigo-500 transition-colors shadow-sm">
+                        View Mirror
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                <div class="text-4xl mb-3">🪞</div>
+                <h3 class="text-sm font-semibold text-slate-700 mb-1">No partners yet</h3>
+                <p class="text-xs text-slate-400">Share your code or enter a friend's code above to get started.</p>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function copyCode() {
+        const code = document.getElementById('my-pairing-code').textContent.trim();
+        navigator.clipboard.writeText(code).then(() => {
+            const fb = document.getElementById('copy-feedback');
+            fb.style.opacity = '1';
+            setTimeout(() => fb.style.opacity = '0', 2000);
+        });
+    }
+
+    async function regenerateCode() {
+        const btn = document.getElementById('regen-btn');
+        btn.disabled = true;
+        try {
+            const resp = await fetch('/api/mirror/regenerate', { method: 'POST' });
+            const data = await resp.json();
+            if (data.success) {
+                document.getElementById('my-pairing-code').textContent = data.code;
+            }
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    async function acceptCode() {
+        const input = document.getElementById('partner-code-input');
+        const code = input.value.trim().toUpperCase();
+        const fb = document.getElementById('accept-feedback');
+        const btn = document.getElementById('accept-btn');
+
+        if (!code || code.length < 8) {
+            fb.textContent = 'Please enter a valid 8-character code.';
+            fb.className = 'text-sm mt-3 text-red-600';
+            fb.classList.remove('hidden');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Pairing…';
+
+        try {
+            const resp = await fetch('/api/mirror/accept', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code })
+            });
+            const data = await resp.json();
+            if (data.success) {
+                fb.textContent = `✓ Paired with ${data.partner_email}!`;
+                fb.className = 'text-sm mt-3 text-green-600 font-medium';
+                fb.classList.remove('hidden');
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                fb.textContent = data.error || 'Failed to pair.';
+                fb.className = 'text-sm mt-3 text-red-600';
+                fb.classList.remove('hidden');
+            }
+        } catch (e) {
+            fb.textContent = 'Network error. Please try again.';
+            fb.className = 'text-sm mt-3 text-red-600';
+            fb.classList.remove('hidden');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Pair';
+        }
+    }
+
+    // Allow Enter key on the input
+    document.getElementById('partner-code-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); acceptCode(); }
+    });
+</script>
+{% endblock %}

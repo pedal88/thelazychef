@@ -1,3 +1,4 @@
+import os
 import re
 
 content = open('templates/admin/recipes_management.html', 'r').read()

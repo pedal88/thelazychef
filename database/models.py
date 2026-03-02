@@ -396,3 +396,26 @@ class UserQueue(db.Model):
 
     user: Mapped["User"] = relationship(back_populates="queue_items")
     recipe: Mapped["Recipe"] = relationship(back_populates="queue_items")
+
+
+# ---------------------------------------------------------------------------
+# Recipe Mirror — Mutual Pairing Links
+# ---------------------------------------------------------------------------
+
+class UserLink(db.Model):
+    """Tracks a mutual 'Recipe Mirror' connection between two users."""
+    __tablename__ = 'user_link'
+    __table_args__ = (
+        UniqueConstraint('user_id_1', 'user_id_2', name='uq_user_link_pair'),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id_1: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
+    user_id_2: Mapped[Optional[int]] = mapped_column(ForeignKey('user.id'), nullable=True)
+    pairing_code: Mapped[str] = mapped_column(String(10), unique=True, index=True, nullable=False)
+    status: Mapped[str] = mapped_column(String(20), default='PENDING', nullable=False)
+    is_default: Mapped[bool] = mapped_column(Boolean, default=False, server_default='0', nullable=False)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)
+
+    user_1: Mapped["User"] = relationship(foreign_keys=[user_id_1])
+    user_2: Mapped[Optional["User"]] = relationship(foreign_keys=[user_id_2])
