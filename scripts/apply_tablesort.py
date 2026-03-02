@@ -1,3 +1,5 @@
+import re
+
 content = open('templates/admin/recipes_management.html', 'r').read()
 
 # Add search bar
