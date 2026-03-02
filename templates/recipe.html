@@ -755,7 +755,7 @@
                 <h2 class="text-2xl font-bold font-sans text-slate-900">Explore the Flavor Galaxy</h2>
             </div>
             <div id="flavor-galaxy-container"
-                class="w-full h-96 bg-slate-900 rounded-xl overflow-hidden relative border border-slate-700 mt-8">
+                class="w-full h-96 bg-slate-50 cursor-grab active:cursor-grabbing rounded-xl overflow-hidden relative border border-slate-200 mt-8">
                 <div id="galaxy-loading"
                     class="absolute inset-0 flex items-center justify-center text-slate-400 font-medium">
                     Scanning the universe...
@@ -1698,10 +1698,23 @@
                         .attr("width", width)
                         .attr("height", height)
                         .attr("viewBox", [0, 0, width, height])
-                        .attr("style", "max-width: 100%; height: auto; display: block; cursor: grab;")
-                        .call(d3.zoom().scaleExtent([0.5, 4]).on("zoom", (event) => g.attr("transform", event.transform)))
-                        .on("mousedown", () => svg.style("cursor", "grabbing"))
-                        .on("mouseup", () => svg.style("cursor", "grab"));
+                        .attr("style", "max-width: 100%; height: auto; display: block;")
+                        .call(d3.zoom().scaleExtent([0.5, 4]).on("zoom", (event) => {
+                            g.attr("transform", event.transform);
+
+                            // Text fade semantic logic
+                            const scale = event.transform.k;
+                            let textOpacity = (scale - 0.5) / (1.0 - 0.5);
+                            textOpacity = Math.max(0, Math.min(1, textOpacity));
+
+                            g.selectAll('text').style('opacity', d => {
+                                if (d.group === 'cuisine' || d.group === 'protein') {
+                                    let catOpacity = (scale - 0.3) / (0.6 - 0.3);
+                                    return Math.max(0, Math.min(1, catOpacity));
+                                }
+                                return textOpacity;
+                            });
+                        }));
 
                     const g = svg.append("g");
 
@@ -1721,7 +1734,7 @@
                     }
 
                     const link = g.append("g")
-                        .attr("stroke", "#475569") // slate-600
+                        .attr("stroke", "#cbd5e1") // slate-300
                         .attr("stroke-opacity", 0.6)
                         .selectAll("line")
                         .data(data.links)
@@ -1730,8 +1743,6 @@
                         .attr("class", d => `link src-${d.source.id} tgt-${d.target.id}`);
 
                     const node = g.append("g")
-                        .attr("stroke", "#fff")
-                        .attr("stroke-width", 1.5)
                         .selectAll("g")
                         .data(data.nodes)
                         .join("g")
@@ -1742,23 +1753,25 @@
 
                     // Node colors mapped
                     const colorMap = {
-                        'center': '#3b82f6', // Blue
-                        'cuisine': '#f59e0b', // Amber
-                        'protein': '#e11d48', // Rose/Red
-                        'sibling': '#14b8a6'  // Teal
+                        'center': '#ffffff', // White
+                        'cuisine': '#1e293b', // slate-800
+                        'protein': '#94a3b8', // slate-400
+                        'sibling': '#ffffff'  // White
                     };
 
                     const radiusMap = {
-                        'center': 40,
-                        'cuisine': 25,
-                        'protein': 25,
-                        'sibling': 18
+                        'center': 20,
+                        'cuisine': 30,
+                        'protein': 24,
+                        'sibling': 14
                     };
 
                     // Circles
                     node.append("circle")
                         .attr("r", d => radiusMap[d.group] || 20)
-                        .attr("fill", d => colorMap[d.group] || "#94a3b8");
+                        .attr("fill", d => colorMap[d.group] || "#94a3b8")
+                        .attr("stroke", d => (d.group === 'center' || d.group === 'sibling') ? '#cbd5e1' : 'transparent')
+                        .attr("stroke-width", 1.5);
 
                     // Images for center / siblings if available
                     node.filter(d => d.image)
@@ -1772,27 +1785,28 @@
 
                     // Labels
                     node.append("text")
-                        .attr("dy", d => (radiusMap[d.group] || 20) + 14)
+                        .attr("dy", d => (radiusMap[d.group] || 20) + 16)
                         .attr("text-anchor", "middle")
                         .text(d => d.name)
-                        .attr("fill", "#f8fafc")
+                        .attr("fill", "#475569")
                         .attr("stroke", "none")
-                        .style("font-size", d => d.group === 'center' ? "14px" : "11px")
-                        .style("font-weight", d => d.group === 'center' ? "bold" : "normal")
-                        .style("font-family", "sans-serif")
-                        .style("text-shadow", "0px 2px 4px rgba(0,0,0,0.8)");
+                        .style("font-size", d => d.group === 'center' ? "12px" : "11px")
+                        .style("font-weight", d => d.group === 'center' ? "600" : "500")
+                        .style("font-family", "Inter, sans-serif")
+                        .style("pointer-events", "none")
+                        .style("text-shadow", "0 2px 4px rgba(255,255,255,0.8)");
 
                     // Hover interactions
                     node.on("mouseover", function (event, d) {
                         // Dim all
-                        node.style("opacity", 0.3);
+                        node.style("opacity", 0.2);
                         link.style("stroke-opacity", 0.1);
 
                         // Highlight connected
                         const connectedIds = new Set([d.id]);
                         link.filter(l => l.source.id === d.id || l.target.id === d.id)
                             .style("stroke-opacity", 1)
-                            .style("stroke", "#fcd34d")
+                            .style("stroke", "#64748b")
                             .each(l => {
                                 connectedIds.add(l.source.id);
                                 connectedIds.add(l.target.id);
@@ -1806,18 +1820,22 @@
                             connectedPlanets.forEach(planet => {
                                 link.filter(l => (l.source.id === planet.id && l.target.group === 'center') || (l.target.id === planet.id && l.source.group === 'center'))
                                     .style("stroke-opacity", 1)
-                                    .style("stroke", "#fcd34d");
+                                    .style("stroke", "#64748b");
 
                                 connectedIds.add(`recipe_{{ recipe.id }}`);
                             });
                         }
 
                         node.filter(n => connectedIds.has(n.id))
-                            .style("opacity", 1);
+                            .style("opacity", 1)
+                            .select("circle")
+                            .attr("stroke", "#94a3b8");
                     })
                         .on("mouseout", function () {
-                            node.style("opacity", 1);
-                            link.style("stroke-opacity", 0.6).style("stroke", "#475569");
+                            node.style("opacity", 1)
+                                .select("circle")
+                                .attr("stroke", d => (d.group === 'center' || d.group === 'sibling') ? '#cbd5e1' : 'transparent');
+                            link.style("stroke-opacity", 0.6).style("stroke", "#cbd5e1");
                         });
 
                     node.call(d3.drag()
