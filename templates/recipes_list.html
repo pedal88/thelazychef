@@ -9,747 +9,929 @@
 {% endblock %}
 
 {% block content %}
-<div class="bg-white py-12">
-    <div class="mx-auto max-w-7xl px-6 lg:px-8">
 
-        {# ---------- Page Header ---------- #}
-        {% if current_view == 'saved' %}
-        {{ type.page_header('My Cookbook', 'Your personal collection of favorite recipes.') }}
-        {% elif current_view == 'next' %}
-        {{ type.page_header('Cook Next', 'Recipes queued up and ready for your kitchen.') }}
-        {% else %}
-        {{ type.page_header('Recipe Library', 'Every dish created with your AI Chef.') }}
-        {% endif %}
+{# ================================================================= #}
+{# IMMERSIVE MOBILE DISCOVERY VIEW — Full-viewport scrolling cards #}
+{# Only activates for discover mode; other views use the standard UI #}
+{# ================================================================= #}
+{% if current_view == 'discover' %}
 
-        {# ---------- Toolbar: View Tabs + Style Toggle ---------- #}
-        <div
-            class="mt-4 flex flex-col sm:flex-row justify-between items-center bg-white p-2 rounded-xl border border-gray-100 shadow-sm gap-3">
+<style>
+    /* Immersive card container */
+    .immersive-feed {
+        height: 100dvh;
+        overflow-y: scroll;
+        scroll-snap-type: y mandatory;
+        overscroll-behavior-y: contain;
+        -webkit-overflow-scrolling: touch;
+    }
 
-            {# Context Tabs #}
-            <nav class="flex space-x-1" aria-label="View tabs">
-                <a href="{{ url_for('recipes_list', view='discover', style=view_style) }}"
-                    class="{% if current_view == 'discover' %}bg-indigo-50 text-indigo-700 font-semibold{% else %}text-gray-500 hover:text-gray-700 hover:bg-gray-50{% endif %} rounded-lg px-4 py-2 text-sm font-medium transition-colors">
-                    🔍 Discover
-                </a>
-                {% if current_user.is_authenticated %}
-                <a href="{{ url_for('recipes_list', view='saved', style=view_style) }}"
-                    class="{% if current_view == 'saved' %}bg-indigo-50 text-indigo-700 font-semibold{% else %}text-gray-500 hover:text-gray-700 hover:bg-gray-50{% endif %} rounded-lg px-4 py-2 text-sm font-medium transition-colors">
-                    ❤️ Saved
-                </a>
-                <a href="{{ url_for('recipes_list', view='next', style=view_style) }}"
-                    class="{% if current_view == 'next' %}bg-indigo-50 text-indigo-700 font-semibold{% else %}text-gray-500 hover:text-gray-700 hover:bg-gray-50{% endif %} rounded-lg px-4 py-2 text-sm font-medium transition-colors">
-                    ⏰ Queue
-                </a>
-                {% endif %}
-            </nav>
+    .immersive-card-slot {
+        height: 100dvh;
+        scroll-snap-align: start;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+    }
 
-            {# Style Toggle #}
-            <div class="flex bg-gray-100 p-1 rounded-lg shrink-0">
-                <a href="{{ url_for('recipes_list', view=current_view, style='grid') }}"
-                    class="{% if view_style == 'grid' %}bg-white shadow-sm text-gray-900{% else %}text-gray-500 hover:text-gray-700{% endif %} rounded-md px-3 py-1.5 text-sm font-medium flex items-center gap-2 transition-all">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
-                        </path>
-                    </svg>
-                    Grid
-                </a>
-                <a href="{{ url_for('recipes_list', view=current_view, style='table') }}"
-                    class="{% if view_style == 'table' %}bg-white shadow-sm text-gray-900{% else %}text-gray-500 hover:text-gray-700{% endif %} rounded-md px-3 py-1.5 text-sm font-medium flex items-center gap-2 transition-all">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
-                    </svg>
-                    Table
-                </a>
-            </div>
-        </div>
+    .immersive-card {
+        width: 95vw;
+        height: 80dvh;
+        border-radius: 1.5rem;
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
 
-        {# ---------- Filter Form ---------- #}
-        <form method="GET" action="{{ url_for('recipes_list') }}" id="filterForm"
-            class="mt-4 mb-8 bg-gray-50 rounded-2xl p-6 border border-gray-100">
-            {# Preserve view + style via hidden inputs so Apply Filters doesn't lose context #}
-            <input type="hidden" name="view" value="{{ current_view }}">
-            <input type="hidden" name="style" value="{{ view_style }}">
+    .immersive-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
 
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5 items-end">
+    .immersive-card-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 2rem 1.5rem 1.5rem;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.80) 0%, rgba(0, 0, 0, 0.40) 50%, transparent 100%);
+    }
 
-                {# Multi-Select Dropdown Macro #}
-                {% macro multi_select_dropdown(id, label, options, selected_values) %}
-                <div class="relative group dropdown-container" id="container-{{ id }}">
-                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">{{ label
-                        }}</label>
+    /* Desktop: show standard grid, hide immersive */
+    @media (min-width: 768px) {
+        .immersive-feed {
+            display: none;
+        }
 
-                    <button type="button" onclick="toggleDropdown('{{ id }}')"
-                        class="relative w-full cursor-default rounded-full bg-white py-2 pl-4 pr-10 text-left text-sm text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm sm:leading-6">
-                        <span class="block truncate" id="display-{{ id }}">
-                            {% if selected_values|length == options|length %}
-                            All {{ label }}s
-                            {% elif selected_values|length > 0 %}
-                            {{ selected_values|length }} Selected
-                            {% else %}
-                            Select {{ label }}
-                            {% endif %}
-                        </span>
-                        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                            <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor"
-                                aria-hidden="true">
-                                <path fill-rule="evenodd"
-                                    d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                                    clip-rule="evenodd" />
-                            </svg>
-                        </span>
-                    </button>
+        .standard-discovery {
+            display: block !important;
+        }
+    }
 
-                    <div id="dropdown-{{ id }}"
-                        class="hidden absolute z-30 mt-1 max-h-80 w-full rounded-md bg-white text-base shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm flex flex-col overflow-hidden">
+    /* Mobile: show immersive, hide standard */
+    @media (max-width: 767px) {
+        .standard-discovery {
+            display: none !important;
+        }
+    }
+</style>
 
-                        <div class="p-2 border-b border-gray-100 bg-gray-50">
-                            <input type="text" placeholder="Search {{ label }}..."
-                                onkeyup="filterOptions('{{ id }}', this.value)"
-                                class="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-xs">
-                        </div>
 
-                        <div
-                            class="flex justify-between px-3 py-2 text-xs font-medium text-indigo-600 border-b border-gray-100 bg-white">
-                            <span onclick="selectAll('{{ id }}')"
-                                class="cursor-pointer hover:underline hover:text-indigo-800">Select All</span>
-                            <span onclick="selectNone('{{ id }}')"
-                                class="cursor-pointer hover:underline text-gray-500 hover:text-indigo-600">None</span>
-                        </div>
-
-                        <div class="overflow-y-auto flex-1 p-1">
-                            {% for option in options %}
-                            <label
-                                class="relative flex cursor-pointer select-none py-2 pl-3 pr-9 hover:bg-gray-50 rounded-sm">
-                                <input type="checkbox" name="{{ id }}" value="{{ option }}" {% if option in
-                                    selected_values %}checked{% endif %} class="peer sr-only"
-                                    onchange="updateDisplay('{{ id }}', '{{ label }}s', {{ options|length }})">
-                                <span
-                                    class="absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600 opacity-0 peer-checked:opacity-100 transition-opacity">
-                                    <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                </span>
-                                <span
-                                    class="ml-6 block truncate font-normal text-gray-900 peer-checked:font-medium peer-checked:text-indigo-900">
-                                    {{ option|title }}
-                                </span>
-                            </label>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-                {% endmacro %}
-
-                {{ multi_select_dropdown('cuisine', 'Cuisine', cuisine_options, selected_cuisines) }}
-                {{ multi_select_dropdown('diet', 'Diet', diet_options, selected_diets) }}
-                {{ multi_select_dropdown('meal_type', 'Meal Type', meal_type_options, selected_meal_types) }}
-                {{ multi_select_dropdown('protein_type', 'Protein', protein_options, selected_proteins) }}
-                {{ multi_select_dropdown('difficulty', 'Difficulty', difficulty_options, selected_difficulties) }}
-            </div>
-
-            <div class="mt-6 flex justify-end gap-3 border-t border-gray-200 pt-4">
-                <a href="{{ url_for('recipes_list', view=current_view, style=view_style) }}"
-                    class="rounded-full bg-white px-5 py-2 text-sm font-semibold text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">
-                    Clear Filters
-                </a>
-                <button type="submit"
-                    class="rounded-full bg-indigo-600 px-8 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-colors">
-                    Apply Filters
-                </button>
-            </div>
-        </form>
-
-        {# ---------- Dropdown JS ---------- #}
-        <script>
-            function toggleDropdown(id) {
-                document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
-                    if (el.id !== `dropdown-${id}`) el.classList.add('hidden');
-                });
-                document.getElementById(`dropdown-${id}`).classList.toggle('hidden');
-            }
-
-            function selectAll(id) {
-                const inputs = document.getElementById(`dropdown-${id}`).querySelectorAll('input[type="checkbox"]');
-                inputs.forEach(i => i.checked = true);
-                const label = id === 'meal_type' ? 'Meal Types' : id.charAt(0).toUpperCase() + id.slice(1) + 's';
-                updateDisplay(id, label, inputs.length);
-            }
-
-            function selectNone(id) {
-                const inputs = document.getElementById(`dropdown-${id}`).querySelectorAll('input[type="checkbox"]');
-                inputs.forEach(i => i.checked = false);
-                const label = id === 'meal_type' ? 'Meal Types' : id.charAt(0).toUpperCase() + id.slice(1) + 's';
-                updateDisplay(id, label, inputs.length);
-            }
-
-            function updateDisplay(id, labelName, totalOptions) {
-                const inputs = document.getElementById(`dropdown-${id}`).querySelectorAll('input[type="checkbox"]:checked');
-                const count = inputs.length;
-                const display = document.getElementById(`display-${id}`);
-                if (count === totalOptions) display.innerText = `All ${labelName}`;
-                else if (count > 0) display.innerText = `${count} Selected`;
-                else display.innerText = `Select ${labelName}`;
-            }
-
-            document.addEventListener('click', function (e) {
-                if (!e.target.closest('.dropdown-container')) {
-                    document.querySelectorAll('[id^="dropdown-"]').forEach(el => el.classList.add('hidden'));
-                }
-            });
-
-            function filterOptions(id, query) {
-                const lowerQuery = query.toLowerCase();
-                document.getElementById(`dropdown-${id}`).querySelectorAll('label').forEach(opt => {
-                    const matches = opt.innerText.toLowerCase().includes(lowerQuery);
-                    opt.classList.toggle('hidden', !matches);
-                    opt.classList.toggle('flex', matches);
-                });
-            }
-        </script>
-
-        {# ---------- Recipe Content Area ---------- #}
-        {% if not recipes %}
-        {# Contextual Empty State #}
-        <div class="mt-12 flex flex-col items-center justify-center py-20 text-center">
-            {% if current_view == 'saved' %}
-            <div class="text-6xl mb-4">❤️</div>
-            <h3 class="text-lg font-semibold text-gray-800 mb-2">No saved recipes yet</h3>
-            <p class="text-gray-500 mb-6 max-w-sm">You haven't liked any recipes yet. Go to Discover to find some!</p>
-            <a href="{{ url_for('recipes_list', view='discover') }}"
-                class="rounded-full bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition-colors">
-                Browse Recipes
-            </a>
-            {% elif current_view == 'next' %}
-            <div class="text-6xl mb-4">⏰</div>
-            <h3 class="text-lg font-semibold text-gray-800 mb-2">Your cooking queue is empty</h3>
-            <p class="text-gray-500 mb-6 max-w-sm">What's for dinner? Add recipes to your queue from any recipe page.
-            </p>
-            <a href="{{ url_for('recipes_list', view='discover') }}"
-                class="rounded-full bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition-colors">
-                Discover Recipes
-            </a>
+{# --------- MOBILE: Immersive scroll-snap feed --------- #}
+<div class="immersive-feed bg-slate-900">
+    {% if recipes %}
+    {% for recipe in recipes %}
+    <div class="immersive-card-slot">
+        <a href="/recipe/{{ recipe.id }}" class="immersive-card block">
+            {# Image #}
+            {% if recipe.image_filename %}
+            <img src="{{ get_recipe_image_url(recipe) }}" alt="{{ recipe.title }}" loading="lazy">
             {% else %}
+            <div
+                class="w-full h-full bg-gradient-to-br from-orange-400 via-orange-500 to-red-500 flex items-center justify-center">
+                <span class="text-8xl opacity-30">🍳</span>
+            </div>
+            {% endif %}
+
+            {# Info overlay #}
+            <div class="immersive-card-overlay">
+                {# Action buttons — positioned above the text #}
+                {% if current_user.is_authenticated %}
+                <div class="flex items-center gap-3 mb-4">
+                    <button type="button" onclick="event.preventDefault(); event.stopPropagation();"
+                        class="favorite-btn w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 flex items-center justify-center transition-all active:scale-90"
+                        data-recipe-id="{{ recipe.id }}" title="Save Recipe">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+                            </path>
+                        </svg>
+                    </button>
+                    <button type="button"
+                        onclick="event.preventDefault(); event.stopPropagation(); addToQueue({{ recipe.id }}, this)"
+                        class="queue-btn w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 flex items-center justify-center transition-all active:scale-90"
+                        data-recipe-id="{{ recipe.id }}" title="Add to Cook Next">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                    </button>
+                </div>
+                {% endif %}
+
+                {# Meta tags #}
+                <div class="flex items-center gap-2 mb-2">
+                    <span
+                        class="inline-flex items-center rounded-full bg-white/20 backdrop-blur-sm px-3 py-1 text-xs font-bold text-white uppercase tracking-wide">
+                        {{ recipe.cuisine }}
+                    </span>
+                    {% if recipe.prep_time_mins %}
+                    <span class="inline-flex items-center gap-1 text-xs text-white/80">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <polyline points="12 6 12 12 16 14" />
+                        </svg>
+                        {{ recipe.prep_time_mins }} min
+                    </span>
+                    {% endif %}
+                    <span class="text-xs text-white/60">{{ recipe.difficulty }}</span>
+                </div>
+
+                {# Title #}
+                <h2 class="font-serif text-2xl font-bold text-white leading-tight line-clamp-2">
+                    {{ recipe.title }}
+                </h2>
+
+                {# Diet tags #}
+                {% if recipe.diets_list %}
+                <div class="mt-2 flex flex-wrap gap-1.5">
+                    {% for diet in recipe.diets_list[:3] %}
+                    <span class="text-[10px] font-medium text-white/70 bg-white/10 rounded-full px-2 py-0.5">{{ diet
+                        }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="immersive-card-slot">
+        <div class="text-center text-white px-8">
             <div class="text-6xl mb-4">🔍</div>
-            <h3 class="text-lg font-semibold text-gray-800 mb-2">No recipes match your filters</h3>
-            <p class="text-gray-500 mb-6 max-w-sm">Try adjusting or clearing your filters to see more results.</p>
+            <h3 class="text-lg font-semibold mb-2">No recipes match your filters</h3>
+            <p class="text-white/60 mb-6 text-sm">Try adjusting or clearing your filters.</p>
             <a href="{{ url_for('recipes_list', view='discover') }}"
-                class="rounded-full bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition-colors">
+                class="rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-slate-900 shadow-sm hover:bg-slate-100 transition-colors">
                 Clear Filters
             </a>
-            {% endif %}
         </div>
+    </div>
+    {% endif %}
+</div>
 
-        {% elif view_style == 'table' %}
-        {# ---------- Table View ---------- #}
-        <div class="mt-6 flow-root">
-            <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                    <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                        <table class="min-w-full divide-y divide-gray-300">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
-                                        Recipe</th>
-                                    <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Cuisine</th>
-                                    <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Difficulty
-                                    </th>
-                                    <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Diets</th>
-                                    {% if current_user.is_authenticated %}
-                                    <th class="px-3 py-3.5 text-center text-sm font-semibold text-gray-900">Made?</th>
-                                    {% endif %}
-                                    <th
-                                        class="relative py-3.5 pl-3 pr-4 sm:pr-6 text-right text-sm font-semibold text-gray-900">
-                                        Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200 bg-white">
-                                {% for recipe in recipes %}
-                                <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
-                                        <div class="flex items-center gap-3">
-                                            {% if recipe.image_filename %}
-                                            <img class="h-10 w-10 rounded-full object-cover flex-shrink-0"
-                                                src="{{ get_recipe_image_url(recipe) }}" alt="">
-                                            {% else %}
-                                            <span
-                                                class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 flex-shrink-0 text-lg">🍳</span>
-                                            {% endif %}
-                                            <div>
-                                                <a href="/recipe/{{ recipe.id }}"
-                                                    class="font-medium text-gray-900 hover:text-indigo-600">{{
-                                                    recipe.title }}</a>
-                                                {% if recipe.is_super_liked %}<span class="text-blue-500 ml-1"
-                                                    title="Super Liked">★</span>{% endif %}
+{# --------- DESKTOP: Standard grid (hidden on mobile discover) --------- #}
+<div class="standard-discovery">
+    {% endif %}
+
+    <div class="bg-white {% if current_view == 'discover' %}py-6{% else %}py-12{% endif %}">
+        <div class="mx-auto max-w-7xl px-6 lg:px-8">
+
+            {# ---------- Page Header ---------- #}
+            {% if current_view == 'saved' %}
+            {{ type.page_header('My Cookbook', 'Your personal collection of favorite recipes.') }}
+            {% elif current_view == 'next' %}
+            {{ type.page_header('Cook Next', 'Recipes queued up and ready for your kitchen.') }}
+            {% elif current_view != 'discover' %}
+            {{ type.page_header('Recipe Library', 'Every dish created with your AI Chef.') }}
+            {% endif %}
+
+            {# ---------- Toolbar: View Tabs + Style Toggle ---------- #}
+            <div
+                class="mt-4 flex flex-col sm:flex-row justify-between items-center bg-white p-2 rounded-xl border border-gray-100 shadow-sm gap-3">
+
+                {# Context Tabs #}
+                <nav class="flex space-x-1" aria-label="View tabs">
+                    <a href="{{ url_for('recipes_list', view='discover', style=view_style) }}"
+                        class="{% if current_view == 'discover' %}bg-indigo-50 text-indigo-700 font-semibold{% else %}text-gray-500 hover:text-gray-700 hover:bg-gray-50{% endif %} rounded-lg px-4 py-2 text-sm font-medium transition-colors">
+                        🔍 Discover
+                    </a>
+                    {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('recipes_list', view='saved', style=view_style) }}"
+                        class="{% if current_view == 'saved' %}bg-indigo-50 text-indigo-700 font-semibold{% else %}text-gray-500 hover:text-gray-700 hover:bg-gray-50{% endif %} rounded-lg px-4 py-2 text-sm font-medium transition-colors">
+                        ❤️ Saved
+                    </a>
+                    <a href="{{ url_for('recipes_list', view='next', style=view_style) }}"
+                        class="{% if current_view == 'next' %}bg-indigo-50 text-indigo-700 font-semibold{% else %}text-gray-500 hover:text-gray-700 hover:bg-gray-50{% endif %} rounded-lg px-4 py-2 text-sm font-medium transition-colors">
+                        ⏰ Queue
+                    </a>
+                    {% endif %}
+                </nav>
+
+                {# Style Toggle #}
+                <div class="flex bg-gray-100 p-1 rounded-lg shrink-0">
+                    <a href="{{ url_for('recipes_list', view=current_view, style='grid') }}"
+                        class="{% if view_style == 'grid' %}bg-white shadow-sm text-gray-900{% else %}text-gray-500 hover:text-gray-700{% endif %} rounded-md px-3 py-1.5 text-sm font-medium flex items-center gap-2 transition-all">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
+                            </path>
+                        </svg>
+                        Grid
+                    </a>
+                    <a href="{{ url_for('recipes_list', view=current_view, style='table') }}"
+                        class="{% if view_style == 'table' %}bg-white shadow-sm text-gray-900{% else %}text-gray-500 hover:text-gray-700{% endif %} rounded-md px-3 py-1.5 text-sm font-medium flex items-center gap-2 transition-all">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                        </svg>
+                        Table
+                    </a>
+                </div>
+            </div>
+
+            {# ---------- Filter Form ---------- #}
+            <form method="GET" action="{{ url_for('recipes_list') }}" id="filterForm"
+                class="mt-4 mb-8 bg-gray-50 rounded-2xl p-6 border border-gray-100">
+                {# Preserve view + style via hidden inputs so Apply Filters doesn't lose context #}
+                <input type="hidden" name="view" value="{{ current_view }}">
+                <input type="hidden" name="style" value="{{ view_style }}">
+
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5 items-end">
+
+                    {# Multi-Select Dropdown Macro #}
+                    {% macro multi_select_dropdown(id, label, options, selected_values) %}
+                    <div class="relative group dropdown-container" id="container-{{ id }}">
+                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">{{ label
+                            }}</label>
+
+                        <button type="button" onclick="toggleDropdown('{{ id }}')"
+                            class="relative w-full cursor-default rounded-full bg-white py-2 pl-4 pr-10 text-left text-sm text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm sm:leading-6">
+                            <span class="block truncate" id="display-{{ id }}">
+                                {% if selected_values|length == options|length %}
+                                All {{ label }}s
+                                {% elif selected_values|length > 0 %}
+                                {{ selected_values|length }} Selected
+                                {% else %}
+                                Select {{ label }}
+                                {% endif %}
+                            </span>
+                            <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                                <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor"
+                                    aria-hidden="true">
+                                    <path fill-rule="evenodd"
+                                        d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </span>
+                        </button>
+
+                        <div id="dropdown-{{ id }}"
+                            class="hidden absolute z-30 mt-1 max-h-80 w-full rounded-md bg-white text-base shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm flex flex-col overflow-hidden">
+
+                            <div class="p-2 border-b border-gray-100 bg-gray-50">
+                                <input type="text" placeholder="Search {{ label }}..."
+                                    onkeyup="filterOptions('{{ id }}', this.value)"
+                                    class="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-xs">
+                            </div>
+
+                            <div
+                                class="flex justify-between px-3 py-2 text-xs font-medium text-indigo-600 border-b border-gray-100 bg-white">
+                                <span onclick="selectAll('{{ id }}')"
+                                    class="cursor-pointer hover:underline hover:text-indigo-800">Select All</span>
+                                <span onclick="selectNone('{{ id }}')"
+                                    class="cursor-pointer hover:underline text-gray-500 hover:text-indigo-600">None</span>
+                            </div>
+
+                            <div class="overflow-y-auto flex-1 p-1">
+                                {% for option in options %}
+                                <label
+                                    class="relative flex cursor-pointer select-none py-2 pl-3 pr-9 hover:bg-gray-50 rounded-sm">
+                                    <input type="checkbox" name="{{ id }}" value="{{ option }}" {% if option in
+                                        selected_values %}checked{% endif %} class="peer sr-only"
+                                        onchange="updateDisplay('{{ id }}', '{{ label }}s', {{ options|length }})">
+                                    <span
+                                        class="absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600 opacity-0 peer-checked:opacity-100 transition-opacity">
+                                        <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd"
+                                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                    </span>
+                                    <span
+                                        class="ml-6 block truncate font-normal text-gray-900 peer-checked:font-medium peer-checked:text-indigo-900">
+                                        {{ option|title }}
+                                    </span>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endmacro %}
+
+                    {{ multi_select_dropdown('cuisine', 'Cuisine', cuisine_options, selected_cuisines) }}
+                    {{ multi_select_dropdown('diet', 'Diet', diet_options, selected_diets) }}
+                    {{ multi_select_dropdown('meal_type', 'Meal Type', meal_type_options, selected_meal_types) }}
+                    {{ multi_select_dropdown('protein_type', 'Protein', protein_options, selected_proteins) }}
+                    {{ multi_select_dropdown('difficulty', 'Difficulty', difficulty_options, selected_difficulties) }}
+                </div>
+
+                <div class="mt-6 flex justify-end gap-3 border-t border-gray-200 pt-4">
+                    <a href="{{ url_for('recipes_list', view=current_view, style=view_style) }}"
+                        class="rounded-full bg-white px-5 py-2 text-sm font-semibold text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">
+                        Clear Filters
+                    </a>
+                    <button type="submit"
+                        class="rounded-full bg-indigo-600 px-8 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-colors">
+                        Apply Filters
+                    </button>
+                </div>
+            </form>
+
+            {# ---------- Dropdown JS ---------- #}
+            <script>
+                function toggleDropdown(id) {
+                    document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
+                        if (el.id !== `dropdown-${id}`) el.classList.add('hidden');
+                    });
+                    document.getElementById(`dropdown-${id}`).classList.toggle('hidden');
+                }
+
+                function selectAll(id) {
+                    const inputs = document.getElementById(`dropdown-${id}`).querySelectorAll('input[type="checkbox"]');
+                    inputs.forEach(i => i.checked = true);
+                    const label = id === 'meal_type' ? 'Meal Types' : id.charAt(0).toUpperCase() + id.slice(1) + 's';
+                    updateDisplay(id, label, inputs.length);
+                }
+
+                function selectNone(id) {
+                    const inputs = document.getElementById(`dropdown-${id}`).querySelectorAll('input[type="checkbox"]');
+                    inputs.forEach(i => i.checked = false);
+                    const label = id === 'meal_type' ? 'Meal Types' : id.charAt(0).toUpperCase() + id.slice(1) + 's';
+                    updateDisplay(id, label, inputs.length);
+                }
+
+                function updateDisplay(id, labelName, totalOptions) {
+                    const inputs = document.getElementById(`dropdown-${id}`).querySelectorAll('input[type="checkbox"]:checked');
+                    const count = inputs.length;
+                    const display = document.getElementById(`display-${id}`);
+                    if (count === totalOptions) display.innerText = `All ${labelName}`;
+                    else if (count > 0) display.innerText = `${count} Selected`;
+                    else display.innerText = `Select ${labelName}`;
+                }
+
+                document.addEventListener('click', function (e) {
+                    if (!e.target.closest('.dropdown-container')) {
+                        document.querySelectorAll('[id^="dropdown-"]').forEach(el => el.classList.add('hidden'));
+                    }
+                });
+
+                function filterOptions(id, query) {
+                    const lowerQuery = query.toLowerCase();
+                    document.getElementById(`dropdown-${id}`).querySelectorAll('label').forEach(opt => {
+                        const matches = opt.innerText.toLowerCase().includes(lowerQuery);
+                        opt.classList.toggle('hidden', !matches);
+                        opt.classList.toggle('flex', matches);
+                    });
+                }
+            </script>
+
+            {# ---------- Recipe Content Area ---------- #}
+            {% if not recipes %}
+            {# Contextual Empty State #}
+            <div class="mt-12 flex flex-col items-center justify-center py-20 text-center">
+                {% if current_view == 'saved' %}
+                <div class="text-6xl mb-4">❤️</div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">No saved recipes yet</h3>
+                <p class="text-gray-500 mb-6 max-w-sm">You haven't liked any recipes yet. Go to Discover to find some!
+                </p>
+                <a href="{{ url_for('recipes_list', view='discover') }}"
+                    class="rounded-full bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition-colors">
+                    Browse Recipes
+                </a>
+                {% elif current_view == 'next' %}
+                <div class="text-6xl mb-4">⏰</div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Your cooking queue is empty</h3>
+                <p class="text-gray-500 mb-6 max-w-sm">What's for dinner? Add recipes to your queue from any recipe
+                    page.
+                </p>
+                <a href="{{ url_for('recipes_list', view='discover') }}"
+                    class="rounded-full bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition-colors">
+                    Discover Recipes
+                </a>
+                {% else %}
+                <div class="text-6xl mb-4">🔍</div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">No recipes match your filters</h3>
+                <p class="text-gray-500 mb-6 max-w-sm">Try adjusting or clearing your filters to see more results.</p>
+                <a href="{{ url_for('recipes_list', view='discover') }}"
+                    class="rounded-full bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition-colors">
+                    Clear Filters
+                </a>
+                {% endif %}
+            </div>
+
+            {% elif view_style == 'table' %}
+            {# ---------- Table View ---------- #}
+            <div class="mt-6 flow-root">
+                <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                    <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                        <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                            <table class="min-w-full divide-y divide-gray-300">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th
+                                            class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
+                                            Recipe</th>
+                                        <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Cuisine
+                                        </th>
+                                        <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Difficulty
+                                        </th>
+                                        <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Diets</th>
+                                        {% if current_user.is_authenticated %}
+                                        <th class="px-3 py-3.5 text-center text-sm font-semibold text-gray-900">Made?
+                                        </th>
+                                        {% endif %}
+                                        <th
+                                            class="relative py-3.5 pl-3 pr-4 sm:pr-6 text-right text-sm font-semibold text-gray-900">
+                                            Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 bg-white">
+                                    {% for recipe in recipes %}
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
+                                            <div class="flex items-center gap-3">
+                                                {% if recipe.image_filename %}
+                                                <img class="h-10 w-10 rounded-full object-cover flex-shrink-0"
+                                                    src="{{ get_recipe_image_url(recipe) }}" alt="">
+                                                {% else %}
+                                                <span
+                                                    class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 flex-shrink-0 text-lg">🍳</span>
+                                                {% endif %}
+                                                <div>
+                                                    <a href="/recipe/{{ recipe.id }}"
+                                                        class="font-medium text-gray-900 hover:text-indigo-600">{{
+                                                        recipe.title }}</a>
+                                                    {% if recipe.is_super_liked %}<span class="text-blue-500 ml-1"
+                                                        title="Super Liked">★</span>{% endif %}
+                                                </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ recipe.cuisine }}
-                                    </td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                        <span
-                                            class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">{{
-                                            recipe.difficulty }}</span>
-                                    </td>
-                                    <td class="px-3 py-4 text-sm text-gray-500 max-w-xs truncate">{{
-                                        recipe.diets_list|join(', ') }}</td>
-                                    {% if current_user.is_authenticated %}
-                                    <td class="px-3 py-4 text-center">
-                                        <button type="button" onclick="toggleMade({{ recipe.id }}, this)"
-                                            class="made-btn inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium border transition-all
+                                        </td>
+                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ recipe.cuisine
+                                            }}
+                                        </td>
+                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                            <span
+                                                class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">{{
+                                                recipe.difficulty }}</span>
+                                        </td>
+                                        <td class="px-3 py-4 text-sm text-gray-500 max-w-xs truncate">{{
+                                            recipe.diets_list|join(', ') }}</td>
+                                        {% if current_user.is_authenticated %}
+                                        <td class="px-3 py-4 text-center">
+                                            <button type="button" onclick="toggleMade({{ recipe.id }}, this)"
+                                                class="made-btn inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium border transition-all
                                                    {% if recipe.interaction and recipe.interaction.is_made %}bg-green-50 text-green-700 border-green-300{% else %}bg-gray-50 text-gray-500 border-gray-200 hover:bg-green-50 hover:text-green-700 hover:border-green-300{% endif %}"
-                                            data-recipe-id="{{ recipe.id }}"
-                                            data-is-made="{{ 'true' if recipe.interaction and recipe.interaction.is_made else 'false' }}">
-                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
-                                                stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M5 13l4 4L19 7" />
-                                            </svg>
-                                            Made it
-                                        </button>
-                                    </td>
-                                    {% endif %}
-                                    <td
-                                        class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                                        <div class="flex items-center justify-end gap-3">
-                                            {% if current_user.is_authenticated %}
-                                            <button type="button"
-                                                onclick="openFeedbackDrawer({{ recipe.id }}, '{{ recipe.title|e }}')"
-                                                class="text-gray-400 hover:text-indigo-600 transition-colors"
-                                                title="Leave Feedback">
-                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                                                data-recipe-id="{{ recipe.id }}"
+                                                data-is-made="{{ 'true' if recipe.interaction and recipe.interaction.is_made else 'false' }}">
+                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
                                                     stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                                        stroke-width="2" d="M5 13l4 4L19 7" />
                                                 </svg>
+                                                Made it
                                             </button>
-                                            {% endif %}
-                                            <a href="/recipe/{{ recipe.id }}"
-                                                class="text-indigo-600 hover:text-indigo-900">View</a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                                        </td>
+                                        {% endif %}
+                                        <td
+                                            class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                                            <div class="flex items-center justify-end gap-3">
+                                                {% if current_user.is_authenticated %}
+                                                <button type="button"
+                                                    onclick="openFeedbackDrawer({{ recipe.id }}, '{{ recipe.title|e }}')"
+                                                    class="text-gray-400 hover:text-indigo-600 transition-colors"
+                                                    title="Leave Feedback">
+                                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                                                        stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                                    </svg>
+                                                </button>
+                                                {% endif %}
+                                                <a href="/recipe/{{ recipe.id }}"
+                                                    class="text-indigo-600 hover:text-indigo-900">View</a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        {% else %}
-        {# ---------- Grid View ---------- #}
-        <div class="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-8">
-            {% for recipe in recipes %}
-            <div class="group relative flex flex-col">
-                {{ card.recipe_preview_card(recipe, recipe.id, show_inspector=True) }}
+            {% else %}
+            {# ---------- Grid View ---------- #}
+            <div class="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-8">
+                {% for recipe in recipes %}
+                <div class="group relative flex flex-col">
+                    {{ card.recipe_preview_card(recipe, recipe.id, show_inspector=True) }}
 
-                {# Made + Feedback row — only for logged-in users #}
-                {% if current_user.is_authenticated %}
-                <div class="mt-2 flex items-center justify-between gap-2 px-1">
-                    <button type="button" onclick="toggleMade({{ recipe.id }}, this)"
-                        class="made-btn flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium border transition-all
+                    {# Made + Feedback row — only for logged-in users #}
+                    {% if current_user.is_authenticated %}
+                    <div class="mt-2 flex items-center justify-between gap-2 px-1">
+                        <button type="button" onclick="toggleMade({{ recipe.id }}, this)"
+                            class="made-btn flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium border transition-all
                                {% if recipe.interaction and recipe.interaction.is_made %}bg-green-50 text-green-700 border-green-300{% else %}bg-gray-50 text-gray-500 border-gray-200 hover:bg-green-50 hover:text-green-700 hover:border-green-300{% endif %}"
-                        data-recipe-id="{{ recipe.id }}"
-                        data-is-made="{{ 'true' if recipe.interaction and recipe.interaction.is_made else 'false' }}">
-                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                        Made it
-                    </button>
+                            data-recipe-id="{{ recipe.id }}"
+                            data-is-made="{{ 'true' if recipe.interaction and recipe.interaction.is_made else 'false' }}">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7" />
+                            </svg>
+                            Made it
+                        </button>
 
-                    <button type="button" onclick="openFeedbackDrawer({{ recipe.id }}, '{{ recipe.title|e }}')"
-                        class="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium border border-gray-200 bg-gray-50 text-gray-500 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-300 transition-all">
-                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                        </svg>
-                        Feedback
-                    </button>
+                        <button type="button" onclick="openFeedbackDrawer({{ recipe.id }}, '{{ recipe.title|e }}')"
+                            class="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium border border-gray-200 bg-gray-50 text-gray-500 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-300 transition-all">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                            Feedback
+                        </button>
+                    </div>
+                    {% endif %}
                 </div>
-                {% endif %}
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-
-    </div>{# /max-w-7xl #}
-</div>{# /bg-white #}
-
-{# ---------- Inspector Modal ---------- #}
-{{ inspector.recipe_inspector_modal() }}
-
-{# ---------- Feedback Drawer ---------- #}
-{% if current_user.is_authenticated %}
-<div id="feedback-drawer-backdrop" class="fixed inset-0 bg-black/40 z-40 hidden transition-opacity"
-    onclick="closeFeedbackDrawer()"></div>
-
-<aside id="feedback-drawer"
-    class="fixed inset-y-0 right-0 z-50 w-full sm:w-[420px] bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
-
-    {# Header #}
-    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-        <div>
-            <h2 class="text-lg font-semibold text-gray-900">Leave Feedback</h2>
-            <p id="feedback-recipe-title" class="text-sm text-gray-500 truncate max-w-xs"></p>
-        </div>
-        <button onclick="closeFeedbackDrawer()"
-            class="p-2 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        </button>
-    </div>
-
-    {# Scrollable body #}
-    <form id="feedback-form" class="flex-1 overflow-y-auto px-6 py-6 space-y-6" onsubmit="submitFeedback(event)">
-        <input type="hidden" id="feedback-recipe-id" name="recipe_id" value="">
-
-        {# Star Rating #}
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Your Rating</label>
-            <div class="flex gap-2" id="star-container">
-                {% for i in range(1, 6) %}
-                <button type="button" data-value="{{ i }}" onclick="setRating({{ i }})"
-                    class="star-btn text-3xl text-gray-300 hover:text-yellow-400 transition-colors leading-none cursor-pointer">★</button>
                 {% endfor %}
             </div>
-            <input type="hidden" id="feedback-rating" name="rating" value="">
-        </div>
+            {% endif %}
 
-        {# Comment #}
-        <div>
-            <label for="feedback-comment" class="block text-sm font-medium text-gray-700 mb-2">Comment <span
-                    class="text-gray-400 font-normal">(optional)</span></label>
-            <textarea id="feedback-comment" name="comment" rows="4"
-                placeholder="How did it turn out? Any tweaks you'd recommend?"
-                class="block w-full rounded-xl border-0 py-3 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm resize-none"></textarea>
-        </div>
+        </div>{# /max-w-7xl #}
+    </div>{# /bg-white #}
 
-        {# Photo Upload #}
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Photos <span
-                    class="text-gray-400 font-normal">(up to 5)</span></label>
-            <label for="feedback-photos"
-                class="group flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer bg-gray-50 hover:bg-indigo-50 hover:border-indigo-400 transition-colors">
-                <svg class="w-8 h-8 text-gray-400 group-hover:text-indigo-500 mb-2 transition-colors" fill="none"
-                    viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                        d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+    {# ---------- Inspector Modal ---------- #}
+    {{ inspector.recipe_inspector_modal() }}
+
+    {# ---------- Feedback Drawer ---------- #}
+    {% if current_user.is_authenticated %}
+    <div id="feedback-drawer-backdrop" class="fixed inset-0 bg-black/40 z-40 hidden transition-opacity"
+        onclick="closeFeedbackDrawer()"></div>
+
+    <aside id="feedback-drawer"
+        class="fixed inset-y-0 right-0 z-50 w-full sm:w-[420px] bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+
+        {# Header #}
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+            <div>
+                <h2 class="text-lg font-semibold text-gray-900">Leave Feedback</h2>
+                <p id="feedback-recipe-title" class="text-sm text-gray-500 truncate max-w-xs"></p>
+            </div>
+            <button onclick="closeFeedbackDrawer()"
+                class="p-2 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
-                <span class="text-sm text-gray-500 group-hover:text-indigo-600">Click to upload or drag & drop</span>
-                <span class="text-xs text-gray-400 mt-0.5">JPG, PNG, WEBP, HEIC up to 20MB</span>
-            </label>
-            <input id="feedback-photos" name="photos" type="file" accept="image/*,.heic,.heif" multiple class="sr-only"
-                onchange="previewPhotos(this)">
-            <div id="photo-preview" class="mt-3 flex flex-wrap gap-2"></div>
+            </button>
         </div>
 
-        {# Previously Saved Photos #}
-        <div id="saved-photos-section" class="hidden">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Previously Uploaded</label>
-            <div id="saved-photos-grid" class="flex flex-wrap gap-2"></div>
-            <p class="mt-1 text-xs text-gray-400">New uploads will be added to these.</p>
+        {# Scrollable body #}
+        <form id="feedback-form" class="flex-1 overflow-y-auto px-6 py-6 space-y-6" onsubmit="submitFeedback(event)">
+            <input type="hidden" id="feedback-recipe-id" name="recipe_id" value="">
+
+            {# Star Rating #}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Your Rating</label>
+                <div class="flex gap-2" id="star-container">
+                    {% for i in range(1, 6) %}
+                    <button type="button" data-value="{{ i }}" onclick="setRating({{ i }})"
+                        class="star-btn text-3xl text-gray-300 hover:text-yellow-400 transition-colors leading-none cursor-pointer">★</button>
+                    {% endfor %}
+                </div>
+                <input type="hidden" id="feedback-rating" name="rating" value="">
+            </div>
+
+            {# Comment #}
+            <div>
+                <label for="feedback-comment" class="block text-sm font-medium text-gray-700 mb-2">Comment <span
+                        class="text-gray-400 font-normal">(optional)</span></label>
+                <textarea id="feedback-comment" name="comment" rows="4"
+                    placeholder="How did it turn out? Any tweaks you'd recommend?"
+                    class="block w-full rounded-xl border-0 py-3 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm resize-none"></textarea>
+            </div>
+
+            {# Photo Upload #}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Photos <span
+                        class="text-gray-400 font-normal">(up to 5)</span></label>
+                <label for="feedback-photos"
+                    class="group flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer bg-gray-50 hover:bg-indigo-50 hover:border-indigo-400 transition-colors">
+                    <svg class="w-8 h-8 text-gray-400 group-hover:text-indigo-500 mb-2 transition-colors" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                    </svg>
+                    <span class="text-sm text-gray-500 group-hover:text-indigo-600">Click to upload or drag &
+                        drop</span>
+                    <span class="text-xs text-gray-400 mt-0.5">JPG, PNG, WEBP, HEIC up to 20MB</span>
+                </label>
+                <input id="feedback-photos" name="photos" type="file" accept="image/*,.heic,.heif" multiple
+                    class="sr-only" onchange="previewPhotos(this)">
+                <div id="photo-preview" class="mt-3 flex flex-wrap gap-2"></div>
+            </div>
+
+            {# Previously Saved Photos #}
+            <div id="saved-photos-section" class="hidden">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Previously Uploaded</label>
+                <div id="saved-photos-grid" class="flex flex-wrap gap-2"></div>
+                <p class="mt-1 text-xs text-gray-400">New uploads will be added to these.</p>
+            </div>
+
+            {# Status message #}
+            <div id="feedback-status" class="hidden rounded-lg px-4 py-3 text-sm"></div>
+        </form>
+
+        {# Footer #}
+        <div class="px-6 py-4 border-t border-gray-100 flex gap-3">
+            <button type="button" onclick="closeFeedbackDrawer()"
+                class="flex-1 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">
+                Cancel
+            </button>
+            <button type="submit" form="feedback-form"
+                class="flex-1 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition-colors disabled:opacity-60"
+                id="feedback-submit-btn">
+                Save Feedback
+            </button>
         </div>
+    </aside>
 
-        {# Status message #}
-        <div id="feedback-status" class="hidden rounded-lg px-4 py-3 text-sm"></div>
-    </form>
+    <script>
+        // ── Feedback Drawer ──────────────────────────────────────────────────────
 
-    {# Footer #}
-    <div class="px-6 py-4 border-t border-gray-100 flex gap-3">
-        <button type="button" onclick="closeFeedbackDrawer()"
-            class="flex-1 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">
-            Cancel
-        </button>
-        <button type="submit" form="feedback-form"
-            class="flex-1 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition-colors disabled:opacity-60"
-            id="feedback-submit-btn">
-            Save Feedback
-        </button>
-    </div>
-</aside>
+        async function openFeedbackDrawer(recipeId, recipeTitle) {
+            // Set identity
+            document.getElementById('feedback-recipe-id').value = recipeId;
+            document.getElementById('feedback-recipe-title').textContent = recipeTitle;
 
-<script>
-    // ── Feedback Drawer ──────────────────────────────────────────────────────
+            // Reset form to clean state first
+            resetFeedbackDrawer();
 
-    async function openFeedbackDrawer(recipeId, recipeTitle) {
-        // Set identity
-        document.getElementById('feedback-recipe-id').value = recipeId;
-        document.getElementById('feedback-recipe-title').textContent = recipeTitle;
+            // Open immediately so user sees it loading
+            document.getElementById('feedback-drawer').classList.remove('translate-x-full');
+            document.getElementById('feedback-drawer-backdrop').classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
 
-        // Reset form to clean state first
-        resetFeedbackDrawer();
+            // Fetch existing interaction data
+            try {
+                const resp = await fetch(`/api/interactions/recipe/${recipeId}`);
+                const data = await resp.json();
 
-        // Open immediately so user sees it loading
-        document.getElementById('feedback-drawer').classList.remove('translate-x-full');
-        document.getElementById('feedback-drawer-backdrop').classList.remove('hidden');
-        document.body.classList.add('overflow-hidden');
+                // Pre-populate star rating
+                if (data.rating) {
+                    setRating(data.rating);
+                }
 
-        // Fetch existing interaction data
-        try {
-            const resp = await fetch(`/api/interactions/recipe/${recipeId}`);
-            const data = await resp.json();
+                // Pre-populate comment
+                if (data.comment) {
+                    document.getElementById('feedback-comment').value = data.comment;
+                }
 
-            // Pre-populate star rating
-            if (data.rating) {
-                setRating(data.rating);
+                // Show previously saved photos
+                const photos = data.user_photos || [];
+                keptPhotoUrls = [...photos]; // Track which URLs to keep
+                renderSavedPhotos(keptPhotoUrls);
+            } catch (err) {
+                console.error('Could not load existing feedback', err);
             }
-
-            // Pre-populate comment
-            if (data.comment) {
-                document.getElementById('feedback-comment').value = data.comment;
-            }
-
-            // Show previously saved photos
-            const photos = data.user_photos || [];
-            keptPhotoUrls = [...photos]; // Track which URLs to keep
-            renderSavedPhotos(keptPhotoUrls);
-        } catch (err) {
-            console.error('Could not load existing feedback', err);
         }
-    }
 
-    function resetFeedbackDrawer() {
-        setRating(0);
-        document.getElementById('feedback-comment').value = '';
-        document.getElementById('photo-preview').innerHTML = '';
-        document.getElementById('feedback-photos').value = '';
-        document.getElementById('feedback-status').classList.add('hidden');
-        document.getElementById('saved-photos-section').classList.add('hidden');
-        document.getElementById('saved-photos-grid').innerHTML = '';
-        keptPhotoUrls = [];
-        const submitBtn = document.getElementById('feedback-submit-btn');
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Save Feedback';
-    }
-
-    // Track which existing photos survive (not deleted by user)
-    let keptPhotoUrls = [];
-
-    function renderSavedPhotos(urls) {
-        const savedSection = document.getElementById('saved-photos-section');
-        const savedGrid = document.getElementById('saved-photos-grid');
-        savedGrid.innerHTML = '';
-
-        if (urls.length > 0) {
-            savedSection.classList.remove('hidden');
-            urls.forEach((url, idx) => {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'relative group';
-
-                // Thumbnail
-                const img = document.createElement('img');
-                img.src = url;
-                img.className = 'h-20 w-20 object-cover rounded-lg border border-gray-200 shadow-sm cursor-pointer';
-                img.title = 'Click to view full size';
-                img.onclick = () => window.open(url, '_blank');
-
-                // Delete button (visible on hover)
-                const del = document.createElement('button');
-                del.type = 'button';
-                del.className = [
-                    'absolute -top-2 -right-2 z-10',
-                    'w-6 h-6 rounded-full',
-                    'bg-red-500 hover:bg-red-600 text-white',
-                    'flex items-center justify-center',
-                    'opacity-0 group-hover:opacity-100 transition-opacity duration-150',
-                    'shadow-md'
-                ].join(' ');
-                del.title = 'Remove photo';
-                del.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>';
-                del.onclick = () => {
-                    keptPhotoUrls.splice(idx, 1);
-                    renderSavedPhotos(keptPhotoUrls); // Re-render with updated list
-                };
-
-                wrapper.appendChild(img);
-                wrapper.appendChild(del);
-                savedGrid.appendChild(wrapper);
-            });
-        } else {
-            savedSection.classList.add('hidden');
-        }
-    }
-
-    function closeFeedbackDrawer() {
-        document.getElementById('feedback-drawer').classList.add('translate-x-full');
-        document.getElementById('feedback-drawer-backdrop').classList.add('hidden');
-        document.body.classList.remove('overflow-hidden');
-    }
-
-    // ── Star Rating ──────────────────────────────────────────────────────────
-
-    let currentRating = 0;
-
-    function setRating(val) {
-        currentRating = val;
-        document.getElementById('feedback-rating').value = val || '';
-        document.querySelectorAll('.star-btn').forEach((btn, idx) => {
-            btn.classList.toggle('text-yellow-400', idx < val);
-            btn.classList.toggle('text-gray-300', idx >= val);
-        });
-    }
-
-    // Hover preview
-    document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.star-btn').forEach((btn, idx) => {
-            btn.addEventListener('mouseenter', () => {
-                document.querySelectorAll('.star-btn').forEach((b, i) => {
-                    b.classList.toggle('text-yellow-400', i <= idx);
-                    b.classList.toggle('text-gray-300', i > idx);
-                });
-            });
-            btn.addEventListener('mouseleave', () => setRating(currentRating));
-        });
-    });
-
-    // ── Photo Preview (new uploads) ──────────────────────────────────────────
-
-    function previewPhotos(input) {
-        const preview = document.getElementById('photo-preview');
-        preview.innerHTML = '';
-        const files = Array.from(input.files).slice(0, 5);
-        files.forEach(file => {
-            const reader = new FileReader();
-            reader.onload = e => {
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.className = 'h-20 w-20 object-cover rounded-lg border border-indigo-200 shadow-sm ring-2 ring-indigo-300';
-                img.title = file.name;
-                preview.appendChild(img);
-            };
-            reader.readAsDataURL(file);
-        });
-    }
-
-    // ── Submit Feedback ──────────────────────────────────────────────────────
-
-    async function submitFeedback(e) {
-        e.preventDefault();
-        const recipeId = document.getElementById('feedback-recipe-id').value;
-        const form = document.getElementById('feedback-form');
-        const statusEl = document.getElementById('feedback-status');
-        const submitBtn = document.getElementById('feedback-submit-btn');
-
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Saving…';
-
-        const formData = new FormData(form);
-        // Tell backend which previously saved photo URLs to keep (i.e., not deleted)
-        formData.set('keep_photos', JSON.stringify(keptPhotoUrls));
-
-        try {
-            const resp = await fetch(`/api/interactions/recipe/${recipeId}/feedback`, {
-                method: 'POST',
-                body: formData,
-            });
-            const data = await resp.json();
-            if (data.success) {
-                statusEl.textContent = '✓ Feedback saved!';
-                statusEl.className = 'rounded-lg px-4 py-3 text-sm bg-green-50 text-green-700 border border-green-200';
-                statusEl.classList.remove('hidden');
-                setTimeout(closeFeedbackDrawer, 1500);
-            } else {
-                throw new Error('Server returned an error');
-            }
-        } catch (err) {
-            statusEl.textContent = 'Something went wrong. Please try again.';
-            statusEl.className = 'rounded-lg px-4 py-3 text-sm bg-red-50 text-red-700 border border-red-200';
-            statusEl.classList.remove('hidden');
+        function resetFeedbackDrawer() {
+            setRating(0);
+            document.getElementById('feedback-comment').value = '';
+            document.getElementById('photo-preview').innerHTML = '';
+            document.getElementById('feedback-photos').value = '';
+            document.getElementById('feedback-status').classList.add('hidden');
+            document.getElementById('saved-photos-section').classList.add('hidden');
+            document.getElementById('saved-photos-grid').innerHTML = '';
+            keptPhotoUrls = [];
+            const submitBtn = document.getElementById('feedback-submit-btn');
             submitBtn.disabled = false;
             submitBtn.textContent = 'Save Feedback';
         }
-    }
 
-    // ── Toggle Made ──────────────────────────────────────────────────────────
+        // Track which existing photos survive (not deleted by user)
+        let keptPhotoUrls = [];
 
-    async function toggleMade(recipeId, btn) {
-        try {
-            const resp = await fetch(`/api/interactions/recipe/${recipeId}/made`, { method: 'PATCH' });
-            const data = await resp.json();
-            if (data.success) {
-                const isMade = data.is_made;
-                btn.dataset.isMade = isMade ? 'true' : 'false';
-                if (isMade) {
-                    btn.classList.add('bg-green-50', 'text-green-700', 'border-green-300');
-                    btn.classList.remove('bg-gray-50', 'text-gray-500', 'border-gray-200');
-                } else {
-                    btn.classList.remove('bg-green-50', 'text-green-700', 'border-green-300');
-                    btn.classList.add('bg-gray-50', 'text-gray-500', 'border-gray-200');
-                }
+        function renderSavedPhotos(urls) {
+            const savedSection = document.getElementById('saved-photos-section');
+            const savedGrid = document.getElementById('saved-photos-grid');
+            savedGrid.innerHTML = '';
+
+            if (urls.length > 0) {
+                savedSection.classList.remove('hidden');
+                urls.forEach((url, idx) => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'relative group';
+
+                    // Thumbnail
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.className = 'h-20 w-20 object-cover rounded-lg border border-gray-200 shadow-sm cursor-pointer';
+                    img.title = 'Click to view full size';
+                    img.onclick = () => window.open(url, '_blank');
+
+                    // Delete button (visible on hover)
+                    const del = document.createElement('button');
+                    del.type = 'button';
+                    del.className = [
+                        'absolute -top-2 -right-2 z-10',
+                        'w-6 h-6 rounded-full',
+                        'bg-red-500 hover:bg-red-600 text-white',
+                        'flex items-center justify-center',
+                        'opacity-0 group-hover:opacity-100 transition-opacity duration-150',
+                        'shadow-md'
+                    ].join(' ');
+                    del.title = 'Remove photo';
+                    del.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>';
+                    del.onclick = () => {
+                        keptPhotoUrls.splice(idx, 1);
+                        renderSavedPhotos(keptPhotoUrls); // Re-render with updated list
+                    };
+
+                    wrapper.appendChild(img);
+                    wrapper.appendChild(del);
+                    savedGrid.appendChild(wrapper);
+                });
+            } else {
+                savedSection.classList.add('hidden');
             }
-        } catch (err) {
-            console.error('Failed to toggle made status', err);
         }
-    }
-</script>
-{% endif %}
 
-{# ---------- Bulk Actions Toolbar (Admin Only) ---------- #}
-{% if current_user.is_authenticated and current_user.is_admin %}
-<div id="bulk-action-bar"
-    class="fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] py-4 transform translate-y-full transition-transform duration-300 z-50 flex items-center justify-between pointer-events-none data-[visible=true]:translate-y-0 data-[visible=true]:pointer-events-auto">
-    <div class="max-w-7xl mx-auto w-full flex items-center justify-between px-6 lg:px-8">
-        <div class="flex items-center gap-4">
-            <span class="text-sm font-semibold text-gray-700" id="selection-count">0 Selected</span>
-            <button onclick="clearSelection()"
-                class="text-sm text-gray-500 hover:text-gray-900 underline">Cancel</button>
-        </div>
-        <button type="button" onclick="bulkDeleteRecipes()"
-            class="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 transition-colors">
-            Delete Selected
-        </button>
-    </div>
-</div>
-
-<script>
-    const selectedRecipeIds = new Set();
-    const bulkActionBar = document.getElementById('bulk-action-bar');
-    const selectionCount = document.getElementById('selection-count');
-
-    function toggleRecipeSelection(checkbox, id) {
-        if (checkbox.checked) selectedRecipeIds.add(id);
-        else selectedRecipeIds.delete(id);
-        updateBulkUI();
-    }
-
-    function updateBulkUI() {
-        if (selectedRecipeIds.size > 0) {
-            bulkActionBar.setAttribute('data-visible', 'true');
-            selectionCount.textContent = `${selectedRecipeIds.size} Selected`;
-        } else {
-            bulkActionBar.setAttribute('data-visible', 'false');
+        function closeFeedbackDrawer() {
+            document.getElementById('feedback-drawer').classList.add('translate-x-full');
+            document.getElementById('feedback-drawer-backdrop').classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
         }
-    }
 
-    function clearSelection() {
-        selectedRecipeIds.clear();
-        document.querySelectorAll('.recipe-select-cb').forEach(cb => cb.checked = false);
-        updateBulkUI();
-    }
+        // ── Star Rating ──────────────────────────────────────────────────────────
 
-    async function bulkDeleteRecipes() {
-        if (!confirm(`Are you sure you want to delete ${selectedRecipeIds.size} recipes? This cannot be undone.`)) return;
-        try {
-            const response = await fetch('/api/delete-recipes/bulk', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ recipe_ids: Array.from(selectedRecipeIds).map(Number) })
+        let currentRating = 0;
+
+        function setRating(val) {
+            currentRating = val;
+            document.getElementById('feedback-rating').value = val || '';
+            document.querySelectorAll('.star-btn').forEach((btn, idx) => {
+                btn.classList.toggle('text-yellow-400', idx < val);
+                btn.classList.toggle('text-gray-300', idx >= val);
             });
-            const data = await response.json();
-            if (data.success) window.location.reload();
-            else alert('Error: ' + data.error);
-        } catch (e) {
-            alert('Request failed');
-            console.error(e);
         }
-    }
-</script>
+
+        // Hover preview
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.star-btn').forEach((btn, idx) => {
+                btn.addEventListener('mouseenter', () => {
+                    document.querySelectorAll('.star-btn').forEach((b, i) => {
+                        b.classList.toggle('text-yellow-400', i <= idx);
+                        b.classList.toggle('text-gray-300', i > idx);
+                    });
+                });
+                btn.addEventListener('mouseleave', () => setRating(currentRating));
+            });
+        });
+
+        // ── Photo Preview (new uploads) ──────────────────────────────────────────
+
+        function previewPhotos(input) {
+            const preview = document.getElementById('photo-preview');
+            preview.innerHTML = '';
+            const files = Array.from(input.files).slice(0, 5);
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'h-20 w-20 object-cover rounded-lg border border-indigo-200 shadow-sm ring-2 ring-indigo-300';
+                    img.title = file.name;
+                    preview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // ── Submit Feedback ──────────────────────────────────────────────────────
+
+        async function submitFeedback(e) {
+            e.preventDefault();
+            const recipeId = document.getElementById('feedback-recipe-id').value;
+            const form = document.getElementById('feedback-form');
+            const statusEl = document.getElementById('feedback-status');
+            const submitBtn = document.getElementById('feedback-submit-btn');
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving…';
+
+            const formData = new FormData(form);
+            // Tell backend which previously saved photo URLs to keep (i.e., not deleted)
+            formData.set('keep_photos', JSON.stringify(keptPhotoUrls));
+
+            try {
+                const resp = await fetch(`/api/interactions/recipe/${recipeId}/feedback`, {
+                    method: 'POST',
+                    body: formData,
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    statusEl.textContent = '✓ Feedback saved!';
+                    statusEl.className = 'rounded-lg px-4 py-3 text-sm bg-green-50 text-green-700 border border-green-200';
+                    statusEl.classList.remove('hidden');
+                    setTimeout(closeFeedbackDrawer, 1500);
+                } else {
+                    throw new Error('Server returned an error');
+                }
+            } catch (err) {
+                statusEl.textContent = 'Something went wrong. Please try again.';
+                statusEl.className = 'rounded-lg px-4 py-3 text-sm bg-red-50 text-red-700 border border-red-200';
+                statusEl.classList.remove('hidden');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Save Feedback';
+            }
+        }
+
+        // ── Toggle Made ──────────────────────────────────────────────────────────
+
+        async function toggleMade(recipeId, btn) {
+            try {
+                const resp = await fetch(`/api/interactions/recipe/${recipeId}/made`, { method: 'PATCH' });
+                const data = await resp.json();
+                if (data.success) {
+                    const isMade = data.is_made;
+                    btn.dataset.isMade = isMade ? 'true' : 'false';
+                    if (isMade) {
+                        btn.classList.add('bg-green-50', 'text-green-700', 'border-green-300');
+                        btn.classList.remove('bg-gray-50', 'text-gray-500', 'border-gray-200');
+                    } else {
+                        btn.classList.remove('bg-green-50', 'text-green-700', 'border-green-300');
+                        btn.classList.add('bg-gray-50', 'text-gray-500', 'border-gray-200');
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to toggle made status', err);
+            }
+        }
+    </script>
+    {% endif %}
+
+    {# ---------- Bulk Actions Toolbar (Admin Only) ---------- #}
+    {% if current_user.is_authenticated and current_user.is_admin %}
+    <div id="bulk-action-bar"
+        class="fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] py-4 transform translate-y-full transition-transform duration-300 z-50 flex items-center justify-between pointer-events-none data-[visible=true]:translate-y-0 data-[visible=true]:pointer-events-auto">
+        <div class="max-w-7xl mx-auto w-full flex items-center justify-between px-6 lg:px-8">
+            <div class="flex items-center gap-4">
+                <span class="text-sm font-semibold text-gray-700" id="selection-count">0 Selected</span>
+                <button onclick="clearSelection()"
+                    class="text-sm text-gray-500 hover:text-gray-900 underline">Cancel</button>
+            </div>
+            <button type="button" onclick="bulkDeleteRecipes()"
+                class="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 transition-colors">
+                Delete Selected
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const selectedRecipeIds = new Set();
+        const bulkActionBar = document.getElementById('bulk-action-bar');
+        const selectionCount = document.getElementById('selection-count');
+
+        function toggleRecipeSelection(checkbox, id) {
+            if (checkbox.checked) selectedRecipeIds.add(id);
+            else selectedRecipeIds.delete(id);
+            updateBulkUI();
+        }
+
+        function updateBulkUI() {
+            if (selectedRecipeIds.size > 0) {
+                bulkActionBar.setAttribute('data-visible', 'true');
+                selectionCount.textContent = `${selectedRecipeIds.size} Selected`;
+            } else {
+                bulkActionBar.setAttribute('data-visible', 'false');
+            }
+        }
+
+        function clearSelection() {
+            selectedRecipeIds.clear();
+            document.querySelectorAll('.recipe-select-cb').forEach(cb => cb.checked = false);
+            updateBulkUI();
+        }
+
+        async function bulkDeleteRecipes() {
+            if (!confirm(`Are you sure you want to delete ${selectedRecipeIds.size} recipes? This cannot be undone.`)) return;
+            try {
+                const response = await fetch('/api/delete-recipes/bulk', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ recipe_ids: Array.from(selectedRecipeIds).map(Number) })
+                });
+                const data = await response.json();
+                if (data.success) window.location.reload();
+                else alert('Error: ' + data.error);
+            } catch (e) {
+                alert('Request failed');
+                console.error(e);
+            }
+        }
+    </script>
+    {% endif %}
+
+    {# Close standard-discovery wrapper if in discover mode #}
+    {% if current_view == 'discover' %}
+</div>{# /standard-discovery #}
 {% endif %}
 
 {% endblock %}

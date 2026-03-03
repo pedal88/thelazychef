@@ -70,13 +70,31 @@
                 scrollbar-width: none;
             }
         }
+
+        /* Immersive mode — native-feel suppression */
+        .immersive-mode {
+            overscroll-behavior-y: contain;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .immersive-mode * {
+            -webkit-tap-highlight-color: transparent;
+        }
     </style>
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#ea580c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     {% block head %}{% endblock %}
 </head>
 
-<body class="flex min-h-full flex-col text-slate-900">
+{% set is_discover_mode = request.args.get('view') == 'discover' or is_landing_page is defined %}
 
-    <!-- Navigation -->
+<body class="flex min-h-full flex-col text-slate-900 {% if is_discover_mode %}immersive-mode{% endif %}">
+
+    <!-- Navigation (hidden in discover mode) -->
+    {% if not is_discover_mode %}
     <header class="bg-white border-b border-gray-200 sticky top-0 z-[100] print:hidden">
         <nav class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <!-- Logo -->
@@ -310,6 +328,84 @@
                 })();
         </script>
     </header>
+    {% else %}
+    <!-- Immersive Mode: Floating Action Button -->
+    <button id="immersive-fab"
+        class="fixed top-4 left-4 z-[200] w-11 h-11 rounded-full bg-white/70 backdrop-blur-md border border-white/30 shadow-lg flex items-center justify-center text-slate-700 hover:bg-white/90 transition-all active:scale-95"
+        aria-label="Open menu">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+    </button>
+
+    <!-- Immersive Slide-Over Menu -->
+    <div id="immersive-menu-backdrop" class="fixed inset-0 bg-black/40 z-[250] hidden transition-opacity"
+        onclick="closeImmersiveMenu()"></div>
+    <aside id="immersive-menu"
+        class="fixed inset-y-0 left-0 z-[260] w-72 bg-white shadow-2xl transform -translate-x-full transition-transform duration-300 ease-in-out">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+            <a href="/" class="flex items-center gap-2">
+                <span class="text-xl">🍳</span>
+                <span class="font-serif text-lg font-bold">The Lazy Chef</span>
+            </a>
+            <button onclick="closeImmersiveMenu()"
+                class="p-1.5 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <nav class="px-4 py-4 space-y-1 text-sm font-medium text-slate-700 overflow-y-auto">
+            <a href="/" class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">🔍 Discover
+                Recipes</a>
+            <a href="/explore/galaxy" class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">🌌
+                Galaxy Map</a>
+            <a href="/recipes" class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">📖 All
+                Recipes</a>
+            <a href="{{ url_for('collections_index') }}"
+                class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">🗂️ Collections</a>
+            {% if current_user.is_authenticated %}
+            <div class="border-t border-slate-100 my-2"></div>
+            <a href="{{ url_for('saved_recipes_view') }}"
+                class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">💚 Saved Recipes</a>
+            <a href="{{ url_for('queue.next_recipes_view') }}"
+                class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">🍳 Cook Next</a>
+            <a href="/mirror" class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">🪞 Recipe
+                Mirror</a>
+            {% endif %}
+            <a href="/become-a-chef" class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">👨‍🍳
+                Become a Chef</a>
+            <a href="/ingredients" class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">🥦
+                Ingredients</a>
+            {% if current_user.is_authenticated %}
+            <div class="border-t border-slate-100 my-2"></div>
+            <div class="flex items-center justify-between px-3">
+                <span class="text-xs text-slate-400 truncate">{{ current_user.email }}</span>
+                <a href="{{ url_for('logout') }}" class="text-sm text-orange-600 font-semibold">Logout</a>
+            </div>
+            {% else %}
+            <div class="border-t border-slate-100 my-2 flex gap-2 px-3">
+                <a href="{{ url_for('login') }}"
+                    class="flex-1 text-center py-2 rounded-lg border border-slate-200 hover:bg-slate-50">Login</a>
+                <a href="{{ url_for('register') }}"
+                    class="flex-1 text-center py-2 rounded-full bg-orange-600 text-white font-semibold hover:bg-orange-700">Sign
+                    Up</a>
+            </div>
+            {% endif %}
+        </nav>
+    </aside>
+
+    <script>
+        document.getElementById('immersive-fab').addEventListener('click', () => {
+            document.getElementById('immersive-menu').classList.remove('-translate-x-full');
+            document.getElementById('immersive-menu-backdrop').classList.remove('hidden');
+        });
+        function closeImmersiveMenu() {
+            document.getElementById('immersive-menu').classList.add('-translate-x-full');
+            document.getElementById('immersive-menu-backdrop').classList.add('hidden');
+        }
+    </script>
+    {% endif %}
 
     <!-- Main Content -->
     <main class="flex-grow">

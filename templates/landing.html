@@ -1,24 +1,19 @@
 {% extends "base.html" %}
 
+{% set is_landing_page = True %}
+
 {% block content %}
 <!-- Main Container -->
-<div
-    class="h-[calc(100vh-64px)] overflow-hidden bg-slate-50 relative flex flex-col items-center justify-center overscroll-none">
+<div class="h-[100dvh] overflow-hidden bg-slate-900 relative flex flex-col items-center justify-center overscroll-none">
 
     <!-- Background Decoration -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-orange-200/20 rounded-full blur-3xl"></div>
-        <div class="absolute top-[20%] -right-[10%] w-[40%] h-[40%] bg-blue-200/20 rounded-full blur-3xl"></div>
-    </div>
-
-    <!-- HEADER / Branding -->
-    <div class="absolute top-4 z-10 text-center pointer-events-none">
-        <h1 class="text-sm font-bold text-slate-400 uppercase tracking-widest">Discover</h1>
-        <p class="text-xs text-slate-300">Swipe to build your taste profile</p>
+        <div class="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-orange-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute top-[20%] -right-[10%] w-[40%] h-[40%] bg-indigo-500/10 rounded-full blur-3xl"></div>
     </div>
 
     <!-- Card Deck Container -->
-    <div id="deck" class="relative w-full max-w-sm h-[60vh] md:h-[65vh] flex items-center justify-center">
+    <div id="deck" class="relative w-[95vw] max-w-sm h-[80dvh] flex items-center justify-center">
         <!-- Loading State -->
         <div id="loading" class="absolute inset-0 flex items-center justify-center text-slate-400 z-0">
             <div class="flex flex-col items-center gap-3">
@@ -31,12 +26,12 @@
         <div id="empty-state"
             class="hidden absolute inset-0 flex flex-col items-center justify-center text-center p-8 bg-white rounded-3xl shadow-lg border border-slate-100 z-0 mx-4 max-h-[400px]">
             <span class="text-5xl mb-6">🎉</span>
-            <h3 class="text-xl font-bold text-slate-800">You're all caught up!</h3>
-            <p class="text-slate-500 mt-2 text-sm leading-relaxed mb-6">
+            <h3 class="text-xl font-bold text-white">You're all caught up!</h3>
+            <p class="text-white/60 mt-2 text-sm leading-relaxed mb-6">
                 We've run out of recipes for now. Check back later or review your favorites.
             </p>
             <a href="/recipes"
-                class="px-6 py-3 bg-slate-900 text-white rounded-full text-sm font-semibold hover:bg-slate-800 transition-colors shadow-lg shadow-slate-200">
+                class="px-6 py-3 bg-white text-slate-900 rounded-full text-sm font-semibold hover:bg-slate-100 transition-colors shadow-lg">
                 Browse Cookbook
             </a>
         </div>
@@ -89,7 +84,7 @@
     function addCard(recipe) {
         const el = document.createElement('div');
         el.dataset.id = recipe.id;
-        el.className = 'absolute w-[90vw] max-w-sm aspect-[3/4] bg-white rounded-3xl shadow-2xl overflow-hidden touch-none transition-all duration-300 origin-bottom select-none border border-slate-100 will-change-transform';
+        el.className = 'absolute w-[95vw] max-w-sm h-[75dvh] bg-white rounded-3xl shadow-2xl overflow-hidden touch-none transition-all duration-300 origin-bottom select-none border border-white/10 will-change-transform';
 
         // Use a placeholder if no image
         const imgUrl = recipe.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80';
