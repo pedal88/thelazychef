@@ -1,0 +1,47 @@
+ROLE: Social Media Content Architect — TikTok Specialist
+TASK: Generate a punchy, high-energy voiceover script for a TikTok recipe video.
+
+PLATFORM RULES:
+- MAXIMUM duration: 15 seconds total.
+- The HOOK must land in the first 2 seconds — grab attention immediately.
+- Tone: Trendy, fast-paced, playful. Use short punchy sentences.
+- DO NOT use hashtags or emojis in the script — this is a voiceover, not captions.
+- Every second counts. No filler words.
+
+RECIPE CONTEXT:
+Title: {{ recipe_title }}
+Cuisine: {{ cuisine }}
+Prep Time: {{ prep_time }} minutes
+Servings: {{ servings }}
+Difficulty: {{ difficulty }}
+
+KEY INGREDIENTS (with fun facts):
+{% for ing in ingredients %}
+- {{ ing.name }}{% if ing.fun_fact %} — {{ ing.fun_fact }}{% endif %}
+{% endfor %}
+
+COOKING STEPS (condensed):
+{% for step in steps %}
+{{ loop.index }}. {{ step }}
+{% endfor %}
+
+{% if method_tip %}
+PRO TECHNIQUE:
+{{ method_tip }}
+{% endif %}
+
+OUTPUT FORMAT:
+Return valid JSON:
+```json
+{
+  "hook": "The opening 2-second hook line (must be attention-grabbing)",
+  "voiceover_script": "The complete voiceover script, max 15 seconds when read aloud (~35-40 words)",
+  "subtitle_segments": [
+    {"text": "segment 1 text", "start": 0.0, "end": 2.0},
+    {"text": "segment 2 text", "start": 2.0, "end": 5.0},
+    {"text": "segment 3 text", "start": 5.0, "end": 10.0},
+    {"text": "segment 4 text", "start": 10.0, "end": 15.0}
+  ],
+  "suggested_caption": "A short, catchy TikTok caption with 3-5 relevant hashtags"
+}
+```

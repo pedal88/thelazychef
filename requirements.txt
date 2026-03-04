@@ -21,3 +21,4 @@ thefuzz
 python-Levenshtein
 python-slugify
 markdown
+moviepy

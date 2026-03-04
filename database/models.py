@@ -262,6 +262,7 @@ class Recipe(db.Model):
     interactions: Mapped[list["UserRecipeInteraction"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
     collections: Mapped[list["CollectionItem"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
     queue_items: Mapped[list["UserQueue"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
+    social_posts: Mapped[list["SocialMediaPost"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
 
 class Instruction(db.Model):
     __tablename__ = 'instruction'
@@ -419,3 +420,27 @@ class UserLink(db.Model):
 
     user_1: Mapped["User"] = relationship(foreign_keys=[user_id_1])
     user_2: Mapped[Optional["User"]] = relationship(foreign_keys=[user_id_2])
+
+
+# ---------------------------------------------------------------------------
+# Social Media Content Generation (Media Hub)
+# ---------------------------------------------------------------------------
+
+class SocialMediaPost(db.Model):
+    """Tracks AI-generated social media content per recipe × platform."""
+    __tablename__ = 'social_media_post'
+    __table_args__ = (
+        UniqueConstraint('recipe_id', 'platform', 'template_name', name='uq_social_recipe_platform_template'),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    recipe_id: Mapped[int] = mapped_column(ForeignKey('recipe.id'), nullable=False, index=True)
+    platform: Mapped[str] = mapped_column(String(20), nullable=False)  # 'tiktok' | 'instagram'
+    status: Mapped[str] = mapped_column(String(20), default='pending', nullable=False)  # pending | generating | ready | failed
+    template_name: Mapped[str] = mapped_column(String(100), nullable=False)  # e.g. 'tiktok_persona.jinja2'
+    voiceover_script: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    video_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)
+
+    recipe: Mapped["Recipe"] = relationship(back_populates="social_posts")

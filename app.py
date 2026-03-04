@@ -14,7 +14,7 @@ from flask_migrate import Migrate
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 import markdown
 from database.db_connector import configure_database
-from database.models import db, Ingredient, Recipe, Instruction, RecipeIngredient, RecipeMealType, RecipeDiet, User, Resource, resource_relations, Chef, UserRecipeInteraction, RecipeEvaluation, RecipeCollection, CollectionItem, UserQueue, UserLink
+from database.models import db, Ingredient, Recipe, Instruction, RecipeIngredient, RecipeMealType, RecipeDiet, User, Resource, resource_relations, Chef, UserRecipeInteraction, RecipeEvaluation, RecipeCollection, CollectionItem, UserQueue, UserLink, SocialMediaPost
 from utils.decorators import admin_required
 from sqlalchemy import or_, func
 from sqlalchemy.orm import joinedload
@@ -68,6 +68,9 @@ app.register_blueprint(ingredients_bp)
 
 from routes.queue_routes import queue_bp
 app.register_blueprint(queue_bp)
+
+from routes.media_hub_routes import media_hub_bp
+app.register_blueprint(media_hub_bp)
 
 
 from utils.markdown_extensions import VideoExtension
@@ -188,6 +191,7 @@ print(f"--- STORAGE SYSTEM ACTIVE: {storage_provider.__class__.__name__} ---")
 # Inject storage provider into blueprint context
 # Note: Blueprints are registered earlier, but we can attach attributes to the object
 prompts_bp.storage_provider = storage_provider
+media_hub_bp.storage_provider = storage_provider
 
 # Initialize Flask-Login
 login_manager = LoginManager()
