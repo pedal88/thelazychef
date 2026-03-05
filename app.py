@@ -1098,6 +1098,18 @@ def recipes_list():
                 UserRecipeInteraction.timestamp.desc()
             )
         )
+    elif view_mode == 'made' and current_user.is_authenticated:
+        # Base query for Made recipes
+        stmt = (
+            db.select(Recipe, UserRecipeInteraction)
+            .join(UserRecipeInteraction)
+            .where(
+                UserRecipeInteraction.user_id == current_user.id,
+                UserRecipeInteraction.is_made == True,
+                Recipe.status == 'approved'
+            )
+            .order_by(UserRecipeInteraction.timestamp.desc())
+        )
     elif view_mode == 'next' and current_user.is_authenticated:
         # Base query for Queue
         from database.models import UserQueue
@@ -1144,13 +1156,13 @@ def recipes_list():
     results = db.session.execute(stmt).all()
     
     recipes = []
-    if view_mode in ['saved', 'next']:
+    if view_mode in ['saved', 'made', 'next']:
         for item in results:
             r = item[0]
             # Attach interaction data to recipe object for template
-            if view_mode == 'saved':
+            if view_mode in ('saved', 'made'):
                 interaction = item[1]
-                r.is_super_liked = interaction.is_super_like
+                r.is_super_liked = getattr(interaction, 'is_super_like', False)
                 r.interaction = interaction
             elif view_mode == 'next':
                 queue_item = item[1]

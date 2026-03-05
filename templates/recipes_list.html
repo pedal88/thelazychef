@@ -4,7 +4,7 @@
 {% import "components/modals/recipe_inspector.html" as inspector %}
 
 {% block title %}
-{% if current_view == 'saved' %}My Cookbook{% elif current_view == 'next' %}Cook Next{% else %}Recipe Library{% endif %}
+{% if current_view == 'saved' %}My Cookbook{% elif current_view == 'made' %}Made Recipes{% elif current_view == 'next' %}Cook Next{% else %}Recipe Library{% endif %}
 - The Lazy Chef
 {% endblock %}
 
@@ -184,6 +184,8 @@
             {# ---------- Page Header ---------- #}
             {% if current_view == 'saved' %}
             {{ type.page_header('My Cookbook', 'Your personal collection of favorite recipes.') }}
+            {% elif current_view == 'made' %}
+            {{ type.page_header('Made Recipes', 'Recipes you\'ve cooked — your kitchen hall of fame.') }}
             {% elif current_view == 'next' %}
             {{ type.page_header('Cook Next', 'Recipes queued up and ready for your kitchen.') }}
             {% elif current_view != 'discover' %}
@@ -204,6 +206,10 @@
                     <a href="{{ url_for('recipes_list', view='saved', style=view_style) }}"
                         class="{% if current_view == 'saved' %}bg-indigo-50 text-indigo-700 font-semibold{% else %}text-gray-500 hover:text-gray-700 hover:bg-gray-50{% endif %} rounded-lg px-4 py-2 text-sm font-medium transition-colors">
                         ❤️ Saved
+                    </a>
+                    <a href="{{ url_for('recipes_list', view='made', style=view_style) }}"
+                        class="{% if current_view == 'made' %}bg-indigo-50 text-indigo-700 font-semibold{% else %}text-gray-500 hover:text-gray-700 hover:bg-gray-50{% endif %} rounded-lg px-4 py-2 text-sm font-medium transition-colors">
+                        ✅ Made
                     </a>
                     <a href="{{ url_for('recipes_list', view='next', style=view_style) }}"
                         class="{% if current_view == 'next' %}bg-indigo-50 text-indigo-700 font-semibold{% else %}text-gray-500 hover:text-gray-700 hover:bg-gray-50{% endif %} rounded-lg px-4 py-2 text-sm font-medium transition-colors">
@@ -392,6 +398,15 @@
                 <a href="{{ url_for('recipes_list', view='discover') }}"
                     class="rounded-full bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition-colors">
                     Browse Recipes
+                </a>
+                {% elif current_view == 'made' %}
+                <div class="text-6xl mb-4">✅</div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">No recipes made yet</h3>
+                <p class="text-gray-500 mb-6 max-w-sm">Mark recipes as "Made it" after you cook them to build your kitchen track record.
+                </p>
+                <a href="{{ url_for('recipes_list', view='discover') }}"
+                    class="rounded-full bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition-colors">
+                    Find Recipes
                 </a>
                 {% elif current_view == 'next' %}
                 <div class="text-6xl mb-4">⏰</div>

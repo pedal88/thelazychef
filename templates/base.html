@@ -93,7 +93,7 @@
 
 <body class="flex min-h-full flex-col text-slate-900 {% if is_discover_mode %}immersive-mode{% endif %}">
 
-    <!-- Navigation (hidden in discover mode) -->
+    <!-- Navigation -->
     {% if not is_discover_mode %}
     <header class="bg-white border-b border-gray-200 sticky top-0 z-[100] print:hidden">
         <nav class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -145,6 +145,9 @@
                             <a href="{{ url_for('saved_recipes_view') }}"
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">Saved
                                 Recipes</a>
+                            <a href="{{ url_for('recipes_list', view='made') }}"
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">✅
+                                Made</a>
                             <a href="{{ url_for('queue.next_recipes_view') }}"
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">🍳
                                 Cook Next</a>
@@ -336,9 +339,75 @@
         </script>
     </header>
     {% else %}
-    <!-- Immersive Mode: Floating Action Button -->
+    <!-- Discover Mode: Header visible on desktop/tablet, FAB on mobile -->
+    <header class="hidden md:block bg-white border-b border-gray-200 sticky top-0 z-[100] print:hidden">
+        <nav class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Logo -->
+            <a href="/" class="flex items-center gap-2 group">
+                <span class="text-2xl pt-1">🍳</span>
+                <span class="font-serif text-xl font-bold tracking-tight group-hover:text-orange-600 transition-colors">
+                    The Lazy Chef
+                </span>
+            </a>
+
+            <!-- Desktop Links -->
+            <div class="flex items-center gap-6 text-sm font-medium text-slate-600">
+                <!-- Discover Dropdown -->
+                <div class="relative group">
+                    <button class="flex items-center gap-1 hover:text-orange-600 transition-colors focus:outline-none">
+                        <span>Discover</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="absolute left-0 mt-0 w-40 bg-white border border-slate-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[110] transform origin-top-left">
+                        <div class="py-1">
+                            <a href="/" class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">Swipe</a>
+                            <a href="/explore/galaxy" class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">Galaxy Map</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recipes Dropdown -->
+                <div class="relative group">
+                    <button class="flex items-center gap-1 hover:text-orange-600 transition-colors focus:outline-none">
+                        <span>Recipes</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="absolute left-0 mt-0 w-40 bg-white border border-slate-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[110] transform origin-top-left">
+                        <div class="py-1">
+                            {% if current_user.is_authenticated %}
+                            <a href="{{ url_for('saved_recipes_view') }}" class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">Saved</a>
+                            <a href="{{ url_for('recipes_list', view='made') }}" class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">Made</a>
+                            <a href="{{ url_for('queue.next_recipes_view') }}" class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">Cook Next</a>
+                            {% endif %}
+                            <a href="/recipes" class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">All Recipes</a>
+                            <a href="{{ url_for('collections_index') }}" class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">Collections</a>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="/become-a-chef" class="hover:text-orange-600 transition-colors">Become a Chef</a>
+                <a href="/ingredients" class="hover:text-orange-600 transition-colors">Ingredients</a>
+
+                {% if current_user.is_authenticated %}
+                {% if current_user.is_admin %}
+                <a href="/admin" class="hover:text-orange-600 transition-colors">Admin</a>
+                {% endif %}
+                <a href="{{ url_for('logout') }}" class="text-slate-400 hover:text-orange-600 transition-colors">Logout</a>
+                {% else %}
+                <a href="{{ url_for('login') }}" class="hover:text-orange-600 transition-colors">Login</a>
+                <a href="{{ url_for('register') }}" class="rounded-full bg-orange-600 text-white px-4 py-1.5 hover:bg-orange-700 transition-colors">Sign Up</a>
+                {% endif %}
+            </div>
+        </nav>
+    </header>
+
+    <!-- Mobile FAB (only on small screens) -->
     <button id="immersive-fab"
-        class="fixed top-4 left-4 z-[200] w-11 h-11 rounded-full bg-white/70 backdrop-blur-md border border-white/30 shadow-lg flex items-center justify-center text-slate-700 hover:bg-white/90 transition-all active:scale-95"
+        class="md:hidden fixed top-4 left-4 z-[200] w-11 h-11 rounded-full bg-white/70 backdrop-blur-md border border-white/30 shadow-lg flex items-center justify-center text-slate-700 hover:bg-white/90 transition-all active:scale-95"
         aria-label="Open menu">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
