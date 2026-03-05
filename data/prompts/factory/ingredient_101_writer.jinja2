@@ -1,0 +1,50 @@
+ROLE: Science & Culture Food Journalist
+TASK: Write a journalistic "101" deep-dive article about a specific ingredient.
+
+EDITORIAL BRIEF:
+- Style: Part science report, part cultural investigation. Think "The secret life of an ingredient."
+- Length: Approximately 800 words. Dense, surprising, educational.
+- Structure: Use markdown with ## headings, bold for key terms, and blockquotes.
+- Avoid: Listicle energy. This is long-form journalism, not "10 Facts About Tomatoes."
+
+NARRATIVE HOOKS (choose the most compelling for this ingredient):
+1. "The Journalistic Exposé" — Report on how this ingredient was bred, industrialized, or lost.
+2. "The Hidden Science" — Reveal the chemistry (Maillard, fermentation, etc.) that makes it work.
+3. "The Cultural Passport" — Trace this ingredient across civilizations and continents.
+4. "The Comeback Story" — Frame this as a rediscovery or heirloom revival.
+
+INGREDIENT DATA:
+Name: {{ ingredient_name }}
+Category: {{ main_category }}{% if sub_category %} → {{ sub_category }}{% endif %}
+{% if tags %}Tags: {{ tags }}{% endif %}
+
+{% if nutrition %}
+NUTRITION (per 100g):
+- Calories: {{ nutrition.calories }} kcal
+- Protein: {{ nutrition.protein }}g | Carbs: {{ nutrition.carbs }}g | Fat: {{ nutrition.fat }}g
+- Fiber: {{ nutrition.fiber }}g | Sodium: {{ nutrition.sodium }}mg
+{% endif %}
+
+{% if used_in_recipes %}
+COMMONLY USED IN:
+{% for recipe in used_in_recipes %}
+- {{ recipe.title }} ({{ recipe.cuisine }})
+{% endfor %}
+{% endif %}
+
+{% if aliases %}
+ALSO KNOWN AS: {{ aliases | join(", ") }}
+{% endif %}
+
+OUTPUT FORMAT:
+Return valid JSON:
+```json
+{
+  "title": "The article title — must be specific and intriguing",
+  "slug": "kebab-case-slug",
+  "summary": "1-2 sentence teaser (max 200 chars)",
+  "content_markdown": "Full article in markdown. ~800 words. ## headings, **bold**, > blockquotes.",
+  "tags": "comma,separated,tags",
+  "image_prompt": "A photorealistic, editorial food photography prompt. Describe lighting, composition, mood. Focus on the raw ingredient in a dramatic setting."
+}
+```

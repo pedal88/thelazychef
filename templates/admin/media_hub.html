@@ -5,15 +5,11 @@
 {% block content %}
 <style>
     @keyframes pulse-dot {
-
-        0%,
-        100% {
-            opacity: 1;
-        }
-
-        50% {
-            opacity: 0.3;
-        }
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+    }
+    @keyframes spin-slow {
+        100% { transform: rotate(360deg); }
     }
 </style>
 
@@ -23,7 +19,7 @@
     <div class="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
             <h1 class="font-serif text-3xl font-bold text-slate-900">🎬 Media Studio</h1>
-            <p class="text-sm text-slate-500 mt-1">Generate social media content for your recipes</p>
+            <p class="text-sm text-slate-500 mt-1">Generate social media content & knowledge assets for your recipes</p>
         </div>
         <div class="flex items-center gap-3 flex-wrap">
             <a href="/admin/media-hub/overview"
@@ -31,90 +27,156 @@
                 ⚙️ Overview & Workbench
             </a>
             <div class="flex gap-3 flex-wrap">
-                <div
-                    class="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-2.5 text-center min-w-[100px]">
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-2.5 text-center min-w-[100px]">
                     <div class="text-xl font-bold text-slate-800" id="statTotal">—</div>
                     <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Recipes</div>
                 </div>
-                <div
-                    class="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-2.5 text-center min-w-[100px]">
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-2.5 text-center min-w-[100px]">
                     <div class="text-xl font-bold text-green-600" id="statReady">—</div>
                     <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Ready</div>
                 </div>
-                <div
-                    class="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-2.5 text-center min-w-[100px]">
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-2.5 text-center min-w-[100px]">
                     <div class="text-xl font-bold text-orange-600" id="statPending">—</div>
                     <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Pending</div>
                 </div>
             </div>
-            </div>
         </div>
-
-        <!-- Recipe Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5" id="mhGrid">
-            <div class="col-span-full text-center py-20 text-slate-400">
-                <div class="text-5xl mb-4">🎬</div>
-                <p class="font-medium">Loading recipes…</p>
-            </div>
-        </div>
-
     </div>
 
-    <!-- Video Preview Modal -->
-    <div id="mhModal"
-        class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-[90%] overflow-hidden">
-            <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-                <h3 class="font-serif font-bold text-slate-800 text-lg" id="modalTitle">Preview</h3>
-                <button onclick="closeModal()"
-                    class="p-1.5 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+    <!-- Bulk Actions Bar -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+            <h2 class="text-sm font-semibold text-slate-700 uppercase tracking-wider">
+                🏭 Knowledge Factory — Bulk Actions
+            </h2>
+            <div class="flex items-center gap-2 flex-wrap">
+                <button onclick="bulkGenerate('articles')" id="bulkArticlesBtn"
+                    class="rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                    📝 Generate Missing Articles
+                </button>
+                <button onclick="bulkGenerate('podcasts')" id="bulkPodcastsBtn"
+                    class="rounded-lg bg-purple-600 px-4 py-2 text-xs font-semibold text-white hover:bg-purple-700 shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                    🎙️ Generate Missing Podcasts
+                </button>
+                <button onclick="bulkGenerate('videos')" id="bulkVideosBtn"
+                    class="rounded-lg bg-orange-600 px-4 py-2 text-xs font-semibold text-white hover:bg-orange-700 shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                    🎬 Generate Missing Videos
                 </button>
             </div>
-            <div class="p-5">
-                <video id="modalVideo" controls class="w-full rounded-lg"></video>
-                <div id="modalScript"
-                    class="mt-4 p-3 bg-slate-50 rounded-lg text-sm text-slate-600 max-h-48 overflow-y-auto whitespace-pre-wrap border border-slate-200">
-                </div>
-            </div>
+        </div>
+        <div id="bulkStatus" class="mt-2 text-xs text-slate-500 hidden"></div>
+    </div>
+
+    <!-- Recipe Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5" id="mhGrid">
+        <div class="col-span-full text-center py-20 text-slate-400">
+            <div class="text-5xl mb-4">🎬</div>
+            <p class="font-medium">Loading recipes…</p>
         </div>
     </div>
 
-    <script>
-        // ── State ───────────────────────────────────────────────────────
-        let recipesData = [];
+</div>
 
-        // ── Init ────────────────────────────────────────────────────────
-        document.addEventListener('DOMContentLoaded', loadRecipes);
+<!-- Video Preview Modal -->
+<div id="mhModal"
+    class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-[90%] overflow-hidden">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+            <h3 class="font-serif font-bold text-slate-800 text-lg" id="modalTitle">Preview</h3>
+            <button onclick="closeModal()"
+                class="p-1.5 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div class="p-5">
+            <video id="modalVideo" controls class="w-full rounded-lg"></video>
+            <div id="modalScript"
+                class="mt-4 p-3 bg-slate-50 rounded-lg text-sm text-slate-600 max-h-48 overflow-y-auto whitespace-pre-wrap border border-slate-200">
+            </div>
+        </div>
+    </div>
+</div>
 
-        async function loadRecipes() {
-            try {
-                const res = await fetch('/admin/media-hub/api/recipes');
-                recipesData = await res.json();
-                renderGrid(recipesData);
-                updateStats(recipesData);
-            } catch (e) {
-                console.error('Failed to load recipes:', e);
-            }
+<!-- Podcast Preview Modal -->
+<div id="podcastModal"
+    class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-[90%] max-h-[85vh] overflow-hidden flex flex-col">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+            <h3 class="font-serif font-bold text-slate-800 text-lg" id="podcastModalTitle">🎙️ Podcast Preview</h3>
+            <button onclick="closePodcastModal()"
+                class="p-1.5 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Episode Info -->
+        <div class="px-5 py-3 bg-purple-50 border-b border-purple-100">
+            <div class="text-sm font-semibold text-purple-800" id="podcastEpisodeTitle">—</div>
+            <div class="text-xs text-purple-500 mt-0.5" id="podcastMeta">—</div>
+        </div>
+
+        <!-- Audio Player (hidden until audio exists) -->
+        <div id="podcastAudioSection" class="hidden px-5 py-3 bg-slate-50 border-b border-slate-200">
+            <audio id="podcastAudio" controls class="w-full rounded-lg" preload="none"></audio>
+        </div>
+
+        <!-- Render Audio Button (shown when script exists but no audio) -->
+        <div id="podcastRenderSection" class="hidden px-5 py-3 bg-orange-50 border-b border-orange-100">
+            <div class="flex items-center justify-between">
+                <span class="text-xs text-orange-700">Script ready — audio not yet rendered.</span>
+                <button id="renderAudioBtn" onclick="renderPodcastAudio()"
+                    class="rounded-lg bg-orange-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-orange-700 shadow-sm transition-all disabled:opacity-40">
+                    🔊 Render Audio
+                </button>
+            </div>
+            <p class="text-xs text-orange-500 mt-1">Uses Google Cloud TTS. Takes ~30 seconds.</p>
+        </div>
+
+        <!-- Dialogue Script -->
+        <div class="flex-1 overflow-y-auto p-5 space-y-3" id="podcastDialogue">
+            <p class="text-sm text-slate-400">Loading script…</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ── State ───────────────────────────────────────────────────────
+    let recipesData = [];
+
+    // ── Init ────────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', loadRecipes);
+
+    async function loadRecipes() {
+        try {
+            const res = await fetch('/admin/media-hub/api/recipes');
+            recipesData = await res.json();
+            renderGrid(recipesData);
+            updateStats(recipesData);
+        } catch (e) {
+            console.error('Failed to load recipes:', e);
         }
+    }
 
-        // ── Render ──────────────────────────────────────────────────────
-        function renderGrid(recipes) {
-            const grid = document.getElementById('mhGrid');
+    // ── Render ──────────────────────────────────────────────────────
+    function renderGrid(recipes) {
+        const grid = document.getElementById('mhGrid');
 
-            if (!recipes.length) {
-                grid.innerHTML = `
+        if (!recipes.length) {
+            grid.innerHTML = `
             <div class="col-span-full text-center py-20 text-slate-400">
                 <div class="text-5xl mb-4">📚</div>
                 <p class="font-medium">No approved recipes found.</p>
             </div>`;
-                return;
-            }
+            return;
+        }
 
-            grid.innerHTML = recipes.map(r => `
+        grid.innerHTML = recipes.map(r => `
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
              data-recipe-id="${r.id}">
             <img class="w-full aspect-[16/10] object-cover bg-slate-100"
@@ -123,7 +185,14 @@
                  onerror="this.src=''; this.classList.add('hidden');" />
             <div class="p-4">
                 <h3 class="text-sm font-semibold text-slate-800 truncate" title="${r.title}">${r.title}</h3>
-                <p class="text-xs text-slate-500 mt-0.5 mb-3">${r.cuisine || 'Unknown'}</p>
+                <p class="text-xs text-slate-500 mt-0.5 mb-2">${r.cuisine || 'Unknown'}</p>
+
+                <!-- Knowledge Status Icons -->
+                <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
+                    ${renderKnowledgeIcon('📝', 'Article', r.knowledge.has_article, r.id, 'article')}
+                    ${renderKnowledgeIcon('🎙️', 'Podcast', r.knowledge.has_podcast, r.id, 'podcast')}
+                    ${renderKnowledgeIcon('🎬', 'Video', r.knowledge.has_video, r.id, 'video')}
+                </div>
 
                 <div class="flex flex-wrap gap-1.5 mb-3">
                     ${renderBadge('TikTok', r.statuses.tiktok)}
@@ -153,151 +222,406 @@
             </div>
         </div>
     `).join('');
+    }
+
+    function renderKnowledgeIcon(emoji, label, exists, recipeId, type) {
+        if (exists) {
+            // Green icon — clickable for podcast (opens preview), static for others
+            if (type === 'podcast') {
+                return `<button onclick="openPodcastPreview(${recipeId}); event.stopPropagation();"
+                            class="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20 hover:bg-green-100 transition-all cursor-pointer"
+                            title="${label}: Ready — Click to preview">
+                            ${emoji} ✓
+                        </button>`;
+            }
+            return `<span class="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20"
+                          title="${label}: Ready">
+                        ${emoji} ✓
+                    </span>`;
         }
+        // Clickable — triggers single generation
+        return `<button onclick="generateKnowledge('${type}', ${recipeId}, this); event.stopPropagation();"
+                    class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-400 ring-1 ring-inset ring-slate-500/10 hover:bg-orange-50 hover:text-orange-600 hover:ring-orange-500/20 transition-all cursor-pointer"
+                    title="${label}: Missing — Click to generate">
+                    ${emoji} ✗
+                </button>`;
+    }
 
-        function renderBadge(label, status) {
-            const s = status || 'none';
-            const styles = {
-                none: 'bg-slate-100 text-slate-500 ring-1 ring-inset ring-slate-500/10',
-                pending: 'bg-orange-50 text-orange-700 ring-1 ring-inset ring-orange-600/20',
-                generating: 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20',
-                ready: 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20',
-                failed: 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20',
-            };
-            const dotColors = {
-                none: 'bg-slate-400', pending: 'bg-orange-500', generating: 'bg-blue-500',
-                ready: 'bg-green-500', failed: 'bg-red-500',
-            };
-            const animate = s === 'generating' ? 'style="animation: pulse-dot 1.2s infinite"' : '';
+    function renderBadge(label, status) {
+        const s = status || 'none';
+        const styles = {
+            none: 'bg-slate-100 text-slate-500 ring-1 ring-inset ring-slate-500/10',
+            pending: 'bg-orange-50 text-orange-700 ring-1 ring-inset ring-orange-600/20',
+            generating: 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20',
+            ready: 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20',
+            failed: 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20',
+        };
+        const dotColors = {
+            none: 'bg-slate-400', pending: 'bg-orange-500', generating: 'bg-blue-500',
+            ready: 'bg-green-500', failed: 'bg-red-500',
+        };
+        const animate = s === 'generating' ? 'style="animation: pulse-dot 1.2s infinite"' : '';
 
-            return `<span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${styles[s] || styles.none}">
+        return `<span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${styles[s] || styles.none}">
                 <span class="w-1.5 h-1.5 rounded-full ${dotColors[s] || dotColors.none}" ${animate}></span>
                 ${label}: ${s}
             </span>`;
-        }
+    }
 
-        function updateStats(recipes) {
-            document.getElementById('statTotal').textContent = recipes.length;
+    function updateStats(recipes) {
+        document.getElementById('statTotal').textContent = recipes.length;
 
-            let ready = 0, pending = 0;
-            for (const r of recipes) {
-                for (const platform of ['tiktok', 'instagram']) {
-                    if (r.statuses[platform] === 'ready') ready++;
-                    else if (!r.statuses[platform] || r.statuses[platform] === 'pending') pending++;
-                }
-            }
-            document.getElementById('statReady').textContent = ready;
-            document.getElementById('statPending').textContent = pending;
-        }
-
-        // ── Generate / View ─────────────────────────────────────────────
-        async function generate(recipeId, platform, btn) {
-            const recipe = recipesData.find(r => r.id === recipeId);
-            if (recipe && recipe.statuses[platform] === 'ready') {
-                openPreview(recipeId, platform);
-                return;
-            }
-
-            btn.disabled = true;
-            btn.textContent = '⏳ Generating…';
-
-            try {
-                const res = await fetch('/admin/media-hub/generate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ recipe_id: recipeId, platform }),
-                });
-
-                if (res.status === 202) {
-                    pollStatus(recipeId, platform, btn);
-                } else {
-                    const data = await res.json();
-                    alert('Error: ' + (data.error || 'Unknown'));
-                    btn.disabled = false;
-                    btn.textContent = platform === 'tiktok' ? '▶ TikTok' : '▶ Insta';
-                }
-            } catch (e) {
-                alert('Network error: ' + e.message);
-                btn.disabled = false;
+        let ready = 0, pending = 0;
+        for (const r of recipes) {
+            for (const platform of ['tiktok', 'instagram']) {
+                if (r.statuses[platform] === 'ready') ready++;
+                else if (!r.statuses[platform] || r.statuses[platform] === 'pending') pending++;
             }
         }
+        document.getElementById('statReady').textContent = ready;
+        document.getElementById('statPending').textContent = pending;
+    }
 
-        async function pollStatus(recipeId, platform, btn) {
-            const interval = setInterval(async () => {
-                try {
-                    const res = await fetch(`/admin/media-hub/api/status/${recipeId}`);
-                    const data = await res.json();
-                    const postData = data[platform];
+    // ── Knowledge Generation (single) ───────────────────────────────
+    async function generateKnowledge(type, recipeId, btn) {
+        btn.disabled = true;
+        btn.innerHTML = '⏳';
+        btn.classList.add('animate-pulse');
 
-                    if (!postData || postData.status === 'generating') return;
+        try {
+            let endpoint, body;
 
-                    clearInterval(interval);
+            if (type === 'article') {
+                endpoint = '/admin/media-hub/generate-article';
+                body = { source_type: 'recipe', source_id: recipeId };
+            } else if (type === 'podcast') {
+                endpoint = '/admin/media-hub/generate-podcast';
+                body = { source_type: 'recipe', source_id: recipeId };
+            } else if (type === 'video') {
+                endpoint = '/admin/media-hub/generate';
+                body = { recipe_id: recipeId, platform: 'tiktok' };
+            }
 
-                    if (postData.status === 'ready') {
-                        const recipe = recipesData.find(r => r.id === recipeId);
-                        if (recipe) recipe.statuses[platform] = 'ready';
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+
+            if (res.status === 202) {
+                // Poll for completion
+                const pollId = setInterval(async () => {
+                    const r = await fetch('/admin/media-hub/api/recipes');
+                    const data = await r.json();
+                    const recipe = data.find(rec => rec.id === recipeId);
+                    if (!recipe) return;
+
+                    const done = (type === 'article' && recipe.knowledge.has_article)
+                              || (type === 'podcast' && recipe.knowledge.has_podcast)
+                              || (type === 'video' && recipe.knowledge.has_video);
+
+                    if (done) {
+                        clearInterval(pollId);
+                        recipesData = data;
                         renderGrid(recipesData);
                         updateStats(recipesData);
-                    } else if (postData.status === 'failed') {
-                        const recipe = recipesData.find(r => r.id === recipeId);
-                        if (recipe) recipe.statuses[platform] = 'failed';
-                        renderGrid(recipesData);
                     }
-                } catch (e) {
-                    console.error('Poll error:', e);
-                }
-            }, 3000);
+                }, 4000);
+
+                // Auto-stop polling after 2 minutes
+                setTimeout(() => clearInterval(pollId), 120000);
+            } else {
+                const errData = await res.json();
+                alert('Error: ' + (errData.error || 'Unknown'));
+                btn.innerHTML = '❌';
+                btn.disabled = false;
+            }
+        } catch (e) {
+            alert('Network error: ' + e.message);
+            btn.innerHTML = '❌';
+            btn.disabled = false;
+        }
+    }
+
+    // ── Bulk Generation ─────────────────────────────────────────────
+    async function bulkGenerate(action) {
+        const btn = document.getElementById(`bulk${action.charAt(0).toUpperCase() + action.slice(1)}Btn`);
+        const statusEl = document.getElementById('bulkStatus');
+
+        btn.disabled = true;
+        btn.textContent = '⏳ Processing…';
+
+        try {
+            const res = await fetch('/admin/media-hub/generate-bulk', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, recipe_ids: 'all' }),
+            });
+
+            const data = await res.json();
+
+            statusEl.classList.remove('hidden');
+            statusEl.textContent = `✅ Bulk ${action} triggered for ${data.count} recipes. Generating in background…`;
+
+            // Poll for reload after a delay
+            setTimeout(async () => {
+                await loadRecipes();
+                btn.disabled = false;
+                btn.textContent = btn.dataset.originalText || `Generate Missing ${action.charAt(0).toUpperCase() + action.slice(1)}`;
+            }, 15000);
+
+        } catch (e) {
+            alert('Bulk generation error: ' + e.message);
+            btn.disabled = false;
+        }
+    }
+
+    // ── Generate / View ─────────────────────────────────────────────
+    async function generate(recipeId, platform, btn) {
+        const recipe = recipesData.find(r => r.id === recipeId);
+        if (recipe && recipe.statuses[platform] === 'ready') {
+            openPreview(recipeId, platform);
+            return;
         }
 
-        // ── Preview Modal ───────────────────────────────────────────────
-        async function openPreview(recipeId, platform) {
+        btn.disabled = true;
+        btn.textContent = '⏳ Generating…';
+
+        try {
+            const res = await fetch('/admin/media-hub/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ recipe_id: recipeId, platform }),
+            });
+
+            if (res.status === 202) {
+                pollStatus(recipeId, platform, btn);
+            } else {
+                const data = await res.json();
+                alert('Error: ' + (data.error || 'Unknown'));
+                btn.disabled = false;
+                btn.textContent = platform === 'tiktok' ? '▶ TikTok' : '▶ Insta';
+            }
+        } catch (e) {
+            alert('Network error: ' + e.message);
+            btn.disabled = false;
+        }
+    }
+
+    async function pollStatus(recipeId, platform, btn) {
+        const interval = setInterval(async () => {
             try {
                 const res = await fetch(`/admin/media-hub/api/status/${recipeId}`);
                 const data = await res.json();
                 const postData = data[platform];
-                if (!postData) return;
 
-                const recipe = recipesData.find(r => r.id === recipeId);
-                document.getElementById('modalTitle').textContent =
-                    `${recipe ? recipe.title : 'Recipe'} — ${platform.charAt(0).toUpperCase() + platform.slice(1)}`;
+                if (!postData || postData.status === 'generating') return;
 
-                const video = document.getElementById('modalVideo');
-                if (postData.video_url) {
-                    video.src = postData.video_url;
-                    video.style.display = 'block';
-                } else {
-                    video.style.display = 'none';
+                clearInterval(interval);
+
+                if (postData.status === 'ready') {
+                    const recipe = recipesData.find(r => r.id === recipeId);
+                    if (recipe) recipe.statuses[platform] = 'ready';
+                    renderGrid(recipesData);
+                    updateStats(recipesData);
+                } else if (postData.status === 'failed') {
+                    const recipe = recipesData.find(r => r.id === recipeId);
+                    if (recipe) recipe.statuses[platform] = 'failed';
+                    renderGrid(recipesData);
                 }
-
-                const scriptEl = document.getElementById('modalScript');
-                if (postData.script) {
-                    try {
-                        const parsed = JSON.parse(postData.script);
-                        scriptEl.textContent = parsed.voiceover_script || JSON.stringify(parsed, null, 2);
-                    } catch {
-                        scriptEl.textContent = postData.script;
-                    }
-                } else {
-                    scriptEl.textContent = 'No script available.';
-                }
-
-                document.getElementById('mhModal').classList.remove('hidden');
             } catch (e) {
-                console.error('Preview error:', e);
+                console.error('Poll error:', e);
             }
+        }, 3000);
+    }
+
+    // ── Preview Modal ───────────────────────────────────────────────
+    async function openPreview(recipeId, platform) {
+        try {
+            const res = await fetch(`/admin/media-hub/api/status/${recipeId}`);
+            const data = await res.json();
+            const postData = data[platform];
+            if (!postData) return;
+
+            const recipe = recipesData.find(r => r.id === recipeId);
+            document.getElementById('modalTitle').textContent =
+                `${recipe ? recipe.title : 'Recipe'} — ${platform.charAt(0).toUpperCase() + platform.slice(1)}`;
+
+            const video = document.getElementById('modalVideo');
+            if (postData.video_url) {
+                video.src = postData.video_url;
+                video.style.display = 'block';
+            } else {
+                video.style.display = 'none';
+            }
+
+            const scriptEl = document.getElementById('modalScript');
+            if (postData.script) {
+                try {
+                    const parsed = JSON.parse(postData.script);
+                    scriptEl.textContent = parsed.voiceover_script || JSON.stringify(parsed, null, 2);
+                } catch {
+                    scriptEl.textContent = postData.script;
+                }
+            } else {
+                scriptEl.textContent = 'No script available.';
+            }
+
+            document.getElementById('mhModal').classList.remove('hidden');
+        } catch (e) {
+            console.error('Preview error:', e);
         }
+    }
 
-        function closeModal() {
-            document.getElementById('mhModal').classList.add('hidden');
-            document.getElementById('modalVideo').pause();
+    function closeModal() {
+        document.getElementById('mhModal').classList.add('hidden');
+        document.getElementById('modalVideo').pause();
+    }
+
+    document.getElementById('mhModal').addEventListener('click', function (e) {
+        if (e.target === this) closeModal();
+    });
+
+    // ── Podcast Preview Modal ───────────────────────────────────────
+    let currentPodcastPostId = null;
+    let currentPodcastRecipeId = null;
+
+    async function openPodcastPreview(recipeId) {
+        currentPodcastRecipeId = recipeId;
+
+        try {
+            const res = await fetch(`/admin/media-hub/api/podcast/${recipeId}`);
+            const data = await res.json();
+
+            if (data.status === 'none') {
+                alert('No podcast script found. Generate one first by clicking the 🎙️ icon.');
+                return;
+            }
+
+            currentPodcastPostId = data.post_id;
+
+            // Episode info
+            const recipe = recipesData.find(r => r.id === recipeId);
+            document.getElementById('podcastModalTitle').textContent =
+                `🎙️ ${recipe ? recipe.title : 'Recipe'} — Podcast`;
+
+            const script = data.script;
+            document.getElementById('podcastEpisodeTitle').textContent =
+                script?.episode_title || 'Untitled Episode';
+            document.getElementById('podcastMeta').textContent =
+                `~${script?.word_count || '?'} words • ${script?.estimated_duration_minutes || '?'} min`;
+
+            // Audio player
+            const audioSection = document.getElementById('podcastAudioSection');
+            const renderSection = document.getElementById('podcastRenderSection');
+
+            if (data.has_audio && data.audio_url) {
+                document.getElementById('podcastAudio').src = data.audio_url;
+                audioSection.classList.remove('hidden');
+                renderSection.classList.add('hidden');
+            } else {
+                audioSection.classList.add('hidden');
+                renderSection.classList.remove('hidden');
+            }
+
+            // Render dialogue
+            const dialogueEl = document.getElementById('podcastDialogue');
+            const dialogue = script?.dialogue || [];
+
+            if (dialogue.length === 0) {
+                dialogueEl.innerHTML = '<p class="text-sm text-slate-400">No dialogue lines found.</p>';
+            } else {
+                dialogueEl.innerHTML = dialogue.map(line => {
+                    const isA = line.speaker === 'A';
+                    const bgClass = isA ? 'bg-blue-50 border-blue-200' : 'bg-emerald-50 border-emerald-200';
+                    const labelColor = isA ? 'text-blue-600' : 'text-emerald-600';
+                    const icon = isA ? '👤' : '👩';
+                    return `
+                        <div class="rounded-lg border p-3 ${bgClass}">
+                            <span class="text-xs font-bold ${labelColor}">${icon} Speaker ${line.speaker}</span>
+                            <p class="text-sm text-slate-700 mt-1 leading-relaxed">${escapeHtml(line.text)}</p>
+                        </div>`;
+                }).join('');
+            }
+
+            document.getElementById('podcastModal').classList.remove('hidden');
+        } catch (e) {
+            console.error('Podcast preview error:', e);
+            alert('Failed to load podcast: ' + e.message);
         }
+    }
 
-        document.getElementById('mhModal').addEventListener('click', function (e) {
-            if (e.target === this) closeModal();
-        });
+    function closePodcastModal() {
+        document.getElementById('podcastModal').classList.add('hidden');
+        const audio = document.getElementById('podcastAudio');
+        audio.pause();
+        audio.src = '';
+        currentPodcastPostId = null;
+    }
 
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') closeModal();
-        });
-    </script>
-    {% endblock %}
+    async function renderPodcastAudio() {
+        if (!currentPodcastPostId) return;
+
+        const btn = document.getElementById('renderAudioBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Rendering…';
+
+        try {
+            const res = await fetch('/admin/media-hub/render-podcast-audio', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ post_id: currentPodcastPostId }),
+            });
+
+            if (res.status === 202) {
+                const pollId = setInterval(async () => {
+                    const r = await fetch(`/admin/media-hub/api/podcast/${currentPodcastRecipeId}`);
+                    const data = await r.json();
+
+                    if (data.has_audio && data.audio_url) {
+                        clearInterval(pollId);
+                        document.getElementById('podcastAudio').src = data.audio_url;
+                        document.getElementById('podcastAudioSection').classList.remove('hidden');
+                        document.getElementById('podcastRenderSection').classList.add('hidden');
+                        btn.disabled = false;
+                        btn.textContent = '🔊 Render Audio';
+                        await loadRecipes();
+                    }
+                }, 5000);
+
+                setTimeout(() => {
+                    clearInterval(pollId);
+                    btn.disabled = false;
+                    btn.textContent = '🔊 Render Audio';
+                }, 180000);
+            } else {
+                const errData = await res.json();
+                alert('Error: ' + (errData.error || 'Unknown'));
+                btn.disabled = false;
+                btn.textContent = '🔊 Render Audio';
+            }
+        } catch (e) {
+            alert('Network error: ' + e.message);
+            btn.disabled = false;
+            btn.textContent = '🔊 Render Audio';
+        }
+    }
+
+    document.getElementById('podcastModal').addEventListener('click', function (e) {
+        if (e.target === this) closePodcastModal();
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            closeModal();
+            closePodcastModal();
+        }
+    });
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+</script>
+{% endblock %}

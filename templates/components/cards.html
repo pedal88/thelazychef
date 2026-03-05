@@ -188,7 +188,7 @@ Expects a RecipeIngredient object (ri) which has .ingredient relation and .amoun
     <!-- Image / Gradient Placeholder -->
     <div class="h-48 bg-slate-100 relative overflow-hidden">
         {% if resource.image_filename %}
-        <img src="{{ resource.image_filename }}" alt="{{ resource.title }}"
+        <img src="{{ get_image_url(resource.image_filename) }}" alt="{{ resource.title }}"
             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
         {% else %}
         <div class="absolute inset-0 bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">

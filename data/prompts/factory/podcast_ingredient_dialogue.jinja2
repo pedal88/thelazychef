@@ -1,0 +1,53 @@
+ROLE: Podcast Script Writer — Food Science & Culture Show
+TASK: Write a dynamic 5-minute dialogue script about a specific ingredient, for two food-obsessed hosts.
+
+SHOW FORMAT:
+- Two speakers: A = "Marco" (the curious host) and B = "Sarah" (the expert food scientist/historian).
+- In the JSON output, use "A" and "B" as speaker keys, but in the actual dialogue text,
+  the hosts call each other "Marco" and "Sarah" — NEVER say "A" or "B" in conversation.
+- Duration: ~5 minutes when read aloud (~850 words total).
+- Tone: Energetic, curious, full of "wait, I didn't know that!" moments.
+- Structure: Mystery Hook → Origin/Science → Practical Kitchen Tips → Memorable Closer.
+- The dialogue must feel NATURAL — genuine surprise, follow-up questions, anecdotes.
+
+INGREDIENT DATA:
+Name: {{ ingredient_name }}
+Category: {{ main_category }}{% if sub_category %} → {{ sub_category }}{% endif %}
+{% if tags %}Tags: {{ tags }}{% endif %}
+
+{% if nutrition %}
+NUTRITION (per 100g):
+- Calories: {{ nutrition.calories }} kcal
+- Protein: {{ nutrition.protein }}g | Fat: {{ nutrition.fat }}g | Carbs: {{ nutrition.carbs }}g
+{% endif %}
+
+{% if used_in_recipes %}
+FEATURED IN RECIPES:
+{% for recipe in used_in_recipes %}
+- {{ recipe.title }} ({{ recipe.cuisine }})
+{% endfor %}
+{% endif %}
+
+{% if linked_article_summary %}
+LINKED DEEP-DIVE ARTICLE:
+{{ linked_article_summary }}
+(Mine this for narrative hooks and lesser-known facts)
+{% endif %}
+
+{% if aliases %}
+ALSO KNOWN AS: {{ aliases | join(", ") }}
+{% endif %}
+
+OUTPUT FORMAT:
+Return valid JSON:
+```json
+{
+  "episode_title": "A catchy podcast episode title about this ingredient",
+  "dialogue": [
+    {"speaker": "A", "text": "Opening line..."},
+    {"speaker": "B", "text": "Response..."}
+  ],
+  "word_count": 850,
+  "estimated_duration_minutes": 5
+}
+```

@@ -1,0 +1,938 @@
+{% extends "base.html" %}
+{% import "components/modals/recipe_inspector.html" as inspector %}
+
+{% block title %}Production Management — The Lazy Chef{% endblock %}
+
+{% block content %}
+<style>
+    @keyframes pulse-cell { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+    .cell-loading { animation: pulse-cell 1.4s ease-in-out infinite; }
+    .progress-bar {
+        height: 4px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        overflow: hidden;
+        width: 100%;
+    }
+    .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #6366f1, #8b5cf6);
+        border-radius: 4px;
+        animation: indeterminate 1.5s ease-in-out infinite;
+    }
+    @keyframes indeterminate {
+        0%   { width: 0%; margin-left: 0; }
+        50%  { width: 60%; margin-left: 20%; }
+        100% { width: 0%; margin-left: 100%; }
+    }
+    /* Toast */
+    .toast {
+        position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 200;
+        background: #1e293b; color: #fff; border-radius: .75rem;
+        padding: .75rem 1.25rem; font-size: .8125rem; font-weight: 500;
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,.25);
+        transform: translateY(120%); opacity: 0;
+        transition: all .3s ease;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    /* Row highlight */
+    tr.row-selected { background-color: #eff6ff !important; }
+</style>
+
+<div class="bg-white py-6 max-w-[98%] mx-auto">
+    <div class="px-4 sm:px-6 lg:px-8">
+
+        <!-- Header -->
+        <div class="sm:flex sm:items-center">
+            <div class="sm:flex-auto">
+                <h1 class="text-base font-semibold leading-6 text-gray-900">🎬 Production Management</h1>
+                <p class="mt-1 text-sm text-gray-500">Knowledge factory, media generation, and content pipeline.</p>
+            </div>
+
+            <!-- Tabs -->
+            <div class="mt-3 sm:ml-16 sm:mt-0 sm:flex-none flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+                <button type="button" class="tab-switch px-4 py-1.5 text-sm font-medium rounded-md bg-white text-gray-900 shadow-sm" data-tab="recipes">
+                    🍳 Recipes
+                </button>
+                <button type="button" class="tab-switch px-4 py-1.5 text-sm font-medium rounded-md text-gray-500 hover:text-gray-900 hover:bg-white transition-all" data-tab="ingredients">
+                    🥕 Ingredients
+                </button>
+            </div>
+
+            <div class="mt-3 sm:ml-4 sm:mt-0 flex items-center gap-2">
+                <a href="/admin/media-hub/overview"
+                    class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                    ⚙️ Workbench
+                </a>
+                <a href="/admin/media-hub/legacy"
+                    class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                    📊 Card View
+                </a>
+            </div>
+        </div>
+
+        <!-- Search & Stats -->
+        <div class="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2 text-sm">
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                        <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                        Articles: <span id="statArticles">—</span>
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-purple-50 px-2.5 py-1 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-600/20">
+                        <span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                        Scripts: <span id="statPodcasts">—</span>
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-pink-50 px-2.5 py-1 text-xs font-medium text-pink-700 ring-1 ring-inset ring-pink-600/20">
+                        <span class="w-1.5 h-1.5 rounded-full bg-pink-500"></span>
+                        Audio: <span id="statAudio">—</span>
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-orange-50 px-2.5 py-1 text-xs font-medium text-orange-700 ring-1 ring-inset ring-orange-600/20">
+                        <span class="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+                        Videos: <span id="statVideos">—</span>
+                    </span>
+                </div>
+            </div>
+            <input type="text" id="searchInput" placeholder="Search by name…"
+                class="block w-full sm:w-72 rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm">
+        </div>
+
+        <!-- ═══════════════════════════ RECIPES TAB ═══════════════════════════ -->
+        <div id="tab-recipes" class="mt-6">
+            <div class="flow-root">
+                <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                    <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                        <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                            <table class="min-w-full divide-y divide-gray-300" id="recipesTable">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="relative px-3 sm:w-12 sm:px-6">
+                                            <input type="checkbox" id="master-cb-recipes"
+                                                class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600 sm:left-6"
+                                                onchange="toggleAll('recipes', this)">
+                                        </th>
+                                        <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-xs font-semibold text-gray-900 cursor-pointer" onclick="sortTable('recipes', 'title')">
+                                            Name ↕
+                                        </th>
+                                        <th scope="col" class="py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
+                                            Publish Status
+                                        </th>
+                                        <th scope="col" class="py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
+                                            Actions
+                                        </th>
+                                        <th scope="col" class="py-3.5 px-3 text-center text-xs font-semibold text-gray-900">
+                                            📝 Article
+                                        </th>
+                                        <th scope="col" class="py-3.5 px-3 text-center text-xs font-semibold text-gray-900">
+                                            🎙️ Podcast Script
+                                        </th>
+                                        <th scope="col" class="py-3.5 px-3 text-center text-xs font-semibold text-gray-900">
+                                            🔊 Podcast Audio
+                                        </th>
+                                        <th scope="col" class="py-3.5 px-3 text-center text-xs font-semibold text-gray-900">
+                                            🎬 TikTok
+                                        </th>
+                                        <th scope="col" class="py-3.5 px-3 text-center text-xs font-semibold text-gray-900">
+                                            📸 IG Video
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 bg-white" id="recipesBody">
+                                    <tr><td colspan="9" class="py-12 text-center text-gray-400 text-sm">Loading recipes…</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════ INGREDIENTS TAB ═══════════════════════════ -->
+        <div id="tab-ingredients" class="mt-6 hidden">
+            <div class="flow-root">
+                <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                    <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                        <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                            <table class="min-w-full divide-y divide-gray-300" id="ingredientsTable">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="relative px-3 sm:w-12 sm:px-6">
+                                            <input type="checkbox" id="master-cb-ingredients"
+                                                class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600 sm:left-6"
+                                                onchange="toggleAll('ingredients', this)">
+                                        </th>
+                                        <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-xs font-semibold text-gray-900 cursor-pointer" onclick="sortTable('ingredients', 'name')">
+                                            Name ↕
+                                        </th>
+                                        <th scope="col" class="py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
+                                            Category
+                                        </th>
+                                        <th scope="col" class="py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
+                                            Data Status
+                                        </th>
+                                        <th scope="col" class="py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
+                                            Actions
+                                        </th>
+                                        <th scope="col" class="py-3.5 px-3 text-center text-xs font-semibold text-gray-900">
+                                            📝 Article
+                                        </th>
+                                        <th scope="col" class="py-3.5 px-3 text-center text-xs font-semibold text-gray-900">
+                                            🎙️ Podcast
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 bg-white" id="ingredientsBody">
+                                    <tr><td colspan="7" class="py-12 text-center text-gray-400 text-sm">Loading ingredients…</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Bulk Action Footer -->
+<div id="bulkFooter"
+    class="hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900 text-white shadow-2xl border-t border-slate-700">
+    <div class="max-w-[98%] mx-auto px-6 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <span class="text-sm font-medium"><span id="bulkCount">0</span> selected</span>
+            <button onclick="clearSelection()" class="text-xs text-slate-400 hover:text-white underline">Clear</button>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="bulkAction('articles')" class="rounded-lg bg-blue-600 px-4 py-1.5 text-xs font-semibold hover:bg-blue-700 transition-colors">
+                📝 Generate Articles
+            </button>
+            <button onclick="bulkAction('podcasts')" class="rounded-lg bg-purple-600 px-4 py-1.5 text-xs font-semibold hover:bg-purple-700 transition-colors">
+                🎙️ Generate Podcasts
+            </button>
+            <button onclick="bulkAction('videos')" id="bulkVideoBtn" class="rounded-lg bg-orange-600 px-4 py-1.5 text-xs font-semibold hover:bg-orange-700 transition-colors">
+                🎬 Generate TikTok
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Inspect Modal (reuse existing) -->
+{{ inspector.recipe_inspector_modal() }}
+
+<!-- Podcast Script Preview Modal -->
+<div id="scriptModal" class="hidden fixed inset-0 z-50 bg-gray-500/75 backdrop-blur-sm flex items-center justify-center">
+    <div class="bg-white rounded-xl shadow-2xl max-w-lg w-[90%] max-h-[85vh] overflow-hidden flex flex-col">
+        <div class="flex items-center justify-between px-5 py-4 border-b">
+            <h3 class="font-semibold text-gray-900" id="scriptModalTitle">Script Preview</h3>
+            <button onclick="closeScriptModal()" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        <div id="scriptAudioSection" class="hidden px-5 py-3 bg-slate-50 border-b">
+            <audio id="scriptAudio" controls class="w-full" preload="none"></audio>
+        </div>
+        <div id="scriptRenderSection" class="hidden px-5 py-3 bg-orange-50 border-b">
+            <div class="flex items-center justify-between">
+                <span class="text-xs text-orange-700">Audio not yet rendered.</span>
+                <button id="scriptRenderBtn" onclick="renderAudioFromModal()"
+                    class="rounded-lg bg-orange-600 px-3 py-1 text-xs font-semibold text-white hover:bg-orange-700">
+                    🔊 Render Audio
+                </button>
+            </div>
+        </div>
+        <div class="flex-1 overflow-y-auto p-5 space-y-2" id="scriptDialogue"></div>
+    </div>
+</div>
+
+<!-- Video Preview Modal -->
+<div id="videoModal" class="hidden fixed inset-0 z-50 bg-gray-500/75 backdrop-blur-sm flex items-center justify-center">
+    <div class="bg-white rounded-xl shadow-2xl max-w-lg w-[90%] overflow-hidden">
+        <div class="flex items-center justify-between px-5 py-4 border-b">
+            <h3 class="font-semibold text-gray-900" id="videoModalTitle">Video Preview</h3>
+            <button onclick="closeVideoModal()" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        <div class="p-5">
+            <video id="videoPlayer" controls class="w-full rounded-lg"></video>
+            <div id="videoScript" class="mt-3 p-3 bg-slate-50 rounded-lg text-sm text-gray-600 max-h-40 overflow-y-auto whitespace-pre-wrap border"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+let recipesData = [];
+let ingredientsData = [];
+const selected = { recipes: new Set(), ingredients: new Set() };
+let activeTab = 'recipes';
+let sortState = { recipes: { key: 'title', dir: 'asc' }, ingredients: { key: 'name', dir: 'asc' } };
+let currentScriptPostId = null;
+let currentScriptRecipeId = null;
+const generatingCells = new Set();  // Track cells with in-flight generation
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+    loadRecipes();
+    loadIngredients();
+    setupTabs();
+    setupSearch();
+});
+
+// ═══════════════════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════════════════
+function setupTabs() {
+    document.querySelectorAll('.tab-switch').forEach(btn => {
+        btn.addEventListener('click', () => {
+            activeTab = btn.dataset.tab;
+            document.querySelectorAll('.tab-switch').forEach(b => {
+                b.classList.remove('bg-white', 'text-gray-900', 'shadow-sm');
+                b.classList.add('text-gray-500');
+            });
+            btn.classList.add('bg-white', 'text-gray-900', 'shadow-sm');
+            btn.classList.remove('text-gray-500');
+            document.getElementById('tab-recipes').classList.toggle('hidden', activeTab !== 'recipes');
+            document.getElementById('tab-ingredients').classList.toggle('hidden', activeTab !== 'ingredients');
+            updateBulkFooter();
+        });
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SEARCH
+// ═══════════════════════════════════════════════════════════════
+function setupSearch() {
+    document.getElementById('searchInput').addEventListener('input', e => {
+        const q = e.target.value.toLowerCase();
+        const tbody = activeTab === 'recipes' ? 'recipesBody' : 'ingredientsBody';
+        document.querySelectorAll(`#${tbody} tr`).forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(q) ? '' : 'none';
+        });
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LOAD DATA
+// ═══════════════════════════════════════════════════════════════
+async function loadRecipes() {
+    try {
+        const res = await fetch('/admin/media-hub/api/recipes');
+        recipesData = await res.json();
+        renderRecipes();
+        updateStats();
+    } catch (e) { console.error('Failed to load recipes:', e); }
+}
+
+async function loadIngredients() {
+    try {
+        const res = await fetch('/admin/media-hub/api/ingredients');
+        ingredientsData = await res.json();
+        renderIngredients();
+    } catch (e) { console.error('Failed to load ingredients:', e); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER RECIPES TABLE
+// ═══════════════════════════════════════════════════════════════
+function renderRecipes() {
+    const tbody = document.getElementById('recipesBody');
+    if (!recipesData.length) {
+        tbody.innerHTML = '<tr><td colspan="9" class="py-12 text-center text-gray-400 text-sm">No approved recipes found.</td></tr>';
+        return;
+    }
+
+    const sorted = [...recipesData].sort((a, b) => {
+        const k = sortState.recipes.key;
+        const m = sortState.recipes.dir === 'asc' ? 1 : -1;
+        return (a[k] || '').toString().localeCompare((b[k] || '').toString()) * m;
+    });
+
+    tbody.innerHTML = sorted.map(r => `
+        <tr class="hover:bg-gray-50 ${selected.recipes.has(r.id) ? 'row-selected' : ''}" data-id="${r.id}">
+            <td class="relative px-3 sm:w-12 sm:px-6">
+                <input type="checkbox" value="${r.id}" ${selected.recipes.has(r.id) ? 'checked' : ''}
+                    onchange="toggleRow('recipes', ${r.id}, this)"
+                    class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600 sm:left-6">
+            </td>
+            <td class="px-3 py-3 text-sm font-medium text-gray-900 max-w-xs">
+                <div class="line-clamp-1" title="${esc(r.title)}">${esc(r.title)}</div>
+                <div class="text-xs text-gray-400">${r.cuisine || ''}</div>
+            </td>
+            <td class="px-3 py-3 text-sm">${statusBadge(r.status || 'draft')}</td>
+            <td class="px-3 py-3 text-sm space-x-1">
+                <button onclick="openInspector(${r.id})" class="text-indigo-600 hover:text-indigo-900" title="Inspect Data">
+                    <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5"/>
+                    </svg>
+                </button>
+                <a href="/recipe/${r.id}" target="_blank" class="text-gray-400 hover:text-gray-700" title="View Recipe">
+                    <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+                    </svg>
+                </a>
+            </td>
+            <td class="px-3 py-3 text-center" id="cell-article-${r.id}">${cellOrProgress('cell-article-'+r.id, articleCell(r))}</td>
+            <td class="px-3 py-3 text-center" id="cell-podcast-${r.id}">${cellOrProgress('cell-podcast-'+r.id, podcastScriptCell(r))}</td>
+            <td class="px-3 py-3 text-center" id="cell-audio-${r.id}">${cellOrProgress('cell-audio-'+r.id, podcastAudioCell(r))}</td>
+            <td class="px-3 py-3 text-center" id="cell-tiktok-${r.id}">${cellOrProgress('cell-tiktok-'+r.id, videoCell(r, 'tiktok'))}</td>
+            <td class="px-3 py-3 text-center" id="cell-ig-${r.id}">${cellOrProgress('cell-ig-'+r.id, videoCell(r, 'instagram'))}</td>
+        </tr>
+    `).join('');
+}
+
+function articleCell(r) {
+    if (r.knowledge.has_article) {
+        return `<a href="/admin/resources/edit/${r.knowledge.primary_resource_id}" class="inline-flex items-center gap-1 rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20 hover:bg-green-100">
+                    ✓ Edit
+                </a>`;
+    }
+    return `<button onclick="genArticle(${r.id}, 'recipe', this)" class="rounded-md bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                Generate
+            </button>`;
+}
+
+function podcastScriptCell(r) {
+    if (r.knowledge.has_podcast) {
+        return `<div class="flex items-center justify-center gap-1">
+            <button onclick="openScriptPreview(${r.id})" class="inline-flex items-center gap-1 rounded-md bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-600/20 hover:bg-purple-100">
+                ✓ View Script
+            </button>
+            <button onclick="regenPodcast(${r.id}, 'recipe')" class="text-gray-400 hover:text-purple-600 transition-colors" title="Regenerate script">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182"/>
+                </svg>
+            </button>
+        </div>`;
+    }
+    return `<button onclick="genPodcast(${r.id}, 'recipe', this)" class="rounded-md bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                Generate
+            </button>`;
+}
+
+function podcastAudioCell(r) {
+    if (r.knowledge.has_audio) {
+        return `<div class="flex items-center justify-center gap-1">
+            <button onclick="openScriptPreview(${r.id})" class="inline-flex items-center gap-1 rounded-md bg-pink-50 px-2 py-1 text-xs font-medium text-pink-700 ring-1 ring-inset ring-pink-600/20 hover:bg-pink-100">
+                ✓ Listen
+            </button>
+            <button onclick="regenAudio(${r.id}, ${r.knowledge.podcast_post_id})" class="text-gray-400 hover:text-pink-600 transition-colors" title="Re-render audio">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182"/>
+                </svg>
+            </button>
+        </div>`;
+    }
+    if (r.knowledge.has_podcast) {
+        return `<button onclick="renderAudioDirect(${r.id}, ${r.knowledge.podcast_post_id}, this)" class="rounded-md bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                    Render
+                </button>`;
+    }
+    return `<span class="text-xs text-gray-400" title="Generate a podcast script first">—</span>`;
+}
+
+function videoCell(r, platform) {
+    const status = r.statuses[platform];
+    const hasImage = !!r.image_url;
+
+    if (status === 'ready') {
+        return `<button onclick="openVideoPreview(${r.id}, '${platform}')" class="inline-flex items-center gap-1 rounded-md bg-orange-50 px-2 py-1 text-xs font-medium text-orange-700 ring-1 ring-inset ring-orange-600/20 hover:bg-orange-100">
+                    ✓ Preview
+                </button>`;
+    }
+    if (status === 'generating') {
+        return inlineProgress();
+    }
+    if (!hasImage) {
+        return `<span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs text-gray-400 ring-1 ring-inset ring-gray-500/10 cursor-not-allowed" title="Add Hero Image first.">
+                    ⚠️ No Image
+                </span>`;
+    }
+    return `<button onclick="genVideo(${r.id}, '${platform}', this)" class="rounded-md bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                Generate
+            </button>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER INGREDIENTS TABLE
+// ═══════════════════════════════════════════════════════════════
+function renderIngredients() {
+    const tbody = document.getElementById('ingredientsBody');
+    if (!ingredientsData.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="py-12 text-center text-gray-400 text-sm">No active ingredients found.</td></tr>';
+        return;
+    }
+
+    const sorted = [...ingredientsData].sort((a, b) => {
+        const k = sortState.ingredients.key;
+        const m = sortState.ingredients.dir === 'asc' ? 1 : -1;
+        return (a[k] || '').toString().localeCompare((b[k] || '').toString()) * m;
+    });
+
+    tbody.innerHTML = sorted.map(ing => `
+        <tr class="hover:bg-gray-50 ${selected.ingredients.has(ing.id) ? 'row-selected' : ''}" data-id="${ing.id}">
+            <td class="relative px-3 sm:w-12 sm:px-6">
+                <input type="checkbox" value="${ing.id}" ${selected.ingredients.has(ing.id) ? 'checked' : ''}
+                    onchange="toggleRow('ingredients', ${ing.id}, this)"
+                    class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600 sm:left-6">
+            </td>
+            <td class="px-3 py-3 text-sm font-medium text-gray-900 max-w-xs">
+                <div class="line-clamp-1" title="${esc(ing.name)}">${esc(ing.name)}</div>
+            </td>
+            <td class="px-3 py-3 text-sm text-gray-500">${ing.main_category || '—'} ${ing.sub_category ? '/ ' + ing.sub_category : ''}</td>
+            <td class="px-3 py-3 text-sm">${statusBadge(ing.data_source === 'ai_analyzed' ? 'analyzed' : ing.data_source)}</td>
+            <td class="px-3 py-3 text-sm">
+                <button class="text-indigo-600 hover:text-indigo-900 text-xs underline" onclick="alert('Ingredient inspector coming soon')">Inspect</button>
+            </td>
+            <td class="px-3 py-3 text-center" id="cell-ing-article-${ing.id}">${cellOrProgress('cell-ing-article-'+ing.id, ingArticleCell(ing))}</td>
+            <td class="px-3 py-3 text-center" id="cell-ing-podcast-${ing.id}">${cellOrProgress('cell-ing-podcast-'+ing.id, ingPodcastCell(ing))}</td>
+        </tr>
+    `).join('');
+}
+
+function ingArticleCell(ing) {
+    if (ing.knowledge.has_article) {
+        return `<a href="/admin/resources/edit/${ing.knowledge.primary_resource_id}" class="inline-flex items-center gap-1 rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20 hover:bg-green-100">
+                    ✓ Edit
+                </a>`;
+    }
+    return `<button onclick="genArticle(${ing.id}, 'ingredient', this)" class="rounded-md bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                Generate
+            </button>`;
+}
+
+function ingPodcastCell(ing) {
+    if (ing.knowledge.has_podcast) {
+        return `<span class="inline-flex items-center gap-1 rounded-md bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-600/20">✓ Ready</span>`;
+    }
+    return `<button onclick="genPodcast(${ing.id}, 'ingredient', this)" class="rounded-md bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                Generate
+            </button>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function statusBadge(status) {
+    const map = {
+        approved: ['bg-green-50 text-green-700 ring-green-600/20', 'Approved'],
+        pending: ['bg-yellow-50 text-yellow-700 ring-yellow-600/20', 'Pending'],
+        draft: ['bg-gray-50 text-gray-600 ring-gray-500/10', 'Draft'],
+        rejected: ['bg-red-50 text-red-700 ring-red-600/20', 'Rejected'],
+        analyzed: ['bg-blue-50 text-blue-700 ring-blue-600/20', 'AI Analyzed'],
+        placeholder: ['bg-gray-50 text-gray-500 ring-gray-500/10', 'Placeholder'],
+        ai_analyzed: ['bg-blue-50 text-blue-700 ring-blue-600/20', 'AI Analyzed'],
+    };
+    const [cls, label] = map[status] || map.pending;
+    return `<span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${cls}">${label}</span>`;
+}
+
+function cellOrProgress(cellId, normalContent) {
+    return generatingCells.has(cellId) ? inlineProgress() : normalContent;
+}
+
+function inlineProgress() {
+    return `<div class="progress-bar"><div class="progress-bar-fill"></div></div>`;
+}
+
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function updateStats() {
+    let articles = 0, podcasts = 0, audio = 0, videos = 0;
+    for (const r of recipesData) {
+        if (r.knowledge.has_article) articles++;
+        if (r.knowledge.has_podcast) podcasts++;
+        if (r.knowledge.has_audio) audio++;
+        if (r.knowledge.has_video) videos++;
+    }
+    document.getElementById('statArticles').textContent = `${articles}/${recipesData.length}`;
+    document.getElementById('statPodcasts').textContent = `${podcasts}/${recipesData.length}`;
+    document.getElementById('statAudio').textContent = `${audio}/${recipesData.length}`;
+    document.getElementById('statVideos').textContent = `${videos}/${recipesData.length}`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SORT
+// ═══════════════════════════════════════════════════════════════
+function sortTable(tab, key) {
+    const s = sortState[tab];
+    s.dir = (s.key === key && s.dir === 'asc') ? 'desc' : 'asc';
+    s.key = key;
+    tab === 'recipes' ? renderRecipes() : renderIngredients();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SELECTION & BULK
+// ═══════════════════════════════════════════════════════════════
+function toggleAll(tab, master) {
+    const cbs = document.querySelectorAll(`#${tab}Body input[type="checkbox"]`);
+    cbs.forEach(cb => {
+        cb.checked = master.checked;
+        const id = parseInt(cb.value);
+        master.checked ? selected[tab].add(id) : selected[tab].delete(id);
+        cb.closest('tr').classList.toggle('row-selected', master.checked);
+    });
+    updateBulkFooter();
+}
+
+function toggleRow(tab, id, cb) {
+    cb.checked ? selected[tab].add(id) : selected[tab].delete(id);
+    cb.closest('tr').classList.toggle('row-selected', cb.checked);
+    updateBulkFooter();
+}
+
+function clearSelection() {
+    selected.recipes.clear();
+    selected.ingredients.clear();
+    document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        cb.checked = false;
+        if (cb.closest('tr')) cb.closest('tr').classList.remove('row-selected');
+    });
+    updateBulkFooter();
+}
+
+function updateBulkFooter() {
+    const count = selected[activeTab].size;
+    document.getElementById('bulkCount').textContent = count;
+    document.getElementById('bulkFooter').classList.toggle('hidden', count === 0);
+    // Show/hide video button only for recipes
+    document.getElementById('bulkVideoBtn').classList.toggle('hidden', activeTab !== 'recipes');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// GENERATION ACTIONS (with inline polling)
+// ═══════════════════════════════════════════════════════════════
+async function genArticle(id, sourceType, btn) {
+    const cellId = sourceType === 'recipe' ? `cell-article-${id}` : `cell-ing-article-${id}`;
+    generatingCells.add(cellId);
+    document.getElementById(cellId).innerHTML = inlineProgress();
+
+    await fetch('/admin/media-hub/generate-article', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ source_type: sourceType, source_id: id }),
+    });
+
+    pollUntilDone(cellId, async () => {
+        if (sourceType === 'recipe') {
+            await loadRecipes();
+            const r = recipesData.find(x => x.id === id);
+            return r && r.knowledge.has_article;
+        } else {
+            await loadIngredients();
+            const ing = ingredientsData.find(x => x.id === id);
+            return ing && ing.knowledge.has_article;
+        }
+    }, () => showToast(`✅ Article generated for ${sourceType} #${id}`));
+}
+
+async function genPodcast(id, sourceType, btn) {
+    const cellId = sourceType === 'recipe' ? `cell-podcast-${id}` : `cell-ing-podcast-${id}`;
+    generatingCells.add(cellId);
+    document.getElementById(cellId).innerHTML = inlineProgress();
+
+    await fetch('/admin/media-hub/generate-podcast', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ source_type: sourceType, source_id: id }),
+    });
+
+    pollUntilDone(cellId, async () => {
+        if (sourceType === 'recipe') {
+            await loadRecipes();
+            const r = recipesData.find(x => x.id === id);
+            return r && r.knowledge.has_podcast;
+        } else {
+            await loadIngredients();
+            const ing = ingredientsData.find(x => x.id === id);
+            return ing && ing.knowledge.has_podcast;
+        }
+    }, () => showToast(`✅ Podcast script generated for ${sourceType} #${id}`));
+}
+
+async function genVideo(id, platform, btn) {
+    const cellId = platform === 'tiktok' ? `cell-tiktok-${id}` : `cell-ig-${id}`;
+    generatingCells.add(cellId);
+    document.getElementById(cellId).innerHTML = inlineProgress();
+
+    await fetch('/admin/media-hub/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recipe_id: id, platform }),
+    });
+
+    pollUntilDone(cellId, async () => {
+        await loadRecipes();
+        const r = recipesData.find(x => x.id === id);
+        return r && r.statuses[platform] === 'ready';
+    }, () => showToast(`✅ ${platform} video generated for recipe #${id}`));
+}
+
+async function renderAudioDirect(recipeId, postId, btn) {
+    const cellId = `cell-audio-${recipeId}`;
+    generatingCells.add(cellId);
+    document.getElementById(cellId).innerHTML = inlineProgress();
+
+    await fetch('/admin/media-hub/render-podcast-audio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ post_id: postId }),
+    });
+
+    pollUntilDone(cellId, async () => {
+        await loadRecipes();
+        const r = recipesData.find(x => x.id === recipeId);
+        return r && r.knowledge.has_audio;
+    }, () => showToast(`✅ Podcast audio rendered for recipe #${recipeId}`), 45);  // 45 × 4s = 3min (TTS is slow)
+}
+
+async function regenPodcast(id, sourceType) {
+    const scriptCellId = sourceType === 'recipe' ? `cell-podcast-${id}` : `cell-ing-podcast-${id}`;
+    const audioCellId = `cell-audio-${id}`;
+
+    // Mark both script and audio cells as generating (new script invalidates old audio)
+    generatingCells.add(scriptCellId);
+    generatingCells.add(audioCellId);
+    document.getElementById(scriptCellId).innerHTML = inlineProgress();
+    const audioCell = document.getElementById(audioCellId);
+    if (audioCell) audioCell.innerHTML = `<span class="text-xs text-gray-400">—</span>`;
+
+    await fetch('/admin/media-hub/generate-podcast', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ source_type: sourceType, source_id: id, force: true }),
+    });
+
+    pollUntilDone(scriptCellId, async () => {
+        if (sourceType === 'recipe') {
+            await loadRecipes();
+            const r = recipesData.find(x => x.id === id);
+            return r && r.knowledge.has_podcast;
+        } else {
+            await loadIngredients();
+            const ing = ingredientsData.find(x => x.id === id);
+            return ing && ing.knowledge.has_podcast;
+        }
+    }, () => {
+        generatingCells.delete(audioCellId);  // Let audio cell re-render normally
+        showToast(`✅ Podcast script regenerated for ${sourceType} #${id}`);
+    });
+}
+
+async function regenAudio(recipeId, postId) {
+    const cellId = `cell-audio-${recipeId}`;
+    generatingCells.add(cellId);
+    document.getElementById(cellId).innerHTML = inlineProgress();
+
+    await fetch('/admin/media-hub/render-podcast-audio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ post_id: postId, force: true }),
+    });
+
+    pollUntilDone(cellId, async () => {
+        await loadRecipes();
+        const r = recipesData.find(x => x.id === recipeId);
+        return r && r.knowledge.has_audio;
+    }, () => showToast(`✅ Podcast audio re-rendered for recipe #${recipeId}`), 45);
+}
+
+function pollUntilDone(cellId, checkFn, onDone, maxPollsOverride) {
+    let polls = 0;
+    const maxPolls = maxPollsOverride || 15; // default 15 × 4s = 60s
+    const interval = setInterval(async () => {
+        polls++;
+        const done = await checkFn();
+        if (done) {
+            clearInterval(interval);
+            generatingCells.delete(cellId);
+            onDone();
+            return;
+        }
+        if (polls >= maxPolls) {
+            clearInterval(interval);
+            generatingCells.delete(cellId);
+            const cell = document.getElementById(cellId);
+            if (cell) {
+                cell.innerHTML = `<button onclick="location.reload()" class="rounded-md bg-red-50 px-2 py-1 text-xs font-semibold text-red-700 ring-1 ring-inset ring-red-600/20 hover:bg-red-100">⚠️ Retry</button>`;
+            }
+            showToast('⚠️ Generation timed out or failed. Check server logs.');
+        }
+    }, 4000);
+    // Hard safety stop at 3 minutes
+    setTimeout(() => { clearInterval(interval); generatingCells.delete(cellId); }, 180000);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BULK ACTIONS
+// ═══════════════════════════════════════════════════════════════
+async function bulkAction(action) {
+    const ids = Array.from(selected[activeTab]);
+    if (ids.length === 0) return;
+
+    if (activeTab === 'recipes') {
+        await fetch('/admin/media-hub/generate-bulk', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action, recipe_ids: ids }),
+        });
+    } else {
+        // Ingredients: handle article/podcast generation per-ingredient
+        for (const id of ids) {
+            const endpoint = action === 'articles' ? '/admin/media-hub/generate-article' : '/admin/media-hub/generate-podcast';
+            const sourceType = 'ingredient';
+            await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ source_type: sourceType, source_id: id }),
+            });
+        }
+    }
+
+    showToast(`✅ Bulk ${action} triggered for ${ids.length} items. Processing in background…`);
+    clearSelection();
+
+    // Reload after a delay
+    setTimeout(() => { loadRecipes(); loadIngredients(); }, 10000);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SCRIPT PREVIEW MODAL
+// ═══════════════════════════════════════════════════════════════
+async function openScriptPreview(recipeId) {
+    currentScriptRecipeId = recipeId;
+    try {
+        const res = await fetch(`/admin/media-hub/api/podcast/${recipeId}`);
+        const data = await res.json();
+        if (data.status === 'none') { alert('No podcast found.'); return; }
+
+        currentScriptPostId = data.post_id;
+        const recipe = recipesData.find(r => r.id === recipeId);
+        document.getElementById('scriptModalTitle').textContent = `🎙️ ${recipe ? recipe.title : 'Recipe'} — Podcast`;
+
+        const script = data.script;
+        // Audio section
+        if (data.has_audio && data.audio_url) {
+            document.getElementById('scriptAudio').src = data.audio_url;
+            document.getElementById('scriptAudioSection').classList.remove('hidden');
+            document.getElementById('scriptRenderSection').classList.add('hidden');
+        } else {
+            document.getElementById('scriptAudioSection').classList.add('hidden');
+            document.getElementById('scriptRenderSection').classList.remove('hidden');
+        }
+
+        // Dialogue
+        const dialogue = script?.dialogue || [];
+        document.getElementById('scriptDialogue').innerHTML = dialogue.map(l => {
+            const isA = l.speaker === 'A';
+            const name = isA ? '🎤 Marco' : '👩‍🔬 Sarah';
+            return `<div class="rounded-lg border p-2.5 ${isA ? 'bg-blue-50 border-blue-200' : 'bg-emerald-50 border-emerald-200'}">
+                <span class="text-xs font-bold ${isA ? 'text-blue-600' : 'text-emerald-600'}">${name}</span>
+                <p class="text-sm text-gray-700 mt-1 leading-relaxed">${esc(l.text)}</p>
+            </div>`;
+        }).join('');
+
+        document.getElementById('scriptModal').classList.remove('hidden');
+    } catch (e) { alert('Error: ' + e.message); }
+}
+
+function closeScriptModal() {
+    document.getElementById('scriptModal').classList.add('hidden');
+    document.getElementById('scriptAudio').pause();
+    currentScriptPostId = null;
+}
+
+async function renderAudioFromModal() {
+    if (!currentScriptPostId) return;
+    const btn = document.getElementById('scriptRenderBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Rendering…';
+
+    await fetch('/admin/media-hub/render-podcast-audio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ post_id: currentScriptPostId }),
+    });
+
+    const poll = setInterval(async () => {
+        const r = await fetch(`/admin/media-hub/api/podcast/${currentScriptRecipeId}`);
+        const d = await r.json();
+        if (d.has_audio && d.audio_url) {
+            clearInterval(poll);
+            document.getElementById('scriptAudio').src = d.audio_url;
+            document.getElementById('scriptAudioSection').classList.remove('hidden');
+            document.getElementById('scriptRenderSection').classList.add('hidden');
+            btn.disabled = false;
+            btn.textContent = '🔊 Render Audio';
+            showToast('✅ Audio rendered successfully!');
+        }
+    }, 5000);
+    setTimeout(() => { clearInterval(poll); btn.disabled = false; btn.textContent = '🔊 Render Audio'; }, 180000);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// VIDEO PREVIEW MODAL
+// ═══════════════════════════════════════════════════════════════
+async function openVideoPreview(recipeId, platform) {
+    try {
+        const res = await fetch(`/admin/media-hub/api/status/${recipeId}`);
+        const data = await res.json();
+        const post = data[platform];
+        if (!post) return;
+
+        const recipe = recipesData.find(r => r.id === recipeId);
+        document.getElementById('videoModalTitle').textContent = `${recipe ? recipe.title : 'Recipe'} — ${platform}`;
+
+        const player = document.getElementById('videoPlayer');
+        if (post.video_url) { player.src = post.video_url; player.style.display = 'block'; }
+        else { player.style.display = 'none'; }
+
+        const scriptEl = document.getElementById('videoScript');
+        if (post.script) {
+            try { const p = JSON.parse(post.script); scriptEl.textContent = p.voiceover_script || JSON.stringify(p, null, 2); }
+            catch { scriptEl.textContent = post.script; }
+        } else { scriptEl.textContent = 'No script available.'; }
+
+        document.getElementById('videoModal').classList.remove('hidden');
+    } catch (e) { console.error(e); }
+}
+
+function closeVideoModal() {
+    document.getElementById('videoModal').classList.add('hidden');
+    document.getElementById('videoPlayer').pause();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// KEYBOARD
+// ═══════════════════════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+        closeScriptModal();
+        closeVideoModal();
+        closeInspector();
+    }
+});
+document.getElementById('scriptModal')?.addEventListener('click', e => { if (e.target === e.currentTarget) closeScriptModal(); });
+document.getElementById('videoModal')?.addEventListener('click', e => { if (e.target === e.currentTarget) closeVideoModal(); });
+</script>
+{% endblock %}

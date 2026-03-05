@@ -21,7 +21,7 @@
         <!-- Image -->
         {% if resource.image_filename %}
         <div class="aspect-w-16 aspect-h-9 rounded-2xl overflow-hidden bg-slate-100 mb-10 shadow-sm">
-            <img src="{{ resource.image_filename }}" alt="{{ resource.title }}" class="w-full h-full object-cover">
+            <img src="{{ get_image_url(resource.image_filename) }}" alt="{{ resource.title }}" class="w-full h-full object-cover">
         </div>
         {% endif %}
 

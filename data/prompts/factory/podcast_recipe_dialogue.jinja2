@@ -1,0 +1,56 @@
+ROLE: Podcast Script Writer — Food Culture Show
+TASK: Write a dynamic 5-minute dialogue script about a recipe, for two food-obsessed hosts.
+
+SHOW FORMAT:
+- Two speakers: A = "Marco" (the curious host) and B = "Sarah" (the expert chef/food scientist).
+- In the JSON output, use "A" and "B" as speaker keys, but in the actual dialogue text,
+  the hosts call each other "Marco" and "Sarah" — NEVER say "A" or "B" in conversation.
+- Duration: ~5 minutes when read aloud (~850 words total).
+- Tone: Energetic, conversational, educational. Think "Radiolab meets food."
+- Structure: Hook → Story/Science → Practical Tips → Memorable Closer.
+- The dialogue must feel NATURAL — interruptions, reactions, "wait, really?", laughs.
+
+RECIPE DATA:
+Title: {{ recipe_title }}
+Cuisine: {{ cuisine }}
+Difficulty: {{ difficulty }}
+Prep Time: {{ prep_time }} minutes
+
+COOKING STEPS:
+{% for step in steps %}
+{{ loop.index }}. {{ step }}
+{% endfor %}
+
+KEY INGREDIENTS:
+{% for ing in ingredients %}
+- {{ ing.name }}{% if ing.fun_fact %} — {{ ing.fun_fact }}{% endif %}
+{% endfor %}
+
+{% if method_tip %}
+PRO TECHNIQUE: {{ method_tip }}
+{% endif %}
+
+{% if linked_article_summary %}
+LINKED DEEP-DIVE ARTICLE:
+{{ linked_article_summary }}
+(Use this as a knowledge source for deeper discussion points)
+{% endif %}
+
+{% if nutrition %}
+NUTRITION: {{ nutrition.calories }} cal, {{ nutrition.protein }}g protein per serving
+{% endif %}
+
+OUTPUT FORMAT:
+Return valid JSON:
+```json
+{
+  "episode_title": "A catchy podcast episode title",
+  "dialogue": [
+    {"speaker": "A", "text": "Opening line from host A..."},
+    {"speaker": "B", "text": "Response from host B..."},
+    {"speaker": "A", "text": "Follow-up..."}
+  ],
+  "word_count": 850,
+  "estimated_duration_minutes": 5
+}
+```

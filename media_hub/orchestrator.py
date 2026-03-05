@@ -1,26 +1,30 @@
 """
-media_hub/orchestrator.py — Data Harmonization & Script Generation
+media_hub/orchestrator.py — Data Harmonization, Script Generation & Knowledge Factory
 
 The 'Context Builder' aggregates data from three sources before calling Gemini:
-  1. Recipe Table: Steps, Prep Time, Servings, Difficulty
-  2. Ingredient Table: Fun facts / descriptions for top 4 ingredients
+  1. Recipe Table: ALL columns (steps, nutrition, diets, chef, protein_type...)
+  2. Ingredient Table: Full nutrition, tags, aliases, sub_category
   3. Resource Table: Method-specific tips (e.g. "Searing 101")
 
-This harmonized context is fed into platform-specific Jinja2 prompts,
-then sent to Gemini 2.0 Flash for voiceover script generation.
+The 'Knowledge Factory' generates long-form articles for recipes/ingredients
+and saves them as Resource entries linked via primary_resource_id.
 """
 
 import json
 import logging
+import re
 from typing import Optional
 
 from google import genai
 from sqlalchemy.orm import Session
 
-from database.models import Recipe, RecipeIngredient, Ingredient, Resource, SocialMediaPost, db
+from database.models import (
+    Recipe, RecipeIngredient, Ingredient, Resource,
+    SocialMediaPost, db,
+)
 from utils.prompt_manager import load_prompt
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("media_hub.orchestrator")
 
 # Gemini client — reuses the API key already loaded by ai_engine on app startup
 _client: Optional[genai.Client] = None
@@ -40,38 +44,69 @@ def _get_client() -> genai.Client:
     return _client
 
 
+def _parse_gemini_json(raw_text: str) -> dict:
+    """Parse JSON from Gemini, handling common malformed output.
+
+    Gemini's JSON mode can produce strings with unescaped control characters
+    (literal newlines, tabs) inside JSON string values, which breaks strict
+    json.loads(). This function:
+    1. Tries strict parsing first.
+    2. On failure, sanitizes control chars inside string values and retries.
+    3. As a last resort, uses a regex to extract a JSON object.
+    """
+    import re
+
+    # Attempt 1: strict parse
+    try:
+        return json.loads(raw_text)
+    except json.JSONDecodeError:
+        pass
+
+    # Attempt 2: replace unescaped control characters within strings
+    # This targets literal \n, \r, \t that aren't preceded by a backslash
+    sanitized = raw_text
+    # Replace actual control chars with their escaped equivalents
+    sanitized = sanitized.replace('\r\n', '\\n')
+    sanitized = sanitized.replace('\r', '\\n')
+    sanitized = sanitized.replace('\n', '\\n')
+    sanitized = sanitized.replace('\t', '\\t')
+    try:
+        return json.loads(sanitized)
+    except json.JSONDecodeError:
+        pass
+
+    # Attempt 3: extract JSON block from markdown fences if present
+    match = re.search(r'```json\s*(\{.*?\})\s*```', raw_text, re.DOTALL)
+    if match:
+        cleaned = match.group(1).replace('\n', '\\n').replace('\t', '\\t')
+        try:
+            return json.loads(cleaned)
+        except json.JSONDecodeError:
+            pass
+
+    # Final: raise with original error for debugging
+    return json.loads(raw_text)  # Will raise the original JSONDecodeError
+
+
 # ---------------------------------------------------------------------------
-# 1. DATA HARMONIZATION — Context Builder
+# 1. DATA HARMONIZATION — Context Builders
 # ---------------------------------------------------------------------------
 
 def build_recipe_context(recipe: Recipe, session: Session) -> dict:
     """
-    Aggregates a 'harmonized context' dict from Recipe + Ingredient + Resource tables.
-
-    Returns a dict suitable for rendering into a Jinja2 social prompt template:
-      {
-        "recipe_title": str,
-        "cuisine": str,
-        "prep_time": int,
-        "servings": int,
-        "difficulty": str,
-        "ingredients": [ {name, image_url, fun_fact}, ... ],  # top 4
-        "steps": [ str, ... ],
-        "method_tip": str | None,
-      }
+    LEGACY context builder — lightweight, used by social video generation.
+    Returns the subset needed for TikTok/Instagram persona prompts.
     """
-    # --- Recipe core ---
     steps: list[str] = []
     detected_methods: list[str] = []
 
     for inst in sorted(recipe.instructions, key=lambda i: (i.global_order_index or 0, i.step_number)):
         steps.append(inst.text)
-        # Heuristic: detect cooking methods mentioned in step text
         for method_keyword in ("sear", "braise", "blanch", "sous vide", "flambe", "deglaze", "temper"):
             if method_keyword in inst.text.lower() and method_keyword not in detected_methods:
                 detected_methods.append(method_keyword)
 
-    # --- Ingredients (top 4 by amount/weight descending) ---
+    # Ingredients (top 4 by amount/weight descending)
     recipe_ings: list[RecipeIngredient] = sorted(
         recipe.ingredients,
         key=lambda ri: ri.gram_weight or 0,
@@ -87,7 +122,6 @@ def build_recipe_context(recipe: Recipe, session: Session) -> dict:
             "fun_fact": _get_ingredient_fact(ing),
         })
 
-    # --- Resource lookup for method tips ---
     method_tip: Optional[str] = None
     if detected_methods:
         method_tip = _find_method_tip(detected_methods, session)
@@ -104,16 +138,112 @@ def build_recipe_context(recipe: Recipe, session: Session) -> dict:
     }
 
 
-def _get_ingredient_fact(ing: Ingredient) -> Optional[str]:
+def build_full_recipe_context(recipe: Recipe, session: Session) -> dict:
     """
-    Extracts a fun fact or description from the Ingredient record.
+    FULL context builder — pulls ALL columns for Knowledge Factory / podcasts.
 
-    Falls back to sub-category if no richer text is available.
+    Enriches the base context with:
+    - Nutrition data (calories, protein, carbs, fat)
+    - Diet labels, protein type, taste level
+    - ALL ingredients (not just top 4)
+    - Chef attribution
     """
-    # Ingredients don't have a 'fun_fact' column today,
-    # but they have tags and sub_category which can serve as a lightweight fact.
-    # When a dedicated 'fun_fact' or 'description' column is added, this is the
-    # single place to update.
+    # Start with the base context
+    ctx = build_recipe_context(recipe, session)
+
+    # --- Enrich with ALL ingredients ---
+    all_ings: list[RecipeIngredient] = sorted(
+        recipe.ingredients,
+        key=lambda ri: ri.gram_weight or 0,
+        reverse=True,
+    )
+    all_enriched: list[dict] = []
+    for ri in all_ings:
+        ing: Ingredient = ri.ingredient
+        all_enriched.append({
+            "name": ing.name,
+            "amount": f"{ri.amount} {ri.unit}" if ri.amount else "",
+            "image_url": ing.image_url,
+            "fun_fact": _get_ingredient_fact(ing),
+        })
+    ctx["ingredients"] = all_enriched
+
+    # --- Nutrition ---
+    if recipe.total_calories:
+        per_serving = recipe.base_servings or 4
+        ctx["nutrition"] = {
+            "calories": round((recipe.total_calories or 0) / per_serving),
+            "protein": round((recipe.total_protein or 0) / per_serving, 1),
+            "carbs": round((recipe.total_carbs or 0) / per_serving, 1),
+            "fat": round((recipe.total_fat or 0) / per_serving, 1),
+        }
+
+    # --- Diets, protein type, taste ---
+    try:
+        ctx["diets"] = recipe.diets_list
+    except Exception:
+        ctx["diets"] = []
+
+    ctx["protein_type"] = recipe.protein_type
+    ctx["taste_level"] = recipe.taste_level
+
+    # --- Chef attribution ---
+    if recipe.chef:
+        ctx["chef_name"] = recipe.chef.id  # chef.id is the display name/slug
+
+    return ctx
+
+
+def build_full_ingredient_context(ingredient: Ingredient, session: Session) -> dict:
+    """
+    Full context builder for an Ingredient — used by article generation.
+    """
+    # Parse aliases
+    aliases = []
+    if ingredient.aliases:
+        try:
+            aliases = json.loads(ingredient.aliases)
+        except (json.JSONDecodeError, TypeError):
+            aliases = []
+
+    # Find recipes using this ingredient (top 5)
+    recipe_ings = session.execute(
+        db.select(RecipeIngredient)
+        .where(RecipeIngredient.ingredient_id == ingredient.id)
+        .limit(5)
+    ).scalars().all()
+
+    used_in_recipes = []
+    for ri in recipe_ings:
+        r = session.get(Recipe, ri.recipe_id)
+        if r and r.status == "approved":
+            used_in_recipes.append({"title": r.title, "cuisine": r.cuisine or "International"})
+
+    # Nutrition
+    nutrition = None
+    if ingredient.calories_per_100g:
+        nutrition = {
+            "calories": round(ingredient.calories_per_100g or 0),
+            "protein": round(ingredient.protein_per_100g or 0, 1),
+            "fat": round(ingredient.fat_per_100g or 0, 1),
+            "carbs": round(ingredient.carbs_per_100g or 0, 1),
+            "fiber": round(ingredient.fiber_per_100g or 0, 1),
+            "sodium": round(ingredient.sodium_mg_per_100g or 0, 1),
+        }
+
+    return {
+        "ingredient_name": ingredient.name,
+        "main_category": ingredient.main_category or "Food",
+        "sub_category": ingredient.sub_category,
+        "tags": ingredient.tags,
+        "nutrition": nutrition,
+        "used_in_recipes": used_in_recipes,
+        "aliases": aliases if aliases else None,
+    }
+
+
+def _get_ingredient_fact(ing: Ingredient) -> Optional[str]:
+    """Extract a fun fact or description from the Ingredient record."""
     if ing.sub_category:
         return f"A {ing.sub_category.lower()} ingredient"
     if ing.tags:
@@ -122,11 +252,7 @@ def _get_ingredient_fact(ing: Ingredient) -> Optional[str]:
 
 
 def _find_method_tip(methods: list[str], session: Session) -> Optional[str]:
-    """
-    Searches the Resource table for articles whose title or tags mention
-    one of the detected cooking methods. Returns the first matching
-    article's summary as a pro tip.
-    """
+    """Search Resource table for articles matching detected cooking methods."""
     for method in methods:
         resource: Optional[Resource] = session.execute(
             db.select(Resource)
@@ -147,7 +273,178 @@ def _find_method_tip(methods: list[str], session: Session) -> Optional[str]:
 
 
 # ---------------------------------------------------------------------------
-# 2. SCRIPT GENERATION — Gemini 2.0 Flash
+# 2. KNOWLEDGE FACTORY — Article Generation
+# ---------------------------------------------------------------------------
+
+ARTICLE_TEMPLATES = {
+    "recipe": "factory/recipe_deep_dive_writer.jinja2",
+    "ingredient": "factory/ingredient_101_writer.jinja2",
+}
+
+
+def generate_article_for_recipe(
+    recipe_id: int,
+    app,
+    storage_provider=None,
+) -> dict:
+    """
+    Generate a "Food Forensics" deep-dive article for a recipe.
+
+    Safety: Runs inside a DB transaction. If Gemini or image generation fails,
+    no orphan Resource is left in the database.
+
+    Returns:
+        {"status": "ready", "resource_id": int} or {"status": "failed", "error": str}
+    """
+    with app.app_context():
+        session = db.session
+        recipe = session.get(Recipe, recipe_id)
+        if not recipe:
+            return {"status": "failed", "error": f"Recipe {recipe_id} not found"}
+
+        # --- Guard: skip if primary_resource already exists ---
+        if recipe.primary_resource_id:
+            logger.info(f"[KnowledgeFactory] Recipe '{recipe.title}' already has primary resource (id={recipe.primary_resource_id})")
+            return {"status": "ready", "resource_id": recipe.primary_resource_id, "skipped": True}
+
+        try:
+            # Build full context
+            context = build_full_recipe_context(recipe, session)
+            logger.info(f"[KnowledgeFactory] Generating article for recipe '{recipe.title}'")
+
+            # Render prompt and call Gemini
+            rendered_prompt = load_prompt(ARTICLE_TEMPLATES["recipe"], **context)
+            client = _get_client()
+            response = client.models.generate_content(
+                model=MODEL_ID,
+                contents=rendered_prompt,
+                config={"response_mime_type": "application/json"},
+            )
+
+            article_data = _parse_gemini_json(response.text)
+
+            # --- Create Resource in a transaction ---
+            slug = article_data.get("slug", f"recipe-{recipe_id}-deep-dive")
+            # Ensure slug uniqueness
+            existing_slug = session.execute(
+                db.select(Resource).where(Resource.slug == slug)
+            ).scalar()
+            if existing_slug:
+                slug = f"{slug}-{recipe_id}"
+
+            new_resource = Resource(
+                slug=slug,
+                title=article_data.get("title", f"Deep Dive: {recipe.title}"),
+                summary=article_data.get("summary", ""),
+                content_markdown=article_data.get("content_markdown", ""),
+                tags=article_data.get("tags", ""),
+                image_filename=recipe.image_filename,  # Inherit hero image from recipe
+                status="draft",  # Start as draft for admin review
+            )
+            session.add(new_resource)
+            session.flush()  # Get the ID without committing
+
+            # Link back to recipe
+            recipe.primary_resource_id = new_resource.id
+
+            # Commit the transaction (Resource + Recipe FK update atomically)
+            session.commit()
+
+            logger.info(
+                f"[KnowledgeFactory] Article created: '{new_resource.title}' "
+                f"(resource_id={new_resource.id}, slug={slug})"
+            )
+
+            return {
+                "status": "ready",
+                "resource_id": new_resource.id,
+                "title": new_resource.title,
+                "image_prompt": article_data.get("image_prompt"),
+            }
+
+        except Exception as e:
+            session.rollback()
+            logger.error(f"[KnowledgeFactory] Article generation failed for recipe {recipe_id}: {e}")
+            return {"status": "failed", "error": str(e)}
+
+
+def generate_article_for_ingredient(
+    ingredient_id: int,
+    app,
+    storage_provider=None,
+) -> dict:
+    """
+    Generate a journalistic "101" article for an ingredient.
+
+    Same transactional safety as recipe articles.
+    """
+    with app.app_context():
+        session = db.session
+        ingredient = session.get(Ingredient, ingredient_id)
+        if not ingredient:
+            return {"status": "failed", "error": f"Ingredient {ingredient_id} not found"}
+
+        # --- Guard: skip if primary_resource already exists ---
+        if ingredient.primary_resource_id:
+            logger.info(f"[KnowledgeFactory] Ingredient '{ingredient.name}' already has primary resource (id={ingredient.primary_resource_id})")
+            return {"status": "ready", "resource_id": ingredient.primary_resource_id, "skipped": True}
+
+        try:
+            context = build_full_ingredient_context(ingredient, session)
+            logger.info(f"[KnowledgeFactory] Generating article for ingredient '{ingredient.name}'")
+
+            rendered_prompt = load_prompt(ARTICLE_TEMPLATES["ingredient"], **context)
+            client = _get_client()
+            response = client.models.generate_content(
+                model=MODEL_ID,
+                contents=rendered_prompt,
+                config={"response_mime_type": "application/json"},
+            )
+
+            article_data = _parse_gemini_json(response.text)
+
+            # --- Create Resource in a transaction ---
+            slug = article_data.get("slug", f"ingredient-{ingredient_id}-101")
+            existing_slug = session.execute(
+                db.select(Resource).where(Resource.slug == slug)
+            ).scalar()
+            if existing_slug:
+                slug = f"{slug}-{ingredient_id}"
+
+            new_resource = Resource(
+                slug=slug,
+                title=article_data.get("title", f"101: {ingredient.name}"),
+                summary=article_data.get("summary", ""),
+                content_markdown=article_data.get("content_markdown", ""),
+                tags=article_data.get("tags", ""),
+                status="draft",
+            )
+            session.add(new_resource)
+            session.flush()
+
+            ingredient.primary_resource_id = new_resource.id
+            session.commit()
+
+            logger.info(
+                f"[KnowledgeFactory] Article created: '{new_resource.title}' "
+                f"(resource_id={new_resource.id})"
+            )
+
+            return {
+                "status": "ready",
+                "resource_id": new_resource.id,
+                "title": new_resource.title,
+                "image_prompt": article_data.get("image_prompt"),
+            }
+
+        except Exception as e:
+            session.rollback()
+            logger.error(f"[KnowledgeFactory] Article generation failed for ingredient {ingredient_id}: {e}")
+            return {"status": "failed", "error": str(e)}
+
+
+# ---------------------------------------------------------------------------
+# 3. SCRIPT GENERATION — Social Media (Gemini 2.0 Flash)
 # ---------------------------------------------------------------------------
 
 PLATFORM_TEMPLATES = {
@@ -159,30 +456,16 @@ PLATFORM_TEMPLATES = {
 def generate_script(recipe: Recipe, platform: str, session: Session) -> dict:
     """
     End-to-end pipeline: harmonize context → render prompt → call Gemini → return parsed JSON.
-
-    Args:
-        recipe: The Recipe ORM object (with relationships loaded).
-        platform: 'tiktok' or 'instagram'.
-        session: Active SQLAlchemy session.
-
-    Returns:
-        Parsed JSON dict from Gemini containing voiceover_script, subtitle_segments, etc.
-
-    Raises:
-        ValueError on unknown platform or Gemini errors.
     """
     template_name = PLATFORM_TEMPLATES.get(platform)
     if not template_name:
         raise ValueError(f"Unknown platform: {platform}. Supported: {list(PLATFORM_TEMPLATES.keys())}")
 
-    # Step 1: Build harmonized context
     context = build_recipe_context(recipe, session)
     logger.info(f"[MediaHub] Built context for recipe '{recipe.title}' ({platform})")
 
-    # Step 2: Render prompt
     rendered_prompt = load_prompt(template_name, **context)
 
-    # Step 3: Call Gemini
     client = _get_client()
     response = client.models.generate_content(
         model=MODEL_ID,
@@ -190,9 +473,8 @@ def generate_script(recipe: Recipe, platform: str, session: Session) -> dict:
         config={"response_mime_type": "application/json"},
     )
 
-    # Step 4: Parse response
     try:
-        result = json.loads(response.text)
+        result = _parse_gemini_json(response.text)
     except json.JSONDecodeError as e:
         logger.error(f"[MediaHub] Gemini returned invalid JSON: {e}")
         raise ValueError(f"Gemini returned invalid JSON: {response.text[:200]}")
@@ -202,7 +484,7 @@ def generate_script(recipe: Recipe, platform: str, session: Session) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# 3. FULL ORCHESTRATION — Called by the route
+# 4. FULL ORCHESTRATION — Called by routes
 # ---------------------------------------------------------------------------
 
 def generate_studio_pack(
@@ -213,12 +495,7 @@ def generate_studio_pack(
 ) -> dict:
     """
     Full orchestration: check cost guard → generate script → render video → upload → save record.
-
-    Designed to run in a background thread. Uses app context for DB access.
-
-    Returns:
-        {"status": "ready", "video_url": str, "script": dict}
-        or {"status": "failed", "error": str}
+    Designed to run in a background thread.
     """
     from media_hub.video_engine import render_video
 
@@ -227,7 +504,7 @@ def generate_studio_pack(
     with app.app_context():
         session = db.session
 
-        # --- Cost Guard: check for existing identical post ---
+        # --- Cost Guard ---
         existing: Optional[SocialMediaPost] = session.execute(
             db.select(SocialMediaPost).where(
                 SocialMediaPost.recipe_id == recipe_id,
@@ -270,7 +547,6 @@ def generate_studio_pack(
         session.commit()
 
         try:
-            # Load recipe with relationships
             recipe = session.execute(
                 db.select(Recipe).where(Recipe.id == recipe_id)
             ).scalar()

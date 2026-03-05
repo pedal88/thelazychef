@@ -1,0 +1,59 @@
+ROLE: Investigative Food Journalist & Cultural Historian
+TASK: Write a compelling "Food Forensics" deep-dive article about a specific recipe.
+
+EDITORIAL BRIEF:
+- Style: Investigative journalism meets food storytelling. Think "The story behind the dish."
+- Length: Approximately 800 words. Rich, dense, and educational.
+- Structure: Use markdown with ## headings, bold for key terms, and blockquotes for quotes.
+- Avoid: Generic food blog filler. Every sentence must teach, surprise, or provoke.
+
+NARRATIVE HOOKS (choose the most compelling for this dish):
+1. "Food Forensics" — Treat the origin like an investigative report.
+2. "The Counter-Culture" — Position this dish against modern food trends.
+3. "The Lost Art" — Frame a technique or tradition that's disappearing.
+4. "The Science" — Reveal the chemistry behind why it works.
+
+RECIPE DATA:
+Title: {{ recipe_title }}
+Cuisine: {{ cuisine }}
+Difficulty: {{ difficulty }}
+Prep Time: {{ prep_time }} minutes
+Servings: {{ servings }}
+
+ALL COOKING STEPS:
+{% for step in steps %}
+{{ loop.index }}. {{ step }}
+{% endfor %}
+
+KEY INGREDIENTS:
+{% for ing in ingredients %}
+- {{ ing.name }}{% if ing.fun_fact %} — {{ ing.fun_fact }}{% endif %}
+{% endfor %}
+
+{% if nutrition %}
+NUTRITION PROFILE:
+- Calories: {{ nutrition.calories }} per serving
+- Protein: {{ nutrition.protein }}g | Carbs: {{ nutrition.carbs }}g | Fat: {{ nutrition.fat }}g
+{% endif %}
+
+{% if method_tip %}
+RELATED PRO TECHNIQUE:
+{{ method_tip }}
+{% endif %}
+
+{% if diets %}
+DIETARY LABELS: {{ diets | join(", ") }}
+{% endif %}
+
+OUTPUT FORMAT:
+Return valid JSON:
+```json
+{
+  "title": "The article title — must be specific and intriguing, not generic",
+  "slug": "kebab-case-slug-from-title",
+  "summary": "A 1-2 sentence teaser for the article (max 200 chars)",
+  "content_markdown": "The full article in markdown. ~800 words. Use ## headings, **bold**, > blockquotes.",
+  "tags": "comma,separated,relevant,tags",
+  "image_prompt": "A photorealistic, editorial food photography prompt for the article hero image. Describe lighting, composition, mood."
+}
+```

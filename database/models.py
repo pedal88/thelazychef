@@ -140,6 +140,13 @@ class Ingredient(db.Model):
         primaryjoin="Ingredient.sub_recipe_id == Recipe.id",
     )
 
+    # Knowledge Factory: link to the auto-generated "Official Deep Dive" article
+    primary_resource_id: Mapped[Optional[int]] = mapped_column(ForeignKey("resource.id"), nullable=True)
+    primary_resource: Mapped[Optional["Resource"]] = relationship(
+        "Resource",
+        foreign_keys=[primary_resource_id],
+    )
+
 
 class IngredientEvaluation(db.Model):
     """LLM-as-a-Judge QA result for a single Ingredient (One-to-One)."""
@@ -238,6 +245,13 @@ class Recipe(db.Model):
     
     # Nested mapping of component names to image URLs/filenames
     component_images: Mapped[dict] = mapped_column(JSON, default=dict, server_default='{}')
+
+    # Knowledge Factory: link to the auto-generated "Official Deep Dive" article
+    primary_resource_id: Mapped[Optional[int]] = mapped_column(ForeignKey("resource.id"), nullable=True)
+    primary_resource: Mapped[Optional["Resource"]] = relationship(
+        "Resource",
+        foreign_keys=[primary_resource_id],
+    )
 
     instructions: Mapped[list["Instruction"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
     ingredients: Mapped[list["RecipeIngredient"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
