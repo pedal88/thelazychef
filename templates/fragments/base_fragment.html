@@ -318,9 +318,9 @@
             const vw = window.innerWidth;
             const vh = window.innerHeight;
 
-            // Dynamically scale to fit ~70% of the available viewport
-            const scaleX = (vw * 0.70) / 1080;
-            const scaleY = (vh * 0.70) / 1920;
+            // Dynamically scale to fit ~60% of the available viewport
+            const scaleX = (vw * 0.60) / 1080;
+            const scaleY = (vh * 0.60) / 1920;
             let scale = Math.min(scaleX, scaleY);
 
             // If we are in Playwright headless mode (strictly exactly 1080x1920), we force exactly 1.0 to ensure pixel-perfect renders
