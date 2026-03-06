@@ -512,6 +512,29 @@ def fragment_sandbox(fragment_name):
         logger.exception(f"[Sandbox] Failed to render {fragment_name}")
         return jsonify({"error": str(e)}), 500
 
+
+@media_hub_bp.route("/sandbox/poll-templates", methods=["GET"])
+@login_required
+@admin_required
+def poll_templates():
+    """
+    Endpoint for the Design Sandbox to check if fragments were saved to disk.
+    Used for the Javascript Hot-Reloading feature.
+    """
+    import os
+    root = os.getcwd()
+    frag_dir = os.path.join(root, "templates", "fragments")
+    max_mtime = 0.0
+    if os.path.isdir(frag_dir):
+        for fname in os.listdir(frag_dir):
+            if fname.endswith(".html"):
+                fpath = os.path.join(frag_dir, fname)
+                mtime = os.path.getmtime(fpath)
+                if mtime > max_mtime:
+                    max_mtime = mtime
+                    
+    return jsonify({"last_modified": max_mtime})
+
 # ---------------------------------------------------------------------------
 # Routes — Knowledge Factory (Article + Podcast Generation)
 # ---------------------------------------------------------------------------
