@@ -3,12 +3,20 @@
 {% block title %}Media Hub - Sandbox{% endblock %}
 
 {% block content %}
-<div class="bg-slate-50 border-t border-slate-200" style="height: calc(100vh - 64px); overflow: hidden;">
+<div id="sandbox-root" class="bg-slate-50 border-t border-slate-200 relative"
+    style="height: calc(100vh - 64px); overflow: hidden;">
+    <!-- Fullscreen Toggle -->
+    <button onclick="toggleFullscreen()" id="fullscreen-btn"
+        class="absolute top-3 right-3 z-50 bg-slate-800 hover:bg-slate-700 text-white text-xs px-3 py-1.5 rounded-lg shadow-lg transition-colors flex items-center gap-1.5 border border-slate-600">
+        <span id="fs-icon">⛶</span>
+        <span id="fs-label">Fullscreen</span>
+    </button>
     <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-full">
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 h-full">
             <!-- Left Column: Controls & Fragments (scrollable) -->
-            <div class="lg:col-span-6 flex flex-col gap-6 overflow-y-auto py-6" style="max-height: calc(100vh - 64px);">
+            <div class="lg:col-span-6 flex flex-col gap-6 overflow-y-auto py-6" id="left-column"
+                style="max-height: calc(100vh - 64px);">
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200">
                     <div class="p-6">
                         <!-- Sandbox Controls -->
@@ -459,6 +467,35 @@ Context/Text: "${target.innerText.substring(0, 50).trim()}${target.innerText.len
             console.error('Failed to copy: ', err);
         });
     }
+
+    // --- Fullscreen Mode ---
+    function toggleFullscreen() {
+        const root = document.getElementById('sandbox-root');
+        if (!document.fullscreenElement) {
+            root.requestFullscreen().catch(err => console.warn('Fullscreen failed:', err));
+        } else {
+            document.exitFullscreen();
+        }
+    }
+
+    document.addEventListener('fullscreenchange', () => {
+        const root = document.getElementById('sandbox-root');
+        const left = document.getElementById('left-column');
+        const icon = document.getElementById('fs-icon');
+        const label = document.getElementById('fs-label');
+
+        if (document.fullscreenElement) {
+            root.style.height = '100vh';
+            left.style.maxHeight = '100vh';
+            icon.textContent = '✕';
+            label.textContent = 'Exit';
+        } else {
+            root.style.height = 'calc(100vh - 64px)';
+            left.style.maxHeight = 'calc(100vh - 64px)';
+            icon.textContent = '⛶';
+            label.textContent = 'Fullscreen';
+        }
+    });
 
 </script>
 {% endblock %}
