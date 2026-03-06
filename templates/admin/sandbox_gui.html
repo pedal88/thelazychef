@@ -48,14 +48,14 @@
                 </div>
 
                 <!-- Scaling Note Additions -->
-                <div class="mb-4 bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg flex gap-3">
-                    <span class="text-blue-500 text-lg">💡</span>
+                <div class="mb-4 bg-green-50 border-l-4 border-green-400 p-4 rounded-r-lg flex gap-3">
+                    <span class="text-green-600 text-lg">✨</span>
                     <div>
-                        <p class="text-sm text-blue-700 font-semibold">Native Rendering Warning</p>
-                        <p class="text-xs text-blue-600 mt-1">
-                            These templates are hardcoded to <strong>1080×1920</strong> (TikTok resolution) because the
-                            Playwright engine captures them exactly at that size to make a video. If they launch too
-                            large on your monitor, refer to the "Scaling Workarounds" below.
+                        <p class="text-sm text-green-700 font-semibold">Smart Scaling Activated</p>
+                        <p class="text-xs text-green-600 mt-1">
+                            These templates are hardcoded to <strong>1080×1920</strong> (TikTok resolution), but they
+                            will dynamically auto-scale via Javascript to perfectly fit your browser window while
+                            maintaining aspect ratio, simulating a mobile device!
                         </p>
                     </div>
                 </div>
@@ -147,58 +147,14 @@
 
                 </div>
 
-                <!-- Spacer for Alternatives Box -->
-                <div class="mt-12 mb-2 pb-2 border-b border-slate-200 flex items-center gap-2">
-                    <span class="text-slate-400">🔍</span>
-                    <h2 class="text-lg font-serif font-bold text-slate-800">Scaling Workarounds</h2>
-                </div>
 
-                <div class="bg-slate-50 p-6 rounded-lg border border-slate-200 text-sm text-slate-700 space-y-4">
-                    <p>If the window physically bleeds off your laptop screen, here are three ways to iterate without
-                        changing the core 1080x1920 CSS (which would break the headless generator):</p>
-
-                    <div class="space-y-3">
-                        <div class="pl-4 border-l-2 border-slate-300">
-                            <strong>1. CSS 'Scale' Injection (Recommended)</strong>
-                            <p class="text-xs text-slate-500 mt-1">When the window opens, inject the `scale` CSS
-                                property directly into the URL by clicking below. This physically shrinks the rendered
-                                layout without altering the core templates.</p>
-                            <button onclick="openSandbox('hero', 0.50)"
-                                class="mt-2 text-xs bg-white border border-slate-300 rounded px-3 py-1 hover:bg-slate-50">Launch
-                                Hero (Scaled to 50%)</button>
-                            <button onclick="openSandbox('meta', 0.50)"
-                                class="mt-2 text-xs bg-white border border-slate-300 rounded px-3 py-1 hover:bg-slate-50">Launch
-                                Meta (Scaled to 50%)</button>
-                            <button onclick="openSandbox('ingredients', 0.50)"
-                                class="mt-2 text-xs bg-white border border-slate-300 rounded px-3 py-1 hover:bg-slate-50">Launch
-                                Ingredients (Scaled to 50%)</button>
-                            <button onclick="openSandbox('steps', 0.50)"
-                                class="mt-2 text-xs bg-white border border-slate-300 rounded px-3 py-1 hover:bg-slate-50">Launch
-                                Steps (Scaled to 50%)</button>
-                        </div>
-
-                        <div class="pl-4 border-l-2 border-slate-300">
-                            <strong>2. Chrome Device Toolbar (The precise way)</strong>
-                            <p class="text-xs text-slate-500 mt-1">Open the standard window, press
-                                <code>Cmd + Option + I</code> to open DevTools, then click the "Toggle Device Toolbar"
-                                icon (or <code>Cmd + Shift + M</code>). Enter "1080 x 1920" as a custom device. Chrome
-                                will auto-scale it to fit, and you can inspect elements perfectly.</p>
-                        </div>
-
-                        <div class="pl-4 border-l-2 border-slate-300">
-                            <strong>3. Standard Browser Zoom</strong>
-                            <p class="text-xs text-slate-500 mt-1">Open the standard window, hold <code>Cmd</code> and
-                                press <code>-</code> (minus) repeatedly to zoom the browser out to 50% or 33%.</p>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    function openSandbox(fragmentName, scaleOverwrite) {
+    function openSandbox(fragmentName) {
         const recipeId = document.getElementById('sandbox-recipe-id').value || 192;
         const theme = document.getElementById('sandbox-theme').value || 'modern';
         const debug = document.getElementById('sandbox-debug').checked;
@@ -208,12 +164,8 @@
             targetUrl += "&debug=true";
         }
 
-        if (scaleOverwrite) {
-            targetUrl += `&scale=${scaleOverwrite}`;
-        }
-
         // Open the sandbox in a new window/tab so the developer can run F12 Tools natively inside it
-        window.open(targetUrl, '_blank', 'width=1080,height=1000,menubar=1,toolbar=1');
+        window.open(targetUrl, '_blank', 'menubar=1,toolbar=1');
     }
 </script>
 {% endblock %}

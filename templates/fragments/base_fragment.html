@@ -52,45 +52,32 @@
         body {
             font-family: 'Inter', sans-serif;
             margin: 0;
-            {% if scale and scale != 1.0 %}
-            /* Provide a dark canvas testing background when scaled */
-            background-color: #0f172a;
-            min-height: 100vh;
+            width: 100vw;
+            height: 100vh;
+            background-color: #0f172a; /* Outer canvas dark testing background */
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 2rem;
-            {% else %}
-            /* Production headless rendering mode */
-            width: 1080px;
-            height: 1920px;
-            overflow: hidden;
-            background: var(--bg);
-            {% endif %}
+            overflow: hidden; /* Prevent scrolling on laptop entirely */
         }
 
-        {% if scale and scale != 1.0 %}
-        #preview-container {
-            /* Scaled bounding box to prevent scrollbars on the parent */
-            width: {{ (1080 * scale) | int }}px;
-            height: {{ (1920 * scale) | int }}px;
+        #fragment-wrapper {
+            /* We use a wrapper to shrink the flexbox footprint dynamically so it perfectly centers */
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-        {% endif %}
 
-        #scale-wrapper {
+        #fragment-root {
             width: 1080px;
             height: 1920px;
             position: relative;
             background: var(--bg);
             color: var(--fg);
             overflow: hidden;
-            {% if scale and scale != 1.0 %}
-            transform: scale({{ scale }});
-            transform-origin: top left;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            border-radius: 48px; /* Phone-like rounded corners */
-            border: 8px solid #1e293b; /* Emulate a bezel */
-            {% endif %}
+            flex-shrink: 0;
+            /* In JS we add transform: scale() here */
+            transform-origin: center center;
         }
 
         /* ── Safe Box: content lives inside these margins ── */
@@ -129,47 +116,82 @@
     {% block head %}{% endblock %}
 </head>
 <body>
-    {% if scale and scale != 1.0 %}
-    <div id="preview-container">
-    {% endif %}
-        <div id="scale-wrapper">
-            <div id="fragment-root" class="relative w-[1080px] h-[1920px] overflow-hidden">
-                {% block content %}{% endblock %}
+    <div id="fragment-wrapper">
+        <div id="fragment-root">
+            {% block content %}{% endblock %}
 
-                {# Brand watermark footer — inside bottom safe zone #}
-                <div class="absolute bottom-0 left-0 right-0 px-12 py-8 flex items-center justify-between z-50">
-                    <div class="flex items-center gap-3">
-                        <span class="text-3xl">🍳</span>
-                        <span class="font-serif text-xl font-bold tracking-tight" style="color: var(--fg-muted);">The Lazy Chef</span>
-                    </div>
-                    {% if page_indicator %}
-                    <span class="frag-small font-medium" style="color: var(--fg-subtle);">{{ page_indicator }}</span>
-                    {% endif %}
+            {# Brand watermark footer — inside bottom safe zone #}
+            <div class="absolute bottom-0 left-0 right-0 px-12 py-8 flex items-center justify-between z-50">
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl">🍳</span>
+                    <span class="font-serif text-xl font-bold tracking-tight" style="color: var(--fg-muted);">The Lazy Chef</span>
                 </div>
+                {% if page_indicator %}
+                <span class="frag-small font-medium" style="color: var(--fg-subtle);">{{ page_indicator }}</span>
+                {% endif %}
+            </div>
 
-                {# ── TikTok/Reels safe zone debug overlay ── #}
-                <div class="debug-zones absolute inset-0 pointer-events-none z-[999]" style="display:none;">
-                    {# Top status bar area #}
-                    <div class="absolute top-0 left-0 right-0 h-[120px] bg-red-500/15 border-b border-red-500/30 flex items-end justify-center pb-2">
-                        <span class="text-red-400 text-xs font-mono">TOP SAFE ZONE (120px)</span>
-                    </div>
-                    {# Bottom caption / CTA area #}
-                    <div class="absolute bottom-0 left-0 right-0 h-[280px] bg-red-500/15 border-t border-red-500/30 flex items-start justify-center pt-2">
-                        <span class="text-red-400 text-xs font-mono">BOTTOM SAFE ZONE (280px — captions + brand)</span>
-                    </div>
-                    {# Right sidebar — like/comment/share buttons #}
-                    <div class="absolute top-[40%] right-0 w-[100px] h-[400px] bg-blue-500/15 border-l border-blue-500/30 flex items-center justify-center">
-                        <span class="text-blue-400 text-xs font-mono rotate-90 whitespace-nowrap">SIDEBAR (likes/share)</span>
-                    </div>
-                    {# Content safe box outline #}
-                    <div class="absolute border-2 border-dashed border-green-500/40" style="top:120px;left:64px;right:64px;bottom:280px;">
-                        <span class="absolute top-1 left-2 text-green-400 text-xs font-mono">CONTENT SAFE BOX</span>
-                    </div>
+            {# ── TikTok/Reels safe zone debug overlay ── #}
+            <div class="debug-zones absolute inset-0 pointer-events-none z-[999]" style="display:none;">
+                {# Top status bar area #}
+                <div class="absolute top-0 left-0 right-0 h-[120px] bg-red-500/15 border-b border-red-500/30 flex items-end justify-center pb-2">
+                    <span class="text-red-400 text-xs font-mono">TOP SAFE ZONE (120px)</span>
+                </div>
+                {# Bottom caption / CTA area #}
+                <div class="absolute bottom-0 left-0 right-0 h-[280px] bg-red-500/15 border-t border-red-500/30 flex items-start justify-center pt-2">
+                    <span class="text-red-400 text-xs font-mono">BOTTOM SAFE ZONE (280px — captions + brand)</span>
+                </div>
+                {# Right sidebar — like/comment/share buttons #}
+                <div class="absolute top-[40%] right-0 w-[100px] h-[400px] bg-blue-500/15 border-l border-blue-500/30 flex items-center justify-center">
+                    <span class="text-blue-400 text-xs font-mono rotate-90 whitespace-nowrap">SIDEBAR (likes/share)</span>
+                </div>
+                {# Content safe box outline #}
+                <div class="absolute border-2 border-dashed border-green-500/40" style="top:120px;left:64px;right:64px;bottom:280px;">
+                    <span class="absolute top-1 left-2 text-green-400 text-xs font-mono">CONTENT SAFE BOX</span>
                 </div>
             </div>
         </div>
-    {% if scale and scale != 1.0 %}
     </div>
-    {% endif %}
+    
+    <script>
+        function autoScaleFragment() {
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            
+            // Calculate scale required to fit within viewport with a slight 3% margin if on desktop
+            let scale = Math.min(vw / 1080, vh / 1920) * 0.97;
+            
+            // If we are in Playwright headless mode (strictly exactly 1080x1920), we force exactly 1.0 to ensure pixel-perfect renders
+            if (vw === 1080 && vh === 1920) {
+                scale = 1.0;
+            }
+            
+            const root = document.getElementById('fragment-root');
+            const wrapper = document.getElementById('fragment-wrapper');
+            if (root && wrapper) {
+                root.style.transform = `scale(${scale})`;
+                
+                // Keep the wrapper exactly the size of the scaled element so flexbox centering works perfectly
+                wrapper.style.width = `${1080 * scale}px`;
+                wrapper.style.height = `${1920 * scale}px`;
+                
+                // Add laptop preview styling (rounded corners, shadow) if scaled down
+                if (scale < 0.99) {
+                    root.style.borderRadius = '40px';
+                    root.style.boxShadow = '0 25px 50px -12px rgba(0,0,0,0.5)';
+                    root.style.outline = '4px solid #334155'; // Use outline to not impact inner box-sizing
+                } else {
+                    root.style.borderRadius = '0';
+                    root.style.boxShadow = 'none';
+                    root.style.outline = 'none';
+                }
+            }
+        }
+        
+        window.addEventListener('resize', autoScaleFragment);
+        window.addEventListener('DOMContentLoaded', autoScaleFragment);
+        // Run immediately as well just in case
+        autoScaleFragment();
+    </script>
 </body>
 </html>
