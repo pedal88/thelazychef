@@ -47,17 +47,19 @@
                     </div>
                 </div>
 
-                <!-- Scaling Note Additions -->
-                <div class="mb-4 bg-green-50 border-l-4 border-green-400 p-4 rounded-r-lg flex gap-3">
-                    <span class="text-green-600 text-lg">✨</span>
-                    <div>
-                        <p class="text-sm text-green-700 font-semibold">Smart Scaling Activated</p>
-                        <p class="text-xs text-green-600 mt-1">
-                            These templates are hardcoded to <strong>1080×1920</strong> (TikTok resolution), but they
-                            will dynamically auto-scale via Javascript to perfectly fit your browser window while
-                            maintaining aspect ratio, simulating a mobile device!
-                        </p>
+                <!-- Dynamic Iframe Wrapper -->
+                <div class="mb-4 bg-green-50 border border-green-200 rounded-lg p-3 flex justify-between items-center w-full transition-all"
+                    id="scaling-notice">
+                    <div class="flex items-center gap-3">
+                        <span class="text-green-600">✨</span>
+                        <p class="text-sm text-green-700 font-medium">Smart Scaling Activated: 1080x1920 scaled to
+                            perfectly fit your view below.</p>
                     </div>
+                    <button
+                        class="text-xs font-semibold text-green-700 hover:text-green-900 px-3 py-1 bg-green-100 hover:bg-green-200 rounded-md transition-colors"
+                        onclick="window.open(document.getElementById('sandbox-frame').src, '_blank')">
+                        Open in New Tab
+                    </button>
                 </div>
 
                 <!-- Fragment List (Horizontal Carousel) -->
@@ -71,98 +73,56 @@
                         style="scroll-behavior: smooth;">
 
                         <!-- Hero -->
-                        <div class="snap-start shrink-0 w-72">
+                        <div class="snap-start shrink-0">
                             <a href="javascript:void(0)" onclick="openSandbox('hero')"
-                                class="h-full group flex flex-col items-center text-center gap-3 p-6 rounded-2xl border border-slate-100 bg-white hover:border-orange-200 hover:shadow-md hover:bg-orange-50 transition-all">
-                                <div
-                                    class="w-16 h-16 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center text-2xl shadow-sm">
-                                    🖼️</div>
-                                <div>
-                                    <h3 class="font-bold text-slate-900 group-hover:text-orange-700 transition-colors">
-                                        Hero Title</h3>
-                                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Full-bleed recipe image with
-                                        glassmorphism title overlay.</p>
-                                </div>
+                                class="flex items-center gap-2 px-4 py-2 rounded-full border border-slate-200 bg-white hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700 transition-all shadow-sm">
+                                <span class="text-lg">🖼️</span>
+                                <span class="font-semibold text-sm">Hero</span>
                             </a>
                         </div>
 
                         <!-- Meta -->
-                        <div class="snap-start shrink-0 w-72">
+                        <div class="snap-start shrink-0">
                             <a href="javascript:void(0)" onclick="openSandbox('meta')"
-                                class="h-full group flex flex-col items-center text-center gap-3 p-6 rounded-2xl border border-slate-100 bg-white hover:border-blue-200 hover:shadow-md hover:bg-blue-50 transition-all">
-                                <div
-                                    class="w-16 h-16 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-2xl shadow-sm">
-                                    ⏱️</div>
-                                <div>
-                                    <h3 class="font-bold text-slate-900 group-hover:text-blue-700 transition-colors">
-                                        Recipe Details</h3>
-                                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Prep time, servings,
-                                        difficulty and cuisine information.</p>
-                                </div>
+                                class="flex items-center gap-2 px-4 py-2 rounded-full border border-slate-200 bg-white hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all shadow-sm">
+                                <span class="text-lg">⏱️</span>
+                                <span class="font-semibold text-sm">Details</span>
                             </a>
                         </div>
 
                         <!-- Ingredients -->
-                        <div class="snap-start shrink-0 w-72">
+                        <div class="snap-start shrink-0">
                             <a href="javascript:void(0)" onclick="openSandbox('ingredients')"
-                                class="h-full group flex flex-col items-center text-center gap-3 p-6 rounded-2xl border border-slate-100 bg-white hover:border-green-200 hover:shadow-md hover:bg-green-50 transition-all">
-                                <div
-                                    class="w-16 h-16 rounded-xl bg-green-100 text-green-600 flex items-center justify-center text-2xl shadow-sm">
-                                    🥦</div>
-                                <div>
-                                    <h3 class="font-bold text-slate-900 group-hover:text-green-700 transition-colors">
-                                        Ingredients List</h3>
-                                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Smart-paginating list of
-                                        required ingredients.</p>
-                                </div>
+                                class="flex items-center gap-2 px-4 py-2 rounded-full border border-slate-200 bg-white hover:border-green-300 hover:bg-green-50 hover:text-green-700 transition-all shadow-sm">
+                                <span class="text-lg">🥦</span>
+                                <span class="font-semibold text-sm">Ingredients</span>
                             </a>
                         </div>
 
                         <!-- Steps -->
-                        <div class="snap-start shrink-0 w-72">
+                        <div class="snap-start shrink-0">
                             <a href="javascript:void(0)" onclick="openSandbox('steps')"
-                                class="h-full group flex flex-col items-center text-center gap-3 p-6 rounded-2xl border border-slate-100 bg-white hover:border-purple-200 hover:shadow-md hover:bg-purple-50 transition-all">
-                                <div
-                                    class="w-16 h-16 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-2xl shadow-sm">
-                                    📝</div>
-                                <div>
-                                    <h3 class="font-bold text-slate-900 group-hover:text-purple-700 transition-colors">
-                                        Instructions</h3>
-                                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Smart-paginating step-by-step
-                                        cooking instructions.</p>
-                                </div>
+                                class="flex items-center gap-2 px-4 py-2 rounded-full border border-slate-200 bg-white hover:border-purple-300 hover:bg-purple-50 hover:text-purple-700 transition-all shadow-sm">
+                                <span class="text-lg">📝</span>
+                                <span class="font-semibold text-sm">Instructions</span>
                             </a>
                         </div>
 
                         <!-- Nutrition -->
-                        <div class="snap-start shrink-0 w-72">
+                        <div class="snap-start shrink-0">
                             <a href="javascript:void(0)" onclick="openSandbox('nutrition')"
-                                class="h-full group flex flex-col items-center text-center gap-3 p-6 rounded-2xl border border-slate-100 bg-white hover:border-rose-200 hover:shadow-md hover:bg-rose-50 transition-all">
-                                <div
-                                    class="w-16 h-16 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center text-2xl shadow-sm">
-                                    🔥</div>
-                                <div>
-                                    <h3 class="font-bold text-slate-900 group-hover:text-rose-700 transition-colors">
-                                        Nutrition Facts</h3>
-                                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Calories, macros, and
-                                        detailed nutritional breakdown.</p>
-                                </div>
+                                class="flex items-center gap-2 px-4 py-2 rounded-full border border-slate-200 bg-white hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700 transition-all shadow-sm">
+                                <span class="text-lg">🔥</span>
+                                <span class="font-semibold text-sm">Nutrition</span>
                             </a>
                         </div>
 
                         <!-- Galaxy -->
-                        <div class="snap-start shrink-0 w-72">
+                        <div class="snap-start shrink-0">
                             <a href="javascript:void(0)" onclick="openSandbox('galaxy')"
-                                class="h-full group flex flex-col items-center text-center gap-3 p-6 rounded-2xl border border-slate-100 bg-white hover:border-indigo-200 hover:shadow-md hover:bg-indigo-50 transition-all">
-                                <div
-                                    class="w-16 h-16 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-2xl shadow-sm">
-                                    🌌</div>
-                                <div>
-                                    <h3 class="font-bold text-slate-900 group-hover:text-indigo-700 transition-colors">
-                                        Flavor Galaxy</h3>
-                                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">D3.js interactive force graph
-                                        of similar recipes.</p>
-                                </div>
+                                class="flex items-center gap-2 px-4 py-2 rounded-full border border-slate-200 bg-white hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 transition-all shadow-sm">
+                                <span class="text-lg">🌌</span>
+                                <span class="font-semibold text-sm">Galaxy</span>
                             </a>
                         </div>
 
@@ -184,8 +144,25 @@
                     }
                 </style>
 
-
             </div>
+        </div>
+
+        <!-- Hidden Iframe Container for inline previewing -->
+        <div id="sandbox-preview-container"
+            class="mt-8 bg-slate-900 rounded-3xl overflow-hidden shadow-2xl relative border-8 border-slate-800"
+            style="display: none; height: 80vh;">
+            <div class="absolute inset-0 flex items-center justify-center pointers-events-none" id="iframe-loader">
+                <span class="text-white opacity-50 flex items-center gap-2"><svg class="animate-spin h-5 w-5"
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                    </svg> Loading Preview...</span>
+            </div>
+            <iframe id="sandbox-frame" class="w-full h-full border-0 relative z-10"
+                onload="document.getElementById('iframe-loader').style.display='none'"></iframe>
         </div>
     </div>
 </div>
@@ -201,8 +178,17 @@
             targetUrl += "&debug=true";
         }
 
-        // Open the sandbox in a new window/tab so the developer can run F12 Tools natively inside it
-        window.open(targetUrl, '_blank', 'menubar=1,toolbar=1');
+        // Instead of opening a new tab, show the iframe and set its src
+        const loader = document.getElementById('iframe-loader');
+        const container = document.getElementById('sandbox-preview-container');
+        const frame = document.getElementById('sandbox-frame');
+
+        container.style.display = 'block';
+        loader.style.display = 'flex';
+        frame.src = targetUrl;
+
+        // Scroll the viewport down slightly to show the preview
+        container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 </script>
 {% endblock %}
