@@ -12,12 +12,13 @@
 {% endblock %}
 
 {% block content %}
-<div class="w-full h-full bg-gradient-to-br from-surface via-surface-lighter to-[#0c1222] flex flex-col px-16 pt-16 pb-28">
+<div
+    class="w-full h-full bg-gradient-to-br from-surface via-surface-lighter to-[#0c1222] flex flex-col px-16 pt-16 pb-28">
 
     {# Section label #}
     <div class="mb-6 shrink-0">
-        <p class="text-brand text-lg font-bold uppercase tracking-[0.25em]">Flavor Galaxy</p>
-        <h2 class="font-serif text-[44px] font-bold text-white leading-tight mt-2">{{ title }}</h2>
+        <p class="text-brand frag-label font-bold uppercase tracking-[0.25em]">Flavor Galaxy</p>
+        <h2 class="font-serif frag-title font-bold text-white leading-tight mt-2">{{ title }}</h2>
     </div>
 
     {# D3 Galaxy container — Playwright will wait for this to render #}
@@ -25,9 +26,10 @@
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const container = document.getElementById("galaxy-container");
-    const graphData = {{ graph_data | tojson }};
+    document.addEventListener("DOMContentLoaded", function () {
+        const container = document.getElementById("galaxy-container");
+        const graphData = {{ graph_data | tojson
+    }};
 
     if (!graphData || !graphData.nodes || graphData.nodes.length <= 1) {
         container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:rgba(255,255,255,0.4);font-size:24px;">Not enough data for Flavor Galaxy</div>';

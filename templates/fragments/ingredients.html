@@ -1,54 +1,70 @@
 {% extends "fragments/base_fragment.html" %}
 
 {# ── Density thresholds ── #}
-{% set density = 'spacious' if item_count <= 6 else ('compact' if item_count > 10 else 'normal') %}
+{% set density = 'spacious' if item_count <= 6 else ('compact' if item_count> 10 else 'normal') %}
 
-{% block content %}
-<div class="w-full h-full bg-surface-grad flex flex-col px-16 pt-[120px] pb-[280px]">
+    {% block content %}
+    <div class="w-full h-full bg-surface-grad flex flex-col px-16 pt-[120px] pb-[280px]">
 
-    {# Section label #}
-    <div class="{% if density == 'compact' %}mb-5{% elif density == 'spacious' %}mb-10{% else %}mb-8{% endif %} shrink-0">
-        <p class="frag-label text-accent">Ingredients</p>
-        <h2 class="font-serif {% if density == 'compact' %}frag-heading{% else %}frag-title{% endif %} font-bold text-fg mt-2">{{ title }}</h2>
-    </div>
-
-    {# Content area — density-aware spacing #}
-    <div id="content-measure" class="flex-1 overflow-hidden {% if density == 'compact' %}space-y-3{% elif density == 'spacious' %}space-y-8{% else %}space-y-5{% endif %}">
-        {% for group in ingredient_groups %}
-        <div>
-            {# Component header (only if multiple components) #}
-            {% if show_component_headers %}
-            <div class="flex items-center gap-4 {% if density == 'compact' %}mb-3{% else %}mb-5{% endif %}">
-                <div class="w-2 {% if density == 'compact' %}h-6{% else %}h-8{% endif %} rounded-full" style="background: var(--accent);"></div>
-                <h3 class="{% if density == 'compact' %}text-lg{% else %}text-2xl{% endif %} font-bold uppercase tracking-wide text-fg-muted">{{ group.component }}</h3>
-            </div>
-            {% endif %}
-
-            {# Ingredient list — spacing adapts to density #}
-            <div class="{% if density == 'compact' %}space-y-0{% else %}space-y-1{% endif %}">
-                {% for ing in group.entries %}
-                <div class="flex items-center {% if density == 'compact' %}gap-3 py-2{% elif density == 'spacious' %}gap-5 py-4{% else %}gap-4 py-3{% endif %} {% if not loop.last %}border-b{% endif %}" style="border-color: var(--card-border);">
-                    {# Ingredient image or initial #}
-                    {% if ing.image_url %}
-                    <img src="{{ ing.image_url }}" class="{% if density == 'compact' %}w-10 h-10 rounded-lg{% else %}w-14 h-14 rounded-xl{% endif %} object-cover shrink-0" style="border: 1px solid var(--card-border);">
-                    {% else %}
-                    <div class="{% if density == 'compact' %}w-10 h-10 rounded-lg{% else %}w-14 h-14 rounded-xl{% endif %} flex items-center justify-center shrink-0" style="background: var(--card-bg); border: 1px solid var(--card-border);">
-                        <span class="{% if density == 'compact' %}text-sm{% else %}text-lg{% endif %} font-bold text-fg-subtle">{{ ing.name[:2]|upper }}</span>
-                    </div>
-                    {% endif %}
-
-                    {# Name #}
-                    <span class="flex-1 {% if density == 'compact' %}text-lg{% elif density == 'spacious' %}text-2xl{% else %}text-xl{% endif %} font-medium text-fg-muted">{{ ing.name }}</span>
-
-                    {# Amount + unit #}
-                    <span class="{% if density == 'compact' %}text-lg{% else %}text-2xl{% endif %} font-semibold text-accent shrink-0">
-                        {% if ing.amount %}{{ ing.amount_display }} {{ ing.unit }}{% endif %}
-                    </span>
-                </div>
-                {% endfor %}
-            </div>
+        {# Section label #}
+        <div
+            class="{% if density == 'compact' %}mb-5{% elif density == 'spacious' %}mb-10{% else %}mb-8{% endif %} shrink-0">
+            <p class="frag-label text-accent">Ingredients</p>
+            <h2
+                class="font-serif {% if density == 'compact' %}frag-heading{% else %}frag-title{% endif %} font-bold text-fg mt-2">
+                {{ title }}</h2>
         </div>
-        {% endfor %}
+
+        {# Content area — density-aware spacing #}
+        <div id="content-measure"
+            class="flex-1 overflow-hidden {% if density == 'compact' %}space-y-3{% elif density == 'spacious' %}space-y-8{% else %}space-y-5{% endif %}">
+            {% for group in ingredient_groups %}
+            <div>
+                {# Component header (only if multiple components) #}
+                {% if show_component_headers %}
+                <div class="flex items-center gap-4 {% if density == 'compact' %}mb-3{% else %}mb-5{% endif %}">
+                    <div class="w-2 {% if density == 'compact' %}h-6{% else %}h-8{% endif %} rounded-full"
+                        style="background: var(--accent);"></div>
+                    <h3
+                        class="{% if density == 'compact' %}frag-label{% else %}frag-body{% endif %} font-bold uppercase tracking-wide text-fg-muted">
+                        {{ group.component }}</h3>
+                </div>
+                {% endif %}
+
+                {# Ingredient list — spacing adapts to density #}
+                <div class="{% if density == 'compact' %}space-y-0{% else %}space-y-1{% endif %}">
+                    {% for ing in group.entries %}
+                    <div class="flex items-center {% if density == 'compact' %}gap-3 py-2{% elif density == 'spacious' %}gap-5 py-4{% else %}gap-4 py-3{% endif %} {% if not loop.last %}border-b{% endif %}"
+                        style="border-color: var(--card-border);">
+                        {# Ingredient image or initial #}
+                        {% if ing.image_url %}
+                        <img src="{{ ing.image_url }}"
+                            class="{% if density == 'compact' %}w-10 h-10 rounded-lg{% else %}w-14 h-14 rounded-xl{% endif %} object-cover shrink-0"
+                            style="border: 1px solid var(--card-border);">
+                        {% else %}
+                        <div class="{% if density == 'compact' %}w-10 h-10 rounded-lg{% else %}w-14 h-14 rounded-xl{% endif %} flex items-center justify-center shrink-0"
+                            style="background: var(--card-bg); border: 1px solid var(--card-border);">
+                            <span
+                                class="{% if density == 'compact' %}frag-small{% else %}frag-label{% endif %} font-bold text-fg-subtle">{{
+                                ing.name[:2]|upper }}</span>
+                        </div>
+                        {% endif %}
+
+                        {# Name #}
+                        <span
+                            class="flex-1 {% if density == 'compact' %}frag-label{% elif density == 'spacious' %}frag-heading{% else %}frag-body{% endif %} font-medium text-fg-muted">{{
+                            ing.name }}</span>
+
+                        {# Amount + unit #}
+                        <span
+                            class="{% if density == 'compact' %}frag-label{% else %}frag-heading{% endif %} font-semibold text-accent shrink-0">
+                            {% if ing.amount %}{{ ing.amount_display }} {{ ing.unit }}{% endif %}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
     </div>
-</div>
-{% endblock %}
+    {% endblock %}
