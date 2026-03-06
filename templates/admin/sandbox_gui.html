@@ -3,12 +3,12 @@
 {% block title %}Media Hub - Sandbox{% endblock %}
 
 {% block content %}
-<div class="h-full bg-slate-50 border-t border-slate-200 py-6 min-h-screen">
-    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+<div class="bg-slate-50 border-t border-slate-200" style="height: calc(100vh - 64px); overflow: hidden;">
+    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-full">
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <!-- Left Column: Controls & Fragments -->
-            <div class="lg:col-span-6 flex flex-col gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 h-full">
+            <!-- Left Column: Controls & Fragments (scrollable) -->
+            <div class="lg:col-span-6 flex flex-col gap-6 overflow-y-auto py-6" style="max-height: calc(100vh - 64px);">
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="p-6">
                         <!-- Sandbox Controls -->
@@ -239,8 +239,8 @@
                 </div>
             </div>
 
-            <!-- Right Column: Preview Iframe -->
-            <div class="lg:col-span-6 flex flex-col">
+            <!-- Right Column: Preview Iframe (no scroll) -->
+            <div class="lg:col-span-6 flex flex-col overflow-hidden py-6">
                 <div id="sandbox-empty-state"
                     class="flex-1 min-h-[85vh] flex items-center justify-center border-2 border-dashed border-slate-300 rounded-3xl bg-slate-100/50">
                     <div class="text-center text-slate-400">
