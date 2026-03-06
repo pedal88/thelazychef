@@ -541,6 +541,18 @@ Context/Text: "${target.innerText.substring(0, 50).trim()}${target.innerText.len
             if (mainFrame.src) {
                 magFrame.src = mainFrame.src;
             }
+            // When the magnifier iframe loads, apply the same theme variable overrides
+            magFrame.onload = function () {
+                if (magFrame.contentWindow && magFrame.contentWindow.document.documentElement) {
+                    const s = magFrame.contentWindow.document.documentElement.style;
+                    s.setProperty('--bg', document.getElementById('color-bg').value);
+                    s.setProperty('--bg-lighter', document.getElementById('color-bg-light').value);
+                    s.setProperty('--accent', document.getElementById('color-accent').value);
+                    s.setProperty('--accent-dark', document.getElementById('color-accent-dark').value);
+                    s.setProperty('--fg', document.getElementById('color-fg').value);
+                    s.setProperty('--fg-muted', document.getElementById('color-fg-muted').value);
+                }
+            };
         } else {
             btn.classList.remove('bg-blue-600', 'border-blue-500');
             btn.classList.add('bg-slate-800', 'border-slate-600');
