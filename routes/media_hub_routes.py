@@ -535,6 +535,47 @@ def poll_templates():
                     
     return jsonify({"last_modified": max_mtime})
 
+
+@media_hub_bp.route("/sandbox/api/source/<fragment_name>", methods=["GET", "POST"])
+@login_required
+@admin_required
+def sandbox_fragment_source(fragment_name):
+    """
+    API for the In-Browser Sandbox Code Editor.
+    GET returns the raw text of a fragment template.
+    POST saves the raw text immediately to disk.
+    """
+    from media_hub.snapshotter import VALID_FRAGMENTS
+    import os
+
+    # "base_fragment" is structural, let's allow editing it too.
+    valid_editables = set(VALID_FRAGMENTS) | {"base_fragment"}
+    
+    if fragment_name not in valid_editables:
+        return jsonify({"error": f"Unknown or uneditable fragment: {fragment_name}"}), 404
+
+    root = os.getcwd()
+    fpath = os.path.join(root, "templates", "fragments", f"{fragment_name}.html")
+    
+    if request.method == "POST":
+        data = request.get_json()
+        if not data or "content" not in data:
+            return jsonify({"error": "Missing 'content' in payload"}), 400
+            
+        with open(fpath, "w", encoding="utf-8") as f:
+            f.write(data["content"])
+            
+        return jsonify({"status": "saved", "fragment": fragment_name})
+
+    # GET request
+    if not os.path.exists(fpath):
+        return jsonify({"error": "File not found"}), 404
+        
+    with open(fpath, "r", encoding="utf-8") as f:
+        content = f.read()
+        
+    return jsonify({"content": content, "fragment": fragment_name})
+
 # ---------------------------------------------------------------------------
 # Routes — Knowledge Factory (Article + Podcast Generation)
 # ---------------------------------------------------------------------------
