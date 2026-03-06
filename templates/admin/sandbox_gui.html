@@ -6,11 +6,18 @@
 <div id="sandbox-root" class="bg-slate-50 border-t border-slate-200 relative"
     style="height: calc(100vh - 64px); overflow: hidden;">
     <!-- Fullscreen Toggle -->
-    <button onclick="toggleFullscreen()" id="fullscreen-btn"
-        class="absolute top-3 right-3 z-50 bg-slate-800 hover:bg-slate-700 text-white text-xs px-3 py-1.5 rounded-lg shadow-lg transition-colors flex items-center gap-1.5 border border-slate-600">
-        <span id="fs-icon">⛶</span>
-        <span id="fs-label">Fullscreen</span>
-    </button>
+    <div class="absolute top-3 right-3 z-50 flex gap-2">
+        <button onclick="toggleMagnify()" id="magnify-btn"
+            class="bg-slate-800 hover:bg-slate-700 text-white text-xs px-3 py-1.5 rounded-lg shadow-lg transition-colors flex items-center gap-1.5 border border-slate-600">
+            <span>🔍</span>
+            <span id="mag-label">Magnify</span>
+        </button>
+        <button onclick="toggleFullscreen()" id="fullscreen-btn"
+            class="bg-slate-800 hover:bg-slate-700 text-white text-xs px-3 py-1.5 rounded-lg shadow-lg transition-colors flex items-center gap-1.5 border border-slate-600">
+            <span id="fs-icon">⛶</span>
+            <span id="fs-label">Fullscreen</span>
+        </button>
+    </div>
     <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-full">
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 h-full">
@@ -275,6 +282,13 @@
                     <iframe id="sandbox-frame" class="w-full h-full border-0 relative z-10" scrolling="no"
                         style="overflow:hidden;"
                         onload="document.getElementById('iframe-loader').style.display='none'"></iframe>
+
+                    <!-- Magnifier Lens -->
+                    <div id="magnifier-lens"
+                        style="display:none; position:absolute; width:200px; height:200px; border-radius:50%; overflow:hidden; pointer-events:none; z-index:60; border: 3px solid #3b82f6; box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(59,130,246,0.3), inset 0 0 30px rgba(0,0,0,0.2);">
+                        <iframe id="magnifier-frame" scrolling="no"
+                            style="position:absolute; border:0; width:1080px; height:1920px; transform-origin:0 0; pointer-events:none;"></iframe>
+                    </div>
                 </div>
             </div>
         </div>
@@ -495,6 +509,75 @@ Context/Text: "${target.innerText.substring(0, 50).trim()}${target.innerText.len
             icon.textContent = '⛶';
             label.textContent = 'Fullscreen';
         }
+    });
+
+    // --- Magnifying Glass ---
+    let magnifyActive = false;
+
+    function toggleMagnify() {
+        magnifyActive = !magnifyActive;
+        const btn = document.getElementById('magnify-btn');
+        const lens = document.getElementById('magnifier-lens');
+        const label = document.getElementById('mag-label');
+
+        if (magnifyActive) {
+            btn.classList.add('bg-blue-600', 'border-blue-500');
+            btn.classList.remove('bg-slate-800', 'border-slate-600');
+            label.textContent = 'Magnify ON';
+            // Load same URL in magnifier iframe at native scale
+            const mainFrame = document.getElementById('sandbox-frame');
+            const magFrame = document.getElementById('magnifier-frame');
+            if (mainFrame.src) {
+                magFrame.src = mainFrame.src;
+            }
+        } else {
+            btn.classList.remove('bg-blue-600', 'border-blue-500');
+            btn.classList.add('bg-slate-800', 'border-slate-600');
+            label.textContent = 'Magnify';
+            lens.style.display = 'none';
+        }
+    }
+
+    // Track mouse over the preview container
+    document.addEventListener('DOMContentLoaded', () => {
+        const container = document.getElementById('sandbox-preview-container');
+        if (!container) return;
+
+        container.addEventListener('mousemove', function (e) {
+            if (!magnifyActive) return;
+            const lens = document.getElementById('magnifier-lens');
+            const mainFrame = document.getElementById('sandbox-frame');
+            const magFrame = document.getElementById('magnifier-frame');
+            const rect = container.getBoundingClientRect();
+            const frameRect = mainFrame.getBoundingClientRect();
+
+            const lensSize = 200;
+            const magScale = 0.5; // Magnifier renders at 50% of 1080px native = ~540px, which is ~2.5x the preview
+
+            // Position lens centered on cursor (relative to container)
+            const lensX = e.clientX - rect.left - lensSize / 2;
+            const lensY = e.clientY - rect.top - lensSize / 2;
+            lens.style.display = 'block';
+            lens.style.left = lensX + 'px';
+            lens.style.top = lensY + 'px';
+
+            // Map cursor position to content coordinates in the 1080x1920 space
+            const mouseXInFrame = e.clientX - frameRect.left;
+            const mouseYInFrame = e.clientY - frameRect.top;
+            const contentX = (mouseXInFrame / frameRect.width) * 1080;
+            const contentY = (mouseYInFrame / frameRect.height) * 1920;
+
+            // Scale and offset the magnifier iframe so the content under cursor is centered in the lens
+            magFrame.style.transform = `scale(${magScale})`;
+            magFrame.style.left = -(contentX * magScale) + (lensSize / 2) + 'px';
+            magFrame.style.top = -(contentY * magScale) + (lensSize / 2) + 'px';
+        });
+
+        container.addEventListener('mouseleave', function () {
+            if (magnifyActive) {
+                document.getElementById('magnifier-lens').style.display = 'none';
+            }
+        });
     });
 
 </script>
