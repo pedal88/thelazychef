@@ -2,24 +2,6 @@
 
 {% block title %}Media Hub - Sandbox{% endblock %}
 
-{% block head %}
-<!-- CodeMirror Dependencies -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/material-darker.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/xml/xml.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/css/css.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
-<style>
-    .CodeMirror {
-        height: 100% !important;
-        font-size: 13px;
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    }
-</style>
-{% endblock %}
-
 {% block content %}
 <div class="h-full bg-slate-50 border-t border-slate-200 py-6 min-h-screen">
     <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -155,33 +137,6 @@
                                 <span class="font-semibold text-sm">Galaxy</span>
                             </a>
                         </div>
-
-                        <!-- IDE Code Editor Panel -->
-                        <div class="mt-6 bg-slate-900 rounded-xl overflow-hidden border border-slate-700 shadow-xl flex flex-col hidden"
-                            id="editor-panel">
-                            <div
-                                class="bg-slate-800 px-4 py-3 border-b border-slate-700 flex justify-between items-center">
-                                <div class="flex items-center gap-2 text-slate-300">
-                                    <span class="text-xs">⌨️</span>
-                                    <span class="font-mono text-sm font-semibold"
-                                        id="editor-filename">fragment.html</span>
-                                </div>
-                                <div class="flex gap-2">
-                                    <button onclick="loadSource('base_fragment')"
-                                        class="text-xs px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 transition-colors">Edit
-                                        Base Theme</button>
-                                    <button onclick="saveSource()" id="save-source-btn"
-                                        class="text-[11px] px-3 py-1 rounded bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors flex items-center gap-1">
-                                        <span>Save to Disk</span>
-                                        <span class="text-blue-300 text-[10px] ml-1">(Cmd+S)</span>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="relative w-full" style="height: 450px;">
-                                <textarea id="code-editor" class="hidden"></textarea>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
             </div>
@@ -247,9 +202,6 @@
             document.getElementById('iframe-loader').style.display = 'none';
             applyCurrentThemeVars();
         };
-
-        // Boot up the native IDE editor for the fragment
-        loadSource(fragmentName);
     }
 
     // --- Developer Tools: Live Variables ---
@@ -333,85 +285,6 @@
             // Silently fail network errors to prevent console spam
         }
     }, 1500); // Check every 1.5 seconds
-
-    // --- Developer Tools: CodeMirror Editor ---
-    let currentEditorFrag = null;
-    let codeMirrorInstance = null;
-
-    function initCodeMirror() {
-        if (codeMirrorInstance) return;
-        const textarea = document.getElementById('code-editor');
-        codeMirrorInstance = CodeMirror.fromTextArea(textarea, {
-            mode: "htmlmixed",
-            theme: "material-darker",
-            lineNumbers: true,
-            indentUnit: 4,
-            lineWrapping: true,
-            extraKeys: {
-                "Cmd-S": function (cm) { saveSource(); },
-                "Ctrl-S": function (cm) { saveSource(); }
-            }
-        });
-        codeMirrorInstance.setSize("100%", "100%");
-    }
-
-    async function loadSource(fragmentName) {
-        currentEditorFrag = fragmentName;
-        document.getElementById('editor-panel').classList.remove('hidden');
-        document.getElementById('editor-filename').textContent = fragmentName + '.html';
-
-        initCodeMirror();
-        codeMirrorInstance.setValue("");
-
-        try {
-            const res = await fetch(`/admin/media-hub/sandbox/api/source/${fragmentName}`);
-            const data = await res.json();
-            if (res.ok) {
-                codeMirrorInstance.setValue(data.content || "");
-                codeMirrorInstance.clearHistory();
-            } else {
-                codeMirrorInstance.setValue(`<!-- Error loading ${fragmentName}.html: ${data.error} -->`);
-            }
-        } catch (e) {
-            codeMirrorInstance.setValue(`<!-- Network Error -->`);
-        }
-    }
-
-    async function saveSource() {
-        if (!currentEditorFrag || !codeMirrorInstance) return;
-
-        const content = codeMirrorInstance.getValue();
-        const btn = document.getElementById('save-source-btn');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = `<span class="flex items-center gap-1"><svg class="animate-spin h-3 w-3 inline" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291l3-2.647z"></path></svg> Saving...</span>`;
-
-        try {
-            const res = await fetch(`/admin/media-hub/sandbox/api/source/${currentEditorFrag}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content: content })
-            });
-            if (res.ok) {
-                btn.innerHTML = `<span class="text-green-300 flex items-center gap-1">✓ Saved!</span>`;
-                setTimeout(() => { btn.innerHTML = originalText; }, 2000);
-
-                // Flash force reload the iframe instantly
-                const livereload = document.getElementById('sandbox-livereload');
-                if (livereload && livereload.checked) {
-                    const frame = document.getElementById('sandbox-frame');
-                    if (frame.contentWindow) {
-                        frame.contentWindow.location.reload();
-                    }
-                }
-            } else {
-                alert("Failed to save.");
-                btn.innerHTML = originalText;
-            }
-        } catch (e) {
-            alert("Network error.");
-            btn.innerHTML = originalText;
-        }
-    }
 
 </script>
 {% endblock %}
