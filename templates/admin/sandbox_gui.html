@@ -289,9 +289,9 @@
 
                     <!-- Magnifier Lens -->
                     <div id="magnifier-lens"
-                        style="display:none; position:absolute; width:200px; height:200px; border-radius:50%; overflow:hidden; pointer-events:none; z-index:60; border: 3px solid #3b82f6; box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(59,130,246,0.3), inset 0 0 30px rgba(0,0,0,0.2);">
+                        style="display:none; position:absolute; width:300px; height:300px; border-radius:50%; overflow:hidden; pointer-events:none; z-index:60; border: 3px solid #3b82f6; box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(59,130,246,0.3), inset 0 0 30px rgba(0,0,0,0.2);">
                         <iframe id="magnifier-frame" scrolling="no"
-                            style="position:absolute; border:0; width:1080px; height:1920px; transform-origin:0 0; pointer-events:none;"></iframe>
+                            style="position:absolute; border:0; transform-origin:0 0; pointer-events:none;"></iframe>
                     </div>
                 </div>
             </div>
@@ -534,6 +534,10 @@ Context/Text: "${target.innerText.substring(0, 50).trim()}${target.innerText.len
             // Load same URL in magnifier iframe at native scale
             const mainFrame = document.getElementById('sandbox-frame');
             const magFrame = document.getElementById('magnifier-frame');
+            // Match the magnifier iframe to the main iframe's actual viewport size
+            const mainRect = mainFrame.getBoundingClientRect();
+            magFrame.style.width = mainRect.width + 'px';
+            magFrame.style.height = mainRect.height + 'px';
             if (mainFrame.src) {
                 magFrame.src = mainFrame.src;
             }
@@ -560,8 +564,8 @@ Context/Text: "${target.innerText.substring(0, 50).trim()}${target.innerText.len
             const rect = container.getBoundingClientRect();
             const frameRect = mainFrame.getBoundingClientRect();
 
-            const lensSize = 200;
-            const magScale = 0.5;
+            const lensSize = 300;
+            const zoomFactor = 2.5;
 
             // Position lens centered on cursor (relative to container)
             const lensX = e.clientX - rect.left - lensSize / 2;
@@ -570,16 +574,14 @@ Context/Text: "${target.innerText.substring(0, 50).trim()}${target.innerText.len
             lens.style.left = lensX + 'px';
             lens.style.top = lensY + 'px';
 
-            // Map cursor position to content coordinates in the 1080x1920 space
+            // Mouse position relative to the main iframe (pixel coordinates in the displayed iframe)
             const mouseXInFrame = e.clientX - frameRect.left;
             const mouseYInFrame = e.clientY - frameRect.top;
-            const contentX = (mouseXInFrame / frameRect.width) * 1080;
-            const contentY = (mouseYInFrame / frameRect.height) * 1920;
 
-            // Scale and offset the magnifier iframe
-            magFrame.style.transform = `scale(${magScale})`;
-            magFrame.style.left = -(contentX * magScale) + (lensSize / 2) + 'px';
-            magFrame.style.top = -(contentY * magScale) + (lensSize / 2) + 'px';
+            // Zoom the magnifier iframe and offset so the area under cursor is centered in the lens
+            magFrame.style.transform = `scale(${zoomFactor})`;
+            magFrame.style.left = -(mouseXInFrame * zoomFactor) + (lensSize / 2) + 'px';
+            magFrame.style.top = -(mouseYInFrame * zoomFactor) + (lensSize / 2) + 'px';
         });
 
         overlay.addEventListener('mouseleave', function () {
