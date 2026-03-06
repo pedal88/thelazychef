@@ -159,6 +159,99 @@
                             </a>
                         </div>
 
+                        <!-- Design Tokens Panel -->
+                        <div class="mt-6">
+                            <button
+                                onclick="document.getElementById('tokens-body').classList.toggle('hidden'); this.querySelector('.toggle-arrow').classList.toggle('rotate-90')"
+                                class="w-full flex items-center justify-between bg-slate-800 text-white px-4 py-3 rounded-t-xl hover:bg-slate-700 transition-colors">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm">🎛️</span>
+                                    <span class="text-xs font-bold uppercase tracking-wider">Design Tokens</span>
+                                </div>
+                                <span class="toggle-arrow text-xs transition-transform rotate-90">▶</span>
+                            </button>
+                            <div id="tokens-body"
+                                class="bg-slate-900 rounded-b-xl border border-t-0 border-slate-700 p-4 flex flex-col gap-4">
+
+                                <!-- Font Family -->
+                                <div>
+                                    <div class="text-[10px] text-slate-500 font-bold uppercase mb-2">Font Family</div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <select id="token-font-heading" onchange="applyTokenFont('heading', this.value)"
+                                            class="text-xs bg-slate-800 text-slate-300 border border-slate-700 rounded px-2 py-1.5">
+                                            <option value="'Playfair Display', serif">Playfair Display</option>
+                                            <option value="'Inter', sans-serif">Inter</option>
+                                            <option value="'Georgia', serif">Georgia</option>
+                                            <option value="'Outfit', sans-serif">Outfit</option>
+                                        </select>
+                                        <select id="token-font-body" onchange="applyTokenFont('body', this.value)"
+                                            class="text-xs bg-slate-800 text-slate-300 border border-slate-700 rounded px-2 py-1.5">
+                                            <option value="'Inter', sans-serif">Inter (Body)</option>
+                                            <option value="'Roboto', sans-serif">Roboto</option>
+                                            <option value="'Outfit', sans-serif">Outfit</option>
+                                            <option value="system-ui, sans-serif">System UI</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Typography Scale -->
+                                <div>
+                                    <div class="text-[10px] text-slate-500 font-bold uppercase mb-2">Typography Scale
+                                        (px)</div>
+                                    <div class="flex flex-col gap-3">
+                                        <div class="flex items-center gap-3">
+                                            <span class="text-[10px] text-pink-400 font-mono w-16 shrink-0">title</span>
+                                            <input type="range" id="token-title-size" min="24" max="72" value="48"
+                                                step="1" oninput="applyTokenSize('frag-title', this.value, 'val-title')"
+                                                class="flex-1 h-1 accent-pink-500">
+                                            <span id="val-title"
+                                                class="text-xs text-slate-400 font-mono w-8 text-right">48</span>
+                                        </div>
+                                        <div class="flex items-center gap-3">
+                                            <span
+                                                class="text-[10px] text-orange-400 font-mono w-16 shrink-0">heading</span>
+                                            <input type="range" id="token-heading-size" min="18" max="56" value="36"
+                                                step="1"
+                                                oninput="applyTokenSize('frag-heading', this.value, 'val-heading')"
+                                                class="flex-1 h-1 accent-orange-500">
+                                            <span id="val-heading"
+                                                class="text-xs text-slate-400 font-mono w-8 text-right">36</span>
+                                        </div>
+                                        <div class="flex items-center gap-3">
+                                            <span class="text-[10px] text-blue-400 font-mono w-16 shrink-0">label</span>
+                                            <input type="range" id="token-label-size" min="10" max="24" value="16"
+                                                step="1" oninput="applyTokenSize('frag-label', this.value, 'val-label')"
+                                                class="flex-1 h-1 accent-blue-500">
+                                            <span id="val-label"
+                                                class="text-xs text-slate-400 font-mono w-8 text-right">16</span>
+                                        </div>
+                                        <div class="flex items-center gap-3">
+                                            <span class="text-[10px] text-green-400 font-mono w-16 shrink-0">body</span>
+                                            <input type="range" id="token-body-size" min="12" max="36" value="21"
+                                                step="1" oninput="applyTokenSize('frag-body', this.value, 'val-body')"
+                                                class="flex-1 h-1 accent-green-500">
+                                            <span id="val-body"
+                                                class="text-xs text-slate-400 font-mono w-8 text-right">21</span>
+                                        </div>
+                                        <div class="flex items-center gap-3">
+                                            <span
+                                                class="text-[10px] text-slate-400 font-mono w-16 shrink-0">small</span>
+                                            <input type="range" id="token-small-size" min="8" max="20" value="14"
+                                                step="1" oninput="applyTokenSize('frag-small', this.value, 'val-small')"
+                                                class="flex-1 h-1 accent-slate-500">
+                                            <span id="val-small"
+                                                class="text-xs text-slate-400 font-mono w-8 text-right">14</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Reset -->
+                                <button onclick="resetTokens()"
+                                    class="text-[10px] text-blue-400 hover:text-blue-300 underline self-end">Reset to
+                                    defaults</button>
+                            </div>
+                        </div>
+
                         <!-- Inspector Panel -->
                         <div class="mt-6 bg-slate-900 rounded-xl overflow-hidden border border-slate-700 shadow-xl flex flex-col hidden"
                             id="inspector-panel">
@@ -414,6 +507,74 @@
             // Silently fail network errors to prevent console spam
         }
     }, 1500); // Check every 1.5 seconds
+
+    // --- Developer Tools: Design Tokens ---
+    function getTokenStyleTag(frame) {
+        if (!frame.contentWindow || !frame.contentWindow.document) return null;
+        let tag = frame.contentWindow.document.getElementById('sandbox-token-overrides');
+        if (!tag) {
+            tag = frame.contentWindow.document.createElement('style');
+            tag.id = 'sandbox-token-overrides';
+            frame.contentWindow.document.head.appendChild(tag);
+        }
+        return tag;
+    }
+
+    // Track current overrides so we can rebuild the style tag
+    let tokenOverrides = {};
+
+    function rebuildTokenCSS() {
+        const frame = document.getElementById('sandbox-frame');
+        const tag = getTokenStyleTag(frame);
+        if (!tag) return;
+
+        let css = '';
+        for (const [selector, props] of Object.entries(tokenOverrides)) {
+            const declarations = Object.entries(props).map(([k, v]) => `${k}: ${v} !important`).join('; ');
+            css += `.${selector} { ${declarations}; }\n`;
+        }
+        tag.innerHTML = css;
+    }
+
+    function applyTokenSize(className, value, labelId) {
+        document.getElementById(labelId).textContent = value;
+        if (!tokenOverrides[className]) tokenOverrides[className] = {};
+        tokenOverrides[className]['font-size'] = value + 'px';
+        rebuildTokenCSS();
+    }
+
+    function applyTokenFont(type, fontFamily) {
+        const classes = type === 'heading'
+            ? ['frag-title', 'frag-heading']
+            : ['frag-body', 'frag-label', 'frag-small'];
+
+        classes.forEach(cls => {
+            if (!tokenOverrides[cls]) tokenOverrides[cls] = {};
+            tokenOverrides[cls]['font-family'] = fontFamily;
+        });
+        rebuildTokenCSS();
+    }
+
+    function resetTokens() {
+        tokenOverrides = {};
+        const frame = document.getElementById('sandbox-frame');
+        const tag = getTokenStyleTag(frame);
+        if (tag) tag.innerHTML = '';
+
+        // Reset slider UI values
+        document.getElementById('token-title-size').value = 48;
+        document.getElementById('val-title').textContent = '48';
+        document.getElementById('token-heading-size').value = 36;
+        document.getElementById('val-heading').textContent = '36';
+        document.getElementById('token-label-size').value = 16;
+        document.getElementById('val-label').textContent = '16';
+        document.getElementById('token-body-size').value = 21;
+        document.getElementById('val-body').textContent = '21';
+        document.getElementById('token-small-size').value = 14;
+        document.getElementById('val-small').textContent = '14';
+        document.getElementById('token-font-heading').selectedIndex = 0;
+        document.getElementById('token-font-body').selectedIndex = 0;
+    }
 
     // --- Developer Tools: Click Inspector ---
     let copyDataCache = "";
