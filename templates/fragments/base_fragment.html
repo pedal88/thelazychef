@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1080">
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;600;700;800;900&display=swap"
+        rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
@@ -32,22 +35,117 @@
     <style>
         /* ── Theme CSS Variables ── */
         :root {
-            --fg:           {{ theme.fg           | default('#ffffff') }};
-            --fg-muted:     {{ theme.fg_muted     | default('rgba(255,255,255,0.60)') }};
-            --fg-subtle:    {{ theme.fg_subtle    | default('rgba(255,255,255,0.40)') }};
-            --bg:           {{ theme.bg           | default('#0f172a') }};
-            --bg-lighter:   {{ theme.bg_lighter   | default('#1e293b') }};
-            --bg-card:      {{ theme.bg_card      | default('#1e293b') }};
-            --bg-gradient-start: {{ theme.bg_gradient_start | default('#0f172a') }};
-            --bg-gradient-end:   {{ theme.bg_gradient_end   | default('#0c1222') }};
-            --accent:       {{ theme.accent       | default('#f97316') }};
-            --accent-dark:  {{ theme.accent_dark  | default('#ea580c') }};
-            --accent-light: {{ theme.accent_light | default('#fdba74') }};
-            --card-border:  {{ theme.card_border  | default('rgba(255,255,255,0.10)') }};
-            --card-bg:      {{ theme.card_bg      | default('rgba(255,255,255,0.05)') }};
+            --fg: {
+                    {
+                    theme.fg | default('#ffffff')
+                }
+            }
+
+            ;
+
+            --fg-muted: {
+                    {
+                    theme.fg_muted | default('rgba(255,255,255,0.60)')
+                }
+            }
+
+            ;
+
+            --fg-subtle: {
+                    {
+                    theme.fg_subtle | default('rgba(255,255,255,0.40)')
+                }
+            }
+
+            ;
+
+            --bg: {
+                    {
+                    theme.bg | default('#0f172a')
+                }
+            }
+
+            ;
+
+            --bg-lighter: {
+                    {
+                    theme.bg_lighter | default('#1e293b')
+                }
+            }
+
+            ;
+
+            --bg-card: {
+                    {
+                    theme.bg_card | default('#1e293b')
+                }
+            }
+
+            ;
+
+            --bg-gradient-start: {
+                    {
+                    theme.bg_gradient_start | default('#0f172a')
+                }
+            }
+
+            ;
+
+            --bg-gradient-end: {
+                    {
+                    theme.bg_gradient_end | default('#0c1222')
+                }
+            }
+
+            ;
+
+            --accent: {
+                    {
+                    theme.accent | default('#f97316')
+                }
+            }
+
+            ;
+
+            --accent-dark: {
+                    {
+                    theme.accent_dark | default('#ea580c')
+                }
+            }
+
+            ;
+
+            --accent-light: {
+                    {
+                    theme.accent_light | default('#fdba74')
+                }
+            }
+
+            ;
+
+            --card-border: {
+                    {
+                    theme.card_border | default('rgba(255,255,255,0.10)')
+                }
+            }
+
+            ;
+
+            --card-bg: {
+                    {
+                    theme.card_bg | default('rgba(255,255,255,0.05)')
+                }
+            }
+
+            ;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             width: 1080px;
             height: 1920px;
@@ -55,43 +153,113 @@
             font-family: 'Inter', sans-serif;
             color: var(--fg);
             background: var(--bg);
+
+                {
+                % if scale and scale !=1.0 %
+            }
+
+            transform: scale({
+                    {
+                    scale
+                }
+            });
+        transform-origin: top left;
+
+            {
+            % endif %
+        }
         }
 
         /* ── Safe Box: content lives inside these margins ── */
         .safe-box {
             position: absolute;
-            top: 120px;        /* top safe zone */
-            left: 64px;        /* side padding */
+            top: 120px;
+            /* top safe zone */
+            left: 64px;
+            /* side padding */
             right: 64px;
-            bottom: 280px;     /* bottom safe zone (caption + brand) */
+            bottom: 280px;
+            /* bottom safe zone (caption + brand) */
             display: flex;
             flex-direction: column;
         }
+
         /* Full-bleed fragments (Hero) skip the safe box */
-        .full-bleed { position: absolute; inset: 0; }
+        .full-bleed {
+            position: absolute;
+            inset: 0;
+        }
 
         /* ── Scalable typography ── */
-        .frag-title   { font-size: clamp(36px, 4.2vw, 56px); line-height: 1.1; }
-        .frag-heading { font-size: clamp(28px, 3.4vw, 44px); line-height: 1.15; }
-        .frag-label   { font-size: clamp(14px, 1.4vw, 18px); letter-spacing: 0.25em; text-transform: uppercase; font-weight: 700; }
-        .frag-body    { font-size: clamp(18px, 2vw, 24px); line-height: 1.6; }
-        .frag-small   { font-size: clamp(12px, 1.2vw, 16px); }
+        .frag-title {
+            font-size: clamp(36px, 4.2vw, 56px);
+            line-height: 1.1;
+        }
+
+        .frag-heading {
+            font-size: clamp(28px, 3.4vw, 44px);
+            line-height: 1.15;
+        }
+
+        .frag-label {
+            font-size: clamp(14px, 1.4vw, 18px);
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .frag-body {
+            font-size: clamp(18px, 2vw, 24px);
+            line-height: 1.6;
+        }
+
+        .frag-small {
+            font-size: clamp(12px, 1.2vw, 16px);
+        }
 
         /* ── CSS var utilities ── */
-        .text-fg        { color: var(--fg); }
-        .text-fg-muted  { color: var(--fg-muted); }
-        .text-fg-subtle { color: var(--fg-subtle); }
-        .text-accent    { color: var(--accent); }
-        .bg-surface-grad { background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-lighter), var(--bg-gradient-end)); }
-        .card-glass { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 24px; }
+        .text-fg {
+            color: var(--fg);
+        }
+
+        .text-fg-muted {
+            color: var(--fg-muted);
+        }
+
+        .text-fg-subtle {
+            color: var(--fg-subtle);
+        }
+
+        .text-accent {
+            color: var(--accent);
+        }
+
+        .bg-surface-grad {
+            background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-lighter), var(--bg-gradient-end));
+        }
+
+        .card-glass {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+        }
 
         /* ── Debug: TikTok / Reels safe zone overlay ── */
-        {% if debug %}
-        .debug-zones { display: block !important; }
-        {% endif %}
+            {
+            % if debug %
+        }
+
+        .debug-zones {
+            display: block !important;
+        }
+
+            {
+            % endif %
+        }
     </style>
     {% block head %}{% endblock %}
 </head>
+
 <body>
     <div id="fragment-root" class="relative w-[1080px] h-[1920px] overflow-hidden">
         {% block content %}{% endblock %}
@@ -100,7 +268,8 @@
         <div class="absolute bottom-0 left-0 right-0 px-12 py-8 flex items-center justify-between z-50">
             <div class="flex items-center gap-3">
                 <span class="text-3xl">🍳</span>
-                <span class="font-serif text-xl font-bold tracking-tight" style="color: var(--fg-muted);">The Lazy Chef</span>
+                <span class="font-serif text-xl font-bold tracking-tight" style="color: var(--fg-muted);">The Lazy
+                    Chef</span>
             </div>
             {% if page_indicator %}
             <span class="frag-small font-medium" style="color: var(--fg-subtle);">{{ page_indicator }}</span>
@@ -110,22 +279,27 @@
         {# ── TikTok/Reels safe zone debug overlay ── #}
         <div class="debug-zones absolute inset-0 pointer-events-none z-[999]" style="display:none;">
             {# Top status bar area #}
-            <div class="absolute top-0 left-0 right-0 h-[120px] bg-red-500/15 border-b border-red-500/30 flex items-end justify-center pb-2">
+            <div
+                class="absolute top-0 left-0 right-0 h-[120px] bg-red-500/15 border-b border-red-500/30 flex items-end justify-center pb-2">
                 <span class="text-red-400 text-xs font-mono">TOP SAFE ZONE (120px)</span>
             </div>
             {# Bottom caption / CTA area #}
-            <div class="absolute bottom-0 left-0 right-0 h-[280px] bg-red-500/15 border-t border-red-500/30 flex items-start justify-center pt-2">
+            <div
+                class="absolute bottom-0 left-0 right-0 h-[280px] bg-red-500/15 border-t border-red-500/30 flex items-start justify-center pt-2">
                 <span class="text-red-400 text-xs font-mono">BOTTOM SAFE ZONE (280px — captions + brand)</span>
             </div>
             {# Right sidebar — like/comment/share buttons #}
-            <div class="absolute top-[40%] right-0 w-[100px] h-[400px] bg-blue-500/15 border-l border-blue-500/30 flex items-center justify-center">
+            <div
+                class="absolute top-[40%] right-0 w-[100px] h-[400px] bg-blue-500/15 border-l border-blue-500/30 flex items-center justify-center">
                 <span class="text-blue-400 text-xs font-mono rotate-90 whitespace-nowrap">SIDEBAR (likes/share)</span>
             </div>
             {# Content safe box outline #}
-            <div class="absolute border-2 border-dashed border-green-500/40" style="top:120px;left:64px;right:64px;bottom:280px;">
+            <div class="absolute border-2 border-dashed border-green-500/40"
+                style="top:120px;left:64px;right:64px;bottom:280px;">
                 <span class="absolute top-1 left-2 text-green-400 text-xs font-mono">CONTENT SAFE BOX</span>
             </div>
         </div>
     </div>
 </body>
+
 </html>

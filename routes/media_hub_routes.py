@@ -492,6 +492,7 @@ def fragment_sandbox(fragment_name):
     recipe_id = request.args.get("recipe_id", 192, type=int)
     theme_name = request.args.get("theme", "modern")
     debug = request.args.get("debug", "").lower() in ("1", "true", "yes")
+    scale = request.args.get("scale", 1.0, type=float)
 
     try:
         storage_provider = media_hub_bp.storage_provider
@@ -502,6 +503,7 @@ def fragment_sandbox(fragment_name):
             storage_provider=storage_provider,
             theme_name=theme_name,
             debug=debug,
+            scale=scale,
         )
         return render_template(f"fragments/{fragment_name}.html", **ctx)
     except ValueError as e:

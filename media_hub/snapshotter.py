@@ -525,19 +525,9 @@ def _build_galaxy_data(recipe, session, storage_provider=None) -> dict:
 VALID_FRAGMENTS = {"hero", "meta", "nutrition", "ingredients", "steps", "galaxy"}
 
 
-def build_sandbox_context(
-    recipe_id: int,
-    fragment_name: str,
-    app: Flask,
-    storage_provider=None,
-    theme_name: str = DEFAULT_THEME,
-    debug: bool = False,
-) -> dict:
+def build_sandbox_context(recipe_id: int, fragment_name: str, app, storage_provider, theme_name="modern", debug=False, scale=1.0):
     """
-    Build the full template context for a single fragment, suitable for
-    rendering in a browser (no Playwright).
-
-    Used by the /admin/media-hub/sandbox/<fragment_name> route.
+    Builds the Jinja context needed to render a specific fragment in the browser sandbox.
     """
     from database.models import Recipe, db
 
@@ -569,6 +559,7 @@ def build_sandbox_context(
             "chef_name": recipe.chef.name if recipe.chef else None,
             "theme": theme,
             "debug": debug,
+            "scale": scale,
         }
 
         if fragment_name == "hero":
