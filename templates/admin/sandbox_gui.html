@@ -137,6 +137,98 @@
                                 <span class="font-semibold text-sm">Galaxy</span>
                             </a>
                         </div>
+
+                        <!-- Inspector Panel -->
+                        <div class="mt-6 bg-slate-900 rounded-xl overflow-hidden border border-slate-700 shadow-xl flex flex-col hidden"
+                            id="inspector-panel">
+                            <div
+                                class="bg-slate-800 px-4 py-3 border-b border-slate-700 flex justify-between items-center">
+                                <div class="flex items-center gap-2 text-slate-300">
+                                    <span class="text-xs">🔍</span>
+                                    <span class="font-mono text-sm font-semibold uppercase tracking-wider">Element
+                                        Inspector</span>
+                                </div>
+                                <span
+                                    class="bg-blue-600/20 text-blue-400 text-[10px] px-2 py-0.5 rounded font-medium border border-blue-500/30">Click
+                                    Preview</span>
+                            </div>
+                            <div class="p-4 overflow-y-auto" style="height: 350px;">
+                                <div id="inspector-empty"
+                                    class="h-full flex flex-col items-center justify-center text-slate-500 text-sm">
+                                    <span class="text-3xl mb-2">🖱️</span>
+                                    <p>Click any element in the iframe</p>
+                                    <p class="text-xs mt-1">to inspect its styles</p>
+                                </div>
+                                <div id="inspector-content" class="hidden flex flex-col gap-4">
+                                    <div>
+                                        <div class="text-[10px] text-slate-500 font-bold uppercase mb-1">Tag</div>
+                                        <div id="ins-tag"
+                                            class="font-mono text-pink-400 text-sm bg-slate-800 rounded px-2 py-1 border border-slate-700">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="text-[10px] text-slate-500 font-bold uppercase mb-1">Classes</div>
+                                        <div id="ins-classes"
+                                            class="font-mono text-blue-300 text-xs bg-slate-800 rounded px-2 py-1.5 border border-slate-700 break-words">
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <div class="text-[10px] text-slate-500 font-bold uppercase mb-1">Font Size
+                                            </div>
+                                            <div id="ins-fontsize"
+                                                class="font-mono text-slate-300 text-xs bg-slate-800 rounded px-2 py-1 border border-slate-700">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="text-[10px] text-slate-500 font-bold uppercase mb-1">Color</div>
+                                            <div
+                                                class="flex items-center gap-2 bg-slate-800 rounded px-2 py-1 border border-slate-700">
+                                                <div id="ins-color-swatch"
+                                                    class="w-3 h-3 rounded-full border border-slate-600"></div>
+                                                <div id="ins-color" class="font-mono text-slate-300 text-xs"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <div class="text-[10px] text-slate-500 font-bold uppercase mb-1">Padding
+                                            </div>
+                                            <div id="ins-padding"
+                                                class="font-mono text-slate-300 text-xs bg-slate-800 rounded px-2 py-1 border border-slate-700">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="text-[10px] text-slate-500 font-bold uppercase mb-1">Margin
+                                            </div>
+                                            <div id="ins-margin"
+                                                class="font-mono text-slate-300 text-xs bg-slate-800 rounded px-2 py-1 border border-slate-700">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <div class="text-[10px] text-slate-500 font-bold uppercase mb-1">Width</div>
+                                            <div id="ins-width"
+                                                class="font-mono text-slate-300 text-xs bg-slate-800 rounded px-2 py-1 border border-slate-700">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="text-[10px] text-slate-500 font-bold uppercase mb-1">Height
+                                            </div>
+                                            <div id="ins-height"
+                                                class="font-mono text-slate-300 text-xs bg-slate-800 rounded px-2 py-1 border border-slate-700">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button onclick="copyInspectorData()"
+                                        class="mt-2 text-xs bg-slate-700 hover:bg-slate-600 text-white rounded py-2 transition-colors flex justify-center items-center gap-1 border border-slate-600">
+                                        <span>📋</span> Copy to Clipboard for AI
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -201,7 +293,11 @@
         frame.onload = function () {
             document.getElementById('iframe-loader').style.display = 'none';
             applyCurrentThemeVars();
+            attachInspector(frame);
         };
+
+        // Ensure panel is visible
+        document.getElementById('inspector-panel').classList.remove('hidden');
     }
 
     // --- Developer Tools: Live Variables ---
@@ -285,6 +381,77 @@
             // Silently fail network errors to prevent console spam
         }
     }, 1500); // Check every 1.5 seconds
+
+    // --- Developer Tools: Click Inspector ---
+    let copyDataCache = "";
+
+    function attachInspector(frame) {
+        if (!frame.contentWindow || !frame.contentWindow.document) return;
+
+        // Inject a tiny style to show outline on hover
+        const doc = frame.contentWindow.document;
+        const style = doc.createElement('style');
+        style.innerHTML = `
+            .sandbox-inspect-hover { outline: 2px dashed #3b82f6 !important; outline-offset: -2px !important; cursor: crosshair !important; }
+        `;
+        doc.head.appendChild(style);
+
+        doc.body.addEventListener('mouseover', function (e) {
+            e.target.classList.add('sandbox-inspect-hover');
+        });
+
+        doc.body.addEventListener('mouseout', function (e) {
+            e.target.classList.remove('sandbox-inspect-hover');
+        });
+
+        doc.body.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const target = e.target;
+            const computed = frame.contentWindow.getComputedStyle(target);
+
+            document.getElementById('inspector-empty').classList.add('hidden');
+            document.getElementById('inspector-content').classList.remove('hidden');
+
+            document.getElementById('ins-tag').textContent = `<${target.tagName.toLowerCase()}>`;
+            document.getElementById('ins-classes').textContent = target.className.replace('sandbox-inspect-hover', '').trim() || '(no classes)';
+
+            document.getElementById('ins-fontsize').textContent = computed.fontSize;
+
+            document.getElementById('ins-color').textContent = computed.color;
+            document.getElementById('ins-color-swatch').style.backgroundColor = computed.color;
+
+            document.getElementById('ins-padding').textContent = computed.padding;
+            document.getElementById('ins-margin').textContent = computed.margin;
+            document.getElementById('ins-width').textContent = computed.width;
+            document.getElementById('ins-height').textContent = computed.height;
+
+            // Format everything nicely for the AI copy buffer
+            copyDataCache = `Element: <${target.tagName.toLowerCase()}>
+Classes: ${target.className.replace('sandbox-inspect-hover', '').trim()}
+
+Computed CSS:
+Font-Size: ${computed.fontSize}
+Color: ${computed.color}
+Padding: ${computed.padding}
+Margin: ${computed.margin}
+Width: ${computed.width}
+Height: ${computed.height}
+
+Context/Text: "${target.innerText.substring(0, 50).trim()}${target.innerText.length > 50 ? '...' : ''}"`;
+
+        }, true);
+    }
+
+    function copyInspectorData() {
+        if (!copyDataCache) return;
+        navigator.clipboard.writeText(copyDataCache).then(() => {
+            alert("✅ Copied! Paste this into Antigravity or Cursor along with your request.\n\nExample:\n'I want to increase the font size of this element. Make it text-2xl.'\n\n" + copyDataCache);
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+        });
+    }
 
 </script>
 {% endblock %}
