@@ -522,7 +522,7 @@ def _build_galaxy_data(recipe, session, storage_provider=None) -> dict:
 # 7. SANDBOX — build context for browser-based design iteration
 # ---------------------------------------------------------------------------
 
-VALID_FRAGMENTS = {"hero", "meta", "nutrition", "ingredients", "steps", "galaxy"}
+VALID_FRAGMENTS = {"hero", "meta", "nutrition", "ingredients", "steps", "galaxy", "typography"}
 
 
 def build_sandbox_context(recipe_id: int, fragment_name: str, app, storage_provider, theme_name="modern", debug=False, scale=1.0):
@@ -533,6 +533,12 @@ def build_sandbox_context(recipe_id: int, fragment_name: str, app, storage_provi
 
     if fragment_name not in VALID_FRAGMENTS:
         raise ValueError(f"Unknown fragment: {fragment_name}. Valid: {VALID_FRAGMENTS}")
+
+    # Typography specimen is a virtual fragment — no recipe data needed
+    if fragment_name == "typography":
+        with app.app_context():
+            theme = get_theme(theme_name)
+            return {"theme": theme, "debug": debug, "scale": scale}
 
     with app.app_context():
         recipe = db.session.get(Recipe, recipe_id)
