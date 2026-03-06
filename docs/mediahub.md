@@ -44,12 +44,12 @@ The base template (`base_fragment.html`) provides a robust foundation across all
 
 ## 5. Developer Tools & Sandbox
 
-To avoid spinning up the entire backend snapshotter pipeline for every CSS tweak, the system includes a robust Developer Sandbox:
+To avoid spinning up the entire backend snapshotter pipeline for every CSS tweak, the system includes a robust Developer Sandbox at `/admin/media-hub/sandbox`.
 
-*   **Sandbox Route (`GET /admin/media-hub/sandbox/<fragment_name>`)**
-*   **Purpose:** Allows Frontend/UX engineers to render any given fragment as a standard webpage. Real-time DOM editing can be done using the browser's F12 Inspector.
+*   **Responsive 2-Column GUI**: The Sandbox utilizes a streamlined, two-column layout. The left pane provides controls (Recipe ID, Theme, Safe Zones) and a minimalist button grid for selecting fragment types. The right pane hosts a dedicated inline `<iframe>` to instantly preview the selected fragment without opening new tabs.
+*   **Smart Auto-Scaling**: The fragment templates (`base_fragment.html`) contain injected vanilla Javascript that reads the browser's viewport on load. Since fragments are strictly hardcoded to 1080x1920, the Javascript dynamically calculates the necessary decimal scale and applies a CSS `transform: scale(X)` footprint to shrink and perfectly center the 9:16 canvas within the developer's window, emulating a mobile device bezel. When evaluated by the Playwright Headless engine, it forcibly overrides the scale back to `1.0` to preserve pixel-perfect rendering down the pipeline.
 *   **Query Capabilities:** 
-    *   `?recipe_id=XY`: Render with real data.
+    *   `?recipe_id=XY`: Render with real template data.
     *   `?theme=classic`: Hot-swap visual themes.
     *   `?debug=true`: Activates the **TikTok Safe Zones Debug Overlay**. Overlays semi-transparent red/blue blocks showing exactly where TikTok's native right-sidebar (Likes/Shares) and bottom caption blocks sit, guaranteeing zero clipping.
 
