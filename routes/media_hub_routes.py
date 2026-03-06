@@ -398,6 +398,119 @@ def trigger_podcast_audio_render():
 
 
 # ---------------------------------------------------------------------------
+# Routes — Fragment Snapshotter (Lego Building Blocks)
+# ---------------------------------------------------------------------------
+
+@media_hub_bp.route("/preview-fragments", methods=["POST"])
+@login_required
+@admin_required
+def preview_fragments():
+    """
+    Render all fragment PNGs for a recipe and return their URLs.
+
+    JSON body:
+      { "recipe_id": int }
+
+    Returns:
+      { "fragments": [ { "type": str, "page": int, "url": str }, ... ] }
+    """
+    data = request.get_json()
+    if not data or not data.get("recipe_id"):
+        return jsonify({"error": "recipe_id is required"}), 400
+
+    recipe_id = int(data["recipe_id"])
+    app = current_app._get_current_object()
+    storage_provider = media_hub_bp.storage_provider
+
+    try:
+        from media_hub.snapshotter import render_recipe_fragments
+
+        results = render_recipe_fragments(recipe_id, app, storage_provider)
+
+        fragments = []
+        for frag in results:
+            # Build filename for storage
+            fname = f"preview_{frag.fragment_type}"
+            if frag.total_pages > 1:
+                fname += f"_p{frag.page}"
+            fname += ".png"
+            folder = f"fragments/recipe_{recipe_id}"
+
+            if storage_provider:
+                url = storage_provider.save(frag.png_bytes, fname, folder)
+            else:
+                # Fallback: return data URL (local dev without storage)
+                import base64
+                b64 = base64.b64encode(frag.png_bytes).decode()
+                url = f"data:image/png;base64,{b64}"
+
+            fragments.append({
+                "type": frag.fragment_type,
+                "page": frag.page,
+                "total_pages": frag.total_pages,
+                "component": frag.component,
+                "url": url,
+            })
+
+        logger.info(f"[Snapshotter] Preview generated: {len(fragments)} fragments for recipe {recipe_id}")
+        return jsonify({"fragments": fragments}), 200
+
+    except Exception as e:
+        logger.exception(f"[Snapshotter] Preview failed for recipe {recipe_id}")
+        return jsonify({"error": str(e)}), 500
+
+
+@media_hub_bp.route("/sandbox", methods=["GET"])
+@login_required
+@admin_required
+def sandbox_gui():
+    """
+    Landing page for the Media Hub Design Sandbox.
+    Provides a GUI to select recipes, themes, and launch specific fragments.
+    """
+    return render_template("admin/sandbox_gui.html")
+
+
+@media_hub_bp.route("/sandbox/<fragment_name>", methods=["GET"])
+@login_required
+@admin_required
+def fragment_sandbox(fragment_name):
+    """
+    Design sandbox — renders a single fragment as a standard web page.
+    Open in browser and use F12 Inspector for real-time CSS iteration.
+
+    Query params:
+        recipe_id (int)  — default 192
+        theme     (str)  — 'modern' | 'classic'
+        debug     (bool) — '1'/'true' to show TikTok safe zones overlay
+    """
+    from media_hub.snapshotter import build_sandbox_context, VALID_FRAGMENTS
+
+    if fragment_name not in VALID_FRAGMENTS:
+        return jsonify({"error": f"Unknown fragment: {fragment_name}", "valid": sorted(VALID_FRAGMENTS)}), 404
+
+    recipe_id = request.args.get("recipe_id", 192, type=int)
+    theme_name = request.args.get("theme", "modern")
+    debug = request.args.get("debug", "").lower() in ("1", "true", "yes")
+
+    try:
+        storage_provider = media_hub_bp.storage_provider
+        ctx = build_sandbox_context(
+            recipe_id=recipe_id,
+            fragment_name=fragment_name,
+            app=current_app._get_current_object(),
+            storage_provider=storage_provider,
+            theme_name=theme_name,
+            debug=debug,
+        )
+        return render_template(f"fragments/{fragment_name}.html", **ctx)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 404
+    except Exception as e:
+        logger.exception(f"[Sandbox] Failed to render {fragment_name}")
+        return jsonify({"error": str(e)}), 500
+
+# ---------------------------------------------------------------------------
 # Routes — Knowledge Factory (Article + Podcast Generation)
 # ---------------------------------------------------------------------------
 

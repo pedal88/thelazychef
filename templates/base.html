@@ -230,7 +230,7 @@
                             </a>
                             <a href="/admin/media-hub"
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
-                                🎬 Production Suite
+                                🎬 Media Hub
                             </a>
                         </div>
                     </div>
@@ -302,8 +302,7 @@
                         class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">📚 Manage
                         Resources</a>
                     <a href="/admin/media-hub"
-                        class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">🎬 Production
-                        Suite</a>
+                        class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">🎬 Media Hub</a>
                 </div>
                 {% endif %}
                 <div class="border-t border-slate-100 pt-2 mt-2 flex items-center justify-between px-3">
@@ -357,13 +356,18 @@
                     <button class="flex items-center gap-1 hover:text-orange-600 transition-colors focus:outline-none">
                         <span>Discover</span>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
                         </svg>
                     </button>
-                    <div class="absolute left-0 mt-0 w-40 bg-white border border-slate-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[110] transform origin-top-left">
+                    <div
+                        class="absolute left-0 mt-0 w-40 bg-white border border-slate-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[110] transform origin-top-left">
                         <div class="py-1">
-                            <a href="/" class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">Swipe</a>
-                            <a href="/explore/galaxy" class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">Galaxy Map</a>
+                            <a href="/"
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">Swipe</a>
+                            <a href="/explore/galaxy"
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">Galaxy
+                                Map</a>
                         </div>
                     </div>
                 </div>
@@ -373,18 +377,27 @@
                     <button class="flex items-center gap-1 hover:text-orange-600 transition-colors focus:outline-none">
                         <span>Recipes</span>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
                         </svg>
                     </button>
-                    <div class="absolute left-0 mt-0 w-40 bg-white border border-slate-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[110] transform origin-top-left">
+                    <div
+                        class="absolute left-0 mt-0 w-40 bg-white border border-slate-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[110] transform origin-top-left">
                         <div class="py-1">
                             {% if current_user.is_authenticated %}
-                            <a href="{{ url_for('saved_recipes_view') }}" class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">Saved</a>
-                            <a href="{{ url_for('recipes_list', view='made') }}" class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">Made</a>
-                            <a href="{{ url_for('queue.next_recipes_view') }}" class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">Cook Next</a>
+                            <a href="{{ url_for('saved_recipes_view') }}"
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">Saved</a>
+                            <a href="{{ url_for('recipes_list', view='made') }}"
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">Made</a>
+                            <a href="{{ url_for('queue.next_recipes_view') }}"
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">Cook
+                                Next</a>
                             {% endif %}
-                            <a href="/recipes" class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">All Recipes</a>
-                            <a href="{{ url_for('collections_index') }}" class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">Collections</a>
+                            <a href="/recipes"
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">All
+                                Recipes</a>
+                            <a href="{{ url_for('collections_index') }}"
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">Collections</a>
                         </div>
                     </div>
                 </div>
@@ -396,10 +409,13 @@
                 {% if current_user.is_admin %}
                 <a href="/admin" class="hover:text-orange-600 transition-colors">Admin</a>
                 {% endif %}
-                <a href="{{ url_for('logout') }}" class="text-slate-400 hover:text-orange-600 transition-colors">Logout</a>
+                <a href="{{ url_for('logout') }}"
+                    class="text-slate-400 hover:text-orange-600 transition-colors">Logout</a>
                 {% else %}
                 <a href="{{ url_for('login') }}" class="hover:text-orange-600 transition-colors">Login</a>
-                <a href="{{ url_for('register') }}" class="rounded-full bg-orange-600 text-white px-4 py-1.5 hover:bg-orange-700 transition-colors">Sign Up</a>
+                <a href="{{ url_for('register') }}"
+                    class="rounded-full bg-orange-600 text-white px-4 py-1.5 hover:bg-orange-700 transition-colors">Sign
+                    Up</a>
                 {% endif %}
             </div>
         </nav>

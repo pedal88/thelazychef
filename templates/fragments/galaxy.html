@@ -1,0 +1,140 @@
+{% extends "fragments/base_fragment.html" %}
+
+{% block head %}
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+    #galaxy-container {
+        width: 1080px;
+        height: 1700px;
+        position: relative;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="w-full h-full bg-gradient-to-br from-surface via-surface-lighter to-[#0c1222] flex flex-col px-16 pt-16 pb-28">
+
+    {# Section label #}
+    <div class="mb-6 shrink-0">
+        <p class="text-brand text-lg font-bold uppercase tracking-[0.25em]">Flavor Galaxy</p>
+        <h2 class="font-serif text-[44px] font-bold text-white leading-tight mt-2">{{ title }}</h2>
+    </div>
+
+    {# D3 Galaxy container — Playwright will wait for this to render #}
+    <div id="galaxy-container" class="flex-1 rounded-3xl overflow-hidden bg-white/[0.02] border border-white/5"></div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const container = document.getElementById("galaxy-container");
+    const graphData = {{ graph_data | tojson }};
+
+    if (!graphData || !graphData.nodes || graphData.nodes.length <= 1) {
+        container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:rgba(255,255,255,0.4);font-size:24px;">Not enough data for Flavor Galaxy</div>';
+        container.setAttribute("data-rendered", "true");
+        return;
+    }
+
+    const width = 1048;  // 1080 - 2*16px padding
+    const height = 1600;
+
+    const svg = d3.select("#galaxy-container")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .attr("viewBox", [0, 0, width, height]);
+
+    const g = svg.append("g");
+
+    const simulation = d3.forceSimulation(graphData.nodes)
+        .velocityDecay(0.3)
+        .force("link", d3.forceLink(graphData.links).id(d => d.id).distance(d =>
+            d.group === 'cuisine' || d.group === 'protein' ? 100 : 140))
+        .force("charge", d3.forceManyBody().strength(-250))
+        .force("center", d3.forceCenter(width / 2, height / 2))
+        .force("collide", d3.forceCollide().radius(d =>
+            d.group === 'center' ? 50 : (d.group === 'cuisine' || d.group === 'protein' ? 35 : 25)
+        ).iterations(2));
+
+    // Pin center node
+    const centerNode = graphData.nodes.find(n => n.group === 'center');
+    if (centerNode) {
+        centerNode.fx = width / 2;
+        centerNode.fy = height / 2;
+    }
+
+    // Links
+    const link = g.append("g")
+        .attr("stroke", "#475569")
+        .attr("stroke-opacity", 0.4)
+        .selectAll("line")
+        .data(graphData.links)
+        .join("line")
+        .attr("stroke-width", d => Math.sqrt(d.weight) * 1.2);
+
+    // Nodes
+    const colorMap = {
+        'center': '#f97316',
+        'cuisine': '#1e293b',
+        'protein': '#475569',
+        'sibling': '#ffffff'
+    };
+    const radiusMap = {
+        'center': 24,
+        'cuisine': 28,
+        'protein': 22,
+        'sibling': 14
+    };
+
+    const node = g.append("g")
+        .selectAll("g")
+        .data(graphData.nodes)
+        .join("g");
+
+    node.append("circle")
+        .attr("r", d => radiusMap[d.group] || 16)
+        .attr("fill", d => colorMap[d.group] || "#94a3b8")
+        .attr("stroke", d => d.group === 'sibling' ? '#475569' : (d.group === 'center' ? '#fdba74' : 'transparent'))
+        .attr("stroke-width", d => d.group === 'center' ? 3 : 1);
+
+    // Images for center / siblings
+    node.filter(d => d.image)
+        .append("image")
+        .attr("href", d => d.image)
+        .attr("x", d => -(radiusMap[d.group] || 16))
+        .attr("y", d => -(radiusMap[d.group] || 16))
+        .attr("width", d => (radiusMap[d.group] || 16) * 2)
+        .attr("height", d => (radiusMap[d.group] || 16) * 2)
+        .attr("clip-path", d => `circle(${radiusMap[d.group] || 16}px at ${radiusMap[d.group] || 16}px ${radiusMap[d.group] || 16}px)`);
+
+    // Labels
+    node.append("text")
+        .attr("dy", d => (radiusMap[d.group] || 16) + 18)
+        .attr("text-anchor", "middle")
+        .text(d => d.name)
+        .attr("fill", "#94a3b8")
+        .style("font-size", d => d.group === 'center' ? "14px" : "12px")
+        .style("font-weight", d => d.group === 'center' ? "700" : "500")
+        .style("font-family", "Inter, sans-serif");
+
+    // Run simulation for N ticks, then stop and mark as rendered
+    simulation.on("tick", () => {
+        link.attr("x1", d => d.source.x).attr("y1", d => d.source.y)
+            .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+        node.attr("transform", d => `translate(${d.x},${d.y})`);
+    });
+
+    // Let simulation run for 300 ticks then freeze
+    for (let i = 0; i < 300; i++) simulation.tick();
+    simulation.stop();
+
+    // Final positions
+    link.attr("x1", d => d.source.x).attr("y1", d => d.source.y)
+        .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+    node.attr("transform", d => `translate(${d.x},${d.y})`);
+
+    // Signal to Playwright that rendering is complete
+    container.setAttribute("data-rendered", "true");
+});
+</script>
+{% endblock %}

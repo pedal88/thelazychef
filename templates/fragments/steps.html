@@ -1,0 +1,56 @@
+{% extends "fragments/base_fragment.html" %}
+
+{# ── Density thresholds ── #}
+{% set density = 'spacious' if item_count <= 3 else ('compact' if item_count > 5 else 'normal') %}
+
+{% block content %}
+<div class="w-full h-full bg-surface-grad flex flex-col px-16 pt-[120px] pb-[280px]">
+
+    {# Section label #}
+    <div class="{% if density == 'compact' %}mb-5{% elif density == 'spacious' %}mb-10{% else %}mb-8{% endif %} shrink-0">
+        <p class="frag-label text-accent">Instructions</p>
+        <h2 class="font-serif {% if density == 'compact' %}frag-heading{% else %}frag-title{% endif %} font-bold text-fg mt-2">{{ title }}</h2>
+    </div>
+
+    {# Content area — density-aware spacing #}
+    <div id="content-measure" class="flex-1 overflow-hidden {% if density == 'compact' %}space-y-4{% elif density == 'spacious' %}space-y-8{% else %}space-y-5{% endif %}">
+        {% for group in step_groups %}
+        <div>
+            {# Component header (only if multiple components) #}
+            {% if show_component_headers %}
+            <div class="flex items-center gap-4 {% if density == 'compact' %}mb-3{% else %}mb-5{% endif %}">
+                <div class="w-2 {% if density == 'compact' %}h-6{% else %}h-8{% endif %} rounded-full" style="background: var(--accent);"></div>
+                <h3 class="{% if density == 'compact' %}text-lg{% else %}text-2xl{% endif %} font-bold uppercase tracking-wide text-fg-muted">{{ group.component }}</h3>
+            </div>
+            {% endif %}
+
+            {# Steps list — density-aware #}
+            <div class="{% if density == 'compact' %}space-y-3{% elif density == 'spacious' %}space-y-6{% else %}space-y-4{% endif %}">
+                {% for step in group.entries %}
+                <div class="flex {% if density == 'compact' %}gap-3{% else %}gap-5{% endif %}">
+                    {# Step number badge #}
+                    <div class="shrink-0 {% if density == 'compact' %}w-10 h-10 rounded-xl{% else %}w-12 h-12 rounded-2xl{% endif %} flex items-center justify-center mt-1"
+                         style="background: color-mix(in srgb, var(--accent) 20%, transparent);">
+                        <span class="{% if density == 'compact' %}text-lg{% else %}text-xl{% endif %} font-bold text-accent">{{ step.number }}</span>
+                    </div>
+
+                    {# Step text #}
+                    <div class="flex-1">
+                        <p class="{% if density == 'compact' %}text-lg leading-snug{% elif density == 'spacious' %}text-[22px] leading-relaxed{% else %}text-xl leading-relaxed{% endif %} text-fg-muted">{{ step.text }}</p>
+                        {% if step.estimated_minutes %}
+                        <p class="{% if density == 'compact' %}text-sm{% else %}text-base{% endif %} text-fg-subtle mt-1 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            ~{{ step.estimated_minutes }} min
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
