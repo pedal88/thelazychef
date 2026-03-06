@@ -147,12 +147,71 @@
         }
 
         body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+
+                {
+                % if scale and scale !=1.0 %
+            }
+
+            /* Provide a dark canvas testing background when scaled */
+            background-color: #0f172a;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+
+                {
+                % else %
+            }
+
+            /* Production headless rendering mode */
             width: 1080px;
             height: 1920px;
             overflow: hidden;
-            font-family: 'Inter', sans-serif;
-            color: var(--fg);
             background: var(--bg);
+
+                {
+                % endif %
+            }
+        }
+
+            {
+            % if scale and scale !=1.0 %
+        }
+
+        #preview-container {
+
+            /* Scaled bounding box to prevent scrollbars on the parent */
+            width: {
+                    {
+                    (1080 * scale) | int
+                }
+            }
+
+            px;
+
+            height: {
+                    {
+                    (1920 * scale) | int
+                }
+            }
+
+            px;
+        }
+
+            {
+            % endif %
+        }
+
+        #scale-wrapper {
+            width: 1080px;
+            height: 1920px;
+            position: relative;
+            background: var(--bg);
+            color: var(--fg);
+            overflow: hidden;
 
                 {
                 % if scale and scale !=1.0 %
@@ -164,7 +223,12 @@
                 }
             });
         transform-origin: top left;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        border-radius: 48px;
+        /* Phone-like rounded corners */
+        border: 8px solid #1e293b;
 
+        /* Emulate a bezel */
             {
             % endif %
         }
@@ -261,45 +325,54 @@
 </head>
 
 <body>
-    <div id="fragment-root" class="relative w-[1080px] h-[1920px] overflow-hidden">
-        {% block content %}{% endblock %}
+    {% if scale and scale != 1.0 %}
+    <div id="preview-container">
+        {% endif %}
+        <div id="scale-wrapper">
+            <div id="fragment-root" class="relative w-[1080px] h-[1920px] overflow-hidden">
+                {% block content %}{% endblock %}
 
-        {# Brand watermark footer — inside bottom safe zone #}
-        <div class="absolute bottom-0 left-0 right-0 px-12 py-8 flex items-center justify-between z-50">
-            <div class="flex items-center gap-3">
-                <span class="text-3xl">🍳</span>
-                <span class="font-serif text-xl font-bold tracking-tight" style="color: var(--fg-muted);">The Lazy
-                    Chef</span>
-            </div>
-            {% if page_indicator %}
-            <span class="frag-small font-medium" style="color: var(--fg-subtle);">{{ page_indicator }}</span>
-            {% endif %}
-        </div>
+                {# Brand watermark footer — inside bottom safe zone #}
+                <div class="absolute bottom-0 left-0 right-0 px-12 py-8 flex items-center justify-between z-50">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">🍳</span>
+                        <span class="font-serif text-xl font-bold tracking-tight" style="color: var(--fg-muted);">The
+                            Lazy Chef</span>
+                    </div>
+                    {% if page_indicator %}
+                    <span class="frag-small font-medium" style="color: var(--fg-subtle);">{{ page_indicator }}</span>
+                    {% endif %}
+                </div>
 
-        {# ── TikTok/Reels safe zone debug overlay ── #}
-        <div class="debug-zones absolute inset-0 pointer-events-none z-[999]" style="display:none;">
-            {# Top status bar area #}
-            <div
-                class="absolute top-0 left-0 right-0 h-[120px] bg-red-500/15 border-b border-red-500/30 flex items-end justify-center pb-2">
-                <span class="text-red-400 text-xs font-mono">TOP SAFE ZONE (120px)</span>
-            </div>
-            {# Bottom caption / CTA area #}
-            <div
-                class="absolute bottom-0 left-0 right-0 h-[280px] bg-red-500/15 border-t border-red-500/30 flex items-start justify-center pt-2">
-                <span class="text-red-400 text-xs font-mono">BOTTOM SAFE ZONE (280px — captions + brand)</span>
-            </div>
-            {# Right sidebar — like/comment/share buttons #}
-            <div
-                class="absolute top-[40%] right-0 w-[100px] h-[400px] bg-blue-500/15 border-l border-blue-500/30 flex items-center justify-center">
-                <span class="text-blue-400 text-xs font-mono rotate-90 whitespace-nowrap">SIDEBAR (likes/share)</span>
-            </div>
-            {# Content safe box outline #}
-            <div class="absolute border-2 border-dashed border-green-500/40"
-                style="top:120px;left:64px;right:64px;bottom:280px;">
-                <span class="absolute top-1 left-2 text-green-400 text-xs font-mono">CONTENT SAFE BOX</span>
+                {# ── TikTok/Reels safe zone debug overlay ── #}
+                <div class="debug-zones absolute inset-0 pointer-events-none z-[999]" style="display:none;">
+                    {# Top status bar area #}
+                    <div
+                        class="absolute top-0 left-0 right-0 h-[120px] bg-red-500/15 border-b border-red-500/30 flex items-end justify-center pb-2">
+                        <span class="text-red-400 text-xs font-mono">TOP SAFE ZONE (120px)</span>
+                    </div>
+                    {# Bottom caption / CTA area #}
+                    <div
+                        class="absolute bottom-0 left-0 right-0 h-[280px] bg-red-500/15 border-t border-red-500/30 flex items-start justify-center pt-2">
+                        <span class="text-red-400 text-xs font-mono">BOTTOM SAFE ZONE (280px — captions + brand)</span>
+                    </div>
+                    {# Right sidebar — like/comment/share buttons #}
+                    <div
+                        class="absolute top-[40%] right-0 w-[100px] h-[400px] bg-blue-500/15 border-l border-blue-500/30 flex items-center justify-center">
+                        <span class="text-blue-400 text-xs font-mono rotate-90 whitespace-nowrap">SIDEBAR
+                            (likes/share)</span>
+                    </div>
+                    {# Content safe box outline #}
+                    <div class="absolute border-2 border-dashed border-green-500/40"
+                        style="top:120px;left:64px;right:64px;bottom:280px;">
+                        <span class="absolute top-1 left-2 text-green-400 text-xs font-mono">CONTENT SAFE BOX</span>
+                    </div>
+                </div>
             </div>
         </div>
+        {% if scale and scale != 1.0 %}
     </div>
+    {% endif %}
 </body>
 
 </html>
