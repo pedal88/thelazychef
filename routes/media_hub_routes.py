@@ -460,6 +460,41 @@ def preview_fragments():
         return jsonify({"error": str(e)}), 500
 
 
+@media_hub_bp.route("/sandbox/api/search-recipes", methods=["GET"])
+@login_required
+@admin_required
+def sandbox_search_recipes():
+    """
+    Lightweight recipe search for the Sandbox recipe picker.
+    Accepts ?q=... and returns up to 10 matches by title or ID.
+    """
+    query = request.args.get("q", "").strip()
+    if not query:
+        return jsonify([])
+
+    results = []
+    # If the query is purely numeric, search by ID first
+    if query.isdigit():
+        recipe = db.session.get(Recipe, int(query))
+        if recipe:
+            results.append({"id": recipe.id, "title": recipe.title, "cuisine": recipe.cuisine or ""})
+
+    # Then search by title (case-insensitive LIKE)
+    title_matches = (
+        Recipe.query
+        .filter(Recipe.title.ilike(f"%{query}%"))
+        .order_by(Recipe.id.desc())
+        .limit(10)
+        .all()
+    )
+    seen_ids = {r["id"] for r in results}
+    for r in title_matches:
+        if r.id not in seen_ids:
+            results.append({"id": r.id, "title": r.title, "cuisine": r.cuisine or ""})
+
+    return jsonify(results[:10])
+
+
 @media_hub_bp.route("/sandbox", methods=["GET"])
 @login_required
 @admin_required

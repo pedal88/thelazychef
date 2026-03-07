@@ -30,12 +30,26 @@
                         <div class="mb-6 flex flex-col gap-4 bg-slate-50 p-4 rounded-lg border border-slate-200">
                             <!-- Config Row -->
                             <div class="flex flex-col gap-4">
-                                <div class="w-full">
+                                <div class="w-full relative">
                                     <label
-                                        class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">Recipe
-                                        ID</label>
-                                    <input type="number" id="sandbox-recipe-id" value="192"
-                                        class="w-full rounded-md border-0 py-1 px-3 text-sm text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-orange-600">
+                                        class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">Recipe</label>
+                                    <input type="text" id="sandbox-recipe-search" placeholder="Search by name or ID..."
+                                        autocomplete="off"
+                                        class="w-full rounded-md border-0 py-1.5 px-3 text-sm text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-orange-600">
+                                    <input type="hidden" id="sandbox-recipe-id" value="">
+                                    <!-- Search Results Dropdown -->
+                                    <div id="recipe-search-results"
+                                        class="hidden absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                                    </div>
+                                    <!-- Selected Recipe Badge -->
+                                    <div id="selected-recipe-badge"
+                                        class="hidden mt-2 flex items-center gap-2 bg-orange-50 border border-orange-200 rounded-lg px-3 py-1.5">
+                                        <span class="text-xs font-mono text-orange-600" id="badge-id"></span>
+                                        <span class="text-sm font-medium text-orange-900 truncate"
+                                            id="badge-title"></span>
+                                        <button onclick="clearRecipeSelection()"
+                                            class="ml-auto text-orange-400 hover:text-orange-600 text-xs">✕</button>
+                                    </div>
                                 </div>
                                 <div class="w-full">
                                     <label
@@ -394,6 +408,74 @@
 </div>
 
 <script>
+    // --- Recipe Search ---
+    let searchTimer = null;
+    const searchInput = document.getElementById('sandbox-recipe-search');
+    const searchResults = document.getElementById('recipe-search-results');
+
+    searchInput.addEventListener('input', function () {
+        clearTimeout(searchTimer);
+        const query = this.value.trim();
+        if (query.length < 1) {
+            searchResults.classList.add('hidden');
+            searchResults.innerHTML = '';
+            return;
+        }
+        searchTimer = setTimeout(() => {
+            fetch(`/admin/media-hub/sandbox/api/search-recipes?q=${encodeURIComponent(query)}`)
+                .then(r => r.json())
+                .then(recipes => {
+                    if (recipes.length === 0) {
+                        searchResults.innerHTML = '<div class="px-4 py-3 text-sm text-slate-400">No recipes found</div>';
+                    } else {
+                        searchResults.innerHTML = recipes.map(r => `
+                            <button type="button" onclick="selectRecipe(${r.id}, '${r.title.replace(/'/g, "\\'")}', '${r.cuisine}')"
+                                class="w-full text-left px-4 py-2.5 hover:bg-orange-50 flex items-center gap-3 border-b border-slate-100 last:border-0 transition-colors">
+                                <span class="text-xs font-mono text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded shrink-0">#${r.id}</span>
+                                <span class="text-sm font-medium text-slate-800 truncate">${r.title}</span>
+                                ${r.cuisine ? `<span class="text-[10px] text-slate-400 ml-auto shrink-0">${r.cuisine}</span>` : ''}
+                            </button>
+                        `).join('');
+                    }
+                    searchResults.classList.remove('hidden');
+                })
+                .catch(err => console.error('Search failed:', err));
+        }, 250);
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('#sandbox-recipe-search') && !e.target.closest('#recipe-search-results')) {
+            searchResults.classList.add('hidden');
+        }
+    });
+
+    // Re-open on focus if there's text
+    searchInput.addEventListener('focus', function () {
+        if (this.value.trim().length >= 1 && searchResults.innerHTML) {
+            searchResults.classList.remove('hidden');
+        }
+    });
+
+    function selectRecipe(id, title, cuisine) {
+        document.getElementById('sandbox-recipe-id').value = id;
+        searchInput.value = '';
+        searchResults.classList.add('hidden');
+        searchResults.innerHTML = '';
+
+        // Show the badge
+        document.getElementById('badge-id').textContent = '#' + id;
+        document.getElementById('badge-title').textContent = title;
+        document.getElementById('selected-recipe-badge').classList.remove('hidden');
+    }
+
+    function clearRecipeSelection() {
+        document.getElementById('sandbox-recipe-id').value = '';
+        document.getElementById('selected-recipe-badge').classList.add('hidden');
+        searchInput.value = '';
+        searchInput.focus();
+    }
+
     function openSandbox(fragmentName) {
         const recipeId = document.getElementById('sandbox-recipe-id').value || 192;
         const theme = document.getElementById('sandbox-theme').value || 'modern';
