@@ -506,6 +506,8 @@
         searchResults.classList.add('hidden');
         searchResults.innerHTML = '';
         document.getElementById('recipe-clear-btn').classList.remove('hidden');
+        // Reload preview with newly selected recipe
+        openSandbox(currentFragment || 'hero');
     }
 
     function clearRecipeSelection() {
