@@ -3,6 +3,51 @@
 {% block title %}Media Hub - Sandbox{% endblock %}
 
 {% block content %}
+<style>
+    /* Insert line indicator for grid reorder drag */
+    .frag-card {
+        position: relative;
+    }
+
+    .frag-card[data-drop-side]::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: #3b82f6;
+        border-radius: 2px;
+        z-index: 20;
+        box-shadow: 0 0 6px rgba(59, 130, 246, 0.5);
+    }
+
+    .frag-card[data-drop-side]::after {
+        content: '';
+        position: absolute;
+        width: 9px;
+        height: 9px;
+        background: #3b82f6;
+        border-radius: 50%;
+        z-index: 21;
+        top: -3px;
+    }
+
+    .frag-card[data-drop-side="left"]::before {
+        left: -4px;
+    }
+
+    .frag-card[data-drop-side="left"]::after {
+        left: -7px;
+    }
+
+    .frag-card[data-drop-side="right"]::before {
+        right: -4px;
+    }
+
+    .frag-card[data-drop-side="right"]::after {
+        right: -7px;
+    }
+</style>
 <div id="sandbox-root" class="bg-slate-50 border-t border-slate-200 relative"
     style="height: calc(100vh - 64px); overflow: hidden;">
     <!-- Fullscreen Toggle -->
@@ -105,7 +150,9 @@
                                         <div class="relative frag-card" id="frag-card-{{ name }}"
                                             data-fragment="{{ name }}" draggable="true"
                                             ondragstart="onCardDragStart(event, '{{ name }}')"
-                                            ondragover="onCardDragOver(event)" ondrop="onCardDrop(event, '{{ name }}')">
+                                            ondragover="onCardDragOver(event, '{{ name }}')"
+                                            ondragleave="onCardDragLeave(event)"
+                                            ondrop="onCardDrop(event, '{{ name }}')">
                                             <div class="flex items-center justify-center gap-0.5 mb-0.5"
                                                 id="version-pills-{{ name }}">
                                                 <button onclick="openSandbox('{{ name }}', event, 1)" draggable="true"
@@ -834,14 +881,33 @@
         evt.target.style.opacity = '0.4';
     }
 
-    function onCardDragOver(evt) {
+    function onCardDragOver(evt, targetName) {
         // Only accept card reorder drags
-        if (!draggedCardName) return;
+        if (!draggedCardName || draggedCardName === targetName) return;
         evt.preventDefault();
         evt.dataTransfer.dropEffect = 'move';
+
+        // Determine left vs right half
+        const card = evt.currentTarget;
+        const rect = card.getBoundingClientRect();
+        const midX = rect.left + rect.width / 2;
+        const side = evt.clientX < midX ? 'left' : 'right';
+
+        // Clear all indicators then set current
+        clearDropIndicators();
+        card.dataset.dropSide = side;
+    }
+
+    function onCardDragLeave(evt) {
+        delete evt.currentTarget.dataset.dropSide;
+    }
+
+    function clearDropIndicators() {
+        document.querySelectorAll('.frag-card[data-drop-side]').forEach(c => delete c.dataset.dropSide);
     }
 
     function onCardDrop(evt, targetName) {
+        clearDropIndicators();
         if (!draggedCardName || draggedCardName === targetName) {
             draggedCardName = null;
             return;
@@ -856,23 +922,23 @@
 
         if (!draggedCard || !targetCard) return;
 
-        // Determine if dragged should go before or after target
-        const cards = [...grid.querySelectorAll('.frag-card')];
-        const dragIdx = cards.indexOf(draggedCard);
-        const targetIdx = cards.indexOf(targetCard);
+        // Use cursor position to decide insert-before or insert-after
+        const rect = targetCard.getBoundingClientRect();
+        const midX = rect.left + rect.width / 2;
+        const insertBefore = evt.clientX < midX;
 
-        if (dragIdx < targetIdx) {
-            grid.insertBefore(draggedCard, targetCard.nextSibling);
-        } else {
+        if (insertBefore) {
             grid.insertBefore(draggedCard, targetCard);
+        } else {
+            grid.insertBefore(draggedCard, targetCard.nextSibling);
         }
-
         draggedCardName = null;
         saveFragmentOrder();
     }
 
-    // Also reset opacity on dragend
+    // Also reset opacity and indicators on dragend
     document.addEventListener('dragend', function (evt) {
+        clearDropIndicators();
         if (evt.target.classList && evt.target.classList.contains('frag-card')) {
             evt.target.style.opacity = '';
             draggedCardName = null;
