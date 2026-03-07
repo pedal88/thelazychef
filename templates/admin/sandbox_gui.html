@@ -556,12 +556,19 @@
 
     function openSandbox(fragmentName, evt) {
         const useSecond = evt && evt.shiftKey;
-        currentFragment = fragmentName;
+        if (!useSecond) currentFragment = fragmentName;
 
-        // Highlight active fragment pill
+        // Only clear the relevant highlight color set
         document.querySelectorAll('.frag-btn').forEach(btn => {
-            btn.classList.remove('ring-2', 'ring-orange-400', 'bg-orange-50', 'border-orange-300',
-                'ring-indigo-400', 'bg-indigo-50', 'border-indigo-300');
+            if (useSecond) {
+                btn.classList.remove('ring-2', 'ring-indigo-400', 'bg-indigo-50', 'border-indigo-300');
+                // Re-add ring-2 if this btn still has orange (primary) highlight
+                if (btn.classList.contains('ring-orange-400')) btn.classList.add('ring-2');
+            } else {
+                btn.classList.remove('ring-2', 'ring-orange-400', 'bg-orange-50', 'border-orange-300');
+                // Re-add ring-2 if this btn still has indigo (secondary) highlight
+                if (btn.classList.contains('ring-indigo-400')) btn.classList.add('ring-2');
+            }
         });
         const activeBtn = document.getElementById('frag-btn-' + fragmentName);
         if (activeBtn) {
