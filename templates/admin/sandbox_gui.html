@@ -854,5 +854,14 @@ Context/Text: "${target.innerText.substring(0, 50).trim()}${target.innerText.len
         });
     });
 
+    // --- Auto-load Hero on page load ---
+    window.addEventListener('load', function () {
+        // Set a default recipe if none selected
+        if (!document.getElementById('sandbox-recipe-id').value) {
+            selectRecipe(192, 'Default Recipe', '');
+        }
+        openSandbox('hero');
+    });
+
 </script>
 {% endblock %}
