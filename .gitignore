@@ -43,5 +43,5 @@ logs/
 
 # Sandbox pinned versions
 *.html.pinned
-*.v2.html
-*.v3.html
+# Sandbox fragment versions (v2, v3, v10, etc.)
+*.v[0-9]*.html

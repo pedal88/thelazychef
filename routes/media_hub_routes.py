@@ -643,16 +643,20 @@ def pin_status(fragment_name):
 @login_required
 @admin_required
 def list_fragment_versions(fragment_name):
-    """List all available versions for a fragment (1 = original, 2/3 = variants)."""
+    """List all available versions for a fragment (1 = original, 2+ = variants)."""
+    import glob, re
     from media_hub.snapshotter import VALID_FRAGMENTS
     if fragment_name not in VALID_FRAGMENTS:
         return jsonify({"error": f"Unknown fragment: {fragment_name}"}), 404
 
     fragments_dir = os.path.join(current_app.root_path, "templates", "fragments")
     versions = [1]  # v1 always exists (the original .html)
-    for v in (2, 3):
-        if os.path.exists(os.path.join(fragments_dir, f"{fragment_name}.v{v}.html")):
-            versions.append(v)
+    pattern = os.path.join(fragments_dir, f"{fragment_name}.v*.html")
+    for path in glob.glob(pattern):
+        m = re.search(r'\.v(\d+)\.html$', path)
+        if m:
+            versions.append(int(m.group(1)))
+    versions.sort()
     return jsonify({"fragment": fragment_name, "versions": versions})
 
 
@@ -660,8 +664,8 @@ def list_fragment_versions(fragment_name):
 @login_required
 @admin_required
 def create_fragment_version(fragment_name):
-    """Save the current fragment as a new numbered version (max 3)."""
-    import shutil
+    """Save the current fragment as a new numbered version (next unused integer)."""
+    import shutil, glob, re
     from media_hub.snapshotter import VALID_FRAGMENTS
     if fragment_name not in VALID_FRAGMENTS:
         return jsonify({"error": f"Unknown fragment: {fragment_name}"}), 404
@@ -671,15 +675,19 @@ def create_fragment_version(fragment_name):
     if not os.path.exists(src):
         return jsonify({"error": "Source template not found"}), 404
 
-    # Find next available version slot
-    for v in (2, 3):
-        dst = os.path.join(fragments_dir, f"{fragment_name}.v{v}.html")
-        if not os.path.exists(dst):
-            shutil.copy2(src, dst)
-            logger.info(f"[Sandbox] Created version {v} for {fragment_name}")
-            return jsonify({"status": "created", "fragment": fragment_name, "version": v})
+    # Find the highest existing version number
+    max_v = 1
+    pattern = os.path.join(fragments_dir, f"{fragment_name}.v*.html")
+    for path in glob.glob(pattern):
+        m = re.search(r'\.v(\d+)\.html$', path)
+        if m:
+            max_v = max(max_v, int(m.group(1)))
 
-    return jsonify({"error": "Maximum 3 versions reached. Delete one first."}), 409
+    next_v = max_v + 1
+    dst = os.path.join(fragments_dir, f"{fragment_name}.v{next_v}.html")
+    shutil.copy2(src, dst)
+    logger.info(f"[Sandbox] Created version {next_v} for {fragment_name}")
+    return jsonify({"status": "created", "fragment": fragment_name, "version": next_v})
 
 
 @media_hub_bp.route("/sandbox/version/<fragment_name>/<int:version_num>", methods=["DELETE"])
