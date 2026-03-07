@@ -744,6 +744,9 @@
     document.addEventListener('dragstart', function () {
         const c1 = document.getElementById('sandbox-preview-container');
         const c2 = document.getElementById('sandbox-preview-container-2');
+        // Disable pointer events on iframes so drop events reach the container
+        document.getElementById('sandbox-frame').style.pointerEvents = 'none';
+        document.getElementById('sandbox-frame-2').style.pointerEvents = 'none';
         // Show Preview 1 if hidden
         if (c1.classList.contains('hidden')) {
             c1.classList.remove('hidden');
@@ -759,6 +762,9 @@
 
     // Hide Preview 2 drop zone if nothing was dropped
     document.addEventListener('dragend', function () {
+        // Re-enable pointer events on iframes
+        document.getElementById('sandbox-frame').style.pointerEvents = '';
+        document.getElementById('sandbox-frame-2').style.pointerEvents = '';
         if (dropZoneRevealed) {
             const c2 = document.getElementById('sandbox-preview-container-2');
             const frame2 = document.getElementById('sandbox-frame-2');
