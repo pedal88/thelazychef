@@ -424,9 +424,9 @@
                     <!-- Preview 1 (primary) -->
                     <div id="sandbox-preview-container"
                         class="bg-slate-900 rounded-3xl overflow-hidden shadow-2xl relative border-8 border-slate-800 hidden flex-1">
-                        <div
-                            class="absolute top-2 left-3 z-30 bg-slate-800/80 text-[10px] text-slate-400 font-bold uppercase px-2 py-0.5 rounded">
-                            1</div>
+                        <div id="preview-label-1"
+                            class="absolute top-2 left-3 z-30 bg-orange-500/90 text-[10px] text-white font-bold uppercase px-2 py-0.5 rounded tracking-wide">
+                            ① —</div>
                         <div class="absolute inset-0 flex items-center justify-center pointer-events-none"
                             id="iframe-loader">
                             <span class="text-white opacity-50 flex items-center gap-2"><svg
@@ -460,9 +460,9 @@
                     <!-- Preview 2 (comparison, hidden by default) -->
                     <div id="sandbox-preview-container-2"
                         class="bg-slate-900 rounded-3xl overflow-hidden shadow-2xl relative border-8 border-indigo-800/60 hidden flex-1">
-                        <div
-                            class="absolute top-2 left-3 z-30 bg-indigo-800/80 text-[10px] text-white font-bold uppercase px-2 py-0.5 rounded">
-                            2</div>
+                        <div id="preview-label-2"
+                            class="absolute top-2 left-3 z-30 bg-indigo-500/90 text-[10px] text-white font-bold uppercase px-2 py-0.5 rounded tracking-wide">
+                            ② —</div>
                         <button onclick="closeSecondPreview()"
                             class="absolute top-2 right-3 z-30 bg-slate-800/80 hover:bg-red-600 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center transition-colors">✕</button>
                         <div class="absolute inset-0 flex items-center justify-center pointer-events-none"
@@ -683,7 +683,10 @@
         const emptyState = document.getElementById('sandbox-empty-state');
         emptyState.style.display = 'none';
 
+        const labelText = `${fragmentName} v${v}`;
+
         if (useSecond) {
+            document.getElementById('preview-label-2').textContent = `② ${labelText}`;
             const container2 = document.getElementById('sandbox-preview-container-2');
             const loader2 = document.getElementById('iframe-loader-2');
             const frame2 = document.getElementById('sandbox-frame-2');
@@ -692,6 +695,7 @@
             frame2.src = targetUrl;
             frame2.onload = () => { loader2.style.display = 'none'; };
         } else {
+            document.getElementById('preview-label-1').textContent = `① ${labelText}`;
             const loader = document.getElementById('iframe-loader');
             const container = document.getElementById('sandbox-preview-container');
             const frame = document.getElementById('sandbox-frame');
