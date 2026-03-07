@@ -540,12 +540,99 @@ def fragment_sandbox(fragment_name):
             debug=debug,
             scale=scale,
         )
-        return render_template(f"fragments/{fragment_name}.html", **ctx)
+        # Support serving pinned (old) version for comparison
+        version = request.args.get("version", "live")
+        template_path = f"fragments/{fragment_name}.html"
+        if version == "pinned":
+            pinned_path = os.path.join(current_app.root_path, "templates", "fragments", f"{fragment_name}.html.pinned")
+            if os.path.exists(pinned_path):
+                from jinja2 import Template as J2Template
+                with open(pinned_path, "r") as f:
+                    pinned_source = f.read()
+                # Render from the pinned file using the app's Jinja env
+                template = current_app.jinja_env.from_string(pinned_source)
+                return template.render(**ctx)
+            # Fall through to live if no pinned file exists
+
+        return render_template(template_path, **ctx)
     except ValueError as e:
         return jsonify({"error": str(e)}), 404
     except Exception as e:
         logger.exception(f"[Sandbox] Failed to render {fragment_name}")
         return jsonify({"error": str(e)}), 500
+
+
+@media_hub_bp.route("/sandbox/pin/<fragment_name>", methods=["POST"])
+@login_required
+@admin_required
+def pin_fragment(fragment_name):
+    """Copy current fragment template to a .pinned backup for comparison."""
+    import shutil
+    from media_hub.snapshotter import VALID_FRAGMENTS
+
+    if fragment_name not in VALID_FRAGMENTS:
+        return jsonify({"error": f"Unknown fragment: {fragment_name}"}), 404
+
+    src = os.path.join(current_app.root_path, "templates", "fragments", f"{fragment_name}.html")
+    dst = os.path.join(current_app.root_path, "templates", "fragments", f"{fragment_name}.html.pinned")
+
+    if not os.path.exists(src):
+        return jsonify({"error": f"Template not found: {fragment_name}.html"}), 404
+
+    shutil.copy2(src, dst)
+    logger.info(f"[Sandbox] Pinned {fragment_name}.html → .pinned")
+    return jsonify({"status": "pinned", "fragment": fragment_name})
+
+
+@media_hub_bp.route("/sandbox/revert/<fragment_name>", methods=["POST"])
+@login_required
+@admin_required
+def revert_fragment(fragment_name):
+    """Restore the pinned version over the current live template."""
+    import shutil
+    from media_hub.snapshotter import VALID_FRAGMENTS
+
+    if fragment_name not in VALID_FRAGMENTS:
+        return jsonify({"error": f"Unknown fragment: {fragment_name}"}), 404
+
+    pinned = os.path.join(current_app.root_path, "templates", "fragments", f"{fragment_name}.html.pinned")
+    live = os.path.join(current_app.root_path, "templates", "fragments", f"{fragment_name}.html")
+
+    if not os.path.exists(pinned):
+        return jsonify({"error": "No pinned version found"}), 404
+
+    shutil.copy2(pinned, live)
+    os.remove(pinned)
+    logger.info(f"[Sandbox] Reverted {fragment_name}.html from .pinned")
+    return jsonify({"status": "reverted", "fragment": fragment_name})
+
+
+@media_hub_bp.route("/sandbox/accept/<fragment_name>", methods=["POST"])
+@login_required
+@admin_required
+def accept_fragment(fragment_name):
+    """Accept the current live version and delete the pinned backup."""
+    from media_hub.snapshotter import VALID_FRAGMENTS
+
+    if fragment_name not in VALID_FRAGMENTS:
+        return jsonify({"error": f"Unknown fragment: {fragment_name}"}), 404
+
+    pinned = os.path.join(current_app.root_path, "templates", "fragments", f"{fragment_name}.html.pinned")
+
+    if os.path.exists(pinned):
+        os.remove(pinned)
+        logger.info(f"[Sandbox] Accepted new {fragment_name}.html, deleted .pinned")
+
+    return jsonify({"status": "accepted", "fragment": fragment_name})
+
+
+@media_hub_bp.route("/sandbox/pin-status/<fragment_name>", methods=["GET"])
+@login_required
+@admin_required
+def pin_status(fragment_name):
+    """Check if a pinned version exists for this fragment."""
+    pinned = os.path.join(current_app.root_path, "templates", "fragments", f"{fragment_name}.html.pinned")
+    return jsonify({"pinned": os.path.exists(pinned), "fragment": fragment_name})
 
 
 @media_hub_bp.route("/sandbox/poll-templates", methods=["GET"])

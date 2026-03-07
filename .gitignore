@@ -40,3 +40,6 @@ google-cloud-sdk/
 google-cloud-cli-darwin-arm.tar.gz
 
 logs/
+
+# Sandbox pinned versions
+*.html.pinned

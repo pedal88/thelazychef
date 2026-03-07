@@ -139,11 +139,30 @@
                                                 class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Tokens</span>
                                         </a>
                                     </div>
-                                    <!-- Compare Mode Toggle -->
-                                    <button type="button" id="compare-toggle" onclick="toggleCompareMode()"
-                                        class="mt-2 w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-indigo-50 hover:border-indigo-300 transition-all text-[10px] font-bold uppercase tracking-wide text-slate-400">
-                                        <span>🔀</span> <span id="compare-label">Compare: OFF</span>
-                                    </button>
+                                    <!-- Pin & Compare Controls -->
+                                    <div id="pin-controls" class="mt-2 flex gap-1.5">
+                                        <!-- No pin state -->
+                                        <button type="button" id="pin-btn" onclick="pinCurrentFragment()"
+                                            class="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-amber-50 hover:border-amber-300 transition-all text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                                            <span>📌</span> Pin Version
+                                        </button>
+                                        <!-- Pinned state (hidden by default) -->
+                                        <button type="button" id="compare-btn" onclick="loadPinnedComparison()"
+                                            style="display:none;"
+                                            class="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-indigo-300 bg-indigo-50 transition-all text-[10px] font-bold uppercase tracking-wide text-indigo-600">
+                                            <span>🔀</span> Compare
+                                        </button>
+                                        <button type="button" id="revert-btn" onclick="revertFragment()"
+                                            style="display:none;"
+                                            class="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-orange-300 bg-orange-50 hover:bg-orange-100 transition-all text-[10px] font-bold uppercase tracking-wide text-orange-600">
+                                            <span>↩️</span> Revert
+                                        </button>
+                                        <button type="button" id="accept-btn" onclick="acceptFragment()"
+                                            style="display:none;"
+                                            class="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-green-300 bg-green-50 hover:bg-green-100 transition-all text-[10px] font-bold uppercase tracking-wide text-green-600">
+                                            <span>✅</span> Accept
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <!-- Theme Settings Body (collapsed by default) -->
@@ -558,27 +577,80 @@
         document.getElementById('recipe-clear-btn').classList.add('hidden');
     }
     let currentFragment = null;
-    let compareMode = false;
+    let pinnedFragment = null;
 
-    function toggleCompareMode() {
-        compareMode = !compareMode;
-        const btn = document.getElementById('compare-toggle');
-        const label = document.getElementById('compare-label');
-        if (compareMode) {
-            btn.classList.remove('bg-white', 'text-slate-400', 'border-slate-200');
-            btn.classList.add('bg-indigo-100', 'text-indigo-700', 'border-indigo-300');
-            label.textContent = 'Compare: ON — click a fragment for slot 2';
-        } else {
-            btn.classList.remove('bg-indigo-100', 'text-indigo-700', 'border-indigo-300');
-            btn.classList.add('bg-white', 'text-slate-400', 'border-slate-200');
-            label.textContent = 'Compare: OFF';
-        }
+    function setPinUI(pinned) {
+        document.getElementById('pin-btn').style.display = pinned ? 'none' : 'flex';
+        document.getElementById('compare-btn').style.display = pinned ? 'flex' : 'none';
+        document.getElementById('revert-btn').style.display = pinned ? 'flex' : 'none';
+        document.getElementById('accept-btn').style.display = pinned ? 'flex' : 'none';
+    }
+
+    function pinCurrentFragment() {
+        const frag = currentFragment || 'hero';
+        fetch(`/admin/media-hub/sandbox/pin/${frag}`, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'pinned') {
+                    pinnedFragment = frag;
+                    setPinUI(true);
+                }
+            });
+    }
+
+    function loadPinnedComparison() {
+        if (!pinnedFragment) return;
+        // Load the pinned (old) version into Preview 2
+        const recipeId = document.getElementById('sandbox-recipe-id').value || 192;
+        const theme = document.getElementById('sandbox-theme').value || 'modern';
+        const debug = document.getElementById('sandbox-debug').checked;
+        let url = `/admin/media-hub/sandbox/${pinnedFragment}?recipe_id=${recipeId}&theme=${theme}&version=pinned`;
+        if (debug) url += '&debug=true';
+
+        const container2 = document.getElementById('sandbox-preview-container-2');
+        const loader2 = document.getElementById('iframe-loader-2');
+        const frame2 = document.getElementById('sandbox-frame-2');
+        container2.classList.remove('hidden');
+        loader2.style.display = 'flex';
+        frame2.src = url;
+        frame2.onload = () => { loader2.style.display = 'none'; };
+
+        // Also reload Preview 1 with the live (new) version
+        openSandbox(pinnedFragment);
+    }
+
+    function revertFragment() {
+        if (!pinnedFragment) return;
+        if (!confirm('Revert to the pinned (old) version? The current changes will be lost.')) return;
+        fetch(`/admin/media-hub/sandbox/revert/${pinnedFragment}`, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'reverted') {
+                    pinnedFragment = null;
+                    setPinUI(false);
+                    closeSecondPreview();
+                    openSandbox(currentFragment || 'hero');
+                }
+            });
+    }
+
+    function acceptFragment() {
+        if (!pinnedFragment) return;
+        fetch(`/admin/media-hub/sandbox/accept/${pinnedFragment}`, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'accepted') {
+                    pinnedFragment = null;
+                    setPinUI(false);
+                    closeSecondPreview();
+                }
+            });
     }
 
     function openSandbox(fragmentName, evt) {
         if (evt) evt.preventDefault();
-        const useSecond = compareMode;
-        if (!useSecond) currentFragment = fragmentName;
+        const useSecond = false;  // Compare now handled by loadPinnedComparison
+        currentFragment = fragmentName;
 
         // Only clear the relevant highlight color set
         document.querySelectorAll('.frag-btn').forEach(btn => {
