@@ -132,6 +132,17 @@
                                             <span>🗑️</span> Delete Version
                                         </button>
                                     </div>
+                                    <!-- Preview Target Toggle -->
+                                    <div class="mt-1.5 flex gap-1.5">
+                                        <button type="button" id="target-btn-1" onclick="setPreviewTarget(1)"
+                                            class="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border-2 border-orange-400 bg-orange-50 transition-all text-[10px] font-bold uppercase tracking-wide text-orange-600">
+                                            ① Preview 1
+                                        </button>
+                                        <button type="button" id="target-btn-2" onclick="setPreviewTarget(2)"
+                                            class="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-indigo-50 hover:border-indigo-300 transition-all text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                                            ② Preview 2
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <!-- Theme Settings Body (collapsed by default) -->
@@ -616,29 +627,48 @@
             });
     }
 
+    let previewTarget = 1;  // 1 = primary, 2 = secondary
+
+    function setPreviewTarget(target) {
+        previewTarget = target;
+        const btn1 = document.getElementById('target-btn-1');
+        const btn2 = document.getElementById('target-btn-2');
+        if (target === 1) {
+            btn1.className = 'flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border-2 border-orange-400 bg-orange-50 transition-all text-[10px] font-bold uppercase tracking-wide text-orange-600';
+            btn2.className = 'flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-indigo-50 hover:border-indigo-300 transition-all text-[10px] font-bold uppercase tracking-wide text-slate-400';
+        } else {
+            btn1.className = 'flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-orange-50 hover:border-orange-300 transition-all text-[10px] font-bold uppercase tracking-wide text-slate-400';
+            btn2.className = 'flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border-2 border-indigo-400 bg-indigo-50 transition-all text-[10px] font-bold uppercase tracking-wide text-indigo-600';
+        }
+    }
+
     function openSandbox(fragmentName, evt, version) {
         if (evt) evt.preventDefault();
         currentFragment = fragmentName;
         const v = version || 1;
+        const useSecond = previewTarget === 2;
 
-        // Highlight active fragment pill
+        const highlightColor = useSecond ? 'indigo' : 'orange';
+
+        // Highlight active fragment
         document.querySelectorAll('.frag-btn').forEach(btn => {
-            btn.classList.remove('ring-2', 'ring-orange-400', 'bg-orange-50', 'border-orange-300');
+            btn.classList.remove('ring-2', 'ring-orange-400', 'bg-orange-50', 'border-orange-300',
+                'ring-indigo-400', 'bg-indigo-50', 'border-indigo-300');
         });
         const activeBtn = document.getElementById('frag-btn-' + fragmentName);
         if (activeBtn) {
-            activeBtn.classList.add('ring-2', 'ring-orange-400', 'bg-orange-50', 'border-orange-300');
+            activeBtn.classList.add('ring-2', `ring-${highlightColor}-400`, `bg-${highlightColor}-50`, `border-${highlightColor}-300`);
         }
 
         // Highlight active version pill
         document.querySelectorAll('.version-pill-' + fragmentName).forEach(p => {
-            p.classList.remove('bg-orange-400', 'text-white');
+            p.classList.remove('bg-orange-400', 'bg-indigo-400', 'text-white');
             p.classList.add('bg-slate-200', 'text-slate-500');
         });
         const activePill = document.querySelector(`.version-pill-${fragmentName}[data-version="${v}"]`);
         if (activePill) {
             activePill.classList.remove('bg-slate-200', 'text-slate-500');
-            activePill.classList.add('bg-orange-400', 'text-white');
+            activePill.classList.add(`bg-${highlightColor}-400`, 'text-white');
         }
 
         const recipeId = document.getElementById('sandbox-recipe-id').value || 192;
@@ -650,22 +680,31 @@
             targetUrl += "&debug=true";
         }
 
-        // Show the iframe and set its src, hide empty state
         const emptyState = document.getElementById('sandbox-empty-state');
         emptyState.style.display = 'none';
 
-        const loader = document.getElementById('iframe-loader');
-        const container = document.getElementById('sandbox-preview-container');
-        const frame = document.getElementById('sandbox-frame');
-        container.classList.remove('hidden');
-        container.style.display = 'flex';
-        loader.style.display = 'flex';
-        frame.src = targetUrl;
-        frame.onload = function () {
-            document.getElementById('iframe-loader').style.display = 'none';
-            applyCurrentThemeVars();
-            attachInspector(frame);
-        };
+        if (useSecond) {
+            const container2 = document.getElementById('sandbox-preview-container-2');
+            const loader2 = document.getElementById('iframe-loader-2');
+            const frame2 = document.getElementById('sandbox-frame-2');
+            container2.classList.remove('hidden');
+            loader2.style.display = 'flex';
+            frame2.src = targetUrl;
+            frame2.onload = () => { loader2.style.display = 'none'; };
+        } else {
+            const loader = document.getElementById('iframe-loader');
+            const container = document.getElementById('sandbox-preview-container');
+            const frame = document.getElementById('sandbox-frame');
+            container.classList.remove('hidden');
+            container.style.display = 'flex';
+            loader.style.display = 'flex';
+            frame.src = targetUrl;
+            frame.onload = function () {
+                document.getElementById('iframe-loader').style.display = 'none';
+                applyCurrentThemeVars();
+                attachInspector(frame);
+            };
+        }
     }
 
     function closeSecondPreview() {
