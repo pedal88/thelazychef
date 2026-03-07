@@ -139,6 +139,11 @@
                                                 class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Tokens</span>
                                         </a>
                                     </div>
+                                    <!-- Compare Mode Toggle -->
+                                    <button type="button" id="compare-toggle" onclick="toggleCompareMode()"
+                                        class="mt-2 w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-indigo-50 hover:border-indigo-300 transition-all text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                                        <span>🔀</span> <span id="compare-label">Compare: OFF</span>
+                                    </button>
                                 </div>
 
                                 <!-- Theme Settings Body (collapsed by default) -->
@@ -553,10 +558,26 @@
         document.getElementById('recipe-clear-btn').classList.add('hidden');
     }
     let currentFragment = null;
+    let compareMode = false;
+
+    function toggleCompareMode() {
+        compareMode = !compareMode;
+        const btn = document.getElementById('compare-toggle');
+        const label = document.getElementById('compare-label');
+        if (compareMode) {
+            btn.classList.remove('bg-white', 'text-slate-400', 'border-slate-200');
+            btn.classList.add('bg-indigo-100', 'text-indigo-700', 'border-indigo-300');
+            label.textContent = 'Compare: ON — click a fragment for slot 2';
+        } else {
+            btn.classList.remove('bg-indigo-100', 'text-indigo-700', 'border-indigo-300');
+            btn.classList.add('bg-white', 'text-slate-400', 'border-slate-200');
+            label.textContent = 'Compare: OFF';
+        }
+    }
 
     function openSandbox(fragmentName, evt) {
         if (evt) evt.preventDefault();
-        const useSecond = evt && evt.shiftKey;
+        const useSecond = compareMode;
         if (!useSecond) currentFragment = fragmentName;
 
         // Only clear the relevant highlight color set
