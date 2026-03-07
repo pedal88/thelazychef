@@ -102,22 +102,25 @@
                                         ('coreid', '🪪', 'Core ID', 'cyan')
                                         ] %}
                                         {% for name, icon, label, color in fragments %}
-                                        <div class="relative" id="frag-card-{{ name }}">
+                                        <div class="relative frag-card" id="frag-card-{{ name }}"
+                                            data-fragment="{{ name }}" draggable="true"
+                                            ondragstart="onCardDragStart(event, '{{ name }}')"
+                                            ondragover="onCardDragOver(event)" ondrop="onCardDrop(event, '{{ name }}')">
                                             <div class="flex items-center justify-center gap-0.5 mb-0.5"
                                                 id="version-pills-{{ name }}">
                                                 <button onclick="openSandbox('{{ name }}', event, 1)" draggable="true"
-                                                    ondragstart="onPillDrag(event, '{{ name }}', 1)"
+                                                    ondragstart="onPillDrag(event, '{{ name }}', 1); event.stopPropagation();"
                                                     class="version-pill version-pill-{{ name }} w-4 h-4 rounded-full text-[8px] font-bold bg-slate-200 text-slate-500 hover:bg-{{ color }}-300 transition-all leading-none flex items-center justify-center cursor-grab"
                                                     data-version="1" title="Version 1">1</button>
                                             </div>
                                             <!-- Fragment button -->
                                             <a href="javascript:void(0)" onclick="openSandbox('{{ name }}', event)"
-                                                draggable="true" ondragstart="onPillDrag(event, '{{ name }}', 1)"
                                                 id="frag-btn-{{ name }}"
-                                                class="frag-btn flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-{{ color }}-300 hover:bg-{{ color }}-50 transition-all shadow-sm cursor-grab">
+                                                class="frag-btn flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-{{ color }}-300 hover:bg-{{ color }}-50 transition-all shadow-sm cursor-pointer">
                                                 <span class="text-2xl">{{ icon }}</span>
-                                                <span
-                                                    class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">{{
+                                                <span id="frag-label-{{ name }}"
+                                                    class="text-[10px] font-bold text-slate-500 uppercase tracking-wide"
+                                                    ondblclick="startRenameFragment('{{ name }}', event)">{{
                                                     label }}</span>
                                             </a>
                                         </div>
@@ -778,6 +781,124 @@
         // Reset Preview 1 styles
         const c1 = document.getElementById('sandbox-preview-container');
         c1.style.boxShadow = '';
+    });
+    // --- Fragment Rename (double-click label) ---
+    function startRenameFragment(fragmentName, evt) {
+        evt.preventDefault();
+        evt.stopPropagation();
+        const labelEl = document.getElementById('frag-label-' + fragmentName);
+        const currentText = labelEl.textContent.trim();
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = currentText;
+        input.className = 'text-[10px] font-bold text-slate-700 uppercase tracking-wide bg-white border border-blue-400 rounded px-1 py-0 w-full text-center outline-none';
+        input.style.maxWidth = '80px';
+
+        const finishRename = () => {
+            const newName = input.value.trim() || currentText;
+            labelEl.textContent = newName;
+            // Save to localStorage
+            const labels = JSON.parse(localStorage.getItem('sandbox-fragment-labels') || '{}');
+            labels[fragmentName] = newName;
+            localStorage.setItem('sandbox-fragment-labels', JSON.stringify(labels));
+        };
+
+        input.addEventListener('blur', finishRename);
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+            if (e.key === 'Escape') { input.value = currentText; input.blur(); }
+        });
+
+        labelEl.textContent = '';
+        labelEl.appendChild(input);
+        input.focus();
+        input.select();
+    }
+
+    // Restore saved labels on load
+    function restoreFragmentLabels() {
+        const labels = JSON.parse(localStorage.getItem('sandbox-fragment-labels') || '{}');
+        for (const [name, label] of Object.entries(labels)) {
+            const el = document.getElementById('frag-label-' + name);
+            if (el) el.textContent = label;
+        }
+    }
+
+    // --- Fragment Grid Reorder (drag cards) ---
+    let draggedCardName = null;
+
+    function onCardDragStart(evt, fragmentName) {
+        draggedCardName = fragmentName;
+        evt.dataTransfer.setData('application/x-card-reorder', fragmentName);
+        evt.dataTransfer.effectAllowed = 'move';
+        evt.target.style.opacity = '0.4';
+    }
+
+    function onCardDragOver(evt) {
+        // Only accept card reorder drags
+        if (!draggedCardName) return;
+        evt.preventDefault();
+        evt.dataTransfer.dropEffect = 'move';
+    }
+
+    function onCardDrop(evt, targetName) {
+        if (!draggedCardName || draggedCardName === targetName) {
+            draggedCardName = null;
+            return;
+        }
+        evt.preventDefault();
+        evt.stopPropagation();
+
+        const grid = document.getElementById('fragment-grid');
+        const draggedCard = document.getElementById('frag-card-' + draggedCardName);
+        const targetCard = document.getElementById('frag-card-' + targetName);
+        draggedCard.style.opacity = '';
+
+        if (!draggedCard || !targetCard) return;
+
+        // Determine if dragged should go before or after target
+        const cards = [...grid.querySelectorAll('.frag-card')];
+        const dragIdx = cards.indexOf(draggedCard);
+        const targetIdx = cards.indexOf(targetCard);
+
+        if (dragIdx < targetIdx) {
+            grid.insertBefore(draggedCard, targetCard.nextSibling);
+        } else {
+            grid.insertBefore(draggedCard, targetCard);
+        }
+
+        draggedCardName = null;
+        saveFragmentOrder();
+    }
+
+    // Also reset opacity on dragend
+    document.addEventListener('dragend', function (evt) {
+        if (evt.target.classList && evt.target.classList.contains('frag-card')) {
+            evt.target.style.opacity = '';
+            draggedCardName = null;
+        }
+    });
+
+    function saveFragmentOrder() {
+        const grid = document.getElementById('fragment-grid');
+        const order = [...grid.querySelectorAll('.frag-card')].map(c => c.dataset.fragment);
+        localStorage.setItem('sandbox-fragment-order', JSON.stringify(order));
+    }
+
+    function restoreFragmentOrder() {
+        const saved = JSON.parse(localStorage.getItem('sandbox-fragment-order') || '[]');
+        if (!saved.length) return;
+        const grid = document.getElementById('fragment-grid');
+        saved.forEach(name => {
+            const card = document.getElementById('frag-card-' + name);
+            if (card) grid.appendChild(card);
+        });
+    }
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', function () {
+        restoreFragmentOrder();
+        restoreFragmentLabels();
     });
 
     // --- Fragment Version Management ---
