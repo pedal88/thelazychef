@@ -1,0 +1,84 @@
+{% extends "fragments/base_fragment.html" %}
+
+{% block content %}
+{# Core Identity Card — recipe metadata at a glance #}
+<div class="safe-box bg-surface-grad">
+
+    {# Header badge #}
+    <div class="mb-8">
+        <span class="inline-flex items-center rounded-full px-4 py-1 text-[14px] font-bold uppercase tracking-widest"
+            style="background: var(--accent); color: white;">
+            Core Identity
+        </span>
+    </div>
+
+    {# Recipe image + title block #}
+    <div class="flex gap-10 mb-10">
+        {% if image_url %}
+        <div class="w-[340px] h-[340px] rounded-3xl overflow-hidden flex-shrink-0 border-2"
+            style="border-color: var(--card-border);">
+            <img src="{{ image_url }}" alt="{{ title }}" class="w-full h-full object-cover">
+        </div>
+        {% else %}
+        <div class="w-[340px] h-[340px] rounded-3xl flex-shrink-0 flex items-center justify-center"
+            style="background: var(--bg-lighter); border: 2px solid var(--card-border);">
+            <span class="text-[120px] opacity-20">🍳</span>
+        </div>
+        {% endif %}
+
+        <div class="flex flex-col justify-center flex-1 min-w-0">
+            <h1 class="font-serif font-bold text-white leading-[1.1] tracking-tight mb-4"
+                style="font-size: clamp(44px, 4.5vw, 60px); text-shadow: 0 2px 8px rgba(0,0,0,0.3);">
+                {{ title }}
+            </h1>
+            <div class="flex items-center gap-3">
+                <span class="text-[22px] font-mono font-bold" style="color: var(--accent);">#{{ recipe_id }}</span>
+            </div>
+        </div>
+    </div>
+
+    {# Data grid #}
+    <div class="card-glass p-8 flex-1">
+        <div class="grid grid-cols-2 gap-x-10 gap-y-8">
+
+            {# Cuisine #}
+            <div class="flex flex-col gap-2">
+                <span class="frag-small font-bold uppercase tracking-widest"
+                    style="color: var(--fg-subtle);">Cuisine</span>
+                <span class="frag-body font-semibold text-white">{{ cuisine or '—' }}</span>
+            </div>
+
+            {# Difficulty #}
+            <div class="flex flex-col gap-2">
+                <span class="frag-small font-bold uppercase tracking-widest"
+                    style="color: var(--fg-subtle);">Difficulty</span>
+                <span class="frag-body font-semibold text-white">{{ difficulty or '—' }}</span>
+            </div>
+
+            {# Protein Type #}
+            <div class="flex flex-col gap-2">
+                <span class="frag-small font-bold uppercase tracking-widest"
+                    style="color: var(--fg-subtle);">Protein</span>
+                <span class="frag-body font-semibold text-white">{{ protein_type or '—' }}</span>
+            </div>
+
+            {# Chef #}
+            <div class="flex flex-col gap-2">
+                <span class="frag-small font-bold uppercase tracking-widest"
+                    style="color: var(--fg-subtle);">Chef</span>
+                <span class="frag-body font-semibold text-white">{{ chef_name or '—' }}</span>
+            </div>
+
+            {# Image Filename #}
+            <div class="flex flex-col gap-2 col-span-2">
+                <span class="frag-small font-bold uppercase tracking-widest" style="color: var(--fg-subtle);">Image
+                    File</span>
+                <span class="frag-small font-mono" style="color: var(--fg-muted);">{{ image_filename or 'No image'
+                    }}</span>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}

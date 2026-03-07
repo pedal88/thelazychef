@@ -522,7 +522,7 @@ def _build_galaxy_data(recipe, session, storage_provider=None) -> dict:
 # 7. SANDBOX — build context for browser-based design iteration
 # ---------------------------------------------------------------------------
 
-VALID_FRAGMENTS = {"hero", "meta", "nutrition", "ingredients", "steps", "galaxy", "typography"}
+VALID_FRAGMENTS = {"hero", "meta", "nutrition", "ingredients", "steps", "galaxy", "typography", "coreid"}
 
 
 def build_sandbox_context(recipe_id: int, fragment_name: str, app, storage_provider, theme_name="modern", debug=False, scale=1.0):
@@ -602,5 +602,13 @@ def build_sandbox_context(recipe_id: int, fragment_name: str, app, storage_provi
         if fragment_name == "galaxy":
             graph_data = _build_galaxy_data(recipe, db.session, storage_provider)
             return {**base_ctx, "graph_data": graph_data}
+
+        if fragment_name == "coreid":
+            return {
+                **base_ctx,
+                "recipe_id": recipe.id,
+                "protein_type": recipe.protein_type,
+                "image_filename": recipe.image_filename,
+            }
 
         return base_ctx
