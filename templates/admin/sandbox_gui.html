@@ -88,64 +88,38 @@
 
                                 <!-- Fragments Body (open by default) -->
                                 <div id="fragments-body" class="mt-3">
-                                    <div class="grid grid-cols-8 gap-1.5">
-                                        <a href="javascript:void(0)" onclick="openSandbox('hero', event)"
-                                            id="frag-btn-hero"
-                                            class="frag-btn flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-orange-300 hover:bg-orange-50 transition-all shadow-sm cursor-pointer">
-                                            <span class="text-2xl">🖼️</span>
-                                            <span
-                                                class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Hero</span>
-                                        </a>
-                                        <a href="javascript:void(0)" onclick="openSandbox('meta', event)"
-                                            id="frag-btn-meta"
-                                            class="frag-btn flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-blue-300 hover:bg-blue-50 transition-all shadow-sm cursor-pointer">
-                                            <span class="text-2xl">⏱️</span>
-                                            <span
-                                                class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Details</span>
-                                        </a>
-                                        <a href="javascript:void(0)" onclick="openSandbox('ingredients', event)"
-                                            id="frag-btn-ingredients"
-                                            class="frag-btn flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-green-300 hover:bg-green-50 transition-all shadow-sm cursor-pointer">
-                                            <span class="text-2xl">🥦</span>
-                                            <span
-                                                class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Ingredi.</span>
-                                        </a>
-                                        <a href="javascript:void(0)" onclick="openSandbox('steps', event)"
-                                            id="frag-btn-steps"
-                                            class="frag-btn flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-purple-300 hover:bg-purple-50 transition-all shadow-sm cursor-pointer">
-                                            <span class="text-2xl">📝</span>
-                                            <span
-                                                class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Steps</span>
-                                        </a>
-                                        <a href="javascript:void(0)" onclick="openSandbox('nutrition', event)"
-                                            id="frag-btn-nutrition"
-                                            class="frag-btn flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-rose-300 hover:bg-rose-50 transition-all shadow-sm cursor-pointer">
-                                            <span class="text-2xl">🔥</span>
-                                            <span
-                                                class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Nutrition</span>
-                                        </a>
-                                        <a href="javascript:void(0)" onclick="openSandbox('galaxy', event)"
-                                            id="frag-btn-galaxy"
-                                            class="frag-btn flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-indigo-300 hover:bg-indigo-50 transition-all shadow-sm cursor-pointer">
-                                            <span class="text-2xl">🌌</span>
-                                            <span
-                                                class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Galaxy</span>
-                                        </a>
-                                        <a href="javascript:void(0)" onclick="openSandbox('typography', event)"
-                                            id="frag-btn-typography"
-                                            class="frag-btn flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-amber-300 hover:bg-amber-50 transition-all shadow-sm cursor-pointer">
-                                            <span class="text-2xl">🔤</span>
-                                            <span
-                                                class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Tokens</span>
-                                        </a>
-                                        <a href="javascript:void(0)" onclick="openSandbox('coreid', event)"
-                                            id="frag-btn-coreid"
-                                            class="frag-btn flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-cyan-300 hover:bg-cyan-50 transition-all shadow-sm cursor-pointer">
-                                            <span class="text-2xl">🪪</span>
-                                            <span
-                                                class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Core
-                                                ID</span>
-                                        </a>
+                                    <div class="grid grid-cols-8 gap-1.5" id="fragment-grid">
+                                        <!-- Fragment tiles are defined here with version pills -->
+                                        {% set fragments = [
+                                        ('hero', '🖼️', 'Hero', 'orange'),
+                                        ('meta', '⏱️', 'Details', 'blue'),
+                                        ('ingredients', '🥦', 'Ingredi.', 'green'),
+                                        ('steps', '📝', 'Steps', 'purple'),
+                                        ('nutrition', '🔥', 'Nutrition', 'rose'),
+                                        ('galaxy', '🌌', 'Galaxy', 'indigo'),
+                                        ('typography', '🔤', 'Tokens', 'amber'),
+                                        ('coreid', '🪪', 'Core ID', 'cyan')
+                                        ] %}
+                                        {% for name, icon, label, color in fragments %}
+                                        <div class="relative" id="frag-card-{{ name }}">
+                                            <!-- Version pills row -->
+                                            <div class="flex items-center justify-center gap-0.5 mb-0.5"
+                                                id="version-pills-{{ name }}">
+                                                <button onclick="openSandbox('{{ name }}', event, 1)"
+                                                    class="version-pill version-pill-{{ name }} w-4 h-4 rounded-full text-[8px] font-bold bg-slate-200 text-slate-500 hover:bg-{{ color }}-300 transition-all leading-none flex items-center justify-center"
+                                                    data-version="1" title="Version 1">1</button>
+                                            </div>
+                                            <!-- Fragment button -->
+                                            <a href="javascript:void(0)" onclick="openSandbox('{{ name }}', event)"
+                                                id="frag-btn-{{ name }}"
+                                                class="frag-btn flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-{{ color }}-300 hover:bg-{{ color }}-50 transition-all shadow-sm cursor-pointer">
+                                                <span class="text-2xl">{{ icon }}</span>
+                                                <span
+                                                    class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">{{
+                                                    label }}</span>
+                                            </a>
+                                        </div>
+                                        {% endfor %}
                                     </div>
                                     <!-- Pin & Compare Controls -->
                                     <div id="pin-controls" class="mt-2 flex gap-1.5">
@@ -169,6 +143,17 @@
                                             style="display:none;"
                                             class="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-green-300 bg-green-50 hover:bg-green-100 transition-all text-[10px] font-bold uppercase tracking-wide text-green-600">
                                             <span>✅</span> Accept
+                                        </button>
+                                    </div>
+                                    <!-- Version Management Controls -->
+                                    <div class="mt-1.5 flex gap-1.5">
+                                        <button type="button" onclick="saveAsNewVersion()"
+                                            class="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-teal-50 hover:border-teal-300 transition-all text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                                            <span>💾</span> Save as v2/v3
+                                        </button>
+                                        <button type="button" onclick="promptDeleteVersion()"
+                                            class="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-red-50 hover:border-red-300 transition-all text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                                            <span>🗑️</span> Delete Version
                                         </button>
                                     </div>
                                 </div>
@@ -655,36 +640,36 @@
             });
     }
 
-    function openSandbox(fragmentName, evt) {
+    function openSandbox(fragmentName, evt, version) {
         if (evt) evt.preventDefault();
-        const useSecond = false;  // Compare now handled by loadPinnedComparison
         currentFragment = fragmentName;
+        const v = version || 1;
 
-        // Only clear the relevant highlight color set
+        // Highlight active fragment pill
         document.querySelectorAll('.frag-btn').forEach(btn => {
-            if (useSecond) {
-                btn.classList.remove('ring-2', 'ring-indigo-400', 'bg-indigo-50', 'border-indigo-300');
-                // Re-add ring-2 if this btn still has orange (primary) highlight
-                if (btn.classList.contains('ring-orange-400')) btn.classList.add('ring-2');
-            } else {
-                btn.classList.remove('ring-2', 'ring-orange-400', 'bg-orange-50', 'border-orange-300');
-                // Re-add ring-2 if this btn still has indigo (secondary) highlight
-                if (btn.classList.contains('ring-indigo-400')) btn.classList.add('ring-2');
-            }
+            btn.classList.remove('ring-2', 'ring-orange-400', 'bg-orange-50', 'border-orange-300');
         });
         const activeBtn = document.getElementById('frag-btn-' + fragmentName);
         if (activeBtn) {
-            if (useSecond) {
-                activeBtn.classList.add('ring-2', 'ring-indigo-400', 'bg-indigo-50', 'border-indigo-300');
-            } else {
-                activeBtn.classList.add('ring-2', 'ring-orange-400', 'bg-orange-50', 'border-orange-300');
-            }
+            activeBtn.classList.add('ring-2', 'ring-orange-400', 'bg-orange-50', 'border-orange-300');
         }
+
+        // Highlight active version pill
+        document.querySelectorAll('.version-pill-' + fragmentName).forEach(p => {
+            p.classList.remove('bg-orange-400', 'text-white');
+            p.classList.add('bg-slate-200', 'text-slate-500');
+        });
+        const activePill = document.querySelector(`.version-pill-${fragmentName}[data-version="${v}"]`);
+        if (activePill) {
+            activePill.classList.remove('bg-slate-200', 'text-slate-500');
+            activePill.classList.add('bg-orange-400', 'text-white');
+        }
+
         const recipeId = document.getElementById('sandbox-recipe-id').value || 192;
         const theme = document.getElementById('sandbox-theme').value || 'modern';
         const debug = document.getElementById('sandbox-debug').checked;
 
-        let targetUrl = `/admin/media-hub/sandbox/${fragmentName}?recipe_id=${recipeId}&theme=${theme}`;
+        let targetUrl = `/admin/media-hub/sandbox/${fragmentName}?recipe_id=${recipeId}&theme=${theme}&version=${v}`;
         if (debug) {
             targetUrl += "&debug=true";
         }
@@ -693,32 +678,18 @@
         const emptyState = document.getElementById('sandbox-empty-state');
         emptyState.style.display = 'none';
 
-        if (useSecond) {
-            // Load into second preview
-            const container2 = document.getElementById('sandbox-preview-container-2');
-            const loader2 = document.getElementById('iframe-loader-2');
-            const frame2 = document.getElementById('sandbox-frame-2');
-            container2.classList.remove('hidden');
-            loader2.style.display = 'flex';
-            frame2.src = targetUrl;
-            frame2.onload = function () {
-                loader2.style.display = 'none';
-            };
-        } else {
-            // Load into primary preview
-            const loader = document.getElementById('iframe-loader');
-            const container = document.getElementById('sandbox-preview-container');
-            const frame = document.getElementById('sandbox-frame');
-            container.classList.remove('hidden');
-            container.style.display = 'flex';
-            loader.style.display = 'flex';
-            frame.src = targetUrl;
-            frame.onload = function () {
-                document.getElementById('iframe-loader').style.display = 'none';
-                applyCurrentThemeVars();
-                attachInspector(frame);
-            };
-        }
+        const loader = document.getElementById('iframe-loader');
+        const container = document.getElementById('sandbox-preview-container');
+        const frame = document.getElementById('sandbox-frame');
+        container.classList.remove('hidden');
+        container.style.display = 'flex';
+        loader.style.display = 'flex';
+        frame.src = targetUrl;
+        frame.onload = function () {
+            document.getElementById('iframe-loader').style.display = 'none';
+            applyCurrentThemeVars();
+            attachInspector(frame);
+        };
     }
 
     function closeSecondPreview() {
@@ -727,6 +698,69 @@
         container2.classList.add('hidden');
         frame2.src = '';
     }
+
+    // --- Fragment Version Management ---
+    const FRAGMENT_NAMES = ['hero', 'meta', 'ingredients', 'steps', 'nutrition', 'galaxy', 'typography', 'coreid'];
+
+    function refreshVersionPills(fragmentName) {
+        fetch(`/admin/media-hub/sandbox/versions/${fragmentName}`)
+            .then(r => r.json())
+            .then(data => {
+                const container = document.getElementById('version-pills-' + fragmentName);
+                if (!container) return;
+                container.innerHTML = '';
+                data.versions.forEach(v => {
+                    const pill = document.createElement('button');
+                    pill.className = `version-pill version-pill-${fragmentName} w-4 h-4 rounded-full text-[8px] font-bold bg-slate-200 text-slate-500 hover:bg-orange-300 transition-all leading-none flex items-center justify-center`;
+                    pill.textContent = v;
+                    pill.dataset.version = v;
+                    pill.title = `Version ${v}`;
+                    pill.onclick = function (e) { openSandbox(fragmentName, e, v); };
+                    container.appendChild(pill);
+                });
+            });
+    }
+
+    function loadAllVersionPills() {
+        FRAGMENT_NAMES.forEach(f => refreshVersionPills(f));
+    }
+
+    function saveAsNewVersion() {
+        const frag = currentFragment || 'hero';
+        fetch(`/admin/media-hub/sandbox/create-version/${frag}`, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'created') {
+                    refreshVersionPills(frag);
+                    alert(`Saved current ${frag} as version ${data.version}`);
+                } else {
+                    alert(data.error || 'Failed to create version');
+                }
+            });
+    }
+
+    function promptDeleteVersion() {
+        const frag = currentFragment || 'hero';
+        const vStr = prompt(`Delete which version of "${frag}"? (Enter 2 or 3)`);
+        if (!vStr) return;
+        const v = parseInt(vStr);
+        if (v === 1) { alert('Cannot delete version 1 (the original).'); return; }
+        if (v < 2 || v > 3) { alert('Enter 2 or 3.'); return; }
+
+        fetch(`/admin/media-hub/sandbox/version/${frag}/${v}`, { method: 'DELETE' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'deleted') {
+                    refreshVersionPills(frag);
+                    openSandbox(frag, null, 1);
+                } else {
+                    alert(data.error || 'Failed to delete');
+                }
+            });
+    }
+
+    // Load version pills on page load
+    document.addEventListener('DOMContentLoaded', loadAllVersionPills);
 
     function reloadCurrentFragment() {
         if (currentFragment) {

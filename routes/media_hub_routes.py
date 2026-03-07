@@ -540,19 +540,23 @@ def fragment_sandbox(fragment_name):
             debug=debug,
             scale=scale,
         )
-        # Support serving pinned (old) version for comparison
-        version = request.args.get("version", "live")
+        # Support serving specific versions for comparison
+        version = request.args.get("version", "1")
         template_path = f"fragments/{fragment_name}.html"
+
         if version == "pinned":
-            pinned_path = os.path.join(current_app.root_path, "templates", "fragments", f"{fragment_name}.html.pinned")
-            if os.path.exists(pinned_path):
-                from jinja2 import Template as J2Template
-                with open(pinned_path, "r") as f:
-                    pinned_source = f.read()
-                # Render from the pinned file using the app's Jinja env
-                template = current_app.jinja_env.from_string(pinned_source)
+            alt_path = os.path.join(current_app.root_path, "templates", "fragments", f"{fragment_name}.html.pinned")
+            if os.path.exists(alt_path):
+                with open(alt_path, "r") as f:
+                    template = current_app.jinja_env.from_string(f.read())
                 return template.render(**ctx)
-            # Fall through to live if no pinned file exists
+        elif version not in ("1", "live"):
+            # Numbered version: v2, v3
+            alt_path = os.path.join(current_app.root_path, "templates", "fragments", f"{fragment_name}.v{version}.html")
+            if os.path.exists(alt_path):
+                with open(alt_path, "r") as f:
+                    template = current_app.jinja_env.from_string(f.read())
+                return template.render(**ctx)
 
         return render_template(template_path, **ctx)
     except ValueError as e:
@@ -633,6 +637,72 @@ def pin_status(fragment_name):
     """Check if a pinned version exists for this fragment."""
     pinned = os.path.join(current_app.root_path, "templates", "fragments", f"{fragment_name}.html.pinned")
     return jsonify({"pinned": os.path.exists(pinned), "fragment": fragment_name})
+
+
+@media_hub_bp.route("/sandbox/versions/<fragment_name>", methods=["GET"])
+@login_required
+@admin_required
+def list_fragment_versions(fragment_name):
+    """List all available versions for a fragment (1 = original, 2/3 = variants)."""
+    from media_hub.snapshotter import VALID_FRAGMENTS
+    if fragment_name not in VALID_FRAGMENTS:
+        return jsonify({"error": f"Unknown fragment: {fragment_name}"}), 404
+
+    fragments_dir = os.path.join(current_app.root_path, "templates", "fragments")
+    versions = [1]  # v1 always exists (the original .html)
+    for v in (2, 3):
+        if os.path.exists(os.path.join(fragments_dir, f"{fragment_name}.v{v}.html")):
+            versions.append(v)
+    return jsonify({"fragment": fragment_name, "versions": versions})
+
+
+@media_hub_bp.route("/sandbox/create-version/<fragment_name>", methods=["POST"])
+@login_required
+@admin_required
+def create_fragment_version(fragment_name):
+    """Save the current fragment as a new numbered version (max 3)."""
+    import shutil
+    from media_hub.snapshotter import VALID_FRAGMENTS
+    if fragment_name not in VALID_FRAGMENTS:
+        return jsonify({"error": f"Unknown fragment: {fragment_name}"}), 404
+
+    fragments_dir = os.path.join(current_app.root_path, "templates", "fragments")
+    src = os.path.join(fragments_dir, f"{fragment_name}.html")
+    if not os.path.exists(src):
+        return jsonify({"error": "Source template not found"}), 404
+
+    # Find next available version slot
+    for v in (2, 3):
+        dst = os.path.join(fragments_dir, f"{fragment_name}.v{v}.html")
+        if not os.path.exists(dst):
+            shutil.copy2(src, dst)
+            logger.info(f"[Sandbox] Created version {v} for {fragment_name}")
+            return jsonify({"status": "created", "fragment": fragment_name, "version": v})
+
+    return jsonify({"error": "Maximum 3 versions reached. Delete one first."}), 409
+
+
+@media_hub_bp.route("/sandbox/version/<fragment_name>/<int:version_num>", methods=["DELETE"])
+@login_required
+@admin_required
+def delete_fragment_version(fragment_name, version_num):
+    """Delete a specific version of a fragment."""
+    from media_hub.snapshotter import VALID_FRAGMENTS
+    if fragment_name not in VALID_FRAGMENTS:
+        return jsonify({"error": f"Unknown fragment: {fragment_name}"}), 404
+
+    if version_num == 1:
+        return jsonify({"error": "Cannot delete version 1 (the original template)"}), 400
+
+    fragments_dir = os.path.join(current_app.root_path, "templates", "fragments")
+    target = os.path.join(fragments_dir, f"{fragment_name}.v{version_num}.html")
+
+    if not os.path.exists(target):
+        return jsonify({"error": f"Version {version_num} not found"}), 404
+
+    os.remove(target)
+    logger.info(f"[Sandbox] Deleted version {version_num} for {fragment_name}")
+    return jsonify({"status": "deleted", "fragment": fragment_name, "version": version_num})
 
 
 @media_hub_bp.route("/sandbox/poll-templates", methods=["GET"])
