@@ -8,13 +8,13 @@
 All fragment templates MUST use these classes instead of hardcoded `font-size` values.
 They are defined in `base_fragment.html` and render at TikTok-safe sizes on the 1080px canvas.
 
-| Class | Size Range | Use For |
+| Class | Size | Use For |
 |---|---|---|
-| `.frag-title` | 56–80px | Hero headlines, dish names |
-| `.frag-heading` | 40–56px | Section titles, ingredient names, step numbers |
-| `.frag-body` | 32–40px | Body text, descriptions, amounts |
-| `.frag-label` | 26–32px | Uppercase labels, metadata tags, section markers |
-| `.frag-small` | 22–28px | Captions, footnotes, page indicators (minimum readable) |
+| `.frag-title` | 68px | Hero headlines, dish names |
+| `.frag-heading` | 48px | Section titles, ingredient names, step numbers |
+| `.frag-body` | 36px | Body text, descriptions, amounts |
+| `.frag-label` | 29px | Uppercase labels, metadata tags, section markers |
+| `.frag-small` | 25px | Captions, footnotes, page indicators (minimum readable) |
 
 ### Rules
 - **Never use `font-size` below 22px** on the 1080px canvas — it will be unreadable on phones
