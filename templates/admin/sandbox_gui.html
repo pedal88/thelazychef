@@ -94,6 +94,7 @@
                                         ('hero', '🖼️', 'Hero', 'orange'),
                                         ('meta', '⏱️', 'Details', 'blue'),
                                         ('ingredients', '🥦', 'Ingredi.', 'green'),
+                                        ('ingrid', '🎨', 'Grid', 'lime'),
                                         ('steps', '📝', 'Steps', 'purple'),
                                         ('nutrition', '🔥', 'Nutrition', 'rose'),
                                         ('galaxy', '🌌', 'Galaxy', 'indigo'),
@@ -722,7 +723,7 @@
     }
 
     // --- Fragment Version Management ---
-    const FRAGMENT_NAMES = ['hero', 'meta', 'ingredients', 'steps', 'nutrition', 'galaxy', 'typography', 'coreid'];
+    const FRAGMENT_NAMES = ['hero', 'meta', 'ingredients', 'ingrid', 'steps', 'nutrition', 'galaxy', 'typography', 'coreid'];
 
     function refreshVersionPills(fragmentName) {
         fetch(`/admin/media-hub/sandbox/versions/${fragmentName}`)

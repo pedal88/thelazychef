@@ -522,7 +522,7 @@ def _build_galaxy_data(recipe, session, storage_provider=None) -> dict:
 # 7. SANDBOX — build context for browser-based design iteration
 # ---------------------------------------------------------------------------
 
-VALID_FRAGMENTS = {"hero", "meta", "nutrition", "ingredients", "steps", "galaxy", "typography", "coreid"}
+VALID_FRAGMENTS = {"hero", "meta", "nutrition", "ingredients", "steps", "galaxy", "typography", "coreid", "ingrid"}
 
 
 def build_sandbox_context(recipe_id: int, fragment_name: str, app, storage_provider, theme_name="modern", debug=False, scale=1.0):
@@ -609,6 +609,21 @@ def build_sandbox_context(recipe_id: int, fragment_name: str, app, storage_provi
                 "recipe_id": recipe.id,
                 "protein_type": recipe.protein_type,
                 "image_filename": recipe.image_filename,
+            }
+
+        if fragment_name == "ingrid":
+            ingredient_groups = _build_ingredient_groups(recipe, storage_provider)
+            # Flatten all groups into a single list, images first for visual impact
+            all_items = []
+            for g in ingredient_groups:
+                all_items.extend(g["entries"])
+            # Sort: ingredients with images first, then alphabetically
+            all_items.sort(key=lambda x: (0 if x["image_url"] else 1, x["name"]))
+            # Cap at 9 for a clean 3x3 grid (or 8 for 2x4)
+            grid_items = all_items[:9]
+            return {
+                **base_ctx,
+                "grid_items": grid_items,
             }
 
         return base_ctx
