@@ -261,17 +261,9 @@
         }
 
         /* ── Debug: TikTok / Reels safe zone overlay ── */
-            {
-            % if debug %
-        }
-
-        .debug-zones {
-            display: block !important;
-        }
-
-            {
-            % endif %
-        }
+        {% if debug %}
+        .debug-zones { display: block !important; }
+        {% endif %}
     </style>
     {% block head %}{% endblock %}
 </head>
