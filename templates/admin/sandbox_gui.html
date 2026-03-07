@@ -260,46 +260,46 @@
                                     <div class="flex flex-col gap-3">
                                         <div class="flex items-center gap-3">
                                             <span class="text-[10px] text-pink-400 font-mono w-16 shrink-0">title</span>
-                                            <input type="range" id="token-title-size" min="24" max="72" value="48"
+                                            <input type="range" id="token-title-size" min="40" max="100" value="68"
                                                 step="1" oninput="applyTokenSize('frag-title', this.value, 'val-title')"
                                                 class="flex-1 h-1 accent-pink-500">
                                             <span id="val-title"
-                                                class="text-xs text-slate-400 font-mono w-8 text-right">48</span>
+                                                class="text-xs text-slate-400 font-mono w-8 text-right">68</span>
                                         </div>
                                         <div class="flex items-center gap-3">
                                             <span
                                                 class="text-[10px] text-orange-400 font-mono w-16 shrink-0">heading</span>
-                                            <input type="range" id="token-heading-size" min="18" max="56" value="36"
+                                            <input type="range" id="token-heading-size" min="28" max="80" value="48"
                                                 step="1"
                                                 oninput="applyTokenSize('frag-heading', this.value, 'val-heading')"
                                                 class="flex-1 h-1 accent-orange-500">
                                             <span id="val-heading"
-                                                class="text-xs text-slate-400 font-mono w-8 text-right">36</span>
+                                                class="text-xs text-slate-400 font-mono w-8 text-right">48</span>
                                         </div>
                                         <div class="flex items-center gap-3">
                                             <span class="text-[10px] text-blue-400 font-mono w-16 shrink-0">label</span>
-                                            <input type="range" id="token-label-size" min="10" max="24" value="16"
+                                            <input type="range" id="token-label-size" min="18" max="48" value="29"
                                                 step="1" oninput="applyTokenSize('frag-label', this.value, 'val-label')"
                                                 class="flex-1 h-1 accent-blue-500">
                                             <span id="val-label"
-                                                class="text-xs text-slate-400 font-mono w-8 text-right">16</span>
+                                                class="text-xs text-slate-400 font-mono w-8 text-right">29</span>
                                         </div>
                                         <div class="flex items-center gap-3">
                                             <span class="text-[10px] text-green-400 font-mono w-16 shrink-0">body</span>
-                                            <input type="range" id="token-body-size" min="12" max="36" value="21"
+                                            <input type="range" id="token-body-size" min="22" max="56" value="36"
                                                 step="1" oninput="applyTokenSize('frag-body', this.value, 'val-body')"
                                                 class="flex-1 h-1 accent-green-500">
                                             <span id="val-body"
-                                                class="text-xs text-slate-400 font-mono w-8 text-right">21</span>
+                                                class="text-xs text-slate-400 font-mono w-8 text-right">36</span>
                                         </div>
                                         <div class="flex items-center gap-3">
                                             <span
                                                 class="text-[10px] text-slate-400 font-mono w-16 shrink-0">small</span>
-                                            <input type="range" id="token-small-size" min="8" max="20" value="14"
+                                            <input type="range" id="token-small-size" min="14" max="40" value="25"
                                                 step="1" oninput="applyTokenSize('frag-small', this.value, 'val-small')"
                                                 class="flex-1 h-1 accent-slate-500">
                                             <span id="val-small"
-                                                class="text-xs text-slate-400 font-mono w-8 text-right">14</span>
+                                                class="text-xs text-slate-400 font-mono w-8 text-right">25</span>
                                         </div>
                                     </div>
                                 </div>
@@ -792,7 +792,7 @@
 
     // --- Developer Tools: Live Variables ---
     function updateThemeVar(variable, value) {
-        const frame = document.getElementById('sandbox-frame');
+        const frame = getActiveFrame();
         if (frame.contentWindow && frame.contentWindow.document.documentElement) {
             frame.contentWindow.document.documentElement.style.setProperty(variable, value);
         }
@@ -820,8 +820,8 @@
     }
 
     function resetThemeVars() {
-        const frame = document.getElementById('sandbox-frame');
-        // Setting an empty string removes the inline overwrite, reverting back to the template's Jinja variables classes
+        const frame = getActiveFrame();
+        // Setting an empty string removes the inline overwrite
         if (frame.contentWindow && frame.contentWindow.document.documentElement) {
             frame.contentWindow.document.documentElement.style.setProperty('--bg', '');
             frame.contentWindow.document.documentElement.style.setProperty('--bg-lighter', '');
@@ -884,6 +884,10 @@
     }, 1500); // Check every 1.5 seconds
 
     // --- Developer Tools: Design Tokens ---
+    function getActiveFrame() {
+        return document.getElementById(previewTarget === 2 ? 'sandbox-frame-2' : 'sandbox-frame');
+    }
+
     function getTokenStyleTag(frame) {
         if (!frame.contentWindow || !frame.contentWindow.document) return null;
         let tag = frame.contentWindow.document.getElementById('sandbox-token-overrides');
@@ -899,7 +903,7 @@
     let tokenOverrides = {};
 
     function rebuildTokenCSS() {
-        const frame = document.getElementById('sandbox-frame');
+        const frame = getActiveFrame();
         const tag = getTokenStyleTag(frame);
         if (!tag) return;
 
@@ -932,21 +936,21 @@
 
     function resetTokens() {
         tokenOverrides = {};
-        const frame = document.getElementById('sandbox-frame');
+        const frame = getActiveFrame();
         const tag = getTokenStyleTag(frame);
         if (tag) tag.innerHTML = '';
 
-        // Reset slider UI values
-        document.getElementById('token-title-size').value = 48;
-        document.getElementById('val-title').textContent = '48';
-        document.getElementById('token-heading-size').value = 36;
-        document.getElementById('val-heading').textContent = '36';
-        document.getElementById('token-label-size').value = 16;
-        document.getElementById('val-label').textContent = '16';
-        document.getElementById('token-body-size').value = 21;
-        document.getElementById('val-body').textContent = '21';
-        document.getElementById('token-small-size').value = 14;
-        document.getElementById('val-small').textContent = '14';
+        // Reset slider UI values to TikTok-optimized defaults
+        document.getElementById('token-title-size').value = 68;
+        document.getElementById('val-title').textContent = '68';
+        document.getElementById('token-heading-size').value = 48;
+        document.getElementById('val-heading').textContent = '48';
+        document.getElementById('token-label-size').value = 29;
+        document.getElementById('val-label').textContent = '29';
+        document.getElementById('token-body-size').value = 36;
+        document.getElementById('val-body').textContent = '36';
+        document.getElementById('token-small-size').value = 25;
+        document.getElementById('val-small').textContent = '25';
         document.getElementById('token-font-heading').selectedIndex = 0;
         document.getElementById('token-font-body').selectedIndex = 0;
     }
