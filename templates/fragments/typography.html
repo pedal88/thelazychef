@@ -4,86 +4,116 @@
 <div class="safe-box">
 
     {# ── Section: Title ── #}
-    <div class="mb-12">
+    <div class="mb-14">
         <span class="frag-label text-accent mb-4 block">frag-title · Playfair Display</span>
         <h1 class="frag-title font-serif font-bold text-fg">
             The Quick Brown Fox
         </h1>
-        <p class="frag-small text-fg-subtle mt-2 font-mono">clamp(36px, 4.2vw, 56px) · line-height: 1.1</p>
+        <p class="frag-small text-fg-subtle mt-3 font-mono">clamp(56px, 6.5vw, 80px) · line-height: 1.1</p>
     </div>
 
     {# ── Section: Heading ── #}
-    <div class="mb-12">
+    <div class="mb-14">
         <span class="frag-label text-accent mb-4 block">frag-heading · Inter</span>
         <h2 class="frag-heading font-sans font-bold text-fg">
             Jumps Over the Lazy Dog
         </h2>
-        <p class="frag-small text-fg-subtle mt-2 font-mono">clamp(28px, 3.4vw, 44px) · line-height: 1.15</p>
+        <p class="frag-small text-fg-subtle mt-3 font-mono">clamp(40px, 4.8vw, 56px) · line-height: 1.15</p>
+    </div>
+
+    {# ── Section: Body ── #}
+    <div class="mb-14">
+        <span class="frag-label text-accent mb-4 block">frag-body · Inter</span>
+        <p class="frag-body text-fg">
+            Body copy for ingredient names, step instructions, and general content.
+            Optimized for readability on TikTok's 1080×1920 canvas.
+        </p>
+        <p class="frag-small text-fg-subtle mt-3 font-mono">clamp(32px, 3.5vw, 40px) · line-height: 1.5</p>
     </div>
 
     {# ── Section: Label ── #}
-    <div class="mb-12">
+    <div class="mb-14">
         <span class="frag-label text-accent mb-4 block">frag-label · Inter</span>
         <span class="frag-label text-fg">
             Uppercase Tracking Label
         </span>
-        <p class="frag-small text-fg-subtle mt-3 font-mono">clamp(14px, 1.4vw, 18px) · letter-spacing: 0.25em ·
+        <p class="frag-small text-fg-subtle mt-4 font-mono">clamp(26px, 2.6vw, 32px) · letter-spacing: 0.2em ·
             uppercase · weight: 700</p>
     </div>
 
-    {# ── Section: Body ── #}
-    <div class="mb-12">
-        <span class="frag-label text-accent mb-4 block">frag-body · Inter</span>
-        <p class="frag-body text-fg">
-            This is body copy used for ingredient names, step instructions, and general content. It should be highly
-            readable at the 1080px canvas width and maintain comfortable line spacing for scanning.
-        </p>
-        <p class="frag-small text-fg-subtle mt-2 font-mono">clamp(18px, 2vw, 24px) · line-height: 1.6</p>
-    </div>
-
     {# ── Section: Small ── #}
-    <div class="mb-12">
+    <div class="mb-14">
         <span class="frag-label text-accent mb-4 block">frag-small · Inter</span>
         <p class="frag-small text-fg">
-            Small text for metadata, page indicators, footnotes and secondary information that doesn't compete with the
-            main content hierarchy.
+            Small text for metadata, captions, footnotes and secondary information.
+            This is the minimum readable size on TikTok.
         </p>
-        <p class="frag-small text-fg-subtle mt-2 font-mono">clamp(12px, 1.2vw, 16px)</p>
+        <p class="frag-small text-fg-subtle mt-3 font-mono">clamp(22px, 2.2vw, 28px)</p>
     </div>
 
     {# ── Divider ── #}
-    <div class="w-full h-px my-6" style="background: var(--card-border);"></div>
+    <div class="w-full h-px my-8" style="background: var(--card-border);"></div>
+
+    {# ── Section: Size Comparison ── #}
+    <div class="mb-14">
+        <span class="frag-label text-accent mb-6 block">Scale Comparison</span>
+        <div class="flex flex-col gap-5">
+            <div class="flex items-baseline gap-6">
+                <span class="frag-title font-serif font-bold text-fg" style="line-height:1;">Aa</span>
+                <span class="frag-small text-fg-muted font-mono">title</span>
+            </div>
+            <div class="flex items-baseline gap-6">
+                <span class="frag-heading font-bold text-fg" style="line-height:1;">Aa</span>
+                <span class="frag-small text-fg-muted font-mono">heading</span>
+            </div>
+            <div class="flex items-baseline gap-6">
+                <span class="frag-body text-fg" style="line-height:1;">Aa</span>
+                <span class="frag-small text-fg-muted font-mono">body</span>
+            </div>
+            <div class="flex items-baseline gap-6">
+                <span class="frag-label text-fg" style="line-height:1;">AA</span>
+                <span class="frag-small text-fg-muted font-mono">label</span>
+            </div>
+            <div class="flex items-baseline gap-6">
+                <span class="frag-small text-fg" style="line-height:1;">Aa</span>
+                <span class="frag-small text-fg-muted font-mono">small</span>
+            </div>
+        </div>
+    </div>
+
+    {# ── Divider ── #}
+    <div class="w-full h-px my-8" style="background: var(--card-border);"></div>
 
     {# ── Section: Color Tokens ── #}
     <div class="mb-10">
         <span class="frag-label text-accent mb-6 block">Color Tokens</span>
-        <div class="flex flex-col gap-4">
-            <div class="flex items-center gap-4">
-                <div class="w-16 h-16 rounded-xl border border-white/10 flex-shrink-0" style="background: var(--fg);">
+        <div class="flex flex-col gap-5">
+            <div class="flex items-center gap-5">
+                <div class="w-20 h-20 rounded-xl border border-white/10 flex-shrink-0" style="background: var(--fg);">
                 </div>
                 <div>
                     <span class="frag-body font-semibold text-fg">--fg</span>
                     <span class="frag-small text-fg-muted block">Primary foreground</span>
                 </div>
             </div>
-            <div class="flex items-center gap-4">
-                <div class="w-16 h-16 rounded-xl border border-white/10 flex-shrink-0"
+            <div class="flex items-center gap-5">
+                <div class="w-20 h-20 rounded-xl border border-white/10 flex-shrink-0"
                     style="background: var(--fg-muted);"></div>
                 <div>
                     <span class="frag-body font-semibold text-fg">--fg-muted</span>
                     <span class="frag-small text-fg-muted block">Secondary / muted text</span>
                 </div>
             </div>
-            <div class="flex items-center gap-4">
-                <div class="w-16 h-16 rounded-xl border border-white/10 flex-shrink-0"
+            <div class="flex items-center gap-5">
+                <div class="w-20 h-20 rounded-xl border border-white/10 flex-shrink-0"
                     style="background: var(--accent);"></div>
                 <div>
                     <span class="frag-body font-semibold text-fg">--accent</span>
                     <span class="frag-small text-fg-muted block">Brand accent</span>
                 </div>
             </div>
-            <div class="flex items-center gap-4">
-                <div class="w-16 h-16 rounded-xl border border-white/10 flex-shrink-0"
+            <div class="flex items-center gap-5">
+                <div class="w-20 h-20 rounded-xl border border-white/10 flex-shrink-0"
                     style="background: var(--bg-lighter);"></div>
                 <div>
                     <span class="frag-body font-semibold text-fg">--bg-lighter</span>
@@ -96,9 +126,9 @@
     {# ── Section: Card Glass Sample ── #}
     <div>
         <span class="frag-label text-accent mb-6 block">card-glass Component</span>
-        <div class="card-glass p-8">
-            <h3 class="frag-heading font-bold text-fg mb-2">Card Title</h3>
-            <p class="frag-body text-fg-muted">This is how content looks inside a glassmorphism card with the current
+        <div class="card-glass p-10">
+            <h3 class="frag-heading font-bold text-fg mb-3">Card Title</h3>
+            <p class="frag-body text-fg-muted">Content inside a glassmorphism card with the current
                 theme's --card-bg and --card-border tokens applied.</p>
         </div>
     </div>
