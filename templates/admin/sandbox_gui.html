@@ -693,7 +693,10 @@
             container2.classList.remove('hidden');
             loader2.style.display = 'flex';
             frame2.src = targetUrl;
-            frame2.onload = () => { loader2.style.display = 'none'; };
+            frame2.onload = () => {
+                loader2.style.display = 'none';
+                applyThemeVarsToFrame(frame2);
+            };
         } else {
             document.getElementById('preview-label-1').textContent = `① ${labelText}`;
             const loader = document.getElementById('iframe-loader');
@@ -802,6 +805,17 @@
         updateThemeVar('--accent-dark', document.getElementById('color-accent-dark').value);
         updateThemeVar('--fg', document.getElementById('color-fg').value);
         updateThemeVar('--fg-muted', document.getElementById('color-fg-muted').value);
+    }
+
+    function applyThemeVarsToFrame(frame) {
+        if (!frame.contentWindow || !frame.contentWindow.document.documentElement) return;
+        const root = frame.contentWindow.document.documentElement.style;
+        root.setProperty('--bg', document.getElementById('color-bg').value);
+        root.setProperty('--bg-lighter', document.getElementById('color-bg-light').value);
+        root.setProperty('--accent', document.getElementById('color-accent').value);
+        root.setProperty('--accent-dark', document.getElementById('color-accent-dark').value);
+        root.setProperty('--fg', document.getElementById('color-fg').value);
+        root.setProperty('--fg-muted', document.getElementById('color-fg-muted').value);
     }
 
     function resetThemeVars() {
