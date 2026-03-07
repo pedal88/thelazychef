@@ -414,8 +414,7 @@
                 </div>
 
                 <!-- Hidden Iframe Containers — side-by-side for comparison -->
-                <div class="flex gap-3 flex-1 min-h-[85vh]" ondragenter="showDropZones()"
-                    ondragleave="maybeHideDropZones(event)">
+                <div class="flex gap-3 flex-1 min-h-[85vh]">
                     <!-- Preview 1 (primary) -->
                     <div id="sandbox-preview-container"
                         class="bg-slate-900 rounded-3xl overflow-hidden shadow-2xl relative border-8 border-slate-800 hidden flex-1 transition-all"
@@ -741,40 +740,39 @@
     }
 
     let dropZoneRevealed = false;
-    function showDropZones() {
+    // Show Preview 2 as drop target the instant any drag begins anywhere on the page
+    document.addEventListener('dragstart', function () {
         const c1 = document.getElementById('sandbox-preview-container');
         const c2 = document.getElementById('sandbox-preview-container-2');
-        // Always show both containers as drop targets during drag
+        // Show Preview 1 if hidden
         if (c1.classList.contains('hidden')) {
             c1.classList.remove('hidden');
             c1.style.display = 'flex';
-            c1.style.border = '8px dashed rgba(251,146,60,0.4)';
         }
+        // Show Preview 2 if hidden
         if (c2.classList.contains('hidden')) {
             c2.classList.remove('hidden');
             c2.style.border = '8px dashed rgba(99,102,241,0.4)';
             dropZoneRevealed = true;
         }
-    }
+    });
 
-    function maybeHideDropZones(evt) {
-        // Only hide if we leave the flex container entirely
-        if (evt.relatedTarget && evt.currentTarget.contains(evt.relatedTarget)) return;
+    // Hide Preview 2 drop zone if nothing was dropped
+    document.addEventListener('dragend', function () {
         if (dropZoneRevealed) {
             const c2 = document.getElementById('sandbox-preview-container-2');
             const frame2 = document.getElementById('sandbox-frame-2');
             if (!frame2.src || frame2.src === 'about:blank' || frame2.src === '') {
                 c2.classList.add('hidden');
-                c2.style.border = '';
-            } else {
-                c2.style.border = '';
             }
+            c2.style.border = '';
+            c2.style.boxShadow = '';
             dropZoneRevealed = false;
         }
-        // Reset Preview 1 border if it was dashed
+        // Reset Preview 1 styles
         const c1 = document.getElementById('sandbox-preview-container');
-        c1.style.border = '';
-    }
+        c1.style.boxShadow = '';
+    });
 
     // --- Fragment Version Management ---
     const FRAGMENT_NAMES = ['hero', 'meta', 'ingredients', 'ingrid', 'steps', 'nutrition', 'galaxy', 'typography', 'coreid'];
