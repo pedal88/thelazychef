@@ -756,10 +756,10 @@
 
     function promptDeleteVersion() {
         const frag = currentFragment || 'hero';
-        const vStr = prompt(`Delete which version of "${frag}"? (Enter version number, e.g. 2, 3, 10...)`);
+        const vStr = prompt(`Delete which version of "${frag}"? (Enter version number)`);
         if (!vStr) return;
         const v = parseInt(vStr);
-        if (isNaN(v) || v < 2) { alert('Cannot delete version 1 (the original). Enter a version ≥ 2.'); return; }
+        if (isNaN(v) || v < 1) { alert('Enter a valid version number.'); return; }
 
         fetch(`/admin/media-hub/sandbox/version/${frag}/${v}`, { method: 'DELETE' })
             .then(r => r.json())

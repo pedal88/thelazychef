@@ -694,15 +694,38 @@ def create_fragment_version(fragment_name):
 @login_required
 @admin_required
 def delete_fragment_version(fragment_name, version_num):
-    """Delete a specific version of a fragment."""
+    """Delete a specific version of a fragment.
+
+    If version 1 is deleted, the lowest other version is promoted to v1
+    (its file replaces the main .html and the old .v*.html is removed).
+    """
+    import glob, re, shutil
     from media_hub.snapshotter import VALID_FRAGMENTS
     if fragment_name not in VALID_FRAGMENTS:
         return jsonify({"error": f"Unknown fragment: {fragment_name}"}), 404
 
-    if version_num == 1:
-        return jsonify({"error": "Cannot delete version 1 (the original template)"}), 400
-
     fragments_dir = os.path.join(current_app.root_path, "templates", "fragments")
+
+    if version_num == 1:
+        # Find all other versions
+        pattern = os.path.join(fragments_dir, f"{fragment_name}.v*.html")
+        others = []
+        for path in glob.glob(pattern):
+            m = re.search(r'\.v(\d+)\.html$', path)
+            if m:
+                others.append(int(m.group(1)))
+        if not others:
+            return jsonify({"error": "Cannot delete the only version"}), 400
+
+        # Promote the lowest other version to v1
+        promote = min(others)
+        src = os.path.join(fragments_dir, f"{fragment_name}.v{promote}.html")
+        dst = os.path.join(fragments_dir, f"{fragment_name}.html")
+        shutil.copy2(src, dst)
+        os.remove(src)
+        logger.info(f"[Sandbox] Deleted v1 of {fragment_name}, promoted v{promote} to v1")
+        return jsonify({"status": "deleted", "fragment": fragment_name, "version": version_num, "promoted": promote})
+
     target = os.path.join(fragments_dir, f"{fragment_name}.v{version_num}.html")
 
     if not os.path.exists(target):
