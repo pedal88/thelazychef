@@ -121,35 +121,11 @@
                                         </div>
                                         {% endfor %}
                                     </div>
-                                    <!-- Pin & Compare Controls -->
-                                    <div id="pin-controls" class="mt-2 flex gap-1.5">
-                                        <!-- No pin state -->
-                                        <button type="button" id="pin-btn" onclick="pinCurrentFragment()"
-                                            class="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-amber-50 hover:border-amber-300 transition-all text-[10px] font-bold uppercase tracking-wide text-slate-400">
-                                            <span>📌</span> Pin Version
-                                        </button>
-                                        <!-- Pinned state (hidden by default) -->
-                                        <button type="button" id="compare-btn" onclick="loadPinnedComparison()"
-                                            style="display:none;"
-                                            class="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-indigo-300 bg-indigo-50 transition-all text-[10px] font-bold uppercase tracking-wide text-indigo-600">
-                                            <span>🔀</span> Compare
-                                        </button>
-                                        <button type="button" id="revert-btn" onclick="revertFragment()"
-                                            style="display:none;"
-                                            class="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-orange-300 bg-orange-50 hover:bg-orange-100 transition-all text-[10px] font-bold uppercase tracking-wide text-orange-600">
-                                            <span>↩️</span> Revert
-                                        </button>
-                                        <button type="button" id="accept-btn" onclick="acceptFragment()"
-                                            style="display:none;"
-                                            class="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-green-300 bg-green-50 hover:bg-green-100 transition-all text-[10px] font-bold uppercase tracking-wide text-green-600">
-                                            <span>✅</span> Accept
-                                        </button>
-                                    </div>
                                     <!-- Version Management Controls -->
-                                    <div class="mt-1.5 flex gap-1.5">
+                                    <div class="mt-2 flex gap-1.5">
                                         <button type="button" onclick="saveAsNewVersion()"
                                             class="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-teal-50 hover:border-teal-300 transition-all text-[10px] font-bold uppercase tracking-wide text-slate-400">
-                                            <span>💾</span> Save Version
+                                            <span>➕</span> New Version
                                         </button>
                                         <button type="button" onclick="promptDeleteVersion()"
                                             class="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-red-50 hover:border-red-300 transition-all text-[10px] font-bold uppercase tracking-wide text-slate-400">
