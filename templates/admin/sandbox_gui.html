@@ -679,8 +679,10 @@
 
     // --- Drag & Drop for previews ---
     function onPillDrag(evt, fragmentName, version) {
+        evt.stopPropagation();
         evt.dataTransfer.setData('text/plain', JSON.stringify({ fragment: fragmentName, version: version }));
         evt.dataTransfer.effectAllowed = 'copy';
+        showDropZones();
     }
 
     function onPreviewDragOver(evt, slot) {
@@ -790,8 +792,8 @@
     }
 
     let dropZoneRevealed = false;
-    // Show Preview 2 as drop target the instant any drag begins anywhere on the page
-    document.addEventListener('dragstart', function () {
+
+    function showDropZones() {
         const c1 = document.getElementById('sandbox-preview-container');
         const c2 = document.getElementById('sandbox-preview-container-2');
         // Disable pointer events on iframes so drop events reach the container
@@ -808,6 +810,11 @@
             c2.style.border = '8px dashed rgba(99,102,241,0.4)';
             dropZoneRevealed = true;
         }
+    }
+
+    // Show Preview 2 as drop target the instant any drag begins anywhere on the page
+    document.addEventListener('dragstart', function () {
+        showDropZones();
     });
 
     // Hide Preview 2 drop zone if nothing was dropped
