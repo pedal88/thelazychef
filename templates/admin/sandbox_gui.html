@@ -33,22 +33,17 @@
                                 <div class="w-full relative">
                                     <label
                                         class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">Recipe</label>
-                                    <input type="text" id="sandbox-recipe-search" placeholder="Search by name or ID..."
-                                        autocomplete="off"
-                                        class="w-full rounded-md border-0 py-1.5 px-3 text-sm text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-orange-600">
+                                    <div class="relative">
+                                        <input type="text" id="sandbox-recipe-search"
+                                            placeholder="Search by name or ID..." autocomplete="off"
+                                            class="w-full rounded-md border-0 py-1.5 px-3 pr-8 text-sm text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-orange-600">
+                                        <button id="recipe-clear-btn" onclick="clearRecipeSelection()"
+                                            class="hidden absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm leading-none">✕</button>
+                                    </div>
                                     <input type="hidden" id="sandbox-recipe-id" value="">
                                     <!-- Search Results Dropdown -->
                                     <div id="recipe-search-results"
                                         class="hidden absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl max-h-60 overflow-y-auto">
-                                    </div>
-                                    <!-- Selected Recipe Badge -->
-                                    <div id="selected-recipe-badge"
-                                        class="hidden mt-2 flex items-center gap-2 bg-orange-50 border border-orange-200 rounded-lg px-3 py-1.5">
-                                        <span class="text-xs font-mono text-orange-600" id="badge-id"></span>
-                                        <span class="text-sm font-medium text-orange-900 truncate"
-                                            id="badge-title"></span>
-                                        <button onclick="clearRecipeSelection()"
-                                            class="ml-auto text-orange-400 hover:text-orange-600 text-xs">✕</button>
                                     </div>
                                 </div>
                                 <!-- Toggle Buttons Row -->
@@ -506,21 +501,19 @@
 
     function selectRecipe(id, title, cuisine) {
         document.getElementById('sandbox-recipe-id').value = id;
-        searchInput.value = '';
+        searchInput.value = title + ' (#' + id + ')';
+        searchInput.readOnly = true;
         searchResults.classList.add('hidden');
         searchResults.innerHTML = '';
-
-        // Show the badge
-        document.getElementById('badge-id').textContent = '#' + id;
-        document.getElementById('badge-title').textContent = title;
-        document.getElementById('selected-recipe-badge').classList.remove('hidden');
+        document.getElementById('recipe-clear-btn').classList.remove('hidden');
     }
 
     function clearRecipeSelection() {
         document.getElementById('sandbox-recipe-id').value = '';
-        document.getElementById('selected-recipe-badge').classList.add('hidden');
         searchInput.value = '';
+        searchInput.readOnly = false;
         searchInput.focus();
+        document.getElementById('recipe-clear-btn').classList.add('hidden');
     }
     let currentFragment = null;
 
