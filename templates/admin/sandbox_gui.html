@@ -760,7 +760,17 @@
             document.getElementById('ins-height').textContent = computed.height;
 
             // Format everything nicely for the AI copy buffer
-            copyDataCache = `Element: <${target.tagName.toLowerCase()}>
+            const recipeId = document.getElementById('sandbox-recipe-id').value || 'none';
+            const recipeName = document.getElementById('sandbox-recipe-search').value || 'none';
+            const themeName = document.getElementById('sandbox-theme').value || 'modern';
+            copyDataCache = `--- Sandbox Context ---
+Fragment: ${currentFragment || 'none'}
+Template: templates/fragments/${currentFragment || '?'}.html
+Recipe: ${recipeName} (ID: ${recipeId})
+Theme: ${themeName}
+
+--- Inspected Element ---
+Element: <${target.tagName.toLowerCase()}>
 Classes: ${target.className.replace('sandbox-inspect-hover', '').trim()}
 
 Computed CSS:
@@ -771,7 +781,8 @@ Margin: ${computed.margin}
 Width: ${computed.width}
 Height: ${computed.height}
 
-Context/Text: "${target.innerText.substring(0, 50).trim()}${target.innerText.length > 50 ? '...' : ''}"`;
+Context/Text: "${target.innerText.substring(0, 50).trim()}${target.innerText.length > 50 ? '...' : ''}"
+`;
 
         }, true);
     }
