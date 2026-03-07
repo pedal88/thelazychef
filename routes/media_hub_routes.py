@@ -545,18 +545,15 @@ def fragment_sandbox(fragment_name):
         template_path = f"fragments/{fragment_name}.html"
 
         if version == "pinned":
-            alt_path = os.path.join(current_app.root_path, "templates", "fragments", f"{fragment_name}.html.pinned")
-            if os.path.exists(alt_path):
-                with open(alt_path, "r") as f:
-                    template = current_app.jinja_env.from_string(f.read())
-                return template.render(**ctx)
+            pinned_tpl = f"fragments/{fragment_name}.html.pinned"
+            pinned_abs = os.path.join(current_app.root_path, "templates", pinned_tpl)
+            if os.path.exists(pinned_abs):
+                template_path = pinned_tpl
         elif version not in ("1", "live"):
-            # Numbered version: v2, v3
-            alt_path = os.path.join(current_app.root_path, "templates", "fragments", f"{fragment_name}.v{version}.html")
-            if os.path.exists(alt_path):
-                with open(alt_path, "r") as f:
-                    template = current_app.jinja_env.from_string(f.read())
-                return template.render(**ctx)
+            versioned_tpl = f"fragments/{fragment_name}.v{version}.html"
+            versioned_abs = os.path.join(current_app.root_path, "templates", versioned_tpl)
+            if os.path.exists(versioned_abs):
+                template_path = versioned_tpl
 
         return render_template(template_path, **ctx)
     except ValueError as e:
