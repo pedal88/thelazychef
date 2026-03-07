@@ -51,78 +51,96 @@
                                             class="ml-auto text-orange-400 hover:text-orange-600 text-xs">✕</button>
                                     </div>
                                 </div>
-                                <div class="w-full">
-                                    <label
-                                        class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">Theme</label>
-                                    <select id="sandbox-theme" onchange="reloadCurrentFragment()"
-                                        class="w-full rounded-md border-0 py-1 px-3 text-sm text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-orange-600">
-                                        <option value="modern">Modern (Dark / High Contrast)</option>
-                                        <option value="classic">Classic (Light / Cream)</option>
-                                    </select>
-                                </div>
-                                <div class="flex items-center gap-2 mt-2 ml-1">
-                                    <input type="checkbox" id="sandbox-debug" checked onchange="reloadCurrentFragment()"
-                                        class="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-600">
-                                    <label for="sandbox-debug"
-                                        class="text-sm font-medium text-slate-700 cursor-pointer">Show Safe
-                                        Zones</label>
-                                </div>
+                                <!-- Collapsible: Theme & Display Settings -->
+                                <div>
+                                    <button type="button"
+                                        onclick="document.getElementById('theme-settings-body').classList.toggle('hidden'); this.querySelector('.toggle-arrow').classList.toggle('rotate-90')"
+                                        class="w-full flex items-center justify-between bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg transition-colors">
+                                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">🎨
+                                            Theme & Display</span>
+                                        <span
+                                            class="toggle-arrow text-[10px] text-slate-400 transition-transform">▶</span>
+                                    </button>
+                                    <div id="theme-settings-body" class="hidden mt-3 flex flex-col gap-3">
+                                        <div class="w-full">
+                                            <label
+                                                class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">Theme</label>
+                                            <select id="sandbox-theme" onchange="reloadCurrentFragment()"
+                                                class="w-full rounded-md border-0 py-1 px-3 text-sm text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-orange-600">
+                                                <option value="modern">Modern (Dark / High Contrast)</option>
+                                                <option value="classic">Classic (Light / Cream)</option>
+                                            </select>
+                                        </div>
+                                        <div class="flex items-center gap-2 ml-1">
+                                            <input type="checkbox" id="sandbox-debug" checked
+                                                onchange="reloadCurrentFragment()"
+                                                class="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-600">
+                                            <label for="sandbox-debug"
+                                                class="text-sm font-medium text-slate-700 cursor-pointer">Show Safe
+                                                Zones</label>
+                                        </div>
 
-                                <!-- Extended Sandbox Tools -->
-                                <div class="mt-4 pt-4 border-t border-slate-200">
-                                    <h3 class="text-xs font-bold text-slate-400 mb-3 flex items-center justify-between">
-                                        <span>LIVE THEME OVERRIDES</span>
-                                        <button onclick="resetThemeVars()"
-                                            class="text-[10px] text-blue-500 hover:text-blue-700 underline">Reset</button>
-                                    </h3>
+                                        <!-- Live Theme Overrides -->
+                                        <div class="pt-3 border-t border-slate-200">
+                                            <h3
+                                                class="text-xs font-bold text-slate-400 mb-3 flex items-center justify-between">
+                                                <span>LIVE THEME OVERRIDES</span>
+                                                <button onclick="resetThemeVars()"
+                                                    class="text-[10px] text-blue-500 hover:text-blue-700 underline">Reset</button>
+                                            </h3>
 
-                                    <div class="grid grid-cols-2 gap-3 mb-4">
-                                        <label
-                                            class="flex items-center justify-between bg-white px-3 py-1.5 rounded border border-slate-200 shadow-sm cursor-pointer hover:border-blue-300 transition-colors">
-                                            <span class="text-xs font-medium text-slate-600 mr-2">BG</span>
-                                            <input type="color" id="color-bg" value="#0f172a"
-                                                class="h-6 w-8 rounded cursor-pointer border-0 p-0"
-                                                oninput="updateThemeVar('--bg', this.value)">
-                                            <input type="color" id="color-bg-light" value="#1e293b"
-                                                class="h-6 w-8 rounded cursor-pointer border-0 p-0 ml-1"
-                                                oninput="updateThemeVar('--bg-lighter', this.value)"
-                                                title="Background Lighter">
-                                        </label>
-                                        <label
-                                            class="flex items-center justify-between bg-white px-3 py-1.5 rounded border border-slate-200 shadow-sm cursor-pointer hover:border-blue-300 transition-colors">
-                                            <span class="text-xs font-medium text-slate-600 mr-2">Brand</span>
-                                            <input type="color" id="color-accent" value="#f97316"
-                                                class="h-6 w-8 rounded cursor-pointer border-0 p-0"
-                                                oninput="updateThemeVar('--accent', this.value)">
-                                            <input type="color" id="color-accent-dark" value="#ea580c"
-                                                class="h-6 w-8 rounded cursor-pointer border-0 p-0 ml-1"
-                                                oninput="updateThemeVar('--accent-dark', this.value)"
-                                                title="Accent Dark">
-                                        </label>
-                                        <label
-                                            class="flex items-center justify-between bg-white px-3 py-1.5 rounded border border-slate-200 shadow-sm cursor-pointer hover:border-blue-300 transition-colors col-span-2">
-                                            <span class="text-xs font-medium text-slate-600 mr-2">Typography (FG)</span>
-                                            <div class="flex gap-1">
-                                                <input type="color" id="color-fg" value="#ffffff"
-                                                    class="h-6 w-8 rounded cursor-pointer border-0 p-0"
-                                                    oninput="updateThemeVar('--fg', this.value)" title="Primary">
-                                                <input type="color" id="color-fg-muted" value="#94a3b8"
-                                                    class="h-6 w-8 rounded cursor-pointer border-0 p-0"
-                                                    oninput="updateThemeVar('--fg-muted', this.value)" title="Muted">
+                                            <div class="grid grid-cols-2 gap-3 mb-4">
+                                                <label
+                                                    class="flex items-center justify-between bg-white px-3 py-1.5 rounded border border-slate-200 shadow-sm cursor-pointer hover:border-blue-300 transition-colors">
+                                                    <span class="text-xs font-medium text-slate-600 mr-2">BG</span>
+                                                    <input type="color" id="color-bg" value="#0f172a"
+                                                        class="h-6 w-8 rounded cursor-pointer border-0 p-0"
+                                                        oninput="updateThemeVar('--bg', this.value)">
+                                                    <input type="color" id="color-bg-light" value="#1e293b"
+                                                        class="h-6 w-8 rounded cursor-pointer border-0 p-0 ml-1"
+                                                        oninput="updateThemeVar('--bg-lighter', this.value)"
+                                                        title="Background Lighter">
+                                                </label>
+                                                <label
+                                                    class="flex items-center justify-between bg-white px-3 py-1.5 rounded border border-slate-200 shadow-sm cursor-pointer hover:border-blue-300 transition-colors">
+                                                    <span class="text-xs font-medium text-slate-600 mr-2">Brand</span>
+                                                    <input type="color" id="color-accent" value="#f97316"
+                                                        class="h-6 w-8 rounded cursor-pointer border-0 p-0"
+                                                        oninput="updateThemeVar('--accent', this.value)">
+                                                    <input type="color" id="color-accent-dark" value="#ea580c"
+                                                        class="h-6 w-8 rounded cursor-pointer border-0 p-0 ml-1"
+                                                        oninput="updateThemeVar('--accent-dark', this.value)"
+                                                        title="Accent Dark">
+                                                </label>
+                                                <label
+                                                    class="flex items-center justify-between bg-white px-3 py-1.5 rounded border border-slate-200 shadow-sm cursor-pointer hover:border-blue-300 transition-colors col-span-2">
+                                                    <span class="text-xs font-medium text-slate-600 mr-2">Typography
+                                                        (FG)</span>
+                                                    <div class="flex gap-1">
+                                                        <input type="color" id="color-fg" value="#ffffff"
+                                                            class="h-6 w-8 rounded cursor-pointer border-0 p-0"
+                                                            oninput="updateThemeVar('--fg', this.value)"
+                                                            title="Primary">
+                                                        <input type="color" id="color-fg-muted" value="#94a3b8"
+                                                            class="h-6 w-8 rounded cursor-pointer border-0 p-0"
+                                                            oninput="updateThemeVar('--fg-muted', this.value)"
+                                                            title="Muted">
+                                                    </div>
+                                                </label>
                                             </div>
-                                        </label>
-                                    </div>
 
-                                    <h3
-                                        class="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider mt-5 border-t border-slate-200 pt-3">
-                                        DEV ENVIRONMENT</h3>
-                                    <label
-                                        class="flex items-center gap-2 cursor-pointer bg-blue-50/50 p-2 rounded border border-blue-100">
-                                        <input type="checkbox" id="sandbox-livereload" checked
-                                            class="h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-600">
-                                        <span class="text-sm font-semibold text-blue-800">Auto-Reload Iframe on
-                                            Edit</span>
-                                    </label>
+                                            <h3
+                                                class="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider mt-5 border-t border-slate-200 pt-3">
+                                                DEV ENVIRONMENT</h3>
+                                            <label
+                                                class="flex items-center gap-2 cursor-pointer bg-blue-50/50 p-2 rounded border border-blue-100">
+                                                <input type="checkbox" id="sandbox-livereload" checked
+                                                    class="h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-600">
+                                                <span class="text-sm font-semibold text-blue-800">Auto-Reload Iframe on
+                                                    Edit</span>
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
