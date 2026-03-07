@@ -555,6 +555,7 @@
     let currentFragment = null;
 
     function openSandbox(fragmentName, evt) {
+        if (evt) evt.preventDefault();
         const useSecond = evt && evt.shiftKey;
         if (!useSecond) currentFragment = fragmentName;
 
