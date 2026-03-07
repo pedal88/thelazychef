@@ -54,14 +54,14 @@
                                 <div class="w-full">
                                     <label
                                         class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">Theme</label>
-                                    <select id="sandbox-theme"
+                                    <select id="sandbox-theme" onchange="reloadCurrentFragment()"
                                         class="w-full rounded-md border-0 py-1 px-3 text-sm text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-orange-600">
                                         <option value="modern">Modern (Dark / High Contrast)</option>
                                         <option value="classic">Classic (Light / Cream)</option>
                                     </select>
                                 </div>
                                 <div class="flex items-center gap-2 mt-2 ml-1">
-                                    <input type="checkbox" id="sandbox-debug" checked
+                                    <input type="checkbox" id="sandbox-debug" checked onchange="reloadCurrentFragment()"
                                         class="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-600">
                                     <label for="sandbox-debug"
                                         class="text-sm font-medium text-slate-700 cursor-pointer">Show Safe
@@ -475,8 +475,10 @@
         searchInput.value = '';
         searchInput.focus();
     }
+    let currentFragment = null;
 
     function openSandbox(fragmentName) {
+        currentFragment = fragmentName;
         const recipeId = document.getElementById('sandbox-recipe-id').value || 192;
         const theme = document.getElementById('sandbox-theme').value || 'modern';
         const debug = document.getElementById('sandbox-debug').checked;
@@ -506,6 +508,12 @@
 
         // Ensure panel is visible
         document.getElementById('inspector-panel').classList.remove('hidden');
+    }
+
+    function reloadCurrentFragment() {
+        if (currentFragment) {
+            openSandbox(currentFragment);
+        }
     }
 
     // --- Developer Tools: Live Variables ---
