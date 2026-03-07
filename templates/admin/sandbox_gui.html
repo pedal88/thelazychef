@@ -89,46 +89,49 @@
                                 <!-- Fragments Body (open by default) -->
                                 <div id="fragments-body" class="mt-3">
                                     <div class="grid grid-cols-7 gap-1.5">
-                                        <a href="javascript:void(0)" onclick="openSandbox('hero')" id="frag-btn-hero"
+                                        <a href="javascript:void(0)" onclick="openSandbox('hero', event)"
+                                            id="frag-btn-hero"
                                             class="frag-btn flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-orange-300 hover:bg-orange-50 transition-all shadow-sm cursor-pointer">
                                             <span class="text-2xl">🖼️</span>
                                             <span
                                                 class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Hero</span>
                                         </a>
-                                        <a href="javascript:void(0)" onclick="openSandbox('meta')" id="frag-btn-meta"
+                                        <a href="javascript:void(0)" onclick="openSandbox('meta', event)"
+                                            id="frag-btn-meta"
                                             class="frag-btn flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-blue-300 hover:bg-blue-50 transition-all shadow-sm cursor-pointer">
                                             <span class="text-2xl">⏱️</span>
                                             <span
                                                 class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Details</span>
                                         </a>
-                                        <a href="javascript:void(0)" onclick="openSandbox('ingredients')"
+                                        <a href="javascript:void(0)" onclick="openSandbox('ingredients', event)"
                                             id="frag-btn-ingredients"
                                             class="frag-btn flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-green-300 hover:bg-green-50 transition-all shadow-sm cursor-pointer">
                                             <span class="text-2xl">🥦</span>
                                             <span
                                                 class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Ingredi.</span>
                                         </a>
-                                        <a href="javascript:void(0)" onclick="openSandbox('steps')" id="frag-btn-steps"
+                                        <a href="javascript:void(0)" onclick="openSandbox('steps', event)"
+                                            id="frag-btn-steps"
                                             class="frag-btn flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-purple-300 hover:bg-purple-50 transition-all shadow-sm cursor-pointer">
                                             <span class="text-2xl">📝</span>
                                             <span
                                                 class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Steps</span>
                                         </a>
-                                        <a href="javascript:void(0)" onclick="openSandbox('nutrition')"
+                                        <a href="javascript:void(0)" onclick="openSandbox('nutrition', event)"
                                             id="frag-btn-nutrition"
                                             class="frag-btn flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-rose-300 hover:bg-rose-50 transition-all shadow-sm cursor-pointer">
                                             <span class="text-2xl">🔥</span>
                                             <span
                                                 class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Nutrition</span>
                                         </a>
-                                        <a href="javascript:void(0)" onclick="openSandbox('galaxy')"
+                                        <a href="javascript:void(0)" onclick="openSandbox('galaxy', event)"
                                             id="frag-btn-galaxy"
                                             class="frag-btn flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-indigo-300 hover:bg-indigo-50 transition-all shadow-sm cursor-pointer">
                                             <span class="text-2xl">🌌</span>
                                             <span
                                                 class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Galaxy</span>
                                         </a>
-                                        <a href="javascript:void(0)" onclick="openSandbox('typography')"
+                                        <a href="javascript:void(0)" onclick="openSandbox('typography', event)"
                                             id="frag-btn-typography"
                                             class="frag-btn flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-amber-300 hover:bg-amber-50 transition-all shadow-sm cursor-pointer">
                                             <span class="text-2xl">🔤</span>
@@ -412,35 +415,67 @@
                     </div>
                 </div>
 
-                <!-- Hidden Iframe Container for inline previewing -->
-                <div id="sandbox-preview-container"
-                    class="bg-slate-900 rounded-3xl overflow-hidden shadow-2xl relative border-8 border-slate-800 hidden flex-1 min-h-[85vh]">
-                    <div class="absolute inset-0 flex items-center justify-center pointer-events-none"
-                        id="iframe-loader">
-                        <span class="text-white opacity-50 flex items-center gap-2"><svg class="animate-spin h-5 w-5"
-                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                    stroke-width="4">
-                                </circle>
-                                <path class="opacity-75" fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                </path>
-                            </svg> Loading Preview...</span>
-                    </div>
-                    <iframe id="sandbox-frame" class="w-full h-full border-0 relative z-10" scrolling="no"
-                        style="overflow:hidden;"
-                        onload="document.getElementById('iframe-loader').style.display='none'"></iframe>
+                <!-- Hidden Iframe Containers — side-by-side for comparison -->
+                <div class="flex gap-3 flex-1 min-h-[85vh]">
+                    <!-- Preview 1 (primary) -->
+                    <div id="sandbox-preview-container"
+                        class="bg-slate-900 rounded-3xl overflow-hidden shadow-2xl relative border-8 border-slate-800 hidden flex-1">
+                        <div
+                            class="absolute top-2 left-3 z-30 bg-slate-800/80 text-[10px] text-slate-400 font-bold uppercase px-2 py-0.5 rounded">
+                            1</div>
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none"
+                            id="iframe-loader">
+                            <span class="text-white opacity-50 flex items-center gap-2"><svg
+                                    class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                        stroke-width="4">
+                                    </circle>
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                    </path>
+                                </svg> Loading Preview...</span>
+                        </div>
+                        <iframe id="sandbox-frame" class="w-full h-full border-0 relative z-10" scrolling="no"
+                            style="overflow:hidden;"
+                            onload="document.getElementById('iframe-loader').style.display='none'"></iframe>
 
-                    <!-- Transparent overlay to capture mouse events over iframe -->
-                    <div id="magnify-overlay"
-                        style="position:absolute; inset:0; z-index:50; pointer-events:none; cursor:crosshair;">
+                        <!-- Transparent overlay to capture mouse events over iframe -->
+                        <div id="magnify-overlay"
+                            style="position:absolute; inset:0; z-index:50; pointer-events:none; cursor:crosshair;">
+                        </div>
+
+                        <!-- Magnifier Lens -->
+                        <div id="magnifier-lens"
+                            style="display:none; position:absolute; width:300px; height:300px; border-radius:50%; overflow:hidden; pointer-events:none; z-index:60; border: 3px solid #3b82f6; box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(59,130,246,0.3), inset 0 0 30px rgba(0,0,0,0.2);">
+                            <iframe id="magnifier-frame" scrolling="no"
+                                style="position:absolute; border:0; transform-origin:0 0; pointer-events:none;"></iframe>
+                        </div>
                     </div>
 
-                    <!-- Magnifier Lens -->
-                    <div id="magnifier-lens"
-                        style="display:none; position:absolute; width:300px; height:300px; border-radius:50%; overflow:hidden; pointer-events:none; z-index:60; border: 3px solid #3b82f6; box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(59,130,246,0.3), inset 0 0 30px rgba(0,0,0,0.2);">
-                        <iframe id="magnifier-frame" scrolling="no"
-                            style="position:absolute; border:0; transform-origin:0 0; pointer-events:none;"></iframe>
+                    <!-- Preview 2 (comparison, hidden by default) -->
+                    <div id="sandbox-preview-container-2"
+                        class="bg-slate-900 rounded-3xl overflow-hidden shadow-2xl relative border-8 border-indigo-800/60 hidden flex-1">
+                        <div
+                            class="absolute top-2 left-3 z-30 bg-indigo-800/80 text-[10px] text-white font-bold uppercase px-2 py-0.5 rounded">
+                            2</div>
+                        <button onclick="closeSecondPreview()"
+                            class="absolute top-2 right-3 z-30 bg-slate-800/80 hover:bg-red-600 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center transition-colors">✕</button>
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none"
+                            id="iframe-loader-2" style="display:none;">
+                            <span class="text-white opacity-50 flex items-center gap-2"><svg
+                                    class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                        stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                    </path>
+                                </svg> Loading...</span>
+                        </div>
+                        <iframe id="sandbox-frame-2" class="w-full h-full border-0 relative z-10" scrolling="no"
+                            style="overflow:hidden;"
+                            onload="document.getElementById('iframe-loader-2').style.display='none'"></iframe>
                     </div>
                 </div>
             </div>
@@ -519,16 +554,22 @@
     }
     let currentFragment = null;
 
-    function openSandbox(fragmentName) {
+    function openSandbox(fragmentName, evt) {
+        const useSecond = evt && evt.shiftKey;
         currentFragment = fragmentName;
 
         // Highlight active fragment pill
         document.querySelectorAll('.frag-btn').forEach(btn => {
-            btn.classList.remove('ring-2', 'ring-orange-400', 'bg-orange-50', 'border-orange-300');
+            btn.classList.remove('ring-2', 'ring-orange-400', 'bg-orange-50', 'border-orange-300',
+                'ring-indigo-400', 'bg-indigo-50', 'border-indigo-300');
         });
         const activeBtn = document.getElementById('frag-btn-' + fragmentName);
         if (activeBtn) {
-            activeBtn.classList.add('ring-2', 'ring-orange-400', 'bg-orange-50', 'border-orange-300');
+            if (useSecond) {
+                activeBtn.classList.add('ring-2', 'ring-indigo-400', 'bg-indigo-50', 'border-indigo-300');
+            } else {
+                activeBtn.classList.add('ring-2', 'ring-orange-400', 'bg-orange-50', 'border-orange-300');
+            }
         }
         const recipeId = document.getElementById('sandbox-recipe-id').value || 192;
         const theme = document.getElementById('sandbox-theme').value || 'modern';
@@ -540,22 +581,42 @@
         }
 
         // Show the iframe and set its src, hide empty state
-        const loader = document.getElementById('iframe-loader');
-        const container = document.getElementById('sandbox-preview-container');
         const emptyState = document.getElementById('sandbox-empty-state');
-        const frame = document.getElementById('sandbox-frame');
-
         emptyState.style.display = 'none';
-        container.style.display = 'flex'; // Use flex since flex-col was on parent, wait actually flex or block is fine, flex-1 applies to it
-        loader.style.display = 'flex';
-        frame.src = targetUrl;
 
-        // Wait for iframe to load to re-apply any active custom theme vars
-        frame.onload = function () {
-            document.getElementById('iframe-loader').style.display = 'none';
-            applyCurrentThemeVars();
-            attachInspector(frame);
-        };
+        if (useSecond) {
+            // Load into second preview
+            const container2 = document.getElementById('sandbox-preview-container-2');
+            const loader2 = document.getElementById('iframe-loader-2');
+            const frame2 = document.getElementById('sandbox-frame-2');
+            container2.classList.remove('hidden');
+            loader2.style.display = 'flex';
+            frame2.src = targetUrl;
+            frame2.onload = function () {
+                loader2.style.display = 'none';
+            };
+        } else {
+            // Load into primary preview
+            const loader = document.getElementById('iframe-loader');
+            const container = document.getElementById('sandbox-preview-container');
+            const frame = document.getElementById('sandbox-frame');
+            container.classList.remove('hidden');
+            container.style.display = 'flex';
+            loader.style.display = 'flex';
+            frame.src = targetUrl;
+            frame.onload = function () {
+                document.getElementById('iframe-loader').style.display = 'none';
+                applyCurrentThemeVars();
+                attachInspector(frame);
+            };
+        }
+    }
+
+    function closeSecondPreview() {
+        const container2 = document.getElementById('sandbox-preview-container-2');
+        const frame2 = document.getElementById('sandbox-frame-2');
+        container2.classList.add('hidden');
+        frame2.src = '';
     }
 
     function reloadCurrentFragment() {
