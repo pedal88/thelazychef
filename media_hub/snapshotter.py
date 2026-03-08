@@ -506,7 +506,7 @@ def render_recipe_fragments(
             }
             html = _render_html(app, "ingredients.html", ctx)
             results.append(FragmentResult(
-                fragment_type="ingredients",
+                fragment_type="inglist",
                 page=page_num,
                 total_pages=total_pages,
                 png_bytes=_screenshot_html(html),
@@ -627,7 +627,7 @@ def _build_galaxy_data(recipe, session, storage_provider=None) -> dict:
 # 7. SANDBOX — build context for browser-based design iteration
 # ---------------------------------------------------------------------------
 
-VALID_FRAGMENTS = {"hero", "meta", "nutrition", "ingredients", "steps", "galaxy", "typography", "coreid", "ing-grid"}
+VALID_FRAGMENTS = {"hero", "meta", "nutrition", "inglist", "steps", "galaxy", "typography", "coreid", "ing-grid"}
 
 
 def build_sandbox_context(recipe_id: int, fragment_name: str, app, storage_provider, theme_name="modern", debug=False, scale=1.0):
@@ -684,7 +684,7 @@ def build_sandbox_context(recipe_id: int, fragment_name: str, app, storage_provi
         if fragment_name == "nutrition":
             return {**base_ctx, **_build_nutrition_context(recipe)}
 
-        if fragment_name == "ingredients":
+        if fragment_name == "inglist":
             ingredient_groups = _build_ingredient_groups(recipe, storage_provider)
             total_items = sum(len(g["entries"]) for g in ingredient_groups)
             return {
