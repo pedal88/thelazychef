@@ -1057,7 +1057,7 @@
     document.addEventListener('DOMContentLoaded', loadAllVersionPills);
 
     // Theme color data for the legend
-    const THEME_COLORS = {{ themes_json | safe }};
+    const THEME_COLORS = {{ themes | tojson }};
 
     function updateColorLegend() {
         const themeName = document.getElementById('sandbox-theme').value;
