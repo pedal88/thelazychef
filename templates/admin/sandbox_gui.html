@@ -618,6 +618,7 @@
         document.getElementById('recipe-clear-btn').classList.add('hidden');
     }
     let currentFragment = null;
+    let currentVersion = 1;
     let pinnedFragment = null;
 
     function setPinUI(pinned) {
@@ -725,7 +726,8 @@
     function openSandbox(fragmentName, evt, version, forceSlot) {
         if (evt) evt.preventDefault();
         currentFragment = fragmentName;
-        const v = version || 1;
+        const v = version || currentVersion || 1;
+        currentVersion = v;
 
         // Determine target: forceSlot (drag), ⌥+click, or default to Preview 1
         const useSecond = forceSlot ? forceSlot === 2 : (evt && evt.altKey);
@@ -1069,7 +1071,7 @@
     function reloadCurrentFragment() {
         updateColorLegend();
         if (currentFragment) {
-            openSandbox(currentFragment);
+            openSandbox(currentFragment, null, currentVersion);
         }
     }
 
