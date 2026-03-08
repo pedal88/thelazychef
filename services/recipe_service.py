@@ -441,3 +441,12 @@ def clone_recipe(original_recipe_id: int, new_title: str, ingredient_overrides: 
 
     return new_recipe.id
 
+def create_recipe_from_extracted_json(json_data: dict, source_url: str, chef_id: str = "gourmet") -> dict:
+    """
+    Bridge function for the TikTok Source Sidecar.
+    Bypasses AI extraction and feeds pre-extracted JSON directly into
+    the standard recipe persistence and normalization workflow.
+    """
+    from ai_engine import RecipeObj
+    recipe_obj = RecipeObj(**json_data)
+    return process_recipe_workflow(recipe_obj, query_context=source_url, chef_id=chef_id)

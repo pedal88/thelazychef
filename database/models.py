@@ -458,3 +458,19 @@ class SocialMediaPost(db.Model):
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)
 
     recipe: Mapped["Recipe"] = relationship(back_populates="social_posts")
+
+# ---------------------------------------------------------------------------
+# TikTok Source Sidecar
+# ---------------------------------------------------------------------------
+
+class TikTokSource(db.Model):
+    """Stores raw extracted data from arbitrary TikTok URLs (Recipe vs Resource triage)"""
+    __tablename__ = 'tiktok_source'
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    tiktok_url: Mapped[str] = mapped_column(String(500), unique=True, index=True, nullable=False)
+    dish_name: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
+    entity_type: Mapped[str] = mapped_column(String(50), default='NO_MATCH', server_default='NO_MATCH', nullable=False) # 'RECIPE', 'RESOURCE', 'NO_MATCH'
+    status: Mapped[str] = mapped_column(String(50), default='SUGGESTED', server_default='SUGGESTED', nullable=False) # 'SUGGESTED', 'IGNORED', 'IMPORTED'
+    extracted_json: Mapped[dict] = mapped_column(JSON, default=dict, server_default='{}') # The "Cheat Sheet" data
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)

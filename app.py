@@ -14,7 +14,7 @@ from flask_migrate import Migrate
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 import markdown
 from database.db_connector import configure_database
-from database.models import db, Ingredient, Recipe, Instruction, RecipeIngredient, RecipeMealType, RecipeDiet, User, Resource, resource_relations, Chef, UserRecipeInteraction, RecipeEvaluation, RecipeCollection, CollectionItem, UserQueue, UserLink, SocialMediaPost
+from database.models import db, Ingredient, Recipe, Instruction, RecipeIngredient, RecipeMealType, RecipeDiet, User, Resource, resource_relations, Chef, UserRecipeInteraction, RecipeEvaluation, RecipeCollection, CollectionItem, UserQueue, UserLink, SocialMediaPost, TikTokSource
 from utils.decorators import admin_required
 from sqlalchemy import or_, func
 from sqlalchemy.orm import joinedload
@@ -71,6 +71,9 @@ app.register_blueprint(queue_bp)
 
 from routes.media_hub_routes import media_hub_bp
 app.register_blueprint(media_hub_bp)
+
+from routes.admin_tiktok_routes import tiktok_bp
+app.register_blueprint(tiktok_bp)
 
 
 from utils.markdown_extensions import VideoExtension

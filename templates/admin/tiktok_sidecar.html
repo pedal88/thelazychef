@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+
+{% block title %}TikTok Source Sidecar - The Lazy Chef{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8">
+
+        <!-- Header -->
+        <div class="sm:flex sm:items-center mb-8">
+            <div class="sm:flex-auto">
+                <h1 class="text-xl font-bold leading-6 text-gray-900">TikTok Source Sidecar 🗂️</h1>
+                <p class="mt-2 text-sm text-gray-500">
+                    Paste raw TikTok URLs from your "Like List" texts here. 
+                    The ingestion engine will use AI to watch the video, classify it (Recipe vs Resource), 
+                    and securely stash the structured JSON "Cheat Sheet" here. 
+                </p>
+            </div>
+        </div>
+
+        <!-- Ingestion Queue Section -->
+        <div class="mb-8 bg-white shadow-sm ring-1 ring-gray-300 sm:rounded-lg p-6">
+            <h2 class="text-md font-semibold text-gray-900 mb-4">Batch Ingestion</h2>
+            <textarea id="bulk-input" rows="5"
+                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                placeholder="Paste URLs here (one per line)"></textarea>
+            
+            <div class="mt-4">
+                <button id="ingestBtn" class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50">
+                    Ingest & Classify
+                </button>
+            </div>
+            
+            <!-- Ingest Loader -->
+            <div id="ingest-progress" class="hidden mt-4 text-sm text-gray-600">
+                <p>Ingesting <span id="ingest-current">0</span> / <span id="ingest-total">0</span>...</p>
+            </div>
+        </div>
+
+        <!-- Sidecar Staging Table -->
+        <div class="mt-8 flow-root">
+            <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                    <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                        <table class="min-w-full divide-y divide-gray-300">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 w-[20%]">Date</th>
+                                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[30%]">Dish Name</th>
+                                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[15%]">Entity Type</th>
+                                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[15%]">Status</th>
+                                    <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6 w-[20%]">
+                                        <span class="sr-only">Actions</span>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 bg-white">
+                                {% for source in sources %}
+                                <tr id="row-{{ source.id }}" class="{{ 'bg-orange-50' if source.entity_type == 'RESOURCE' else '' }} {{ 'bg-gray-50 opacity-60' if source.status == 'IMPORTED' else '' }}">
+                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 sm:pl-6">
+                                        {{ source.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                        <div class="text-xs truncate max-w-[150px]"><a href="{{ source.tiktok_url }}" target="_blank" class="text-blue-500 hover:underline">Source Link</a></div>
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900">
+                                        {{ source.dish_name or 'N/A' }}
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm">
+                                        {% if source.entity_type == 'RECIPE' %}
+                                            <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Recipe</span>
+                                        {% elif source.entity_type == 'RESOURCE' %}
+                                            <span class="inline-flex items-center rounded-md bg-orange-50 px-2 py-1 text-xs font-medium text-orange-700 ring-1 ring-inset ring-orange-600/20">Resource</span>
+                                        {% else %}
+                                            <span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">No Match</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm" id="status-{{ source.id }}">
+                                        {% if source.status == 'SUGGESTED' %}
+                                            <span class="inline-flex items-center rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-600/20">Stashed</span>
+                                        {% elif source.status == 'IMPORTED' %}
+                                            <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20">Imported</span>
+                                        {% else %}
+                                            <span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">{{ source.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6" id="actions-{{ source.id }}">
+                                        {% if source.entity_type == 'RECIPE' and source.status != 'IMPORTED' %}
+                                        <button onclick="importShortcut({{ source.id }})" class="text-indigo-600 hover:text-indigo-900 font-bold bg-indigo-50 px-2 py-1 rounded">Import &rarr;</button>
+                                        {% endif %}
+                                        <button onclick="deleteSource({{ source.id }})" class="text-red-500 hover:text-red-700 ml-3">Delete</button>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-gray-500 py-4 text-sm italic">
+                                        No items in the sidecar yet.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 1. Ingestion Queue Logic
+    document.getElementById('ingestBtn').addEventListener('click', async () => {
+        const btn = document.getElementById('ingestBtn');
+        const input = document.getElementById('bulk-input');
+        const rawText = input.value;
+        const urls = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 5);
+        
+        if (urls.length === 0) return;
+        
+        btn.disabled = true;
+        input.disabled = true;
+        
+        const loader = document.getElementById('ingest-progress');
+        loader.classList.remove('hidden');
+        document.getElementById('ingest-total').textContent = urls.length;
+        
+        let count = 0;
+        
+        for (const url of urls) {
+            count++;
+            document.getElementById('ingest-current').textContent = count;
+            
+            try {
+                const res = await fetch('/admin/tiktok-sidecar/api/ingest', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: url })
+                });
+                
+                await res.json();
+                
+            } catch (err) {
+                console.error("Failed on url", url, err);
+            }
+            // Small pause for system stability
+            await new Promise(r => setTimeout(r, 1000));
+        }
+        
+        window.location.reload();
+    });
+
+    // 2. The Import Bridge Logc
+    async function importShortcut(sourceId) {
+        const actionsCell = document.getElementById('actions-' + sourceId);
+        const originalHtml = actionsCell.innerHTML;
+        actionsCell.innerHTML = '<span class="text-gray-500">Mapping...</span>';
+        
+        try {
+            const res = await fetch(`/admin/tiktok-sidecar/api/import/${sourceId}`, {
+                method: 'POST'
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                document.getElementById('status-' + sourceId).innerHTML = '<span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20">Imported</span>';
+                actionsCell.innerHTML = `<a href="/recipe/${data.recipe_id}" target="_blank" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-2 py-1 rounded">View Recipe</a>`;
+                document.getElementById('row-' + sourceId).classList.add('bg-gray-50', 'opacity-60');
+            } else {
+                alert("Import failed: " + data.error);
+                actionsCell.innerHTML = originalHtml;
+            }
+        } catch (err) {
+            alert("Network error");
+            actionsCell.innerHTML = originalHtml;
+        }
+    }
+
+    // 3. Delete functionality
+    async function deleteSource(sourceId) {
+        if (!confirm("Remove this entry from the Sidecar?")) return;
+        
+        try {
+            const res = await fetch(`/admin/tiktok-sidecar/api/delete/${sourceId}`, {
+                method: 'DELETE'
+            });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('row-' + sourceId).remove();
+            } else {
+                alert("Failed to delete.");
+            }
+        } catch (err) {
+            alert("Network error");
+        }
+    }
+</script>
+{% endblock %}
