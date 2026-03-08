@@ -1060,7 +1060,11 @@
     document.addEventListener('DOMContentLoaded', loadAllVersionPills);
 
     // Theme color data for the legend
-    const THEME_COLORS = JSON.parse(document.getElementById('theme-data').textContent);
+    let THEME_COLORS = {};
+    try {
+        const el = document.getElementById('theme-data');
+        if (el) THEME_COLORS = JSON.parse(el.textContent);
+    } catch(e) { console.warn('Theme data parse error:', e); }
 
     function updateColorLegend() {
         const themeName = document.getElementById('sandbox-theme').value;
