@@ -778,7 +778,7 @@
             frame2.src = targetUrl;
             frame2.onload = () => {
                 loader2.style.display = 'none';
-                applyThemeVarsToFrame(frame2);
+                toggleSafeZones(document.getElementById('sandbox-debug').checked);
             };
         } else {
             document.getElementById('preview-label-1').textContent = `① ${labelText}`;
@@ -791,7 +791,7 @@
             frame.src = targetUrl;
             frame.onload = function () {
                 document.getElementById('iframe-loader').style.display = 'none';
-                applyCurrentThemeVars();
+                toggleSafeZones(document.getElementById('sandbox-debug').checked);
                 attachInspector(frame);
             };
         }

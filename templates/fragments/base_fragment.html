@@ -260,18 +260,8 @@
             border-radius: 24px;
         }
 
-        /* ── Debug: TikTok / Reels safe zone overlay ── */
-            {
-            % if debug %
-        }
 
-        .debug-zones {
-            display: block !important;
-        }
-
-            {
-            % endif %
-        }
+        /* Debug zones visibility controlled by sandbox JS (toggleSafeZones) */
     </style>
     {% block head %}{% endblock %}
 </head>
