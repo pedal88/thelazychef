@@ -3,7 +3,8 @@ import logging
 import typing_extensions as typing
 from google.genai import types
 
-from ai_engine import client, load_controlled_vocabularies, get_slim_pantry_context, pantry_map
+from ai_engine import client, load_controlled_vocabularies, pantry_map
+from services.pantry_service import get_slim_pantry_context
 from database.models import db, TikTokSource, Recipe
 from services.social_media_service import SocialMediaExtractor
 
