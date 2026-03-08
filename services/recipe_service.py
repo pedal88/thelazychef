@@ -235,12 +235,18 @@ def process_recipe_workflow(recipe_data, query_context: str, chef_id: str) -> di
                     f"passed validation but not found in DB."
                 )
 
-            amount = ing.amount if hasattr(ing, 'amount') else ing.get('amount', 0)
+            # Smart Fallback: AI Estimate vs Physics Override
+            raw_estimate = ing.get('gram_weight_estimate') if isinstance(ing, dict) else getattr(ing, 'gram_weight_estimate', None)
+            ai_gram_estimate = float(raw_estimate) if raw_estimate is not None else 0.0
+            
+            # Smart Fallback for Amount
+            raw_amt = ing.get('amount') if isinstance(ing, dict) else getattr(ing, 'amount', None)
+            target_amt = float(raw_amt) if raw_amt is not None else 1.0
+
+            amount = target_amt
             unit = ing.unit if hasattr(ing, 'unit') else ing.get('unit', '')
             component = group.component if hasattr(group, 'component') else group.get('component', 'Main Dish')
             
-            # Smart Fallback: AI Estimate vs Physics Override
-            ai_gram_estimate = float(ing.get('gram_weight_estimate', 0.0)) if isinstance(ing, dict) else float(getattr(ing, 'gram_weight_estimate', 0.0))
             final_gram_weight = ai_gram_estimate
             
             # Rule A: The Override
