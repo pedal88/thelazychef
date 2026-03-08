@@ -102,6 +102,20 @@ def import_to_recipe(source_id):
         import traceback; traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
 
+@tiktok_bp.route('/api/inspect/<int:source_id>', methods=['GET'])
+@login_required
+@admin_required
+def inspect_source(source_id):
+    """Fetches the raw extracted JSON for a specific TikTok source."""
+    source = db.session.get(TikTokSource, source_id)
+    if not source:
+        return jsonify({"success": False, "error": "Not found"}), 404
+        
+    return jsonify({
+        "success": True, 
+        "data": source.extracted_json
+    })
+
 @tiktok_bp.route('/api/delete/<int:source_id>', methods=['DELETE'])
 @login_required
 @admin_required

@@ -96,14 +96,21 @@ class TikTokIngestionService:
             system_prompt = f"""
             You are a culinary intelligence extractor. Your job is to analyze the provided video.
             
+            CRITICAL: You MUST return a JSON object with EXACTLY this wrapper structure:
+            {{
+                "entity_type": "RECIPE" | "RESOURCE" | "NO_MATCH",
+                "dish_name": "The name of the dish or subject of the resource",
+                "recipe_data": {{ ... the actual recipe details if it's a recipe ... }}
+            }}
+            
             Step 1: Classification
             If the video demonstrates how to make a specific dish (even loosely), classify as "RECIPE".
             If the video shares cooking knowledge, equipment reviews, or techniques without a dish, classify as "RESOURCE".
             If it's entirely unrelated to cooking/food, classify as "NO_MATCH".
             
             Step 2: Extraction
-            If "RECIPE", provide the full recipe_data matching our application schema.
-            If not a recipe, leave recipe_data empty.
+            If "RECIPE", populate 'recipe_data' matching our standard recipe schema (title, difficulty, etc).
+            If not a recipe, leave 'recipe_data' empty {{}}.
 
             Pantry Context for matching ingredient IDs (pantry_id):
             {pantry_str}
@@ -126,12 +133,12 @@ class TikTokIngestionService:
             dish_name = res_json.get('dish_name', 'Unknown')
             recipe_data = res_json.get('recipe_data', {})
             
-            # Format correction for fallback AI dicts
-            if not recipe_data and entity_type == 'RECIPE':
-                # Sometimes gemini nests it differently without schema enforcement
-                if 'title' in res_json:
+            # Format correction for fallback AI dicts when it ignores the wrapper
+            if 'entity_type' not in res_json:
+                if 'title' in res_json or 'recipe_name' in res_json or 'ingredients' in res_json:
+                     entity_type = 'RECIPE'
                      recipe_data = res_json
-                     dish_name = res_json.get('title')
+                     dish_name = res_json.get('title') or res_json.get('recipe_name', 'Unknown')
             
             # 5. Save to TikTokSource sidecar
             new_source = TikTokSource(

@@ -122,6 +122,7 @@
                                         {% if source.entity_type == 'RECIPE' and source.status != 'IMPORTED' %}
                                         <button onclick="importShortcut({{ source.id }})" class="text-indigo-600 hover:text-indigo-900 font-bold bg-indigo-50 px-2 py-1 rounded">Import &rarr;</button>
                                         {% endif %}
+                                        <button onclick="inspectSource({{ source.id }})" class="text-slate-600 hover:text-slate-900 ml-3">Inspect</button>
                                         <button onclick="deleteSource({{ source.id }})" class="text-red-500 hover:text-red-700 ml-3">Delete</button>
                                     </td>
                                 </tr>
@@ -141,6 +142,34 @@
 
     </div>
 </div>
+
+<!-- Inspector Modal -->
+<div id="inspector-modal" class="relative z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+    <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+      <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:p-6">
+          <div class="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
+            <button type="button" onclick="document.getElementById('inspector-modal').classList.add('hidden')" class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+              <span class="sr-only">Close</span>
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div class="sm:flex sm:items-start">
+            <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
+              <h3 class="text-base font-semibold leading-6 text-gray-900" id="modal-title">Stashed Extracted Context</h3>
+              <div class="mt-4">
+                <pre id="inspector-content" class="text-sm text-gray-800 bg-gray-50 p-4 rounded border border-gray-200 overflow-x-auto max-h-[60vh] overflow-y-auto whitespace-pre-wrap font-mono"></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 {% endblock %}
 
 {% block scripts %}
@@ -300,6 +329,26 @@
             }
         } catch (err) {
             alert("Network error");
+        }
+    }
+
+    // 4. Inspect Data Functionality
+    async function inspectSource(sourceId) {
+        const modal = document.getElementById('inspector-modal');
+        const contentArea = document.getElementById('inspector-content');
+        contentArea.innerHTML = "Loading...";
+        modal.classList.remove('hidden');
+
+        try {
+            const res = await fetch(`/admin/tiktok-sidecar/api/inspect/${sourceId}`);
+            const data = await res.json();
+            if (data.success) {
+                contentArea.innerHTML = JSON.stringify(data.data, null, 2);
+            } else {
+                contentArea.innerHTML = "Error loading data: " + data.error;
+            }
+        } catch (err) {
+            contentArea.innerHTML = "Network failure loading inspector.";
         }
     }
 </script>
