@@ -171,6 +171,21 @@ THEMES: dict[str, dict[str, str]] = {
         "card_border": "rgba(0,0,0,0.10)",
         "card_bg": "rgba(0,0,0,0.03)",
     },
+    "spicy": {
+        "fg": "#ffffff",
+        "fg_muted": "rgba(255,255,255,0.85)",
+        "fg_subtle": "rgba(255,255,255,0.55)",
+        "bg": "#1A1311",
+        "bg_lighter": "#2d211e",
+        "bg_card": "#261c1a",
+        "bg_gradient_start": "#1A1311",
+        "bg_gradient_end": "#110c0b",
+        "accent": "#EF4444",
+        "accent_dark": "#dc2626",
+        "accent_light": "#f87171",
+        "card_border": "rgba(255,255,255,0.12)",
+        "card_bg": "rgba(255,255,255,0.06)",
+    },
 }
 
 DEFAULT_THEME = "modern"
