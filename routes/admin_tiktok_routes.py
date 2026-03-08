@@ -38,7 +38,26 @@ def ingest_url():
     if result.get("status") in ["success", "skipped"]:
          return jsonify({"success": True, "data": result})
     else:
-         return jsonify({"success": False, "error": result.get("reason", "Unknown error")}), 400
+@tiktok_bp.route('/api/upload', methods=['POST'])
+@login_required
+@admin_required
+def upload_file():
+    """Handles parsing of a TikTok Like List.txt file to extract URLs."""
+    if 'file' not in request.files:
+        return jsonify({"success": False, "error": "No file part"}), 400
+        
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"success": False, "error": "No selected file"}), 400
+        
+    if file:
+        try:
+            content = file.read().decode('utf-8')
+            urls = TikTokIngestionService.parse_tiktok_file(content)
+            return jsonify({"success": True, "urls": urls})
+        except Exception as e:
+            import traceback; traceback.print_exc()
+            return jsonify({"success": False, "error": f"Failed to parse file: {str(e)}"}), 500
 
 
 @tiktok_bp.route('/api/import/<int:source_id>', methods=['POST'])

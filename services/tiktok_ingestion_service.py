@@ -12,6 +12,38 @@ logger = logging.getLogger(__name__)
 
 class TikTokIngestionService:
     @staticmethod
+    def parse_tiktok_file(file_content: str) -> list[str]:
+        """
+        Parses a TikTok export file (Like List.txt, Favourite Videos.txt) to extract URLs.
+        Filters out duplicates against TikTokSource and Recipe tables.
+        """
+        import re
+        # Find all URLs that look like tiktok links
+        urls = re.findall(r'Link:\s*(https?://[^\s]+)', file_content)
+        
+        # Fallback if the word "Link:" wasn't used but it's clearly a TikTok URL
+        if not urls:
+             urls = re.findall(r'(https?://(?:www\.)?(?:vt\.)?tiktok\.com/[^\s]+)', file_content)
+
+        # Deduplicate the list itself
+        urls = list(set(urls))
+        
+        valid_urls = []
+        for url in urls:
+             existing_source = db.session.execute(
+                 db.select(TikTokSource).where(TikTokSource.tiktok_url == url)
+             ).scalar_one_or_none()
+             
+             existing_recipe = db.session.execute(
+                 db.select(Recipe).where(Recipe.source_input == url)
+             ).scalar_one_or_none()
+             
+             if not existing_source and not existing_recipe:
+                  valid_urls.append(url)
+                  
+        return valid_urls
+
+    @staticmethod
     def classify_and_extract(url: str):
         """
         Downloads a video, uses Gemini to classify it as RECIPE, RESOURCE, or NO_MATCH.
