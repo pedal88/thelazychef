@@ -627,7 +627,7 @@ def _build_galaxy_data(recipe, session, storage_provider=None) -> dict:
 # 7. SANDBOX — build context for browser-based design iteration
 # ---------------------------------------------------------------------------
 
-VALID_FRAGMENTS = {"hero", "meta", "nutrition", "ingredients", "steps", "galaxy", "typography", "coreid", "ingrid"}
+VALID_FRAGMENTS = {"hero", "meta", "nutrition", "ingredients", "steps", "galaxy", "typography", "coreid", "ing-grid"}
 
 
 def build_sandbox_context(recipe_id: int, fragment_name: str, app, storage_provider, theme_name="modern", debug=False, scale=1.0):
@@ -716,7 +716,7 @@ def build_sandbox_context(recipe_id: int, fragment_name: str, app, storage_provi
                 "image_filename": recipe.image_filename,
             }
 
-        if fragment_name == "ingrid":
+        if fragment_name == "ing-grid":
             ingredient_groups = _build_ingredient_groups(recipe, storage_provider)
             # Flatten all groups into a single list, images first for visual impact
             all_items = []

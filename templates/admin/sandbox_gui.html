@@ -148,7 +148,7 @@
                                         ('hero', '🖼️', 'Hero', 'orange'),
                                         ('meta', '⏱️', 'Details', 'blue'),
                                         ('ingredients', '🥦', 'Ingredi.', 'green'),
-                                        ('ingrid', '🎨', 'Grid', 'lime'),
+                                        ('ing-grid', '🎨', 'Grid', 'lime'),
                                         ('steps', '📝', 'Steps', 'purple'),
                                         ('nutrition', '🔥', 'Nutrition', 'rose'),
                                         ('galaxy', '🌌', 'Galaxy', 'indigo'),
@@ -1118,8 +1118,31 @@
             }
         })
         .catch(err => {
-            console.error(err);
-            alert('Failed to send rename request');
+            // Because the Python backend dynamically rewrites its own .py files to persist
+            // the new fragment name, the Flask dev server instantly triggers a hot reload and
+            // drops the connection before returning the 200 OK. We catch that NetworkError here
+            // and assume it worked, waiting for the server to reboot before refreshing.
+            console.warn("Connection dropped (likely server rebooting after file write). Waiting to reload...");
+            
+            // Migrate labels locally just in case
+            const labels = JSON.parse(localStorage.getItem('sandbox-fragment-labels') || '{}');
+            if (labels[frag]) {
+                labels[newName] = labels[frag];
+                delete labels[frag];
+                localStorage.setItem('sandbox-fragment-labels', JSON.stringify(labels));
+            }
+            
+            // Poll until server is back, then reload
+            const pollServer = setInterval(() => {
+                fetch('/admin/media-hub/sandbox/poll-templates')
+                    .then(res => {
+                        if (res.ok) {
+                            clearInterval(pollServer);
+                            window.location.reload();
+                        }
+                    })
+                    .catch(() => { /* Still rebooting */ });
+            }, 1000);
         });
     }
 
