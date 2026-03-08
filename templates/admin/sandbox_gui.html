@@ -768,7 +768,9 @@
         const emptyState = document.getElementById('sandbox-empty-state');
         emptyState.style.display = 'none';
 
-        const labelText = `${fragmentName} v${v}`;
+        const theme = document.getElementById('sandbox-theme').value || 'modern';
+        const themeLabel = document.getElementById('sandbox-theme').selectedOptions[0]?.text.split('—')[0].trim() || theme;
+        const labelText = `${fragmentName} v${v} · ${themeLabel}`;
 
         if (useSecond) {
             document.getElementById('preview-label-2').textContent = `② ${labelText}`;
