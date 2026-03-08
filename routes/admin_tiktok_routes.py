@@ -38,6 +38,8 @@ def ingest_url():
     if result.get("status") in ["success", "skipped"]:
          return jsonify({"success": True, "data": result})
     else:
+         return jsonify({"success": False, "error": result.get("reason", "Unknown error")}), 400
+
 @tiktok_bp.route('/api/upload', methods=['POST'])
 @login_required
 @admin_required
