@@ -549,6 +549,8 @@
     </div>
 </div>
 
+{% set themes_json_str = (themes | default({})) | tojson %}
+<script id="theme-data" type="application/json">{{ themes_json_str }}</script>
 <script>
     // --- Recipe Search ---
     let searchTimer = null;
@@ -1053,11 +1055,12 @@
             });
     }
 
+
     // Load version pills on page load
     document.addEventListener('DOMContentLoaded', loadAllVersionPills);
 
     // Theme color data for the legend
-    const THEME_COLORS = {{ themes | tojson }};
+    const THEME_COLORS = JSON.parse(document.getElementById('theme-data').textContent);
 
     function updateColorLegend() {
         const themeName = document.getElementById('sandbox-theme').value;
