@@ -797,8 +797,19 @@ def rename_fragment(fragment_name):
     if os.path.exists(gui_path):
         with open(gui_path, "r") as f:
             gui_content = f.read()
-        # Look for ('fragment_name', 'icon', 'Label', 'color')
-        gui_content = re.sub(rf"\('{fragment_name}',", f"('{new_name}',", gui_content)
+        # Look for ('fragment_name', 'icon', 'Label', 'color') and update name AND the displayed label
+        def repl(m):
+            icon = m.group(1)
+            color = m.group(2)
+            display_label = new_name.replace('-', ' ').replace('_', ' ').title()[:8].strip()
+            return f"('{new_name}', '{icon}', '{display_label}', '{color}')"
+            
+        pattern = rf"\('{fragment_name}',\s*'([^']*)',\s*'[^']*',\s*'([^']*)'\)"
+        gui_content, count = re.subn(pattern, repl, gui_content)
+        
+        # Fallback if that failed to match
+        if count == 0:
+            gui_content = re.sub(rf"\('{fragment_name}',", f"('{new_name}',", gui_content)
         with open(gui_path, "w") as f:
             f.write(gui_content)
     
