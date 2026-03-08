@@ -35,109 +35,19 @@
     <style>
         /* ── Theme CSS Variables ── */
         :root {
-            --fg: {
-                    {
-                    theme.fg | default('#ffffff')
-                }
-            }
-
-            ;
-
-            --fg-muted: {
-                    {
-                    theme.fg_muted | default('rgba(255,255,255,0.60)')
-                }
-            }
-
-            ;
-
-            --fg-subtle: {
-                    {
-                    theme.fg_subtle | default('rgba(255,255,255,0.40)')
-                }
-            }
-
-            ;
-
-            --bg: {
-                    {
-                    theme.bg | default('#0f172a')
-                }
-            }
-
-            ;
-
-            --bg-lighter: {
-                    {
-                    theme.bg_lighter | default('#1e293b')
-                }
-            }
-
-            ;
-
-            --bg-card: {
-                    {
-                    theme.bg_card | default('#1e293b')
-                }
-            }
-
-            ;
-
-            --bg-gradient-start: {
-                    {
-                    theme.bg_gradient_start | default('#0f172a')
-                }
-            }
-
-            ;
-
-            --bg-gradient-end: {
-                    {
-                    theme.bg_gradient_end | default('#0c1222')
-                }
-            }
-
-            ;
-
-            --accent: {
-                    {
-                    theme.accent | default('#f97316')
-                }
-            }
-
-            ;
-
-            --accent-dark: {
-                    {
-                    theme.accent_dark | default('#ea580c')
-                }
-            }
-
-            ;
-
-            --accent-light: {
-                    {
-                    theme.accent_light | default('#fdba74')
-                }
-            }
-
-            ;
-
-            --card-border: {
-                    {
-                    theme.card_border | default('rgba(255,255,255,0.10)')
-                }
-            }
-
-            ;
-
-            --card-bg: {
-                    {
-                    theme.card_bg | default('rgba(255,255,255,0.05)')
-                }
-            }
-
-            ;
+            --fg: {{ theme.fg | default('#ffffff') }};
+            --fg-muted: {{ theme.fg_muted | default('rgba(255,255,255,0.60)') }};
+            --fg-subtle: {{ theme.fg_subtle | default('rgba(255,255,255,0.40)') }};
+            --bg: {{ theme.bg | default('#0f172a') }};
+            --bg-lighter: {{ theme.bg_lighter | default('#1e293b') }};
+            --bg-card: {{ theme.bg_card | default('#1e293b') }};
+            --bg-gradient-start: {{ theme.bg_gradient_start | default('#0f172a') }};
+            --bg-gradient-end: {{ theme.bg_gradient_end | default('#0c1222') }};
+            --accent: {{ theme.accent | default('#f97316') }};
+            --accent-dark: {{ theme.accent_dark | default('#ea580c') }};
+            --accent-light: {{ theme.accent_light | default('#fdba74') }};
+            --card-border: {{ theme.card_border | default('rgba(255,255,255,0.10)') }};
+            --card-bg: {{ theme.card_bg | default('rgba(255,255,255,0.05)') }};
         }
 
         * {
