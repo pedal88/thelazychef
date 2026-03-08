@@ -503,7 +503,9 @@ def sandbox_gui():
     Landing page for the Media Hub Design Sandbox.
     Provides a GUI to select recipes, themes, and launch specific fragments.
     """
-    return render_template("admin/sandbox_gui.html")
+    import json
+    from media_hub.snapshotter import THEMES
+    return render_template("admin/sandbox_gui.html", themes_json=json.dumps(THEMES))
 
 
 @media_hub_bp.route("/sandbox/<fragment_name>", methods=["GET"])

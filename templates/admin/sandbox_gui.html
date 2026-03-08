@@ -129,6 +129,15 @@
                                         <span
                                             class="toggle-arrow text-[8px] text-slate-400 transition-transform">▶</span>
                                     </button>
+                                    <button type="button"
+                                        onclick="document.getElementById('settings-panel-body').classList.toggle('hidden'); this.querySelector('.toggle-arrow').classList.toggle('rotate-90')"
+                                        class="flex flex-col items-center gap-0.5 bg-slate-100 hover:bg-slate-200 px-2 py-2 rounded-lg transition-colors">
+                                        <span
+                                            class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">⚙️</span>
+                                        <span class="text-[9px] font-bold text-slate-500 uppercase">Settings</span>
+                                        <span
+                                            class="toggle-arrow text-[8px] text-slate-400 transition-transform">▶</span>
+                                    </button>
                                 </div>
 
                                 <!-- Fragments Body (open by default) -->
@@ -206,70 +215,55 @@
                                             <option value="mono">⬜ Mono — Grayscale / No Color</option>
                                         </select>
                                     </div>
-                                    <div class="flex items-center gap-2 ml-1">
-                                        <input type="checkbox" id="sandbox-debug" checked
-                                            onchange="reloadCurrentFragment()"
-                                            class="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-600">
-                                        <label for="sandbox-debug"
-                                            class="text-sm font-medium text-slate-700 cursor-pointer">Show Safe
-                                            Zones</label>
-                                    </div>
                                     <div class="pt-3 border-t border-slate-200">
-                                        <h3
-                                            class="text-xs font-bold text-slate-400 mb-3 flex items-center justify-between">
-                                            <span>LIVE THEME OVERRIDES</span>
-                                            <button onclick="resetThemeVars()"
-                                                class="text-[10px] text-blue-500 hover:text-blue-700 underline">Reset</button>
-                                        </h3>
-                                        <div class="grid grid-cols-2 gap-3 mb-4">
-                                            <label
-                                                class="flex items-center justify-between bg-white px-3 py-1.5 rounded border border-slate-200 shadow-sm cursor-pointer hover:border-blue-300 transition-colors">
-                                                <span class="text-xs font-medium text-slate-600 mr-2">BG</span>
-                                                <input type="color" id="color-bg" value="#0f172a"
-                                                    class="h-6 w-8 rounded cursor-pointer border-0 p-0"
-                                                    oninput="updateThemeVar('--bg', this.value)">
-                                                <input type="color" id="color-bg-light" value="#1e293b"
-                                                    class="h-6 w-8 rounded cursor-pointer border-0 p-0 ml-1"
-                                                    oninput="updateThemeVar('--bg-lighter', this.value)"
-                                                    title="Background Lighter">
-                                            </label>
-                                            <label
-                                                class="flex items-center justify-between bg-white px-3 py-1.5 rounded border border-slate-200 shadow-sm cursor-pointer hover:border-blue-300 transition-colors">
-                                                <span class="text-xs font-medium text-slate-600 mr-2">Brand</span>
-                                                <input type="color" id="color-accent" value="#f97316"
-                                                    class="h-6 w-8 rounded cursor-pointer border-0 p-0"
-                                                    oninput="updateThemeVar('--accent', this.value)">
-                                                <input type="color" id="color-accent-dark" value="#ea580c"
-                                                    class="h-6 w-8 rounded cursor-pointer border-0 p-0 ml-1"
-                                                    oninput="updateThemeVar('--accent-dark', this.value)"
-                                                    title="Accent Dark">
-                                            </label>
-                                            <label
-                                                class="flex items-center justify-between bg-white px-3 py-1.5 rounded border border-slate-200 shadow-sm cursor-pointer hover:border-blue-300 transition-colors col-span-2">
-                                                <span class="text-xs font-medium text-slate-600 mr-2">Typography
-                                                    (FG)</span>
-                                                <div class="flex gap-1">
-                                                    <input type="color" id="color-fg" value="#ffffff"
-                                                        class="h-6 w-8 rounded cursor-pointer border-0 p-0"
-                                                        oninput="updateThemeVar('--fg', this.value)" title="Primary">
-                                                    <input type="color" id="color-fg-muted" value="#94a3b8"
-                                                        class="h-6 w-8 rounded cursor-pointer border-0 p-0"
-                                                        oninput="updateThemeVar('--fg-muted', this.value)"
-                                                        title="Muted">
-                                                </div>
-                                            </label>
+                                        <h3 class="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">
+                                            Color Legend</h3>
+                                        <div class="flex flex-col gap-1.5" id="color-legend">
+                                            <div class="flex items-center gap-2">
+                                                <span id="swatch-bg" class="w-5 h-5 rounded border border-slate-300 shrink-0"></span>
+                                                <span class="text-[11px] text-slate-600">Background</span>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <span id="swatch-bg-lighter" class="w-5 h-5 rounded border border-slate-300 shrink-0"></span>
+                                                <span class="text-[11px] text-slate-600">Cards & panels</span>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <span id="swatch-fg" class="w-5 h-5 rounded border border-slate-300 shrink-0"></span>
+                                                <span class="text-[11px] text-slate-600">Main text (titles, headings)</span>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <span id="swatch-fg-muted" class="w-5 h-5 rounded border border-slate-300 shrink-0"></span>
+                                                <span class="text-[11px] text-slate-600">Secondary text (names, body)</span>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <span id="swatch-accent" class="w-5 h-5 rounded border border-slate-300 shrink-0"></span>
+                                                <span class="text-[11px] text-slate-600">Accent (labels, amounts, highlights)</span>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <span id="swatch-accent-dark" class="w-5 h-5 rounded border border-slate-300 shrink-0"></span>
+                                                <span class="text-[11px] text-slate-600">Accent dark (hover, emphasis)</span>
+                                            </div>
                                         </div>
-                                        <h3
-                                            class="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider mt-5 border-t border-slate-200 pt-3">
-                                            DEV ENVIRONMENT</h3>
-                                        <label
-                                            class="flex items-center gap-2 cursor-pointer bg-blue-50/50 p-2 rounded border border-blue-100">
-                                            <input type="checkbox" id="sandbox-livereload" checked
-                                                class="h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-600">
-                                            <span class="text-sm font-semibold text-blue-800">Auto-Reload Iframe on
-                                                Edit</span>
-                                        </label>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Settings Panel -->
+                        <div id="settings-panel-body" class="hidden mt-4">
+                            <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col gap-4">
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" id="sandbox-debug" checked
+                                        onchange="reloadCurrentFragment()"
+                                        class="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-600">
+                                    <label for="sandbox-debug"
+                                        class="text-sm font-medium text-slate-700 cursor-pointer">Show Safe Zones</label>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" id="sandbox-livereload" checked
+                                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600">
+                                    <label for="sandbox-livereload"
+                                        class="text-sm font-medium text-slate-700 cursor-pointer">Auto-Reload Iframe on Edit</label>
                                 </div>
                             </div>
                         </div>
@@ -991,6 +985,7 @@
     document.addEventListener('DOMContentLoaded', function () {
         restoreFragmentOrder();
         restoreFragmentLabels();
+        if (typeof updateColorLegend === 'function') updateColorLegend();
     });
 
     // --- Fragment Version Management ---
@@ -1057,72 +1052,29 @@
     // Load version pills on page load
     document.addEventListener('DOMContentLoaded', loadAllVersionPills);
 
+    // Theme color data for the legend
+    const THEME_COLORS = {{ themes_json | safe }};
+
+    function updateColorLegend() {
+        const themeName = document.getElementById('sandbox-theme').value;
+        const t = THEME_COLORS[themeName] || THEME_COLORS['modern'];
+        document.getElementById('swatch-bg').style.background = t.bg;
+        document.getElementById('swatch-bg-lighter').style.background = t.bg_lighter;
+        document.getElementById('swatch-fg').style.background = t.fg;
+        document.getElementById('swatch-fg-muted').style.background = t.fg_muted;
+        document.getElementById('swatch-accent').style.background = t.accent;
+        document.getElementById('swatch-accent-dark').style.background = t.accent_dark;
+    }
+
     function reloadCurrentFragment() {
+        updateColorLegend();
         if (currentFragment) {
             openSandbox(currentFragment);
         }
     }
 
-    // --- Developer Tools: Live Variables ---
-    function updateThemeVar(variable, value) {
-        const frame = getActiveFrame();
-        if (frame.contentWindow && frame.contentWindow.document.documentElement) {
-            frame.contentWindow.document.documentElement.style.setProperty(variable, value);
-        }
-    }
 
-    function applyCurrentThemeVars() {
-        // Automatically inject current tool states into the iframe upon load/refresh
-        updateThemeVar('--bg', document.getElementById('color-bg').value);
-        updateThemeVar('--bg-lighter', document.getElementById('color-bg-light').value);
-        updateThemeVar('--accent', document.getElementById('color-accent').value);
-        updateThemeVar('--accent-dark', document.getElementById('color-accent-dark').value);
-        updateThemeVar('--fg', document.getElementById('color-fg').value);
-        updateThemeVar('--fg-muted', document.getElementById('color-fg-muted').value);
-    }
 
-    function applyThemeVarsToFrame(frame) {
-        if (!frame.contentWindow || !frame.contentWindow.document.documentElement) return;
-        const root = frame.contentWindow.document.documentElement.style;
-        root.setProperty('--bg', document.getElementById('color-bg').value);
-        root.setProperty('--bg-lighter', document.getElementById('color-bg-light').value);
-        root.setProperty('--accent', document.getElementById('color-accent').value);
-        root.setProperty('--accent-dark', document.getElementById('color-accent-dark').value);
-        root.setProperty('--fg', document.getElementById('color-fg').value);
-        root.setProperty('--fg-muted', document.getElementById('color-fg-muted').value);
-    }
-
-    function resetThemeVars() {
-        const frame = getActiveFrame();
-        // Setting an empty string removes the inline overwrite
-        if (frame.contentWindow && frame.contentWindow.document.documentElement) {
-            frame.contentWindow.document.documentElement.style.setProperty('--bg', '');
-            frame.contentWindow.document.documentElement.style.setProperty('--bg-lighter', '');
-            frame.contentWindow.document.documentElement.style.setProperty('--accent', '');
-            frame.contentWindow.document.documentElement.style.setProperty('--accent-dark', '');
-            frame.contentWindow.document.documentElement.style.setProperty('--fg', '');
-            frame.contentWindow.document.documentElement.style.setProperty('--fg-muted', '');
-        }
-
-        // Optionally fetch the original values from the iframe's computed style (which is currently difficult due to CSS var scope)
-        // For now, reloading the iframe completely resets the template cleanly
-        const theme = document.getElementById('sandbox-theme').value || 'modern';
-
-        // Very basic reset mappings to inputs
-        if (theme === 'modern') {
-            document.getElementById('color-bg').value = '#0f172a';
-            document.getElementById('color-bg-light').value = '#1e293b';
-            document.getElementById('color-accent').value = '#f97316';
-            document.getElementById('color-accent-dark').value = '#ea580c';
-            document.getElementById('color-fg').value = '#ffffff';
-        } else {
-            document.getElementById('color-bg').value = '#fdfbf7';
-            document.getElementById('color-bg-light').value = '#ffffff';
-            document.getElementById('color-accent').value = '#d97706';
-            document.getElementById('color-accent-dark').value = '#b45309';
-            document.getElementById('color-fg').value = '#1e293b';
-        }
-    }
 
     // --- Developer Tools: Hot Template Reloading ---
     let lastModifiedTemplateTime = 0;
