@@ -254,7 +254,7 @@
                             <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col gap-4">
                                 <div class="flex items-center gap-2">
                                     <input type="checkbox" id="sandbox-debug" checked
-                                        onchange="reloadCurrentFragment()"
+                                        onchange="toggleSafeZones(this.checked)"
                                         class="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-600">
                                     <label for="sandbox-debug"
                                         class="text-sm font-medium text-slate-700 cursor-pointer">Show Safe Zones</label>
@@ -1073,7 +1073,16 @@
         }
     }
 
-
+    function toggleSafeZones(show) {
+        // Toggle debug overlay directly inside iframe(s) — no reload needed
+        ['sandbox-frame', 'sandbox-frame-2'].forEach(id => {
+            const frame = document.getElementById(id);
+            try {
+                const zones = frame.contentWindow.document.querySelector('.debug-zones');
+                if (zones) zones.style.display = show ? 'block' : 'none';
+            } catch(e) { /* cross-origin or no content */ }
+        });
+    }
 
 
     // --- Developer Tools: Hot Template Reloading ---
