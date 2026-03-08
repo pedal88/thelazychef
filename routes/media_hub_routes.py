@@ -734,6 +734,82 @@ def delete_fragment_version(fragment_name, version_num):
     return jsonify({"status": "deleted", "fragment": fragment_name, "version": version_num})
 
 
+@media_hub_bp.route("/sandbox/rename/<fragment_name>", methods=["POST"])
+@login_required
+@admin_required
+def rename_fragment(fragment_name):
+    """Rename a fragment and all its associated versions."""
+    import glob, re, os
+    from media_hub.snapshotter import VALID_FRAGMENTS
+    
+    if fragment_name not in VALID_FRAGMENTS:
+        return jsonify({"error": f"Unknown fragment: {fragment_name}"}), 404
+        
+    data = request.get_json() or {}
+    new_name = data.get("new_name", "").strip().lower()
+    
+    if not new_name:
+        return jsonify({"error": "No new name provided"}), 400
+        
+    # Validation: only a-z, 0-9, and hyphens/underscores
+    if not re.match(r'^[a-z0-9\-_]+$', new_name):
+        return jsonify({"error": "Name can only contain letters, numbers, hyphens, and underscores."}), 400
+        
+    if new_name in VALID_FRAGMENTS:
+        return jsonify({"error": f"A fragment named '{new_name}' already exists."}), 400
+        
+    fragments_dir = os.path.join(current_app.root_path, "templates", "fragments")
+    
+    # Files to rename: fragment_name.html, fragment_name.v*.html, fragment_name.html.pinned
+    renamed = 0
+    pattern = os.path.join(fragments_dir, f"{fragment_name}*")
+    
+    for old_path in glob.glob(pattern):
+        filename = os.path.basename(old_path)
+        # Verify it exactly starts with the fragment name followed by . to prevent renaming 'hero' when renaming 'he'
+        if filename.startswith(f"{fragment_name}."):
+            new_filename = filename.replace(f"{fragment_name}.", f"{new_name}.", 1)
+            new_path = os.path.join(fragments_dir, new_filename)
+            os.rename(old_path, new_path)
+            renamed += 1
+            
+    if renamed == 0:
+        return jsonify({"error": "No files found to rename"}), 404
+        
+    logger.info(f"[Sandbox] Renamed fragment '{fragment_name}' to '{new_name}' ({renamed} files)")
+    
+    # Reload the dynamic fragments list in the snapshotter module just to be safe in this worker
+    VALID_FRAGMENTS.discard(fragment_name)
+    VALID_FRAGMENTS.add(new_name)
+    
+    # Persist the rename in snapshotter.py so it survives restarts
+    snapshotter_path = os.path.join(current_app.root_path, "media_hub", "snapshotter.py")
+    if os.path.exists(snapshotter_path):
+        with open(snapshotter_path, "r") as f:
+            content = f.read()
+        # Look for "fragment_name" in the set assignment and replace
+        content = re.sub(rf'"{fragment_name}"', f'"{new_name}"', content)
+        with open(snapshotter_path, "w") as f:
+            f.write(content)
+            
+    # Persist the rename in sandbox_gui.html template
+    gui_path = os.path.join(current_app.root_path, "templates", "admin", "sandbox_gui.html")
+    if os.path.exists(gui_path):
+        with open(gui_path, "r") as f:
+            gui_content = f.read()
+        # Look for ('fragment_name', 'icon', 'Label', 'color')
+        gui_content = re.sub(rf"\('{fragment_name}',", f"('{new_name}',", gui_content)
+        with open(gui_path, "w") as f:
+            f.write(gui_content)
+    
+    return jsonify({
+        "status": "success",
+        "old_name": fragment_name,
+        "new_name": new_name,
+        "renamed_files": renamed
+    })
+
+
 @media_hub_bp.route("/sandbox/poll-templates", methods=["GET"])
 @login_required
 @admin_required
