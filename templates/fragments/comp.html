@@ -1,0 +1,142 @@
+{% extends "fragments/base_fragment.html" %}
+
+{% block content %}
+{# Components Overview fragment (1, 2, or 3 components dynamically expanding) #}
+
+<div class="full-bleed">
+    {% if image_url %}
+    <img src="{{ image_url }}" alt="Background" class="w-full h-full object-cover">
+    {% else %}
+    <div class="w-full h-full" style="background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));"></div>
+    {% endif %}
+
+    {# Soft dark wash background so cards pop out beautifully #}
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-md"></div>
+</div>
+
+<div class="safe-box flex flex-col gap-6 justify-center">
+    
+    {# Massive Title Bar #}
+    <div class="mb-4 pt-4">
+        <h1 class="font-serif font-black uppercase tracking-tight leading-none" style="font-size: 80px; color: var(--accent); text-shadow: 0 4px 16px rgba(0,0,0,0.5);">
+            Ingredients
+        </h1>
+    </div>
+
+    {# Flex column that automatically divides vertical space evenly #}
+    <div class="flex-1 flex flex-col gap-6 pb-4">
+        {% set total_comps = ingredient_groups|length %}
+        {% if total_comps == 1 %}
+            {% set size_class = "w-[144px] h-[144px]" %}
+            {% set max_w_class = "max-w-[144px]" %}
+            {% set gap_class = "gap-2" %}
+            {% set card_p = "p-4" %}
+            {% set content_pl = "pl-4" %}
+            {% set text_class = "text-[22px]" %}
+            {% set emoji_class = "text-[65px]" %}
+        {% elif total_comps == 2 %}
+            {% set size_class = "w-[136px] h-[136px]" %}
+            {% set max_w_class = "max-w-[136px]" %}
+            {% set gap_class = "gap-3" %}
+            {% set card_p = "p-6" %}
+            {% set content_pl = "pl-4" %}
+            {% set text_class = "text-[20px]" %}
+            {% set emoji_class = "text-[60px]" %}
+        {% else %}
+            {% set size_class = "w-[120px] h-[120px]" %}
+            {% set max_w_class = "max-w-[120px]" %}
+            {% set gap_class = "gap-4" %}
+            {% set card_p = "p-8" %}
+            {% set content_pl = "pl-6" %}
+            {% set text_class = "text-[18px]" %}
+            {% set emoji_class = "text-[50px]" %}
+        {% endif %}
+
+        {% set ns = namespace(total_rows_used=0) %}
+        {% for group in ingredient_groups %}
+        
+        {% set items = group.entries %}
+        
+        {# A Flex-growing card #}
+        <div class="flex-1 flex bg-white/10 backdrop-blur-xl rounded-[32px] border border-white/20 {{ card_p }} shadow-2xl relative overflow-hidden group">
+            
+            {# Accent Bar #}
+            <div class="absolute inset-y-0 left-0 w-3" style="background: var(--accent);"></div>
+
+            <div class="flex flex-col flex-1 {{ content_pl }}">
+                
+                {# Component Name #}
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-14 h-14 rounded-full flex items-center justify-center font-bold text-2xl"
+                         style="background: color-mix(in srgb, var(--accent) 30%, transparent); color: white;">
+                        {{ loop.index }}
+                    </div>
+                    <h2 class="font-bold text-white uppercase tracking-wider leading-none mt-1" style="font-size: 52px; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">
+                        {{ group.component }}
+                    </h2>
+                </div>
+
+                {# Dynamic Row Capping Requirements:
+                   - 1 comp: up to 6 rows (max 36 items)
+                   - 2 comps: up to 5 rows per comp, 6 rows total
+                   - 3 comps: up to 4 rows per comp, 6 rows total #}
+                {% if total_comps == 1 %}
+                    {% set component_max_rows = 6 %}
+                {% elif total_comps == 2 %}
+                    {% set component_max_rows = 5 %}
+                {% else %}
+                    {% set component_max_rows = 4 %}
+                {% endif %}
+
+                {% set available_global_rows = 6 - ns.total_rows_used %}
+                {# Ensure we don't drop below 0 rows if we overran somehow #}
+                {% set available_global_rows = [available_global_rows, 0]|max %}
+                
+                {% set allowed_rows = [component_max_rows, available_global_rows]|min %}
+                {% set items_per_row = 6 %}
+                {% set max_items = allowed_rows * items_per_row %}
+
+                {% set shown_items = [items|length, max_items]|min %}
+                {% set consumed_rows = ((shown_items - 1) // items_per_row) + 1 if shown_items > 0 else 0 %}
+                {% set ns.total_rows_used = ns.total_rows_used + consumed_rows %}
+
+                {# If capping, we reserve the very last slot of max_items for the +N bubble #}
+                {% set limit_index = max_items %}
+                {% if items|length > max_items %}
+                    {% set limit_index = max_items - 1 %}
+                {% endif %}
+
+                <div class="flex-1 flex flex-wrap {{ gap_class }} items-center content-start">
+                    {% for item in items %}
+                        {% if loop.index <= limit_index %}
+                            <div class="flex flex-col items-center gap-2">
+                                <div class="{{ size_class }} rounded-2xl overflow-hidden bg-black/40 border border-white/20 shadow-inner flex items-center justify-center p-3 relative"
+                                     style="box-shadow: inset 0 4px 12px rgba(0,0,0,0.5);">
+                                    {% if item.image_url %}
+                                    <img src="{{ item.image_url }}" alt="{{ item.name }}" class="w-full h-full object-contain filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
+                                    {% else %}
+                                    <span class="text-white/20 {{ emoji_class }}">🥦</span>
+                                    {% endif %}
+                                </div>
+                                {# Show text ONLY if there's less than 3 groups (or 1 group) to save vertical space #}
+                                {% if total_comps <= 2 %}
+                                <span class="text-white/90 {{ text_class }} font-bold text-center {{ max_w_class }} leading-tight line-clamp-2" style="text-shadow: 0 2px 6px rgba(0,0,0,0.8);">{{ item.name }}</span>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if items|length > max_items %}
+                        <div class="{{ size_class }} rounded-2xl bg-white/5 border-2 border-white/10 flex items-center justify-center shadow-inner">
+                            <span class="text-white/60 text-[36px] font-black tracking-tighter shadow-sm">+{{ items|length - limit_index }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

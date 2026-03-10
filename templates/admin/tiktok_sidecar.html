@@ -58,6 +58,18 @@
                 </button>
             </div>
             
+            <!-- Pre-flight Report UI -->
+            <div id="preflight-report" class="hidden mt-6 p-4 rounded-md bg-gray-50 border border-gray-200 text-sm">
+                <h3 class="font-medium text-gray-900 mb-2">Ingestion Filter Report</h3>
+                <div class="flex gap-4 mb-3">
+                    <span id="pf-valid" class="text-green-700 font-medium">0 Valid</span>
+                    <span id="pf-skipped" class="text-amber-700 font-medium">0 Skipped</span>
+                </div>
+                <!-- Scrollable list of skipped items -->
+                <ul id="pf-skipped-list" class="max-h-32 overflow-y-auto space-y-1 text-xs text-gray-600 border-t border-gray-200 pt-2">
+                </ul>
+            </div>
+            
             <!-- Ingest Loader -->
             <div id="ingest-progress" class="hidden mt-4 bg-indigo-50 p-4 rounded-md border border-indigo-100">
                 <div class="flex items-center gap-3">
@@ -81,11 +93,13 @@
                         <table class="min-w-full divide-y divide-gray-300">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 w-[20%]">Date</th>
-                                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[30%]">Dish Name</th>
-                                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[15%]">Entity Type</th>
-                                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[15%]">Status</th>
-                                    <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6 w-[20%]">
+                                    <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 w-[15%]">Date</th>
+                                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[20%]">Dish Name</th>
+                                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[10%]">Entity Type</th>
+                                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[10%]">Format</th>
+                                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[10%]">Status</th>
+                                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[10%]">Linked</th>
+                                    <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6 w-[25%]">
                                         <span class="sr-only">Actions</span>
                                     </th>
                                 </tr>
@@ -97,10 +111,10 @@
                                         {{ source.created_at.strftime('%Y-%m-%d %H:%M') }}
                                         <div class="text-xs truncate max-w-[150px]"><a href="{{ source.tiktok_url }}" target="_blank" class="text-blue-500 hover:underline">Source Link</a></div>
                                     </td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900">
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900" id="dish-name-{{ source.id }}">
                                         {{ source.dish_name or 'N/A' }}
                                     </td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm">
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm" id="entity-type-{{ source.id }}">
                                         {% if source.entity_type == 'RECIPE' %}
                                             <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Recipe</span>
                                         {% elif source.entity_type == 'RESOURCE' %}
@@ -108,6 +122,9 @@
                                         {% else %}
                                             <span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">No Match</span>
                                         {% endif %}
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-xs font-mono text-gray-500" id="format-type-{{ source.id }}">
+                                        {{ source.format_type }}
                                     </td>
                                     <td class="whitespace-nowrap px-3 py-4 text-sm" id="status-{{ source.id }}">
                                         {% if source.status == 'SUGGESTED' %}
@@ -118,17 +135,27 @@
                                             <span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">{{ source.status }}</span>
                                         {% endif %}
                                     </td>
-                                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6" id="actions-{{ source.id }}">
-                                        {% if source.entity_type == 'RECIPE' and source.status != 'IMPORTED' %}
-                                        <button onclick="importShortcut({{ source.id }})" class="text-indigo-600 hover:text-indigo-900 font-bold bg-indigo-50 px-2 py-1 rounded">Import &rarr;</button>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm font-medium" id="linked-{{ source.id }}">
+                                        {% if recipe_map.get(source.tiktok_url) %}
+                                            <a href="{{ url_for('recipe_detail', recipe_id=recipe_map.get(source.tiktok_url)) }}" target="_blank" class="text-indigo-600 hover:text-indigo-900 border-b border-indigo-200 hover:border-indigo-600">Recipe #{{ recipe_map.get(source.tiktok_url) }}</a>
+                                        {% else %}
+                                            <span class="text-gray-400 font-normal">-</span>
                                         {% endif %}
-                                        <button onclick="inspectSource({{ source.id }})" class="text-slate-600 hover:text-slate-900 ml-3">Inspect</button>
-                                        <button onclick="deleteSource({{ source.id }})" class="text-red-500 hover:text-red-700 ml-3">Delete</button>
+                                    </td>
+                                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6" id="actions-{{ source.id }}">
+                                        {% if source.entity_type == 'RECIPE' and source.status != 'IMPORTED' and not recipe_map.get(source.tiktok_url) %}
+                                        <button onclick="importShortcut({{ source.id }})" class="text-indigo-600 hover:text-indigo-900 font-bold bg-indigo-50 px-2 py-1 rounded transition">Import &rarr;</button>
+                                        {% endif %}
+                                        {% if source.status != 'IMPORTED' %}
+                                        <button onclick="deepScanSource({{ source.id }})" class="text-indigo-600 hover:text-indigo-900 ml-2" title="Deep Scan Video Meta">👁️ Scan</button>
+                                        {% endif %}
+                                        <button onclick="inspectSource({{ source.id }})" class="text-slate-600 hover:text-slate-900 ml-2">Inspect</button>
+                                        <button onclick="deleteSource({{ source.id }})" class="text-red-500 hover:text-red-700 ml-2">Delete</button>
                                     </td>
                                 </tr>
                                 {% else %}
                                 <tr>
-                                    <td colspan="5" class="text-center text-gray-500 py-4 text-sm italic">
+                                    <td colspan="6" class="text-center text-gray-500 py-4 text-sm italic">
                                         No items in the sidecar yet.
                                     </td>
                                 </tr>
@@ -257,13 +284,64 @@
         btn.disabled = true;
         bulkInput.disabled = true;
         
+        // PRE-FLIGHT CHECK
+        let validUrlsToProcess = [];
+        try {
+            const pfRes = await fetch('/admin/tiktok-sidecar/api/pre-flight', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ urls: urls })
+            });
+            const pfData = await pfRes.json();
+            
+            if (!pfData.success) {
+                alert("Pre-flight check failed: " + pfData.error);
+                btn.disabled = false;
+                bulkInput.disabled = false;
+                return;
+            }
+            
+            validUrlsToProcess = pfData.valid_urls;
+            
+            // Show Report
+            const reportDiv = document.getElementById('preflight-report');
+            const pfValid = document.getElementById('pf-valid');
+            const pfSkipped = document.getElementById('pf-skipped');
+            const pfList = document.getElementById('pf-skipped-list');
+            
+            reportDiv.classList.remove('hidden');
+            pfValid.textContent = `${validUrlsToProcess.length} Valid`;
+            pfSkipped.textContent = `${pfData.rejected.length} Skipped`;
+            
+            pfList.innerHTML = '';
+            pfData.rejected.forEach(item => {
+                const li = document.createElement('li');
+                li.innerHTML = `<span class="text-red-500">🔴</span> <span class="truncate max-w-[200px] inline-block align-bottom">${item.url}</span> - <span class="font-medium text-amber-600">${item.reason}</span>`;
+                pfList.appendChild(li);
+            });
+            
+        } catch (err) {
+            console.error(err);
+            alert("Network error during pre-flight check.");
+            btn.disabled = false;
+            bulkInput.disabled = false;
+            return;
+        }
+
+        if (validUrlsToProcess.length === 0) {
+            alert("All pasted URLs were filtered out as duplicates! See report.");
+            btn.disabled = false;
+            bulkInput.disabled = false;
+            return;
+        }
+        
+        // ACTUAL INGEST PROCESS
         const loader = document.getElementById('ingest-progress');
         loader.classList.remove('hidden');
-        document.getElementById('ingest-total').textContent = urls.length;
+        document.getElementById('ingest-total').textContent = validUrlsToProcess.length;
         
         let count = 0;
-        
-        for (const url of urls) {
+        for (const url of validUrlsToProcess) {
             count++;
             document.getElementById('ingest-current').textContent = count;
             document.getElementById('ingest-current-url').textContent = url;
@@ -274,9 +352,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ url: url })
                 });
-                
                 await res.json();
-                
             } catch (err) {
                 console.error("Failed on url", url, err);
             }
@@ -287,11 +363,19 @@
         window.location.reload();
     });
 
-    // 2. The Import Bridge Logc
+    // 2. The Import Bridge Logic
     async function importShortcut(sourceId) {
         const actionsCell = document.getElementById('actions-' + sourceId);
         const originalHtml = actionsCell.innerHTML;
-        actionsCell.innerHTML = '<span class="text-gray-500">Mapping...</span>';
+        // Detailed spinner since this is now a heavy video extraction
+        actionsCell.innerHTML = `
+            <span class="inline-flex items-center text-sm font-medium text-indigo-600">
+                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Extracting...
+            </span>`;
         
         try {
             const res = await fetch(`/admin/tiktok-sidecar/api/import/${sourceId}`, {
@@ -310,6 +394,75 @@
         } catch (err) {
             alert("Network error");
             actionsCell.innerHTML = originalHtml;
+        }
+    }
+
+    // 2b. The Deep Meta Scan Logic
+    async function deepScanSource(sourceId) {
+        const actionsCell = document.getElementById('actions-' + sourceId);
+        const formatCell = document.getElementById('format-type-' + sourceId);
+        const dishCell = document.getElementById('dish-name-' + sourceId);
+        const entityCell = document.getElementById('entity-type-' + sourceId);
+        
+        const originalHtml = actionsCell.innerHTML;
+        const originalFormat = formatCell.innerHTML;
+        const originalDish = dishCell.innerHTML;
+        const originalEntity = entityCell.innerHTML;
+        
+        // Detailed spinner
+        actionsCell.innerHTML = `
+            <span class="inline-flex items-center text-sm font-medium text-indigo-600">
+                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Scanning...
+            </span>`;
+            
+        formatCell.innerHTML = `<span class="animate-pulse">...</span>`;
+        dishCell.innerHTML = `<span class="animate-pulse">...</span>`;
+        entityCell.innerHTML = `<span class="animate-pulse">...</span>`;
+        
+        try {
+            const res = await fetch(`/admin/tiktok-sidecar/api/deep-scan/${sourceId}`, {
+                method: 'POST'
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                formatCell.textContent = data.format_type;
+                dishCell.textContent = data.dish_name;
+                
+                let entityHtml = '';
+                if (data.entity_type === 'RECIPE') {
+                     entityHtml = `<span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Recipe</span>`;
+                } else if (data.entity_type === 'RESOURCE') {
+                     entityHtml = `<span class="inline-flex items-center rounded-md bg-orange-50 px-2 py-1 text-xs font-medium text-orange-700 ring-1 ring-inset ring-orange-600/20">Resource</span>`;
+                } else {
+                     entityHtml = `<span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">No Match</span>`;
+                }
+                entityCell.innerHTML = entityHtml;
+                
+                if (data.entity_type === 'RESOURCE') {
+                    document.getElementById('row-' + sourceId).className = 'bg-orange-50';
+                } else {
+                    document.getElementById('row-' + sourceId).className = '';
+                }
+                
+                actionsCell.innerHTML = originalHtml; 
+            } else {
+                alert("Scan failed: " + data.error);
+                actionsCell.innerHTML = originalHtml;
+                formatCell.innerHTML = originalFormat;
+                dishCell.innerHTML = originalDish;
+                entityCell.innerHTML = originalEntity;
+            }
+        } catch (err) {
+            alert("Network error");
+            actionsCell.innerHTML = originalHtml;
+            formatCell.innerHTML = originalFormat;
+            dishCell.innerHTML = originalDish;
+            entityCell.innerHTML = originalEntity;
         }
     }
 
@@ -337,18 +490,19 @@
         const modal = document.getElementById('inspector-modal');
         const contentArea = document.getElementById('inspector-content');
         contentArea.innerHTML = "Loading...";
+        document.getElementById('modal-title').textContent = "Raw Scraped Caption";
         modal.classList.remove('hidden');
 
         try {
             const res = await fetch(`/admin/tiktok-sidecar/api/inspect/${sourceId}`);
             const data = await res.json();
             if (data.success) {
-                contentArea.innerHTML = JSON.stringify(data.data, null, 2);
+                contentArea.textContent = data.data; // Just text content now, no JSON.stringify
             } else {
-                contentArea.innerHTML = "Error loading data: " + data.error;
+                contentArea.textContent = "Error loading data: " + data.error;
             }
         } catch (err) {
-            contentArea.innerHTML = "Network failure loading inspector.";
+            contentArea.textContent = "Network failure loading inspector.";
         }
     }
 </script>

@@ -460,6 +460,112 @@ def preview_fragments():
         return jsonify({"error": str(e)}), 500
 
 
+# ---------------------------------------------------------------------------
+# Routes — Sequence Templates
+# ---------------------------------------------------------------------------
+
+@media_hub_bp.route("/sandbox/api/templates", methods=["GET"])
+@login_required
+@admin_required
+def list_sequence_templates():
+    from database.models import SequenceTemplate
+    templates = db.session.execute(
+        db.select(SequenceTemplate).order_by(SequenceTemplate.name)
+    ).scalars().all()
+    
+    return jsonify({
+        "templates": [
+            {
+                "id": t.id,
+                "name": t.name,
+                "sequence": t.fragments_sequence
+            } for t in templates
+        ]
+    })
+
+@media_hub_bp.route("/sandbox/api/templates", methods=["POST"])
+@login_required
+@admin_required
+def create_sequence_template():
+    data = request.get_json()
+    if not data or not data.get("name") or not data.get("sequence"):
+        return jsonify({"error": "name and sequence array required"}), 400
+        
+    from database.models import SequenceTemplate
+    try:
+        # Check if exists
+        existing = db.session.execute(
+            db.select(SequenceTemplate).where(SequenceTemplate.name == data["name"])
+        ).scalar()
+        
+        if existing:
+            # Overwrite existing
+            existing.fragments_sequence = data["sequence"]
+        else:
+            new_tmpl = SequenceTemplate(
+                name=data["name"],
+                fragments_sequence=data["sequence"]
+            )
+            db.session.add(new_tmpl)
+            
+        db.session.commit()
+        return jsonify({"status": "success", "message": "Saved successfully"})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+@media_hub_bp.route("/sandbox/api/templates/<int:template_id>", methods=["DELETE"])
+@login_required
+@admin_required
+def delete_sequence_template(template_id):
+    from database.models import SequenceTemplate
+    try:
+        t = db.session.get(SequenceTemplate, template_id)
+        if t:
+            db.session.delete(t)
+            db.session.commit()
+        return jsonify({"status": "success"})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+@media_hub_bp.route("/sandbox/api/generate-reel", methods=["POST"])
+@login_required
+@admin_required
+def build_custom_reel():
+    """
+    Builds a custom reel from an ordered list of fragment names.
+    JSON body:
+      {
+        "recipe_id": 192,
+        "fragments": ["hero", "hook-social", "step1", "comp", "end"]
+      }
+    Returns URL to final MP4.
+    """
+    data = request.get_json()
+    if not data or not data.get("recipe_id") or not data.get("fragments"):
+        return jsonify({"error": "recipe_id and fragments array are required"}), 400
+
+    recipe_id = int(data["recipe_id"])
+    fragments_sequence = data["fragments"]
+    
+    app = current_app._get_current_object()
+    storage_provider = media_hub_bp.storage_provider
+
+    try:
+        from media_hub.snapshotter import compile_custom_reel
+        # This function generates an MP4 and saves it to storage/static
+        # Returning its public URL.
+        video_url = compile_custom_reel(recipe_id, fragments_sequence, app, storage_provider)
+        
+        logger.info(f"[VideoEngine] Custom Reel assembled for recipe {recipe_id} with sequence: {fragments_sequence}")
+        return jsonify({"status": "success", "video_url": video_url}), 200
+
+    except Exception as e:
+        logger.exception(f"[VideoEngine] Reel compilation failed for recipe {recipe_id}")
+        return jsonify({"error": str(e), "status": "failed"}), 500
+
+
 @media_hub_bp.route("/sandbox/api/search-recipes", methods=["GET"])
 @login_required
 @admin_required
@@ -495,7 +601,38 @@ def sandbox_search_recipes():
     return jsonify(results[:10])
 
 
+
+@media_hub_bp.route("/sandbox/api/recipe-meta", methods=["GET"])
+@login_required
+@admin_required
+def get_recipe_meta():
+    from database.models import Recipe
+    from media_hub.snapshotter import _build_step_groups, _paginate_steps_dynamically
+    
+    recipe_id = request.args.get("id", type=int)
+    if not recipe_id:
+        return jsonify({"error": "No recipe ID"}), 400
+    recipe = db.session.get(Recipe, recipe_id)
+    if not recipe:
+        return jsonify({"error": "Not found"}), 404
+        
+    step_groups = _build_step_groups(recipe)
+    dynamic_steps = []
+    
+    for comp_idx, group in enumerate(step_groups, start=1):
+        pages = _paginate_steps_dynamically([group])
+        for p_idx, page_groups in enumerate(pages, start=1):
+            dynamic_steps.append({
+                "fragment_name": f"step{comp_idx}",
+                "page": p_idx,
+                "total_pages": len(pages),
+                "component_name": group["component"]
+            })
+            
+    return jsonify({"steps": dynamic_steps})
+
 @media_hub_bp.route("/sandbox", methods=["GET"])
+
 @login_required
 @admin_required
 def sandbox_gui():
@@ -520,15 +657,16 @@ def fragment_sandbox(fragment_name):
         theme     (str)  — 'modern' | 'classic'
         debug     (bool) — '1'/'true' to show TikTok safe zones overlay
     """
-    from media_hub.snapshotter import build_sandbox_context, VALID_FRAGMENTS
+    from media_hub.snapshotter import build_sandbox_context, VALID_FRAGMENTS, is_valid_fragment
 
-    if fragment_name not in VALID_FRAGMENTS:
+    if not is_valid_fragment(fragment_name):
         return jsonify({"error": f"Unknown fragment: {fragment_name}", "valid": sorted(VALID_FRAGMENTS)}), 404
 
     recipe_id = request.args.get("recipe_id", 192, type=int)
     theme_name = request.args.get("theme", "modern")
     debug = request.args.get("debug", "").lower() in ("1", "true", "yes")
     scale = request.args.get("scale", 1.0, type=float)
+    page = request.args.get("page", 1, type=int)
 
     try:
         storage_provider = media_hub_bp.storage_provider
@@ -540,10 +678,12 @@ def fragment_sandbox(fragment_name):
             theme_name=theme_name,
             debug=debug,
             scale=scale,
+            page=page,
         )
         # Support serving specific versions for comparison
         version = request.args.get("version", "1")
-        template_path = f"fragments/{fragment_name}.html"
+        base_frag = "steps" if fragment_name.startswith("step") else fragment_name
+        template_path = f"fragments/{base_frag}.html"
 
         if version == "pinned":
             pinned_tpl = f"fragments/{fragment_name}.html.pinned"
@@ -570,9 +710,9 @@ def fragment_sandbox(fragment_name):
 def pin_fragment(fragment_name):
     """Copy current fragment template to a .pinned backup for comparison."""
     import shutil
-    from media_hub.snapshotter import VALID_FRAGMENTS
+    from media_hub.snapshotter import VALID_FRAGMENTS, is_valid_fragment
 
-    if fragment_name not in VALID_FRAGMENTS:
+    if not is_valid_fragment(fragment_name):
         return jsonify({"error": f"Unknown fragment: {fragment_name}"}), 404
 
     src = os.path.join(current_app.root_path, "templates", "fragments", f"{fragment_name}.html")
@@ -592,9 +732,9 @@ def pin_fragment(fragment_name):
 def revert_fragment(fragment_name):
     """Restore the pinned version over the current live template."""
     import shutil
-    from media_hub.snapshotter import VALID_FRAGMENTS
+    from media_hub.snapshotter import VALID_FRAGMENTS, is_valid_fragment
 
-    if fragment_name not in VALID_FRAGMENTS:
+    if not is_valid_fragment(fragment_name):
         return jsonify({"error": f"Unknown fragment: {fragment_name}"}), 404
 
     pinned = os.path.join(current_app.root_path, "templates", "fragments", f"{fragment_name}.html.pinned")
@@ -614,9 +754,9 @@ def revert_fragment(fragment_name):
 @admin_required
 def accept_fragment(fragment_name):
     """Accept the current live version and delete the pinned backup."""
-    from media_hub.snapshotter import VALID_FRAGMENTS
+    from media_hub.snapshotter import VALID_FRAGMENTS, is_valid_fragment
 
-    if fragment_name not in VALID_FRAGMENTS:
+    if not is_valid_fragment(fragment_name):
         return jsonify({"error": f"Unknown fragment: {fragment_name}"}), 404
 
     pinned = os.path.join(current_app.root_path, "templates", "fragments", f"{fragment_name}.html.pinned")
@@ -643,8 +783,8 @@ def pin_status(fragment_name):
 def list_fragment_versions(fragment_name):
     """List all available versions for a fragment (1 = original, 2+ = variants)."""
     import glob, re
-    from media_hub.snapshotter import VALID_FRAGMENTS
-    if fragment_name not in VALID_FRAGMENTS:
+    from media_hub.snapshotter import VALID_FRAGMENTS, is_valid_fragment
+    if not is_valid_fragment(fragment_name):
         return jsonify({"error": f"Unknown fragment: {fragment_name}"}), 404
 
     fragments_dir = os.path.join(current_app.root_path, "templates", "fragments")
@@ -658,14 +798,53 @@ def list_fragment_versions(fragment_name):
     return jsonify({"fragment": fragment_name, "versions": versions})
 
 
+@media_hub_bp.route("/sandbox/generate-hook/<int:recipe_id>", methods=["POST"])
+@login_required
+@admin_required
+def sandbox_generate_hook(recipe_id):
+    """
+    Called from the Hook fragments in Sandbox GUI to request AI text regeneration.
+    """
+    hook_type = request.args.get("type", "social")
+    
+    from database.models import db, Recipe
+    from ai_engine import generate_social_hook
+    
+    recipe = db.session.get(Recipe, recipe_id)
+    if not recipe:
+        return jsonify({"error": "Recipe not found", "status": "failed"}), 404
+        
+    recipe_data = {
+        "title": recipe.title,
+        "cuisine": recipe.cuisine,
+        "ingredients": ", ".join([i.ingredient.name for i in recipe.ingredients])
+    }
+    
+    generated_text = generate_social_hook(recipe_data, hook_type=hook_type)
+    
+    if "Warning:" in generated_text:
+        return jsonify({"error": generated_text, "status": "failed"}), 500
+        
+    # Update DB - JSON field requires reassignment to trigger update
+    hooks = dict(recipe.social_hooks or {})
+    hooks[hook_type] = generated_text
+    recipe.social_hooks = hooks
+    
+    try:
+        db.session.commit()
+        return jsonify({"status": "success", "hook": generated_text})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e), "status": "failed"}), 500
+
 @media_hub_bp.route("/sandbox/create-version/<fragment_name>", methods=["POST"])
 @login_required
 @admin_required
 def create_fragment_version(fragment_name):
     """Save the current fragment as a new numbered version (next unused integer)."""
     import shutil, glob, re
-    from media_hub.snapshotter import VALID_FRAGMENTS
-    if fragment_name not in VALID_FRAGMENTS:
+    from media_hub.snapshotter import VALID_FRAGMENTS, is_valid_fragment
+    if not is_valid_fragment(fragment_name):
         return jsonify({"error": f"Unknown fragment: {fragment_name}"}), 404
 
     fragments_dir = os.path.join(current_app.root_path, "templates", "fragments")
@@ -698,8 +877,8 @@ def delete_fragment_version(fragment_name, version_num):
     (its file replaces the main .html and the old .v*.html is removed).
     """
     import glob, re, shutil
-    from media_hub.snapshotter import VALID_FRAGMENTS
-    if fragment_name not in VALID_FRAGMENTS:
+    from media_hub.snapshotter import VALID_FRAGMENTS, is_valid_fragment
+    if not is_valid_fragment(fragment_name):
         return jsonify({"error": f"Unknown fragment: {fragment_name}"}), 404
 
     fragments_dir = os.path.join(current_app.root_path, "templates", "fragments")
@@ -734,15 +913,71 @@ def delete_fragment_version(fragment_name, version_num):
     return jsonify({"status": "deleted", "fragment": fragment_name, "version": version_num})
 
 
+@media_hub_bp.route("/sandbox/fragment/<fragment_name>", methods=["DELETE"])
+@login_required
+@admin_required
+def delete_entire_fragment(fragment_name):
+    """Delete an entire fragment and all of its versions, removing it from exactly the UI and VALID_FRAGMENTS."""
+    import glob, re
+    from media_hub.snapshotter import VALID_FRAGMENTS, is_valid_fragment
+    if not is_valid_fragment(fragment_name):
+        return jsonify({"error": f"Unknown fragment: {fragment_name}"}), 404
+
+    # 1. Delete all related files in templates/fragments/
+    fragments_dir = os.path.join(current_app.root_path, "templates", "fragments")
+    pattern = os.path.join(fragments_dir, f"{fragment_name}*.html*")
+    deleted_files = []
+    
+    # Using specific checks to avoid matching prefixes (e.g. deleting 'hero2' if deleting 'hero')
+    for path in glob.glob(pattern):
+        fname = os.path.basename(path)
+        if fname.startswith(f"{fragment_name}.") or fname == f"{fragment_name}.html":
+            os.remove(path)
+            deleted_files.append(fname)
+
+    # 2. Remove from VALID_FRAGMENTS in snapshotter.py
+    snapshotter_path = os.path.join(current_app.root_path, "media_hub", "snapshotter.py")
+    if os.path.exists(snapshotter_path):
+        with open(snapshotter_path, "r") as f:
+            content = f.read()
+        
+        # Matches '"hero", ' or '"hero"'
+        pattern_str = rf'"{fragment_name}"\s*(?:,\s*)?'
+        new_content = re.sub(pattern_str, '', content)
+        
+        with open(snapshotter_path, "w") as f:
+            f.write(new_content)
+            
+    # 3. Remove from UI array in sandbox_gui.html template
+    gui_path = os.path.join(current_app.root_path, "templates", "admin", "sandbox_gui.html")
+    if os.path.exists(gui_path):
+        with open(gui_path, "r") as f:
+            gui_content = f.read()
+            
+        # Look for the exact tuple ('fragment_name', 'icon', 'Label', 'color'), potentially with trailing comma
+        pattern_gui = rf"\s*\('{fragment_name}',\s*'[^']*',\s*'[^']*',\s*'[^']*'\)(?:\s*,)?"
+        gui_content = re.sub(pattern_gui, '', gui_content)
+        
+        with open(gui_path, "w") as f:
+            f.write(gui_content)
+            
+    logger.info(f"[Sandbox] Completely deleted fragment '{fragment_name}' and all its versions.")
+    return jsonify({
+        "status": "deleted",
+        "fragment": fragment_name,
+        "deleted_files": deleted_files
+    })
+
+
 @media_hub_bp.route("/sandbox/rename/<fragment_name>", methods=["POST"])
 @login_required
 @admin_required
 def rename_fragment(fragment_name):
     """Rename a fragment and all its associated versions."""
     import glob, re, os
-    from media_hub.snapshotter import VALID_FRAGMENTS
+    from media_hub.snapshotter import VALID_FRAGMENTS, is_valid_fragment
     
-    if fragment_name not in VALID_FRAGMENTS:
+    if not is_valid_fragment(fragment_name):
         return jsonify({"error": f"Unknown fragment: {fragment_name}"}), 404
         
     data = request.get_json() or {}

@@ -1,0 +1,53 @@
+{% extends "fragments/base_fragment.html" %}
+
+{% block content %}
+<div class="full-bleed media-bg">
+    {% if image_url %}
+        <div class="absolute inset-0 z-0">
+            <img src="{{ image_url }}" alt="{{ title }}" class="w-full h-full object-cover">
+            {# Very heavy gradient to ensure text readability while preserving the heroic food background #}
+            <div class="absolute inset-0" style="background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.9) 100%);"></div>
+        </div>
+    {% else %}
+        <div class="w-full h-full" style="background: var(--surface-grad);"></div>
+    {% endif %}
+</div>
+
+<div class="safe-box flex flex-col items-center justify-center p-12 relative z-10 h-full media-fg">
+
+    <div class="flex-1 flex flex-col items-center justify-center text-center w-full">
+        
+        {# The Lazy Chef Logo / Mascot floating at the top #}
+        <div class="text-[120px] mb-8 drop-shadow-[0_0_30px_rgba(255,255,255,0.3)] animate-pulse">
+            👨‍🍳
+        </div>
+        
+        <h1 class="font-serif font-black text-8xl text-white mb-10 drop-shadow-[0_4px_20px_rgba(0,0,0,0.8)] leading-tight tracking-tight">
+            Bon Appétit!
+        </h1>
+        
+        {# Final Recipe Title Card Recap #}
+        <div class="bg-black/50 backdrop-blur-xl rounded-[3rem] p-10 border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.5)] w-full max-w-2xl transform relative overflow-hidden">
+            <div class="absolute inset-0 opacity-20 pointer-events-none" style="background: radial-gradient(circle at top right, var(--accent), transparent 60%);"></div>
+            
+            <h2 class="relative font-serif font-black text-5xl text-accent mb-6 drop-shadow-lg leading-tight">
+                {{ title }}
+            </h2>
+            
+            <div class="relative flex justify-center flex-wrap gap-4 mt-2">
+                <span class="text-2xl font-black uppercase tracking-widest bg-white/10 px-6 py-3 rounded-full backdrop-blur-sm border border-white/20 text-white shadow-inner">
+                    ⏱ {{ prep_time_mins }} MIN
+                </span>
+                <span class="text-2xl font-black uppercase tracking-widest bg-white/10 px-6 py-3 rounded-full backdrop-blur-sm border border-white/20 text-white shadow-inner">
+                    🍽 {{ base_servings }} SERVINGS
+                </span>
+            </div>
+        </div>
+    </div>
+
+    {# Footer branding #}
+    <div class="shrink-0 mt-auto pb-12 w-full text-center">
+        <p class="text-[32px] font-black tracking-[0.4em] text-white/50 uppercase">Enjoy the Lazy Way</p>
+    </div>
+</div>
+{% endblock %}

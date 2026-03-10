@@ -1,71 +1,93 @@
 {% extends "fragments/base_fragment.html" %}
 
-{# ── Density thresholds ── #}
-{% set density = 'spacious' if item_count <= 3 else ('compact' if item_count> 5 else 'normal') %}
+{% block content %}
+<div class="full-bleed">
+    <div class="w-full h-full" style="background: var(--surface-grad);"></div>
+</div>
 
-    {% block content %}
-    <div class="w-full h-full bg-surface-grad flex flex-col px-16 pt-[120px] pb-[280px]">
+<div class="safe-box flex flex-col justify-start px-8 pt-20 pb-20">
 
-        {# Section label #}
-        <div
-            class="{% if density == 'compact' %}mb-5{% elif density == 'spacious' %}mb-10{% else %}mb-8{% endif %} shrink-0">
-            <p class="frag-label text-accent">Instructions</p>
-            <h2
-                class="font-serif {% if density == 'compact' %}frag-heading{% else %}frag-title{% endif %} font-bold text-fg mt-2">
-                {{ title }}</h2>
-        </div>
+    {# Section label & title #}
+    <div class="mb-6 text-center shrink-0">
+        <h2 class="font-serif font-black text-6xl text-fg leading-tight">{{ title }}</h2>
+        {% if step_groups and step_groups[0].component and show_component_headers %}
+        <h3 class="font-bold text-3xl text-accent mt-3 uppercase tracking-widest">{{ step_groups[0].component }}</h3>
+        {% endif %}
+    </div>
 
-        {# Content area — density-aware spacing #}
-        <div id="content-measure"
-            class="flex-1 overflow-hidden {% if density == 'compact' %}space-y-4{% elif density == 'spacious' %}space-y-8{% else %}space-y-5{% endif %}">
-            {% for group in step_groups %}
-            <div>
-                {# Component header (only if multiple components) #}
-                {% if show_component_headers %}
-                <div class="flex items-center gap-4 {% if density == 'compact' %}mb-3{% else %}mb-5{% endif %}">
-                    <div class="w-2 {% if density == 'compact' %}h-6{% else %}h-8{% endif %} rounded-full"
-                        style="background: var(--accent);"></div>
-                    <h3
-                        class="{% if density == 'compact' %}frag-label{% else %}frag-body{% endif %} font-bold uppercase tracking-wide text-fg-muted">
-                        {{ group.component }}</h3>
-                </div>
-                {% endif %}
+    {# Content area — Flex container to distribute perfectly #}
+    <div class="flex-1 overflow-hidden flex flex-col pt-4 pb-2" style="justify-content: flex-start; gap: 1.5rem;">
+        {% for group in step_groups %}
+        
+        {# Component header removed from block level and moved to subtitle above #}
 
-                {# Steps list — density-aware #}
-                <div
-                    class="{% if density == 'compact' %}space-y-3{% elif density == 'spacious' %}space-y-6{% else %}space-y-4{% endif %}">
-                    {% for step in group.entries %}
-                    <div class="flex {% if density == 'compact' %}gap-3{% else %}gap-5{% endif %}">
-                        {# Step number badge #}
-                        <div class="shrink-0 {% if density == 'compact' %}w-10 h-10 rounded-xl{% else %}w-12 h-12 rounded-2xl{% endif %} flex items-center justify-center mt-1"
-                            style="background: color-mix(in srgb, var(--accent) 20%, transparent);">
-                            <span
-                                class="{% if density == 'compact' %}frag-label{% else %}frag-body{% endif %} font-bold text-accent">{{
-                                step.number }}</span>
-                        </div>
+        {# Steps list #}
+        <div class="flex flex-col w-full shrink-0" style="gap: 1.5rem;">
+            {% for step in group.entries %}
+            
+            {% if step.phase == 'Prep' %}
+                {% set bg_cls = 'bg-blue-500' %}
+                {% set badge_text = 'text-blue-600' %}
+                {% set badge_bg = 'bg-blue-500/20' %}
+                {% set badge_border = 'border-blue-500/30' %}
+                {% set phase_emoji = '🔪' %}
+            {% elif step.phase == 'Cook' %}
+                {% set bg_cls = 'bg-orange-500' %}
+                {% set badge_text = 'text-orange-600' %}
+                {% set badge_bg = 'bg-orange-500/20' %}
+                {% set badge_border = 'border-orange-500/30' %}
+                {% set phase_emoji = '🔥' %}
+            {% else %}
+                {% set bg_cls = 'bg-green-500' %}
+                {% set badge_text = 'text-green-600' %}
+                {% set badge_bg = 'bg-green-500/20' %}
+                {% set badge_border = 'border-green-500/30' %}
+                {% set phase_emoji = '🌿' %}
+            {% endif %}
 
-                        {# Step text #}
-                        <div class="flex-1">
-                            <p
-                                class="{% if density == 'compact' %}frag-label leading-snug{% elif density == 'spacious' %}frag-heading leading-relaxed{% else %}frag-body leading-relaxed{% endif %} text-fg-muted">
-                                {{ step.text }}</p>
-                            {% if step.estimated_minutes %}
-                            <p
-                                class="{% if density == 'compact' %}frag-small{% else %}frag-label{% endif %} text-fg-subtle mt-1 flex items-center gap-2">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                    stroke-width="2">
-                                    <circle cx="12" cy="12" r="10" />
-                                    <polyline points="12 6 12 12 16 14" />
-                                </svg>
-                                ~{{ step.estimated_minutes }} min
-                            </p>
-                            {% endif %}
-                        </div>
+            <div class="flex gap-4 relative items-start p-5 rounded-[2rem] border backdrop-blur-md shadow-lg h-full"
+                 style="background: color-mix(in srgb, var(--card-bg) 80%, transparent); border-color: var(--card-border);">
+                
+                {# Phase Indicator / Number Ribbon #}
+                <div class="shrink-0 flex flex-col items-center mt-1">
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center font-black text-3xl text-white shadow-inner {{ bg_cls }}">
+                        {{ step.number }}
                     </div>
-                    {% endfor %}
+                </div>
+
+                {# Step text #}
+                <div class="flex-1 pt-1">
+                    {% if step.estimated_minutes %}
+                    <div class="flex gap-3 flex-wrap items-center mb-3">
+                        <span class="text-[20px] font-bold text-fg flex items-center gap-2 font-mono px-4 py-1.5 rounded-full border border-slate-500/10"
+                              style="background: color-mix(in srgb, var(--fg) 10%, transparent);">
+                            ⏱ {{ step.estimated_minutes }} MIN
+                        </span>
+                    </div>
+                    {% endif %}
+                    
+                    {# The actual instruction block #}
+                    <p class="text-[32px] font-medium leading-[1.6] text-fg tracking-tight pr-4">
+                        {{ step.text }}
+                    </p>
                 </div>
             </div>
             {% endfor %}
         </div>
+        
+        {% endfor %}
     </div>
-    {% endblock %}
+
+    {# Absolute Bottom Progress Bar #}
+    {% if total_pages_count and total_pages_count > 1 %}
+    <div class="shrink-0 mt-6 flex justify-center w-full">
+        <div class="flex gap-2.5 items-center bg-black/50 backdrop-blur-md px-6 py-3 rounded-full border border-white/20">
+            {% for p in range(total_pages_count) %}
+                <div class="h-3 rounded-full transition-all duration-300 {{ 'w-12 bg-accent shadow-[0_0_15px_var(--accent)]' if (p + 1) == current_page_idx else 'w-4 bg-white/30' }}"></div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

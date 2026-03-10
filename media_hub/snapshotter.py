@@ -343,9 +343,37 @@ def _screenshot_html(html: str, wait_for_selector: Optional[str] = None) -> byte
         # Short extra wait for fonts / Tailwind to settle
         page.wait_for_timeout(500)
 
-        png_bytes = page.screenshot(type="png", full_page=False)
+        # Check for dual-layer structure robustly inside JS context
+        has_dual = page.evaluate("() => document.querySelectorAll('.media-bg').length > 0")
+        
+        if not has_dual:
+            png_bytes = page.screenshot(type="png", full_page=False)
+            browser.close()
+            return png_bytes
+            
+        # 1. Capture BG only (hide FG)
+        page.evaluate("() => { document.querySelectorAll('.media-fg').forEach(el => el.style.visibility = 'hidden'); }")
+        bg_png = page.screenshot(type="png", full_page=False)
+        
+        # 2. Capture FG only (show FG, hide BG)
+        page.evaluate("""() => { 
+            document.querySelectorAll('.media-fg').forEach(el => el.style.visibility = 'visible');
+            document.querySelectorAll('.media-bg').forEach(el => el.style.visibility = 'hidden');
+            
+            // Critical: make all containers transparent so fg_png preserves alpha
+            document.body.style.backgroundColor = 'transparent';
+            document.body.style.background = 'transparent';
+            
+            const root = document.getElementById('fragment-root');
+            if(root) {
+                root.style.backgroundColor = 'transparent';
+                root.style.background = 'transparent';
+            }
+        }""")
+        fg_png = page.screenshot(type="png", full_page=False, omit_background=True)
+        
         browser.close()
-        return png_bytes
+        return {"bg": bg_png, "fg": fg_png}
 
 
 # ---------------------------------------------------------------------------
@@ -403,6 +431,79 @@ def _paginate_groups(
 
     return pages
 
+
+def _paginate_steps_dynamically(groups: list[dict], max_budget: int = 1650) -> list[list[dict]]:
+    """
+    Split step groups based on a mathematical height/pixel budget instead of random counts.
+    TikTok viewport height is exactly 1920px.
+    """
+    import math
+    pages: list[list[dict]] = []
+    current_page: list[dict] = []
+    
+    # Mathematical Layout Constants calibrated for "Phase 1" UI cuts
+    HEADER_COST = 180         # H2 main title, pt-20 top safe-box padding, mb-6 margin
+    COMP_HEADER_COST = 50     # H3 subtitle margin and line-height
+    STEP_BASE_COST = 80       # p-5 padding inside card, 1rem gap between cards, step border
+    LINE_HEIGHT = 51          # 32px font * 1.6 leading
+    CHARS_PER_LINE = 58       # Expanded horizon: Safe-box px-8 + narrower w-12 badge gives ~100px more width
+
+    current_budget_used = HEADER_COST
+
+    for group in groups:
+        remaining = list(group["entries"])
+        
+        while remaining:
+            if current_budget_used >= max_budget:
+                pages.append(current_page)
+                current_page = []
+                current_budget_used = HEADER_COST
+            
+            chunk = []
+            chunk_budget = current_budget_used
+            
+            # If we show component headers, charge for it on this page slice
+            if len(groups) > 1 or group.get("component"):  
+                chunk_budget += COMP_HEADER_COST
+            
+            while remaining:
+                step = remaining[0]
+                text = step.get("text", "")
+                
+                lines = math.ceil(len(text) / CHARS_PER_LINE)
+                if lines == 0: lines = 1
+                step_cost = STEP_BASE_COST + (lines * LINE_HEIGHT)
+                
+                # Rule: Force it to fit if the slide is totally empty (to prevent infinite loops on giant steps)
+                if len(chunk) == 0 and len(current_page) == 0:
+                    chunk_budget += step_cost
+                    chunk.append(step)
+                    remaining.pop(0)
+                    continue
+                    
+                if chunk_budget + step_cost <= max_budget:
+                    chunk_budget += step_cost
+                    chunk.append(step)
+                    remaining.pop(0)
+                else:
+                    break
+                    
+            if chunk:
+                current_page.append({
+                    "component": group.get("component"),
+                    "entries": chunk
+                })
+                current_budget_used = chunk_budget
+            else:
+                # If we couldn't fit a single step but we have content on the page, force a new page
+                pages.append(current_page)
+                current_page = []
+                current_budget_used = HEADER_COST
+                
+    if current_page:
+        pages.append(current_page)
+        
+    return pages
 
 # ---------------------------------------------------------------------------
 # 5. MAIN ORCHESTRATOR — render_recipe_fragments()
@@ -466,17 +567,7 @@ def render_recipe_fragments(
             png_bytes=_screenshot_html(html),
         ))
 
-        # ── 2. META ──
-        logger.info(f"[Snapshotter] Rendering Meta for recipe {recipe_id}")
-        meta_ctx = {
-            **base_ctx,
-            "compact_meta": total_ingredients > 15,
-        }
-        html = _render_html(app, "meta.html", meta_ctx)
-        results.append(FragmentResult(
-            fragment_type="meta",
-            png_bytes=_screenshot_html(html),
-        ))
+
 
         # ── 3. NUTRITION ──
         logger.info(f"[Snapshotter] Rendering Nutrition for recipe {recipe_id}")
@@ -506,7 +597,7 @@ def render_recipe_fragments(
             }
             html = _render_html(app, "ingredients.html", ctx)
             results.append(FragmentResult(
-                fragment_type="inglist",
+                fragment_type="shop",
                 page=page_num,
                 total_pages=total_pages,
                 png_bytes=_screenshot_html(html),
@@ -514,7 +605,7 @@ def render_recipe_fragments(
 
         # ── 5. STEPS (with SmartOverflow + density) ──
         logger.info(f"[Snapshotter] Rendering Steps for recipe {recipe_id}")
-        pages = _paginate_groups(step_groups, MAX_STEPS_PER_PAGE)
+        pages = _paginate_steps_dynamically(step_groups)
 
         for page_idx, page_groups in enumerate(pages):
             page_num = page_idx + 1
@@ -528,6 +619,8 @@ def render_recipe_fragments(
                 "show_component_headers": has_multiple_components,
                 "page_indicator": page_indicator,
                 "item_count": page_item_count,
+                "current_page_idx": page_num,
+                "total_pages_count": total_pages,
             }
             html = _render_html(app, "steps.html", ctx)
             results.append(FragmentResult(
@@ -537,7 +630,15 @@ def render_recipe_fragments(
                 png_bytes=_screenshot_html(html),
             ))
 
-        # ── 6. GALAXY ──
+        # ── 6. END ──
+        logger.info(f"[Snapshotter] Rendering End for recipe {recipe_id}")
+        html = _render_html(app, "end.html", base_ctx)
+        results.append(FragmentResult(
+            fragment_type="end",
+            png_bytes=_screenshot_html(html),
+        ))
+
+        # ── 7. GALAXY ──
         logger.info(f"[Snapshotter] Rendering Galaxy for recipe {recipe_id}")
         try:
             graph_data = _build_galaxy_data(recipe, db.session, storage_provider)
@@ -627,17 +728,21 @@ def _build_galaxy_data(recipe, session, storage_provider=None) -> dict:
 # 7. SANDBOX — build context for browser-based design iteration
 # ---------------------------------------------------------------------------
 
-VALID_FRAGMENTS = {"hero", "meta", "nutrition", "inglist", "steps", "galaxy", "typography", "coreid", "ing-grid"}
+VALID_FRAGMENTS = {"hero", "comp", "nutrition", "nutr", "shop", "galaxy", "typography", "coreid", "ing-grid", "hook-social", "hook-cinematic", "end"}
+
+def is_valid_fragment(name: str) -> bool:
+    if name.startswith("step") and name[4:].isdigit(): return True
+    return name in VALID_FRAGMENTS
 
 
-def build_sandbox_context(recipe_id: int, fragment_name: str, app, storage_provider, theme_name="modern", debug=False, scale=1.0):
+def build_sandbox_context(recipe_id: int, fragment_name: str, app, storage_provider, theme_name="modern", debug=False, scale=1.0, page=1):
     """
     Builds the Jinja context needed to render a specific fragment in the browser sandbox.
     """
     from database.models import Recipe, db
 
-    if fragment_name not in VALID_FRAGMENTS:
-        raise ValueError(f"Unknown fragment: {fragment_name}. Valid: {VALID_FRAGMENTS}")
+    if not is_valid_fragment(fragment_name):
+        raise ValueError(f"Unknown fragment: {fragment_name}. Valid core types: {VALID_FRAGMENTS} plus step[N]")
 
     # Typography specimen is a virtual fragment — no recipe data needed
     if fragment_name == "typography":
@@ -673,18 +778,24 @@ def build_sandbox_context(recipe_id: int, fragment_name: str, app, storage_provi
             "scale": scale,
         }
 
-        if fragment_name == "hero":
+        if fragment_name == "hero" or fragment_name == "end":
             return base_ctx
 
-        if fragment_name == "meta":
-            ingredient_groups = _build_ingredient_groups(recipe, storage_provider)
-            total_ingredients = sum(len(g["entries"]) for g in ingredient_groups)
-            return {**base_ctx, "compact_meta": total_ingredients > 15}
+        if fragment_name == "comp":
+            return {
+                **base_ctx,
+                "ingredient_groups": _build_ingredient_groups(recipe, storage_provider)
+            }
+
+
 
         if fragment_name == "nutrition":
             return {**base_ctx, **_build_nutrition_context(recipe)}
 
-        if fragment_name == "inglist":
+        if fragment_name == "nutr":
+            return {**base_ctx, "recipe": recipe, "wgt": recipe.total_weight_g or 1}
+
+        if fragment_name == "shop":
             ingredient_groups = _build_ingredient_groups(recipe, storage_provider)
             total_items = sum(len(g["entries"]) for g in ingredient_groups)
             return {
@@ -694,14 +805,31 @@ def build_sandbox_context(recipe_id: int, fragment_name: str, app, storage_provi
                 "item_count": total_items,
             }
 
-        if fragment_name == "steps":
+        if fragment_name.startswith("step") and fragment_name[4:].isdigit():
+            comp_idx = int(fragment_name[4:]) - 1
             step_groups = _build_step_groups(recipe)
-            total_items = sum(len(g["entries"]) for g in step_groups)
+            
+            # Bound check
+            if comp_idx < 0 or comp_idx >= len(step_groups):
+                raise ValueError(f"Component index {comp_idx+1} out of bounds for recipe {recipe_id}")
+                
+            group = step_groups[comp_idx]
+            pages = _paginate_steps_dynamically([group])
+            total_pages = len(pages)
+            page_idx = min(max(1, page), total_pages) - 1
+            page_groups = pages[page_idx]
+            
+            total_items = sum(len(g["entries"]) for g in page_groups)
+            page_indicator = f"{group['component']} {page_idx + 1}/{total_pages}" if total_pages > 1 else None
+            
             return {
                 **base_ctx,
-                "step_groups": step_groups,
+                "step_groups": page_groups,
                 "show_component_headers": len(step_groups) > 1,
                 "item_count": total_items,
+                "page_indicator": page_indicator,
+                "current_page_idx": page_idx + 1,
+                "total_pages_count": total_pages,
             }
 
         if fragment_name == "galaxy":
@@ -731,4 +859,178 @@ def build_sandbox_context(recipe_id: int, fragment_name: str, app, storage_provi
                 "grid_items": grid_items,
             }
 
+        if fragment_name in ["hook-social", "hook-cinematic"]:
+            hooks = recipe.social_hooks or {}
+            hook_type = "social" if fragment_name == "hook-social" else "cinematic"
+            return {
+                **base_ctx,
+                "hook_text": hooks.get(hook_type)
+            }
+
         return base_ctx
+
+def compile_custom_reel(recipe_id: int, sequence: list[dict], app, storage_provider) -> str:
+    """
+    Renders an ordered sequence of fragments into a final MP4 video using FFmpeg.
+    Supports granular duration and motion effects (zoom_in, zoom_out, pan_right, pan_left).
+    """
+    import os
+    import tempfile
+    import subprocess
+    import time
+    from database.models import Recipe, db
+
+    with app.app_context():
+        recipe = db.session.get(Recipe, recipe_id)
+        if not recipe:
+            raise ValueError(f"Recipe {recipe_id} not found")
+
+        rendered_frames = []
+        
+        for item in sequence:
+            # Backwards compatibility if list contains strings instead of dicts
+            if isinstance(item, str):
+                frag_name = item
+                effect = "none"
+                duration = 2.0
+            else:
+                frag_name = item.get("id", "hero")
+                effect = item.get("effect", "none")
+                duration = float(item.get("duration", 2.0))
+
+            base_temp_name = "steps" if frag_name.startswith("step") else frag_name
+            ctx1 = build_sandbox_context(recipe_id, frag_name, app, storage_provider, theme_name="modern", page=1)
+            total_pages = ctx1.get("total_pages_count", 1)
+
+            for p_num in range(1, total_pages + 1):
+                ctx = build_sandbox_context(recipe_id, frag_name, app, storage_provider, theme_name="modern", page=p_num)
+                try:
+                    html = _render_html(app, f"{base_temp_name}.html", ctx)
+                    wait_selector = '[data-rendered="true"]' if base_temp_name == "galaxy" else None
+                    result = _screenshot_html(html, wait_for_selector=wait_selector)
+                    if isinstance(result, dict):
+                        rendered_frames.append({
+                            "bg": result["bg"],
+                            "fg": result["fg"],
+                            "effect": effect,
+                            "duration": duration
+                        })
+                    else:
+                        rendered_frames.append({
+                            "png": result,
+                            "effect": effect,
+                            "duration": duration
+                        })
+                except Exception as e:
+                    logger.error(f"[Snapshotter] Failed to screenshot {frag_name} p{p_num}: {e}")
+
+        if not rendered_frames:
+            raise ValueError("No frames generated for sequence")
+
+        timestamp = int(time.time())
+        vid_filename = f"reel_{recipe_id}_{timestamp}.mp4"
+        out_dir = os.path.join(app.root_path, "static", "reels")
+        os.makedirs(out_dir, exist_ok=True)
+        vid_path = os.path.join(out_dir, vid_filename)
+
+        with tempfile.TemporaryDirectory() as td:
+            concat_list = []
+            
+            for i, frame in enumerate(rendered_frames):
+                chunk_path = os.path.join(td, f"chunk_{i:04d}.mp4")
+                
+                has_fg = "bg" in frame
+                if has_fg:
+                    bg_path = os.path.join(td, f"bg_{i:04d}.png")
+                    fg_path = os.path.join(td, f"fg_{i:04d}.png")
+                    with open(bg_path, "wb") as f: f.write(frame["bg"])
+                    with open(fg_path, "wb") as f: f.write(frame["fg"])
+                    img_path = bg_path
+                else:
+                    img_path = os.path.join(td, f"frame_{i:04d}.png")
+                    with open(img_path, "wb") as f: f.write(frame["png"])
+                
+                effect = frame["effect"]
+                duration = frame["duration"]
+                fps = 30
+                frames_needed = int(duration * fps)
+                
+                # z=1.1 means viewport drops 99x175 pixels of safe room to pan/zoom
+                safe_x = 95
+                safe_y = 87
+                
+                # Determine zoompan effect string
+                if effect == "zoom_in":
+                    zp = f"zoompan=z='min(1.0 + (on/{frames_needed})*0.1, 1.1)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={frames_needed}:s=1080x1920:fps=30"
+                elif effect == "zoom_out":
+                    zp = f"zoompan=z='max(1.1 - (on/{frames_needed})*0.1, 1.0)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={frames_needed}:s=1080x1920:fps=30"
+                elif effect == "pan_right":
+                    zp = f"zoompan=z=1.1:x='(on/{frames_needed})*{safe_x}':y='{safe_y}':d={frames_needed}:s=1080x1920:fps=30"
+                elif effect == "pan_left":
+                    zp = f"zoompan=z=1.1:x='{safe_x}-(on/{frames_needed})*{safe_x}':y='{safe_y}':d={frames_needed}:s=1080x1920:fps=30"
+                else:
+                    zp = None
+
+                if has_fg:
+                    if not zp:
+                        # Static Dual Layer
+                        cmd = [
+                            "ffmpeg", "-y",
+                            "-loop", "1", "-i", bg_path,
+                            "-loop", "1", "-i", fg_path,
+                            "-filter_complex", "overlay",
+                            "-t", str(duration),
+                            "-c:v", "libx264", "-r", "30", "-pix_fmt", "yuv420p"
+                        ]
+                    else:
+                        # Motion Dual Layer
+                        cmd = [
+                            "ffmpeg", "-y",
+                            "-i", bg_path,
+                            "-loop", "1", "-i", fg_path,
+                            "-filter_complex", f"[0:v]{zp}[bg]; [bg][1:v]overlay=shortest=1",
+                            "-c:v", "libx264", "-pix_fmt", "yuv420p"
+                        ]
+                else:
+                    if not zp:
+                        # Static Single Layer
+                        cmd = [
+                            "ffmpeg", "-y",
+                            "-loop", "1", "-i", img_path,
+                            "-t", str(duration),
+                            "-c:v", "libx264", "-r", "30", "-pix_fmt", "yuv420p"
+                        ]
+                    else:
+                        # Motion Single Layer
+                        cmd = [
+                            "ffmpeg", "-y",
+                            "-i", img_path,
+                            "-vf", zp,
+                            "-c:v", "libx264", "-pix_fmt", "yuv420p"
+                        ]
+                
+                cmd.append(chunk_path)
+                logger.info(f"[VideoEngine] Rendering chunk {i}: {effect} for {duration}s")
+                subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                concat_list.append(chunk_path)
+                
+            # Write exactly ordered list for FFmpeg Demuxer
+            concat_txt_path = os.path.join(td, "concat.txt")
+            with open(concat_txt_path, "w") as f:
+                for chunk in concat_list:
+                    # FFmpeg concat file expects POSIX path strings
+                    f.write(f"file '{chunk}'\n")
+                    
+            logger.info(f"[VideoEngine] Stitching {len(concat_list)} clips into master reel...")
+            final_cmd = [
+                "ffmpeg", "-y",
+                "-f", "concat",
+                "-safe", "0",
+                "-i", concat_txt_path,
+                "-c", "copy",
+                vid_path
+            ]
+            subprocess.run(final_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            
+        logger.info(f"[VideoEngine] Reel Build Complete! Saved to: {vid_path}")
+        return f"/static/reels/{vid_filename}"

@@ -1,50 +1,45 @@
 {% extends "fragments/base_fragment.html" %}
 
 {% block content %}
-{# Ingredient Grid Collage — visual-first layout for TikTok/IG hooks #}
-<div class="full-bleed bg-surface-grad flex flex-col">
+{# Ingredient Grid v2 — clean light cards, TikTok-optimized font sizes, 3 columns #}
+<div class="full-bleed flex flex-col" style="background: #f8f9fb;">
 
-    {# Top bar with label + title inside safe zone #}
+    {# Header inside safe zone #}
     <div class="px-16 pt-[130px] pb-6 shrink-0">
-        <p class="frag-label text-accent mb-2">What You'll Need</p>
-        <h2 class="font-serif frag-title font-bold text-fg">{{ title }}</h2>
+        <div class="flex items-baseline gap-4">
+            <h2 class="font-bold uppercase tracking-wide" style="font-size: 64px; color: var(--accent);">
+                Ingredients</h2>
+            <span class="font-medium" style="font-size: 28px; color: #a0aec0;">{{ cuisine or '' }}</span>
+        </div>
     </div>
 
-    {# Grid area — fills remaining space above bottom safe zone #}
-    <div class="flex-1 px-10 pb-[290px] overflow-hidden">
-        {% set cols = 3 if grid_items|length > 6 else 2 %}
-        <div class="grid grid-cols-{{ cols }} gap-3 h-full auto-rows-fr">
+    {# Grid area #}
+    <div class="flex-1 px-12 pb-[290px] overflow-hidden">
+        <div class="grid grid-cols-3 gap-x-5 gap-y-8">
             {% for ing in grid_items %}
-            <div class="relative rounded-2xl overflow-hidden group" style="border: 1px solid var(--card-border);">
-
-                {# Image or fallback #}
-                {% if ing.image_url %}
-                <img src="{{ ing.image_url }}" alt="{{ ing.name }}" class="absolute inset-0 w-full h-full object-cover">
-                {% else %}
-                <div class="absolute inset-0 flex items-center justify-center"
-                    style="background: linear-gradient(135deg, var(--bg-lighter), var(--bg));">
-                    <span class="text-[48px] opacity-20">🥘</span>
-                </div>
-                {% endif %}
-
-                {# Dark gradient overlay for text readability #}
-                <div class="absolute inset-0"
-                    style="background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.15) 50%, transparent 100%);">
-                </div>
-
-                {# Ingredient name + amount at bottom #}
-                <div class="absolute bottom-0 left-0 right-0 p-3 z-10">
-                    <p class="text-white font-semibold leading-tight"
-                        style="font-size: {% if cols == 3 %}14px{% else %}18px{% endif %};">
-                        {{ ing.name }}
-                    </p>
-                    {% if ing.amount %}
-                    <p class="font-bold mt-0.5"
-                        style="color: var(--accent); font-size: {% if cols == 3 %}13px{% else %}16px{% endif %};">
-                        {{ ing.amount_display }} {{ ing.unit }}
-                    </p>
+            <div class="flex flex-col items-center">
+                {# Image tile #}
+                <div class="w-full aspect-square rounded-2xl overflow-hidden flex items-center justify-center mb-4"
+                    style="background: #ffffff; box-shadow: 0 2px 12px rgba(0,0,0,0.06); border: 1px solid #e8ecf1;">
+                    {% if ing.image_url %}
+                    <img src="{{ ing.image_url }}" alt="{{ ing.name }}" class="w-[85%] h-[85%] object-contain">
+                    {% else %}
+                    <span class="font-bold uppercase" style="font-size: 48px; color: #94a3b8;">{{ ing.name[:2]|upper
+                        }}</span>
                     {% endif %}
                 </div>
+                {# Name #}
+                <p class="text-center font-semibold leading-tight"
+                    style="font-size: 36px; color: #334155; max-width: 100%;">
+                    {{ ing.name }}
+                </p>
+                {# Amount + unit #}
+                {% if ing.amount %}
+                <p class="text-center font-medium uppercase tracking-wide mt-1"
+                    style="font-size: 28px; color: #94a3b8;">
+                    {{ ing.amount_display }} {{ ing.unit }}
+                </p>
+                {% endif %}
             </div>
             {% endfor %}
         </div>

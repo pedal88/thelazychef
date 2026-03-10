@@ -1,0 +1,27 @@
+
+Error: class uri 'gevent' invalid or not found: 
+
+[Traceback (most recent call last):
+  File "/Users/pad/Projects/thelazychef/venv/lib/python3.13/site-packages/gunicorn/workers/ggevent.py", line 12, in <module>
+    import gevent
+ModuleNotFoundError: No module named 'gevent'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/pad/Projects/thelazychef/venv/lib/python3.13/site-packages/gunicorn/util.py", line 121, in load_class
+    mod = importlib.import_module('.'.join(components))
+  File "/opt/homebrew/Cellar/python@3.13/3.13.7/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/Users/pad/Projects/thelazychef/venv/lib/python3.13/site-packages/gunicorn/workers/ggevent.py", line 14, in <module>
+    raise RuntimeError("gevent worker requires gevent 24.10.1 or higher")
+RuntimeError: gevent worker requires gevent 24.10.1 or higher
+]
+

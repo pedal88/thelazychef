@@ -214,6 +214,7 @@ class Recipe(db.Model):
     difficulty: Mapped[str] = mapped_column(String)
     protein_type: Mapped[str] = mapped_column(String, nullable=True)
     image_filename: Mapped[str] = mapped_column(String, nullable=True)
+    source_image_filename: Mapped[str] = mapped_column(String, nullable=True)
 
     # New Metadata
     base_servings: Mapped[int] = mapped_column(Integer, default=4, server_default='4')
@@ -245,6 +246,9 @@ class Recipe(db.Model):
     
     # Nested mapping of component names to image URLs/filenames
     component_images: Mapped[dict] = mapped_column(JSON, default=dict, server_default='{}')
+
+    # AI-generated hook texts (e.g. native_social, cinematic_result)
+    social_hooks: Mapped[dict] = mapped_column(JSON, default=dict, server_default='{}')
 
     # Knowledge Factory: link to the auto-generated "Official Deep Dive" article
     primary_resource_id: Mapped[Optional[int]] = mapped_column(ForeignKey("resource.id"), nullable=True)
@@ -460,6 +464,20 @@ class SocialMediaPost(db.Model):
     recipe: Mapped["Recipe"] = relationship(back_populates="social_posts")
 
 # ---------------------------------------------------------------------------
+# Sequence Templates (Media Hub)
+# ---------------------------------------------------------------------------
+
+class SequenceTemplate(db.Model):
+    """Stores reusable timeline sequence configurations for Media Hub."""
+    __tablename__ = 'sequence_template'
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
+    # JSON array of strings e.g. ["hero", "hook-social", "steps", "end"]
+    fragments_sequence: Mapped[list[str]] = mapped_column(JSON, default=list, server_default='[]')
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)
+
+# ---------------------------------------------------------------------------
 # TikTok Source Sidecar
 # ---------------------------------------------------------------------------
 
@@ -471,6 +489,7 @@ class TikTokSource(db.Model):
     tiktok_url: Mapped[str] = mapped_column(String(500), unique=True, index=True, nullable=False)
     dish_name: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
     entity_type: Mapped[str] = mapped_column(String(50), default='NO_MATCH', server_default='NO_MATCH', nullable=False) # 'RECIPE', 'RESOURCE', 'NO_MATCH'
+    format_type: Mapped[str] = mapped_column(String(50), default='UNKNOWN', server_default='UNKNOWN', nullable=False) # 'VIDEO', 'CAROUSEL_IMAGE', 'UNKNOWN'
     status: Mapped[str] = mapped_column(String(50), default='SUGGESTED', server_default='SUGGESTED', nullable=False) # 'SUGGESTED', 'IGNORED', 'IMPORTED'
-    extracted_json: Mapped[dict] = mapped_column(JSON, default=dict, server_default='{}') # The "Cheat Sheet" data
+    raw_caption: Mapped[Optional[str]] = mapped_column(Text, nullable=True) # The raw scraped text
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)

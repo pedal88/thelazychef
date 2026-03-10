@@ -2635,8 +2635,13 @@ def api_generate_single_url():
             # Generate via video pipeline
             recipe_data = generate_recipe_from_video(video_path, caption, clean_context)
             
-            query_context = caption or url
-            result = process_recipe_workflow(recipe_data, query_context=query_context, chef_id=chef_id)
+            # The URL uniquely identifies this for the frontend as a Social Web Link
+            result = process_recipe_workflow(
+                recipe_data, 
+                query_context=url, 
+                chef_id=chef_id,
+                source_thumbnail_path=extract_result.get('thumbnail_path')
+            )
             
             if result.get('status') == 'SUCCESS':
                 return jsonify({
@@ -2651,8 +2656,8 @@ def api_generate_single_url():
                     'error': f"Missing ingredients: {', '.join(missing_names)}"
                 })
         finally:
-            # Always ensure the temp video file is deleted
-            SocialMediaExtractor.cleanup(video_path)
+            # Always ensure the temp files are deleted
+            SocialMediaExtractor.cleanup(video_path, extract_result.get('thumbnail_path'))
             
     except Exception as e:
         db.session.rollback()
@@ -2859,6 +2864,23 @@ def recipe_detail(recipe_id):
                             substitutes=substitutes,
                             user_interaction=user_interaction,
                             linked_ingredient=linked_ingredient)
+
+@app.route('/recipe/<int:recipe_id>/swap-image', methods=['POST'])
+@login_required
+@admin_required
+def swap_recipe_image(recipe_id):
+    """Swaps the AI generated image with the source video thumbnail (if available)."""
+    recipe = db.session.get(Recipe, recipe_id)
+    if not recipe or not recipe.source_image_filename:
+        return jsonify({"success": False, "error": "No source thumbnail available for this recipe."}), 400
+        
+    temp = recipe.image_filename
+    recipe.image_filename = recipe.source_image_filename
+    recipe.source_image_filename = temp
+    db.session.commit()
+    
+    return jsonify({"success": True, "new_image": get_recipe_image_url(recipe)})
+
 
 @app.route('/recipe/<int:recipe_id>/kitchen')
 def recipe_kitchen_mode(recipe_id):

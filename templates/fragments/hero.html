@@ -1,10 +1,10 @@
 {% extends "fragments/base_fragment.html" %}
 
 {% block content %}
-{# Full-bleed hero image with glassmorphism title overlay #}
-<div class="full-bleed">
+{# Full-bleed hero background layer (gets animated by ffmpeg) #}
+<div class="full-bleed media-bg">
     {% if image_url %}
-    <img src="{{ image_url }}" alt="{{ title }}" class="w-full h-full object-cover" style="transform: scale(1.05);">
+    <img src="{{ image_url }}" alt="{{ title }}" class="w-full h-full object-cover">
     {% else %}
     <div class="w-full h-full flex items-center justify-center"
         style="background: linear-gradient(135deg, var(--accent-dark), var(--accent), #dc2626);">
@@ -18,8 +18,8 @@
     </div>
 </div>
 
-{# Glassmorphism title container — bottom 20% #}
-<div class="absolute bottom-0 left-0 right-0 z-10" style="padding: 0 48px 300px;">
+{# Foreground text layer (stays perfectly crisp and static) #}
+<div class="absolute bottom-0 left-0 right-0 z-10 media-fg" style="padding: 0 48px 300px;">
     <div class="rounded-3xl px-8 py-8"
         style="background: rgba(0,0,0,0.45); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.10);">
 

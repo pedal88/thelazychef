@@ -34,6 +34,12 @@
         <!-- Subtle Retake/Generate Button -->
         <div
             class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center gap-2">
+            {% if recipe.source_image_filename %}
+            <button onclick="swapRecipeImage({{ recipe.id }})" title="Swap with Source Video Thumbnail"
+                class="px-3 h-10 bg-black/50 hover:bg-black/70 backdrop-blur text-white text-xs font-bold rounded-full flex items-center justify-center transition-all shadow-sm">
+                <span>🔄 Swap Source</span>
+            </button>
+            {% endif %}
             <button onclick="generateComponentImages({{ recipe.id }})" title="Generate Component Images"
                 class="px-3 h-10 bg-black/50 hover:bg-black/70 backdrop-blur text-white text-xs font-bold rounded-full flex items-center justify-center transition-all shadow-sm">
                 <span id="comp-gen-text">📸 Components</span>
@@ -277,11 +283,11 @@
                 {% if recipe.source_input %}
                 <div
                     class="flex items-center text-sm text-slate-500 bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm">
-                    {% if recipe.source_type == 'social' or recipe.source_type == 'web' %}
+                    {% if recipe.source_type == 'social' or recipe.source_type == 'web' or recipe.source_input.startswith('http') %}
                     <span class="mr-2">🔗</span>
                     <a href="{{ recipe.source_input }}" target="_blank" rel="noopener noreferrer"
                         class="hover:text-indigo-600 hover:underline font-medium break-all max-w-[200px] sm:max-w-xs xl:max-w-md truncate">
-                        {{ recipe.source_input }}
+                        Inspired by: {{ recipe.source_input }}
                     </a>
                     {% else %}
                     <span class="mr-2">💡</span>
@@ -1906,5 +1912,19 @@
                     container.innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-red-400 text-sm">Failed to connect to the Flavor Galaxy.</div>';
                 });
         });
+
+        async function swapRecipeImage(recipeId) {
+            try {
+                const res = await fetch(`/recipe/${recipeId}/swap-image`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (err) {
+                alert('Network error swapping image.');
+            }
+        }
     </script>
     {% endblock %}

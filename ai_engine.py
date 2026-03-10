@@ -72,6 +72,7 @@ class RecipeSchema(typing.TypedDict):
     # Safe Failure Flags (Optional)
     is_valid_recipe: typing.NotRequired[bool]
     error_reason: typing.NotRequired[str]
+    hero_image_prompt: typing.NotRequired[str]
 
 class IngredientAnalysisSchema(typing.TypedDict):
     name: str # The standardized name
@@ -858,4 +859,42 @@ def extract_nutrients_from_text(raw_text: str, ingredient_name: str = "") -> dic
     except Exception as e:
         print(f"ERROR: Nutrient extraction failed: {e}")
         raise ValueError(f"Nutrient extraction failed: {e}")
-#
+class HookGenerationSchema(typing.TypedDict):
+    hook_text: str
+
+def generate_social_hook(recipe_data: dict, hook_type: str = "social") -> str:
+    """
+    Generates a high-converting short hook text for TikTok/Instagram Reels.
+    
+    recipe_data: dict containing 'title', 'cuisine', 'ingredients'
+    hook_type: 'social' (native controversies/hacks) or 'cinematic' (stunning transformations)
+    """
+    if hook_type == "cinematic":
+        sys_role = "You are a master of cinematic hook writing. You write dramatic, punchy hooks that focus on 'results first' or stunning visual transformations (e.g. 'Watch this $3 cabbage become a masterpiece'). Max 15 words. Short, punchy, beautiful tension."
+    else:
+        sys_role = "You are a top-tier TikTok recipe creator. You write highly engaging native social hooks that create controversy, curiosity or reveal a hack. (e.g. 'Italians will hate me for this pasta hack, but it works every single time.'). No emojis. Max 20 words."
+        
+    prompt = f"""
+    Recipe Name: {recipe_data.get('title', 'Unknown')}
+    Cuisine: {recipe_data.get('cuisine', 'Unknown')}
+    Key Ingredients: {recipe_data.get('ingredients', '')}
+    
+    Write exactly ONE hook text based on your role profile. Be visceral, surprising, and arresting.
+    """
+    
+    try:
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt,
+            config=genai.types.GenerateContentConfig(
+                system_instruction=sys_role,
+                response_mime_type="application/json",
+                response_schema=HookGenerationSchema,
+                temperature=0.8,
+            )
+        )
+        data = json.loads(response.text)
+        return data.get("hook_text", "Warning: Generation failed. Try again!")
+    except Exception as e:
+        print(f"Hook generation error: {e}")
+        return "Warning: AI Generation encountered an error."

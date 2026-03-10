@@ -1,0 +1,27 @@
+{% extends "fragments/base_fragment.html" %}
+
+{% block content %}
+{# Hook Cinematic — Results-First, Huge bottom-aligned typography #}
+
+<div class="full-bleed media-bg">
+    {% if image_url %}
+    <img src="{{ image_url }}" alt="Background" class="w-full h-full object-cover">
+    {% else %}
+    <div class="w-full h-full flex flex-col items-center pt-[30%]" style="background: linear-gradient(135deg, var(--bg-lighter), var(--bg));">
+        <span class="text-[300px] opacity-10">🎬</span>
+    </div>
+    {% endif %}
+
+    {# Heavy bottom-up gradient so text POPS insanely well #}
+    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent"></div>
+</div>
+
+<div class="safe-box justify-end pb-12 media-fg">
+    <div class="w-full pl-6 pr-12 border-l-[16px]" style="border-color: var(--accent);">
+        <h1 class="font-sans font-black text-white leading-[1.05] tracking-tight uppercase"
+            style="font-size: clamp(80px, 9vw, 110px); text-shadow: 0 4px 30px rgba(0,0,0,0.8);">
+            {{ hook_text | default("Watch this $3 head of cabbage become a masterpiece.") }}
+        </h1>
+    </div>
+</div>
+{% endblock %}

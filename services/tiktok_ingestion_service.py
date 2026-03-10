@@ -46,8 +46,8 @@ class TikTokIngestionService:
     @staticmethod
     def classify_and_extract(url: str):
         """
-        Downloads a video, uses Gemini to classify it as RECIPE, RESOURCE, or NO_MATCH.
-        If it's a RECIPE, extracts the JSON matching the main RecipeSchema.
+        Fast triage step: Scrapes text caption, uses Gemini to classify (RECIPE vs RESOURCE)
+        and determine format (VIDEO vs SLIDESHOW) based purely on text.
         """
         # 1. Deduplication check
         existing_source = db.session.execute(
@@ -62,66 +62,41 @@ class TikTokIngestionService:
         ).scalar_one_or_none()
         
         if existing_recipe:
-             # It's already fully imported
              return {"status": "skipped", "reason": "Already imported as Recipe", "id": existing_recipe.id}
 
-        # 2. Extract Video
+        # 2. Extract Metadata ONLY (no video download)
         try:
-            extract_result = SocialMediaExtractor.download_video(url)
-            video_path = extract_result['video_path']
+            extract_result = SocialMediaExtractor.extract_metadata(url)
             caption = extract_result.get('caption', '')
         except Exception as e:
-            logger.error(f"Failed to download video from {url}: {e}")
+            logger.error(f"Failed to extract metadata from {url}: {e}")
             return {"status": "error", "reason": str(e)}
 
         try:
-            # 3. Upload to Gemini
-            file_ref = client.files.upload(file=video_path)
-            
-            import time
-            while True:
-                file_info = client.files.get(name=file_ref.name)
-                if file_info.state == "ACTIVE":
-                    break
-                elif file_info.state == "FAILED":
-                    raise ValueError("Video processing failed inside Gemini")
-                time.sleep(2)
-            
-            # 4. Get Context
-            slim_context = get_slim_pantry_context()
-            pantry_str = json.dumps(slim_context)
-            vocab = load_controlled_vocabularies()
-            
-            # Ask Gemini to return a combined schema
+            # 3. Fast Text Triage with Gemini
             system_prompt = f"""
-            You are a culinary intelligence extractor. Your job is to analyze the provided video.
+            You are a culinary intelligence triager. Your job is to analyze the caption text of a social media post.
             
-            CRITICAL: You MUST return a JSON object with EXACTLY this wrapper structure:
+            CRITICAL: You MUST return a JSON object with EXACTLY this structure:
             {{
                 "entity_type": "RECIPE" | "RESOURCE" | "NO_MATCH",
                 "dish_name": "The name of the dish or subject of the resource",
-                "recipe_data": {{ ... the actual recipe details if it's a recipe ... }}
+                "format_type": "VIDEO" | "CAROUSEL_IMAGE" | "UNKNOWN"
             }}
             
             Step 1: Classification
-            If the video demonstrates how to make a specific dish (even loosely), classify as "RECIPE".
-            If the video shares cooking knowledge, equipment reviews, or techniques without a dish, classify as "RESOURCE".
-            If it's entirely unrelated to cooking/food, classify as "NO_MATCH".
+            If the text indicates it's demonstrating a specific dish, classify as "RECIPE".
+            If the text shares cooking knowledge, reviews, or techniques without a dish, classify as "RESOURCE".
+            If completely unrelated to food, classify as "NO_MATCH".
             
-            Step 2: Extraction
-            If "RECIPE", populate 'recipe_data' matching our standard recipe schema (title, difficulty, etc).
-            If not a recipe, leave 'recipe_data' empty {{}}.
-
-            Pantry Context for matching ingredient IDs (pantry_id):
-            {pantry_str}
-            
-            Valid Metadata vocabularies:
-            {json.dumps(vocab)}
+            Step 2: Format Guessing
+            If the caption mentions "swipe", "slideshow", "pictures", etc., guess "CAROUSEL_IMAGE".
+            Otherwise, guess "VIDEO".
             """
             
             response = client.models.generate_content(
                 model='gemini-2.5-flash',
-                contents=[file_ref, system_prompt, f"Caption: {caption}"],
+                contents=[system_prompt, f"Caption text to analyze: {caption}"],
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",
                 )
@@ -131,22 +106,22 @@ class TikTokIngestionService:
             
             entity_type = res_json.get('entity_type', 'NO_MATCH')
             dish_name = res_json.get('dish_name', 'Unknown')
-            recipe_data = res_json.get('recipe_data', {})
+            format_type = res_json.get('format_type', 'UNKNOWN')
             
-            # Format correction for fallback AI dicts when it ignores the wrapper
+            # Format correction
             if 'entity_type' not in res_json:
-                if 'title' in res_json or 'recipe_name' in res_json or 'ingredients' in res_json:
+                if 'title' in res_json or 'recipe_name' in res_json:
                      entity_type = 'RECIPE'
-                     recipe_data = res_json
                      dish_name = res_json.get('title') or res_json.get('recipe_name', 'Unknown')
             
-            # 5. Save to TikTokSource sidecar
+            # 4. Save to TikTokSource sidecar
             new_source = TikTokSource(
                 tiktok_url=url,
                 dish_name=dish_name,
                 entity_type=entity_type,
+                format_type=format_type,
                 status='SUGGESTED',
-                extracted_json=recipe_data
+                raw_caption=caption
             )
             db.session.add(new_source)
             db.session.commit()
@@ -154,14 +129,12 @@ class TikTokIngestionService:
             return {
                 "status": "success", 
                 "entity_type": entity_type, 
+                "format_type": format_type,
                 "dish_name": dish_name,
                 "id": new_source.id
             }
 
         except Exception as e:
             db.session.rollback()
-            logger.error(f"Sidecar extraction failed for {url}: {e}")
+            logger.error(f"Sidecar text triage failed for {url}: {e}")
             return {"status": "error", "reason": str(e)}
-        finally:
-            if 'video_path' in locals():
-                SocialMediaExtractor.cleanup(video_path)

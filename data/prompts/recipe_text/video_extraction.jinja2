@@ -28,7 +28,7 @@ RECIPE EXTRACTION RULES:
 3. Estimate numeric amounts for ingredients based on visual observation.
 4. Extract title, cuisine, diet, difficulty, etc.
 5. Infer numeric values for taste_level, prep_time_mins, cleanup_factor.
-
+6. Produce a highly detailed `hero_image_prompt` that meticulously describes the final plated dish identically to how it looks in the video (e.g., "finely minced crispy beef over white rice topped with shredded purple cabbage and coin-sliced fresh cucumbers in a dark ceramic bowl"). Do NOT mention "TikTok", "video", or "screenshot" in the prompt.
 COMPONENT SPLITTING LOGIC:
 - If the recipe has distinct sub-parts (e.g. a sauce, a base, toppings), split into separate components.
 - Simple dishes: use 1 component named "Main Dish".

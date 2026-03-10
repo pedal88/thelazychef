@@ -146,14 +146,17 @@
                                         <!-- Fragment tiles are defined here with version pills -->
                                         {% set fragments = [
                                         ('hero', '🖼️', 'Hero', 'orange'),
-                                        ('meta', '⏱️', 'Details', 'blue'),
-                                        ('inglist', '🥦', 'Inglist', 'green'),
+                                        ('comp', '🧩', 'Comp', 'teal'),
+                                        ('shop', '🥦', 'Shop', 'green'),
                                         ('ing-grid', '🎨', 'Ing Grid', 'lime'),
-                                        ('steps', '📝', 'Steps', 'purple'),
                                         ('nutrition', '🔥', 'Nutrition', 'rose'),
+                                        ('nutr', '📋', 'Nutr', 'zinc'),
                                         ('galaxy', '🌌', 'Galaxy', 'indigo'),
                                         ('typography', '🔤', 'Tokens', 'amber'),
-                                        ('coreid', '🪪', 'Core ID', 'cyan')
+                                        ('coreid', '🪪', 'Core ID', 'cyan'),
+                                        ('hook-social', '🐦', 'Social', 'sky'),
+                                        ('hook-cinematic', '🎬', 'Cinema', 'red'),
+                                        ('end', '👨‍🍳', 'End', 'purple')
                                         ] %}
                                         {% for name, icon, label, color in fragments %}
                                         <div class="relative frag-card" id="frag-card-{{ name }}"
@@ -162,6 +165,16 @@
                                             ondragover="onCardDragOver(event, '{{ name }}')"
                                             ondragleave="onCardDragLeave(event)"
                                             ondrop="onCardDrop(event, '{{ name }}')">
+                                            
+                                            {% if name in ['hook-social', 'hook-cinematic'] %}
+                                            <button onclick="regenerateFragmentHook('{{ name }}'); event.stopPropagation();"
+                                                class="absolute -top-1 -right-1 z-20 w-5 h-5 bg-blue-500 hover:bg-blue-600 rounded-full text-white flex items-center justify-center shadow-md shadow-blue-500/30 transition-all hover:scale-110"
+                                                title="Regenerate Hook Text via AI">
+                                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                </svg>
+                                            </button>
+                                            {% endif %}
                                             <div class="flex items-center justify-center gap-0.5 mb-0.5"
                                                 id="version-pills-{{ name }}">
                                                 <button onclick="openSandbox('{{ name }}', event, 1)" draggable="true"
@@ -182,24 +195,73 @@
                                         </div>
                                         {% endfor %}
                                     </div>
+                                    <!-- Dynamic Step Fragments Container -->
+                                    <div id="dynamic-step-fragments" class="grid grid-cols-6 gap-1.5 mt-1.5">
+                                    </div>
+                                    
                                     <!-- Version Management Controls -->
-                                    <div class="mt-2 grid grid-cols-2 gap-1.5">
+                                    <div class="mt-2 grid grid-cols-4 gap-1.5">
                                         <button type="button" onclick="saveAsNewVersion()"
-                                            class="col-span-2 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-teal-50 hover:border-teal-300 transition-all text-[10px] font-bold uppercase tracking-wide text-slate-400">
-                                            <span>➕</span> New Version
+                                            class="flex flex-col items-center justify-center py-2 rounded-lg border border-slate-200 bg-white hover:bg-teal-50 hover:border-teal-300 transition-all gap-1">
+                                            <span class="text-sm">➕</span>
+                                            <span class="text-[8px] font-bold uppercase tracking-wider text-slate-400">New Ver</span>
                                         </button>
                                         <button type="button" onclick="promptRenameFragment()"
-                                            class="flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-blue-50 hover:border-blue-300 transition-all text-[10px] font-bold uppercase tracking-wide text-slate-400">
-                                            <span>✏️</span> Rename
+                                            class="flex flex-col items-center justify-center py-2 rounded-lg border border-slate-200 bg-white hover:bg-blue-50 hover:border-blue-300 transition-all gap-1">
+                                            <span class="text-sm">✏️</span>
+                                            <span class="text-[8px] font-bold uppercase tracking-wider text-slate-400">Rename</span>
                                         </button>
                                         <button type="button" onclick="promptDeleteVersion()"
-                                            class="flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-red-50 hover:border-red-300 transition-all text-[10px] font-bold uppercase tracking-wide text-slate-400">
-                                            <span>🗑️</span> Delete
+                                            class="flex flex-col items-center justify-center py-2 rounded-lg border border-slate-200 bg-white hover:bg-amber-50 hover:border-amber-300 transition-all gap-1">
+                                            <span class="text-sm">🗑️</span>
+                                            <span class="text-[8px] font-bold uppercase tracking-wider text-slate-400">Del Ver</span>
+                                        </button>
+                                        <button type="button" onclick="promptDeleteFragment()"
+                                            class="flex flex-col items-center justify-center py-2 rounded-lg border border-red-200 bg-white hover:bg-red-50 hover:border-red-400 transition-all gap-1">
+                                            <span class="text-sm">💣</span>
+                                            <span class="text-[8px] font-bold uppercase tracking-wider text-red-500">Del Frag</span>
                                         </button>
                                     </div>
                                     <p class="mt-2 text-[9px] text-slate-400 text-center leading-tight">
                                         Click → Preview ①&ensp;·&ensp;⌥+Click → Preview ②&ensp;·&ensp;Drag onto either
                                     </p>
+                                    
+                                    <!-- Embedded Dock Container -->
+                                    <div id="timeline-dock-container" class="mt-6 flex flex-col gap-3 bg-white rounded-xl border border-slate-200 shadow-sm p-4 relative overflow-hidden">
+                                        <div class="absolute inset-0 bg-gradient-to-br from-slate-50 to-indigo-50/40 pointer-events-none"></div>
+                                        <div class="flex flex-col gap-2 shrink-0 relative z-10 w-full mb-1">
+                                            <div class="flex justify-between items-center w-full">
+                                                <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-1.5"><span class="text-sm">🎬</span> Sequence Flow</span>
+                                                <div class="flex items-center gap-2">
+                                                    <button onclick="saveTemplate()" class="bg-white hover:bg-slate-50 text-slate-600 px-2 py-1.5 rounded border border-slate-200 text-[8px] font-bold uppercase tracking-widest transition-colors shadow-sm flex items-center gap-1" title="Save this sequence as a template">
+                                                        <span>💾 Save</span>
+                                                    </button>
+                                                    <button onclick="exportSequence()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded border-b-2 border-indigo-800 text-[9px] font-black uppercase tracking-widest transition-colors shadow-sm flex items-center gap-1">
+                                                        <span>Export Seq</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center gap-1">
+                                                <select id="sequence-template-select" onchange="loadTemplate(this.value)" class="flex-grow text-[9px] py-1 px-1 border border-slate-200 rounded text-slate-600 bg-slate-50 outline-none focus:border-indigo-400 font-bold tracking-wide">
+                                                    <option value="">-- Load Saved Template --</option>
+                                                </select>
+                                                <button onclick="deleteTemplate()" class="text-slate-400 hover:text-red-500 rounded p-1 transition-colors" title="Delete selected template">
+                                                    <span class="text-xs">🗑️</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <div id="timeline-dock" class="w-full relative z-10 flex items-center gap-2 min-h-[70px] overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-slate-200"
+                                            ondragover="onDockDragOver(event)"
+                                            ondragleave="onDockDragLeave(event)"
+                                            ondrop="onDockDrop(event)">
+                                            <!-- Drop zone prompt -->
+                                            <div id="timeline-placeholder" class="absolute inset-0 border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center text-slate-400 text-[10px] font-bold uppercase tracking-widest pointer-events-none transition-colors">
+                                                Drag Fragments Here
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
                                 </div>
 
                                 <!-- Theme Settings Body (collapsed by default) -->
@@ -220,7 +282,7 @@
                                             <option value="mono">⬜ Mono — Grayscale / No Color</option>
                                         </select>
                                     </div>
-                                    <div class="pt-3 border-t border-slate-200">
+                                    <div class="pt-3 border-t border-slate-200 mt-3">
                                         <h3 class="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">
                                             Color Legend</h3>
                                         <div class="flex flex-col gap-1.5" id="color-legend">
@@ -481,6 +543,13 @@
                     </div>
                 </div>
 
+                <!-- Horizontal Scrolling Sequence -->
+                <div id="timeline-dock" class="flex p-2 overflow-x-auto min-w-full min-h-[64px] items-center gap-0"
+                    ondragover="onDockDragOver(event)" ondragleave="onDockDragLeave(event)"
+                    ondrop="onDockDrop(event)">
+                    <!-- Default Placeholder -->
+                </div>
+
                 <!-- Hidden Iframe Containers — side-by-side for comparison -->
                 <div class="flex gap-3 flex-1 min-h-[85vh]">
                     <!-- Preview 1 (primary) -->
@@ -606,6 +675,67 @@
         }
     });
 
+    async function loadDynamicSteps(recipeId) {
+        try {
+            const res = await fetch(`/admin/media-hub/sandbox/api/recipe-meta?id=${recipeId}`);
+            const data = await res.json();
+            const container = document.getElementById('dynamic-step-fragments');
+            if(container) container.innerHTML = '';
+            
+            if (data.steps && data.steps.length > 0 && container) {
+                // If the user's current preview was 'steps' (which doesn't exist anymore), redirect safely
+                if (currentFragment === 'steps') currentFragment = 'step1';
+                
+                const components = {};
+                data.steps.forEach(step => {
+                    if (!components[step.fragment_name]) {
+                        components[step.fragment_name] = {
+                            name: step.fragment_name,
+                            componentName: step.component_name,
+                            totalPages: step.total_pages,
+                        };
+                    }
+                });
+                
+                Object.values(components).forEach(comp => {
+                    const name = comp.name;
+                    const label = comp.componentName || 'Steps';
+                    const shortLabel = label.length > 15 ? label.substring(0,13)+'..' : label;
+                    
+                    let paginationHtml = '';
+                    if (comp.totalPages > 1) {
+                        let segs = '';
+                        for(let p=1; p<=comp.totalPages; p++) {
+                            segs += `<div class="flex-1 text-center py-[3px] hover:bg-purple-100/80 cursor-pointer text-[8.5px] font-extrabold text-slate-400 hover:text-purple-600 transition-colors"
+                            onclick="event.stopPropagation(); openSandbox('${name}', event, null, null, ${p});" title="Page ${p}">${p}</div>`;
+                        }
+                        paginationHtml = `<div class="w-full flex border-t border-slate-100 bg-slate-50 mt-auto divide-x divide-slate-100">${segs}</div>`;
+                    }
+                    
+                    const btnHtml = `
+                        <div class="relative frag-card col-span-2 flex flex-col rounded-xl border border-slate-200 bg-white hover:border-purple-300 hover:shadow-sm transition-all shadow-sm overflow-hidden group" 
+                            id="frag-card-${name}" 
+                            data-fragment="${name}"
+                            draggable="true"
+                            ondragstart="onCardDragStart(event, '${name}')">
+                            <!-- Main Card Body defaults to Page 1 -->
+                            <a href="javascript:void(0)" onclick="openSandbox('${name}', event, null, null, 1)"
+                                id="frag-btn-${name}"
+                                class="frag-btn flex flex-col items-center justify-center gap-0.5 pt-2 pb-1.5 flex-grow text-center cursor-pointer">
+                                <span class="text-xl group-hover:scale-110 transition-transform">🍱</span>
+                                <span class="text-[8px] font-bold text-slate-500 uppercase tracking-tighter leading-tight px-1 text-center w-full group-hover:text-purple-700">${shortLabel}</span>
+                            </a>
+                            ${paginationHtml}
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', btnHtml);
+                });
+            }
+        } catch (e) {
+            console.error("Failed to load steps", e);
+        }
+    }
+
     function selectRecipe(id, title, cuisine) {
         document.getElementById('sandbox-recipe-id').value = id;
         searchInput.value = title + ' (#' + id + ')';
@@ -613,8 +743,10 @@
         searchResults.classList.add('hidden');
         searchResults.innerHTML = '';
         document.getElementById('recipe-clear-btn').classList.remove('hidden');
-        // Reload preview with newly selected recipe
-        openSandbox(currentFragment || 'hero');
+        // Reload steps then preview
+        loadDynamicSteps(id).then(() => {
+            openSandbox(currentFragment || 'hero');
+        });
     }
 
     function clearRecipeSelection() {
@@ -623,6 +755,8 @@
         searchInput.readOnly = false;
         searchInput.focus();
         document.getElementById('recipe-clear-btn').classList.add('hidden');
+        const container = document.getElementById('dynamic-step-fragments');
+        if(container) container.innerHTML = '';
     }
     let currentFragment = null;
     let currentVersion = 1;
@@ -730,10 +864,25 @@
         } catch (e) { /* ignore bad drag data */ }
     }
 
-    function openSandbox(fragmentName, evt, version, forceSlot) {
+    function openSandbox(fragmentName, evt, version, forceSlot, specificPage) {
         if (evt) evt.preventDefault();
         currentFragment = fragmentName;
-        const v = version || currentVersion || 1;
+        
+        // Default to the latest version if not explicitly provided
+        let v = version;
+        if (!v) {
+            const pills = document.querySelectorAll('.version-pill-' + fragmentName);
+            if (pills.length > 0) {
+                let maxV = 1;
+                pills.forEach(p => {
+                    const pv = parseInt(p.dataset.version);
+                    if (pv > maxV) maxV = pv;
+                });
+                v = maxV;
+            } else {
+                v = 1;
+            }
+        }
         currentVersion = v;
 
         // Determine target: forceSlot (drag), ⌥+click, or default to Preview 1
@@ -747,7 +896,16 @@
             btn.classList.remove('ring-2', 'ring-orange-400', 'bg-orange-50', 'border-orange-300',
                 'ring-indigo-400', 'bg-indigo-50', 'border-indigo-300');
         });
-        const activeBtn = document.getElementById('frag-btn-' + fragmentName);
+        
+        // Match specific page button if exists
+        let activeBtn = null;
+        if (specificPage) {
+            activeBtn = document.getElementById(`frag-btn-${fragmentName}-p${specificPage}`);
+        }
+        if (!activeBtn) {
+            activeBtn = document.getElementById('frag-btn-' + fragmentName);
+        }
+        
         if (activeBtn) {
             activeBtn.classList.add('ring-2', `ring-${highlightColor}-400`, `bg-${highlightColor}-50`, `border-${highlightColor}-300`);
         }
@@ -765,9 +923,17 @@
 
         const recipeId = document.getElementById('sandbox-recipe-id').value || 192;
         const theme = document.getElementById('sandbox-theme').value || 'modern';
+        
+        // Extract page from parameters, fallback to input box if it exists, or default 1
+        let page = specificPage;
+        if (!page) {
+            const pageSelect = document.getElementById('sandbox-page');
+            page = pageSelect ? pageSelect.value : 1;
+        }
+        
         const debug = document.getElementById('sandbox-debug').checked;
 
-        let targetUrl = `/admin/media-hub/sandbox/${fragmentName}?recipe_id=${recipeId}&theme=${theme}&version=${v}`;
+        let targetUrl = `/admin/media-hub/sandbox/${fragmentName}?recipe_id=${recipeId}&theme=${theme}&version=${v}&page=${page}`;
         if (debug) {
             targetUrl += "&debug=true";
         }
@@ -938,8 +1104,18 @@
     function onCardDragStart(evt, fragmentName) {
         draggedCardName = fragmentName;
         evt.dataTransfer.setData('application/x-card-reorder', fragmentName);
-        evt.dataTransfer.effectAllowed = 'move';
+        evt.dataTransfer.setData('text/plain', fragmentName); // Required for Timeline Dock dropzone
+        evt.dataTransfer.effectAllowed = 'copyMove';
         evt.target.style.opacity = '0.4';
+    }
+
+    // --- Timeline Dock Drop Zone ---
+    window.onDockDragOver = function(e) {
+        if (!e.dataTransfer.types.includes('text/plain') && !e.dataTransfer.types.includes('application/x-card-reorder')) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+        const placeholder = document.getElementById('timeline-placeholder');
+        if(placeholder) placeholder.classList.add('border-indigo-400', 'bg-indigo-50/50');
     }
 
     function onCardDragOver(evt, targetName) {
@@ -1003,6 +1179,7 @@
         if (evt.target.classList && evt.target.classList.contains('frag-card')) {
             evt.target.style.opacity = '';
             draggedCardName = null;
+            draggedTimelineId = null;
         }
     });
 
@@ -1030,14 +1207,14 @@
     });
 
     // --- Fragment Version Management ---
-    const FRAGMENT_NAMES = ['hero', 'meta', 'ingredients', 'ingrid', 'steps', 'nutrition', 'galaxy', 'typography', 'coreid'];
+    const FRAGMENT_NAMES = [...document.querySelectorAll('.frag-card')].map(c => c.dataset.fragment);
 
     function refreshVersionPills(fragmentName) {
         fetch(`/admin/media-hub/sandbox/versions/${fragmentName}`)
             .then(r => r.json())
             .then(data => {
                 const container = document.getElementById('version-pills-' + fragmentName);
-                if (!container) return;
+                if (!container || !data.versions) return;
                 container.innerHTML = '';
                 data.versions.forEach(v => {
                     const pill = document.createElement('button');
@@ -1086,6 +1263,24 @@
                     openSandbox(frag, null, 1);
                 } else {
                     alert(data.error || 'Failed to delete');
+                }
+            });
+    }
+
+    function promptDeleteFragment() {
+        const frag = currentFragment || 'hero';
+        if (!confirm(`Are you absolutely sure you want to permanently delete the ENTIRE "${frag}" fragment and all its versions? This cannot be undone.`)) {
+            return;
+        }
+
+        fetch(`/admin/media-hub/sandbox/fragment/${frag}`, { method: 'DELETE' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'deleted') {
+                    alert(`Fragment "${frag}" deleted successfully.`);
+                    window.location.reload();
+                } else {
+                    alert(data.error || 'Failed to delete fragment');
                 }
             });
     }
@@ -1509,13 +1704,599 @@ Context/Text: "${target.innerText.substring(0, 50).trim()}${target.innerText.len
         });
     });
 
-    // --- Auto-load Hero on page load ---
+    // --- Auto-load default on page load ---
     window.addEventListener('load', function () {
         // Set a default recipe if none selected
-        if (!document.getElementById('sandbox-recipe-id').value) {
-            selectRecipe(192, 'Default Recipe', '');
+        const existingId = document.getElementById('sandbox-recipe-id').value;
+        if (!existingId) {
+            selectRecipe(208, 'Default Recipe', '');
+        } else {
+            // Reload steps for existing recipe if refreshing the page
+            loadDynamicSteps(existingId).then(() => {
+                openSandbox(currentFragment || 'hero');
+            });
         }
-        openSandbox('hero');
+    });
+
+    // --- Regenerate Hooks (Sidebar Buttons) ---
+    function regenerateFragmentHook(fragmentName) {
+        const recipeId = document.getElementById('sandbox-recipe-id').value;
+        if (!recipeId) {
+            alert('Please select a recipe first.');
+            return;
+        }
+        
+        const typeMapping = {
+            'hook-social': 'social',
+            'hook-cinematic': 'cinematic'
+        };
+        const type = typeMapping[fragmentName];
+
+        if (!confirm(`Regenerate ${type} hook text via AI?`)) return;
+
+        const btn = event.currentTarget;
+        const origIcon = btn.innerHTML;
+        btn.innerHTML = `<svg class="animate-spin w-3 h-3 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+        btn.disabled = true;
+
+        fetch(`/admin/media-hub/sandbox/generate-hook/${recipeId}?type=${type}`, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    if (currentFragment === fragmentName) {
+                        openSandbox(currentFragment);
+                    }
+                } else {
+                    alert('Backend not ready: ' + (data.error || 'Failed'));
+                }
+            })
+            .catch(err => {
+                alert("Error triggering generation.");
+            })
+            .finally(() => {
+                btn.innerHTML = origIcon;
+                btn.disabled = false;
+            });
+    }
+
+    // --- TIMELINE DOCK LOGIC ---
+    let timelineSequence = [];
+    let draggedTimelineId = null;
+    
+    // onDockDragOver is defined near onCardDragStart
+    
+    window.onDockDragLeave = function(e) {
+        e.preventDefault();
+        document.getElementById('timeline-placeholder')?.classList.remove('border-indigo-400', 'bg-indigo-50/50');
+    }
+    
+    window.addTimelineBlock = function(fragId) {
+        const card = document.getElementById('frag-card-' + fragId) || document.getElementById(fragId);
+        if (!card) return;
+        
+        const dataFragment = card.getAttribute('data-fragment') || fragId;
+        const uniqueId = 'tl_' + Math.random().toString(36).substr(2, 9);
+        
+        // Parse the label/icon from the source card
+        const btn = card.querySelector('.frag-btn');
+        let iconHtml = '🎬';
+        let labelHtml = dataFragment;
+        if(btn) {
+            const spans = btn.querySelectorAll('span');
+            if (spans.length >= 2) {
+                iconHtml = spans[0].innerHTML;
+                labelHtml = spans[1].innerText;
+            }
+        }
+        
+        const duration = 2.0;
+        timelineSequence.push({ id: uniqueId, fragment: dataFragment, label: labelHtml, effect: 'none', duration: duration });
+        
+        const blockHtml = `
+            <div id="${uniqueId}" class="relative frag-card h-[48px] shrink-0 flex flex-col rounded-[2px] border-r border border-slate-300 bg-white hover:border-indigo-400 transition-all overflow-hidden group animate-in zoom-in-50 duration-200"
+                style="width: ${duration * 32}px; min-width: 24px;"
+                data-tlid="${uniqueId}" draggable="true"
+                ondragstart="onTimelineDragStart(event, '${uniqueId}')"
+                ondragover="onTimelineDragOver(event, '${uniqueId}')"
+                ondragleave="onTimelineDragLeave(event)"
+                ondragend="onTimelineDragEnd(event)"
+                ondrop="onTimelineDrop(event, '${uniqueId}')">
+                
+                <a href="javascript:void(0)" draggable="false" onclick="openSandbox('${dataFragment}', event, null, null, 1)" class="flex flex-col items-center justify-center gap-0.5 pt-1 pb-2 flex-grow text-center w-full hover:bg-slate-50 transition-colors cursor-move">
+                    <span class="text-xs group-hover:scale-110 transition-transform pointer-events-none">${iconHtml}</span>
+                    <span class="text-[6px] font-bold text-slate-500 uppercase tracking-tighter leading-none px-0.5 text-center w-full truncate pointer-events-none">${labelHtml}</span>
+                </a>
+                
+                <!-- Duration Badge -->
+                <div class="absolute bottom-[2px] left-[4px] right-[10px] flex justify-center pointer-events-none">
+                    <span class="dur-badge bg-slate-100 text-slate-500 text-[6px] font-black px-1 py-0.5 rounded tracking-wider">${duration.toFixed(1)}s</span>
+                </div>
+                
+                <!-- Resize Handle -->
+                <div class="absolute right-0 top-0 bottom-0 w-2.5 cursor-col-resize hover:bg-blue-100/80 transition-colors z-30 flex items-center justify-center opacity-0 group-hover:opacity-100 border-l border-transparent hover:border-blue-200"
+                     onmousedown="startTimelineDurationDrag(event, '${uniqueId}')">
+                    <div class="w-0.5 h-3 bg-blue-400/50 rounded-full pointer-events-none"></div>
+                </div>
+                
+                <button onclick="editTimelineBlockSettings('${uniqueId}')" class="absolute top-[2px] left-[2px] w-3.5 h-3.5 rounded-full bg-slate-100/80 hover:bg-blue-500 text-slate-400 hover:text-white flex items-center justify-center transition-colors shadow-sm z-20 opacity-0 group-hover:opacity-100" title="Motion Config">
+                    <span class="text-[7px] leading-none">⚙️</span>
+                </button>
+                <button onclick="removeTimelineBlock('${uniqueId}')" class="absolute top-[2px] right-[2px] w-3.5 h-3.5 rounded-full bg-slate-100/80 hover:bg-red-500 text-slate-400 hover:text-white flex items-center justify-center transition-colors shadow-sm z-20 opacity-0 group-hover:opacity-100" title="Delete from timeline">
+                    <span class="text-[8px] leading-none font-black">&times;</span>
+                </button>
+            </div>
+        `;
+        
+        document.getElementById('timeline-dock').insertAdjacentHTML('beforeend', blockHtml);
+    }
+
+    window.onDockDrop = function(e) {
+        e.preventDefault();
+        const placeholder = document.getElementById('timeline-placeholder');
+        if (placeholder) {
+            placeholder.classList.remove('border-indigo-400', 'bg-indigo-50/50');
+            placeholder.classList.add('hidden');
+        }
+        
+        const fragId = e.dataTransfer.getData('text/plain');
+        if (!fragId && !e.dataTransfer.types.includes('application/x-timeline-reorder')) return;
+        
+        // If it's a reorder operation from within the timeline dock itself
+        if (draggedTimelineId) {
+            // Reordering to the END of the dock implicitly if dropped on the empty container space
+            const dock = document.getElementById('timeline-dock');
+            const draggedBlock = document.getElementById(draggedTimelineId);
+            if (draggedBlock && e.target === dock) {
+                dock.appendChild(draggedBlock);
+            }
+            draggedTimelineId = null;
+            return;
+        }
+        
+        // Otherwise it's a new fragment dragged from the fragment library
+        addTimelineBlock(fragId);
+    }
+    
+    // Internal Timeline Drag & Drop Reordering
+    window.onTimelineDragStart = function(evt, uniqueId) {
+        draggedTimelineId = uniqueId;
+        evt.dataTransfer.setData('application/x-timeline-reorder', uniqueId);
+        evt.dataTransfer.effectAllowed = 'move';
+        evt.target.style.opacity = '0.4';
+    }
+    
+    window.onTimelineDragLeave = function(evt) {
+        delete evt.currentTarget.dataset.dropSide;
+    }
+
+    window.onTimelineDragEnd = function(evt) {
+        evt.target.style.opacity = '1';
+        clearDropIndicators();
+        draggedTimelineId = null;
+    }
+    
+    window.onTimelineDragOver = function(evt, targetId) {
+        if (!draggedTimelineId && !draggedCardName) return; // Allow internal or external drag over
+        if (draggedTimelineId === targetId) return;
+        
+        evt.preventDefault();
+        evt.stopPropagation();
+        evt.dataTransfer.dropEffect = draggedTimelineId ? 'move' : 'copy';
+        
+        const card = evt.currentTarget;
+        const rect = card.getBoundingClientRect();
+        const midX = rect.left + rect.width / 2;
+        const side = evt.clientX < midX ? 'left' : 'right';
+        
+        clearDropIndicators();
+        card.dataset.dropSide = side;
+    }
+    
+    window.onTimelineDrop = function(evt, targetId) {
+        evt.preventDefault();
+        evt.stopPropagation();
+        clearDropIndicators();
+        
+        if (draggedTimelineId && draggedTimelineId === targetId) {
+            draggedTimelineId = null;
+            return;
+        }
+        
+        const dock = document.getElementById('timeline-dock');
+        const targetCard = document.getElementById(targetId);
+        
+        if (!targetCard) return;
+        
+        const rect = targetCard.getBoundingClientRect();
+        const midX = rect.left + rect.width / 2;
+        const insertBefore = evt.clientX < midX;
+        
+        let nodeToMove = null;
+        
+        // Find existing or newly created block
+        if (draggedTimelineId) {
+            nodeToMove = document.getElementById(draggedTimelineId);
+            if (nodeToMove) nodeToMove.style.opacity = '1';
+        } else if (draggedCardName || evt.dataTransfer.getData('text/plain')) {
+            const fragToInsert = draggedCardName || evt.dataTransfer.getData('text/plain');
+            addTimelineBlock(fragToInsert); // Creates and appends to end of dock and timelineSequence
+            nodeToMove = dock.lastElementChild; // The newly appended block
+        }
+        
+        // Relocate block to target spot
+        if (nodeToMove && targetCard !== nodeToMove) {
+            if (insertBefore) {
+                dock.insertBefore(nodeToMove, targetCard);
+            } else {
+                dock.insertBefore(nodeToMove, targetCard.nextSibling);
+            }
+        }
+        
+        // Sync JS Array to match the newly sorted DOM order precisely
+        const newSequence = [];
+        dock.querySelectorAll('.frag-card[data-tlid]').forEach(el => {
+            const id = el.dataset.tlid;
+            const seqItem = timelineSequence.find(b => b.id === id);
+            if (seqItem) newSequence.push(seqItem);
+        });
+        timelineSequence = newSequence;
+        
+        draggedTimelineId = null;
+        draggedCardName = null;
+    }
+    
+    window.removeTimelineBlock = function(id) {
+        document.getElementById(id).remove();
+        timelineSequence = timelineSequence.filter(b => b.id !== id);
+        if (timelineSequence.length === 0) {
+            document.getElementById('timeline-placeholder')?.classList.remove('hidden');
+        }
+    }
+    
+    // API Export Handler
+    window.exportSequence = function() {
+        const recipeId = document.getElementById('sandbox-recipe-id').value;
+        if (!recipeId) {
+            alert('Please select a recipe first!');
+            return;
+        }
+        if (timelineSequence.length === 0) {
+            alert('Please drag some fragments into the Sequence Flow first!');
+            return;
+        }
+        
+        const btn = event.currentTarget || document.querySelector('button[onclick="exportSequence()"]');
+        const origHtml = btn.innerHTML;
+        btn.innerHTML = `<svg class="animate-spin w-3 h-3 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> <span>Building...</span>`;
+        btn.disabled = true;
+        
+        // Extract sequence as rich objects
+        const fragments = timelineSequence.map(b => ({
+            id: b.fragment,
+            effect: b.effect || 'none',
+            duration: b.duration || 2.0
+        }));
+        
+        fetch('/admin/media-hub/sandbox/api/generate-reel', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ 
+                recipe_id: parseInt(recipeId),
+                fragments: fragments
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                if(data.video_url) {
+                    showVideoModal(data.video_url);
+                } else {
+                    alert('Sequence finished but no URL returned from backend.');
+                }
+            } else {
+                alert('Generation failed: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Error triggering sequence generation. Check console.");
+        })
+        .finally(() => {
+            btn.innerHTML = origHtml;
+            btn.disabled = false;
+        });
+    }
+    
+    // Autoplay Modal for exported video
+    function showVideoModal(url) {
+        const modalHtml = `
+            <div id="video-export-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                <div class="bg-white rounded-3xl shadow-2xl p-6 max-w-[400px] w-full border border-slate-200 animate-in slide-in-from-bottom-10 flex flex-col items-center">
+                    <div class="flex justify-between items-center w-full mb-4">
+                        <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest"><span class="text-lg mr-1.5">🎬</span> Sequence Rendered</h3>
+                        <button onclick="document.getElementById('video-export-modal').remove()" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full w-8 h-8 flex items-center justify-center transition-colors">
+                            <span class="text-xl">&times;</span>
+                        </button>
+                    </div>
+                    
+                    <div class="w-[320px] aspect-[9/16] bg-slate-100 rounded-2xl overflow-hidden border-4 border-slate-900 shadow-inner relative">
+                        <video src="${url}" controls autoplay loop class="w-full h-full object-cover"></video>
+                    </div>
+                    
+                    <a href="${url}" download class="mt-5 w-full bg-slate-900 hover:bg-black text-white py-3 rounded-xl font-bold uppercase tracking-wider text-[11px] text-center transition-colors shadow-md border border-slate-800 flex items-center justify-center gap-2">
+                        <span class="text-base">⬇️</span> Download Reel
+                    </a>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+    }
+
+    // Timeline Block Configuration Modal
+    window.editTimelineBlockSettings = function(tlid) {
+        const item = timelineSequence.find(b => b.id === tlid);
+        if (!item) return;
+
+        const effect = item.effect || 'none';
+        const duration = item.duration || 2.0;
+
+        const modalHtml = `
+            <div id="tl-settings-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-in fade-in duration-200" onclick="if(event.target===this) document.getElementById('tl-settings-modal').remove()">
+                <div class="bg-white rounded-2xl shadow-xl w-[300px] border border-slate-200 overflow-hidden" onclick="event.stopPropagation()">
+                    <div class="bg-slate-50 border-b border-slate-200 px-4 py-3 flex justify-between items-center">
+                        <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-1.5"><span class="text-sm">⚙️</span> Motion Config</h3>
+                        <button onclick="document.getElementById('tl-settings-modal').remove()" class="text-slate-400 hover:text-slate-600 font-bold">&times;</button>
+                    </div>
+                    <div class="p-4 flex flex-col gap-4">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 -mt-1 truncate max-w-[250px]">Target: ${item.label}</div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Cinematic Effect</label>
+                            <select id="tl-edit-effect" class="w-full text-xs py-1.5 px-2 rounded border border-slate-300 outline-none focus:border-indigo-400 bg-white shadow-sm font-semibold text-slate-700">
+                                <option value="none" ${effect === 'none' ? 'selected' : ''}>Static (No Motion)</option>
+                                <option value="zoom_in" ${effect === 'zoom_in' ? 'selected' : ''}>Zoom In (Ken Burns)</option>
+                                <option value="zoom_out" ${effect === 'zoom_out' ? 'selected' : ''}>Zoom Out</option>
+                                <option value="pan_right" ${effect === 'pan_right' ? 'selected' : ''}>Pan Right</option>
+                                <option value="pan_left" ${effect === 'pan_left' ? 'selected' : ''}>Pan Left</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Clip Duration (Seconds)</label>
+                            <div class="flex items-center gap-2">
+                                <input type="range" id="tl-edit-duration" min="0.5" max="10" step="0.5" value="${duration}" class="w-full" oninput="document.getElementById('tl-dur-val').innerText = this.value + 's'">
+                                <span id="tl-dur-val" class="text-xs font-bold w-6 text-right text-slate-700">${duration}s</span>
+                            </div>
+                        </div>
+                        <button onclick="saveTimelineBlockSettings('${tlid}')" class="mt-2 w-full bg-slate-900 hover:bg-black text-white py-2.5 rounded-lg font-bold uppercase tracking-wider text-[10px] transition-colors shadow-sm">
+                            Apply Changes
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+    };
+
+    window.saveTimelineBlockSettings = function(tlid) {
+        const item = timelineSequence.find(b => b.id === tlid);
+        if (item) {
+            item.effect = document.getElementById('tl-edit-effect').value;
+            item.duration = parseFloat(document.getElementById('tl-edit-duration').value);
+            
+            const card = document.getElementById(tlid);
+            if (card) {
+                card.style.width = (item.duration * 32) + 'px';
+                let durBadge = card.querySelector('.dur-badge');
+                if (durBadge) durBadge.innerText = item.duration.toFixed(1) + 's';
+            }
+        }
+        document.getElementById('tl-settings-modal').remove();
+    };
+
+    // Timeline Drag Handle Resizer
+    let resizingTimelineId = null;
+    let resizeStartX = 0;
+    let resizeStartWidth = 0;
+
+    window.startTimelineDurationDrag = function(evt, tlid) {
+        evt.preventDefault();
+        evt.stopPropagation();
+        resizingTimelineId = tlid;
+        const card = document.getElementById(tlid);
+        resizeStartWidth = card.offsetWidth;
+        resizeStartX = evt.clientX;
+        document.body.style.cursor = 'col-resize';
+        
+        window.addEventListener('mousemove', onTimelineDurationDrag);
+        window.addEventListener('mouseup', endTimelineDurationDrag);
+    }
+
+    function onTimelineDurationDrag(evt) {
+        if (!resizingTimelineId) return;
+        const dx = evt.clientX - resizeStartX;
+        let newWidth = resizeStartWidth + dx;
+        let duration = Math.round((newWidth / 32) * 2) / 2; // snap 0.5s
+        if (duration < 0.5) duration = 0.5;
+        if (duration > 10.0) duration = 10.0;
+        
+        const card = document.getElementById(resizingTimelineId);
+        card.style.width = (duration * 32) + 'px';
+        
+        let durBadge = card.querySelector('.dur-badge');
+        if (durBadge) durBadge.innerText = duration.toFixed(1) + 's';
+    }
+
+    function endTimelineDurationDrag(evt) {
+        if (!resizingTimelineId) return;
+        const card = document.getElementById(resizingTimelineId);
+        let newWidth = card.offsetWidth;
+        let duration = Math.round((newWidth / 32) * 2) / 2;
+        if (duration < 0.5) duration = 0.5;
+        if (duration > 10.0) duration = 10.0;
+        
+        card.style.width = (duration * 32) + 'px';
+        const item = timelineSequence.find(b => b.id === resizingTimelineId);
+        if (item) item.duration = duration;
+
+        document.body.style.cursor = '';
+        window.removeEventListener('mousemove', onTimelineDurationDrag);
+        window.removeEventListener('mouseup', endTimelineDurationDrag);
+        resizingTimelineId = null;
+    }
+
+
+    // Sequence Templates JS logic
+    let savedTemplates = [];
+
+    function fetchTemplates() {
+        fetch('/admin/media-hub/sandbox/api/templates')
+            .then(res => res.json())
+            .then(data => {
+                savedTemplates = data.templates || [];
+                const select = document.getElementById('sequence-template-select');
+                select.innerHTML = '<option value="">-- Load Saved Template --</option>';
+                savedTemplates.forEach(t => {
+                    select.innerHTML += `<option value="${t.id}">${t.name}</option>`;
+                });
+            })
+            .catch(err => console.error("Failed to load templates", err));
+    }
+
+    window.saveTemplate = function() {
+        if (timelineSequence.length === 0) {
+            alert("No sequence to save! Drag some fragments in first.");
+            return;
+        }
+        const name = prompt("Enter a name for this sequence template:");
+        if (!name) return;
+
+        const sequenceToSave = timelineSequence.map(b => ({
+            id: b.fragment,
+            effect: b.effect || 'none',
+            duration: b.duration || 2.0
+        }));
+        fetch('/admin/media-hub/sandbox/api/templates', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ name: name, sequence: sequenceToSave })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                fetchTemplates();
+                alert("Template saved!");
+            } else {
+                alert("Failed to save template: " + (data.error || ""));
+            }
+        });
+    }
+
+    window.loadTemplate = function(templateId) {
+        if (!templateId) return;
+        const template = savedTemplates.find(t => t.id == templateId);
+        if (!template) return;
+        
+        // Clear current timeline
+        document.getElementById('timeline-dock').innerHTML = `
+            <div id="timeline-placeholder" class="absolute inset-0 border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center text-slate-400 text-[10px] font-bold uppercase tracking-widest pointer-events-none transition-colors hidden">
+                Drag Fragments Here
+            </div>
+        `;
+        timelineSequence = [];
+        
+        // Render each fragment block sequentially
+        template.sequence.forEach(node => {
+            // Backward compatibility with older string arrays
+            const isString = typeof node === 'string';
+            const fragName = isString ? node : node.id;
+            const effect = isString ? 'none' : (node.effect || 'none');
+            const duration = isString ? 2.0 : (node.duration || 2.0);
+
+            // Check if card exists in the library to grab icon/label
+            const card = document.getElementById('frag-card-' + fragName) || document.getElementById(fragName);
+            let iconHtml = '🎬';
+            let labelHtml = fragName;
+            
+            if (card) {
+                const btn = card.querySelector('.frag-btn');
+                if(btn) {
+                    const spans = btn.querySelectorAll('span');
+                    if (spans.length >= 2) {
+                        iconHtml = spans[0].innerHTML;
+                        labelHtml = spans[1].innerText;
+                    }
+                }
+            } else if (fragName.startsWith('step')) {
+                iconHtml = '▶️';
+                labelHtml = fragName.replace('step', 'Step ');
+            }
+            
+            const uniqueId = 'tl_' + Math.random().toString(36).substr(2, 9);
+            timelineSequence.push({ id: uniqueId, fragment: fragName, label: labelHtml, effect: effect, duration: duration });
+            
+            const blockHtml = `
+                <div id="${uniqueId}" class="relative frag-card h-[48px] shrink-0 flex flex-col rounded-[2px] border-r border border-slate-300 bg-white hover:border-indigo-400 transition-all overflow-hidden group animate-in zoom-in-50 duration-200"
+                    style="width: ${duration * 32}px; min-width: 24px;"
+                    data-tlid="${uniqueId}" draggable="true"
+                    ondragstart="onTimelineDragStart(event, '${uniqueId}')"
+                    ondragover="onTimelineDragOver(event, '${uniqueId}')"
+                    ondragleave="onTimelineDragLeave(event)"
+                    ondragend="onTimelineDragEnd(event)"
+                    ondrop="onTimelineDrop(event, '${uniqueId}')">
+                    
+                    <a href="javascript:void(0)" draggable="false" onclick="openSandbox('${fragName}', event, null, null, 1)" class="flex flex-col items-center justify-center gap-0.5 pt-1 pb-2 flex-grow text-center w-full hover:bg-slate-50 transition-colors cursor-move">
+                        <span class="text-xs group-hover:scale-110 transition-transform pointer-events-none">${iconHtml}</span>
+                        <span class="text-[6px] font-bold text-slate-500 uppercase tracking-tighter leading-none px-0.5 text-center w-full truncate pointer-events-none">${labelHtml}</span>
+                    </a>
+                    
+                    <!-- Duration Badge -->
+                    <div class="absolute bottom-[2px] left-[4px] right-[10px] flex justify-center pointer-events-none">
+                        <span class="dur-badge bg-slate-100 text-slate-500 text-[6px] font-black px-1 py-0.5 rounded tracking-wider">${duration.toFixed(1)}s</span>
+                    </div>
+                    
+                    <!-- Resize Handle -->
+                    <div class="absolute right-0 top-0 bottom-0 w-2.5 cursor-col-resize hover:bg-blue-100/80 transition-colors z-30 flex items-center justify-center opacity-0 group-hover:opacity-100 border-l border-transparent hover:border-blue-200"
+                         onmousedown="startTimelineDurationDrag(event, '${uniqueId}')">
+                        <div class="w-0.5 h-3 bg-blue-400/50 rounded-full pointer-events-none"></div>
+                    </div>
+                    
+                    <button onclick="editTimelineBlockSettings('${uniqueId}')" class="absolute top-[2px] left-[2px] w-3.5 h-3.5 rounded-full bg-slate-100/80 hover:bg-blue-500 text-slate-400 hover:text-white flex items-center justify-center transition-colors shadow-sm z-20 opacity-0 group-hover:opacity-100" title="Motion Config">
+                        <span class="text-[7px] leading-none">⚙️</span>
+                    </button>
+                    <button onclick="removeTimelineBlock('${uniqueId}')" class="absolute top-[2px] right-[2px] w-3.5 h-3.5 rounded-full bg-slate-100/80 hover:bg-red-500 text-slate-400 hover:text-white flex items-center justify-center transition-colors shadow-sm z-20 opacity-0 group-hover:opacity-100" title="Delete from timeline">
+                        <span class="text-[8px] leading-none font-black">&times;</span>
+                    </button>
+                </div>
+            `;
+            document.getElementById('timeline-dock').insertAdjacentHTML('beforeend', blockHtml);
+        });
+        
+        // Reset dropdown UI
+        document.getElementById('sequence-template-select').value = '';
+    }
+
+    window.deleteTemplate = function() {
+        const select = document.getElementById('sequence-template-select');
+        const id = select.value;
+        if (!id) {
+            alert("Please select a template to delete, or use -- Load -- dropdown.");
+            return;
+        }
+        if (!confirm("Delete this template?")) return;
+        
+        fetch('/admin/media-hub/sandbox/api/templates/' + id, { method: 'DELETE' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    fetchTemplates();
+                } else {
+                    alert("Delete failed: " + data.error);
+                }
+            });
+    }
+
+    // Call on load
+    document.addEventListener("DOMContentLoaded", function() {
+        fetchTemplates();
     });
 
 </script>

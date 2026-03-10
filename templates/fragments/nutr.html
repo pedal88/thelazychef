@@ -1,0 +1,72 @@
+{% extends "fragments/base_fragment.html" %}
+
+{% block content %}
+<div class="full-bleed">
+    <div class="w-full h-full" style="background: linear-gradient(135deg, #e2e8f0, #f8fafc);"></div>
+</div>
+
+<div class="safe-box flex items-center justify-center">
+    {# Classic FDA Nutrition Facts Card #}
+    <div class="bg-white border-[3px] border-slate-200 p-12 shadow-2xl w-[900px] rounded-xl text-slate-900 font-sans tracking-tight relative overflow-hidden">
+        
+        {# Inner box wrapper to mimic the classic border block #}
+        <div class="border-[6px] border-slate-900 p-8">
+            <h1 class="text-[96px] font-black border-b-[16px] border-slate-900 pb-2 mb-4 tracking-tighter leading-none">Nutrition Facts</h1>
+            
+            <div class="flex justify-between font-bold border-b-4 border-slate-900 pb-3 text-[32px] mb-2 tracking-wide">
+                <span>Amount Per Serving</span>
+                <span class="text-slate-500">({{ base_servings }} servings total)</span>
+            </div>
+
+            {% set base_srv = base_servings|default(4) %}
+            {% macro nut_val(total_val, places=0) %}
+                {% set v = total_val or 0 %}
+                {% set v1 = (v / base_srv) %}
+                {{ v1|round(places) if places else v1|round|int }}
+            {% endmacro %}
+
+            <div class="flex justify-between items-end border-b-[16px] border-slate-900 py-4 mb-4">
+                <span class="text-[48px] font-bold">Calories</span>
+                <span class="text-[130px] font-black leading-none tracking-tighter">{{ nut_val(recipe.total_calories, 0) }}</span>
+            </div>
+
+            <div class="text-[36px] font-medium leading-tight space-y-0">
+                <div class="flex justify-between border-b-4 border-slate-300 py-3">
+                    <span class="font-black">Total Fat <span class="font-normal">{{ nut_val(recipe.total_fat, 1) }}g</span></span>
+                </div>
+                <div class="flex justify-between border-b-4 border-slate-300 py-3 pl-12">
+                    <span>Saturated Fat {{ nut_val(recipe.total_saturated_fat, 1) }}g</span>
+                </div>
+                <div class="flex justify-between border-b-4 border-slate-300 py-3 pl-12">
+                    <span>Trans Fat 0g</span>
+                </div>
+                <div class="flex justify-between border-b-4 border-slate-300 py-3">
+                    <span class="font-black">Cholesterol <span class="font-normal">{{ nut_val(recipe.total_cholesterol_mg, 0) }}mg</span></span>
+                </div>
+                <div class="flex justify-between border-b-4 border-slate-300 py-3">
+                    <span class="font-black">Sodium <span class="font-normal">{{ nut_val(recipe.total_sodium_mg, 0) }}mg</span></span>
+                </div>
+                <div class="flex justify-between border-b-4 border-slate-300 py-3">
+                    <span class="font-black">Total Carbohydrate <span class="font-normal">{{ nut_val(recipe.total_carbs, 0) }}g</span></span>
+                </div>
+                <div class="flex justify-between border-b-4 border-slate-300 py-3 pl-12">
+                    <span>Dietary Fiber {{ nut_val(recipe.total_fiber, 1) }}g</span>
+                </div>
+                <div class="flex justify-between border-b-4 border-slate-300 py-3 pl-12">
+                    <span>Total Sugars {{ nut_val(recipe.total_sugar, 1) }}g</span>
+                </div>
+                <div class="flex justify-between border-b-[16px] border-slate-900 py-4 mt-2">
+                    <span class="font-black">Protein <span class="font-normal">{{ nut_val(recipe.total_protein, 1) }}g</span></span>
+                </div>
+
+                <div class="flex justify-between border-b-4 border-slate-300 py-3 text-slate-600 mt-2">
+                    <span>Calcium {{ nut_val(recipe.total_calcium_mg, 0) }}mg</span>
+                </div>
+                <div class="flex justify-between border-b-0 border-slate-300 py-3 text-slate-600">
+                    <span>Potassium {{ nut_val(recipe.total_potassium_mg, 0) }}mg</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
