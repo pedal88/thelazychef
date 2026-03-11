@@ -377,11 +377,14 @@
                                     </td>
                                     
                                     <!-- Usage -->
+                                    <!-- Usage -->
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-center">
                                         <span class="inline-flex items-center rounded-full {% if recipe_count > 0 %}bg-indigo-50 text-indigo-700 ring-indigo-600/20{% else %}bg-gray-50 text-gray-500 ring-gray-600/20{% endif %} px-2 py-1 text-xs font-medium ring-1 ring-inset">
                                             {{ recipe_count }}
                                         </span>
                                     </td>
+                                    
+                                    {% if ing.evaluation %}
                                     {% set ev = ing.evaluation %}
                                     {% set qa_details = ev.evaluation_details | tojson | forceescape %}
 
