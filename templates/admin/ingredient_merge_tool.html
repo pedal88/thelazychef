@@ -193,40 +193,90 @@
         
         panel.classList.remove('hidden');
         
+        // Load ignored suggestions from local storage
+        let ignoredMerges = [];
         try {
-            const res = await fetch('/admin/ingredients-management/api/merge-suggestions?limit=5');
+            ignoredMerges = JSON.parse(localStorage.getItem('ignoredMerges') || '[]');
+        } catch(e) {}
+        
+        try {
+            const res = await fetch('/admin/ingredients-management/api/merge-suggestions?limit=15'); // Fetch a bit more to account for ignored ones
             const data = await res.json();
             
             loading.classList.add('hidden');
             list.classList.remove('hidden');
             
             if(data.success && data.suggestions.length > 0) {
+                // Filter out ignored ones and limit to 5
+                const displayList = data.suggestions.filter(s => !ignoredMerges.includes(s.loser_id)).slice(0, 5);
+                
                 list.innerHTML = '';
-                data.suggestions.forEach(s => {
-                    const li = document.createElement('li');
-                    li.className = "flex items-center justify-between bg-white px-4 py-2 rounded border border-indigo-100 shadow-sm text-sm";
-                    li.innerHTML = `
-                        <div class="flex items-center gap-4">
-                            <div>
-                                <span class="font-bold text-green-700">${s.winner_name}</span> 
-                                <span class="text-gray-400 text-xs">(Keep)</span>
+                if(displayList.length === 0) {
+                     list.innerHTML = '<li class="text-sm text-gray-500 italic">No strong duplicates identified at this time (or all were dismissed).</li>';
+                } else {
+                    displayList.forEach(s => {
+                        const li = document.createElement('li');
+                        li.id = `suggestion-${s.loser_id}`;
+                        li.className = "flex items-center justify-between bg-white px-4 py-3 rounded border border-indigo-100 shadow-sm text-sm";
+                        
+                        const wImg = s.winner_image ? `<img src="https://storage.googleapis.com/thelazychef-assets/${s.winner_image}" class="w-8 h-8 rounded-full object-cover">` : `<div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs text-gray-500">?</div>`;
+                        const lImg = s.loser_image ? `<img src="https://storage.googleapis.com/thelazychef-assets/${s.loser_image}" class="w-8 h-8 rounded-full object-cover">` : `<div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs text-gray-500">?</div>`;
+                        
+                        li.innerHTML = `
+                            <div class="flex items-center gap-4 w-full">
+                                <div class="flex items-center gap-2 w-1/3">
+                                    ${wImg}
+                                    <div class="truncate">
+                                        <span class="font-bold text-green-700 truncate block">${s.winner_name}</span> 
+                                        <span class="text-gray-400 text-[10px] uppercase tracking-wide flex items-center gap-1">
+                                            ID: ${s.winner_id} &bull; ${s.winner_count} recipes
+                                        </span>
+                                    </div>
+                                </div>
+                                <svg class="w-5 h-5 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                                <div class="flex items-center gap-2 w-1/3 opacity-75 grayscale hover:grayscale-0 transition-all">
+                                    ${lImg}
+                                    <div class="truncate">
+                                        <span class="font-medium text-red-600 line-through truncate block">${s.loser_name}</span>
+                                        <span class="text-gray-400 text-[10px] uppercase tracking-wide flex items-center gap-1">
+                                            ID: ${s.loser_id} &bull; ${s.loser_count} recipes
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="w-1/4 flex-shrink-0 text-right">
+                                    <span class="text-[10px] text-indigo-400 font-mono bg-indigo-50 px-2 py-0.5 rounded tracking-tight">${s.reason}</span>
+                                </div>
                             </div>
-                            <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                            <div>
-                                <span class="font-medium text-red-600 line-through">${s.loser_name}</span>
-                                <span class="text-gray-400 text-xs">(Destroy)</span>
+                            <div class="flex gap-2 ml-4 flex-shrink-0">
+                                <button type="button" onclick="dismissSuggestion(${s.loser_id})" class="text-xs text-gray-400 hover:text-gray-600 px-2 py-1 rounded transition-colors" title="Ignore this suggestion in the future">X</button>
+                                <button type="button" onclick="applySuggestion(${s.winner_id}, '${s.winner_name.replace(/'/g, "\\'")}', ${s.loser_id}, '${s.loser_name.replace(/'/g, "\\'")}')" class="text-xs bg-indigo-100 hover:bg-indigo-600 hover:text-white text-indigo-700 font-bold px-3 py-1.5 rounded transition-colors shadow-sm">Select</button>
                             </div>
-                            <span class="text-xs text-indigo-400 ml-4 font-mono bg-indigo-50 px-2 py-0.5 rounded">${s.reason}</span>
-                        </div>
-                        <button type="button" onclick="applySuggestion(${s.winner_id}, '${s.winner_name.replace(/'/g, "\\'")}', ${s.loser_id}, '${s.loser_name.replace(/'/g, "\\'")}')" class="text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-3 py-1 rounded font-medium transition-colors">Select</button>
-                    `;
-                    list.appendChild(li);
-                });
+                        `;
+                        list.appendChild(li);
+                    });
+                }
             } else {
                 list.innerHTML = '<li class="text-sm text-gray-500 italic">No strong duplicates identified at this time.</li>';
             }
         } catch(e) {
+            console.error(e);
             loading.innerText = "Failed to load suggestions.";
+        }
+    }
+
+    function dismissSuggestion(loserId) {
+        let ignoredMerges = [];
+        try {
+            ignoredMerges = JSON.parse(localStorage.getItem('ignoredMerges') || '[]');
+        } catch(e) {}
+        
+        ignoredMerges.push(loserId);
+        localStorage.setItem('ignoredMerges', JSON.stringify(ignoredMerges));
+        
+        // Remove from UI visually
+        const li = document.getElementById(`suggestion-${loserId}`);
+        if(li) {
+            li.style.display = 'none';
         }
     }
 
