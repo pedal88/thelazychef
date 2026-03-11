@@ -165,7 +165,26 @@
                 </div>
 
                 <a href="/become-a-chef" class="hover:text-orange-600 transition-colors">Become a Chef</a>
-                <a href="/ingredients" class="hover:text-orange-600 transition-colors">Ingredients</a>
+                <!-- Ingredients Dropdown -->
+                <div class="relative group">
+                    <button class="flex items-center gap-1 hover:text-orange-600 transition-colors focus:outline-none">
+                        <span>Ingredients</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </button>
+                    <div
+                        class="absolute left-0 mt-0 w-48 bg-white border border-slate-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[110] transform origin-top-left">
+                        <div class="py-1">
+                            <a href="/ingredients"
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">🥦 All
+                                Ingredients</a>
+                            <a href="/explore/ingredient-galaxy"
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">🌌 Galaxy</a>
+                        </div>
+                    </div>
+                </div>
 
                 {% if current_user.is_authenticated %}
                 {% if current_user.is_admin %}
@@ -290,7 +309,9 @@
                 <a href="/become-a-chef"
                     class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">Become a Chef</a>
                 <a href="/ingredients"
-                    class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">Ingredients</a>
+                    class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">🥦 All Ingredients</a>
+                <a href="/explore/ingredient-galaxy"
+                    class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">🌌 Ingredient Galaxy</a>
                 {% if current_user.is_authenticated %}
                 {% if current_user.is_admin %}
                 <div class="border-t border-slate-100 pt-2 mt-2">
@@ -409,7 +430,26 @@
                 </div>
 
                 <a href="/become-a-chef" class="hover:text-orange-600 transition-colors">Become a Chef</a>
-                <a href="/ingredients" class="hover:text-orange-600 transition-colors">Ingredients</a>
+                <!-- Ingredients Dropdown -->
+                <div class="relative group">
+                    <button class="flex items-center gap-1 hover:text-orange-600 transition-colors focus:outline-none">
+                        <span>Ingredients</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </button>
+                    <div
+                        class="absolute left-0 mt-0 w-48 bg-white border border-slate-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[110] transform origin-top-left">
+                        <div class="py-1">
+                            <a href="/ingredients"
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">🥦 All
+                                Ingredients</a>
+                            <a href="/explore/ingredient-galaxy"
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">🌌 Galaxy</a>
+                        </div>
+                    </div>
+                </div>
 
                 {% if current_user.is_authenticated %}
                 {% if current_user.is_admin %}
@@ -543,7 +583,9 @@
             <a href="/become-a-chef" class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">👨‍🍳
                 Become a Chef</a>
             <a href="/ingredients" class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">🥦
-                Ingredients</a>
+                All Ingredients</a>
+            <a href="/explore/ingredient-galaxy" class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">🌌
+                Ingredient Galaxy</a>
             {% if current_user.is_authenticated %}
             {% if current_user.is_admin %}
             <div class="border-t border-slate-100 my-2"></div>

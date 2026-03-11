@@ -4,7 +4,6 @@ Mirrors the recipe evaluation_service.py pattern exactly:
 - TypedDict schema enforces Chain-of-Thought ordering (reasoning before score).
 - Multimodal: fetches the ingredient image from its URL and passes it to Gemini.
 - score_commonness is captured but excluded from total_score average.
-- Auto-promotes pending ingredients to 'active' when total_score >= 85.
 """
 from __future__ import annotations
 
@@ -72,7 +71,6 @@ def evaluate_ingredient(ingredient_id: int) -> dict:
         4. Attempt to load the ingredient image via its URL (PIL).
         5. Call Gemini with structured JSON output.
         6. Parse the response, compute total_score, persist to DB.
-        7. Auto-promote status to 'active' if score >= 85 and status == 'pending'.
 
     Args:
         ingredient_id: Primary key of the Ingredient to evaluate.
@@ -198,12 +196,8 @@ def evaluate_ingredient(ingredient_id: int) -> dict:
     )
     db.session.add(evaluation)
 
-    # ── Auto-promote pending → active if score >= 85 ───────────────
+    # ── Auto-promote pending → active (Removed per request) ────────
     auto_promoted = False
-    if computed_total >= 85.0 and ing.status == "pending":
-        ing.status = "active"
-        auto_promoted = True
-        print(f"✅ Auto-promoted ingredient #{ingredient_id} ({ing.name}) from 'pending' → 'active'")
 
     db.session.commit()
 

@@ -1,0 +1,395 @@
+{% extends "base.html" %}
+
+{% block title %}Ingredient Galaxy Builder{% endblock %}
+
+{% block head %}
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+    /* Remove body scroll since we want a full screen map under the navbar */
+    body {
+        overflow: hidden;
+    }
+
+    .link {
+        transition: stroke-opacity 0.2s;
+    }
+
+    .node circle {
+        transition: r 0.2s, fill 0.2s;
+    }
+
+    .galaxy-scroll::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .galaxy-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .galaxy-scroll::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+
+    .galaxy-scroll {
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 transparent;
+    }
+
+    /* Removed heavy CSS drop-shadow filters to optimize rendering for large graphs */
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="relative w-full" style="height: calc(100vh - 64px);">
+
+    <div class="absolute top-0 left-0 right-0 p-4 flex justify-between items-start z-10 pointer-events-none">
+
+        <!-- Left: Branding & Search -->
+        <div class="pointer-events-auto w-full max-w-sm space-y-2 max-h-[calc(100vh-80px)] overflow-y-auto galaxy-scroll">
+            <div class="bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl p-3 shadow-sm">
+                <h1 class="text-xl font-semibold text-slate-900 tracking-tight mb-0.5 flex items-center gap-2">
+                    Ingredient Galaxy
+                </h1>
+                <p class="text-xs text-slate-500 mb-2">Explore the pantry network.</p>
+                <div class="relative">
+                    <input type="text" id="search-input" placeholder="Search an ingredient..."
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-3 pr-3 text-sm text-slate-900 focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 placeholder-slate-400">
+                    <div id="search-dropdown"
+                        class="hidden absolute top-full mt-2 w-full bg-white border border-slate-200 rounded-xl max-h-64 overflow-y-auto shadow-xl z-20">
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl p-1.5 shadow-sm inline-flex flex-col gap-0.5">
+                <button id="btn-recenter"
+                    class="flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-xl px-3 py-1.5 text-xs font-medium">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Center Map
+                </button>
+                <button id="btn-physics"
+                    class="flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-xl px-3 py-1.5 text-xs font-medium">
+                    <svg class="w-3.5 h-3.5" id="icon-pause" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span id="label-physics">Pause Physics</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Right: Legend -->
+        <div class="pointer-events-auto bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl p-4 shadow-sm text-xs w-48">
+            <h3 class="font-semibold text-slate-400 mb-3 uppercase tracking-wider text-[10px]">Legend</h3>
+            <div class="space-y-3">
+                <div class="flex items-center gap-3">
+                    <span class="w-3.5 h-3.5 rounded-full bg-slate-700 shadow-sm border-2 border-slate-900"></span>
+                    <span class="text-slate-600 font-medium">Main Category</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="w-3.5 h-3.5 rounded-full bg-slate-400 shadow-sm border-2 border-slate-600"></span>
+                    <span class="text-slate-600 font-medium">Sub Category</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="w-3.5 h-3.5 rounded-full bg-indigo-500 shadow-sm border-2 border-indigo-200"></span>
+                    <span class="text-slate-600 font-medium">Ingredient</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graph Container -->
+    <div id="galaxy-container" class="w-full h-full bg-slate-50 relative cursor-grab active:cursor-grabbing">
+        <div id="loading" class="absolute inset-0 flex items-center justify-center text-slate-400 text-sm font-medium animate-pulse">
+            Mapping connections...
+        </div>
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const container = document.getElementById('galaxy-container');
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+
+        let simulation, svg, g, zoom;
+        let nodesData = [], linksData = [];
+        let physicsEnabled = true;
+
+        let cfg = {
+            gravity: 0.05,
+            repel: -200,
+            linkDist: 1.0,
+            nodeSize: 1.0,
+            linkThick: 1.5,
+            fadeStart: 0.3
+        };
+
+        const colorMap = {
+            'main_cat': '#334155', // slate-700
+            'sub_cat': '#94a3b8', // slate-400
+            'ingredient': '#6366f1' // indigo-500
+        };
+
+        const radiusMap = {
+            'main_cat': 40,
+            'sub_cat': 28,
+            'ingredient': 18
+        };
+
+        fetch('/api/graph/ingredient-galaxy')
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('loading').remove();
+                nodesData = data.nodes;
+                linksData = data.links;
+                initGraph();
+                initSearch();
+            });
+
+        function initGraph() {
+            zoom = d3.zoom()
+                .scaleExtent([0.15, 3])
+                .on('zoom', (event) => {
+                    g.attr('transform', event.transform);
+                    const scale = event.transform.k;
+                    let fadeOutPoint = cfg.fadeStart;
+                    let fullVisiblePoint = fadeOutPoint + 0.5;
+                    let textOpacity = (scale - fadeOutPoint) / (fullVisiblePoint - fadeOutPoint);
+                    textOpacity = Math.max(0, Math.min(1, textOpacity));
+
+                    g.selectAll('text').style('opacity', d => {
+                        if (d.group !== 'ingredient') {
+                            let catOpacity = (scale - 0.1) / (0.4 - 0.1);
+                            return Math.max(0, Math.min(1, catOpacity));
+                        }
+                        return textOpacity;
+                    });
+                });
+
+            svg = d3.select('#galaxy-container').append('svg')
+                .attr('width', width)
+                .attr('height', height)
+                .call(zoom);
+
+            g = svg.append('g');
+
+            simulation = d3.forceSimulation(nodesData)
+                .velocityDecay(0.15) /* Increased from 0.06 to settle faster */
+                .force('link', d3.forceLink(linksData).id(d => d.id).distance(d => {
+                    let base = (d.source.group === 'main_cat' || d.target.group === 'main_cat') ? 160 : 90;
+                    return base * cfg.linkDist;
+                }))
+                .force('charge', d3.forceManyBody().strength(() => cfg.repel))
+                .force('center', d3.forceCenter(width / 2, height / 2))
+                .force('collide', d3.forceCollide().radius(d => (radiusMap[d.group] * cfg.nodeSize) + 8).iterations(1))
+                .force('x', d3.forceX(width / 2).strength(() => cfg.gravity))
+                .force('y', d3.forceY(height / 2).strength(() => cfg.gravity));
+
+            const link = g.append('g')
+                .attr('stroke', '#cbd5e1')
+                .attr('stroke-opacity', 0.6)
+                .selectAll('line')
+                .data(linksData)
+                .join('line')
+                .attr('stroke-width', d => Math.sqrt(d.weight) * cfg.linkThick)
+                .attr('class', 'link');
+
+            const nodeGroup = g.append('g')
+                .selectAll('.node')
+                .data(nodesData)
+                .join('g')
+                .attr('class', 'node cursor-pointer')
+                .call(d3.drag()
+                    .on('start', dragstarted)
+                    .on('drag', dragged)
+                    .on('end', dragended));
+
+            nodeGroup.append('circle')
+                .attr('r', d => radiusMap[d.group] * cfg.nodeSize)
+                .attr('fill', d => colorMap[d.group])
+                .attr('stroke', d => {
+                    if (d.group === 'main_cat') return '#0f172a';
+                    if (d.group === 'sub_cat') return '#475569';
+                    return '#e0e7ff';
+                })
+                .attr('stroke-width', 2);
+
+            nodeGroup.filter(d => d.image)
+                .append('image')
+                .attr('href', d => (d.image && !d.image.startsWith('http') ? '/' + ('static/' + d.image).replace('//', '/') : d.image))
+                .attr('x', d => -(radiusMap[d.group] * cfg.nodeSize))
+                .attr('y', d => -(radiusMap[d.group] * cfg.nodeSize))
+                .attr('width', d => (radiusMap[d.group] * cfg.nodeSize) * 2)
+                .attr('height', d => (radiusMap[d.group] * cfg.nodeSize) * 2)
+                .attr('clip-path', d => `circle(${radiusMap[d.group] * cfg.nodeSize}px at ${radiusMap[d.group] * cfg.nodeSize}px ${radiusMap[d.group] * cfg.nodeSize}px)`);
+
+            nodeGroup.append('text')
+                .attr('dy', d => (radiusMap[d.group] * cfg.nodeSize) + 16)
+                .attr('text-anchor', 'middle')
+                .text(d => d.name)
+                .attr('fill', '#475569')
+                .style('font-size', d => d.group === 'ingredient' ? '12px' : '14px')
+                .style('font-weight', d => d.group === 'ingredient' ? '500' : '600')
+                .style('text-shadow', '0 2px 4px rgba(255,255,255,0.8)');
+
+            nodeGroup.on('mouseover', function (event, d) {
+                nodeGroup.style('opacity', 0.2);
+                link.style('stroke-opacity', 0.1);
+
+                const connected = new Set([d.id]);
+                link.filter(l => l.source.id === d.id || l.target.id === d.id)
+                    .style('stroke-opacity', 1)
+                    .style('stroke', '#64748b')
+                    .each(l => {
+                        connected.add(l.source.id);
+                        connected.add(l.target.id);
+                    });
+
+                nodeGroup.filter(n => connected.has(n.id))
+                    .style('opacity', 1)
+                    .select('circle')
+                    .attr('stroke', '#fbbf24');
+
+                d3.select(this).raise();
+            }).on('mouseout', function () {
+                nodeGroup.style('opacity', 1)
+                    .select('circle')
+                    .attr('stroke', d => {
+                        if (d.group === 'main_cat') return '#0f172a';
+                        if (d.group === 'sub_cat') return '#475569';
+                        return '#e0e7ff';
+                    });
+                link.style('stroke-opacity', 0.6).style('stroke', '#cbd5e1');
+            });
+
+            simulation.on('tick', () => {
+                link
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+
+                nodeGroup
+                    .attr('transform', d => `translate(${d.x},${d.y})`);
+            });
+
+            svg.transition().duration(2000).call(zoom.transform, d3.zoomIdentity.translate(width / 2, height / 2).scale(0.5).translate(-width / 2, -height / 2));
+        }
+
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+        document.getElementById('btn-recenter').addEventListener('click', () => {
+            svg.transition().duration(1000).call(zoom.transform, d3.zoomIdentity.translate(width / 2, height / 2).scale(0.5).translate(-width / 2, -height / 2));
+        });
+
+        document.getElementById('btn-physics').addEventListener('click', (e) => {
+            physicsEnabled = !physicsEnabled;
+            if (physicsEnabled) {
+                simulation.alpha(0.1).restart();
+                document.getElementById('label-physics').textContent = 'Pause Physics';
+                document.getElementById('icon-pause').innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />';
+            } else {
+                simulation.stop();
+                document.getElementById('label-physics').textContent = 'Resume Physics';
+                document.getElementById('icon-pause').innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />';
+            }
+        });
+
+        function initSearch() {
+            const input = document.getElementById('search-input');
+            const drop = document.getElementById('search-dropdown');
+
+            input.addEventListener('input', (e) => {
+                const q = e.target.value.toLowerCase();
+                drop.innerHTML = '';
+                if (q.length < 2) {
+                    drop.classList.add('hidden');
+                    return;
+                }
+
+                const ings = nodesData.filter(n => n.group === 'ingredient' && n.name.toLowerCase().includes(q)).slice(0, 10);
+
+                if (ings.length === 0) {
+                    drop.innerHTML = '<div class="p-4 text-sm text-slate-500 text-center">No ingredients found.</div>';
+                } else {
+                    ings.forEach(r => {
+                        const div = document.createElement('div');
+                        div.className = 'p-3 hover:bg-slate-50 cursor-pointer text-sm text-slate-700 border-b border-slate-100 last:border-0 flex items-center gap-3 transition-colors';
+
+                        let parsedImg = r.image;
+                        if(parsedImg && !parsedImg.startsWith('http')) {
+                            parsedImg = '/' + ('static/' + parsedImg).replace('//', '/');
+                        }
+
+                        const imgHTML = parsedImg 
+                            ? `<img src="${parsedImg}" class="w-8 h-8 rounded-full border border-slate-200 object-cover shadow-sm">`
+                            : `<div class="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 text-xs shadow-sm">🥦</div>`;
+
+                        div.innerHTML = `${imgHTML} <span class="font-medium truncate">${r.name}</span>`;
+                        div.onclick = () => {
+                            teleportTo(r);
+                            input.value = r.name;
+                            drop.classList.add('hidden');
+                        };
+                        drop.appendChild(div);
+                    });
+                }
+                drop.classList.remove('hidden');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('#search-input') && !e.target.closest('#search-dropdown')) {
+                    drop.classList.add('hidden');
+                }
+            });
+        }
+
+        function teleportTo(node) {
+            const x = node.x;
+            const y = node.y;
+
+            svg.transition().duration(1500)
+                .call(zoom.transform, d3.zoomIdentity
+                    .translate(width / 2, height / 2)
+                    .scale(2)
+                    .translate(-x, -y)
+                );
+
+            g.selectAll('.node').filter(n => n.id === node.id)
+                .select('circle')
+                .transition().duration(200)
+                .attr('stroke', '#f97316')
+                .attr('stroke-width', 4)
+                .transition().duration(2000)
+                .attr('stroke', '#e0e7ff')
+                .attr('stroke-width', 2);
+        }
+
+        window.addEventListener('resize', () => {
+            const w = container.clientWidth;
+            const h = container.clientHeight;
+            svg.attr('width', w).attr('height', h);
+            simulation.force('center', d3.forceCenter(w / 2, h / 2));
+            if (physicsEnabled) simulation.alpha(0.3).restart();
+        });
+    });
+</script>
+{% endblock %}

@@ -5,6 +5,7 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 from typing import Any, Optional
+from pgvector.sqlalchemy import Vector
 
 class Base(DeclarativeBase):
     pass
@@ -115,6 +116,9 @@ class Ingredient(db.Model):
     has_transparent_image: Mapped[bool] = mapped_column(Boolean, default=False, server_default='0')
     image_prompt: Mapped[str] = mapped_column(Text, nullable=True)
     data_source: Mapped[str] = mapped_column(String(50), nullable=False, default='placeholder', server_default='placeholder')
+
+    # AI Embedding (768 dimensions for Google models)
+    embedding: Mapped[Optional[Any]] = mapped_column(Vector(768), nullable=True)
 
     # Nutrition Columns
     calories_per_100g: Mapped[float] = mapped_column(Float, nullable=True)

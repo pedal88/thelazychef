@@ -3,6 +3,9 @@
 {% block title %}Ingredients Management - The Lazy Chef{% endblock %}
 
 {% block content %}
+<!-- ECharts for Ingredient Galaxy Node Graphs -->
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+
 <div class="bg-white py-8 max-w-[95%] mx-auto">
     <div class="px-4 sm:px-6 lg:px-8">
 
@@ -989,8 +992,7 @@
                         + (score >= 80 ? ' text-green-600' : score >= 60 ? ' text-amber-500' : ' text-red-600')
                         + ' whitespace-nowrap pl-3 pr-2 py-4 text-sm font-bold';
                 }
-                const promoted = data.auto_promoted ? ' (auto-promoted to Active ✅)' : '';
-                showToast(`QA complete! Score: ${score}${promoted} — reloading…`, score >= 80 ? 'success' : 'warning');
+                showToast(`QA complete! Score: ${score} — reloading…`, score >= 80 ? 'success' : 'warning');
                 // Reload after a short delay so all 6 score columns populate from the server
                 setTimeout(() => window.location.reload(), 1800);
             } else {
@@ -1409,27 +1411,33 @@
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                         Delete Ingredient
                     </button>
+                    <button id="drawer-generate-btn" onclick="const id=this.dataset.id; lmGenerateRecipe(id);" class="col-span-2 flex items-center justify-center gap-2 rounded-lg border border-purple-200 bg-purple-50 px-3 py-2 text-sm font-semibold text-purple-700 shadow-sm hover:bg-purple-100 transition-colors">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                        <span>Generate recipe for this ingredient</span>
+                    </button>
                 </div>
             </div>
 
-            <!-- Lifecycle -->
-            <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                <div class="px-4 py-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
-                    <span class="text-sm font-bold text-gray-700">Lifecycle State</span>
-                </div>
-                <div class="p-4 space-y-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-500 mb-1">Status</label>
-                        <select id="drawer-status" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6">
-                            <option value="active">✅ Active</option>
-                            <option value="pending">⏳ Pending</option>
-                            <option value="inactive">🚫 Inactive</option>
-                        </select>
-                    </div>
+            <!-- ── Publication State ────────────────────────────────────── -->
+            <div class="border-t border-gray-100 pt-6">
+                <h3 class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3 block">Publication State</h3>
+                <select id="drawer-status"
+                    class="block w-full rounded-md border-0 py-2.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6 bg-white shadow-sm font-medium">
+                    <option value="pending">🟡 Pending (Review needed)</option>
+                    <option value="active">🟢 Active (Visible to users)</option>
+                    <option value="rejected">🔴 Rejected (Hidden)</option>
+                </select>
+            </div>
+
+            <!-- ── Flavor Galaxy ─────────────────────────────────────── -->
+            <div class="border-t border-gray-100 pt-6">
+                <h3 class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3 block">Similarity Galaxy</h3>
+                <div id="drawer-galaxy-container" class="w-full h-64 rounded-xl border border-gray-200 bg-white relative overflow-hidden shadow-sm">
+                    <div id="drawer-galaxy" class="absolute inset-0"></div>
                 </div>
             </div>
 
-            <!-- Nutritional Data Snippet -->
+            <!-- ── Nutrition Facts ───────────────────────────────────── -->
             <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                 <div class="px-4 py-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
                     <span class="text-sm font-bold text-gray-700">Nutrition (per 100g)</span>
@@ -1594,9 +1602,62 @@
                 document.getElementById('drawer-fat').innerText = i.fat_per_100g ? `${Math.round(i.fat_per_100g)}g` : '—';
                 document.getElementById('drawer-carb').innerText = i.carbs_per_100g ? `${Math.round(i.carbs_per_100g)}g` : '—';
                 
+                // Draw graph
+                loadIngredientGalaxy(id);
+                
             }
         } catch (e) { console.error('Drawer error', e); }
         finally { document.getElementById('drawer-spinner').classList.add('hidden'); }
+    }
+
+    // Graph tracking variable
+    let _chartInstance = null;
+
+    async function loadIngredientGalaxy(id) {
+        if (!window.echarts) return;
+        
+        const container = document.getElementById('drawer-galaxy');
+        // Initial setup/resize
+        if (!_chartInstance) {
+            _chartInstance = echarts.init(container);
+            window.addEventListener('resize', () => _chartInstance.resize());
+        }
+        
+        _chartInstance.showLoading({ color: '#4f46e5', maskColor: 'rgba(255, 255, 255, 0.8)' });
+        
+        try {
+            const res = await fetch(`${API}/${id}/galaxy`);
+            const data = await res.json();
+            
+            if (data.success && data.nodes.length > 0) {
+                const option = {
+                    tooltip: { trigger: 'item' },
+                    series: [{
+                        type: 'graph',
+                        layout: 'force',
+                        data: data.nodes,
+                        links: data.links,
+                        roam: true, // allow pan/zoom
+                        label: { show: true, position: 'right', formatter: '{b}', fontSize: 11, color: '#374151' },
+                        force: { repulsion: 250, edgeLength: 60, layoutAnimation: true },
+                        lineStyle: { color: '#cbd5e1', width: 2, curveness: 0.1 }
+                    }]
+                };
+                _chartInstance.setOption(option, true);
+                
+                // Hack to fix 0x0 container size when Drawer is animating open
+                setTimeout(() => {
+                    _chartInstance.resize();
+                }, 350);
+            } else {
+                _chartInstance.clear();
+            }
+        } catch (e) {
+            console.error('Galaxy Error:', e);
+            _chartInstance.clear();
+        } finally {
+            _chartInstance.hideLoading();
+        }
     }
 </script>
 

@@ -241,6 +241,80 @@ def regenerate_image(ing_id: int):
     return jsonify({"success": False, "error": result.get("error", "Unknown error")}), 500
 
 
+@ingredients_bp.route("/api/<int:ing_id>/galaxy")
+@login_required
+@admin_required
+def ingredient_galaxy(ing_id: int):
+    """Returns ECharts JSON representing the ingredient's category tree and AI-similar siblings."""
+    ing = db.session.get(Ingredient, ing_id)
+    if not ing:
+        return jsonify({"success": False, "error": "Ingredient not found"}), 404
+
+    nodes = []
+    links = []
+
+    # 1. Add Current Ingredient (Large Center Node)
+    main_symbol = f"image://{ing.image_url}" if ing.image_url else "circle"
+    nodes.append({
+        "id": f"ing_{ing.id}",
+        "name": ing.name,
+        "symbolSize": 50,
+        "symbol": main_symbol,
+        "category": 0,
+        "itemStyle": {"color": "#4f46e5"}, # Fallback Indigo
+        "label": {"show": True}
+    })
+
+    # 2. Add Category Nodes
+    main_cat = ing.main_category or "Uncategorized"
+    sub_cat = ing.sub_category or "General"
+    
+    nodes.append({
+        "id": f"main_{main_cat}",
+        "name": main_cat.title(),
+        "symbolSize": 30,
+        "category": 1,
+        "itemStyle": {"color": "#4b5563"} # Dark Grey for categories
+    })
+    links.append({"source": f"ing_{ing.id}", "target": f"main_{main_cat}"})
+
+    if main_cat != sub_cat:
+        nodes.append({
+            "id": f"sub_{sub_cat}",
+            "name": sub_cat.title(),
+            "symbolSize": 25,
+            "category": 1,
+            "itemStyle": {"color": "#9ca3af"} # Light Grey for sub-categories
+        })
+        links.append({"source": f"main_{main_cat}", "target": f"sub_{sub_cat}"})
+        links.append({"source": f"ing_{ing.id}", "target": f"sub_{sub_cat}"})
+
+    # 3. Add AI-Similar Integrations via Postgres pgvector (if embedding exists)
+    if ing.embedding is not None:
+        similar_ings = db.session.execute(
+            db.select(Ingredient)
+            .where(Ingredient.id != ing.id)
+            .where(Ingredient.embedding != None)
+            .order_by(Ingredient.embedding.cosine_distance(ing.embedding))
+            .limit(5)
+        ).scalars().all()
+
+        for sim_ing in similar_ings:
+            node_id = f"sim_{sim_ing.id}"
+            sim_symbol = f"image://{sim_ing.image_url}" if sim_ing.image_url else "circle"
+            nodes.append({
+                "id": node_id,
+                "name": sim_ing.name,
+                "symbolSize": 35,
+                "symbol": sim_symbol,
+                "category": 2,
+                "itemStyle": {"color": "#10b981"} # Fallback emerald
+            })
+            links.append({"source": f"ing_{ing.id}", "target": node_id, "lineStyle": {"type": "dashed"}})
+
+    return jsonify({"success": True, "nodes": nodes, "links": links})
+
+
 @ingredients_bp.route("/api/<int:ing_id>/strip-background", methods=["POST"])
 @login_required
 @admin_required
@@ -304,9 +378,8 @@ def strip_background(ing_id: int):
 @admin_required
 def evaluate_ingredient(ing_id: int):
     """Trigger the LLM-as-a-Judge QA pipeline for a single ingredient.
-
-    Returns the total_score and whether the ingredient was auto-promoted from
-    'pending' to 'active' (score >= 85).
+    
+    Returns the total_score of the evaluation.
     """
     # Lazy import avoids circular dependency at module load time
     from services.ingredient_evaluation_service import evaluate_ingredient as run_qa

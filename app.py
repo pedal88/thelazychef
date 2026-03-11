@@ -2046,6 +2046,54 @@ def get_global_galaxy_graph():
 
     return jsonify({'nodes': list(nodes_dict.values()), 'links': links})
 
+@app.route('/explore/ingredient-galaxy')
+def explore_ingredient_galaxy():
+    """Renders the full-screen interactive D3 graph of ingredients."""
+    return render_template('explore_ingredient_galaxy.html')
+
+@app.route('/api/graph/ingredient-galaxy', methods=['GET'])
+def get_global_ingredient_galaxy_graph():
+    """Returns nodes and links for ingredients linked to main and sub categories."""
+    ingredients = db.session.execute(
+        db.select(Ingredient).where(Ingredient.status != 'inactive')
+    ).scalars().all()
+    
+    nodes_dict = {}
+    links = []
+    
+    for i in ingredients:
+        ing_id = f"ing_{i.id}"
+        nodes_dict[ing_id] = {
+            'id': ing_id,
+            'name': i.name,
+            'group': 'ingredient',
+            'image': i.image_url if i.image_url else None
+        }
+        
+        main_cat = i.main_category or "Uncategorized"
+        sub_cat = i.sub_category or "General"
+        
+        m_id = f"main_{main_cat}"
+        if m_id not in nodes_dict:
+            nodes_dict[m_id] = {
+                'id': m_id, 'name': main_cat, 'group': 'main_cat'
+            }
+            
+        # Add a sub-category node only if it differs from the main category
+        # Sometimes sub_category empty, default to "General"
+        if sub_cat and main_cat != sub_cat:
+            s_id = f"sub_{sub_cat}"
+            if s_id not in nodes_dict:
+                nodes_dict[s_id] = {
+                    'id': s_id, 'name': sub_cat, 'group': 'sub_cat'
+                }
+            links.append({'source': s_id, 'target': m_id, 'weight': 2.0})
+            links.append({'source': ing_id, 'target': s_id, 'weight': 1.0})
+        else:
+            links.append({'source': ing_id, 'target': m_id, 'weight': 1.0})
+
+    return jsonify({'nodes': list(nodes_dict.values()), 'links': links})
+
 @app.route('/api/graph/orbital/<int:recipe_id>', methods=['GET'])
 def get_orbital_graph(recipe_id):
     target = db.session.get(Recipe, recipe_id)
