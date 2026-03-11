@@ -42,7 +42,19 @@ def dashboard() -> str:
     solid_backgrounds      = request.args.get("solid_backgrounds", "0") == "1"
 
     # ── Build query ─────────────────────────────────────────────────
-    stmt = db.select(Ingredient).order_by(Ingredient.main_category, Ingredient.name)
+    from sqlalchemy.orm import aliased
+    from database.models import RecipeIngredient
+    
+    stmt = db.select(
+        Ingredient,
+        db.func.count(RecipeIngredient.id).label('recipe_count')
+    ).outerjoin(
+        RecipeIngredient, Ingredient.id == RecipeIngredient.ingredient_id
+    ).group_by(
+        Ingredient.id
+    ).order_by(
+        Ingredient.main_category, Ingredient.name
+    )
 
     if selected_statuses:
         stmt = stmt.where(Ingredient.status.in_(selected_statuses))
