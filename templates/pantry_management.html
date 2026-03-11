@@ -191,17 +191,7 @@
                                     </div>
                                     {% endif %}
 
-                                    <!-- Hover Actions -->
-                                    <div
-                                        class="absolute -bottom-2 -right-2 flex gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity z-10">
-                                        <button onclick="openRegenModal('{{ ing.id }}')"
-                                            class="bg-white text-orange-600 rounded-full p-1 shadow border border-slate-200 hover:bg-orange-50"
-                                            title="Regenerate Image"><svg class="w-3 h-3" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                                            </svg></button>
-                                    </div>
+
                                 </div>
                             </td>
 
@@ -291,62 +281,7 @@
 
     </div>
 
-    <!-- REGENERATE IMAGE MODAL -->
-    <div id="regenModal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
-        <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"></div>
-        <div class="fixed inset-0 z-10 overflow-y-auto">
-            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
 
-                <div
-                    class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
-                    <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-                        <div class="sm:flex sm:items-start">
-                            <div
-                                class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-orange-100 sm:mx-0 sm:h-10 sm:w-10">
-                                <svg class="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                                </svg>
-                            </div>
-                            <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
-                                <h3 class="text-base font-semibold leading-6 text-slate-900" id="modalTitle">Regenerate
-                                    Image</h3>
-                                <div class="mt-2">
-                                    <p class="text-xs text-slate-500 mb-2">Review the AI prompt and generate new 1:1
-                                        ingredient images.</p>
-                                    <textarea id="modalPrompt" rows="3"
-                                        class="block w-full rounded-md border-0 py-1.5 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-xs sm:leading-6"></textarea>
-                                    <div id="modalGrid" class="mt-4 grid grid-cols-2 gap-2">
-                                        <div
-                                            class="col-span-2 aspect-[1/1] bg-slate-50 rounded border border-dashed border-slate-300 flex items-center justify-center">
-                                            <span class="text-xs text-slate-400">Images will appear here</span>
-                                        </div>
-                                    </div>
-                                    <input type="hidden" id="modalIngId">
-                                    <input type="hidden" id="modalTempFilename">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-slate-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                        <button type="button" id="btnSaveModal" onclick="saveRegenImage()" disabled
-                            class="inline-flex w-full justify-center rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-slate-700 sm:ml-3 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed">
-                            Save Selection
-                        </button>
-                        <button type="button" id="btnGenModal" onclick="generateRegenImage()"
-                            class="mt-3 inline-flex w-full justify-center rounded-md bg-orange-600 px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-orange-300 hover:bg-orange-500 sm:mt-0 sm:ml-3 sm:w-auto">
-                            Generate
-                        </button>
-                        <button type="button" onclick="closeModal()"
-                            class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:mt-0 sm:w-auto">
-                            Cancel
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
     <!-- JSON VIEWER MODAL -->
     <div id="jsonModal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
         <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeJsonModal()"></div>
@@ -680,105 +615,7 @@
         }
     }
 
-    // --- Modal Logic (Existing) ---
-    async function openRegenModal(id) {
-        const modal = document.getElementById('regenModal');
-        const title = document.getElementById('modalTitle');
-        const promptInput = document.getElementById('modalPrompt');
-        const ingIdInput = document.getElementById('modalIngId');
 
-        modal.classList.remove('hidden');
-        promptInput.value = 'Loading...';
-
-        try {
-            const res = await fetch(`/api/ingredient/${id}`);
-            const data = await res.json();
-            if (data.success) {
-                title.innerText = `Regenerate: ${data.name}`;
-                promptInput.value = data.image_prompt;
-                ingIdInput.value = data.id;
-            }
-        } catch (e) { console.error(e); }
-    }
-
-    function closeModal() { document.getElementById('regenModal').classList.add('hidden'); }
-
-    let MODAL_IMAGES = [];
-    async function generateRegenImage() {
-        // ... (Same as before)
-        const prompt = document.getElementById('modalPrompt').value;
-        const btn = document.getElementById('btnGenModal');
-        const grid = document.getElementById('modalGrid');
-
-        btn.disabled = true;
-        btn.innerText = "Generating...";
-
-        grid.innerHTML = `
-            <div class="col-span-2 aspect-[1/1] bg-slate-50 flex items-center justify-center">
-                <div class="animate-spin h-6 w-6 border-2 border-orange-600 border-t-transparent rounded-full"></div>
-            </div>`;
-
-        try {
-            const response = await fetch('/api/generate-ingredient-image', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: prompt })
-            });
-            const res = await response.json();
-
-            if (res.success) {
-                MODAL_IMAGES = res.images;
-                renderModalGrid(res.images);
-            } else {
-                grid.innerHTML = `<div class="col-span-2 text-red-500 text-xs p-2">Error: ${res.error}</div>`;
-            }
-        } catch (e) {
-            console.error(e);
-            grid.innerHTML = `<div class="col-span-2 text-red-500 text-xs p-2">Failed to generate.</div>`;
-        } finally {
-            btn.disabled = false;
-            btn.innerText = "Generate";
-        }
-    }
-
-    function renderModalGrid(images) {
-        const grid = document.getElementById('modalGrid');
-        grid.innerHTML = '';
-        images.forEach((img, idx) => {
-            const div = document.createElement('div');
-            div.className = "relative aspect-square rounded overflow-hidden cursor-pointer border-2 border-transparent hover:border-orange-500";
-            div.onclick = () => selectModalImage(idx);
-            div.id = `modal-img-${idx}`;
-            div.innerHTML = `<img src="${img.url}" class="w-full h-full object-cover">`;
-            grid.appendChild(div);
-        });
-    }
-
-    function selectModalImage(index) {
-        const imgData = MODAL_IMAGES[index];
-        document.getElementById('modalTempFilename').value = imgData.filename;
-        document.getElementById('btnSaveModal').disabled = false;
-        MODAL_IMAGES.forEach((_, idx) => {
-            const el = document.getElementById(`modal-img-${idx}`);
-            if (idx === index) el.classList.add('border-orange-500', 'ring-2');
-            else el.classList.remove('border-orange-500', 'ring-2');
-        });
-    }
-
-    async function saveRegenImage() {
-        const id = document.getElementById('modalIngId').value;
-        const tempFile = document.getElementById('modalTempFilename').value;
-        const prompt = document.getElementById('modalPrompt').value;
-
-        try {
-            await fetch('/api/update-ingredient-image', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id, temp_filename: tempFile, image_prompt: prompt })
-            });
-            window.location.reload();
-        } catch (e) { alert("Error saving"); }
-    }
 
     async function deleteIngredient(id, name, force = false) {
         if (!force && !confirm(`Delete ${name}?`)) return;
