@@ -405,6 +405,22 @@ def evaluate_ingredient(ing_id: int):
         return jsonify({"success": False, "error": str(exc)}), 500
 
 
+@ingredients_bp.route("/api/merge-suggestions", methods=["GET"])
+@login_required
+@admin_required
+def get_merge_suggestions():
+    """Returns AI-generated suggestions for ingredient merging."""
+    from services.merge_suggestions import get_suggested_merges
+    try:
+        limit = int(request.args.get('limit', 20))
+        suggestions = get_suggested_merges(limit=limit)
+        return jsonify({
+            "success": True,
+            "suggestions": suggestions
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @ingredients_bp.route("/api/unscored_ids", methods=["GET"])
 @login_required
 @admin_required

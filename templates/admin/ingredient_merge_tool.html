@@ -18,8 +18,22 @@
   <div class="bg-white shadow sm:rounded-lg mb-8">
     <div class="px-4 py-5 sm:p-6">
       <h3 class="text-base font-semibold leading-6 text-gray-900">Merge Duplicates</h3>
-      <div class="mt-2 max-w-xl text-sm text-gray-500">
+      <div class="mt-2 text-sm text-gray-500 mb-6">
         <p>This action will re-point all recipe relations from the loser to the winner, merge their aliases, and destroy the loser. This cannot be undone.</p>
+      </div>
+
+      <!-- AI Suggestions Panel -->
+      <div id="suggestionsPanel" class="mb-8 hidden">
+        <h4 class="text-sm font-semibold text-indigo-600 mb-2 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          AI Merge Suggestions
+        </h4>
+        <div class="bg-indigo-50/50 rounded-lg border border-indigo-100 p-4">
+          <div id="suggestionsLoading" class="text-sm text-indigo-400 animate-pulse">Scanning database for likely duplicates...</div>
+          <ul id="suggestionsList" class="space-y-2 hidden">
+            <!-- Populated via Javascript -->
+          </ul>
+        </div>
       </div>
       
       <form id="mergeForm" class="mt-6 space-y-6">
@@ -108,6 +122,9 @@
                 e.target.querySelector('button').disabled = false;
             }
         });
+
+        // Fetch suggestions on load
+        fetchSuggestions();
     });
     
     function setupAutocomplete(inputId, hiddenId, resultsId, displayId) {
@@ -148,6 +165,76 @@
             });
             results.classList.remove('hidden');
         });
+        
+        // Hide results on blur with small delay
+        input.addEventListener('blur', () => {
+            setTimeout(() => {
+                results.classList.add('hidden');
+            }, 200);
+        });
+    }
+
+    function checkSubmitReady() {
+        const winnerId = document.getElementById('winnerId').value;
+        const loserId = document.getElementById('loserId').value;
+        document.getElementById('mergeBtn').disabled = !(winnerId && loserId);
+    }
+
+    async function fetchSuggestions() {
+        const loading = document.getElementById('suggestionsLoading');
+        const list = document.getElementById('suggestionsList');
+        const panel = document.getElementById('suggestionsPanel');
+        
+        panel.classList.remove('hidden');
+        
+        try {
+            const res = await fetch('/admin/ingredients-management/api/merge-suggestions?limit=5');
+            const data = await res.json();
+            
+            loading.classList.add('hidden');
+            list.classList.remove('hidden');
+            
+            if(data.success && data.suggestions.length > 0) {
+                list.innerHTML = '';
+                data.suggestions.forEach(s => {
+                    const li = document.createElement('li');
+                    li.className = "flex items-center justify-between bg-white px-4 py-2 rounded border border-indigo-100 shadow-sm text-sm";
+                    li.innerHTML = `
+                        <div class="flex items-center gap-4">
+                            <div>
+                                <span class="font-bold text-green-700">${s.winner_name}</span> 
+                                <span class="text-gray-400 text-xs">(Keep)</span>
+                            </div>
+                            <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                            <div>
+                                <span class="font-medium text-red-600 line-through">${s.loser_name}</span>
+                                <span class="text-gray-400 text-xs">(Destroy)</span>
+                            </div>
+                            <span class="text-xs text-indigo-400 ml-4 font-mono bg-indigo-50 px-2 py-0.5 rounded">${s.reason}</span>
+                        </div>
+                        <button type="button" onclick="applySuggestion(${s.winner_id}, '${s.winner_name.replace(/'/g, "\\'")}', ${s.loser_id}, '${s.loser_name.replace(/'/g, "\\'")}')" class="text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-3 py-1 rounded font-medium transition-colors">Select</button>
+                    `;
+                    list.appendChild(li);
+                });
+            } else {
+                list.innerHTML = '<li class="text-sm text-gray-500 italic">No strong duplicates identified at this time.</li>';
+            }
+        } catch(e) {
+            loading.innerText = "Failed to load suggestions.";
+        }
+    }
+
+    function applySuggestion(winnerId, winnerName, loserId, loserName) {
+        document.getElementById('winnerId').value = winnerId;
+        document.getElementById('winnerDisplay').textContent = `Selected: ${winnerName} (ID: ${winnerId})`;
+        document.getElementById('winnerDisplay').classList.remove('hidden');
+        
+        document.getElementById('loserId').value = loserId;
+        document.getElementById('loserDisplay').textContent = `Selected: ${loserName} (ID: ${loserId})`;
+        document.getElementById('loserDisplay').classList.remove('hidden');
+        
+        checkSubmitReady();
+    }
         
         // Hide if clicking outside
         document.addEventListener('click', (e) => {
