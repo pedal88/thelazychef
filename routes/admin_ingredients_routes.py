@@ -45,7 +45,7 @@ def dashboard() -> str:
     from sqlalchemy.orm import aliased
     from database.models import RecipeIngredient
     
-    stmt = db.select(
+    query = db.session.query(
         Ingredient,
         db.func.count(RecipeIngredient.id).label('recipe_count')
     ).outerjoin(
@@ -57,34 +57,34 @@ def dashboard() -> str:
     )
 
     if selected_statuses:
-        stmt = stmt.where(Ingredient.status.in_(selected_statuses))
+        query = query.filter(Ingredient.status.in_(selected_statuses))
 
     if selected_categories:
-        stmt = stmt.where(Ingredient.main_category.in_(selected_categories))
+        query = query.filter(Ingredient.main_category.in_(selected_categories))
 
     if selected_sub_cats:
-        stmt = stmt.where(Ingredient.sub_category.in_(selected_sub_cats))
+        query = query.filter(Ingredient.sub_category.in_(selected_sub_cats))
 
     if selected_basic:
         if "yes" in selected_basic and "no" not in selected_basic:
-            stmt = stmt.where(Ingredient.is_staple == True)
+            query = query.filter(Ingredient.is_staple == True)
         elif "no" in selected_basic and "yes" not in selected_basic:
-            stmt = stmt.where(Ingredient.is_staple == False)
+            query = query.filter(Ingredient.is_staple == False)
 
     if search_query:
-        stmt = stmt.where(Ingredient.name.ilike(f"%{search_query}%"))
+        query = query.filter(Ingredient.name.ilike(f"%{search_query}%"))
 
     if missing_images:
-        stmt = stmt.where(
+        query = query.filter(
             (Ingredient.image_url == None) | (Ingredient.image_url == "")
         )
         
     if solid_backgrounds:
-        stmt = stmt.where(
+        query = query.filter(
             (Ingredient.image_url != None) & (Ingredient.image_url != "") & (Ingredient.has_transparent_image == False)
         )
 
-    pagination = db.paginate(stmt, page=page, per_page=per_page, error_out=False)
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
 
     # ── Fetch distinct values for filter menus ──────────────────────
     category_options = sorted(filter(None, [
