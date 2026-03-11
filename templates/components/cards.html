@@ -17,10 +17,10 @@ Expects a RecipeIngredient object (ri) which has .ingredient relation and .amoun
         {% if ingredient.image_url %}
         {% if ingredient.image_url.startswith('http://') or ingredient.image_url.startswith('https://') %}
         <img src="{{ ingredient.image_url }}" alt="{{ ingredient.name }}"
-            class="w-full h-full {% if size == 'xl' %}object-cover{% else %}object-contain{% endif %}" loading="lazy">
+            class="w-full h-full {% if size == 'xl' %}object-cover{% else %}object-contain{% endif %} mix-blend-multiply" style="filter: contrast(1.05) brightness(1.02);" loading="lazy">
         {% else %}
         <img src="{{ url_for('static', filename=ingredient.image_url) }}" alt="{{ ingredient.name }}"
-            class="w-full h-full {% if size == 'xl' %}object-cover{% else %}object-contain{% endif %}" loading="lazy">
+            class="w-full h-full {% if size == 'xl' %}object-cover{% else %}object-contain{% endif %} mix-blend-multiply" style="filter: contrast(1.05) brightness(1.02);" loading="lazy">
         {% endif %}
         {% else %}
         <!-- Fallback Gradient (should rarely adhere with 100% coverage) -->

@@ -1,0 +1,68 @@
+{% extends "fragments/base_fragment.html" %}
+
+{% block content %}
+{# Background layer (zoomed by ffmpeg) #}
+<div class="full-bleed media-bg" style="background: var(--bg-root);">
+    {% if image_url %}
+        <div class="absolute inset-0 z-0 overflow-hidden mix-blend-overlay">
+            <img src="{{ image_url }}" class="w-full h-full object-cover transform scale-125 opacity-30 blur-3xl saturate-150 mix-blend-multiply">
+        </div>
+    {% endif %}
+    <div class="absolute inset-0 z-0" style="background: radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, transparent 100%);"></div>
+</div>
+
+{# Foreground layer (static and crisp) #}
+<div class="absolute inset-0 z-10 media-fg flex items-center justify-center p-12">
+    
+    {# Central Card matching theme #}
+    <div class="w-full h-full rounded-[40px] shadow-2xl relative p-12 flex flex-col items-center justify-center" 
+         style="background: var(--bg-card); border: 1px solid var(--border-subtle);">
+         
+        {# Floating Badge #}
+        <div class="absolute top-12 left-1/2 -translate-x-1/2 flex items-center justify-center">
+            <span class="inline-flex items-center rounded-md px-6 py-2 text-[20px] font-bold uppercase tracking-[0.3em] shadow-xl"
+                  style="background: var(--accent); color: white; border: 1px solid rgba(255,255,255,0.3);">
+                Created By
+            </span>
+        </div>
+
+        {# Avatar Container #}
+        <div class="relative w-[400px] h-[400px] mb-12 flex-shrink-0 mx-auto group z-20" style="margin-top: 50px;">
+            {# Subtle decorative rings matching accent #}
+            <div class="absolute -inset-4 rounded-full border-2 border-dashed animate-[spin_40s_linear_infinite]" style="border-color: var(--accent-light); opacity: 0.5;"></div>
+            <div class="absolute -inset-8 rounded-full border animate-[spin_60s_linear_infinite_reverse]" style="border-color: var(--border-subtle);"></div>
+            
+            {# Main Avatar Frame #}
+            <div class="absolute inset-0 rounded-full overflow-hidden border-[6px]"
+                 style="background: var(--bg-root); border-color: var(--accent); box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+                {% if chef_image_url %}
+                    <img src="{{ chef_image_url }}" alt="{{ chef_name }}" class="w-full h-full object-cover">
+                {% else %}
+                    <div class="w-full h-full flex items-center justify-center" style="background: var(--bg-card);">
+                        <span class="text-[180px] opacity-20">👨‍🍳</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {# Chef Identity & Lore #}
+        <div class="text-center w-full max-w-[850px] flex flex-col items-center z-20">
+            <h1 class="font-serif font-black leading-[1.1] tracking-tight mb-4 text-center" style="color: var(--fg-base); font-size: 80px;">
+                {{ chef_name }}
+            </h1>
+            
+            <h2 class="text-[32px] font-bold uppercase tracking-[0.25em] mb-12" style="color: var(--accent);">
+                {{ chef_archetype }}
+            </h2>
+            
+            <div class="relative w-full px-8 py-6 rounded-3xl" style="background: rgba(0,0,0,0.03);">
+                <span class="absolute -top-10 -left-6 text-[120px] opacity-10 font-serif leading-none" style="color: var(--fg-base);">"</span>
+                <p class="text-[36px] leading-[1.4] font-serif italic relative z-10 text-center" style="color: var(--fg-muted);">
+                    {{ chef_description }}
+                </p>
+                <span class="absolute -bottom-6 -right-6 text-[120px] opacity-10 font-serif leading-none" style="color: var(--fg-base);">"</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

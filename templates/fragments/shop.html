@@ -38,9 +38,9 @@
                         style="border-color: var(--card-border);">
                         {# Ingredient image or initial #}
                         {% if ing.image_url %}
-                        <img src="{{ ing.image_url }}"
-                            class="{% if density == 'compact' %}w-10 h-10 rounded-lg{% else %}w-14 h-14 rounded-xl{% endif %} object-cover shrink-0"
-                            style="border: 1px solid var(--card-border);">
+                        <div class="{% if density == 'compact' %}w-10 h-10 rounded-lg{% else %}w-14 h-14 rounded-xl{% endif %} overflow-hidden bg-white flex items-center justify-center shrink-0 shadow-sm border border-slate-100/50">
+                            <img src="{{ ing.image_url }}" class="w-[120%] h-[120%] object-cover mix-blend-multiply" style="filter: contrast(1.05) brightness(1.02);">
+                        </div>
                         {% else %}
                         <div class="{% if density == 'compact' %}w-10 h-10 rounded-lg{% else %}w-14 h-14 rounded-xl{% endif %} flex items-center justify-center shrink-0"
                             style="background: var(--card-bg); border: 1px solid var(--card-border);">

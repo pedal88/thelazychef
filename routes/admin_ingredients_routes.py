@@ -39,6 +39,7 @@ def dashboard() -> str:
     selected_basic         = request.args.getlist("basic")   # "yes" | "no"
     search_query           = request.args.get("search", "").strip()
     missing_images         = request.args.get("missing_images", "0") == "1"
+    solid_backgrounds      = request.args.get("solid_backgrounds", "0") == "1"
 
     # ── Build query ─────────────────────────────────────────────────
     stmt = db.select(Ingredient).order_by(Ingredient.main_category, Ingredient.name)
@@ -64,6 +65,11 @@ def dashboard() -> str:
     if missing_images:
         stmt = stmt.where(
             (Ingredient.image_url == None) | (Ingredient.image_url == "")
+        )
+        
+    if solid_backgrounds:
+        stmt = stmt.where(
+            (Ingredient.image_url != None) & (Ingredient.image_url != "") & (Ingredient.has_transparent_image == False)
         )
 
     pagination = db.paginate(stmt, page=page, per_page=per_page, error_out=False)
@@ -94,6 +100,7 @@ def dashboard() -> str:
         selected_basic=selected_basic,
         search_query=search_query,
         missing_images=missing_images,
+        solid_backgrounds=solid_backgrounds,
     )
 
 
@@ -187,6 +194,7 @@ def inspect_ingredient(ing_id: int):
             "average_g_per_unit": ing.average_g_per_unit,
             "is_staple": ing.is_staple,
             "image_url": ing.image_url,
+            "has_transparent_image": ing.has_transparent_image,
             "image_prompt": ing.image_prompt,
             "aliases": ing.aliases,
             "calories_per_100g": ing.calories_per_100g,
@@ -212,7 +220,7 @@ def regenerate_image(ing_id: int):
     if not ing:
         return jsonify({"success": False, "error": "Ingredient not found"}), 404
 
-    prompt = ing.image_prompt or f"A professional studio food photography shot of {ing.name}, isolated on a white background, clean and appetising."
+    prompt = ing.image_prompt or f"A professional studio food photography shot of {ing.name}, isolated on a stark white background, brightly lit with absolutely zero drop shadows, clean and appetising."
 
     storage_provider = get_storage_provider()
     generator = VertexImageGenerator(
@@ -225,10 +233,70 @@ def regenerate_image(ing_id: int):
     if result.get("success"):
         # Persist the new URL directly to the ingredient record
         ing.image_url = result["image_url"]
+        if "has_transparent_image" in result:
+            ing.has_transparent_image = result["has_transparent_image"]
         db.session.commit()
         return jsonify({"success": True, "image_url": ing.image_url})
 
     return jsonify({"success": False, "error": result.get("error", "Unknown error")}), 500
+
+
+@ingredients_bp.route("/api/<int:ing_id>/strip-background", methods=["POST"])
+@login_required
+@admin_required
+def strip_background(ing_id: int):
+    """Downloads existing image, runs rembg, re-uploads, saves to db."""
+    import requests
+    import time
+    from PIL import Image
+    from io import BytesIO
+    from rembg import remove
+    from werkzeug.utils import secure_filename
+    from services.storage_service import get_storage_provider
+
+    ing = db.session.get(Ingredient, ing_id)
+    if not ing or not ing.image_url:
+        return jsonify({"success": False, "error": "Ingredient or image not found"}), 404
+
+    # Handle legacy relative paths if any exist
+    url = ing.image_url
+    if not url.startswith('http'):
+        url = f"https://storage.googleapis.com/thelazychef-assets/{url}"
+
+    try:
+        resp = requests.get(url, timeout=10)
+        if resp.status_code != 200:
+            return jsonify({"success": False, "error": "Could not download existing image"}), 400
+
+        # Run rembg on the byte stream
+        raw_bytes = resp.content
+        out_bytes = remove(raw_bytes)
+        
+        # Convert to PNG to keep transparency
+        img = Image.open(BytesIO(out_bytes))
+        final_buf = BytesIO()
+        img.save(final_buf, format="PNG")
+        final_png = final_buf.getvalue()
+
+        # Build new filename to bust cache
+        ts = int(time.time())
+        import re
+        safe_name = re.sub(r'[^a-zA-Z0-9]', '_', ing.name.lower())
+        safe_name = re.sub(r'_+', '_', safe_name).strip('_')
+        filename = f"{safe_name}_{ts}.png"
+
+        # Upload
+        provider = get_storage_provider()
+        public_url = provider.save(final_png, filename, "pantry/candidates")
+
+        # Save to DB
+        ing.image_url = public_url
+        ing.has_transparent_image = True
+        db.session.commit()
+
+        return jsonify({"success": True, "image_url": public_url})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 
 @ingredients_bp.route("/api/<int:ing_id>/evaluate", methods=["POST"])

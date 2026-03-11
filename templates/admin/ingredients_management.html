@@ -34,6 +34,11 @@
                       {{ 'bg-indigo-600 text-white ring-indigo-600' if missing_images else 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50' }}">
                 🖼️ Missing Images
             </a>
+            <a href="{{ url_for('ingredients_mgmt.dashboard', solid_backgrounds='1') }}"
+                class="inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold shadow-sm ring-1 ring-inset transition-colors
+                      {{ 'bg-orange-500 text-white ring-orange-500' if solid_backgrounds else 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50' }}">
+                ⚠️ Solid Backgrounds
+            </a>
 
             <div class="ml-auto flex items-center gap-3">
                 <!-- Search Input -->
@@ -210,13 +215,22 @@
                                     <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
                                         <div class="h-10 w-10 shrink-0">
                                             {% if ing.image_url %}
-                                            <img id="img-{{ ing.id }}" src="{{ ing.image_url }}" alt="{{ ing.name }}"
-                                                class="h-10 w-10 rounded-full object-cover"
-                                                onerror="this.style.display='none'; document.getElementById('ph-{{ ing.id }}').style.display='flex';">
-                                            <div id="ph-{{ ing.id }}"
-                                                class="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-400"
-                                                style="display:none;">
-                                                {{ ing.name[:2]|upper }}
+                                            <div class="relative inline-block h-10 w-10">
+                                                <img id="img-{{ ing.id }}" src="{{ ing.image_url }}" alt="{{ ing.name }}"
+                                                    class="h-10 w-10 rounded-full object-cover"
+                                                    onerror="this.style.display='none'; document.getElementById('ph-{{ ing.id }}').style.display='flex';">
+                                                
+                                                {% if not ing.has_transparent_image %}
+                                                <div class="absolute -top-1 -right-1 z-10 bg-orange-500 text-white rounded-full w-4 h-4 flex items-center justify-center shadow-sm" title="Solid background - needs transparent regeneration">
+                                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                                </div>
+                                                {% endif %}
+                                                
+                                                <div id="ph-{{ ing.id }}"
+                                                    class="h-10 w-10 rounded-full bg-gray-100 items-center justify-center text-xs font-bold text-gray-400"
+                                                    style="display:none;">
+                                                    {{ ing.name[:2]|upper }}
+                                                </div>
                                             </div>
                                             {% else %}
                                             <div id="ph-{{ ing.id }}"
@@ -228,10 +242,11 @@
                                     </td>
 
                                     <!-- Name -->
-                                    <td
-                                        class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 max-w-xs">
-                                        {{ ing.name }} <span class="ml-1 text-xs text-gray-400 font-normal">#{{ ing.id
-                                            }}</span>
+                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium sm:pl-6 max-w-xs">
+                                        <button onclick="openDrawer({{ ing.id }})" class="text-left group outline-none overflow-hidden max-w-full">
+                                            <span class="text-gray-900 group-hover:text-indigo-600 transition-colors block truncate">{{ ing.name }}</span>
+                                            <span class="text-xs text-gray-400 font-normal group-hover:text-indigo-400">#{{ ing.id }}</span>
+                                        </button>
                                         <br>
                                         <span class="font-mono text-xs text-gray-400">{{ ing.food_id }}</span>
                                     </td>
@@ -482,10 +497,16 @@
             <button onclick="clearSelection()"
                 class="text-sm text-gray-500 hover:text-gray-900 underline">Cancel</button>
         </div>
-        <button type="button" onclick="bulkRegenerate()"
-            class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition-colors">
-            ⚡ Regenerate Images
-        </button>
+        <div class="flex items-center gap-3">
+            <button type="button" onclick="bulkStripBackground()"
+                class="rounded-md bg-orange-50 px-4 py-2 text-sm font-semibold text-orange-600 shadow-sm ring-1 ring-inset ring-orange-200 hover:bg-orange-100 transition-colors">
+                🪄 Strip Backgrounds
+            </button>
+            <button type="button" onclick="bulkRegenerate()"
+                class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition-colors">
+                ⚡ Regenerate Images
+            </button>
+        </div>
     </div>
 </div>
 
@@ -840,6 +861,25 @@
         finally { btn.disabled = false; btn.innerHTML = orig; }
     }
 
+    async function stripBackgroundImage(id, btn) {
+        const orig = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<svg class="animate-spin h-4 w-4 text-orange-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>';
+        try {
+            const res = await fetch(`${API}/${id}/strip-background`, { method: 'POST' });
+            const data = await res.json();
+            if (data.success) {
+                const img = document.getElementById(`img-${id}`);
+                const ph = document.getElementById(`ph-${id}`);
+                if (img) { img.src = data.image_url + '?t=' + Date.now(); img.style.display = ''; if (ph) ph.style.display = 'none'; }
+                showToast('✅ Background stripped!');
+                // Wait for image loading then refresh drawer data
+                setTimeout(() => { if (_drawerCurrentId == id) fetchDrawerData(id); }, 1000);
+            } else { showToast(`Strip failed: ${data.error}`, 'error'); }
+        } catch { showToast('Network error.', 'error'); }
+        finally { btn.disabled = false; btn.innerHTML = orig; }
+    }
+
     // ── Bulk Selection ────────────────────────────────────────────
     const selectedIds = new Set();
     const bulkBar = document.getElementById('bulk-action-bar');
@@ -898,6 +938,32 @@
         clearSelection();
     }
 
+    // ── Bulk Strip Background (sequential) ────────────────────────
+    async function bulkStripBackground() {
+        const ids = Array.from(selectedIds);
+        if (!ids.length) return;
+        if (!confirm(`Strip backgrounds from ${ids.length} existing image(s)? This will keep the current photos but make them transparent.`)) return;
+
+        showToast(`Stripping background for ${ids.length} ingredients…`, 'info');
+        let ok = 0, fail = 0;
+        for (const id of ids) {
+            try {
+                const res = await fetch(`${API}/${id}/strip-background`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) { 
+                    ok++; 
+                    const img = document.getElementById(`img-${id}`); 
+                    if (img) img.src = data.image_url + '?t=' + Date.now(); 
+                }
+                else fail++;
+            } catch { fail++; }
+        }
+        showToast(`✅ Done! ${ok} ok, ${fail} failed.`, fail > 0 ? 'warning' : 'success');
+        clearSelection();
+        // Give time for images to reload
+        setTimeout(() => window.location.reload(), 1500);
+    }
+    
     // ── QA Evaluation ─────────────────────────────────────────────
     async function runQA(id, name, btn) {
         if (!confirm(`Run LLM QA evaluation on "${name}"?\nThis calls Gemini with the ingredient image and metadata.`)) return;
@@ -1276,6 +1342,261 @@
             btn.textContent = 'Generate recipe for this ingredient';
             alert('Network error: ' + e.message);
         }
+    }
+</script>
+
+<!-- ── Ingredient Slide-out Drawer ─────────────────────── -->
+<div id="ingredient-drawer-backdrop" class="fixed inset-0 bg-gray-900/40 z-[150] hidden opacity-0 transition-opacity" onclick="closeDrawer()"></div>
+<div id="ingredient-drawer" class="fixed top-0 right-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-[160] transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+    <!-- Drawer Header -->
+    <div class="px-6 py-5 border-b border-gray-100 flex items-start justify-between bg-white shrink-0">
+        <h2 id="drawer-title" class="text-lg font-bold text-gray-900 truncate flex-1 pr-4">Loading...</h2>
+        <button onclick="closeDrawer()" class="shrink-0 text-gray-500 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 p-2 rounded-full transition-colors outline-none">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- Drawer Body -->
+    <div class="flex-1 overflow-y-auto bg-gray-50/50 relative">
+        <!-- Spinner -->
+        <div id="drawer-spinner" class="absolute inset-0 bg-white/80 z-10 flex items-center justify-center hidden">
+            <svg class="animate-spin h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
+        </div>
+        
+        <div class="p-6 space-y-8">
+            <!-- Hero Row -->
+            <div class="flex items-start gap-4">
+                <div class="h-20 w-20 shrink-0 rounded-2xl border border-gray-100 bg-white shadow-sm flex items-center justify-center relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIj48L3JlY3Q+CjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9IiNlZWUiPjwvcmVjdD4KPHJlY3QgeD0iNCIgeT0iNCIgd2lkdGg9IjQiIGhlaWdodD0iNCIgZmlsbD0iI2VlZSI+PC9yZWN0Pgo8L3N2Zz4=')] opacity-50 z-0"></div>
+                    <img id="drawer-img" src="" class="h-full w-full object-cover hidden mix-blend-multiply filter contrast-105 brightness-105 relative z-10" alt="">
+                    <div id="drawer-ph" class="h-full w-full bg-gray-50 text-gray-400 text-xl font-bold flex items-center justify-center relative z-10">?</div>
+                </div>
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span id="drawer-id-badge" class="inline-flex items-center rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 font-mono">ID: —</span>
+                        <span id="drawer-food-id-badge" class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 font-mono">F: —</span>
+                    </div>
+                    <div class="mt-2 text-sm text-gray-500">
+                        <span class="block"><strong>Category:</strong> <span id="drawer-cat">—</span></span>
+                        <span class="block"><strong>Sub:</strong> <span id="drawer-subcat">—</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions Row -->
+            <div>
+                <h3 id="drawer-legacy-warn" class="hidden text-xs font-bold uppercase tracking-widest text-orange-600 mb-3 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                    Solid Background Detected
+                </h3>
+                <h3 id="drawer-actions-title" class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Quick Actions</h3>
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="drawer-regen-btn" onclick="const id = this.dataset.id; regenImage(id, this); setTimeout(() => fetchDrawerData(id), 2500);" class="flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 hover:text-indigo-600 transition-colors">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                        <span id="drawer-regen-lbl">Regen Image</span>
+                    </button>
+                    <button id="drawer-qa-btn" onclick="const id = this.dataset.id; const name = document.getElementById('drawer-title').innerText; runQA(id, name, this); setTimeout(() => fetchDrawerData(id), 6000);" class="flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 hover:text-blue-600 transition-colors">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        Run QA
+                    </button>
+                    <button id="drawer-inspect-btn" onclick="const id = this.dataset.id; inspectIngredient(id);" class="flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition-colors">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                        JSON Dump
+                    </button>
+                    <button id="drawer-delete-btn" onclick="const id = this.dataset.id; const name = document.getElementById('drawer-title').innerText; deleteIngredient(id, name); closeDrawer();" class="col-span-2 flex items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 text-red-700 px-3 py-2 text-sm font-semibold shadow-sm hover:bg-red-100 transition-colors">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        Delete Ingredient
+                    </button>
+                </div>
+            </div>
+
+            <!-- Lifecycle -->
+            <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                <div class="px-4 py-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
+                    <span class="text-sm font-bold text-gray-700">Lifecycle State</span>
+                </div>
+                <div class="p-4 space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Status</label>
+                        <select id="drawer-status" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                            <option value="active">✅ Active</option>
+                            <option value="pending">⏳ Pending</option>
+                            <option value="inactive">🚫 Inactive</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nutritional Data Snippet -->
+            <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                <div class="px-4 py-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
+                    <span class="text-sm font-bold text-gray-700">Nutrition (per 100g)</span>
+                    <span class="text-xs text-gray-400 font-mono flex items-center gap-1" id="drawer-source">—</span>
+                </div>
+                <div class="p-4 grid grid-cols-2 gap-4 text-sm">
+                    <div><span class="text-gray-500">Calories:</span> <span class="font-bold text-gray-900 ml-1" id="drawer-cal">—</span></div>
+                    <div><span class="text-gray-500">Protein:</span> <span class="font-bold text-gray-900 ml-1" id="drawer-pro">—</span></div>
+                    <div><span class="text-gray-500">Fat:</span> <span class="font-bold text-gray-900 ml-1" id="drawer-fat">—</span></div>
+                    <div><span class="text-gray-500">Carbs:</span> <span class="font-bold text-gray-900 ml-1" id="drawer-carb">—</span></div>
+                </div>
+            </div>
+
+             <!-- Link to recipe shortcut -->
+            <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden p-4">
+                 <button id="drawer-link-btn" onclick="const id=this.dataset.id; const name=document.getElementById('drawer-title').innerText; openLinkModal(id, name, null);" class="w-full flex items-center justify-between group">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-orange-100 p-2 rounded-lg text-orange-600 group-hover:bg-orange-500 group-hover:text-white transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m4.656-4.656a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" /></svg>
+                        </div>
+                        <span class="text-sm font-semibold text-gray-700 group-hover:text-orange-600 transition-colors">Sub-recipe Link</span>
+                    </div>
+                    <svg class="h-4 w-4 text-gray-400 group-hover:text-orange-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                 </button>
+            </div>
+        </div>
+        <div class="h-10"></div> <!-- padding bottom -->
+    </div>
+</div>
+
+<script>
+    let _drawerCurrentId = null;
+
+    function openDrawer(id) {
+        const backdrop = document.getElementById('ingredient-drawer-backdrop');
+        const drawer = document.getElementById('ingredient-drawer');
+        
+        backdrop.classList.remove('hidden');
+        // small delay for transition
+        setTimeout(() => {
+            backdrop.classList.remove('opacity-0');
+            backdrop.classList.add('opacity-100');
+            drawer.classList.remove('translate-x-full');
+            drawer.classList.add('translate-x-0');
+        }, 10);
+        
+        document.body.style.overflow = 'hidden'; // lock bg scroll
+        fetchDrawerData(id);
+    }
+
+    function closeDrawer() {
+        const backdrop = document.getElementById('ingredient-drawer-backdrop');
+        const drawer = document.getElementById('ingredient-drawer');
+        
+        drawer.classList.remove('translate-x-0');
+        drawer.classList.add('translate-x-full');
+        
+        backdrop.classList.remove('opacity-100');
+        backdrop.classList.add('opacity-0');
+        
+        setTimeout(() => {
+            backdrop.classList.add('hidden');
+            document.body.style.overflow = '';
+        }, 300);
+        _drawerCurrentId = null;
+    }
+
+    // Capture Escape locally in case other listeners are present
+    document.addEventListener('keydown', e => { 
+        if (e.key === 'Escape' && document.getElementById('ingredient-drawer').classList.contains('translate-x-0')) {
+            closeDrawer(); 
+        } 
+    });
+
+    async function fetchDrawerData(id) {
+        _drawerCurrentId = id;
+        document.getElementById('drawer-spinner').classList.remove('hidden');
+        
+        // Reset state
+        document.getElementById('drawer-title').innerText = 'Loading...';
+        document.getElementById('drawer-img').classList.add('hidden');
+        document.getElementById('drawer-ph').classList.remove('hidden');
+        
+        try {
+            const res = await fetch(`${API}/${id}/inspect`);
+            const data = await res.json();
+            
+            if (data.success && _drawerCurrentId === id) { 
+                const i = data.ingredient;
+                
+                // Header
+                document.getElementById('drawer-title').innerText = i.name;
+                
+                // Transparency Check
+                if(i.image_url && i.has_transparent_image === false) {
+                    document.getElementById('drawer-legacy-warn').classList.remove('hidden');
+                    document.getElementById('drawer-actions-title').classList.add('hidden');
+                    const regenBtn = document.getElementById('drawer-regen-btn');
+                    regenBtn.classList.remove('text-gray-700');
+                    regenBtn.classList.add('text-orange-600', 'border-orange-200', 'bg-orange-50');
+                    // Point to new stripper function
+                    regenBtn.onclick = () => { stripBackgroundImage(i.id, regenBtn); };
+                    document.getElementById('drawer-regen-lbl').innerText = 'Strip Background';
+                } else {
+                    document.getElementById('drawer-legacy-warn').classList.add('hidden');
+                    document.getElementById('drawer-actions-title').classList.remove('hidden');
+                    const regenBtn = document.getElementById('drawer-regen-btn');
+                    regenBtn.classList.remove('text-orange-600', 'border-orange-200', 'bg-orange-50');
+                    regenBtn.classList.add('text-gray-700');
+                    // Point to regular AI generation function
+                    regenBtn.onclick = () => { regenImage(i.id, regenBtn); };
+                    document.getElementById('drawer-regen-lbl').innerText = 'Regen Image';
+                }
+                
+                // Badges
+                document.getElementById('drawer-id-badge').innerText = `ID: ${i.id}`;
+                document.getElementById('drawer-food-id-badge').innerText = `F: ${i.food_id}`;
+                document.getElementById('drawer-cat').innerText = i.main_category || '—';
+                document.getElementById('drawer-subcat').innerText = i.sub_category || '—';
+                
+                // Image (force refresh if recently regen'd)
+                if (i.image_url) {
+                    const img = document.getElementById('drawer-img');
+                    img.src = i.image_url + '?t=' + Date.now();
+                    img.onload = () => { img.classList.remove('hidden'); document.getElementById('drawer-ph').classList.add('hidden'); };
+                }
+                
+                // State dropdown
+                const statSel = document.getElementById('drawer-status');
+                statSel.value = i.status;
+                statSel.onchange = async (e) => {
+                    const newStatus = e.target.value;
+                    const prevStatus = i.status;
+                    statSel.disabled = true;
+                    try {
+                        const sRes = await fetch(`${API}/${id}/status`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }) });
+                        const sData = await sRes.json();
+                        if (sData.success) {
+                            showToast('Status updated');
+                            const rowSel = document.querySelector(`#row-${id} .ing-status-dropdown`);
+                            if (rowSel) { rowSel.value = data.new_status || newStatus; applyIngStatusStyle(rowSel, rowSel.value); rowSel.dataset.previousValue = rowSel.value; }
+                        } else {
+                            statSel.value = prevStatus;
+                            alert(`Failed: ${sData.error}`);
+                        }
+                    } catch { statSel.value = prevStatus; }
+                    finally { statSel.disabled = false; }
+                };
+                
+                // Buttons setup
+                document.querySelectorAll('#drawer-regen-btn, #drawer-qa-btn, #drawer-inspect-btn, #drawer-delete-btn, #drawer-link-btn')
+                    .forEach(b => b.dataset.id = i.id);
+                
+                // Nutrition
+                let srcHtml = i.data_source;
+                if(srcHtml === 'edamam_enterprise') srcHtml = '<span class="text-purple-600">Enterprise</span>';
+                else if(srcHtml.includes('ai_')) srcHtml = '<span class="text-emerald-600">AI</span>';
+                document.getElementById('drawer-source').innerHTML = srcHtml;
+                
+                document.getElementById('drawer-cal').innerText = i.calories_per_100g ? `${Math.round(i.calories_per_100g)}k` : '—';
+                document.getElementById('drawer-pro').innerText = i.protein_per_100g ? `${Math.round(i.protein_per_100g)}g` : '—';
+                document.getElementById('drawer-fat').innerText = i.fat_per_100g ? `${Math.round(i.fat_per_100g)}g` : '—';
+                document.getElementById('drawer-carb').innerText = i.carbs_per_100g ? `${Math.round(i.carbs_per_100g)}g` : '—';
+                
+            }
+        } catch (e) { console.error('Drawer error', e); }
+        finally { document.getElementById('drawer-spinner').classList.add('hidden'); }
     }
 </script>
 

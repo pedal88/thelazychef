@@ -728,7 +728,7 @@ def _build_galaxy_data(recipe, session, storage_provider=None) -> dict:
 # 7. SANDBOX — build context for browser-based design iteration
 # ---------------------------------------------------------------------------
 
-VALID_FRAGMENTS = {"hero", "comp", "nutrition", "nutr", "shop", "galaxy", "typography", "coreid", "ing-grid", "hook-social", "hook-cinematic", "end"}
+VALID_FRAGMENTS = {"hero", "comp", "nutrition", "nutr", "shop", "galaxy", "typography", "coreid", "ing-grid", "hook-social", "hook-cinematic", "end", "chef"}
 
 def is_valid_fragment(name: str) -> bool:
     if name.startswith("step") and name[4:].isdigit(): return True
@@ -772,7 +772,7 @@ def build_sandbox_context(recipe_id: int, fragment_name: str, app, storage_provi
             "image_url": image_url,
             "diets": recipe.diets_list,
             "meal_types": recipe.meal_types_list,
-            "chef_name": recipe.chef.name if recipe.chef else None,
+            "chef_name": recipe.chef.name if recipe.chef else "The French Classic",
             "theme": theme,
             "debug": debug,
             "scale": scale,
@@ -780,6 +780,34 @@ def build_sandbox_context(recipe_id: int, fragment_name: str, app, storage_provi
 
         if fragment_name == "hero" or fragment_name == "end":
             return base_ctx
+
+        if fragment_name == "chef":
+            from database.models import Chef
+            import os
+            import flask
+            
+            chef_obj = recipe.chef
+            
+            # Verify the image actually exists on disk so we gracefully fallback
+            if chef_obj and chef_obj.image_filename:
+                expected_path = os.path.join(app.root_path, 'static', 'chefs', chef_obj.image_filename)
+                if not os.path.exists(expected_path):
+                    chef_obj = None # Fall through to default
+            
+            if not chef_obj:
+                chef_obj = db.session.get(Chef, "french_classic")
+                
+            chef_image_url = None
+            if chef_obj and chef_obj.image_filename:
+                chef_image_url = flask.url_for('static', filename=f'chefs/{chef_obj.image_filename}')
+            
+            return {
+                **base_ctx,
+                "chef_name": chef_obj.name if chef_obj else "The French Classic",
+                "chef_image_url": chef_image_url,
+                "chef_archetype": chef_obj.archetype if chef_obj else "The French Classic",
+                "chef_description": chef_obj.description if chef_obj else "Masters of technique and tradition."
+            }
 
         if fragment_name == "comp":
             return {

@@ -90,14 +90,25 @@ class VertexImageGenerator:
             )
 
             if response.generated_images:
-                image_bytes = response.generated_images[0].image.image_bytes
+                from rembg import remove
+                raw_image_bytes = response.generated_images[0].image.image_bytes
+                
+                # Strip background
+                output_image_bytes = remove(raw_image_bytes)
+                
+                # Convert explicitly to PNG
+                img = Image.open(BytesIO(output_image_bytes))
+                final_buffer = BytesIO()
+                img.save(final_buffer, format="PNG")
+                final_bytes = final_buffer.getvalue()
 
                 # New filename ⟹ new GCS blob ⟹ new public URL — no cache hit possible
-                public_url = self.storage.save(image_bytes, filename, "pantry/candidates")
+                public_url = self.storage.save(final_bytes, filename, "pantry/candidates")
 
                 return {
                     'success': True,
                     'image_url': public_url,
+                    'has_transparent_image': True,
                     'local_path': public_url  # Backwards compat
                 }
             else:

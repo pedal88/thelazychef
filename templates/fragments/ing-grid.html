@@ -22,7 +22,7 @@
                 <div class="w-full aspect-square rounded-2xl overflow-hidden flex items-center justify-center mb-4"
                     style="background: #ffffff; box-shadow: 0 2px 12px rgba(0,0,0,0.06); border: 1px solid #e8ecf1;">
                     {% if ing.image_url %}
-                    <img src="{{ ing.image_url }}" alt="{{ ing.name }}" class="w-[85%] h-[85%] object-contain">
+                    <img src="{{ ing.image_url }}" alt="{{ ing.name }}" class="w-[85%] h-[85%] object-contain mix-blend-multiply" style="filter: contrast(1.05) brightness(1.02);">
                     {% else %}
                     <span class="font-bold uppercase" style="font-size: 48px; color: #94a3b8;">{{ ing.name[:2]|upper
                         }}</span>

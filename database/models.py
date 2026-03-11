@@ -112,6 +112,7 @@ class Ingredient(db.Model):
 
     # Payload (Flattened)
     image_url: Mapped[str] = mapped_column(String, nullable=True)
+    has_transparent_image: Mapped[bool] = mapped_column(Boolean, default=False, server_default='0')
     image_prompt: Mapped[str] = mapped_column(Text, nullable=True)
     data_source: Mapped[str] = mapped_column(String(50), nullable=False, default='placeholder', server_default='placeholder')
 
