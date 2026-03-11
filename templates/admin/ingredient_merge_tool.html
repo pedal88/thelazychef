@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Merge Ingredients{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+  <div class="md:flex md:items-center md:justify-between mb-8">
+    <div class="min-w-0 flex-1">
+      <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
+        Merge Ingredients Phase 1
+      </h2>
+      <p class="mt-1 text-sm text-gray-500">
+        Resolve lexical drift and duplicates by merging "loser" ingredients into "winner" ingredients.
+      </p>
+    </div>
+  </div>
+
+  <div class="bg-white shadow sm:rounded-lg mb-8">
+    <div class="px-4 py-5 sm:p-6">
+      <h3 class="text-base font-semibold leading-6 text-gray-900">Merge Duplicates</h3>
+      <div class="mt-2 max-w-xl text-sm text-gray-500">
+        <p>This action will re-point all recipe relations from the loser to the winner, merge their aliases, and destroy the loser. This cannot be undone.</p>
+      </div>
+      
+      <form id="mergeForm" class="mt-6 space-y-6">
+        
+        <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
+          
+          <!-- Winner Input -->
+          <div>
+            <label for="winnerSearch" class="block text-sm font-medium leading-6 text-gray-900">
+              Keep this Ingredient (Winner)
+            </label>
+            <div class="relative mt-2">
+              <input type="text" id="winnerSearch" class="peer block w-full rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" placeholder="Search winner...">
+              <input type="hidden" id="winnerId" name="winner_id">
+              <div id="winnerResults" class="absolute z-10 hidden mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"></div>
+            </div>
+            <p id="winnerDisplay" class="mt-2 text-sm text-green-600 font-semibold hidden"></p>
+          </div>
+
+          <!-- Loser Input -->
+          <div>
+            <label for="loserSearch" class="block text-sm font-medium leading-6 text-gray-900">
+              Destroy this Ingredient (Loser)
+            </label>
+            <div class="relative mt-2">
+              <input type="text" id="loserSearch" class="block w-full rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-red-600 sm:text-sm sm:leading-6" placeholder="Search loser...">
+              <input type="hidden" id="loserId" name="loser_id">
+              <div id="loserResults" class="absolute z-10 hidden mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"></div>
+            </div>
+            <p id="loserDisplay" class="mt-2 text-sm text-red-600 font-semibold hidden"></p>
+          </div>
+
+        </div>
+
+        <div class="pt-5 border-t border-gray-200 flex justify-end">
+          <button type="submit" id="mergeBtn" disabled class="inline-flex justify-center rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:opacity-50 disabled:cursor-not-allowed">
+            Merge & Destroy
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        setupAutocomplete('winnerSearch', 'winnerId', 'winnerResults', 'winnerDisplay');
+        setupAutocomplete('loserSearch', 'loserId', 'loserResults', 'loserDisplay');
+        
+        document.getElementById('mergeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const winnerId = document.getElementById('winnerId').value;
+            const loserId = document.getElementById('loserId').value;
+            
+            if(!winnerId || !loserId) return;
+            
+            if(!confirm("Are you SURE? This will re-point all recipes and DESTROY the loser ingredient permanently.")) {
+                return;
+            }
+            
+            e.target.querySelector('button').disabled = true;
+            showLoading("Merging Ingredients...");
+            
+            try {
+                const res = await fetch('/api/merge-ingredients', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        target_id: winnerId,
+                        source_id: loserId
+                    })
+                });
+                const data = await res.json();
+                
+                if(data.success) {
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    alert("Error: " + data.error);
+                }
+            } catch(err) {
+                alert("Network Error");
+            } finally {
+                hideLoading();
+                e.target.querySelector('button').disabled = false;
+            }
+        });
+    });
+    
+    function setupAutocomplete(inputId, hiddenId, resultsId, displayId) {
+        const input = document.getElementById(inputId);
+        const hidden = document.getElementById(hiddenId);
+        const results = document.getElementById(resultsId);
+        const display = document.getElementById(displayId);
+        
+        input.addEventListener('input', async (e) => {
+            const q = e.target.value;
+            if (q.length < 2) {
+                results.classList.add('hidden');
+                return;
+            }
+            
+            const res = await fetch(`/api/admin/search-ingredients?q=${encodeURIComponent(q)}`);
+            const data = await res.json();
+            
+            results.innerHTML = '';
+            if (data.results.length === 0) {
+                 results.classList.add('hidden');
+                 return;
+            }
+            
+            data.results.forEach(ing => {
+                const div = document.createElement('div');
+                div.className = 'cursor-pointer hover:bg-gray-100 px-4 py-2 text-sm flex justify-between';
+                div.innerHTML = `<span class="font-medium">${ing.name}</span> <span class="text-xs text-gray-500">ID: ${ing.id} | ${ing.main_category || 'No Cat'}</span>`;
+                div.onclick = () => {
+                    hidden.value = ing.id;
+                    input.value = '';
+                    results.classList.add('hidden');
+                    display.textContent = `Selected: ${ing.name} (ID: ${ing.id})`;
+                    display.classList.remove('hidden');
+                    checkSubmitReady();
+                };
+                results.appendChild(div);
+            });
+            results.classList.remove('hidden');
+        });
+        
+        // Hide if clicking outside
+        document.addEventListener('click', (e) => {
+            if (e.target !== input && e.target !== results) {
+                results.classList.add('hidden');
+            }
+        });
+    }
+    
+    function checkSubmitReady() {
+        const winner = document.getElementById('winnerId').value;
+        const loser = document.getElementById('loserId').value;
+        const btn = document.getElementById('mergeBtn');
+        
+        if (winner && loser && winner !== loser) {
+            btn.disabled = false;
+        } else {
+            btn.disabled = true;
+        }
+    }
+</script>
+{% endblock %}

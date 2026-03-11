@@ -325,6 +325,7 @@ class RecipeIngredient(db.Model):
     ingredient_id: Mapped[int] = mapped_column(ForeignKey("ingredient.id"), nullable=False)
     amount: Mapped[float] = mapped_column(Float)
     unit: Mapped[str] = mapped_column(String)
+    prep_style: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     gram_weight: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     component: Mapped[str] = mapped_column(String, default="Main", nullable=False)
 

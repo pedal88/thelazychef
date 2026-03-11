@@ -496,7 +496,7 @@
                                     {% endif %}
                                     <span
                                         class="print:text-[10px] print:leading-none print:text-left print:m-0 text-slate-800">
-                                        {{ item.ingredient.name }}
+                                        {{ item.ingredient.name }}{% if item.prep_style %}, {{ item.prep_style }}{% endif %}
                                         {% if item.ingredient.sub_recipe_id %}<span
                                             class="hidden print:inline text-[8px] font-bold uppercase tracking-wider text-orange-600 ml-1">[PREP
                                             ↗]</span>{% endif %}

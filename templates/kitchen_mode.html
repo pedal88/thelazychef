@@ -65,7 +65,7 @@
             <ul class="space-y-2">
                 {% for ring in recipe.ingredients %}
                 <li class="flex items-center justify-between border-b border-white/5 pb-2">
-                    <span class="text-base text-slate-200 capitalize">{{ ring.ingredient.name }}</span>
+                    <span class="text-base text-slate-200 capitalize">{{ ring.ingredient.name }}{% if ring.prep_style %}, {{ ring.prep_style }}{% endif %}</span>
                     <span class="text-base font-bold text-white tabular-nums">{{ ring.amount }} <span
                             class="text-slate-500 text-xs ml-1">{{ ring.unit }}</span></span>
                 </li>

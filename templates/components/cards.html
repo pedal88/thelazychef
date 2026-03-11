@@ -58,7 +58,7 @@ Expects a RecipeIngredient object (ri) which has .ingredient relation and .amoun
     </div>
     <span
         class="mt-2 text-xs font-medium text-slate-600 text-center leading-tight {% if size != 'xl' %}w-20 break-words{% endif %}">
-        {{ ingredient.name }}
+        {{ ingredient.name }}{% if ri.prep_style %}, {{ ri.prep_style }}{% endif %}
     </span>
     {# Since we passed the Link Object (RecipeIngredient), we can access amount directly #}
     {% if ri.amount %}

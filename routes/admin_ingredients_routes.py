@@ -372,6 +372,12 @@ def strip_background(ing_id: int):
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
+@ingredients_bp.route("/admin/ingredients/merge", methods=["GET"])
+@login_required
+@admin_required
+def merge_ingredient_tool():
+    """Render the standalone tool for merging duplicate ingredients."""
+    return render_template('admin/ingredient_merge_tool.html')
 
 @ingredients_bp.route("/api/<int:ing_id>/evaluate", methods=["POST"])
 @login_required

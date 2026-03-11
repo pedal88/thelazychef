@@ -248,6 +248,8 @@ def process_recipe_workflow(recipe_data, query_context: str, chef_id: str, sourc
             unit = ing.unit if hasattr(ing, 'unit') else ing.get('unit', '')
             component = group.component if hasattr(group, 'component') else group.get('component', 'Main Dish')
             
+            prep_style = ing.get('prep_style') if isinstance(ing, dict) else getattr(ing, 'prep_style', None)
+            
             final_gram_weight = ai_gram_estimate
             
             # Rule A: The Override
@@ -260,6 +262,7 @@ def process_recipe_workflow(recipe_data, query_context: str, chef_id: str, sourc
                 ingredient_id=ingredient_record.id,
                 amount=amount,
                 unit=unit,
+                prep_style=prep_style,
                 gram_weight=final_gram_weight,
                 component=component,
             ))
@@ -472,6 +475,7 @@ def clone_recipe(original_recipe_id: int, new_title: str, ingredient_overrides: 
             component=r_ing.component,
             amount=target_amt,
             unit=target_unit,
+            prep_style=r_ing.prep_style,
             gram_weight=target_gw
         )
         db_session.add(new_r_ing)

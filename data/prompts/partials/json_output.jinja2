@@ -18,29 +18,31 @@ EXAMPLE OF DESIRED OUTPUT (COMPLEX MULTI-COMPONENT DISH):
     "difficulty": "String (Best fit from Valid Difficulties)",
     "cleanup": "String (Best fit from Valid Cleanup Tags)"
   },
+  // INGREDIENT STRINGENCY RULE: Separate the raw ingredient noun from its physical preparation state. The 'name' must ONLY be the purchasable grocery item. If the recipe calls for a specific preparation, place that instruction in the 'prep_style' field.
+  // Example: {"name": "tomato", "quantity": 2, "unit": "pcs", "prep_style": "diced"}
   "ingredient_groups": [
     {
         "component": "Steak", 
         "ingredients": [
-            {"name": "Ribeye Steak", "amount": 300, "unit": "g", "pantry_id": "000045"},
-            {"name": "Olive Oil", "amount": 15, "unit": "ml", "pantry_id": "000012"},
-            {"name": "Salt", "amount": 5, "unit": "g", "pantry_id": "000001"},
-            {"name": "Black Pepper", "amount": 2, "unit": "g", "pantry_id": "000002"}
+            {"name": "Ribeye Steak", "amount": 300, "unit": "g", "pantry_id": "000045", "prep_style": null},
+            {"name": "Olive Oil", "amount": 15, "unit": "ml", "pantry_id": "000012", "prep_style": null},
+            {"name": "Salt", "amount": 5, "unit": "g", "pantry_id": "000001", "prep_style": null},
+            {"name": "Black Pepper", "amount": 2, "unit": "g", "pantry_id": "000002", "prep_style": "freshly ground"}
         ]
     },
     {
         "component": "Garlic Herb Butter",
         "ingredients": [
-            {"name": "Butter", "amount": 50, "unit": "g", "pantry_id": "000008"},
-            {"name": "Garlic", "amount": 10, "unit": "g", "pantry_id": "000015"},
-            {"name": "Fresh Parsley", "amount": 5, "unit": "g", "pantry_id": null}
+            {"name": "Butter", "amount": 50, "unit": "g", "pantry_id": "000008", "prep_style": "softened"},
+            {"name": "Garlic", "amount": 10, "unit": "g", "pantry_id": "000015", "prep_style": "minced"},
+            {"name": "Parsley", "amount": 5, "unit": "g", "pantry_id": null, "prep_style": "chopped"}
         ]
     },
     {
         "component": "Roasted Vegetables",
         "ingredients": [
-            {"name": "Carrots", "amount": 150, "unit": "g", "pantry_id": "000031"},
-            {"name": "Broccoli", "amount": 150, "unit": "g", "pantry_id": "000032"}
+            {"name": "Carrots", "amount": 150, "unit": "g", "pantry_id": "000031", "prep_style": "chopped"},
+            {"name": "Broccoli", "amount": 150, "unit": "g", "pantry_id": "000032", "prep_style": "florets"}
         ]
     }
   ],

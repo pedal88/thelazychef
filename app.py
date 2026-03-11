@@ -2209,6 +2209,7 @@ def get_recipe_json(recipe_id):
             data['ingredients'].append({
                 'id': ri.id,
                 'name': ri.ingredient.name,
+                'prep_style': ri.prep_style,
                 'amount': ri.amount,
                 'unit': ri.unit,
                 'gram_weight': ri.gram_weight,
@@ -2410,69 +2411,25 @@ def promote_recipe_to_ingredient(recipe_id: int):
 
 @app.route('/api/merge-ingredients', methods=['POST'])
 def merge_ingredients_api():
+    from services.ingredient_service import merge_ingredients
     try:
         data = request.get_json()
-        source_id = data.get('source_id')
-        target_id = data.get('target_id')
+        source_id = data.get('source_id')  # the loser
+        target_id = data.get('target_id')  # the winner
         
         if not source_id or not target_id:
             return jsonify({'success': False, 'error': 'Source and Target IDs required'}), 400
-        
-        if source_id == target_id:
-            return jsonify({'success': False, 'error': 'Cannot merge ingredient into itself'}), 400
 
-        source = db.session.get(Ingredient, source_id)
-        target = db.session.get(Ingredient, target_id)
+        result = merge_ingredients(winner_id=int(target_id), loser_id=int(source_id))
         
-        if not source or not target:
-             return jsonify({'success': False, 'error': 'One or both ingredients not found'}), 404
+        if result['success']:
+             return jsonify({'success': True, 'message': result['message']})
+        else:
+             return jsonify({'success': False, 'error': result['message']}), 400
              
-        # Begin Merge
-        # 1. Get all usages of source
-        usages = list(source.recipe_ingredients) 
-        
-        count_updated = 0
-        count_conflicts = 0
-        
-        for usage in usages:
-            recipe = usage.recipe
-            
-            # Check if recipe already has target
-            conflict = next((ri for ri in recipe.ingredients if ri.ingredient_id == target.id), None)
-            
-            if conflict:
-                # Recipe uses both. Remove source usage (redundant).
-                db.session.delete(usage)
-                count_conflicts += 1
-            else:
-                # No conflict, just reassign
-                usage.ingredient = target
-                db.session.add(usage)
-                count_updated += 1
-        
-        # Flush changes to DB so Foreign Keys are updated/deleted
-        db.session.flush()
-        
-        # Refresh source to ensure it knows it has no more associated ingredients
-        # preventing SQLAlchemy from trying to SET NULL on delete
-        db.session.refresh(source)
-        
-        # 2. Delete the Source Ingredient
-        db.session.delete(source)
-        
-        db.session.commit()
-        
-        return jsonify({
-            'success': True, 
-            'message': f"Merged '{source.name}' into '{target.name}'. Updated {count_updated} recipes, resolved {count_conflicts} conflicts."
-        })
-        
     except Exception as e:
         db.session.rollback()
-        print(f"Merge Error: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-        print(f"Merge Error: {e}")
+        print(f"Merge API Error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 def find_best_ingredient_match(name):
