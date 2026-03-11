@@ -165,12 +165,18 @@
             });
             results.classList.remove('hidden');
         });
-        
         // Hide results on blur with small delay
         input.addEventListener('blur', () => {
             setTimeout(() => {
                 results.classList.add('hidden');
             }, 200);
+        });
+        
+        // Hide if clicking outside
+        document.addEventListener('click', (e) => {
+            if (e.target !== input && e.target !== results) {
+                results.classList.add('hidden');
+            }
         });
     }
 
@@ -234,26 +240,6 @@
         document.getElementById('loserDisplay').classList.remove('hidden');
         
         checkSubmitReady();
-    }
-        
-        // Hide if clicking outside
-        document.addEventListener('click', (e) => {
-            if (e.target !== input && e.target !== results) {
-                results.classList.add('hidden');
-            }
-        });
-    }
-    
-    function checkSubmitReady() {
-        const winner = document.getElementById('winnerId').value;
-        const loser = document.getElementById('loserId').value;
-        const btn = document.getElementById('mergeBtn');
-        
-        if (winner && loser && winner !== loser) {
-            btn.disabled = false;
-        } else {
-            btn.disabled = true;
-        }
     }
 </script>
 {% endblock %}
