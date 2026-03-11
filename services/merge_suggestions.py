@@ -6,7 +6,7 @@ def get_suggested_merges(limit=20):
     Finds potentially duplicate ingredients and suggests a 'winner' and 'loser' 
     based on lexical similarity and string heuristics.
     """
-    ingredients = db.session.query(Ingredient).all()
+    ingredients = db.session.query(Ingredient).filter(Ingredient.status == 'active').all()
     
     candidates = []
     
