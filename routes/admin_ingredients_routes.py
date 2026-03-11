@@ -372,7 +372,7 @@ def strip_background(ing_id: int):
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
-@ingredients_bp.route("/admin/ingredients/merge", methods=["GET"])
+@ingredients_bp.route("/merge", methods=["GET"])
 @login_required
 @admin_required
 def merge_ingredient_tool():
