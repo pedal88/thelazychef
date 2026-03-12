@@ -642,6 +642,59 @@
 </div>
 
 
+<!-- ── Category Review Modal (Human-In-The-Loop) ──────────────── -->
+<div id="category-modal" class="fixed inset-0 z-[70] flex items-center justify-center hidden">
+    <div class="absolute inset-0 bg-gray-900/60" onclick="closeCategoryModal()"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div>
+                <p class="text-[10px] font-bold uppercase tracking-widest text-indigo-500">Categorization Needed</p>
+                <h3 id="cm-title" class="text-base font-semibold text-gray-900">Review AI Categorization</h3>
+            </div>
+            <button onclick="closeCategoryModal()" class="text-gray-400 hover:text-gray-700">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div class="px-5 py-4 space-y-4">
+            <p class="text-sm text-gray-600">Please review and confirm the taxonomy for this ingredient before making it active.</p>
+            
+            <div id="cm-loading" class="flex items-center gap-2 text-sm text-indigo-600 py-2">
+                <svg class="animate-spin h-4 w-4 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>AI is reasoning...</span>
+            </div>
+            
+            <div id="cm-form" class="hidden space-y-3">
+                <input type="hidden" id="cm-ing-id">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Main Category</label>
+                    <select id="cm-main" class="block w-full rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                        {% for opt in category_options %}
+                        <option value="{{ opt }}">{{ opt }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Sub Category</label>
+                    <select id="cm-sub" class="block w-full rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                        {% for opt in sub_category_options %}
+                        <option value="{{ opt }}">{{ opt }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="bg-gray-50 px-5 py-3 flex justify-end gap-3 border-t border-gray-100">
+            <button onclick="closeCategoryModal()" class="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">Cancel</button>
+            <button id="cm-confirm-btn" onclick="confirmCategory()" disabled class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition-colors disabled:opacity-50">Confirm & Activate</button>
+        </div>
+    </div>
+</div>
+
 <!-- ── Scripts ────────────────────────────────────────────────── -->
 <script>
     const API = '/admin/ingredients-management/api';
@@ -748,6 +801,14 @@
         const newStatus = select.value;
         const prev = select.dataset.previousValue;
 
+        // If transitioning from pending to active, intercept to modal
+        if (prev === 'pending' && newStatus === 'active') {
+            // Revert UI temporarily until modal confirms
+            select.value = prev;
+            openCategoryModal(id, select);
+            return;
+        }
+
         applyIngStatusStyle(select, newStatus);
         select.disabled = true;
 
@@ -778,6 +839,101 @@
             select.disabled = false;
         }
     });
+
+    // ── Human in the Loop Modal Flow ──────────────────────────────
+    let activeDropdownSelect = null;
+
+    async function openCategoryModal(id, selectEl) {
+        document.getElementById('category-modal').classList.remove('hidden');
+        document.getElementById('cm-loading').classList.remove('hidden');
+        document.getElementById('cm-form').classList.add('hidden');
+        document.getElementById('cm-confirm-btn').disabled = true;
+        
+        document.getElementById('cm-ing-id').value = id;
+        activeDropdownSelect = selectEl;
+
+        try {
+            const res = await fetch(`${API}/${id}/suggest-taxonomy`);
+            const data = await res.json();
+            
+            document.getElementById('cm-loading').classList.add('hidden');
+            document.getElementById('cm-form').classList.remove('hidden');
+            document.getElementById('cm-confirm-btn').disabled = false;
+
+            if (data.success) {
+                // If suggested main_category exists in the options, select it, else first or blank
+                const mainOpt = Array.from(document.getElementById('cm-main').options).find(o => o.value.toLowerCase() === (data.main_category||'').toLowerCase());
+                if (mainOpt) mainOpt.selected = true;
+
+                const subOpt = Array.from(document.getElementById('cm-sub').options).find(o => o.value.toLowerCase() === (data.sub_category||'').toLowerCase());
+                if (subOpt) subOpt.selected = true;
+                else if (data.sub_category) {
+                     // Append the new sub category if it's new
+                     const newOpt = new Option(data.sub_category, data.sub_category, true, true);
+                     document.getElementById('cm-sub').add(newOpt);
+                }
+            }
+        } catch (err) {
+            console.error(err);
+            document.getElementById('cm-loading').classList.add('hidden');
+            document.getElementById('cm-form').classList.remove('hidden');
+            document.getElementById('cm-confirm-btn').disabled = false;
+        }
+    }
+
+    function closeCategoryModal() {
+        document.getElementById('category-modal').classList.add('hidden');
+        activeDropdownSelect = null;
+    }
+
+    async function confirmCategory() {
+        if (!activeDropdownSelect) return;
+        const id = document.getElementById('cm-ing-id').value;
+        const mainCat = document.getElementById('cm-main').value;
+        const subCat = document.getElementById('cm-sub').value;
+        const select = activeDropdownSelect;
+        
+        document.getElementById('cm-confirm-btn').disabled = true;
+        document.getElementById('cm-confirm-btn').innerText = 'Activating...';
+
+        try {
+            const res = await fetch(`${API}/${id}/status`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    status: 'active',
+                    main_category: mainCat,
+                    sub_category: subCat
+                }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                // Update select UI
+                select.value = 'active';
+                applyIngStatusStyle(select, 'active');
+                select.classList.add('ring-2', 'ring-green-500');
+                setTimeout(() => select.classList.remove('ring-2', 'ring-green-500'), 1200);
+                select.dataset.previousValue = 'active';
+                
+                // Update table row with categories dynamically
+                const row = document.getElementById(`row-${id}`);
+                if (row) {
+                    const catCell = row.querySelectorAll('td')[4];
+                    const subCatCell = row.querySelectorAll('td')[5];
+                    if (catCell) catCell.innerHTML = `<div class="line-clamp-2 break-words max-w-[120px]">${data.main_category}</div>`;
+                    if (subCatCell) subCatCell.innerHTML = `<div class="line-clamp-2 break-words max-w-[120px]">${data.sub_category}</div>`;
+                }
+            } else {
+                alert(`Failed: ${data.error}`);
+            }
+        } catch (err) {
+            alert('Network error updating status.');
+        } finally {
+            document.getElementById('cm-confirm-btn').innerText = 'Confirm & Activate';
+            document.getElementById('cm-confirm-btn').disabled = false;
+            closeCategoryModal();
+        }
+    }
 
     // ── Delete / Archive ──────────────────────────────────────────
     async function deleteIngredient(id, name) {

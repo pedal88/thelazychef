@@ -120,6 +120,14 @@ def dashboard() -> str:
 # JSON API
 # ---------------------------------------------------------------------------
 
+@ingredients_bp.route("/api/<int:ing_id>/suggest-taxonomy", methods=["GET"])
+@login_required
+@admin_required
+def get_suggested_taxonomy(ing_id: int):
+    from services.ingredient_evaluation_service import suggest_ingredient_taxonomy
+    result = suggest_ingredient_taxonomy(ing_id)
+    return jsonify(result)
+
 @ingredients_bp.route("/api/<int:ing_id>/status", methods=["POST"])
 @login_required
 @admin_required
@@ -136,8 +144,19 @@ def update_status(ing_id: int):
         return jsonify({"success": False, "error": "Ingredient not found"}), 404
 
     ing.status = new_status
+    
+    # Optional taxonomy assignment during activation
+    if "main_category" in data and "sub_category" in data:
+        ing.main_category = data["main_category"] or None
+        ing.sub_category = data["sub_category"] or None
+
     db.session.commit()
-    return jsonify({"success": True, "new_status": ing.status})
+    return jsonify({
+        "success": True, 
+        "new_status": ing.status,
+        "main_category": ing.main_category,
+        "sub_category": ing.sub_category
+    })
 
 
 @ingredients_bp.route("/api/<int:ing_id>", methods=["DELETE"])

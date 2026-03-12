@@ -56,6 +56,10 @@ class IngredientEvaluationSchema(typing.TypedDict):
     score_commonness:    int
     total_score:         float
 
+class IngredientTaxonomySchema(typing.TypedDict):
+    """Schema for quickly suggesting taxonomy categories."""
+    main_category: str
+    sub_category: str
 
 # ---------------------------------------------------------------------------
 # Core evaluation function
@@ -206,3 +210,42 @@ def evaluate_ingredient(ingredient_id: int) -> dict:
         "total_score": evaluation.total_score,
         "auto_promoted": auto_promoted,
     }
+
+def suggest_ingredient_taxonomy(ingredient_id: int) -> dict:
+    """Fast, text-only LLM call to suggest main and sub_category."""
+    ing = db.session.get(Ingredient, ingredient_id)
+    if not ing:
+        raise ValueError(f"Ingredient with ID {ingredient_id} not found.")
+
+    prompt = (
+        f"You are a culinary ontology expert. Suggest a standard culinary 'main_category' "
+        f"and 'sub_category' for the ingredient named: '{ing.name}'.\n"
+        f"Main categories typically include: Produce, Meat, Dairy, Pantry, Spice, Hardware.\n"
+        f"Sub categories typically include: Vegetable, Fruit, Beef, Poultry, Cheese, Oil, etc.\n"
+        f"Return only the mapped JSON."
+    )
+
+    try:
+        api_response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=[prompt],
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=IngredientTaxonomySchema,
+                temperature=0.1,
+            ),
+        )
+        data = api_response.parsed if api_response.parsed else json.loads(api_response.text)
+        if hasattr(data, '__dict__'):
+            data = vars(data)
+        elif not isinstance(data, dict):
+            data = dict(data)
+            
+        return {
+            "success": True,
+            "main_category": data.get("main_category", "Pantry"),
+            "sub_category": data.get("sub_category", "Other")
+        }
+    except Exception as exc:
+        print(f"Taxonomy suggestion failed: {exc}")
+        return {"success": False, "main_category": "", "sub_category": ""}
