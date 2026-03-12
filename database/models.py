@@ -42,6 +42,18 @@ class UserRecipeInteraction(db.Model):
     user: Mapped["User"] = relationship(back_populates="interactions")
     recipe: Mapped["Recipe"] = relationship(back_populates="interactions")
 
+class ConceptVisual(db.Model):
+    """Stores generated images/icons for abstract culinary metadata like 'diet', 'cuisine', etc."""
+    __tablename__ = 'concept_visual'
+    __table_args__ = (
+        UniqueConstraint('concept_type', 'concept_name', name='uq_concept_visual_type_name'),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    concept_type: Mapped[str] = mapped_column(String(50), index=True, nullable=False)
+    concept_name: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
+    image_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+
 class Resource(db.Model):
     __tablename__ = 'resource'
     id = db.Column(db.Integer, primary_key=True)

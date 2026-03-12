@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Concept Visuals Metadata Dictionary - Admin{% endblock %}
+
+{% block content %}
+<div class="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-10">
+  <div class="sm:flex sm:items-center">
+    <div class="sm:flex-auto">
+      <h1 class="text-2xl font-semibold leading-6 text-gray-900">Concept Visuals Dictionary</h1>
+      <p class="mt-2 text-sm text-gray-700">A unified space to generate and map icons/images for abstract culinary metadata nodes (e.g. Diets, Cuisines, Equipment).</p>
+    </div>
+  </div>
+
+  <div class="mt-8 flex flex-col gap-12">
+    {% for c_type, records in grouped_visuals.items() %}
+    <div class="bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6 border border-gray-200">
+      <h3 class="text-base font-semibold leading-6 text-gray-900 capitalize">{{ c_type | replace('_', ' ') }}</h3>
+      <div class="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        
+        {% for record in records %}
+        <div class="relative flex items-center space-x-3 rounded-lg border border-gray-300 bg-white px-4 py-3 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 hover:border-gray-400">
+          <div class="flex-shrink-0 relative group">
+            {% if record.image_url %}
+            <img id="img-{{ record.id }}" class="h-10 w-10 object-cover rounded-md" src="{{ record.image_url }}" alt="{{ record.concept_name }}">
+            {% else %}
+            <div id="img-{{ record.id }}" class="h-10 w-10 flex items-center justify-center rounded-md bg-gray-100 text-gray-400 font-bold text-xs">
+              {{ record.concept_name[:2] | upper }}
+            </div>
+            {% endif %}
+            
+            <!-- Hover Regen Button -->
+            <button onclick="generateVisual({{ record.id }}, this)" class="absolute inset-0 bg-black bg-opacity-50 text-white rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+               <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            </button>
+          </div>
+          <div class="min-w-0 flex-1">
+            <span class="absolute inset-0" aria-hidden="true"></span>
+            <p class="text-sm font-medium text-gray-900 truncate">{{ record.concept_name }}</p>
+            <p class="text-[10px] text-gray-500 truncate" id="state-{{ record.id }}">
+                {% if record.image_url %}Active{% else %}No Image{% endif %}
+            </p>
+          </div>
+        </div>
+        {% endfor %}
+        
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<script>
+async function generateVisual(id, btnElement) {
+    const defaultHTML = btnElement.innerHTML;
+    const stateEl = document.getElementById(`state-${id}`);
+    const imgEl = document.getElementById(`img-${id}`);
+    
+    // Set loading state
+    btnElement.innerHTML = `<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+    stateEl.innerText = "Generating...";
+    stateEl.classList.add('text-indigo-600');
+    
+    try {
+        const res = await fetch('/admin/concept-visuals/generate', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({id: id})
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            // Replace placeholder div with an IMG tag if it was a div
+            if(imgEl.tagName === 'DIV') {
+                const newImg = document.createElement('img');
+                newImg.id = `img-${id}`;
+                newImg.className = "h-10 w-10 object-cover rounded-md";
+                newImg.src = data.image_url;
+                imgEl.parentNode.replaceChild(newImg, imgEl);
+            } else {
+                imgEl.src = data.image_url;
+            }
+            
+            stateEl.innerText = "Updated";
+            stateEl.className = "text-[10px] text-green-600 truncate font-semibold";
+        } else {
+            alert("Error: " + data.error);
+            stateEl.innerText = "Failed";
+            stateEl.classList.add('text-red-500');
+        }
+    } catch(err) {
+        console.error(err);
+        alert("Network Error during generation");
+        stateEl.innerText = "Network Error";
+        stateEl.classList.add('text-red-500');
+    } finally {
+        btnElement.innerHTML = defaultHTML;
+    }
+}
+</script>
+{% endblock %}

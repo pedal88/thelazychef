@@ -14,7 +14,7 @@ from flask_migrate import Migrate
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 import markdown
 from database.db_connector import configure_database
-from database.models import db, Ingredient, Recipe, Instruction, RecipeIngredient, RecipeMealType, RecipeDiet, User, Resource, resource_relations, Chef, UserRecipeInteraction, RecipeEvaluation, RecipeCollection, CollectionItem, UserQueue, UserLink, SocialMediaPost, TikTokSource
+from database.models import db, Ingredient, Recipe, Instruction, RecipeIngredient, RecipeMealType, RecipeDiet, User, Resource, resource_relations, Chef, UserRecipeInteraction, RecipeEvaluation, RecipeCollection, CollectionItem, UserQueue, UserLink, SocialMediaPost, TikTokSource, ConceptVisual
 from utils.decorators import admin_required
 from sqlalchemy import or_, func
 from sqlalchemy.orm import joinedload
@@ -74,6 +74,9 @@ app.register_blueprint(media_hub_bp)
 
 from routes.admin_tiktok_routes import tiktok_bp
 app.register_blueprint(tiktok_bp)
+
+from routes.admin_concept_routes import admin_concept_bp
+app.register_blueprint(admin_concept_bp)
 
 
 from utils.markdown_extensions import VideoExtension
@@ -1997,7 +2000,8 @@ def update_ingredient_data_api():
 @app.route('/explore/galaxy')
 def explore_galaxy():
     """Renders the full-screen interactive D3 graph of all recipes."""
-    return render_template('explore_galaxy.html')
+    from services.concept_visual_service import get_concept_images_dict
+    return render_template('explore_galaxy.html', concept_visuals=get_concept_images_dict())
 
 @app.route('/api/graph/galaxy', methods=['GET'])
 def get_global_galaxy_graph():
@@ -2049,7 +2053,8 @@ def get_global_galaxy_graph():
 @app.route('/explore/ingredient-galaxy')
 def explore_ingredient_galaxy():
     """Renders the full-screen interactive D3 graph of ingredients."""
-    return render_template('explore_ingredient_galaxy.html')
+    from services.concept_visual_service import get_concept_images_dict
+    return render_template('explore_ingredient_galaxy.html', concept_visuals=get_concept_images_dict())
 
 @app.route('/api/graph/ingredient-galaxy', methods=['GET'])
 def get_global_ingredient_galaxy_graph():
