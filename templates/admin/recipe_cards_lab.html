@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Navbar/Header to hold controls out of swipe view -->
+<div class="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+        <h1 class="text-xl font-bold font-inter text-gray-900">Recipe Card Lab</h1>
+        <div class="flex items-center space-x-4">
+            <!-- Simulated Kitchen Mode / Chef Avatar controls -->
+            <button class="bg-slate-100 px-3 py-1.5 rounded-full text-sm font-medium">Chef Avatar</button>
+            <button class="bg-orange-100 text-orange-600 px-3 py-1.5 rounded-full text-sm font-medium">Kitchen Mode</button>
+        </div>
+    </div>
+</div>
+
+<div class="min-h-[100dvh] bg-slate-900 flex flex-col items-center justify-center pt-16 overflow-hidden">
+    
+    <!-- Swipe Container -->
+    <div id="card-container" class="relative w-full max-w-sm h-[75vh] flex items-center justify-center">
+        <!-- Main Card -->
+        <div id="recipe-card" class="absolute w-[95vw] sm:w-[350px] h-full bg-slate-800 rounded-3xl shadow-xl overflow-hidden touch-none select-none will-change-transform z-10">
+            
+            <!-- Background Image -->
+            <img src="{{ recipe.image_url }}" alt="{{ recipe.title }}" class="absolute inset-0 w-full h-full object-cover pointer-events-none">
+            
+            <!-- Stamps (Hidden by default, driven by JS opacity) -->
+            <div id="stamp-save" class="absolute top-8 left-8 border-4 border-green-500 text-green-500 text-4xl font-black px-4 py-2 rounded-lg transform -rotate-12 opacity-0 z-20 pointer-events-none drop-shadow-md tracking-wider">
+                SAVE
+            </div>
+            
+            <div id="stamp-pass" class="absolute top-8 right-8 border-4 border-red-500 text-red-500 text-4xl font-black px-4 py-2 rounded-lg transform rotate-12 opacity-0 z-20 pointer-events-none drop-shadow-md tracking-wider">
+                PASS
+            </div>
+
+            <!-- Gradient & Glassmorphism Panel (Bottom 25%) -->
+            <div class="absolute bottom-0 inset-x-0 h-[30%] bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end">
+                <div class="w-full backdrop-blur-md bg-white/20 border-t border-white/30 p-5 pt-4">
+                    
+                    <!-- Metadata Pills -->
+                    <div class="flex items-center gap-2 mb-3 overflow-x-auto hide-scrollbar pb-1">
+                        <!-- Diet -->
+                        <div class="flex items-center gap-1.5 bg-green-500/20 border border-green-400 text-green-100 rounded-full pl-0.5 pr-2.5 py-0.5 whitespace-nowrap">
+                            <img src="{{ icons_map.get('app_icons_diet', '') }}" class="w-5 h-5 rounded-full bg-white object-cover" alt="Diet">
+                            <span class="text-[11px] font-semibold uppercase tracking-wider">{{ recipe.diet }}</span>
+                        </div>
+                        
+                        <!-- Time -->
+                        <div class="flex items-center gap-1.5 bg-black/30 border border-white/20 text-white rounded-full pl-0.5 pr-2.5 py-0.5 whitespace-nowrap">
+                            <img src="{{ icons_map.get('app_icons_time', '') }}" class="w-5 h-5 rounded-full bg-white object-cover" alt="Time">
+                            <span class="text-xs font-medium">{{ recipe.time_estimate }} min</span>
+                        </div>
+                        
+                        <!-- Portions -->
+                        <div class="flex items-center gap-1.5 bg-black/30 border border-white/20 text-white rounded-full pl-0.5 pr-2.5 py-0.5 whitespace-nowrap">
+                            <img src="{{ icons_map.get('app_icons_portions', '') }}" class="w-5 h-5 rounded-full bg-white object-cover" alt="Portions">
+                            <span class="text-xs font-medium">{{ recipe.portions }}</span>
+                        </div>
+                        
+                        <!-- Calories -->
+                        <div class="flex items-center gap-1.5 bg-black/30 border border-white/20 text-white rounded-full pl-0.5 pr-2.5 py-0.5 whitespace-nowrap">
+                            <img src="{{ icons_map.get('app_icons_calories', '') }}" class="w-5 h-5 rounded-full bg-white object-cover" alt="Calories">
+                            <span class="text-xs font-medium">{{ recipe.calories }} kcal</span>
+                        </div>
+                    </div>
+
+                    <!-- Title & Details -->
+                    <h2 class="text-white font-inter font-bold text-2xl leading-tight mb-1.5 line-clamp-2 drop-shadow-md">
+                        {{ recipe.title }}
+                    </h2>
+                    <p class="text-white/80 font-inter text-xs font-bold uppercase tracking-widest drop-shadow-md">
+                        {{ recipe.cuisine }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Background Mock Card to show it's a deck -->
+        <div class="absolute w-[85vw] sm:w-[320px] h-[95%] bg-slate-800 rounded-3xl shadow-xl border border-white/10 mt-6 z-0" style="opacity: 0.5;"></div>
+    </div>
+    
+    <!-- Controls Help -->
+    <p class="mt-8 text-white/50 font-inter text-sm mb-4">Swipe left to pass, right to save</p>
+</div>
+
+<!-- Hammer JS from CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const card = document.getElementById('recipe-card');
+        const stampSave = document.getElementById('stamp-save');
+        const stampPass = document.getElementById('stamp-pass');
+        
+        const mc = new Hammer(card);
+        mc.add(new Hammer.Pan({ direction: Hammer.DIRECTION_HORIZONTAL, threshold: 10 }));
+        
+        let isDragging = false;
+        
+        mc.on('panstart', (e) => {
+            isDragging = true;
+            card.style.transition = 'none';
+        });
+        
+        mc.on('panmove', (e) => {
+            if (!isDragging) return;
+            const deltaX = e.deltaX;
+            const deltaY = e.deltaY; // Optional for slight vertical movement
+            const rotate = deltaX * 0.05;
+            
+            card.style.transform = `translate(${deltaX}px, ${deltaY}px) rotate(${rotate}deg)`;
+            
+            // Opacity mapping (0 to 1 over 100px)
+            const opacity = Math.min(Math.abs(deltaX) / 100, 1);
+            
+            if (deltaX > 0) {
+            stampSave.style.opacity = opacity;
+                stampPass.style.opacity = 0;
+            } else {
+                stampPass.style.opacity = opacity;
+                stampSave.style.opacity = 0;
+            }
+        });
+        
+        mc.on('panend', (e) => {
+            isDragging = false;
+            card.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            
+            if (e.deltaX > 100 || e.velocityX > 0.5) {
+                // Swiped Right (Save)
+                card.style.transform = `translate(${window.innerWidth}px, ${e.deltaY}px) rotate(30deg)`;
+                setTimeout(() => resetCard(), 400);
+            } else if (e.deltaX < -100 || e.velocityX < -0.5) {
+                // Swiped Left (Pass)
+                card.style.transform = `translate(-${window.innerWidth}px, ${e.deltaY}px) rotate(-30deg)`;
+                setTimeout(() => resetCard(), 400);
+            } else {
+                // Spring back (Not far enough)
+                card.style.transform = 'translate(0px, 0px) rotate(0deg)';
+                stampSave.style.opacity = 0;
+                stampPass.style.opacity = 0;
+            }
+        });
+        
+        function resetCard() {
+            card.style.transition = 'none';
+            card.style.transform = 'translate(0px, 0px) rotate(0deg)';
+            stampSave.style.opacity = 0;
+            stampPass.style.opacity = 0;
+        }
+    });
+</script>
+{% endblock %}

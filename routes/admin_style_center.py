@@ -50,6 +50,10 @@ def dashboard():
             ("taxonomy", "Pescetarian", "A clean visual icon for {name} diet, isolated on white, modern aesthetic"),
             ("taxonomy", "Seafood", "A high-end raw ingredient shot representing {name} protein, hyper-detailed, clean lighting"),
             ("taxonomy", "One-Pot", "A cozy, ambient top-down shot representing {name} meal type, rustic but modern presentation"),
+
+            # App Icons
+            ("app_icons", "Isometric 3D", "A minimal isometric 3D icon representing {name}, clean white background, vibrant colors, premium app icon style."),
+            ("app_icons", "Vector Icon", "A flat vector UI icon representing {name}, clean and modern, highly legible, solid background.")
         ]
         for scope, name, prompt in seed_data:
             db.session.add(StyleSandboxPreset(scope=scope, name=name, prompt=prompt))
@@ -57,7 +61,7 @@ def dashboard():
         db.session.commit()
         all_presets = db.session.execute(db.select(StyleSandboxPreset).order_by(StyleSandboxPreset.order_index, StyleSandboxPreset.id)).scalars().all()
     # Group presets by scope
-    presets_by_scope = {'ingredient': [], 'recipe': [], 'taxonomy': []}
+    presets_by_scope = {'ingredient': [], 'recipe': [], 'taxonomy': [], 'app_icons': []}
     for p in all_presets:
         if p.scope in presets_by_scope:
             presets_by_scope[p.scope].append(p)
@@ -65,7 +69,8 @@ def dashboard():
     test_items_by_scope = {
         'ingredient': ["Banana", "Chicken Filet", "Canned Coconut Milk", "Salmon Steak", "Fresh Basil"],
         'recipe': ["Greek Chicken Gyros with Protein Tzatziki", "Loaded Baked Potato Soup with Crispy Skin Dippers", "Marry Me Chicken"],
-        'taxonomy': ["cooking method: Deep-Fried", "Cuisine: Mexican", "Diet: Pescetarian", "Main Protein: Seafood", "Meal Type: One-Pot"]
+        'taxonomy': ["cooking method: Deep-Fried", "Cuisine: Mexican", "Diet: Pescetarian", "Main Protein: Seafood", "Meal Type: One-Pot"],
+        'app_icons': ["time", "diet", "portions", "calories"]
     }
 
     from services.visual_orchestrator_service import get_taxonomy_contexts
@@ -348,3 +353,33 @@ def update_taxonomy_context():
     except Exception as e:
         logger.error(f"Error updating taxonomy context: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
+@admin_style_center_bp.route('/recipe-cards-style', methods=['GET'])
+@login_required
+@admin_required
+def recipe_cards_lab():
+    from database.models import ConceptVisual
+    # Fetch live app icons and taxonomy images
+    concept_visuals = db.session.execute(
+        db.select(ConceptVisual).filter(ConceptVisual.image_url.is_not(None))
+    ).scalars().all()
+    
+    icons_map = {}
+    for cv in concept_visuals:
+        # Normalize key for easy JS/Jinja access
+        key = f"{cv.concept_type.lower()}_{cv.concept_name.lower().replace(' ', '_')}"
+        icons_map[key] = cv.image_url
+
+    # Add a mock recipe for the lab
+    mock_recipe = {
+        'title': 'Loaded Baked Potato Soup with Crispy Skin Dippers',
+        'cuisine': 'American',
+        'time_estimate': 45,
+        'difficulty': 'Medium',
+        'calories': 650,
+        'diet': 'Vegetarian',
+        'portions': '4 servings',
+        'image_url': 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&q=80&w=1200' 
+    }
+
+    return render_template('admin/recipe_cards_lab.html', icons_map=icons_map, recipe=mock_recipe)

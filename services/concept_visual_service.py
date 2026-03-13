@@ -66,6 +66,10 @@ def sync_concept_visuals():
                 sub_cats.extend(subs)
             _upsert_concepts('ingredient_subcategory', list(set(sub_cats)))
 
+    # 7. App Icons
+    app_icons_list = ["time", "diet", "portions", "calories", "difficulty", "rating"]
+    _upsert_concepts('app_icons', app_icons_list)
+
 
 def _upsert_concepts(concept_type: str, names: list[str]):
     """Idempotently insert missing concept names for a given type."""

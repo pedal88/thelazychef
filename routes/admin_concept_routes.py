@@ -50,11 +50,13 @@ def generate_visual():
         storage_provider = get_storage_provider()
         generator = VertexImageGenerator(storage_provider)
         
-        # We process concept visuals as "taxonomy" to get the 3D isometric icons
+        # Determine scope: If it is an app_icon, use the app_icons scope. Otherwise, default to taxonomy.
+        target_scope = "app_icons" if record.concept_type == "app_icons" else "taxonomy"
+        
         result = generator.generate_candidate(
             ingredient_name=f"{record.concept_type}::{record.concept_name}",
             prompt=None,
-            scope="taxonomy"
+            scope=target_scope
         )
         
         if result.get('success'):
