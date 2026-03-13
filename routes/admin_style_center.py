@@ -384,17 +384,18 @@ def recipe_cards_lab():
         selected_recipe = db.session.get(Recipe, selected_recipe_id)
         
     if selected_recipe:
-        # Use the actual recipe, falling back on default values if missing
+        # Use the actual recipe, strictly mapping models schema to dict
         active_recipe = {
             'id': selected_recipe.id,
             'title': selected_recipe.title,
             'cuisine': selected_recipe.cuisine or 'Unknown',
-            'time_estimate': selected_recipe.time_estimate or 0,
+            'time_estimate': selected_recipe.prep_time_mins or 0,
             'difficulty': selected_recipe.difficulty or 'Medium',
-            'calories': getattr(selected_recipe, 'calories', 0) or 0, # Depending on if recipe model has calories column
-            'diet': selected_recipe.diet or 'None',
-            'portions': f"{selected_recipe.portions or 1} servings",
-            'image_url': selected_recipe.image_url or 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=1200'
+            'calories': int(selected_recipe.total_calories) if getattr(selected_recipe, 'total_calories', 0) else 0,
+            'diet': selected_recipe.diets_list[0] if getattr(selected_recipe, 'diets_list', None) and len(selected_recipe.diets_list) > 0 else 'None',
+            'portions': f"{selected_recipe.base_servings or 1} servings",
+            'image_filename': selected_recipe.image_filename,
+            'image_url': selected_recipe.image_filename if selected_recipe.image_filename and selected_recipe.image_filename.startswith('http') else None
         }
     else:
         # Add a mock recipe for the lab
