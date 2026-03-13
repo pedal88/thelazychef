@@ -81,71 +81,174 @@
         loading.classList.add('hidden');
     }
 
+
+    const activeTemplate = "{{ active_template }}";
+
     function addCard(recipe) {
         const el = document.createElement('div');
         el.dataset.id = recipe.id;
-        el.className = 'absolute w-[95vw] max-w-sm h-[75dvh] bg-white rounded-3xl shadow-2xl overflow-hidden touch-none transition-all duration-300 origin-bottom select-none border border-white/10 will-change-transform';
-
-        // Use a placeholder if no image
         const imgUrl = recipe.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80';
+        
+        if (activeTemplate === 'dynamic') {
+             el.className = 'absolute w-[95vw] sm:w-[350px] max-w-sm h-[75dvh] will-change-transform z-10 transition-all duration-300 overflow-hidden rounded-[2.5rem] border border-slate-600 bg-slate-900 shadow-2xl origin-bottom touch-none select-none cursor-pointer border border-white/10';
+             el.innerHTML = `
+                <img src="${imgUrl}" class="absolute inset-0 w-full h-full object-cover brightness-[0.6] pointer-events-none">
+                
+                <div class="absolute top-6 left-6 backdrop-blur-lg bg-white/10 rounded-2xl p-3 flex items-center gap-2 border border-white/20 shadow-xl pointer-events-none">
+                    <span class="text-white font-inter text-sm font-semibold tracking-wide">${recipe.diet || 'None'}</span>
+                </div>
 
-        el.innerHTML = `
-            <div class="relative h-full flex flex-col group cursor-pointer">
-                <!-- Image Section -->
-                <div class="h-[65%] relative overflow-hidden">
-                    <img src="${imgUrl}" class="w-full h-full object-cover pointer-events-none transition-transform duration-700 group-hover:scale-105" draggable="false">
-                    <div class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/80 to-transparent"></div>
+                <div class="absolute top-6 right-6 flex flex-col gap-3 pointer-events-none">
+                    <div class="backdrop-blur-lg bg-white/10 rounded-2xl px-3 py-2 flex items-center gap-2 border border-white/20 shadow-xl">
+                        <span class="text-white font-inter text-xs font-bold tracking-wider">${recipe.time_estimate || 0}M</span>
+                    </div>
+                    <div class="backdrop-blur-lg bg-white/10 rounded-2xl px-3 py-2 flex items-center gap-2 border border-white/20 shadow-xl">
+                        <span class="text-white font-inter text-xs font-bold tracking-wider">${recipe.calories || 0}K</span>
+                    </div>
+                </div>
 
-                    <!-- Pass overlay — middle-left -->
-                    <button class="card-btn-pass absolute left-3 top-1/2 -translate-y-1/2 z-10
-                        w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm text-slate-500
-                        hover:bg-red-50 hover:text-red-500 hover:scale-110 active:scale-95
-                        flex items-center justify-center shadow-lg transition-all duration-150
-                        border border-white/60"
-                        title="Pass">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
+                <div class="absolute bottom-10 left-6 right-6 backdrop-blur-xl bg-black/40 rounded-3xl p-5 border border-white/10 shadow-2xl pointer-events-none">
+                    <h2 class="text-white font-inter font-bold text-[22px] leading-tight mb-2 tracking-tight drop-shadow-md line-clamp-2">${recipe.title}</h2>
+                    <p class="text-white/60 font-inter text-xs uppercase tracking-widest font-bold">${recipe.cuisine || 'Unknown'}</p>
+                </div>
 
-                    <!-- Like overlay — middle-right -->
-                    <button class="card-btn-like absolute right-3 top-1/2 -translate-y-1/2 z-10
-                        w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm text-green-500
-                        hover:bg-green-50 hover:text-green-600 hover:scale-110 active:scale-95
-                        flex items-center justify-center shadow-lg transition-all duration-150
-                        border border-white/60"
-                        title="Like">
-                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                        </svg>
-                    </button>
-
-                    <div class="absolute bottom-5 left-5 right-5 text-white">
-                        <div class="flex items-center gap-2 mb-2">
-                           <span class="bg-white/20 backdrop-blur-md text-white border border-white/30 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide shadow-sm">${recipe.cuisine}</span>
-                           <span class="text-xs font-medium text-white/90">⏱️ ${recipe.time_estimate}m</span>
+                <div class="stamp-save card-btn-like absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/90 backdrop-blur text-green-500 border border-green-200 shadow-2xl rounded-full w-32 h-32 flex items-center justify-center text-7xl font-inter font-black opacity-0 z-30 pointer-events-none scale-110">✓</div>
+                <div class="stamp-pass card-btn-pass absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/90 backdrop-blur text-red-500 border border-red-200 shadow-2xl rounded-full w-32 h-32 flex items-center justify-center text-7xl font-inter font-black opacity-0 z-30 pointer-events-none scale-110">✕</div>
+            `;
+        } else if (activeTemplate === 'editorial') {
+             el.className = 'absolute w-[95vw] sm:w-[350px] max-w-sm h-[75dvh] will-change-transform z-10 transition-all duration-300 overflow-hidden rounded-[2rem] bg-white shadow-2xl origin-bottom touch-none select-none cursor-pointer';
+             el.innerHTML = `
+                <img src="${imgUrl}" class="absolute inset-0 w-full h-full object-cover saturate-[1.2] pointer-events-none">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none"></div>
+                
+                <div class="absolute bottom-6 left-6 w-[75%] bg-white shadow-2xl p-6 rounded-tr-[2rem] rounded-bl-lg rounded-br-2xl pointer-events-none">
+                    <p class="font-inter text-[10px] font-bold text-orange-600 tracking-widest uppercase mb-2">${recipe.cuisine || 'Unknown'}</p>
+                    <h2 class="font-serif text-[28px] text-slate-900 leading-[1.1] mb-5 lowercase tracking-tight line-clamp-2">${recipe.title}</h2>
+                    <div class="flex flex-wrap gap-2">
+                        <div class="flex items-center gap-2 border border-slate-200 rounded-full px-3 py-1.5 bg-white text-slate-600">
+                            <span class="font-inter text-[10px] font-semibold uppercase tracking-wider">${recipe.time_estimate || 0} min</span>
                         </div>
-                        <h2 class="text-3xl font-serif font-bold leading-tight drop-shadow-md line-clamp-2">${recipe.title}</h2>
+                        <div class="flex items-center gap-2 border border-slate-200 rounded-full px-3 py-1.5 bg-white text-slate-600">
+                            <span class="font-inter text-[10px] font-semibold uppercase tracking-wider">${recipe.difficulty || 'Medium'}</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Content Section -->
-                <div class="flex-grow p-6 bg-white flex flex-col text-left">
-                    <div class="flex gap-2 mb-3">
-                         <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-500/10 uppercase tracking-wider">${recipe.difficulty}</span>
-                    </div>
-
-                    <p class="text-slate-500 text-sm line-clamp-3 leading-relaxed">
-                        A ${recipe.difficulty.toLowerCase()} ${recipe.cuisine.toLowerCase()} dish. Perfect for your next meal.
-                    </p>
-
-                    <div class="mt-auto pt-4 flex items-center justify-center opacity-50 text-slate-300 text-xs font-bold uppercase tracking-widest gap-2">
-                        <span>Tap for Details</span>
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+                <div class="stamp-save card-btn-like absolute top-16 left-8 text-green-600 text-6xl font-serif italic tracking-widest opacity-0 z-20 pointer-events-none" style="text-shadow: 2px 2px 0px rgba(255,255,255,0.9); transform: rotate(-5deg);">Saved.</div>
+                <div class="stamp-pass card-btn-pass absolute top-16 right-8 text-red-600 text-6xl font-serif italic tracking-widest opacity-0 z-20 pointer-events-none" style="text-shadow: 2px 2px 0px rgba(255,255,255,0.9); transform: rotate(5deg);">Pass.</div>
+            `;
+        } else if (activeTemplate === 'minimalist') {
+             el.className = 'absolute w-[95vw] sm:w-[350px] max-w-sm h-[75dvh] will-change-transform z-10 transition-all duration-300 overflow-hidden border-2 border-black rounded-none bg-white shadow-2xl flex touch-none select-none origin-bottom cursor-pointer';
+             el.innerHTML = `
+                <div class="relative flex-grow h-full overflow-hidden">
+                    <img src="${imgUrl}" class="absolute inset-0 w-full h-full object-cover grayscale-[20%] pointer-events-none">
+                    <div class="absolute bottom-0 inset-x-0 p-5 bg-white border-t-2 border-black">
+                        <h2 class="font-inter font-black uppercase tracking-tighter text-3xl leading-none text-black line-clamp-2 truncate">${recipe.title}</h2>
+                        <p class="text-black/60 text-xs font-bold uppercase tracking-widest mt-1">${recipe.cuisine || 'Unknown'}</p>
                     </div>
                 </div>
-            </div>
-        `;
+                <div class="w-14 h-full bg-white/95 flex flex-col items-center py-6 gap-8 border-l-2 border-black z-10 shrink-0 pointer-events-none">
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-[9px] font-black uppercase tracking-tighter text-black">Diet</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-[9px] font-black uppercase tracking-tighter text-black">${recipe.time_estimate || 0}M</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-[9px] font-black uppercase tracking-tighter text-black">${recipe.calories || 0}K</span>
+                    </div>
+                </div>
+                <div class="stamp-save card-btn-like absolute top-8 left-6 border-4 border-black bg-white text-black text-5xl font-black px-4 py-2 transform -rotate-12 opacity-0 z-20 pointer-events-none tracking-tighter shadow-[8px_8px_0px_#000]">SAVE</div>
+                <div class="stamp-pass card-btn-pass absolute top-8 right-16 border-4 border-black bg-black text-white text-5xl font-black px-4 py-2 transform rotate-12 opacity-0 z-20 pointer-events-none tracking-tighter shadow-[8px_8px_0px_#fff]">PASS</div>
+            `;
+        } else if (activeTemplate === 'glassmorphism') {
+             el.className = 'absolute w-[95vw] sm:w-[350px] max-w-sm h-[75dvh] bg-slate-800 rounded-3xl shadow-xl overflow-hidden touch-none select-none will-change-transform z-10 border border-white/10 origin-bottom cursor-pointer';
+             el.innerHTML = `
+                <img src="${imgUrl}" alt="${recipe.title}" class="absolute inset-0 w-full h-full object-cover pointer-events-none">
+                
+                <div class="stamp-save card-btn-like absolute top-8 left-8 border-4 border-green-500 text-green-500 text-4xl font-black px-4 py-2 rounded-lg transform -rotate-12 opacity-0 z-20 pointer-events-none drop-shadow-md tracking-wider">SAVE</div>
+                <div class="stamp-pass card-btn-pass absolute top-8 right-8 border-4 border-red-500 text-red-500 text-4xl font-black px-4 py-2 rounded-lg transform rotate-12 opacity-0 z-20 pointer-events-none drop-shadow-md tracking-wider">PASS</div>
+
+                <div class="absolute bottom-0 inset-x-0 h-[30%] bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end">
+                    <div class="w-full backdrop-blur-md bg-white/20 border-t border-white/30 p-5 pt-4">
+                        <div class="flex items-center gap-2 mb-3 overflow-x-auto hide-scrollbar pb-1">
+                            <div class="flex items-center gap-1.5 bg-green-500/20 border border-green-400 text-green-100 rounded-full pl-0.5 pr-2.5 py-0.5 whitespace-nowrap">
+                                <span class="text-[11px] font-semibold uppercase tracking-wider">${recipe.diet || 'None'}</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 bg-black/30 border border-white/20 text-white rounded-full pl-0.5 pr-2.5 py-0.5 whitespace-nowrap">
+                                <span class="text-xs font-medium">${recipe.time_estimate || 0} min</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 bg-black/30 border border-white/20 text-white rounded-full pl-0.5 pr-2.5 py-0.5 whitespace-nowrap">
+                                <span class="text-xs font-medium">${recipe.calories || 0} kcal</span>
+                            </div>
+                        </div>
+                        <h2 class="text-white font-inter font-bold text-2xl leading-tight mb-1.5 line-clamp-2 drop-shadow-md">${recipe.title}</h2>
+                        <p class="text-white/80 font-inter text-xs font-bold uppercase tracking-widest drop-shadow-md">${recipe.cuisine || 'Unknown'}</p>
+                    </div>
+                </div>
+            `;
+        } else {
+             // Default ORIGINAL
+             el.className = 'absolute w-[95vw] max-w-sm h-[75dvh] bg-white rounded-3xl shadow-2xl overflow-hidden touch-none transition-all duration-300 origin-bottom select-none border border-white/10 will-change-transform';
+             el.innerHTML = `
+                <div class="relative h-full flex flex-col group cursor-pointer">
+                    <!-- Image Section -->
+                    <div class="h-[65%] relative overflow-hidden">
+                        <img src="${imgUrl}" class="w-full h-full object-cover pointer-events-none transition-transform duration-700 group-hover:scale-105" draggable="false">
+                        <div class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/80 to-transparent"></div>
+
+                        <!-- Pass overlay — middle-left -->
+                        <button class="card-btn-pass absolute left-3 top-1/2 -translate-y-1/2 z-10
+                            w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm text-slate-500
+                            hover:bg-red-50 hover:text-red-500 hover:scale-110 active:scale-95
+                            flex items-center justify-center shadow-lg transition-all duration-150
+                            border border-white/60"
+                            title="Pass">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+
+                        <!-- Like overlay — middle-right -->
+                        <button class="card-btn-like absolute right-3 top-1/2 -translate-y-1/2 z-10
+                            w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm text-green-500
+                            hover:bg-green-50 hover:text-green-600 hover:scale-110 active:scale-95
+                            flex items-center justify-center shadow-lg transition-all duration-150
+                            border border-white/60"
+                            title="Like">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                            </svg>
+                        </button>
+
+                        <div class="absolute bottom-5 left-5 right-5 text-white">
+                            <div class="flex items-center gap-2 mb-2">
+                               <span class="bg-white/20 backdrop-blur-md text-white border border-white/30 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide shadow-sm">${recipe.cuisine}</span>
+                               <span class="text-xs font-medium text-white/90">⏱️ ${recipe.time_estimate}m</span>
+                            </div>
+                            <h2 class="text-3xl font-serif font-bold leading-tight drop-shadow-md line-clamp-2">${recipe.title}</h2>
+                        </div>
+                    </div>
+
+                    <!-- Content Section -->
+                    <div class="flex-grow p-6 bg-white flex flex-col text-left">
+                        <div class="flex gap-2 mb-3">
+                             <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-500/10 uppercase tracking-wider">${recipe.difficulty}</span>
+                        </div>
+
+                        <p class="text-slate-500 text-sm line-clamp-3 leading-relaxed">
+                            A ${recipe.difficulty.toLowerCase()} ${recipe.cuisine.toLowerCase()} dish. Perfect for your next meal.
+                        </p>
+
+                        <div class="mt-auto pt-4 flex items-center justify-center opacity-50 text-slate-300 text-xs font-bold uppercase tracking-widest gap-2">
+                            <span>Tap for Details</span>
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
 
         el.onclick = (e) => {
             // Only navigate if it wasn't a drag release (simple check)

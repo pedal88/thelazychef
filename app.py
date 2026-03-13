@@ -356,7 +356,10 @@ def get_feed_recipes():
             'image_url': get_recipe_image_url(r),
             'cuisine': r.cuisine,
             'time_estimate': r.prep_time_mins or 30, # Default if missing
-            'difficulty': r.difficulty
+            'difficulty': r.difficulty,
+            'calories': int(r.total_calories) if getattr(r, 'total_calories', 0) else 0,
+            'portions': f"{r.base_servings or 1} servings",
+            'diet': r.diets_list[0] if getattr(r, 'diets_list', None) and len(r.diets_list) > 0 else 'None'
         })
         
     return jsonify({'recipes': data, 'has_more': len(data) == limit})
@@ -920,10 +923,9 @@ def discover():
     # Load Recent Recipes (approved only)
     recent_recipes = db.session.execute(db.select(Recipe).where(Recipe.status == 'approved').order_by(Recipe.id.desc()).limit(8)).scalars().all()
     
-    # Load Resources
     resources = load_resources()
-    
-    return render_template('landing.html', recipes=recent_recipes, resources=resources)
+    active_template = session.get('active_card_template', 'original')
+    return render_template('landing.html', recipes=recent_recipes, resources=resources, active_template=active_template)
 
 def load_resources():
     try:

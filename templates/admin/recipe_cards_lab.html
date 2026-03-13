@@ -43,7 +43,16 @@
     
     <!-- VARIANT 1: OLD STYLE -->
     <div class="shrink-0 snap-center relative w-[95vw] sm:w-[350px] h-[75vh] flex items-center justify-center">
-        <div class="absolute -top-8 inset-x-0 text-center text-white/50 font-inter text-xs font-bold uppercase tracking-widest pointer-events-none">01 · Original Style</div>
+        <div class="absolute -top-10 inset-x-0 flex items-center justify-between px-2 pointer-events-none z-50">
+             <span class="text-white/50 font-inter text-xs font-bold uppercase tracking-widest">01 · Original Style</span>
+             
+             <button onclick="setActiveTemplate('original')" class="pointer-events-auto flex items-center gap-2 transition-opacity {% if active_template == 'original' %}opacity-100 text-green-400{% else %}opacity-50 text-white hover:opacity-100{% endif %}" title="Set as Active on Home Page">
+                 <span class="text-[10px] font-bold uppercase tracking-widest hidden sm:block">{% if active_template == 'original' %}ACTIVE{% else %}USE THIS{% endif %}</span>
+                 <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center {% if active_template == 'original' %}border-green-400 bg-green-400/20{% else %}border-white/50{% endif %}">
+                     {% if active_template == 'original' %}<svg class="w-3 h-3 text-green-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>{% endif %}
+                 </div>
+             </button>
+        </div>
         <div class="absolute w-full h-full flex flex-col bg-white rounded-3xl shadow-2xl overflow-hidden select-none border border-white/10 group">
             <div class="h-[65%] relative overflow-hidden">
             <img src="{{ img_src }}" class="w-full h-full object-cover pointer-events-none transition-transform duration-700 group-hover:scale-105" draggable="false">
@@ -82,7 +91,16 @@
 
     <!-- VARIANT 2: CENTRAL (Glassmorphism & Isometric App Icons) -->
     <div class="shrink-0 snap-center relative w-[95vw] sm:w-[350px] h-[75vh] flex items-center justify-center swipeable-container">
-        <div class="absolute -top-8 inset-x-0 text-center text-white/50 font-inter text-xs font-bold uppercase tracking-widest pointer-events-none">02 · Glassmorphism</div>
+        <div class="absolute -top-10 inset-x-0 flex items-center justify-between px-2 pointer-events-none z-50">
+             <span class="text-white/50 font-inter text-xs font-bold uppercase tracking-widest">02 · Glassmorphism</span>
+             
+             <button onclick="setActiveTemplate('glassmorphism')" class="pointer-events-auto flex items-center gap-2 transition-opacity {% if active_template == 'glassmorphism' %}opacity-100 text-green-400{% else %}opacity-50 text-white hover:opacity-100{% endif %}" title="Set as Active on Home Page">
+                 <span class="text-[10px] font-bold uppercase tracking-widest hidden sm:block">{% if active_template == 'glassmorphism' %}ACTIVE{% else %}USE THIS{% endif %}</span>
+                 <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center {% if active_template == 'glassmorphism' %}border-green-400 bg-green-400/20{% else %}border-white/50{% endif %}">
+                     {% if active_template == 'glassmorphism' %}<svg class="w-3 h-3 text-green-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>{% endif %}
+                 </div>
+             </button>
+        </div>
         <div class="swipe-card absolute w-full h-full bg-slate-800 rounded-3xl shadow-xl overflow-hidden touch-none select-none will-change-transform z-10 border border-white/10">
             <img src="{{ img_src }}" alt="{{ recipe.title }}" class="absolute inset-0 w-full h-full object-cover pointer-events-none">
             
@@ -121,7 +139,16 @@
 
     <!-- VARIANT 3: MINIMALIST (Neo-Brutalist) -->
     <div class="shrink-0 snap-center relative w-[95vw] sm:w-[350px] h-[75vh] flex items-center justify-center swipeable-container">
-        <div class="absolute -top-8 inset-x-0 text-center text-white/50 font-inter text-xs font-bold uppercase tracking-widest pointer-events-none">03 · Neo-Brutalist</div>
+        <div class="absolute -top-10 inset-x-0 flex items-center justify-between px-2 pointer-events-none z-50">
+             <span class="text-white/50 font-inter text-xs font-bold uppercase tracking-widest">03 · Neo-Brutalist</span>
+             
+             <button onclick="setActiveTemplate('minimalist')" class="pointer-events-auto flex items-center gap-2 transition-opacity {% if active_template == 'minimalist' %}opacity-100 text-green-400{% else %}opacity-50 text-white hover:opacity-100{% endif %}" title="Set as Active on Home Page">
+                 <span class="text-[10px] font-bold uppercase tracking-widest hidden sm:block">{% if active_template == 'minimalist' %}ACTIVE{% else %}USE THIS{% endif %}</span>
+                 <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center {% if active_template == 'minimalist' %}border-green-400 bg-green-400/20{% else %}border-white/50{% endif %}">
+                     {% if active_template == 'minimalist' %}<svg class="w-3 h-3 text-green-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>{% endif %}
+                 </div>
+             </button>
+        </div>
         <div class="swipe-card absolute w-full h-full will-change-transform z-10 transition-all duration-300 overflow-hidden border-2 border-black rounded-none bg-white shadow-2xl flex touch-none select-none">
             <div class="relative flex-grow h-full overflow-hidden">
                 <img src="{{ img_src }}" class="absolute inset-0 w-full h-full object-cover grayscale-[20%] pointer-events-none">
@@ -159,7 +186,16 @@
 
     <!-- VARIANT 4: EDITORIAL COOKBOOK -->
     <div class="shrink-0 snap-center relative w-[95vw] sm:w-[350px] h-[75vh] flex items-center justify-center swipeable-container">
-        <div class="absolute -top-8 inset-x-0 text-center text-white/50 font-inter text-xs font-bold uppercase tracking-widest pointer-events-none">04 · Editorial</div>
+        <div class="absolute -top-10 inset-x-0 flex items-center justify-between px-2 pointer-events-none z-50">
+             <span class="text-white/50 font-inter text-xs font-bold uppercase tracking-widest">04 · Editorial</span>
+             
+             <button onclick="setActiveTemplate('editorial')" class="pointer-events-auto flex items-center gap-2 transition-opacity {% if active_template == 'editorial' %}opacity-100 text-green-400{% else %}opacity-50 text-white hover:opacity-100{% endif %}" title="Set as Active on Home Page">
+                 <span class="text-[10px] font-bold uppercase tracking-widest hidden sm:block">{% if active_template == 'editorial' %}ACTIVE{% else %}USE THIS{% endif %}</span>
+                 <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center {% if active_template == 'editorial' %}border-green-400 bg-green-400/20{% else %}border-white/50{% endif %}">
+                     {% if active_template == 'editorial' %}<svg class="w-3 h-3 text-green-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>{% endif %}
+                 </div>
+             </button>
+        </div>
         <div class="swipe-card absolute w-full h-full will-change-transform z-10 transition-all duration-300 overflow-hidden rounded-[2rem] bg-white shadow-2xl touch-none select-none">
             <img src="{{ img_src }}" class="absolute inset-0 w-full h-full object-cover saturate-[1.2] pointer-events-none">
             <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none"></div>
@@ -186,7 +222,16 @@
 
     <!-- VARIANT 5: DYNAMIC CLUSTERS -->
     <div class="shrink-0 snap-center relative w-[95vw] sm:w-[350px] h-[75vh] flex items-center justify-center swipeable-container">
-        <div class="absolute -top-8 inset-x-0 text-center text-white/50 font-inter text-xs font-bold uppercase tracking-widest pointer-events-none">05 · Dynamic Clusters</div>
+        <div class="absolute -top-10 inset-x-0 flex items-center justify-between px-2 pointer-events-none z-50">
+             <span class="text-white/50 font-inter text-xs font-bold uppercase tracking-widest">05 · Dynamic Clusters</span>
+             
+             <button onclick="setActiveTemplate('dynamic')" class="pointer-events-auto flex items-center gap-2 transition-opacity {% if active_template == 'dynamic' %}opacity-100 text-green-400{% else %}opacity-50 text-white hover:opacity-100{% endif %}" title="Set as Active on Home Page">
+                 <span class="text-[10px] font-bold uppercase tracking-widest hidden sm:block">{% if active_template == 'dynamic' %}ACTIVE{% else %}USE THIS{% endif %}</span>
+                 <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center {% if active_template == 'dynamic' %}border-green-400 bg-green-400/20{% else %}border-white/50{% endif %}">
+                     {% if active_template == 'dynamic' %}<svg class="w-3 h-3 text-green-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>{% endif %}
+                 </div>
+             </button>
+        </div>
         <div class="swipe-card absolute w-full h-full will-change-transform z-10 transition-all duration-300 overflow-hidden rounded-[2.5rem] border border-slate-600 bg-slate-900 shadow-2xl touch-none select-none">
             <img src="{{ img_src }}" class="absolute inset-0 w-full h-full object-cover brightness-[0.6] pointer-events-none">
             
@@ -229,6 +274,19 @@
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 
 <script>
+    
+    function setActiveTemplate(templateId) {
+        fetch('/admin/style-center/recipe-cards-style/set-active', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ template_id: templateId })
+        }).then(res => res.json()).then(data => {
+            if(data.success) {
+                window.location.reload();
+            }
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         // Init Search
         if(document.getElementById('recipe-select')) {

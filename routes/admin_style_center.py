@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
+from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify, session
 from flask_login import login_required
 from utils.decorators import admin_required
 from database.models import db, VisualStyleGuide, StyleSandboxRun, StyleSandboxPreset
@@ -411,10 +411,22 @@ def recipe_cards_lab():
             'image_url': 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&q=80&w=1200' 
         }
 
+    active_template = session.get('active_card_template', 'original')
     return render_template(
         'admin/recipe_cards_lab.html', 
         icons_map=icons_map, 
         recipe=active_recipe,
         recent_recipes=recent_recipes,
-        selected_recipe_id=selected_recipe_id
+        selected_recipe_id=selected_recipe_id,
+        active_template=active_template
     )
+
+@admin_style_center_bp.route('/recipe-cards-style/set-active', methods=['POST'])
+@login_required
+@admin_required
+def set_active_recipe_cards_style():
+    data = request.get_json()
+    if data and 'template_id' in data:
+        session['active_card_template'] = data['template_id']
+        return jsonify({'success': True, 'template_id': data['template_id']})
+    return jsonify({'success': False}), 400
