@@ -13,12 +13,59 @@
     </div>
 </div>
 
-<div class="min-h-[100dvh] bg-slate-900 flex flex-col items-center justify-center pt-16 overflow-hidden">
+<div class="min-h-[100dvh] bg-slate-900 pt-24 pb-12 overflow-x-auto hide-scrollbar snap-x snap-mandatory flex gap-8 px-8 xl:justify-center items-center">
     
+    <!-- VARIANT 1: OLD STYLE (Currently at /) -->
+    <div class="shrink-0 snap-center relative w-[95vw] sm:w-[350px] h-[75vh] flex flex-col bg-white rounded-3xl shadow-2xl overflow-hidden select-none border border-white/10 group">
+        <!-- Image Section -->
+        <div class="h-[65%] relative overflow-hidden">
+            <img src="{{ recipe.image_url }}" class="w-full h-full object-cover pointer-events-none transition-transform duration-700 group-hover:scale-105" draggable="false">
+            <div class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/80 to-transparent"></div>
+
+            <!-- Pass overlay — middle-left -->
+            <button class="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm text-slate-500 flex items-center justify-center shadow-lg border border-white/60">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button> <!-- Like overlay — middle-right -->
+            <button class="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm text-green-500 flex items-center justify-center shadow-lg border border-white/60">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+            </button>
+
+            <div class="absolute bottom-5 left-5 right-5 text-white">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="bg-white/20 backdrop-blur-md text-white border border-white/30 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide shadow-sm">{{ recipe.cuisine }}</span>
+                    <span class="text-xs font-medium text-white/90">⏱️ {{ recipe.time_estimate }}m</span>
+                </div>
+                <h2 class="text-3xl font-serif font-bold leading-tight drop-shadow-md line-clamp-2">{{ recipe.title }}</h2>
+            </div>
+        </div>
+
+        <!-- Content Section -->
+        <div class="flex-grow p-6 bg-white flex flex-col text-left">
+            <div class="flex gap-2 mb-3">
+                 <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-500/10 uppercase tracking-wider">{{ recipe.difficulty }}</span>
+            </div>
+
+            <p class="text-slate-500 text-sm line-clamp-3 leading-relaxed">
+                A {{ recipe.difficulty|lower }} {{ recipe.cuisine|lower }} dish. Perfect for your next meal.
+            </p>
+
+            <div class="mt-auto pt-4 flex items-center justify-center opacity-50 text-slate-300 text-xs font-bold uppercase tracking-widest gap-2">
+                <span>Tap for Details</span>
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- VARIANT 2: CENTRAL (Glassmorphism & Isometric App Icons) -->
     <!-- Swipe Container -->
-    <div id="card-container" class="relative w-full max-w-sm h-[75vh] flex items-center justify-center">
+    <div id="card-container" class="shrink-0 snap-center relative w-[95vw] sm:w-[350px] h-[75vh] flex items-center justify-center">
         <!-- Main Card -->
-        <div id="recipe-card" class="absolute w-[95vw] sm:w-[350px] h-full bg-slate-800 rounded-3xl shadow-xl overflow-hidden touch-none select-none will-change-transform z-10">
+        <div id="recipe-card" class="absolute w-full h-full bg-slate-800 rounded-3xl shadow-xl overflow-hidden touch-none select-none will-change-transform z-10 border border-white/10">
             
             <!-- Background Image -->
             <img src="{{ recipe.image_url }}" alt="{{ recipe.title }}" class="absolute inset-0 w-full h-full object-cover pointer-events-none">
@@ -76,10 +123,19 @@
         
         <!-- Background Mock Card to show it's a deck -->
         <div class="absolute w-[85vw] sm:w-[320px] h-[95%] bg-slate-800 rounded-3xl shadow-xl border border-white/10 mt-6 z-0" style="opacity: 0.5;"></div>
+        
+        <!-- Controls Help positioned absolutely just below the central card -->
+        <p class="absolute -bottom-10 inset-x-0 text-center text-white/50 font-inter text-sm whitespace-nowrap">Swipe left to pass, right to save</p>
     </div>
-    
-    <!-- Controls Help -->
-    <p class="mt-8 text-white/50 font-inter text-sm mb-4">Swipe left to pass, right to save</p>
+
+    <!-- VARIANT 3: RIGHT PLACEHOLDER -->
+    <div class="shrink-0 snap-center relative w-[95vw] sm:w-[350px] h-[75vh] flex items-center justify-center bg-slate-800 rounded-3xl border-2 border-dashed border-white/20 shadow-xl overflow-hidden select-none">
+         <span class="text-white/40 font-bold tracking-widest uppercase flex flex-col items-center gap-4">
+            <svg class="w-12 h-12 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+            Variant 3 (WIP)
+         </span>
+    </div>
+
 </div>
 
 <!-- Hammer JS from CDN -->
