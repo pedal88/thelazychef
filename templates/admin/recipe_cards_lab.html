@@ -16,9 +16,9 @@
         <div class="flex items-center gap-6">
             <h1 class="text-xl font-bold font-inter text-gray-900">Recipe Card Lab</h1>
             
-            <form method="GET" action="{{ url_for('admin_style_center.recipe_cards_lab') }}" class="relative hidden sm:block">
-                <select name="recipe_id" id="desktop-recipe-select" class="block w-64 rounded-md border-0 text-gray-900 sm:text-sm sm:leading-6">
-                    <option value="">-- Use Mock Recipe --</option>
+            <form method="GET" action="{{ url_for('admin_style_center.recipe_cards_lab') }}" class="relative ml-2">
+                <select name="recipe_id" id="recipe-select" class="w-40 sm:w-64 rounded-md border-0 text-gray-900 text-sm">
+                    <option value="">-- Mock Recipe --</option>
                     {% for r in recent_recipes %}
                     <option value="{{ r.id }}" {% if selected_recipe_id == r.id|string %}selected{% endif %}>
                         {{ r.title }}
@@ -28,22 +28,10 @@
             </form>
         </div>
 
-        <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-2 sm:space-x-4">
             <!-- Simulated Kitchen Mode / Chef Avatar controls -->
-            <button class="bg-slate-100 px-3 py-1.5 rounded-full text-sm font-medium hidden sm:block">Chef Avatar</button>
-            <button class="bg-orange-100 text-orange-600 px-3 py-1.5 rounded-full text-sm font-medium hidden sm:block">Kitchen Mode</button>
-
-            <!-- Mobile recipe selector (only visible on small screens to save space) -->
-            <form method="GET" action="{{ url_for('admin_style_center.recipe_cards_lab') }}" class="relative sm:hidden block w-40">
-                <select name="recipe_id" id="mobile-recipe-select" class="block w-full rounded-md border-0 text-xs text-gray-900">
-                    <option value="">Mock</option>
-                    {% for r in recent_recipes %}
-                    <option value="{{ r.id }}" {% if selected_recipe_id == r.id|string %}selected{% endif %}>
-                        {{ r.title|truncate(15) }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </form>
+            <button class="bg-slate-100 px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium hidden md:block">Chef Avatar</button>
+            <button class="bg-orange-100 text-orange-600 px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium">Kitchen Mode</button>
         </div>
     </div>
 </div>
@@ -193,11 +181,8 @@
             }
         };
         
-        if(document.getElementById('desktop-recipe-select')) {
-            new TomSelect('#desktop-recipe-select', tsOptions);
-        }
-        if(document.getElementById('mobile-recipe-select')) {
-            new TomSelect('#mobile-recipe-select', tsOptions);
+        if(document.getElementById('recipe-select')) {
+            new TomSelect('#recipe-select', tsOptions);
         }
 
         // Hammer JS Logic
