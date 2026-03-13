@@ -17,7 +17,7 @@
             
             <!-- Left: Recipe Selector -->
             <div class="flex items-center gap-4 w-full sm:w-auto">
-                <h1 class="text-xl font-bold font-inter text-gray-900 hidden md:block">Recipe Card Lab</h1>
+                <h1 class="text-xl font-bold font-inter text-gray-900 hidden md:block">Recipe Preview Lab</h1>
                 <form method="GET" action="{{ url_for('admin_style_center.recipe_cards_lab') }}" class="relative w-full sm:w-auto">
                     <select name="recipe_id" id="recipe-select" class="w-full sm:w-64 rounded-md border-0 text-gray-900 text-sm focus:ring-2 focus:ring-orange-600">
                         <option value="">-- Mock Recipe --</option>
@@ -30,133 +30,192 @@
                 </form>
             </div>
 
-            <!-- Right: Template Switcher -->
-            <div class="flex bg-slate-100 p-1 rounded-lg w-full sm:w-auto">
-                <button type="button" onclick="setTemplate('minimalist')" class="btn-template flex-1 sm:flex-none px-4 py-1.5 rounded-md text-xs font-semibold bg-white shadow-sm text-slate-900 transition-all" data-template="minimalist">Minimalist</button>
-                <button type="button" onclick="setTemplate('editorial')" class="btn-template flex-1 sm:flex-none px-4 py-1.5 rounded-md text-xs font-semibold text-slate-500 hover:text-slate-900 transition-all" data-template="editorial">Editorial</button>
-                <button type="button" onclick="setTemplate('dynamic')" class="btn-template flex-1 sm:flex-none px-4 py-1.5 rounded-md text-xs font-semibold text-slate-500 hover:text-slate-900 transition-all" data-template="dynamic">Dynamic</button>
+            <div class="flex items-center space-x-2 sm:space-x-4">
+                <button class="bg-orange-100 text-orange-600 px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium">Scroll Sideways for Variants</button>
             </div>
-
         </div>
     </div>
 </div>
 
-<div class="min-h-[100dvh] bg-slate-900 pt-36 pb-12 flex flex-col items-center justify-center">
+<div class="min-h-[100dvh] bg-slate-900 pt-36 pb-12 overflow-x-auto hide-scrollbar snap-x snap-mandatory flex gap-8 px-8 xl:justify-center items-center">
+    
+    {% set img_src = recipe.image_url if recipe.image_url else (get_image_url(recipe.image_filename) if recipe.image_filename else 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=1200') %}
+    
+    <!-- VARIANT 1: OLD STYLE -->
+    <div class="shrink-0 snap-center relative w-[95vw] sm:w-[350px] h-[75vh] flex flex-col bg-white rounded-3xl shadow-2xl overflow-hidden select-none border border-white/10 group">
+        <div class="h-[65%] relative overflow-hidden">
+            <img src="{{ img_src }}" class="w-full h-full object-cover pointer-events-none transition-transform duration-700 group-hover:scale-105" draggable="false">
+            <div class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/80 to-transparent"></div>
 
-    <p class="text-white/40 font-inter text-xs uppercase tracking-widest mb-6 pointer-events-none">Swipe to test Physics</p>
+            <button class="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm text-slate-500 flex items-center justify-center shadow-lg border border-white/60">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button> 
+            <button class="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm text-green-500 flex items-center justify-center shadow-lg border border-white/60">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            </button>
 
-    <!-- Swiper Container -->
-    <div id="card-container" class="relative w-[95vw] sm:w-[360px] h-[75vh] flex items-center justify-center">
-        
-        <!-- Main Card Wrapper (Animated by HammerJS) -->
-        <div id="recipe-card" class="absolute w-full h-full will-change-transform z-10 transition-all duration-300 overflow-hidden border-2 border-black rounded-none bg-white shadow-2xl">
+            <div class="absolute bottom-5 left-5 right-5 text-white">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="bg-white/20 backdrop-blur-md text-white border border-white/30 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide shadow-sm">{{ recipe.cuisine }}</span>
+                    <span class="text-xs font-medium text-white/90">⏱️ {{ recipe.time_estimate }}m</span>
+                </div>
+                <h2 class="text-3xl font-serif font-bold leading-tight drop-shadow-md line-clamp-2">{{ recipe.title }}</h2>
+            </div>
+        </div>
+
+        <div class="flex-grow p-6 bg-white flex flex-col text-left">
+            <div class="flex gap-2 mb-3">
+                 <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-500/10 uppercase tracking-wider">{{ recipe.difficulty }}</span>
+            </div>
+            <p class="text-slate-500 text-sm line-clamp-3 leading-relaxed">
+                A {{ recipe.difficulty|lower }} {{ recipe.cuisine|lower }} dish. Perfect for your next meal.
+            </p>
+            <div class="mt-auto pt-4 flex items-center justify-center opacity-50 text-slate-300 text-xs font-bold uppercase tracking-widest gap-2">
+                <span>Tap for Details</span>
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- VARIANT 2: CENTRAL (Glassmorphism & Isometric App Icons) -->
+    <div class="shrink-0 snap-center relative w-[95vw] sm:w-[350px] h-[75vh] flex items-center justify-center swipeable-container">
+        <div class="swipe-card absolute w-full h-full bg-slate-800 rounded-3xl shadow-xl overflow-hidden touch-none select-none will-change-transform z-10 border border-white/10">
+            <img src="{{ img_src }}" alt="{{ recipe.title }}" class="absolute inset-0 w-full h-full object-cover pointer-events-none">
             
-            {% set img_src = recipe.image_url if recipe.image_url else (get_image_url(recipe.image_filename) if recipe.image_filename else 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=1200') %}
-            
-            <!-- TEMPLATE A: MINIMALIST (Neo-Brutalist) -->
-            <div id="tpl-minimalist" class="recipe-variant absolute inset-0 flex bg-white">
-                <div class="relative flex-grow h-full overflow-hidden">
-                    <img src="{{ img_src }}" class="absolute inset-0 w-full h-full object-cover grayscale-[20%]">
-                    
-                    <!-- Brutalist Content Overlay -->
-                    <div class="absolute bottom-0 inset-x-0 p-5 bg-white border-t-2 border-black">
-                        <h2 class="font-inter font-black uppercase tracking-tighter text-3xl leading-none text-black">{{ recipe.title }}</h2>
-                        <div class="flex gap-3 mt-4">
-                            <div class="w-12 h-12 border-2 border-black bg-black text-white flex items-center justify-center font-bold text-xl">✕</div>
-                            <div class="w-12 h-12 border-2 border-black bg-white text-black flex items-center justify-center font-bold text-2xl shadow-[4px_4px_0px_#000]">♥</div>
+            <div class="stamp-save absolute top-8 left-8 border-4 border-green-500 text-green-500 text-4xl font-black px-4 py-2 rounded-lg transform -rotate-12 opacity-0 z-20 pointer-events-none drop-shadow-md tracking-wider">SAVE</div>
+            <div class="stamp-pass absolute top-8 right-8 border-4 border-red-500 text-red-500 text-4xl font-black px-4 py-2 rounded-lg transform rotate-12 opacity-0 z-20 pointer-events-none drop-shadow-md tracking-wider">PASS</div>
+
+            <div class="absolute bottom-0 inset-x-0 h-[30%] bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end">
+                <div class="w-full backdrop-blur-md bg-white/20 border-t border-white/30 p-5 pt-4">
+                    <div class="flex items-center gap-2 mb-3 overflow-x-auto hide-scrollbar pb-1">
+                        <div class="flex items-center gap-1.5 bg-green-500/20 border border-green-400 text-green-100 rounded-full pl-0.5 pr-2.5 py-0.5 whitespace-nowrap">
+                            <img src="{{ icons_map.get('app_icons_diet', '') }}" class="w-5 h-5 rounded-full bg-white object-cover" alt="Diet">
+                            <span class="text-[11px] font-semibold uppercase tracking-wider">{{ recipe.diet }}</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 bg-black/30 border border-white/20 text-white rounded-full pl-0.5 pr-2.5 py-0.5 whitespace-nowrap">
+                            <img src="{{ icons_map.get('app_icons_time', '') }}" class="w-5 h-5 rounded-full bg-white object-cover" alt="Time">
+                            <span class="text-xs font-medium">{{ recipe.time_estimate }} min</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 bg-black/30 border border-white/20 text-white rounded-full pl-0.5 pr-2.5 py-0.5 whitespace-nowrap">
+                            <img src="{{ icons_map.get('app_icons_portions', '') }}" class="w-5 h-5 rounded-full bg-white object-cover" alt="Portions">
+                            <span class="text-xs font-medium">{{ recipe.portions }}</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 bg-black/30 border border-white/20 text-white rounded-full pl-0.5 pr-2.5 py-0.5 whitespace-nowrap">
+                            <img src="{{ icons_map.get('app_icons_calories', '') }}" class="w-5 h-5 rounded-full bg-white object-cover" alt="Calories">
+                            <span class="text-xs font-medium">{{ recipe.calories }} kcal</span>
                         </div>
                     </div>
+                    <h2 class="text-white font-inter font-bold text-2xl leading-tight mb-1.5 line-clamp-2 drop-shadow-md">{{ recipe.title }}</h2>
+                    <p class="text-white/80 font-inter text-xs font-bold uppercase tracking-widest drop-shadow-md">{{ recipe.cuisine }}</p>
                 </div>
-                
-                <!-- Right Sidebar Metadata -->
-                <div class="w-14 h-full bg-white/95 flex flex-col items-center py-6 gap-8 border-l-2 border-black z-10 shrink-0">
-                    <div class="flex flex-col items-center gap-1">
-                        <img src="{{ icons_map.get('app_icons_diet', '') }}" class="w-7 h-7 object-contain">
-                        <span class="text-[9px] font-black uppercase tracking-tighter text-black">Diet</span>
-                    </div>
-                    <div class="flex flex-col items-center gap-1">
-                        <img src="{{ icons_map.get('app_icons_time', '') }}" class="w-7 h-7 object-contain">
-                        <span class="text-[9px] font-black uppercase tracking-tighter text-black">{{ recipe.time_estimate }}M</span>
-                    </div>
-                    <div class="flex flex-col items-center gap-1">
-                        <img src="{{ icons_map.get('app_icons_calories', '') }}" class="w-7 h-7 object-contain">
-                        <span class="text-[9px] font-black uppercase tracking-tighter text-black">{{ recipe.calories }}K</span>
-                    </div>
-                </div>
-                
-                <!-- Brutalist Stamps -->
-                <div class="stamp-save absolute top-8 left-6 border-4 border-black bg-white text-black text-5xl font-black px-4 py-2 transform -rotate-12 opacity-0 z-20 pointer-events-none tracking-tighter shadow-[8px_8px_0px_#000]">SAVE</div>
-                <div class="stamp-pass absolute top-8 right-16 border-4 border-black bg-black text-white text-5xl font-black px-4 py-2 transform rotate-12 opacity-0 z-20 pointer-events-none tracking-tighter shadow-[8px_8px_0px_#fff]">PASS</div>
             </div>
-
-            <!-- TEMPLATE B: EDITORIAL COOKBOOK -->
-            <div id="tpl-editorial" class="recipe-variant absolute inset-0 hidden">
-                <img src="{{ img_src }}" class="absolute inset-0 w-full h-full object-cover saturate-[1.2]">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none"></div>
-                
-                <!-- Asymmetric Overlay -->
-                <div class="absolute bottom-6 left-6 w-[75%] bg-white shadow-2xl p-6 rounded-tr-[2rem] rounded-bl-lg rounded-br-2xl">
-                    <p class="font-inter text-[10px] font-bold text-orange-600 tracking-widest uppercase mb-2">{{ recipe.cuisine }}</p>
-                    <h2 class="font-serif text-[28px] text-slate-900 leading-[1.1] mb-5 lowercase tracking-tight">{{ recipe.title }}</h2>
-                    
-                    <div class="flex flex-wrap gap-2">
-                        <div class="flex items-center gap-2 border border-slate-200 rounded-full px-3 py-1.5 bg-white text-slate-600">
-                            <span class="font-inter text-[10px] font-semibold uppercase tracking-wider">{{ recipe.time_estimate }} min</span>
-                        </div>
-                        <div class="flex items-center gap-2 border border-slate-200 rounded-full px-3 py-1.5 bg-white text-slate-600">
-                            <span class="font-inter text-[10px] font-semibold uppercase tracking-wider">{{ recipe.difficulty }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Elegant Stamps -->
-                <div class="stamp-save absolute top-16 left-8 text-green-600 text-6xl font-serif italic tracking-widest opacity-0 z-20 pointer-events-none" style="text-shadow: 2px 2px 0px rgba(255,255,255,0.9); transform: rotate(-5deg);">Saved.</div>
-                <div class="stamp-pass absolute top-16 right-8 text-red-600 text-6xl font-serif italic tracking-widest opacity-0 z-20 pointer-events-none" style="text-shadow: 2px 2px 0px rgba(255,255,255,0.9); transform: rotate(5deg);">Pass.</div>
-            </div>
-
-            <!-- TEMPLATE C: DYNAMIC CLUSTERS -->
-            <div id="tpl-dynamic" class="recipe-variant absolute inset-0 hidden bg-slate-800">
-                <img src="{{ img_src }}" class="absolute inset-0 w-full h-full object-cover brightness-[0.6]">
-                
-                <!-- Diet Bubble -->
-                <div class="absolute top-6 left-6 backdrop-blur-lg bg-white/10 rounded-2xl p-3 flex items-center gap-2 border border-white/20 shadow-xl">
-                    <img src="{{ icons_map.get('app_icons_diet', '') }}" class="w-6 h-6 object-contain">
-                    <span class="text-white font-inter text-sm font-semibold tracking-wide">{{ recipe.diet }}</span>
-                </div>
-
-                <!-- Time/Cal Bubbles -->
-                <div class="absolute top-6 right-6 flex flex-col gap-3">
-                    <div class="backdrop-blur-lg bg-white/10 rounded-2xl px-3 py-2 flex items-center gap-2 border border-white/20 shadow-xl">
-                        <img src="{{ icons_map.get('app_icons_time', '') }}" class="w-5 h-5 object-contain opacity-90">
-                        <span class="text-white font-inter text-xs font-bold tracking-wider">{{ recipe.time_estimate }}M</span>
-                    </div>
-                    <div class="backdrop-blur-lg bg-white/10 rounded-2xl px-3 py-2 flex items-center gap-2 border border-white/20 shadow-xl">
-                        <img src="{{ icons_map.get('app_icons_calories', '') }}" class="w-5 h-5 object-contain opacity-90">
-                        <span class="text-white font-inter text-xs font-bold tracking-wider">{{ recipe.calories }}K</span>
-                    </div>
-                </div>
-
-                <!-- Title Bubble -->
-                <div class="absolute bottom-32 left-6 right-6 backdrop-blur-xl bg-black/40 rounded-3xl p-5 border border-white/10 shadow-2xl">
-                    <h2 class="text-white font-inter font-bold text-[22px] leading-tight mb-2 tracking-tight drop-shadow-md">{{ recipe.title }}</h2>
-                    <p class="text-white/60 font-inter text-xs uppercase tracking-widest font-bold">{{ recipe.cuisine }}</p>
-                </div>
-
-                <!-- Neumorphic Actions Array -->
-                <div class="absolute bottom-6 inset-x-0 flex justify-center gap-8 z-20 pointer-events-none">
-                    <div class="w-16 h-16 rounded-full bg-[#1e293b] flex items-center justify-center shadow-[5px_5px_10px_#0f172a,-5px_-5px_10px_#334155] text-slate-500 font-black text-xl pointer-events-auto border border-[#334155]">✕</div>
-                    <div class="w-16 h-16 rounded-full bg-[#1e293b] flex items-center justify-center shadow-[5px_5px_10px_#0f172a,-5px_-5px_10px_#334155] text-green-500 font-black text-2xl pointer-events-auto border border-[#334155]">♥</div>
-                </div>
-
-                <div class="stamp-save absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/90 backdrop-blur text-green-500 border border-green-200 shadow-2xl rounded-full w-32 h-32 flex items-center justify-center text-7xl font-inter font-black opacity-0 z-30 pointer-events-none scale-110">✓</div>
-                <div class="stamp-pass absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/90 backdrop-blur text-red-500 border border-red-200 shadow-2xl rounded-full w-32 h-32 flex items-center justify-center text-7xl font-inter font-black opacity-0 z-30 pointer-events-none scale-110">✕</div>
-            </div>
-
         </div>
         
-        <!-- Deck Decorator -->
-        <div class="absolute w-[80vw] sm:w-[320px] h-full bg-slate-800 rounded-3xl shadow-xl mt-6 z-0" style="opacity: 0.5;"></div>
+        <div class="absolute w-[80vw] sm:w-[320px] h-[95%] bg-slate-800 rounded-3xl shadow-xl border border-white/10 mt-6 z-0 opacity-50"></div>
     </div>
+
+
+    <!-- VARIANT 3: MINIMALIST (Neo-Brutalist) -->
+    <div class="shrink-0 snap-center relative w-[95vw] sm:w-[350px] h-[75vh] flex items-center justify-center swipeable-container">
+        <div class="swipe-card absolute w-full h-full will-change-transform z-10 transition-all duration-300 overflow-hidden border-2 border-black rounded-none bg-white shadow-2xl flex touch-none select-none">
+            <div class="relative flex-grow h-full overflow-hidden">
+                <img src="{{ img_src }}" class="absolute inset-0 w-full h-full object-cover grayscale-[20%] pointer-events-none">
+                <div class="absolute bottom-0 inset-x-0 p-5 bg-white border-t-2 border-black">
+                    <h2 class="font-inter font-black uppercase tracking-tighter text-3xl leading-none text-black">{{ recipe.title }}</h2>
+                    <div class="flex gap-3 mt-4">
+                        <div class="w-12 h-12 border-2 border-black bg-black text-white flex items-center justify-center font-bold text-xl">✕</div>
+                        <div class="w-12 h-12 border-2 border-black bg-white text-black flex items-center justify-center font-bold text-2xl shadow-[4px_4px_0px_#000]">♥</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="w-14 h-full bg-white/95 flex flex-col items-center py-6 gap-8 border-l-2 border-black z-10 shrink-0 pointer-events-none">
+                <div class="flex flex-col items-center gap-1">
+                    <img src="{{ icons_map.get('app_icons_diet', '') }}" class="w-7 h-7 object-contain">
+                    <span class="text-[9px] font-black uppercase tracking-tighter text-black">Diet</span>
+                </div>
+                <div class="flex flex-col items-center gap-1">
+                    <img src="{{ icons_map.get('app_icons_time', '') }}" class="w-7 h-7 object-contain">
+                    <span class="text-[9px] font-black uppercase tracking-tighter text-black">{{ recipe.time_estimate }}M</span>
+                </div>
+                <div class="flex flex-col items-center gap-1">
+                    <img src="{{ icons_map.get('app_icons_calories', '') }}" class="w-7 h-7 object-contain">
+                    <span class="text-[9px] font-black uppercase tracking-tighter text-black">{{ recipe.calories }}K</span>
+                </div>
+            </div>
+            
+            <div class="stamp-save absolute top-8 left-6 border-4 border-black bg-white text-black text-5xl font-black px-4 py-2 transform -rotate-12 opacity-0 z-20 pointer-events-none tracking-tighter shadow-[8px_8px_0px_#000]">SAVE</div>
+            <div class="stamp-pass absolute top-8 right-16 border-4 border-black bg-black text-white text-5xl font-black px-4 py-2 transform rotate-12 opacity-0 z-20 pointer-events-none tracking-tighter shadow-[8px_8px_0px_#fff]">PASS</div>
+        </div>
+        
+        <div class="absolute w-[80vw] sm:w-[320px] h-[95%] bg-slate-800 rounded-3xl shadow-xl mt-6 z-0 opacity-50"></div>
+    </div>
+
+
+    <!-- VARIANT 4: EDITORIAL COOKBOOK -->
+    <div class="shrink-0 snap-center relative w-[95vw] sm:w-[350px] h-[75vh] flex items-center justify-center swipeable-container">
+        <div class="swipe-card absolute w-full h-full will-change-transform z-10 transition-all duration-300 overflow-hidden rounded-[2rem] bg-white shadow-2xl touch-none select-none">
+            <img src="{{ img_src }}" class="absolute inset-0 w-full h-full object-cover saturate-[1.2] pointer-events-none">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none"></div>
+            
+            <div class="absolute bottom-6 left-6 w-[75%] bg-white shadow-2xl p-6 rounded-tr-[2rem] rounded-bl-lg rounded-br-2xl pointer-events-none">
+                <p class="font-inter text-[10px] font-bold text-orange-600 tracking-widest uppercase mb-2">{{ recipe.cuisine }}</p>
+                <h2 class="font-serif text-[28px] text-slate-900 leading-[1.1] mb-5 lowercase tracking-tight">{{ recipe.title }}</h2>
+                <div class="flex flex-wrap gap-2">
+                    <div class="flex items-center gap-2 border border-slate-200 rounded-full px-3 py-1.5 bg-white text-slate-600">
+                        <span class="font-inter text-[10px] font-semibold uppercase tracking-wider">{{ recipe.time_estimate }} min</span>
+                    </div>
+                    <div class="flex items-center gap-2 border border-slate-200 rounded-full px-3 py-1.5 bg-white text-slate-600">
+                        <span class="font-inter text-[10px] font-semibold uppercase tracking-wider">{{ recipe.difficulty }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stamp-save absolute top-16 left-8 text-green-600 text-6xl font-serif italic tracking-widest opacity-0 z-20 pointer-events-none" style="text-shadow: 2px 2px 0px rgba(255,255,255,0.9); transform: rotate(-5deg);">Saved.</div>
+            <div class="stamp-pass absolute top-16 right-8 text-red-600 text-6xl font-serif italic tracking-widest opacity-0 z-20 pointer-events-none" style="text-shadow: 2px 2px 0px rgba(255,255,255,0.9); transform: rotate(5deg);">Pass.</div>
+        </div>
+        <div class="absolute w-[80vw] sm:w-[320px] h-[95%] bg-slate-800 rounded-3xl shadow-xl mt-6 z-0 opacity-50"></div>
+    </div>
+
+
+    <!-- VARIANT 5: DYNAMIC CLUSTERS -->
+    <div class="shrink-0 snap-center relative w-[95vw] sm:w-[350px] h-[75vh] flex items-center justify-center swipeable-container">
+        <div class="swipe-card absolute w-full h-full will-change-transform z-10 transition-all duration-300 overflow-hidden rounded-[2.5rem] border border-slate-600 bg-slate-900 shadow-2xl touch-none select-none">
+            <img src="{{ img_src }}" class="absolute inset-0 w-full h-full object-cover brightness-[0.6] pointer-events-none">
+            
+            <div class="absolute top-6 left-6 backdrop-blur-lg bg-white/10 rounded-2xl p-3 flex items-center gap-2 border border-white/20 shadow-xl pointer-events-none">
+                <img src="{{ icons_map.get('app_icons_diet', '') }}" class="w-6 h-6 object-contain">
+                <span class="text-white font-inter text-sm font-semibold tracking-wide">{{ recipe.diet }}</span>
+            </div>
+
+            <div class="absolute top-6 right-6 flex flex-col gap-3 pointer-events-none">
+                <div class="backdrop-blur-lg bg-white/10 rounded-2xl px-3 py-2 flex items-center gap-2 border border-white/20 shadow-xl">
+                    <img src="{{ icons_map.get('app_icons_time', '') }}" class="w-5 h-5 object-contain opacity-90">
+                    <span class="text-white font-inter text-xs font-bold tracking-wider">{{ recipe.time_estimate }}M</span>
+                </div>
+                <div class="backdrop-blur-lg bg-white/10 rounded-2xl px-3 py-2 flex items-center gap-2 border border-white/20 shadow-xl">
+                    <img src="{{ icons_map.get('app_icons_calories', '') }}" class="w-5 h-5 object-contain opacity-90">
+                    <span class="text-white font-inter text-xs font-bold tracking-wider">{{ recipe.calories }}K</span>
+                </div>
+            </div>
+
+            <div class="absolute bottom-32 left-6 right-6 backdrop-blur-xl bg-black/40 rounded-3xl p-5 border border-white/10 shadow-2xl pointer-events-none">
+                <h2 class="text-white font-inter font-bold text-[22px] leading-tight mb-2 tracking-tight drop-shadow-md">{{ recipe.title }}</h2>
+                <p class="text-white/60 font-inter text-xs uppercase tracking-widest font-bold">{{ recipe.cuisine }}</p>
+            </div>
+
+            <div class="absolute bottom-6 inset-x-0 flex justify-center gap-8 z-20 pointer-events-none">
+                <div class="w-16 h-16 rounded-full bg-[#1e293b] flex items-center justify-center shadow-[5px_5px_10px_#0f172a,-5px_-5px_10px_#334155] text-slate-500 font-black text-xl pointer-events-auto border border-[#334155]">✕</div>
+                <div class="w-16 h-16 rounded-full bg-[#1e293b] flex items-center justify-center shadow-[5px_5px_10px_#0f172a,-5px_-5px_10px_#334155] text-green-500 font-black text-2xl pointer-events-auto border border-[#334155]">♥</div>
+            </div>
+
+            <div class="stamp-save absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/90 backdrop-blur text-green-500 border border-green-200 shadow-2xl rounded-full w-32 h-32 flex items-center justify-center text-7xl font-inter font-black opacity-0 z-30 pointer-events-none scale-110">✓</div>
+            <div class="stamp-pass absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/90 backdrop-blur text-red-500 border border-red-200 shadow-2xl rounded-full w-32 h-32 flex items-center justify-center text-7xl font-inter font-black opacity-0 z-30 pointer-events-none scale-110">✕</div>
+        </div>
+        <div class="absolute w-[80vw] sm:w-[320px] h-[95%] bg-slate-800 rounded-3xl shadow-xl mt-6 z-0 opacity-50"></div>
+    </div>
+
 </div>
 
 <!-- Scripts -->
@@ -164,38 +223,6 @@
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 
 <script>
-    let currentTemplate = 'minimalist';
-
-    function setTemplate(templateName) {
-        currentTemplate = templateName;
-
-        // 1. Toggle Button States
-        document.querySelectorAll('.btn-template').forEach(btn => {
-            btn.classList.remove('bg-white', 'shadow-sm', 'text-slate-900');
-            btn.classList.add('text-slate-500', 'hover:text-slate-900');
-            if (btn.dataset.template === templateName) {
-                btn.classList.add('bg-white', 'shadow-sm', 'text-slate-900');
-                btn.classList.remove('text-slate-500', 'hover:text-slate-900');
-            }
-        });
-
-        // 2. Wrap visibility
-        document.querySelectorAll('.recipe-variant').forEach(el => el.classList.add('hidden'));
-        document.getElementById('tpl-' + templateName).classList.remove('hidden');
-
-        // 3. Update parent container classes for corner radiuses and borders
-        const card = document.getElementById('recipe-card');
-        card.className = "absolute w-full h-full will-change-transform z-10 transition-all duration-300 overflow-hidden shadow-2xl";
-        
-        if (templateName === 'minimalist') {
-            card.classList.add('border-2', 'border-black', 'rounded-none', 'bg-white');
-        } else if (templateName === 'editorial') {
-            card.classList.add('rounded-[2rem]', 'bg-white');
-        } else if (templateName === 'dynamic') {
-            card.classList.add('rounded-[2.5rem]', 'border', 'border-slate-600', 'bg-slate-900');
-        }
-    }
-
     document.addEventListener('DOMContentLoaded', () => {
         // Init Search
         if(document.getElementById('recipe-select')) {
@@ -207,56 +234,60 @@
             });
         }
 
-        // Init Hammer
-        const card = document.getElementById('recipe-card');
-        const mc = new Hammer(card);
-        mc.add(new Hammer.Pan({ direction: Hammer.DIRECTION_HORIZONTAL, threshold: 10 }));
-        
-        let isDragging = false;
-        
-        mc.on('panstart', () => {
-            isDragging = true;
-            card.style.transition = 'none';
-        });
-        
-        mc.on('panmove', (e) => {
-            if (!isDragging) return;
-            const deltaX = e.deltaX;
-            card.style.transform = `translate(${deltaX}px, ${e.deltaY}px) rotate(${deltaX * 0.05}deg)`;
+        // Init Hammer UI Physics per deck
+        document.querySelectorAll('.swipeable-container').forEach(container => {
+            const card = container.querySelector('.swipe-card');
+            if(!card) return;
             
-            const opacity = Math.min(Math.abs(deltaX) / 100, 1);
-            const activeSave = document.querySelector(`#tpl-${currentTemplate} .stamp-save`);
-            const activePass = document.querySelector(`#tpl-${currentTemplate} .stamp-pass`);
+            const mc = new Hammer(card);
+            mc.add(new Hammer.Pan({ direction: Hammer.DIRECTION_HORIZONTAL, threshold: 10 }));
             
-            if (deltaX > 0) {
-                if (activeSave) activeSave.style.opacity = opacity;
-                if (activePass) activePass.style.opacity = 0;
-            } else {
-                if (activePass) activePass.style.opacity = opacity;
-                if (activeSave) activeSave.style.opacity = 0;
+            let isDragging = false;
+            
+            mc.on('panstart', () => {
+                isDragging = true;
+                card.style.transition = 'none';
+            });
+            
+            mc.on('panmove', (e) => {
+                if (!isDragging) return;
+                const deltaX = e.deltaX;
+                card.style.transform = `translate(${deltaX}px, ${e.deltaY}px) rotate(${deltaX * 0.05}deg)`;
+                
+                const opacity = Math.min(Math.abs(deltaX) / 100, 1);
+                const activeSave = container.querySelector('.stamp-save');
+                const activePass = container.querySelector('.stamp-pass');
+                
+                if (deltaX > 0) {
+                    if (activeSave) activeSave.style.opacity = opacity;
+                    if (activePass) activePass.style.opacity = 0;
+                } else {
+                    if (activePass) activePass.style.opacity = opacity;
+                    if (activeSave) activeSave.style.opacity = 0;
+                }
+            });
+            
+            mc.on('panend', (e) => {
+                isDragging = false;
+                card.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                
+                if (e.deltaX > 100 || e.velocityX > 0.5) {
+                    card.style.transform = `translate(${window.innerWidth}px, ${e.deltaY}px) rotate(30deg)`;
+                    setTimeout(resetCard, 400);
+                } else if (e.deltaX < -100 || e.velocityX < -0.5) {
+                    card.style.transform = `translate(-${window.innerWidth}px, ${e.deltaY}px) rotate(-30deg)`;
+                    setTimeout(resetCard, 400);
+                } else {
+                    resetCard();
+                }
+            });
+            
+            function resetCard() {
+                card.style.transition = 'transform 0.4s ease, border-radius 0.3s ease';
+                card.style.transform = 'translate(0px, 0px) rotate(0deg)';
+                container.querySelectorAll('.stamp-save, .stamp-pass').forEach(el => el.style.opacity = 0);
             }
         });
-        
-        mc.on('panend', (e) => {
-            isDragging = false;
-            card.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-            
-            if (e.deltaX > 100 || e.velocityX > 0.5) {
-                card.style.transform = `translate(${window.innerWidth}px, ${e.deltaY}px) rotate(30deg)`;
-                setTimeout(resetCard, 400);
-            } else if (e.deltaX < -100 || e.velocityX < -0.5) {
-                card.style.transform = `translate(-${window.innerWidth}px, ${e.deltaY}px) rotate(-30deg)`;
-                setTimeout(resetCard, 400);
-            } else {
-                resetCard();
-            }
-        });
-        
-        function resetCard() {
-            card.style.transition = 'transform 0.4s ease, border-radius 0.3s ease';
-            card.style.transform = 'translate(0px, 0px) rotate(0deg)';
-            document.querySelectorAll('.stamp-save, .stamp-pass').forEach(el => el.style.opacity = 0);
-        }
     });
 </script>
 {% endblock %}
