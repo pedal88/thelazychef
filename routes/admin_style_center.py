@@ -374,7 +374,7 @@ def recipe_cards_lab():
 
     # Fetch recent recipes for the dropdown
     recent_recipes = db.session.execute(
-        db.select(Recipe).order_by(Recipe.created_at.desc()).limit(50)
+        db.select(Recipe).order_by(Recipe.id.desc()).limit(50)
     ).scalars().all()
 
     selected_recipe_id = request.args.get('recipe_id')
