@@ -1,0 +1,599 @@
+{% extends "base.html" %}
+{% block title %}Manage Visual Styles - Admin{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-slate-900 tracking-tight">System Style Center</h1>
+        <p class="mt-2 text-sm text-slate-500">Configure the prompt wrappers and processing rules for global image
+            generation flows.</p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div
+        class="mb-4 rounded-xl p-4 {% if category == 'error' %}bg-red-50 text-red-800 border border-red-200{% else %}bg-green-50 text-green-800 border border-green-200{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <div class="space-y-6">
+        {% for style in styles %}
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="bg-slate-50 border-b border-slate-200 px-6 py-4">
+                <h2 class="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                    <span class="bg-orange-100 text-orange-700 px-2 py-0.5 rounded text-sm uppercase tracking-wider">{{
+                        style.scope }}</span>
+                    Scope
+                </h2>
+            </div>
+            <form id="form-{{ style.id }}" action="{{ url_for('admin_style_center.update_style', style_id=style.id) }}"
+                method="POST" class="p-6">
+
+                {% set current_presets = presets_by_scope.get(style.scope, []) %}
+                {% set current_test_items = test_items_by_scope.get(style.scope, []) %}
+                
+                <div class="mb-6 bg-slate-50 border border-slate-200 rounded-xl p-5 overflow-x-auto">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="text-sm font-semibold text-slate-800">Prompt Sandbox Matrix</h3>
+                            <p class="text-xs text-slate-500 mt-1">Test preset styles against sample items. Select
+                                combinations and generate.</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button type="button" onclick="openAddPresetModal('{{ style.scope }}')"
+                                class="bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-emerald-500 shadow-sm flex items-center gap-1">
+                                + Add Style
+                            </button>
+                            <button type="button" onclick="runMatrixSandbox('{{ style.id }}')"
+                                class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-indigo-500 shadow-sm flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z">
+                                    </path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Run Selected Tests
+                            </button>
+                        </div>
+                    </div>
+
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr>
+                                <th class="p-2 border-b w-1/6">
+                                    <label class="flex items-center gap-2 cursor-pointer font-semibold">
+                                        <input type="checkbox" onchange="toggleAllRows(this, '{{ style.id }}')"
+                                            class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                                        Items \ Styles
+                                    </label>
+                                </th>
+                                {% if style.scope == 'taxonomy' %}
+                                <th class="p-2 border-b w-10 text-center align-middle font-semibold text-slate-400 border-r border-slate-100 shadow-[inset_-1px_0_0_rgba(0,0,0,0.05)] cursor-help" title="Taxonomy Context&#10;Click the (i) icon below to edit">
+                                    <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </th>
+                                {% endif %}
+                                {% for preset in current_presets %}
+                                <th class="p-2 border-b text-center align-top font-semibold w-24 relative preset-col-header"
+                                    draggable="true" 
+                                    data-preset-id="{{ preset.id }}" 
+                                    data-scope="{{ style.scope }}"
+                                    ondragstart="handleDragStart(event)"
+                                    ondragover="handleDragOver(event)"
+                                    ondragenter="handleDragEnter(event)"
+                                    ondragleave="handleDragLeave(event)"
+                                    ondrop="handleDrop(event)">
+                                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500 opacity-0 drop-indicator transition-opacity pointer-events-none"></div>
+                                    <div class="flex flex-col items-center gap-1 relative group h-full cursor-grab active:cursor-grabbing">
+                                        <button type="button" onclick="deletePreset('{{ preset.id }}')" class="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-200">
+                                            &times;
+                                        </button>
+                                        <label class="cursor-pointer flex flex-col items-center gap-1 w-full">
+                                            <input type="checkbox" checked
+                                                onchange="toggleAllCols(this, '{{ style.id }}', '{{ preset.name }}')"
+                                                class="col-toggle-{{ style.id }} rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                                data-preset="{{ preset.name }}">
+                                            <span class="text-xs break-words px-1 text-center w-full">{{ preset.name }}</span>
+                                        </label>
+                                        <button type="button"
+                                            class="text-[9px] text-slate-400 hover:text-indigo-600 font-normal outline-none mt-auto"
+                                            onclick="setPreset('{{ style.id }}', `{{ preset.prompt }}`)">[Load
+                                            Prompt]</button>
+                                    </div>
+                                </th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in current_test_items %}
+                            <tr>
+                                <td class="p-2 border-b font-medium bg-slate-100/50">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" checked
+                                            class="row-toggle-{{ style.id }} rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                            data-item="{{ item }}">
+                                        {{ item }}
+                                    </label>
+                                </td>
+                                {% if style.scope == 'taxonomy' %}
+                                {% set taxonomy_category = item.split(':', 1)[0] | trim | lower if ':' in item else '' %}
+                                <td class="p-2 border-b text-center align-middle bg-slate-50/50 border-r border-slate-100 shadow-[inset_-1px_0_0_rgba(0,0,0,0.05)] w-10">
+                                    <div class="flex items-center justify-center h-full">
+                                        <button type="button" 
+                                                data-category="{{ taxonomy_category }}"
+                                                data-context="{{ taxonomy_contexts.get(taxonomy_category, 'Used as a categorical icon in a food app.') }}"
+                                                onclick="editTaxonomyContext(this)" 
+                                                class="text-slate-400 hover:text-indigo-600 focus:outline-none transition-colors" 
+                                                title="{{ taxonomy_contexts.get(taxonomy_category, 'Used as a categorical icon in a food app.') }}&#10;(Click to edit)">
+                                            <svg class="w-4 h-4 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        </button>
+                                    </div>
+                                </td>
+                                {% endif %}
+                                {% for preset in current_presets %}
+                                <td class="p-2 border-b text-center align-middle hover:bg-slate-100 transition-colors">
+                                    {% set run = sandbox_runs.get((style.scope, item, preset.name)) %}
+                                    <div id="cell-{{ style.id }}-{{ item | replace(' ', '') }}-{{ preset.name | replace(' ', '') }}"
+                                        class="w-24 h-24 mx-auto bg-white rounded shadow-sm border border-slate-200 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-500 transition-all group overflow-hidden relative"
+                                        {% if not run
+                                        %}onclick="generateSingleCell('{{ style.id }}', '{{ item }}', '{{ preset.name }}', `{{ preset.prompt }}`, '{{ style.scope }}')"
+                                        {% endif %}>
+                                        {% if run %}
+                                        <div class="absolute inset-0 flex items-center justify-center"
+                                            onclick="expandSandboxImage(this)" data-url="{{ run.image_url }}"
+                                            data-prompt="{{ run.prompt_used | e }}"
+                                            data-model="{{ run.model_used | e }}" data-item="{{ item | e }}"
+                                            data-preset="{{ preset.name | e }}">
+                                            <img src="{{ run.image_url }}" alt="{{ item }} - {{ preset.name }}"
+                                                class="w-full h-full object-cover">
+                                            <div
+                                                class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7">
+                                                    </path>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <button type="button"
+                                            class="absolute top-0.5 right-0.5 bg-black bg-opacity-40 text-white p-0.5 rounded shadow hover:bg-white hover:text-indigo-600 transition-colors z-10 opacity-0 group-hover:opacity-100"
+                                            title="Regenerate"
+                                            onclick="event.stopPropagation(); generateSingleCell('{{ style.id }}', '{{ item }}', '{{ preset.name }}', `{{ preset.prompt }}`, '{{ style.scope }}')">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                                                </path>
+                                            </svg>
+                                        </button>
+                                        {% else %}
+                                        <span
+                                            class="text-slate-300 font-bold group-hover:text-indigo-400 text-lg">+</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Base Wrapper Prompt</label>
+                        <p class="text-xs text-slate-500 mb-2">Use <code>{name}</code> where the concept name should be
+                            injected.</p>
+                        <textarea id="prompt-{{ style.id }}" name="base_wrapper" rows="3"
+                            class="w-full rounded-xl border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm font-mono p-3">{{ style.base_wrapper }}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Negative Prompt</label>
+                        <textarea id="negative-{{ style.id }}" name="negative_prompt" rows="2"
+                            class="w-full rounded-xl border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm font-mono p-3"
+                            placeholder="Optional...">{{ style.negative_prompt or '' }}</textarea>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-100 mt-4">
+                        <label class="flex items-center gap-3 cursor-pointer mt-4">
+                            <input id="bg-{{ style.id }}" type="checkbox" name="remove_background" {% if
+                                style.remove_background %}checked{% endif %}
+                                class="rounded border-slate-300 text-orange-600 shadow-sm focus:ring-orange-500 h-5 w-5">
+                            <span class="text-sm font-medium text-slate-700">Trigger Rembg (Background Removal)
+                                post-processing</span>
+                        </label>
+
+                        <button type="submit"
+                            class="mt-4 bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-orange-600 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900">
+                            Save Global Configuration
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        {% else %}
+        <div class="text-center py-12 bg-white rounded-2xl border border-dashed border-slate-300">
+            <p class="text-slate-500">No visual styles seeded yet. Run <code>python scripts/seed_styles.py</code> to
+                initialize.</p>
+        </div>
+        {% endfor %}
+    </div>
+<!-- Add Preset Modal -->
+<div id="add-preset-modal" class="fixed inset-0 z-[60] hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden flex flex-col" onclick="event.stopPropagation()">
+        <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+            <div>
+                <h3 class="text-xl font-semibold text-slate-900">Add New Style Preset</h3>
+                <p class="text-xs text-slate-500 mt-1">This will be added as a column in the current scope.</p>
+            </div>
+            <button onclick="closeAddPresetModal()" class="text-slate-500 hover:text-red-500 transition-colors focus:outline-none bg-slate-100 rounded-full p-1.5 hover:border-red-500">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <div class="p-6 flex flex-col gap-4">
+            <input type="hidden" id="new-preset-scope" value="">
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Preset Name</label>
+                <div class="flex gap-2">
+                    <input type="text" id="new-preset-name" placeholder="e.g. Vintage Poster" class="w-full rounded-xl border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                    <button type="button" id="auto-gen-btn" onclick="autoGeneratePrompt()" class="bg-indigo-50 text-indigo-600 px-3 py-2 rounded-xl text-xs font-medium hover:bg-indigo-100 flex items-center gap-1 whitespace-nowrap transition-colors" title="Auto-generate prompt">
+                        ✨ Auto
+                    </button>
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Prompt Keyword String</label>
+                <p class="text-[10px] text-slate-500 mb-1">Make sure you include exactly {name} where the test item goes.</p>
+                <textarea id="new-preset-prompt" rows="3" class="w-full rounded-xl border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm font-mono"></textarea>
+            </div>
+        </div>
+        <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-2 bg-slate-50">
+            <button onclick="closeAddPresetModal()" class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-lg">Cancel</button>
+            <button onclick="submitNewPreset()" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm">Save Preset</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openAddPresetModal(scope) {
+        document.getElementById('new-preset-scope').value = scope;
+        document.getElementById('add-preset-modal').classList.remove('hidden');
+    }
+
+    function closeAddPresetModal() {
+        document.getElementById('add-preset-modal').classList.add('hidden');
+        document.getElementById('new-preset-name').value = '';
+        document.getElementById('new-preset-prompt').value = '';
+    }
+
+    async function autoGeneratePrompt() {
+        const scope = document.getElementById('new-preset-scope').value;
+        const name = document.getElementById('new-preset-name').value;
+        if (!name) return alert('Please enter a preset name first.');
+        
+        const btn = document.getElementById('auto-gen-btn');
+        const origContent = btn.innerHTML;
+        btn.innerHTML = `<svg class="animate-spin h-4 w-4 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+        btn.disabled = true;
+
+        try {
+            const res = await fetch('/admin/style-center/suggest-prompt', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({scope, preset_name: name})
+            });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('new-preset-prompt').value = data.suggestion;
+            } else {
+                alert('Error generating prompt: ' + data.error);
+            }
+        } catch(e) {
+            console.error(e);
+            alert('Error connecting to backend');
+        } finally {
+            btn.innerHTML = origContent;
+            btn.disabled = false;
+        }
+    }
+
+    async function submitNewPreset() {
+        const scope = document.getElementById('new-preset-scope').value;
+        const name = document.getElementById('new-preset-name').value;
+        const prompt = document.getElementById('new-preset-prompt').value;
+        
+        if (!name || !prompt) return alert('Name and prompt required.');
+        if (!prompt.includes('{name}')) return alert('Prompt must include {name}.');
+        
+        try {
+            const res = await fetch('/admin/style-center/preset', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({scope, name, prompt})
+            });
+            const data = await res.json();
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('Error adding preset: ' + data.error);
+            }
+        } catch(e) {
+            console.error(e);
+        }
+    }
+
+    async function deletePreset(presetId) {
+        if (!confirm('Are you sure you want to delete this preset column? Generated images might be lost from cache view.')) return;
+        
+        try {
+            const res = await fetch(`/admin/style-center/preset/${presetId}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('Error deleting preset: ' + data.error);
+            }
+        } catch(e) {
+            console.error(e);
+        }
+    }
+
+    function setPreset(styleId, promptText) {
+        document.getElementById(`prompt-${styleId}`).value = promptText;
+    }
+
+    async function editTaxonomyContext(btn) {
+        const category = btn.dataset.category;
+        const currentContext = btn.dataset.context;
+        if (!category) return;
+        
+        const newContext = prompt(`Edit generic application context for Taxonomy Category: [${category.toUpperCase()}]\n\nEnsure you clearly describe how this category behaves in the digital interface.`, currentContext);
+        if (newContext === null) return;
+        
+        if (newContext.trim() !== currentContext.trim()) {
+            try {
+                const res = await fetch('/admin/style-center/taxonomy-context', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        category: category.trim(), 
+                        text: newContext.trim()
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert('Error updating context: ' + data.error);
+                }
+            } catch(e) {
+                console.error(e);
+                alert('Connection error');
+            }
+        }
+    }
+
+    function toggleAllRows(masterCheckbox, styleId) {
+        const checkboxes = document.querySelectorAll(`.row-toggle-${styleId}`);
+        checkboxes.forEach(cb => cb.checked = masterCheckbox.checked);
+    }
+
+    function toggleAllCols(checkbox, styleId, presetName) {
+        // Optional logic: check/uncheck cells visually
+    }
+
+    async function generateSingleCell(styleId, itemName, presetName, presetPromptTemplate, scopeName) {
+        const cellId = `cell-${styleId}-${itemName.replace(/\s+/g, '')}-${presetName.replace(/\s+/g, '')}`;
+        const cell = document.getElementById(cellId);
+
+        const negativeText = document.getElementById(`negative-${styleId}`).value;
+        const removeBg = document.getElementById(`bg-${styleId}`).checked;
+
+        cell.innerHTML = `
+            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600 mb-1"></div>
+            <span class="text-[9px] text-slate-500 font-medium tracking-wider">GEN...</span>
+        `;
+
+        try {
+            const res = await fetch('/admin/style-center/test-render', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    base_wrapper: presetPromptTemplate,
+                    negative_prompt: negativeText,
+                    remove_background: removeBg,
+                    ingredient_name: itemName,
+                    preset_name: presetName,
+                    scope: scopeName || 'ingredient'
+                })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                const safePrompt = String(data.prompt_used).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                const safeItem = String(itemName).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                const safePreset = String(presetName).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                const safeModel = String(data.model_used).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+                cell.innerHTML = `
+                    <div class="absolute inset-0 flex items-center justify-center" onclick="expandSandboxImage(this)"
+                        data-url="${data.image_url}"
+                        data-prompt="${safePrompt}"
+                        data-model="${safeModel}"
+                        data-item="${safeItem}"
+                        data-preset="${safePreset}">
+                        <img src="${data.image_url}" alt="${safeItem} - ${safePreset}" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
+                        </div>
+                    </div>
+                    <button type="button" class="absolute top-0.5 right-0.5 bg-black bg-opacity-40 text-white p-0.5 rounded shadow hover:bg-white hover:text-indigo-600 transition-colors z-10 opacity-0 group-hover:opacity-100" title="Regenerate"
+                        onclick="event.stopPropagation(); generateSingleCell('${styleId}', '${safeItem}', '${safePreset}', \`${presetPromptTemplate.replace(/`/g, '\\`')}\`, '${scopeName}')">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    </button>
+                `;
+                cell.removeAttribute('onclick');
+            } else {
+                cell.innerHTML = `<span class="text-xs text-red-500 font-bold">X</span>`;
+            }
+        } catch (err) {
+            console.error(err);
+            cell.innerHTML = `<span class="text-xs text-red-500 font-bold">Err</span>`;
+        }
+    }
+
+    async function runMatrixSandbox(styleId) {
+        const itemCheckboxes = document.querySelectorAll(`.row-toggle-${styleId}:checked`);
+        const presetCheckboxes = document.querySelectorAll(`.col-toggle-${styleId}:checked`);
+
+        const items = Array.from(itemCheckboxes).map(cb => cb.dataset.item);
+        const presetsNodes = Array.from(presetCheckboxes);
+
+        if (items.length === 0 || presetsNodes.length === 0) {
+            alert('Please select at least one item and one preset style.');
+            return;
+        }
+
+        for (const item of items) {
+            for (const presetNode of presetsNodes) {
+                const presetName = presetNode.dataset.preset;
+                const cellId = `cell-${styleId}-${item.replace(/\s+/g, '')}-${presetName.replace(/\s+/g, '')}`;
+                const cellHTMLNode = document.getElementById(cellId);
+                if (cellHTMLNode) {
+                    cellHTMLNode.click();
+                }
+            }
+        }
+    }
+
+    function expandSandboxImage(el) {
+        const modal = document.getElementById('sandbox-expand-modal');
+        document.getElementById('sandbox-expanded-image').src = el.dataset.url;
+        document.getElementById('sandbox-expanded-title').innerText = `${el.dataset.item} (${el.dataset.preset})`;
+        document.getElementById('sandbox-expanded-prompt').innerText = el.dataset.prompt;
+        document.getElementById('sandbox-expanded-model').innerText = el.dataset.model;
+        modal.classList.remove('hidden');
+    }
+
+    function closeSandboxModal() {
+        document.getElementById('sandbox-expand-modal').classList.add('hidden');
+    }
+
+    // Drag and Drop Logic
+    let draggedPresetCol = null;
+
+    function handleDragStart(e) {
+        draggedPresetCol = e.currentTarget;
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', draggedPresetCol.dataset.presetId);
+        setTimeout(() => draggedPresetCol.classList.add('opacity-50'), 0);
+    }
+
+    function handleDragOver(e) {
+        e.preventDefault(); // Necessary to allow dropping
+        e.dataTransfer.dropEffect = 'move';
+        return false;
+    }
+
+    function handleDragEnter(e) {
+        e.preventDefault();
+        const target = e.currentTarget;
+        if (target !== draggedPresetCol && target.dataset.scope === draggedPresetCol.dataset.scope) {
+            target.querySelector('.drop-indicator').classList.remove('opacity-0');
+        }
+    }
+
+    function handleDragLeave(e) {
+        const target = e.currentTarget;
+        if (target.querySelector('.drop-indicator')) {
+             target.querySelector('.drop-indicator').classList.add('opacity-0');
+        }
+    }
+
+    async function handleDrop(e) {
+        e.stopPropagation();
+        const target = e.currentTarget;
+        draggedPresetCol.classList.remove('opacity-50');
+        
+        document.querySelectorAll('.drop-indicator').forEach(el => el.classList.add('opacity-0'));
+
+        if (draggedPresetCol !== target && target.dataset.scope === draggedPresetCol.dataset.scope) {
+            const tr = target.parentNode;
+            
+            // visually insert before the target (left drop)
+            tr.insertBefore(draggedPresetCol, target);
+
+            // gather new order for this scope
+            const newOrder = [];
+            tr.querySelectorAll('th.preset-col-header').forEach(th => {
+                newOrder.push(th.dataset.presetId);
+            });
+
+            try {
+                const res = await fetch('/admin/style-center/reorder-presets', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({order: newOrder})
+                });
+                const data = await res.json();
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert('Error reordering: ' + data.error);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Connection error');
+            }
+        }
+        return false;
+    }
+
+    document.addEventListener('dragend', (e) => {
+        if (draggedPresetCol) draggedPresetCol.classList.remove('opacity-50');
+        document.querySelectorAll('.drop-indicator').forEach(el => el.classList.add('opacity-0'));
+    });
+</script>
+
+<!-- Sandbox Expand Modal -->
+<div id="sandbox-expand-modal"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 transition-opacity"
+    onclick="closeSandboxModal()">
+    <div class="relative bg-white rounded-lg p-3 max-w-2xl w-full mx-4" onclick="event.stopPropagation()">
+        <div class="flex justify-between items-center mb-3 px-1 border-b border-slate-100 pb-2">
+            <h3 id="sandbox-expanded-title" class="text-xl font-semibold text-slate-900"></h3>
+            <button onclick="closeSandboxModal()"
+                class="text-slate-500 hover:text-red-500 transition-colors focus:outline-none bg-slate-100 rounded-full p-1.5 border border-transparent hover:border-red-500">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-4">
+            <div class="w-full sm:w-1/2">
+                <img id="sandbox-expanded-image" src="" alt="Expanded Sandbox run"
+                    class="w-full h-auto rounded-md shadow-sm border border-slate-200">
+            </div>
+            <div class="w-full sm:w-1/2 flex flex-col gap-3">
+                <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
+                    <h4 class="text-xs font-bold text-slate-800 uppercase tracking-widest mb-1.5">Prompt Signature Used
+                    </h4>
+                    <p id="sandbox-expanded-prompt" class="text-xs font-mono text-slate-700 leading-relaxed"></p>
+                </div>
+                <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
+                    <h4 class="text-xs font-bold text-slate-800 uppercase tracking-widest mb-1.5">Provider Source</h4>
+                    <p id="sandbox-expanded-model"
+                        class="text-xs font-mono text-indigo-600 bg-indigo-50 inline-block px-2 py-1 rounded"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,13 +1,9 @@
-import os
 from google import genai
-from dotenv import load_dotenv
-
-load_dotenv()
-api_key = os.getenv("GOOGLE_API_KEY")
-client = genai.Client(api_key=api_key)
-
+import os
 try:
-    for model in client.models.list():
-        print(model.name)
+    client = genai.Client(project=os.getenv("GOOGLE_CLOUD_PROJECT", "your-project-id"), location=os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1"))
+    for m in client.models.list():
+        if "imagen" in m.name:
+            print(m.name)
 except Exception as e:
-    print("Error:", e)
+    print(f"Error: {e}")

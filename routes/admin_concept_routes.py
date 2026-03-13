@@ -45,20 +45,24 @@ def generate_visual():
     if not record:
         return jsonify({"success": False, "error": "Concept not found"}), 404
         
-    prompt = f"A clean, modern, minimalist culinary icon representing the {record.concept_type.replace('_', ' ')}: {record.concept_name}. Rendered on a pure solid white background, app UI style, high quality."
-    
     try:
-        image_bytes = VertexImageGenerator.generate_image(prompt)
-        
+        # Get storage provider to pass to generator
         storage_provider = get_storage_provider()
-        safe_name = "".join(c for c in f"{record.concept_type}_{record.concept_name}" if c.isalnum() or c in '_-')
-        filename = f"concept_visuals/{safe_name}_{uuid.uuid4().hex[:8]}.png"
+        generator = VertexImageGenerator(storage_provider)
         
-        url = storage_provider.upload_file(io.BytesIO(image_bytes), filename, content_type="image/png")
+        # We process concept visuals as "taxonomy" to get the 3D isometric icons
+        result = generator.generate_candidate(
+            ingredient_name=f"{record.concept_type}::{record.concept_name}",
+            prompt=None,
+            scope="taxonomy"
+        )
         
-        record.image_url = url
-        db.session.commit()
-        
-        return jsonify({"success": True, "image_url": url, "id": record.id})
+        if result.get('success'):
+            record.image_url = result['image_url']
+            db.session.commit()
+            return jsonify({"success": True, "image_url": result['image_url'], "id": record.id})
+        else:
+            return jsonify({"success": False, "error": result.get('error', 'Unknown generation error')}), 500
+            
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500

@@ -2,11 +2,15 @@ import os
 import shutil
 import json
 import re
+import time
+import logging
 from typing import Optional
 from google import genai
 from google.genai import types
 from PIL import Image
 from io import BytesIO
+
+logger = logging.getLogger(__name__)
 
 # Load Credentials (Assuming Environment Variables or default Auth)
 # Project ID and Location are usually required for Vertex AI
@@ -14,6 +18,8 @@ PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT", "your-project-id")
 LOCATION = os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1")
 
 class VertexImageGenerator:
+    _force_fallback = False
+
     def __init__(self, storage_provider, root_path=None):
         self.storage = storage_provider
         self.root_path = root_path or os.getcwd()
@@ -57,15 +63,64 @@ class VertexImageGenerator:
         safe_name = re.sub(r'_+', '_', safe_name).strip('_')
         return f"{safe_name}.png"
     
-    def generate_candidate(self, ingredient_name: str, prompt: str) -> dict:
+    def _generate_with_fallback(self, prompt: str, config):
+        """Executes generation with tiered model fallback logic."""
+        if VertexImageGenerator._force_fallback:
+            models = ['imagen-4.0-fast-generate-001']
+        else:
+            models = ['imagen-4.0-generate-001', 'imagen-4.0-fast-generate-001']
+
+        last_error = None
+        for i, model_name in enumerate(models):
+            try:
+                response = self.client.models.generate_images(
+                    model=model_name,
+                    prompt=prompt,
+                    config=config
+                )
+                if response and response.generated_images:
+                    return response, model_name
+            except Exception as e:
+                error_msg = str(e).lower()
+                is_429 = "429" in error_msg or "resourceexhausted" in error_msg or "quota" in error_msg
+                last_error = e
+
+                if is_429:
+                    if "per_day" in error_msg or "daily" in error_msg:
+                        logger.critical(f"CRITICAL: {model_name} quota exhausted (daily). Falling back to next model for prompt: {prompt[:60]}")
+                        if model_name == 'imagen-4.0-generate-001':
+                            VertexImageGenerator._force_fallback = True
+                        continue # switch model completely
+                    
+                    elif "per_minute" in error_msg or "minute" in error_msg:
+                        if i == 0:  
+                            logger.warning(f"Minute quota exhausted for {model_name}. Sleeping 10s and retrying...")
+                            time.sleep(10)
+                            try:
+                                response = self.client.models.generate_images(
+                                    model=model_name,
+                                    prompt=prompt,
+                                    config=config
+                                )
+                                if response and response.generated_images:
+                                    return response, model_name
+                            except Exception as inner_e:
+                                logger.critical(f"CRITICAL: {model_name} quota exhausted (per_minute retried). Falling back. Inner err: {inner_e}")
+                                last_error = inner_e
+                                continue
+                        else:
+                            logger.critical(f"CRITICAL: {model_name} quota exhausted (per_minute). Falling back to next model...")
+                            continue
+                
+                # If it's a structural API error (e.g. 400 Bad Request, safety block), we shouldn't fallback blindly to different models as they likely fail too
+                logger.error(f"Error with model {model_name}: {e}")
+                raise e
+        
+        raise Exception(f"All fallback models exhausted. Last error: {last_error}")
+
+    def generate_candidate(self, ingredient_name: str, prompt: str = None, scope: str = None) -> dict:
         """
         Generates an image using Imagen and saves it to the candidates folder.
-
-        Uses a timestamp-suffixed filename on every call so the resulting GCS URL
-        is always unique — this defeats CDN/browser caching that would otherwise
-        serve the old image when the blob path stays the same.
-
-        Returns: { 'success': bool, 'image_url': str, 'error': str }
         """
         import time
 
@@ -78,23 +133,39 @@ class VertexImageGenerator:
             base_name = self._get_safe_filename(ingredient_name).replace('.png', '')
             filename = f"{base_name}_{ts}.png"
 
-            print(f"Generating candidate for {ingredient_name} → {filename} | Prompt: {prompt[:60]}...")
+            remove_bg = True
+            negative_prompt = None
 
-            response = self.client.models.generate_images(
-                model='imagen-4.0-generate-001',
-                prompt=prompt,
-                config=types.GenerateImagesConfig(
-                    number_of_images=1,
-                    aspect_ratio='1:1'
-                )
+            # Apply orchestrator if scope is present
+            if scope:
+                from services.visual_orchestrator_service import VisualOrchestrator
+                prompt = VisualOrchestrator.get_styled_prompt(ingredient_name, scope)
+                rules = VisualOrchestrator.get_processing_rules(scope)
+                remove_bg = rules.get('remove_background', False)
+                negative_prompt = VisualOrchestrator.get_negative_prompt(scope)
+
+            # Some Vertex GenAI models/SDK versions reject distinct `negative_prompt` params.
+            # Append it directly into the prompt string using negative steering text.
+            if negative_prompt:
+                prompt = f"{prompt} DO NOT INCLUDE: {negative_prompt}"
+
+            print(f"Generating candidate for {ingredient_name} → {filename} | Prompt: {str(prompt)[:60]}...")
+
+            config = types.GenerateImagesConfig(
+                number_of_images=1,
+                aspect_ratio='1:1'
             )
 
+            response, model_used = self._generate_with_fallback(prompt, config)
+
             if response.generated_images:
-                from rembg import remove
                 raw_image_bytes = response.generated_images[0].image.image_bytes
                 
-                # Strip background
-                output_image_bytes = remove(raw_image_bytes)
+                if remove_bg:
+                    from rembg import remove
+                    output_image_bytes = remove(raw_image_bytes)
+                else:
+                    output_image_bytes = raw_image_bytes
                 
                 # Convert explicitly to PNG
                 img = Image.open(BytesIO(output_image_bytes))
@@ -108,7 +179,7 @@ class VertexImageGenerator:
                 return {
                     'success': True,
                     'image_url': public_url,
-                    'has_transparent_image': True,
+                    'has_transparent_image': remove_bg,
                     'local_path': public_url  # Backwards compat
                 }
             else:

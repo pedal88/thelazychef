@@ -178,10 +178,12 @@
                         class="absolute left-0 mt-0 w-48 bg-white border border-slate-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[110] transform origin-top-left">
                         <div class="py-1">
                             <a href="/ingredients"
-                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">🥦 All
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">🥦
+                                All
                                 Ingredients</a>
                             <a href="/explore/ingredient-galaxy"
-                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">🌌 Galaxy</a>
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">🌌
+                                Galaxy</a>
                         </div>
                     </div>
                 </div>
@@ -255,6 +257,10 @@
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
                                 🎨 Concept Visuals
                             </a>
+                            <a href="{{ url_for('admin_style_center.dashboard') }}"
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
+                                ✒️ Style Guide
+                            </a>
                             <a href="/admin/media-hub"
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
                                 🎬 Media Hub
@@ -312,8 +318,8 @@
                 {% endif %}
                 <a href="/become-a-chef"
                     class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">Become a Chef</a>
-                <a href="/ingredients"
-                    class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">🥦 All Ingredients</a>
+                <a href="/ingredients" class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">🥦
+                    All Ingredients</a>
                 <a href="/explore/ingredient-galaxy"
                     class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">🌌 Ingredient Galaxy</a>
                 {% if current_user.is_authenticated %}
@@ -325,13 +331,17 @@
                     <a href="/admin/bulk-generate"
                         class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">🚀 Bulk Generate</a>
                     <a href="/admin/tiktok-sidecar"
-                        class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">🗂️ TikTok Sidecar</a>
+                        class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">🗂️ TikTok
+                        Sidecar</a>
                     <a href="/admin/recipes-management"
                         class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">📋 Recipes
                         Management</a>
                     <a href="{{ url_for('admin_concept.dashboard') }}"
-                        class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">🎨 Concept 
+                        class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">🎨 Concept
                         Visuals</a>
+                    <a href="{{ url_for('admin_style_center.dashboard') }}"
+                        class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">✒️ Style
+                        Guide</a>
                     <a href="{{ url_for('admin_resources_list') }}"
                         class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">📚 Manage
                         Resources</a>
@@ -450,10 +460,12 @@
                         class="absolute left-0 mt-0 w-48 bg-white border border-slate-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[110] transform origin-top-left">
                         <div class="py-1">
                             <a href="/ingredients"
-                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">🥦 All
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">🥦
+                                All
                                 Ingredients</a>
                             <a href="/explore/ingredient-galaxy"
-                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">🌌 Galaxy</a>
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">🌌
+                                Galaxy</a>
                         </div>
                     </div>
                 </div>
@@ -527,6 +539,10 @@
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
                                 🎨 Concept Visuals
                             </a>
+                            <a href="{{ url_for('admin_style_center.dashboard') }}"
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
+                                ✒️ Style Guide
+                            </a>
                             <a href="/admin/media-hub"
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
                                 🎬 Media Hub
@@ -595,7 +611,8 @@
                 Become a Chef</a>
             <a href="/ingredients" class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">🥦
                 All Ingredients</a>
-            <a href="/explore/ingredient-galaxy" class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">🌌
+            <a href="/explore/ingredient-galaxy"
+                class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">🌌
                 Ingredient Galaxy</a>
             {% if current_user.is_authenticated %}
             {% if current_user.is_admin %}
@@ -613,11 +630,14 @@
             <a href="{{ url_for('admin_concept.dashboard') }}"
                 class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">🎨 Concept
                 Visuals</a>
+            <a href="{{ url_for('admin_style_center.dashboard') }}"
+                class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">✒️ Style
+                Guide</a>
             <a href="{{ url_for('admin_resources_list') }}"
                 class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">📚 Manage
                 Resources</a>
-            <a href="/admin/media-hub"
-                class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">🎬 Media Hub</a>
+            <a href="/admin/media-hub" class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">🎬
+                Media Hub</a>
             {% endif %}
             <div class="border-t border-slate-100 my-2"></div>
             <div class="flex items-center justify-between px-3">

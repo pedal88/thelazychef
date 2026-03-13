@@ -54,6 +54,39 @@ class ConceptVisual(db.Model):
     concept_name: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
     image_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
 
+class VisualStyleGuide(db.Model):
+    __tablename__ = 'visual_style_guide'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    scope: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
+    base_wrapper: Mapped[str] = mapped_column(Text, nullable=False)
+    negative_prompt: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    remove_background: Mapped[bool] = mapped_column(Boolean, default=False, server_default='0')
+
+class StyleSandboxRun(db.Model):
+    """Stores the test generation results for the style matrix."""
+    __tablename__ = 'style_sandbox_run'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    scope: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
+    preset_name: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
+    test_item: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
+    image_url: Mapped[str] = mapped_column(String(500), nullable=False)
+    prompt_used: Mapped[str] = mapped_column(Text, nullable=False)
+    model_used: Mapped[str] = mapped_column(String(100), nullable=False)
+    timestamp: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)
+
+class StyleSandboxPreset(db.Model):
+    """Dynamically manageable AI generation presets for the Style Sandbox."""
+    __tablename__ = 'style_sandbox_preset'
+    __table_args__ = (
+        UniqueConstraint('scope', 'name', name='uq_style_sandbox_preset_scope_name'),
+    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    scope: Mapped[str] = mapped_column(String(100), index=True, nullable=False, default='ingredient', server_default='ingredient')
+    name: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
+    prompt: Mapped[str] = mapped_column(Text, nullable=False)
+    order_index: Mapped[int] = mapped_column(Integer, default=0, server_default='0')
+
+
 class Resource(db.Model):
     __tablename__ = 'resource'
     id = db.Column(db.Integer, primary_key=True)
