@@ -384,7 +384,6 @@ def recipe_cards_lab():
         selected_recipe = db.session.get(Recipe, selected_recipe_id)
         
     if selected_recipe:
-        # Use the actual recipe, strictly mapping models schema to dict
         active_recipe = {
             'id': selected_recipe.id,
             'title': selected_recipe.title,
@@ -393,7 +392,8 @@ def recipe_cards_lab():
             'difficulty': selected_recipe.difficulty or 'Medium',
             'calories': int(selected_recipe.total_calories) if getattr(selected_recipe, 'total_calories', 0) else 0,
             'diet': selected_recipe.diets_list[0] if getattr(selected_recipe, 'diets_list', None) and len(selected_recipe.diets_list) > 0 else 'None',
-            'portions': f"{selected_recipe.base_servings or 1} servings",
+            'portions': f"{selected_recipe.base_servings or 1}",
+            'protein': f"{getattr(selected_recipe, 'protein_g', 32)}g",
             'image_filename': selected_recipe.image_filename,
             'image_url': selected_recipe.image_filename if selected_recipe.image_filename and selected_recipe.image_filename.startswith('http') else None
         }
@@ -407,15 +407,33 @@ def recipe_cards_lab():
             'difficulty': 'Medium',
             'calories': 650,
             'diet': 'Vegetarian',
-            'portions': '4 servings',
+            'portions': '4',
+            'protein': '18g',
             'image_url': 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&q=80&w=1200' 
         }
+
+    sample_recipes = [active_recipe]
+    for r in recent_recipes[:4]:
+        if r.id != (active_recipe.get('id') if isinstance(active_recipe.get('id'), int) else None):
+            sample_recipes.append({
+                'id': r.id,
+                'title': r.title,
+                'cuisine': r.cuisine or 'Unknown',
+                'time_estimate': r.prep_time_mins or 0,
+                'difficulty': r.difficulty or 'Medium',
+                'calories': int(r.total_calories) if getattr(r, 'total_calories', 0) else 0,
+                'diet': r.diets_list[0] if getattr(r, 'diets_list', None) and len(r.diets_list) > 0 else 'None',
+                'portions': f"{r.base_servings or 1}",
+                'protein': f"{getattr(r, 'protein_g', 24)}g",
+                'image_url': r.image_filename if r.image_filename and r.image_filename.startswith('http') else 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c'
+            })
 
     active_template = session.get('active_card_template', 'original')
     return render_template(
         'admin/recipe_cards_lab.html', 
         icons_map=icons_map, 
         recipe=active_recipe,
+        sample_recipes=sample_recipes,
         recent_recipes=recent_recipes,
         selected_recipe_id=selected_recipe_id,
         active_template=active_template
