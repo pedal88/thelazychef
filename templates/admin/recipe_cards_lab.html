@@ -42,8 +42,10 @@
     {% set img_src = recipe.image_url if recipe.image_url else (get_image_url(recipe.image_filename) if recipe.image_filename else 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=1200') %}
     
     <!-- VARIANT 1: OLD STYLE -->
-    <div class="shrink-0 snap-center relative w-[95vw] sm:w-[350px] h-[75vh] flex flex-col bg-white rounded-3xl shadow-2xl overflow-hidden select-none border border-white/10 group">
-        <div class="h-[65%] relative overflow-hidden">
+    <div class="shrink-0 snap-center relative w-[95vw] sm:w-[350px] h-[75vh] flex items-center justify-center">
+        <div class="absolute -top-8 inset-x-0 text-center text-white/50 font-inter text-xs font-bold uppercase tracking-widest pointer-events-none">01 · Original Style</div>
+        <div class="absolute w-full h-full flex flex-col bg-white rounded-3xl shadow-2xl overflow-hidden select-none border border-white/10 group">
+            <div class="h-[65%] relative overflow-hidden">
             <img src="{{ img_src }}" class="w-full h-full object-cover pointer-events-none transition-transform duration-700 group-hover:scale-105" draggable="false">
             <div class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/80 to-transparent"></div>
 
@@ -76,10 +78,11 @@
             </div>
         </div>
     </div>
-
+</div>
 
     <!-- VARIANT 2: CENTRAL (Glassmorphism & Isometric App Icons) -->
     <div class="shrink-0 snap-center relative w-[95vw] sm:w-[350px] h-[75vh] flex items-center justify-center swipeable-container">
+        <div class="absolute -top-8 inset-x-0 text-center text-white/50 font-inter text-xs font-bold uppercase tracking-widest pointer-events-none">02 · Glassmorphism</div>
         <div class="swipe-card absolute w-full h-full bg-slate-800 rounded-3xl shadow-xl overflow-hidden touch-none select-none will-change-transform z-10 border border-white/10">
             <img src="{{ img_src }}" alt="{{ recipe.title }}" class="absolute inset-0 w-full h-full object-cover pointer-events-none">
             
@@ -118,6 +121,7 @@
 
     <!-- VARIANT 3: MINIMALIST (Neo-Brutalist) -->
     <div class="shrink-0 snap-center relative w-[95vw] sm:w-[350px] h-[75vh] flex items-center justify-center swipeable-container">
+        <div class="absolute -top-8 inset-x-0 text-center text-white/50 font-inter text-xs font-bold uppercase tracking-widest pointer-events-none">03 · Neo-Brutalist</div>
         <div class="swipe-card absolute w-full h-full will-change-transform z-10 transition-all duration-300 overflow-hidden border-2 border-black rounded-none bg-white shadow-2xl flex touch-none select-none">
             <div class="relative flex-grow h-full overflow-hidden">
                 <img src="{{ img_src }}" class="absolute inset-0 w-full h-full object-cover grayscale-[20%] pointer-events-none">
@@ -155,6 +159,7 @@
 
     <!-- VARIANT 4: EDITORIAL COOKBOOK -->
     <div class="shrink-0 snap-center relative w-[95vw] sm:w-[350px] h-[75vh] flex items-center justify-center swipeable-container">
+        <div class="absolute -top-8 inset-x-0 text-center text-white/50 font-inter text-xs font-bold uppercase tracking-widest pointer-events-none">04 · Editorial</div>
         <div class="swipe-card absolute w-full h-full will-change-transform z-10 transition-all duration-300 overflow-hidden rounded-[2rem] bg-white shadow-2xl touch-none select-none">
             <img src="{{ img_src }}" class="absolute inset-0 w-full h-full object-cover saturate-[1.2] pointer-events-none">
             <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none"></div>
@@ -181,6 +186,7 @@
 
     <!-- VARIANT 5: DYNAMIC CLUSTERS -->
     <div class="shrink-0 snap-center relative w-[95vw] sm:w-[350px] h-[75vh] flex items-center justify-center swipeable-container">
+        <div class="absolute -top-8 inset-x-0 text-center text-white/50 font-inter text-xs font-bold uppercase tracking-widest pointer-events-none">05 · Dynamic Clusters</div>
         <div class="swipe-card absolute w-full h-full will-change-transform z-10 transition-all duration-300 overflow-hidden rounded-[2.5rem] border border-slate-600 bg-slate-900 shadow-2xl touch-none select-none">
             <img src="{{ img_src }}" class="absolute inset-0 w-full h-full object-cover brightness-[0.6] pointer-events-none">
             
