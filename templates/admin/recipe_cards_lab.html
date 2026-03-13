@@ -1,14 +1,39 @@
 {% extends "base.html" %}
 
 {% block content %}
-<!-- Navbar/Header to hold controls out of swipe view -->
 <div class="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm border-b border-gray-200">
     <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-        <h1 class="text-xl font-bold font-inter text-gray-900">Recipe Card Lab</h1>
+        <div class="flex items-center gap-6">
+            <h1 class="text-xl font-bold font-inter text-gray-900">Recipe Card Lab</h1>
+            
+            <form method="GET" action="{{ url_for('admin_style_center.recipe_cards_lab') }}" class="relative hidden sm:block">
+                <select name="recipe_id" onchange="this.form.submit()" class="block w-64 rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-orange-600 sm:text-sm sm:leading-6">
+                    <option value="">-- Use Mock Recipe --</option>
+                    {% for r in recent_recipes %}
+                    <option value="{{ r.id }}" {% if selected_recipe_id == r.id|string %}selected{% endif %}>
+                        {{ r.title }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+
         <div class="flex items-center space-x-4">
             <!-- Simulated Kitchen Mode / Chef Avatar controls -->
-            <button class="bg-slate-100 px-3 py-1.5 rounded-full text-sm font-medium">Chef Avatar</button>
-            <button class="bg-orange-100 text-orange-600 px-3 py-1.5 rounded-full text-sm font-medium">Kitchen Mode</button>
+            <button class="bg-slate-100 px-3 py-1.5 rounded-full text-sm font-medium hidden sm:block">Chef Avatar</button>
+            <button class="bg-orange-100 text-orange-600 px-3 py-1.5 rounded-full text-sm font-medium hidden sm:block">Kitchen Mode</button>
+
+            <!-- Mobile recipe selector (only visible on small screens to save space) -->
+            <form method="GET" action="{{ url_for('admin_style_center.recipe_cards_lab') }}" class="relative sm:hidden block">
+                <select name="recipe_id" onchange="this.form.submit()" class="block w-32 rounded-md border-0 py-1.5 pl-3 pr-8 text-xs text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-orange-600">
+                    <option value="">Mock</option>
+                    {% for r in recent_recipes %}
+                    <option value="{{ r.id }}" {% if selected_recipe_id == r.id|string %}selected{% endif %}>
+                        {{ r.title|truncate(15) }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </form>
         </div>
     </div>
 </div>

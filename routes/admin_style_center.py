@@ -358,7 +358,9 @@ def update_taxonomy_context():
 @login_required
 @admin_required
 def recipe_cards_lab():
-    from database.models import ConceptVisual
+    from database.models import ConceptVisual, Recipe
+    from flask import request
+    
     # Fetch live app icons and taxonomy images
     concept_visuals = db.session.execute(
         db.select(ConceptVisual).filter(ConceptVisual.image_url.is_not(None))
@@ -370,16 +372,48 @@ def recipe_cards_lab():
         key = f"{cv.concept_type.lower()}_{cv.concept_name.lower().replace(' ', '_')}"
         icons_map[key] = cv.image_url
 
-    # Add a mock recipe for the lab
-    mock_recipe = {
-        'title': 'Loaded Baked Potato Soup with Crispy Skin Dippers',
-        'cuisine': 'American',
-        'time_estimate': 45,
-        'difficulty': 'Medium',
-        'calories': 650,
-        'diet': 'Vegetarian',
-        'portions': '4 servings',
-        'image_url': 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&q=80&w=1200' 
-    }
+    # Fetch recent recipes for the dropdown
+    recent_recipes = db.session.execute(
+        db.select(Recipe).order_by(Recipe.created_at.desc()).limit(50)
+    ).scalars().all()
 
-    return render_template('admin/recipe_cards_lab.html', icons_map=icons_map, recipe=mock_recipe)
+    selected_recipe_id = request.args.get('recipe_id')
+    selected_recipe = None
+    
+    if selected_recipe_id:
+        selected_recipe = db.session.get(Recipe, selected_recipe_id)
+        
+    if selected_recipe:
+        # Use the actual recipe, falling back on default values if missing
+        active_recipe = {
+            'id': selected_recipe.id,
+            'title': selected_recipe.title,
+            'cuisine': selected_recipe.cuisine or 'Unknown',
+            'time_estimate': selected_recipe.time_estimate or 0,
+            'difficulty': selected_recipe.difficulty or 'Medium',
+            'calories': getattr(selected_recipe, 'calories', 0) or 0, # Depending on if recipe model has calories column
+            'diet': selected_recipe.diet or 'None',
+            'portions': f"{selected_recipe.portions or 1} servings",
+            'image_url': selected_recipe.image_url or 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=1200'
+        }
+    else:
+        # Add a mock recipe for the lab
+        active_recipe = {
+            'id': 'mock',
+            'title': 'Loaded Baked Potato Soup with Crispy Skin Dippers',
+            'cuisine': 'American',
+            'time_estimate': 45,
+            'difficulty': 'Medium',
+            'calories': 650,
+            'diet': 'Vegetarian',
+            'portions': '4 servings',
+            'image_url': 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&q=80&w=1200' 
+        }
+
+    return render_template(
+        'admin/recipe_cards_lab.html', 
+        icons_map=icons_map, 
+        recipe=active_recipe,
+        recent_recipes=recent_recipes,
+        selected_recipe_id=selected_recipe_id
+    )
