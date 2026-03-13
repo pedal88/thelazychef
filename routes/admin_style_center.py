@@ -372,9 +372,9 @@ def recipe_cards_lab():
         key = f"{cv.concept_type.lower()}_{cv.concept_name.lower().replace(' ', '_')}"
         icons_map[key] = cv.image_url
 
-    # Fetch recent recipes for the dropdown
+    # Fetch recent recipes for the dropdown (up to 1000 for searchability)
     recent_recipes = db.session.execute(
-        db.select(Recipe).order_by(Recipe.id.desc()).limit(50)
+        db.select(Recipe).order_by(Recipe.id.desc()).limit(1000)
     ).scalars().all()
 
     selected_recipe_id = request.args.get('recipe_id')
