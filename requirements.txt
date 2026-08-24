@@ -115,3 +115,4 @@ websockets==15.0.1
 Werkzeug==3.1.5
 yarl==1.22.0
 yt-dlp==2026.7.4
+msgpack==1.2.1
