@@ -19,7 +19,13 @@ WORKDIR /app
 COPY requirements.txt .
 
 # Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt \
+    && rm -rf /usr/local/lib/python3.13/site-packages/pip \
+              /usr/local/lib/python3.13/site-packages/pip-*.dist-info \
+              /usr/local/lib/python3.13/site-packages/setuptools \
+              /usr/local/lib/python3.13/site-packages/setuptools-*.dist-info \
+              /usr/local/lib/python3.13/site-packages/pkg_resources \
+              /usr/local/lib/python3.13/ensurepip
 
 # Create a non-root user for security
 RUN groupadd -r appuser && useradd -r -g appuser appuser
