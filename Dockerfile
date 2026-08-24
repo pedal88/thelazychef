@@ -6,7 +6,7 @@ ENV PYTHONUNBUFFERED=1
 
 # Install system dependencies
 # gcc and python3-dev might be needed for some python packages
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     gcc \
     python3-dev \
     ffmpeg \
