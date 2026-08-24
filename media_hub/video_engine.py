@@ -18,10 +18,13 @@ import io
 import os
 import logging
 import tempfile
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 import requests
 from PIL import Image as PilImage
+
+if TYPE_CHECKING:
+    from database.models import Recipe
 
 logger = logging.getLogger(__name__)
 
