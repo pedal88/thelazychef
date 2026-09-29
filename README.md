@@ -29,8 +29,8 @@ The Lazy Chef is a next-generation recipe application that doesn't just tell you
 
 1.  **Clone the Repository**
     ```bash
-    git clone https://github.com/your-username/the-ai-kitchen.git
-    cd the-ai-kitchen
+    git clone https://github.com/pedal88/thelazychef.git
+    cd thelazychef
     ```
 
 2.  **Install Dependencies**
