@@ -47,7 +47,8 @@ def configure_database(app):
         logger.info("Using Local SQLite Database")
         basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
         db_path = os.path.join(basedir, 'kitchen.db')
-        app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+        # DATABASE_URL lets tests point at an in-memory database
+        app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', f'sqlite:///{db_path}')
         
     elif backend == 'cloudsql':
         logger.info("Using Google Cloud SQL (Postgres)")
