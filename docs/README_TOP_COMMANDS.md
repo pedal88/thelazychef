@@ -1,46 +1,52 @@
 # Top Commands Cheat Sheet 🚀
 
-Here are the most frequently used commands for developing and deploying the AI Kitchen.
-
-## 1. Run Application Locally 💻
-Starts the development server on your machine.
+## Run locally 💻
 ```bash
-# Make sure your venv is active or use the direct path
-./venv/bin/python app.py
-```
-*Access at: http://127.0.0.1:8000*
-
-## 2. Deploy to Production ☁️
-Builds the docker image and deploys it to Google Cloud Run.
-```bash
-# Replace [PROJECT_ID] with your ID (e.g., bym-app-287448924512)
-./scripts/deploy.sh [PROJECT_ID]
+source venv/bin/activate
+python app.py              # http://127.0.0.1:8000  (FLASK_DEBUG=1 in .env for auto-reload)
 ```
 
-## 3. Push Changes to Git 🐙
-Saves your code changes to the history and uploads them to the repository.
+## Create or reset an admin user 👤
 ```bash
-git add .
-git commit -m "Describe your changes here"
-git push
+python scripts/seed_admin.py --email you@example.com
 ```
 
-## 4. View Production Logs 📋
-Check the live logs from the Cloud Run application to debug errors.
+## Run tests 🧪
 ```bash
-gcloud run services logs read bym-app --region us-central1 --limit 20
+python -m pytest tests/
 ```
 
-## 5. Connect to Prod Database (Safe Shell) 🗄️
-Open a Python shell connected to the production Cloud SQL database.
+## Ship a change 🚢
 ```bash
-# Login first
+git checkout -b my-change
+git add -A && git commit -m "Describe your change"
+git push -u origin my-change
+gh pr create --fill        # CI runs tests on the PR
+gh pr merge --merge        # merging to main deploys to production
+gh run watch               # follow the deploy
+```
+
+## Database migrations 🗄️
+```bash
+flask db migrate -m "describe the schema change"   # generates a file in migrations/versions/
+# review and commit it; production applies it automatically on deploy
+```
+
+## Production logs 📋
+```bash
+gcloud run services logs read lazy-chef-app --region europe-west1 --project thelazychefai-prod --limit 50
+```
+
+## Connect to the production database (careful!) ⚠️
+```bash
 gcloud auth application-default login
-
-# Export Connection Config (Mac/Linux)
 export DB_BACKEND=cloudsql
-export INSTANCE_CONNECTION_NAME=$(gcloud sql instances list --format="value(connectionName)" --filter="state:RUNNABLE" --limit=1)
+export INSTANCE_CONNECTION_NAME=thelazychefai-prod:europe-north2:lazy-chef-db-eu
+export DB_USER=... DB_PASS=... DB_NAME=...
+python -c "from app import app, db; from database.models import *; import code; ctx = app.app_context(); ctx.push(); code.interact(local=locals())"
+```
 
-# Run Shell
-./venv/bin/python -c "from app import app, db; from database.models import *; print('Connected to Prod DB'); import code; code.interact(local=locals())"
+## Debug scripts 🔍
+```bash
+python -m scripts.debug.verify_setup     # run any script in scripts/debug or scripts/maintenance as a module from the repo root
 ```

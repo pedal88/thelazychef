@@ -1,90 +1,117 @@
 # Technical Documentation ⚙️
 
-**Audience**: Developers, System Architects, Maintainers.
+**Audience**: Developers, maintainers.
 
-The Lazy Chef is a full-stack Flask application that leverages a "Human-in-the-Loop" AI architecture. It strictly separates **Generative Logic** (Text/Recipe Data) from **Visual Logic** (Image Generation) to ensure data consistency and validity.
+The Lazy Chef is a Flask monolith with server-rendered Jinja2 templates (Tailwind CSS), a service layer for AI and business logic, and a relational database. AI output is always validated against the curated ingredient database before it is stored ("human in the loop").
 
 ## 1. Architecture Overview
 
-The application follows a Service-Oriented Architecture (SOA) purely within a monolith structure:
+| Layer | Where | Notes |
+|---|---|---|
+| Web / routes | `app.py`, `routes/` | `app.py` holds most public and core routes; admin areas are Flask blueprints in `routes/` |
+| AI (text) | `ai_engine.py` | All recipe generation / extraction calls to Gemini |
+| Services | `services/` | Recipe workflow, pantry, nutrition, evaluation, photography, scraping, TikTok, storage, podcasts |
+| Media hub | `media_hub/` | Renders social images (Playwright), podcasts (Text-to-Speech) and videos from recipes |
+| Data | `database/models.py` | SQLAlchemy models; Alembic migrations in `migrations/` |
+| Prompts | `data/prompts/` | Jinja2 prompt templates, assembled at runtime |
+| Vocabularies | `data/constraints/`, `data/post_processing/` | Fixed lists (diets, cuisines, meal types, …) that constrain AI output |
+| Personas | `data/agents/` | Chef and photographer personas |
+| Helpers | `utils/` | Prompt loading, image helpers, decorators (`admin_required`), AI error messages |
 
-*   **Frontend**: Server-side rendered Jinja2 templates styled with TailwindCSS.
-*   **Backend**: Flask (Python 3.13) serving as the controller and API gateway.
-*   **AI Layer**: a centralized `ai_engine.py` abstracts all interactions with Google Gemini 1.5 Flash.
-*   **Visual Layer**: A dedicated `photographer_service.py` handles prompt engineering and interaction with the Imagen 3 model.
-*   **Data Layer**: SQLite (via SQLAlchemy) for relational data (Recipes) + JSON for static configuration (Pantry, Taxonomies).
+### Infrastructure
 
-## 2. Data Flow
+| Concern | Local | Production |
+|---|---|---|
+| Database | SQLite `kitchen.db` (`DB_BACKEND=local`) | Cloud SQL Postgres via the Cloud SQL connector (`DB_BACKEND=cloudsql`) |
+| File storage | `static/` (`STORAGE_BACKEND=local`) | Google Cloud Storage bucket (`STORAGE_BACKEND=gcs`) |
+| Server | `python app.py` (port 8000) | Gunicorn on Cloud Run (1 worker, 8 threads) |
 
-The following diagram illustrates how a user request is transformed into a finalized recipe with an image.
+### AI models
+
+| Purpose | Model | Where |
+|---|---|---|
+| Recipe generation & extraction | `gemini-2.5-flash`, `gemini-flash-latest` | `ai_engine.py` |
+| Recipe / ingredient evaluation | `gemini-flash-latest`, `gemini-2.x-flash` | `services/evaluation_service.py`, `services/ingredient_evaluation_service.py` |
+| Visual prompts & image analysis | `gemini-2.0-flash` | `services/photographer_service.py` |
+| Dish & ingredient images | `imagen-4.0-generate-001`, `imagen-4.0-fast-generate-001` | `services/photographer_service.py`, `services/vertex_image_service.py` |
+| TikTok ingestion, style center | `gemini-2.5-flash` | `services/tiktok_ingestion_service.py`, `routes/admin_style_center.py` |
+| Media hub scripts | `gemini-2.0-flash` | `media_hub/orchestrator.py` |
+
+## 2. Recipe Generation Flow
 
 ```mermaid
 graph TD
-    A[User Input: "Spicy Chicken"] -->|POST /generate| B[App Controller]
-    B -->|Context: Pantry + Chef Persona| C[AI Engine: Gemini 1.5]
-    C -->|Draft Recipe JSON| D{Validation Logic}
-    D -- Invalid --> C
-    D -- Valid --> E[Database: Recipe Record]
-    E --> F[UI: Recipe Preview]
-    
-    subgraph "Visual Pipeline"
-    F -->|User Clicks 'Studio/Snap Photo'| G[Photographer Service]
-    G -->|Extract Visual DNA| H[Prompt Engineer]
-    H -->|Enhanced Prompt| I[Imagen 3: Image Engine]
-    I -->|Raw Bytes| J[Image Processor: PIL]
-    J -->|File Save| K[Static Assets]
-    end
-    
-    K --> L[Final UI: High-Res Dish Photo]
+    A[Admin input: idea / URL / text / video] --> B[Route: /generate, /generate/web, /generate/text, /generate/video]
+    B -->|pantry context + chef persona + prompt template| C[ai_engine.py → Gemini]
+    C -->|structured recipe JSON| D[recipe_service.process_recipe_workflow]
+    D -->|all ingredients matched| E[(Recipe saved as draft)]
+    D -->|unmatched ingredients| F[Missing-ingredient resolution screen]
+    F --> E
+    E --> G[Photographer / studio → Imagen]
+    G --> H[Storage: local static/ or GCS]
+    E --> I[Evaluation service scores recipe]
+    I --> J[Admin approves → status 'approved' → visible on site]
 ```
 
-## 3. Directory Structure
+Other diagrams: [RECIPE_GENERATION_FLOWCHART.md](RECIPE_GENERATION_FLOWCHART.md), [RECIPE_GENERATION_SEQUENCE.md](RECIPE_GENERATION_SEQUENCE.md), [RECIPE_GENERATION_SWIMLANE.md](RECIPE_GENERATION_SWIMLANE.md).
 
-```text
-/
-├── app.py                 # Application Entry Point & Route Logic
-├── ai_engine.py           # Gemini Wrapper & Recipe Validation
-├── data/                  # Static Configuration (JSON)
-│   ├── chefs.json         # AI Persona Definitions
-│   ├── meal_types.json    # Classification Taxonomies
-│   ├── protein_types.json # Hierarchical Protein Data
-│   └── ...
-├── database/
-│   └── models.py          # SQLAlchemy Models (Recipe, Ingredient)
-├── services/
-│   ├── photographer_service.py # Image Generation Logic
-│   └── pantry_service.py       # Ingredient Context Logic
-├── static/
-│   ├── recipes/           # Generated Recipe Images
-│   └── pantry/            # Static Ingredient Assets
-└── templates/             # Jinja2 HTML Templates
+### Prompts
+Prompts are not hardcoded. `utils/prompt_manager.load_prompt` renders templates from `data/prompts/`, combining:
+1.  **Role** from the chef persona (`data/agents/chefs.json`, or the `Chef` table).
+2.  **Context**: a slim list of database ingredients, so the AI only uses ingredients that exist.
+3.  **Rules**: shared partials (`data/prompts/partials/`) with the controlled vocabularies and a strict JSON output format.
+
+See [PROMPT_ENGINEERING_GUIDE.md](PROMPT_ENGINEERING_GUIDE.md).
+
+### AI errors
+Gemini errors are mapped to user-safe messages by `utils/ai_errors.friendly_ai_error` (billing, rate limit, bad key, outage). The raw error is printed to the server log.
+
+## 3. Data Model (main tables)
+
+| Model | Purpose |
+|---|---|
+| `Recipe`, `Instruction`, `RecipeIngredient` | Recipe, its steps, and gram-weighted ingredients (supports components and sub-recipes). `status`: `draft` → `approved` |
+| `Ingredient` | Curated ingredient with nutrition, synonyms, images, `embedding` (pgvector) and `status` |
+| `RecipeEvaluation`, `IngredientEvaluation` | AI quality scores |
+| `Chef` | Chef personas |
+| `User`, `UserRecipeInteraction`, `UserQueue` | Accounts (`is_admin`), favorites / made / feedback, personal queue |
+| `RecipeCollection`, `CollectionItem` | Curated collections |
+| `Resource` | Blog-style articles |
+| `SocialMediaPost`, `SequenceTemplate`, `TikTokSource` | Media hub and TikTok ingestion |
+| `VisualStyleGuide`, `StyleSandboxRun`, `StyleSandboxPreset`, `ConceptVisual` | Photo style center |
+
+Schema changes: `flask db migrate -m "..."`, review the file in `migrations/versions/`, and commit it. Production runs `flask db upgrade` as part of each deploy.
+
+## 4. Access Control
+
+*   `@login_required` (Flask-Login) for user features (favorites, feedback, queue).
+*   `@login_required @admin_required` (`utils/decorators.py`) for everything that writes shared data or calls paid AI APIs.
+*   `tests/test_smoke.py` enforces this: every POST/PUT/PATCH/DELETE route must reject anonymous users, and every `@admin_required` route must return 403 for non-admins. Intentionally public write routes are listed in `PUBLIC_WRITE_ENDPOINTS`.
+
+## 5. Configuration
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `GOOGLE_API_KEY` | yes | Gemini / Imagen API key |
+| `SECRET_KEY` | prod | Signs session cookies. Required on Cloud Run; random per process locally if unset |
+| `DB_BACKEND` | no | `local` (default) or `cloudsql` |
+| `DATABASE_URL` | no | Override the local SQLite URL (used by tests: `sqlite://`) |
+| `INSTANCE_CONNECTION_NAME`, `DB_USER`, `DB_PASS`, `DB_NAME` | cloudsql | Cloud SQL connection |
+| `STORAGE_BACKEND` | no | `local` (default) or `gcs` |
+| `GCS_BUCKET_NAME` | gcs | Asset bucket |
+| `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION` | no | Vertex AI settings |
+| `FLASK_DEBUG` | no | `1` enables debug mode for `python app.py` |
+
+## 6. Testing
+
+```bash
+python -m pytest tests/
 ```
 
-## 4. API Strategy
+*   `tests/test_smoke.py`: page loads and route protection (in-memory SQLite, dummy keys).
+*   `tests/test_ai_errors.py`: AI error message mapping.
+*   `tests/test_ai_normalization.py`: recipe component normalization (mocked Gemini).
 
-### System Prompts
-System prompts are not hardcoded strings. They are dynamic constructs assembled at runtime:
-1.  **Role**: Defined in `chefs.json`.
-2.  **Context**: The verified `pantry.json` data is injected to prevent hallucinated ingredients.
-3.  **Rules**: Strict strict JSON schema constraints (Pydantic validation) are appended to ensure the AI output can be parsed programmatically.
+CI (`.github/workflows/deploy.yaml`) runs flake8 syntax checks and `pytest tests/` on every pull request.
 
-### Image Generation
-We do not simply ask for "an image of the dish." The `photographer_service.py` constructs a "Visual Prompt" that describes:
-*   **Subject**: The gathered list of verified ingredients or a reference image analysis.
-*   **Lighting**: Defined by the photographer persona.
-*   **Composition**: 1:1 Aspect Ratio, Macro Food Photography styles.
-
-### Vision Capabilities
-The studio now supports **Gemini Vision (1.5/2.0 Flash)** to analyze uploaded reference images. The system extracts style, lighting, and plating details from the user's photo to generate a matching prompt.
-
-## 5. Development Setup
-
-### Environment Variables
-The application requires the following strictly defined environment variables in `.env`:
-
-*   `GOOGLE_API_KEY`: Required. Must have permissions for `gemini-1.5-flash` and `imagen-3.0-generate-001` (or higher).
-
-### Testing Protocols
-*   **Unit Tests**: Run `python -m unittest` to verify core logic.
-*   **Diagnostics**: Use `python -m scripts.debug.verify_setup` (from the repo root) to check path integrity and API connections.
-*   **Mocking**: The Photographer service typically requires live API calls; use the placeholder generator for offline dev work.
+Ad-hoc debug and maintenance scripts live in `scripts/`, `scripts/debug/` and `scripts/maintenance/`; run them from the repo root, e.g. `python -m scripts.debug.verify_setup`.
