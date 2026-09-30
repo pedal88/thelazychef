@@ -129,7 +129,13 @@ def parse_chef_dna(prompt):
              else:
                 sections[current_key] = [line]
     return sections
-app.config['SECRET_KEY'] = 'dev-key-secret'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
+if not app.config['SECRET_KEY']:
+    if os.environ.get('K_SERVICE'):
+        # Running on Cloud Run: never fall back to a guessable key
+        raise RuntimeError("SECRET_KEY environment variable must be set in production")
+    print("WARNING: SECRET_KEY not set, using a random key (sessions reset on restart)")
+    app.config['SECRET_KEY'] = os.urandom(32).hex()
 # Database Configuration (Local vs Cloud SQL)
 configure_database(app)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -907,6 +913,8 @@ def recipe_image_generation_save():
         return jsonify({'success': False, 'error': str(e)})
 
 @app.route('/new-recipe', methods=['GET', 'POST'])
+@login_required
+@admin_required
 def new_recipe():
     if request.method == 'POST':
         query = request.form.get('query')
@@ -1390,6 +1398,7 @@ def pantry_management():
 
 @app.route('/api/ingredient/<int:id>/link-recipe', methods=['PATCH'])
 @login_required
+@admin_required
 def link_recipe_to_ingredient(id: int):
     """Set (or clear) sub_recipe_id on an ingredient from the admin UI."""
     if not current_user.is_admin:
@@ -1413,6 +1422,8 @@ def link_recipe_to_ingredient(id: int):
 
 
 @app.route('/api/ingredient/<int:id>/toggle_basic', methods=['POST'])
+@login_required
+@admin_required
 def toggle_basic_ingredient(id):
     ing = db.session.get(Ingredient, id)
     if not ing:
@@ -1432,7 +1443,8 @@ def toggle_basic_ingredient(id):
 # --- New Ingredient Workflow ---
 
 @app.route('/new-ingredient', methods=['GET'])
-@app.route('/new-ingredient', methods=['GET'])
+@login_required
+@admin_required
 def new_ingredient_view():
     # Load categories for the dropdown in the template (manually or via API)
     # We can pass them to the template
@@ -1486,6 +1498,7 @@ def search_ingredients_api():
 
 @app.route('/api/relink-ingredient', methods=['POST'])
 @login_required
+@admin_required
 def relink_ingredient_api():
     """Swap the ingredient linked to a RecipeIngredient row. Admin only."""
     if not current_user.is_admin:
@@ -1522,6 +1535,8 @@ def relink_ingredient_api():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/suggest-substitutes', methods=['POST'])
+@login_required
+@admin_required
 def suggest_substitutes_api():
     """Return top 3 pantry substitutes for a missing ingredient name."""
     try:
@@ -1582,6 +1597,8 @@ def suggest_substitutes_api():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/analyze-ingredient', methods=['POST'])
+@login_required
+@admin_required
 def analyze_ingredient_api():
     try:
         data = request.get_json()
@@ -1605,6 +1622,8 @@ def analyze_ingredient_api():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/extract-nutrients', methods=['POST'])
+@login_required
+@admin_required
 def extract_nutrients_api():
     try:
         data = request.get_json()
@@ -1624,6 +1643,8 @@ def extract_nutrients_api():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/generate-ingredient-image', methods=['POST'])
+@login_required
+@admin_required
 def generate_ingredient_image_api():
     try:
         data = request.get_json()
@@ -1694,6 +1715,8 @@ def get_ingredient_details_api(id):
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/ingredient/<int:id>', methods=['DELETE'])
+@login_required
+@admin_required
 def delete_ingredient_api(id):
     try:
         ingredient = db.session.get(Ingredient, id)
@@ -1726,6 +1749,8 @@ def delete_ingredient_api(id):
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/update-ingredient-image', methods=['POST'])
+@login_required
+@admin_required
 def update_ingredient_image_api():
     try:
         data = request.get_json()
@@ -1775,6 +1800,8 @@ def update_ingredient_image_api():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/save-ingredient', methods=['POST'])
+@login_required
+@admin_required
 def save_new_ingredient_api():
     try:
         data = request.get_json()
@@ -1847,6 +1874,7 @@ def save_new_ingredient_api():
 
 @app.route('/api/add-synonym', methods=['POST'])
 @login_required
+@admin_required
 def add_synonym_api():
     try:
         data = request.get_json()
@@ -1867,6 +1895,8 @@ def add_synonym_api():
 
 
 @app.route('/api/quick-add-ingredient', methods=['POST'])
+@login_required
+@admin_required
 def quick_add_ingredient_api():
     try:
         data = request.get_json()
@@ -1943,6 +1973,8 @@ def quick_add_ingredient_api():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/update-ingredient-data', methods=['POST'])
+@login_required
+@admin_required
 def update_ingredient_data_api():
     try:
         data = request.get_json()
@@ -2366,6 +2398,7 @@ def set_pending_link(ingredient_id: int):
 
 @app.route('/api/recipe/<int:recipe_id>/promote-to-ingredient', methods=['POST'])
 @login_required
+@admin_required
 def promote_recipe_to_ingredient(recipe_id: int):
     """Direction A: take a recipe and link it to an existing matching ingredient
     (or create a minimal stub if none exists), then set ingredient.sub_recipe_id."""
@@ -2420,6 +2453,8 @@ def promote_recipe_to_ingredient(recipe_id: int):
 
 
 @app.route('/api/merge-ingredients', methods=['POST'])
+@login_required
+@admin_required
 def merge_ingredients_api():
     from services.ingredient_service import merge_ingredients
     try:
@@ -2506,6 +2541,8 @@ def _handle_workflow_result(result: dict, query_context: str, chef_id: str):
 
 
 @app.route('/generate/web', methods=['POST'])
+@login_required
+@admin_required
 def generate_web_recipe():
     blog_url = request.form.get('blog_url')
     if not blog_url:
@@ -2544,7 +2581,8 @@ def generate_web_recipe():
         return f"Error processing web import: {e}", 500
 
 @app.route('/generate/text', methods=['POST'])
-@app.route('/generate/text', methods=['POST'])
+@login_required
+@admin_required
 def generate_from_text():
     """Generate a recipe from raw pasted text (free-form text dump)."""
     raw_text = request.form.get('raw_text', '').strip()
@@ -2681,6 +2719,8 @@ def api_generate_single_url():
 
 
 @app.route('/generate')
+@login_required
+@admin_required
 def generate():
     query = request.args.get('query')
     chef_id = request.args.get('chef_id', 'gourmet')
@@ -2986,6 +3026,8 @@ from ai_engine import generate_recipe_ai, get_pantry_id, chefs_data, generate_re
 
 
 @app.route('/generate/video', methods=['POST'])
+@login_required
+@admin_required
 def generate_from_video():
     video_url = request.form.get('video_url')
     if not video_url:
@@ -3142,6 +3184,8 @@ def ingredient_dashboard():
     return render_template('ingredient_dashboard.html', ingredients=pantry_items)
 
 @app.route('/api/generate-ingredient-image', methods=['POST'])
+@login_required
+@admin_required
 def generate_ingredient_image():
     data = request.json
     ingredient_name = data.get('ingredient_name')
@@ -3171,6 +3215,8 @@ def generate_ingredient_image():
     return jsonify(result)
 
 @app.route('/api/approve-ingredient-image', methods=['POST'])
+@login_required
+@admin_required
 def approve_ingredient_image():
     data = request.json
     ingredient_name = data.get('ingredient_name')
@@ -3718,4 +3764,5 @@ def mirror_set_default(partner_id):
 if __name__ == '__main__':
     with app.app_context():
         db.create_all() # Ensure tables exist
-    app.run(host='0.0.0.0', debug=True, port=8000)
+    debug = os.environ.get('FLASK_DEBUG', '').lower() in ('1', 'true')
+    app.run(host='0.0.0.0', debug=debug, port=8000)
