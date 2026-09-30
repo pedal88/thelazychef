@@ -129,6 +129,7 @@ jobs:
           env_vars: |
             FLASK_APP=app.py
             GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
+            SECRET_KEY=${{ secrets.SECRET_KEY }}
             DB_BACKEND=cloudsql
             INSTANCE_CONNECTION_NAME=thelazychefai-prod:europe-north2:lazy-chef-db-eu
             DB_USER=${{ secrets.DB_USER }}

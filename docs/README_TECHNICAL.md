@@ -86,5 +86,5 @@ The application requires the following strictly defined environment variables in
 
 ### Testing Protocols
 *   **Unit Tests**: Run `python -m unittest` to verify core logic.
-*   **Diagnostics**: Use `verify_setup.py` to check path integrity and API connections.
+*   **Diagnostics**: Use `python -m scripts.debug.verify_setup` (from the repo root) to check path integrity and API connections.
 *   **Mocking**: The Photographer service typically requires live API calls; use the placeholder generator for offline dev work.

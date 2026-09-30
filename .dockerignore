@@ -20,6 +20,8 @@ nosetests.xml
 coverage.xml
 *.cover
 *.log
+*.tar.gz
+*_dump.json
 .pytest_cache/
 
 # Data & Secrets (CRITICAL)
