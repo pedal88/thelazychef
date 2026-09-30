@@ -92,30 +92,37 @@ class SmokeTests(unittest.TestCase):
 
     def test_anonymous_cannot_call_write_endpoints(self):
         client = self._client()
+        checked = 0
         for rule in _rules():
             if rule.endpoint in PUBLIC_WRITE_ENDPOINTS:
                 continue
             url = _build_url(rule)
             for method in sorted(rule.methods & WRITE_METHODS):
                 with self.subTest(endpoint=rule.endpoint, method=method, url=url):
+                    checked += 1
                     response = client.open(url, method=method)
                     self.assertIn(response.status_code, (302, 401, 403),
                                   f"{method} {url} is reachable without logging in")
+        self.assertGreater(checked, 50)
 
     def test_regular_user_cannot_call_admin_routes(self):
         client = self._client(self.user_id)
+        checked = 0
         for rule in _rules():
             if not _has(app.view_functions[rule.endpoint], 'admin_required'):
                 continue
             url = _build_url(rule)
             for method in sorted(rule.methods - {'HEAD', 'OPTIONS'}):
                 with self.subTest(endpoint=rule.endpoint, method=method, url=url):
+                    checked += 1
                     response = client.open(url, method=method)
                     self.assertEqual(response.status_code, 403,
                                      f"{method} {url} is reachable by a non-admin user")
+        self.assertGreater(checked, 20)
 
     def test_public_pages_load(self):
         client = self._client()
+        checked = 0
         for rule in _rules():
             view = app.view_functions[rule.endpoint]
             if rule.arguments or 'GET' not in rule.methods:
@@ -123,18 +130,23 @@ class SmokeTests(unittest.TestCase):
             if _has(view, 'login_required') or _has(view, 'admin_required'):
                 continue
             with self.subTest(endpoint=rule.endpoint, url=rule.rule):
+                checked += 1
                 response = client.get(rule.rule)
                 self.assertLess(response.status_code, 500, f"GET {rule.rule} crashed")
+        self.assertGreater(checked, 5)
 
     def test_admin_pages_load(self):
         client = self._client(self.admin_id)
+        checked = 0
         for rule in _rules():
             view = app.view_functions[rule.endpoint]
             if rule.arguments or 'GET' not in rule.methods or not _has(view, 'admin_required'):
                 continue
             with self.subTest(endpoint=rule.endpoint, url=rule.rule):
+                checked += 1
                 response = client.get(rule.rule)
                 self.assertLess(response.status_code, 500, f"GET {rule.rule} crashed for admin")
+        self.assertGreater(checked, 5)
 
 
 if __name__ == '__main__':
