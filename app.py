@@ -2777,9 +2777,6 @@ def generate_from_video():
         return redirect(url_for('discover'))
 
 
-# RESOURCE ADMIN ROUTES
-
-
 @app.route('/api/delete-recipe/<int:recipe_id>', methods=['DELETE'])
 @login_required
 @admin_required
@@ -2809,6 +2806,7 @@ def delete_bulk_recipes():
 
     Uses SQLAlchemy ORM delete() + .in_() rather than raw text() SQL because
     pg8000 cannot bind a Python tuple as a single IN-list parameter.
+    SQLAlchemy expands the IN list correctly for every driver.
     """
     from sqlalchemy import delete as sql_delete
 
