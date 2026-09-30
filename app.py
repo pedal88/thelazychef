@@ -23,10 +23,10 @@ from services.pantry_service import get_slim_pantry_context
 from ai_engine import generate_recipe_ai, get_pantry_id, get_top_pantry_suggestions, chefs_data, generate_recipe_from_web_text, analyze_ingredient_ai, extract_nutrients_from_text, load_controlled_vocabularies
 from services.recipe_service import process_recipe_workflow, STATUS_SUCCESS, STATUS_MISSING
 from services.photographer_service import generate_visual_prompt, generate_actual_image, generate_visual_prompt_from_image, load_photographer_config, generate_image_variation, process_external_image
-from services.vertex_image_service import VertexImageGenerator
 from services.web_scraper_service import WebScraper
 from services.storage_service import get_storage_provider, GoogleCloudStorageProvider
 from utils.image_helpers import generate_ingredient_placeholder
+from utils.ai_errors import friendly_ai_error
 import base64
 from io import BytesIO
 from urllib.parse import urlencode
@@ -2576,9 +2576,10 @@ def generate_web_recipe():
         db.session.rollback()
         print(f"Web Import Error: {e}")
         import traceback; traceback.print_exc()
+        message = friendly_ai_error(e, fallback="Could not import a recipe from this URL. Please try again.")
         if 'application/json' in request.headers.get('Accept', ''):
-            return jsonify({'success': False, 'error': str(e)}), 500
-        return f"Error processing web import: {e}", 500
+            return jsonify({'success': False, 'error': message}), 500
+        return message, 500
 
 @app.route('/generate/text', methods=['POST'])
 @login_required
@@ -2613,9 +2614,10 @@ def generate_from_text():
     except Exception as e:
         db.session.rollback()
         import traceback; traceback.print_exc()
+        message = friendly_ai_error(e, fallback="Could not create a recipe from this text. Please try again.")
         if 'application/json' in request.headers.get('Accept', ''):
-            return jsonify({'success': False, 'error': str(e)}), 500
-        flash(f"Error processing text: {str(e)}", "error")
+            return jsonify({'success': False, 'error': message}), 500
+        flash(message, "error")
         return redirect(url_for('new_recipe'))
 
 @app.route('/admin/bulk-generate')
@@ -2740,14 +2742,16 @@ def generate():
         return _handle_workflow_result(result, query_context=query, chef_id=chef_id)
 
     except ValueError as ve:
-        flash(f"Validation Error: {str(ve)}", "error")
+        print(f"Generation Validation Error: {ve}")
+        flash(friendly_ai_error(ve, fallback=f"Validation Error: {str(ve)}"), "error")
         return redirect(url_for('discover'))
     except Exception as e:
         db.session.rollback()
         import traceback; traceback.print_exc()
+        message = friendly_ai_error(e)
         if 'application/json' in request.headers.get('Accept', ''):
-            return jsonify({'success': False, 'error': str(e)}), 500
-        flash(f"Generation error: {str(e)}", "error")
+            return jsonify({'success': False, 'error': message}), 500
+        flash(message, "error")
         return redirect(url_for('new_recipe'))
 
 @app.route('/recipe/<int:recipe_id>')
@@ -3060,174 +3064,11 @@ def generate_from_video():
     except Exception as e:
         db.session.rollback()
         import traceback; traceback.print_exc()
+        message = friendly_ai_error(e, fallback="Could not create a recipe from this video. Please check the link and try again.")
         if 'application/json' in request.headers.get('Accept', ''):
-            return jsonify({'success': False, 'error': str(e)}), 500
-        flash(f"Error processing video: {str(e)}", "error")
+            return jsonify({'success': False, 'error': message}), 500
+        flash(message, "error")
         return redirect(url_for('discover'))
-
-
-# --- INGREDIENT DASHBOARD ROUTES ---
-@app.route('/ingredient-images')
-def ingredient_dashboard():
-    # 1. Load ALL Ingredients from Database (Single Source of Truth)
-    # The DB contains the updated GCS URLs from our sync script
-    # We map them to the dictionary format expected by the template
-    db_ingredients = db.session.execute(
-        db.select(Ingredient).order_by(Ingredient.food_id)
-    ).scalars().all()
-    
-    pantry_items = []
-    
-    # 2. Convert SQLAlchemy objects to Dicts for the template/logic below
-    for ing in db_ingredients:
-        item = {
-            'food_id': ing.food_id,
-            'food_name': ing.name,
-            'main_category': ing.main_category,
-            'images': {
-                'image_url': ing.image_url,
-                'image_prompt': ing.image_prompt
-            }
-        }
-        pantry_items.append(item)
-
-    # 3. Check for Candidates & Apply Overrides
-    # (Existing logic continues below relying on pantry_items list)
-    
-    # Create DB Map for O(1) lookup if needed, but we already have the items from DB
-    db_map = {ing.food_id: ing.image_url for ing in db_ingredients}
-    
-    generator = VertexImageGenerator(storage_provider=storage_provider, root_path=app.root_path)
-    
-    for item in pantry_items:
-        # DB Override
-        if item['food_id'] in db_map and db_map[item['food_id']]:
-             item['images']['image_url'] = db_map[item['food_id']]
-        
-        # Candidate Logic
-        safe_name = generator._get_safe_filename(item['food_name'])
-        
-        # Check storage backend to determine existence check
-        storage_backend = os.getenv('STORAGE_BACKEND', 'local')
-        if storage_backend == 'gcs':
-             # For GCS, we should ideally check if the blob exists.
-             # But checking 100+ blobs per request is slow.
-             # Strategy: Assume if we found a way to "list" them efficiently, or just rely on a naming convention?
-             # Better: The frontend generates them. The backend check is only for "Reload".
-             # Let's perform a CHECK only if we really need to, or skip it for performance?
-             # Attempt to check existence:
-             # We can use storage_provider.exists, but we need to instantiate it efficiently.
-             # NOTE: This N+1 check will be slow on GCS.
-             # Optimization: List valid candidates once per request?
-             # For now, let's just constructing the URL and checking if it *should* exist? 
-             # No, we need to know IF it exists to show the "Approve" button state or the image.
-             
-             # HACK: For now, we will skip the server-side check for candidates on GCS to avoid latency.
-             # OR we implement a "list_candidates" method in generator.
-             # Let's try to verify existence for the *single* item if possible, but for the dashboard loop it's heavy.
-             
-             # Alternative: The dashboard JS handles the "broken image" by hiding it?
-             # But we need 'has_candidate' to be True to show the UI.
-             
-             # Let's try storage.exists(filename, folder)
-             # We need to make sure we don't kill performance.
-             # Actually, let's just check the "Current" images mapping? No, candidates are new.
-             
-             # Compromise: We will NOT check existence loop-side in GCS mode for now to avoid timeout.
-             # We will assume False unless we have a better way (e.g. separate API to fetch candidates).
-             # Wait, if we assume False, the user can't approve them after reload.
-             
-             # Fix: Generator should provide `list_candidates()`
-             # For this immediate fix, let's just check `storage_provider.exists` and accept the latency for the admin page.
-             item['has_candidate'] = storage_provider.exists(safe_name, "pantry/candidates")
-             if item['has_candidate']:
-                  bucket_name = os.getenv('GCS_BUCKET_NAME')
-                  item['candidate_url'] = f"https://storage.googleapis.com/{bucket_name}/pantry/candidates/{safe_name}"
-             else:
-                  item['candidate_url'] = None
-        else:
-             # Local check
-             candidate_path = os.path.join(generator.candidates_dir, safe_name)
-             item['has_candidate'] = os.path.exists(candidate_path)
-             item['candidate_url'] = f"/static/pantry/candidates/{safe_name}" if item['has_candidate'] else None
-        
-        # Ensure image_url is fully qualified for display if it's relative AND NOT from GCS (which starts with https)
-        if 'images' in item and item['images'].get('image_url'):
-             url = item['images']['image_url']
-             if not url.startswith('/') and not url.startswith('http'):
-                 item['images']['image_url'] = f"/static/{url}"
-                 
-        # 3. Check for Originals (Locked Assets)
-        if 'images' in item and item['images'].get('image_url'):
-            current_url = item['images']['image_url']
-            basename = os.path.basename(current_url)
-            
-            # Smart Detection of Originals
-            # If we are using GCS, we assume the original exists if we have a main image (since we synced them)
-            # OR we could check if the main image is a GCS URL
-            
-            storage_backend = os.getenv('STORAGE_BACKEND', 'local')
-            bucket_name = os.getenv('GCS_BUCKET_NAME')
-            
-            if storage_backend == 'gcs' and bucket_name:
-                # GCS Mode: Construct URL directly
-                # Public URL format: https://storage.googleapis.com/BUCKET_NAME/OBJECT_NAME
-                item['original_url'] = f"https://storage.googleapis.com/{bucket_name}/pantry/originals/{basename}"
-            else:
-                # Local Mode: Check filesystem
-                original_path = os.path.join(app.root_path, 'static', 'pantry', 'originals', basename)
-                if os.path.exists(original_path):
-                    item['original_url'] = f"/static/pantry/originals/{basename}"
-                else:
-                    item['original_url'] = None
-
-    return render_template('ingredient_dashboard.html', ingredients=pantry_items)
-
-@app.route('/api/generate-ingredient-image', methods=['POST'])
-@login_required
-@admin_required
-def generate_ingredient_image():
-    data = request.json
-    ingredient_name = data.get('ingredient_name')
-    # The frontend text box value, treated as details if name exists, or raw prompt if not
-    user_input = data.get('prompt') 
-    
-    if not ingredient_name and not user_input:
-        return jsonify({'success': False, 'error': 'Missing name or details'})
-        
-    generator = VertexImageGenerator(storage_provider=storage_provider, root_path=app.root_path)
-
-    if ingredient_name:
-        # STRATEGY A: Use the Studio Template (Preferred)
-        # We treat the user's input as the 'visual_details' variable
-        final_prompt = generator.get_prompt(ingredient_name, visual_details=user_input or "")
-        print(f"DEBUG: Generating image for '{ingredient_name}' using Template. Final Prompt: {final_prompt[:50]}...")
-        result = generator.generate_candidate(ingredient_name, final_prompt)
-        print(f"DEBUG: Generation Result for '{ingredient_name}': {result}") # ADDED LOG
-    elif user_input:
-        # STRATEGY B: Fallback (Raw Mode) - generate a temp name
-        temp_name = f"unknown_{uuid.uuid4().hex[:6]}"
-        print(f"DEBUG: Generating raw image using Prompt: {user_input[:50]}...")
-        result = generator.generate_candidate(temp_name, user_input)
-    else:
-         return jsonify({'success': False, 'error': 'Missing name or prompt'})
-
-    return jsonify(result)
-
-@app.route('/api/approve-ingredient-image', methods=['POST'])
-@login_required
-@admin_required
-def approve_ingredient_image():
-    data = request.json
-    ingredient_name = data.get('ingredient_name')
-    
-    if not ingredient_name:
-        return jsonify({'success': False, 'error': 'Missing ingredient name'})
-        
-    generator = VertexImageGenerator(storage_provider=storage_provider, root_path=app.root_path)
-    result = generator.approve_candidate(ingredient_name)
-    
-    return jsonify(result)
 
 
 # RESOURCE ADMIN ROUTES
