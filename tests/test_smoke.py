@@ -35,9 +35,11 @@ PUBLIC_WRITE_ENDPOINTS = {
 
 def _decorators(view):
     """Qualified names of every wrapper around a view function."""
+    # functools.wraps copies __qualname__ from the wrapped view, so use the
+    # code object's name, which keeps e.g. 'admin_required.<locals>.decorated_function'
     names = []
     while view is not None:
-        names.append(getattr(view, '__qualname__', ''))
+        names.append(view.__code__.co_qualname)
         view = getattr(view, '__wrapped__', None)
     return names
 
