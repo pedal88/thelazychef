@@ -202,6 +202,7 @@ db.init_app(app)
 # Initialize Storage Provider
 storage_provider = get_storage_provider(app.root_path)
 print(f"--- STORAGE SYSTEM ACTIVE: {storage_provider.__class__.__name__} ---")
+app.extensions['storage_provider'] = storage_provider
 
 # Inject storage provider into blueprint context
 # Note: Blueprints are registered earlier, but we can attach attributes to the object
@@ -217,62 +218,9 @@ login_manager.login_view = 'login'
 def load_user(user_id):
     return db.session.get(User, int(user_id))
 
-# AUTH ROUTES
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if current_user.is_authenticated:
-         return redirect(url_for('studio_view') if current_user.is_admin else url_for('recipes_list'))
-    
-    if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        user = db.session.execute(db.select(User).where(User.email == email)).scalar()
-        
-        if user and user.check_password(password):
-            login_user(user)
-            next_page = request.args.get('next')
-            # Intelligent Redirect based on Role
-            if not next_page:
-                next_page = url_for('studio_view') if user.is_admin else url_for('recipes_list')
-            return redirect(next_page)
-        
-        flash('Invalid email or password', 'error')
-    
-    return render_template('login.html')
-
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if current_user.is_authenticated:
-         return redirect(url_for('recipes_list'))
-    
-    if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        
-        # Validation
-        existing_user = db.session.execute(db.select(User).where(User.email == email)).scalar()
-        if existing_user:
-            flash('Email already registered', 'error')
-            return redirect(url_for('register'))
-            
-        # Create User
-        new_user = User(email=email, is_admin=False)
-        new_user.set_password(password)
-        db.session.add(new_user)
-        db.session.commit()
-        
-        # Auto Login
-        login_user(new_user)
-        flash('Account created successfully!', 'success')
-        return redirect(url_for('recipes_list'))
-        
-    return render_template('register.html')
-
-@app.route('/logout')
-def logout():
-    logout_user()
-    flash('You have been logged out.', 'info')
-    return redirect(url_for('discover'))
+# Routes moved out of app.py. FlatBlueprint keeps their original endpoint names.
+from routes.auth_routes import auth_bp
+app.register_blueprint(auth_bp)
 
 @app.route('/api/me/favorites', methods=['GET'])
 @login_required
