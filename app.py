@@ -34,7 +34,7 @@ import shutil
 import datetime
 from sqlalchemy import func
 from utils.prompt_manager import load_prompt
-from routes._shared import get_recipe_image_url, get_image_url
+from routes._shared import get_recipe_image_url, get_image_url, load_json_option
 
 import json
 
@@ -185,6 +185,9 @@ app.register_blueprint(explore_bp)
 
 from routes.resources_routes import resources_bp
 app.register_blueprint(resources_bp)
+
+from routes.admin_chefs_routes import admin_chefs_bp
+app.register_blueprint(admin_chefs_bp)
 
 @app.route('/api/me/favorites', methods=['GET'])
 @login_required
@@ -857,74 +860,6 @@ def load_resources():
         return []
 
 
-import json
-
-def load_json_option(filename, key):
-    data_dir = os.path.join(app.root_path, 'data')
-    try:
-        with open(os.path.join(data_dir, filename), 'r') as f:
-            return json.load(f).get(key, [])
-    except:
-        return []
-
-@app.route('/admin/chefs')
-@login_required
-@admin_required
-def chefs_list():
-    diets_data = load_json_option('diets_tag.json', 'diets')
-    
-    # Load Cooking Methods (Grouped)
-    methods_data_raw = load_json_option('cooking_methods.json', 'cooking_methods')
-    grouped_methods = {}
-    for m in methods_data_raw:
-        cat = m['category']
-        if cat not in grouped_methods:
-            grouped_methods[cat] = []
-        grouped_methods[cat].append(m['method'])
-    
-    # Sort keys
-    grouped_methods = dict(sorted(grouped_methods.items()))
-    
-    return render_template('chefs.html', chefs=chefs_data, diets_list=diets_data, grouped_methods=grouped_methods)
-
-@app.route('/admin/chefs/save', methods=['POST'])
-@login_required
-@admin_required
-def save_chefs_json():
-    try:
-        data = request.get_json()
-        if not data or 'chefs' not in data:
-            return jsonify({'success': False, 'error': 'Invalid JSON structure'}), 400
-        
-        new_chefs = data['chefs']
-        
-        # Validate/Persist
-        json_path = os.path.join(os.path.dirname(__file__), "data", "chefs.json")
-        
-        # We replace the entire list with the new data from UI
-        # But we should preserve structure wrappers if any
-        full_data = {"chefs": new_chefs}
-        
-        with open(json_path, 'w') as f:
-            json.dump(full_data, f, indent=2)
-            
-        # Update in-memory reference
-        global chefs_data
-        chefs_data = new_chefs
-        
-        # Also need to update cache in ai_engine if it's imported there
-        # Since ai_engine loads on import, we might need a reload mechanism 
-        # or just let the app restart handle it. 
-        # For this dev server, a restart is often best, but let's try to update the reference if shared.
-        import ai_engine
-        ai_engine.chefs_data = new_chefs
-        ai_engine.chef_map = {c['id']: c for c in new_chefs}
-
-        return jsonify({'success': True})
-        
-    except Exception as e:
-        print(f"Error saving chefs: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @app.route('/recipes')
