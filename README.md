@@ -1,56 +1,90 @@
 # The Lazy Chef 🍳
 
-> **Transform your pantry staples into 5-star visual masterpieces using the power of Generative AI.**
+> **Turn a craving, a link or a video into a complete, photographed recipe — built from real ingredients.**
 
-The Lazy Chef is a next-generation recipe application that doesn't just tell you what to cook—it shows you. By combining advanced Large Language Models (Gemini 1.5) for culinary logic with state-of-the-art Image Generation models (Imagen 3), it creates a seamless, visual, and highly personalized cooking experience.
+The Lazy Chef is an AI recipe platform. Google Gemini writes structured recipes in the voice of a chef persona, every ingredient is matched against a curated ingredient database (with nutrition data), and Google Imagen produces a photo of the finished dish. An admin back office handles quality control, curation and content production (social images, podcasts, videos).
 
 ---
 
 ## 🌟 Core Features
 
-*   **👨‍🍳 AI Chef Personas**: Choose your culinary guide—from a rustic Italian Nonna to a Michelin Star Innovator. Each chef has a unique voice, philosophy, and cooking style.
-*   **📸 Visual Architect**: Every recipe generates a stunning, high-resolution realization of the final dish using Google's Imagen 3 technology. No generic stock photos.
-*   **🧠 Pantry Intelligence**: Uses a "Human-in-the-Loop" architecture to validate AI-generated recipes against your *actual* real-world inventory.
-*   **🏷️ Smart Classification**: Automatically categorizes meals by Cuisine, Diet, Difficulty, Protein Type, and Occasion (Meal Types) for easy organization.
+**For cooks**
+*   **Discover & browse** approved recipes, filter by cuisine, diet, difficulty, protein and meal type.
+*   **Kitchen mode**: step-by-step cooking view.
+*   **Favorites, "I made this" feedback and a personal queue** (requires an account).
+*   **Collections** and interactive **recipe/ingredient "galaxy" graphs**.
+
+**For admins**
+*   **Recipe generation** from an idea, a web page, pasted text, or a TikTok/Instagram video.
+*   **Ingredient database**: nutrition, synonyms, merging, vector embeddings and AI-generated ingredient images.
+*   **Missing-ingredient resolution**: when the AI uses an ingredient that isn't in the database, a human maps, substitutes or creates it.
+*   **Quality control**: AI evaluator scores recipes; recipes move from `draft` to `approved`.
+*   **Photo studio & style center**: generate, remix and approve dish photography.
+*   **Media hub**: renders social-media image sets, podcasts and videos from recipes.
 
 ## 🚀 How It Works
 
-1.  **Draft**: Tell the AI what you're craving (e.g., "Something spicy with the chicken in my fridge"). The AI parses your request and selects the best ingredients from your pantry.
-2.  **Architect**: The **Generative Engine** (Gemini 1.5) constructs a structured recipe, ensuring cooking times, techniques, and dietary rules are respected.
-3.  **Visualize**: The **Visual Engine** (Imagen 3) reads the recipe's "DNA"—ingredients, plating style, mood—and generates a hyper-realistic photo of the dish before you even start cooking.
+1.  **Ask**: an admin enters an idea ("something spicy with chicken"), a URL, text or a video link.
+2.  **Write**: Gemini generates a structured recipe, constrained by the ingredient database, the chef persona and fixed vocabularies (diets, cuisines, …).
+3.  **Validate**: each ingredient is matched to the database; unmatched ones go to a resolution screen.
+4.  **Save**: the recipe, steps and gram-weighted ingredients are stored and nutrition is calculated.
+5.  **Photograph**: Imagen generates the dish photo from a visual brief.
+6.  **Publish**: after review, the recipe is approved and appears on the site.
 
-## ⚡ Quick Start
+See [docs/README_TECHNICAL.md](docs/README_TECHNICAL.md) for the architecture.
+
+## ⚡ Quick Start (local)
 
 ### Prerequisites
-*   Python 3.10+
-*   A Google Cloud API Key (with access to Gemini and Imagen)
+*   **Python 3.13** (the pinned requirements don't install on older versions)
+*   A Google Gemini API key ([AI Studio](https://aistudio.google.com/apikey))
+*   `ffmpeg` (only needed for video import and the media hub)
 
-### Installation
+### Setup
 
-1.  **Clone the Repository**
-    ```bash
-    git clone https://github.com/pedal88/thelazychef.git
-    cd thelazychef
-    ```
+```bash
+git clone https://github.com/pedal88/thelazychef.git
+cd thelazychef
 
-2.  **Install Dependencies**
-    ```bash
-    python3 -m venv venv
-    source venv/bin/activate
-    pip install -r requirements.txt
-    ```
+python3.13 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 
-3.  **Configure Environment**
-    Create a `.env` file in the root directory:
-    ```bash
-    GOOGLE_API_KEY=your_api_key_here
-    ```
+cp .env.example .env   # then fill in GOOGLE_API_KEY (and optionally SECRET_KEY)
 
-4.  **Run the Kitchen**
-    ```bash
-    python app.py
-    ```
-    Open your browser to `http://127.0.0.1:8000` and start cooking!
+python scripts/seed_admin.py --email you@example.com   # creates kitchen.db (SQLite) + an admin user
+python app.py                                          # http://127.0.0.1:8000
+```
+
+*   The local database starts empty (no ingredients or recipes).
+*   Alembic migrations (`flask db upgrade`) target production Postgres; some use Postgres-only features (pgvector), so locally the tables are created with `db.create_all()` instead.
+*   Set `FLASK_DEBUG=1` in `.env` for auto-reload and debug pages.
+
+### Tests
+
+```bash
+python -m pytest tests/
+```
+
+The smoke tests (`tests/test_smoke.py`) check that every page loads and that write/admin routes reject anonymous and non-admin users. They run in CI on every pull request.
+
+## ☁️ Deployment
+
+Merging to `main` deploys automatically to Google Cloud Run via GitHub Actions. See [docs/README_DEPLOY.md](docs/README_DEPLOY.md).
+
+## 📚 Documentation
+
+| Doc | Contents |
+|---|---|
+| [README_TECHNICAL.md](docs/README_TECHNICAL.md) | Architecture, components, data model, configuration |
+| [README_DEPLOY.md](docs/README_DEPLOY.md) | CI/CD pipeline, secrets, production infrastructure |
+| [README_TOP_COMMANDS.md](docs/README_TOP_COMMANDS.md) | Everyday commands |
+| [PROMPT_ENGINEERING_GUIDE.md](docs/PROMPT_ENGINEERING_GUIDE.md) | How the prompt templates are assembled |
+| [mediahub.md](docs/mediahub.md) | Media hub / social image rendering |
+| [RECIPE_GENERATION_*.md](docs/RECIPE_GENERATION_FLOWCHART.md) | Recipe generation diagrams |
+| [INGREDIENT_IMAGES.md](docs/INGREDIENT_IMAGES.md) | Ingredient image pipeline |
+
+`DEPLOYMENT_TROUBLESHOOTING_POSTMORTEM.md`, `DEPLOY_VIA_CLOUD_SHELL.md` and `docs/README_CLOUD_DEPLOYMENT.md` are historical notes from the original manual deployment.
 
 ---
-*Built with Flask, TailwindCSS, and Google Gemini.*
+*Built with Flask, Tailwind CSS, Google Gemini and Imagen.*
