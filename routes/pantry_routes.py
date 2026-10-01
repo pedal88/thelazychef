@@ -804,27 +804,6 @@ def merge_ingredients_api():
         print(f"Merge API Error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
-def find_best_ingredient_match(name):
-    """
-    Tries to find the best existing ingredient for a given name.
-    Uses the robust fuzzy matching from ai_engine.get_pantry_id,
-    then resolves the food_id to a DB record.
-    Returns an Ingredient ORM object or None.
-    """
-    from ai_engine import get_pantry_id
-    
-    food_id_str = get_pantry_id(name)
-    if not food_id_str:
-        return None
-    
-    return db.session.execute(
-        db.select(Ingredient).where(Ingredient.food_id == food_id_str)
-    ).scalars().first()
-
-
-
-
-
 
 @pantry_bp.route('/api/placeholder/ingredient/\u003cfood_id\u003e')
 def ingredient_placeholder(food_id):
