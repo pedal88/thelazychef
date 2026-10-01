@@ -18,6 +18,71 @@ The Lazy Chef is a Flask monolith with server-rendered Jinja2 templates (Tailwin
 | Personas | `data/agents/` | Chef and photographer personas |
 | Helpers | `utils/` | Prompt loading, image helpers, decorators (`admin_required`), AI error messages |
 
+### How the components connect
+
+Arrows point from caller to callee. Dashed boxes are outside the app.
+
+```mermaid
+graph TD
+    subgraph UI["1 · Interface"]
+        T[Jinja templates]
+        APP[app.py: config, login, blueprints]
+    end
+
+    subgraph R["2 · Routes (routes/)"]
+        RB[Browse & Discover]
+        RG[Generate]
+        RC[My Cookbook: saved, made, queue, mirror]
+        RP[Pantry]
+        RA[Admin]
+        RT[TikTok import]
+        RM[Studio & Media Hub]
+    end
+
+    subgraph L["3 · Kitchen logic (services/)"]
+        PIPE[[Recipe pipeline<br/>process_recipe_workflow]]
+        PAN[Pantry context & matching]
+        NUT[Nutrition]
+        CHEF[Chef personas]
+        ING[Ingestion: scraper, yt_dlp]
+        STO[Storage]
+    end
+
+    subgraph AI["4 · AI & media"]
+        AIE[ai_engine.py]
+        IMG[Image generation]
+        EVAL[Quality evaluation]
+        MH[media_hub/]
+    end
+
+    subgraph D["5 · Data & cloud"]
+        DB[(Postgres / SQLite)]
+        GCS[(Cloud Storage)]
+        GEM{{Gemini}}
+        IMA{{Imagen on Vertex}}
+        WEB{{Web, TikTok, Instagram}}
+    end
+
+    APP --> R
+    RG --> ING & PAN & CHEF & AIE & PIPE
+    RT --> ING & PIPE
+    RP --> AIE & PAN & IMG
+    RA --> AIE & PIPE & IMG & EVAL
+    RM --> MH & AIE & IMG
+    RC --> STO
+    RB & RC & RP & RA & RM --> DB
+
+    PIPE --> PAN & CHEF & NUT & IMG & STO & DB
+    PAN & NUT & CHEF --> DB
+    ING --> WEB & AIE
+    AIE & EVAL & MH --> GEM
+    IMG --> GEM & IMA & STO
+    STO --> GCS
+
+    classDef ext stroke-dasharray: 5 5
+    class GEM,IMA,WEB,GCS ext
+```
+
 ### Infrastructure
 
 | Concern | Local | Production |
@@ -41,17 +106,21 @@ The Lazy Chef is a Flask monolith with server-rendered Jinja2 templates (Tailwin
 
 ```mermaid
 graph TD
-    A[Admin input: idea / URL / text / video] --> B[Route: /generate, /generate/web, /generate/text, /generate/video]
-    B -->|pantry context + chef persona + prompt template| C[ai_engine.py → Gemini]
+    A[Input: idea / URL / text / video] --> B[Route: /generate, /generate/web, /generate/text, /generate/video]
+    B -->|URL: WebScraper · video: yt_dlp download| B2[Raw text or video file]
+    B2 -->|pantry context + chef persona + prompt template| C[ai_engine.py → Gemini]
     C -->|structured recipe JSON| D[recipe_service.process_recipe_workflow]
-    D -->|all ingredients matched| E[(Recipe saved as draft)]
-    D -->|unmatched ingredients| F[Missing-ingredient resolution screen]
-    F --> E
-    E --> G[Photographer / studio → Imagen]
+    D -->|clean names, match to pantry| D2{Ingredient known?}
+    D2 -->|yes| E
+    D2 -->|no: create Ingredient with status 'pending'| E[(Recipe saved as draft)]
+    E --> N[Nutrition totals from pantry values]
+    E --> G[Photographer: Gemini writes prompt → Imagen renders]
     G --> H[Storage: local static/ or GCS]
-    E --> I[Evaluation service scores recipe]
-    I --> J[Admin approves → status 'approved' → visible on site]
+    E -.->|admin, later| I[Evaluation service scores recipe]
+    I -.-> J[Admin approves → status 'approved' → visible on site]
 ```
+
+Every path ends in the same pipeline, which always inserts a new recipe. It does not check for an existing recipe with the same title or source URL.
 
 Other diagrams: [RECIPE_GENERATION_FLOWCHART.md](RECIPE_GENERATION_FLOWCHART.md), [RECIPE_GENERATION_SEQUENCE.md](RECIPE_GENERATION_SEQUENCE.md), [RECIPE_GENERATION_SWIMLANE.md](RECIPE_GENERATION_SWIMLANE.md).
 
