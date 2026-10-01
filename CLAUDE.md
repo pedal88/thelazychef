@@ -5,8 +5,8 @@ Production runs on Google Cloud Run with Postgres on Cloud SQL and assets in GCS
 
 ## Layout
 
-- `app.py` – app setup plus many routes (large; new routes go in blueprints under `routes/`, and old ones are moved there gradually)
-- `routes/` – Flask blueprints (most admin areas live here)
+- `app.py` – app setup only: config, template filters/globals, login manager, blueprint registration. No routes; it re-exports the models because many scripts do `from app import app, db, Recipe`
+- `routes/` – all routes, as Flask blueprints. Blueprints moved out of `app.py` use `FlatBlueprint` (`routes/_flat.py`) so their endpoint names stay un-prefixed (`url_for('recipes_list')`); new areas can use a normal `Blueprint`. Route modules must not import from `app` (circular import); shared helpers live in `routes/_shared.py`, and the storage provider comes from `get_storage()`
 - `services/` – business logic and AI calls (recipes, images, nutrition, storage, …)
 - `ai_engine.py` – Gemini prompt/response handling
 - `database/` – SQLAlchemy models and `db_connector.py` (`DB_BACKEND=local` → SQLite, `cloudsql` → Postgres)
