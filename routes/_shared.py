@@ -1,4 +1,7 @@
 """Helpers shared by the route modules that were split out of app.py."""
+import json
+import os
+
 from flask import current_app, url_for
 
 from services.storage_service import GoogleCloudStorageProvider
@@ -43,3 +46,12 @@ def get_image_url(filename):
         return f"https://storage.googleapis.com/{storage_provider.bucket_name}/recipes/{filename}"
     else:
         return url_for('static', filename='recipes/' + filename)
+
+
+def load_json_option(filename, key):
+    data_dir = os.path.join(current_app.root_path, 'data')
+    try:
+        with open(os.path.join(data_dir, filename), 'r') as f:
+            return json.load(f).get(key, [])
+    except:
+        return []
