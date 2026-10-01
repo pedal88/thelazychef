@@ -8,7 +8,7 @@ The Lazy Chef is a Flask monolith with server-rendered Jinja2 templates (Tailwin
 
 | Layer | Where | Notes |
 |---|---|---|
-| Web / routes | `app.py`, `routes/` | `app.py` holds most public and core routes; admin areas are Flask blueprints in `routes/` |
+| Web / routes | `app.py`, `routes/` | `app.py` sets up the app and registers blueprints; every route lives in a blueprint in `routes/` |
 | AI (text) | `ai_engine.py` | All recipe generation / extraction calls to Gemini |
 | Services | `services/` | Recipe workflow, pantry, nutrition, evaluation, photography, scraping, TikTok, storage, podcasts |
 | Media hub | `media_hub/` | Renders social images (Playwright), podcasts (Text-to-Speech) and videos from recipes |
