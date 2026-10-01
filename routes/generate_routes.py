@@ -5,10 +5,11 @@ import os
 from flask import current_app, flash, jsonify, redirect, render_template, request, session, url_for
 from flask_login import login_required
 
-from ai_engine import chefs_data, generate_recipe_ai, generate_recipe_from_video, generate_recipe_from_web_text
+from ai_engine import generate_recipe_ai, generate_recipe_from_video, generate_recipe_from_web_text
 from database.models import Ingredient, Recipe, db
 from routes._flat import FlatBlueprint
 from services.pantry_service import get_slim_pantry_context
+from services.chef_service import get_chefs
 from services.recipe_service import STATUS_MISSING, process_recipe_workflow
 from services.social_media_service import SocialMediaExtractor
 from services.web_scraper_service import WebScraper
@@ -30,7 +31,7 @@ def new_recipe():
     
     # Get recent recipes (approved only for public display)
     recent_recipes = db.session.execute(db.select(Recipe).where(Recipe.status == 'approved').order_by(Recipe.id.desc()).limit(10)).scalars().all()
-    return render_template('index.html', recipes=recent_recipes, chefs=chefs_data)
+    return render_template('index.html', recipes=recent_recipes, chefs=get_chefs())
 
 
 # ---------------------------------------------------------------------------
