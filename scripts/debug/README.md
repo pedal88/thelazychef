@@ -8,4 +8,4 @@ python -m scripts.debug.check_db
 python -m scripts.maintenance.backfill_nutrition
 ```
 
-`scripts/maintenance/` holds one-off data migrations, backfills and seeders.
+`scripts/maintenance/` holds backfills and seeders. One-off scripts are deleted once they have run; they stay in git history.

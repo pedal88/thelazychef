@@ -48,4 +48,4 @@ After changing a secret, redeploy (see above) for it to take effect.
 *   **Recipe generation shows "AI generation is temporarily unavailable (billing)"**: the Gemini key's project is out of credits; top up or switch to Postpay in [AI Studio](https://ai.studio/projects).
 *   **Migration job fails**: run `gcloud run jobs executions list --job lazy-chef-db-migration --region europe-west1` and inspect the failing execution's logs.
 
-Historical notes on the original manual setup: [README_CLOUD_DEPLOYMENT.md](README_CLOUD_DEPLOYMENT.md), [../DEPLOYMENT_TROUBLESHOOTING_POSTMORTEM.md](../DEPLOYMENT_TROUBLESHOOTING_POSTMORTEM.md), [../DEPLOY_VIA_CLOUD_SHELL.md](../DEPLOY_VIA_CLOUD_SHELL.md).
+Historical notes on the original manual setup: [README_CLOUD_DEPLOYMENT.md](README_CLOUD_DEPLOYMENT.md).
