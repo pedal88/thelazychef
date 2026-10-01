@@ -158,11 +158,6 @@ pantry_map = {}
 
 # --- RESTORED EXPORTS FOR APP COMPATIBILITY ---
 try:
-    chefs_data = load_json("data/agents/chefs.json")['chefs']
-except Exception:
-    chefs_data = []
-
-try:
     protein_data = load_json("data/constraints/main_protein.json")['protein_types']
 except Exception:
     protein_data = []
