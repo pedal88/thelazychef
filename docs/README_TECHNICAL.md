@@ -122,8 +122,6 @@ graph TD
 
 Every path ends in the same pipeline, which always inserts a new recipe. It does not check for an existing recipe with the same title or source URL.
 
-Other diagrams: [RECIPE_GENERATION_FLOWCHART.md](RECIPE_GENERATION_FLOWCHART.md), [RECIPE_GENERATION_SEQUENCE.md](RECIPE_GENERATION_SEQUENCE.md), [RECIPE_GENERATION_SWIMLANE.md](RECIPE_GENERATION_SWIMLANE.md).
-
 ### Prompts
 Prompts are not hardcoded. `utils/prompt_manager.load_prompt` renders templates from `data/prompts/`, combining:
 1.  **Role** from the chef persona (`data/agents/chefs.json`, or the `Chef` table).

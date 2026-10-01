@@ -81,10 +81,9 @@ Merging to `main` deploys automatically to Google Cloud Run via GitHub Actions. 
 | [README_TOP_COMMANDS.md](docs/README_TOP_COMMANDS.md) | Everyday commands |
 | [PROMPT_ENGINEERING_GUIDE.md](docs/PROMPT_ENGINEERING_GUIDE.md) | How the prompt templates are assembled |
 | [mediahub.md](docs/mediahub.md) | Media hub / social image rendering |
-| [RECIPE_GENERATION_*.md](docs/RECIPE_GENERATION_FLOWCHART.md) | Recipe generation diagrams |
 | [INGREDIENT_IMAGES.md](docs/INGREDIENT_IMAGES.md) | Ingredient image pipeline |
 
-`DEPLOYMENT_TROUBLESHOOTING_POSTMORTEM.md`, `DEPLOY_VIA_CLOUD_SHELL.md` and `docs/README_CLOUD_DEPLOYMENT.md` are historical notes from the original manual deployment.
+`docs/README_CLOUD_DEPLOYMENT.md` holds historical notes from the original manual deployment.
 
 ---
 *Built with Flask, Tailwind CSS, Google Gemini and Imagen.*
