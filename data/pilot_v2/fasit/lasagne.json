@@ -1,0 +1,531 @@
+{
+  "title": "Lasagne",
+  "servings": 4,
+  "components": [
+    {
+      "local_id": "c1",
+      "name": "Kjøttsaus"
+    },
+    {
+      "local_id": "c2",
+      "name": "Hvit saus"
+    },
+    {
+      "local_id": "c3",
+      "name": "Lasagne"
+    },
+    {
+      "local_id": "c4",
+      "name": "Grønn salat"
+    }
+  ],
+  "ingredients": [
+    {
+      "local_id": "i1",
+      "component_id": "c1",
+      "name": "kjøttdeig av storfe",
+      "amount": 400,
+      "unit": "g"
+    },
+    {
+      "local_id": "i2",
+      "component_id": "c1",
+      "name": "løk",
+      "amount": 1,
+      "unit": "piece",
+      "prep_style": "finhakket"
+    },
+    {
+      "local_id": "i3",
+      "component_id": "c1",
+      "name": "gulrot",
+      "amount": 1,
+      "unit": "piece",
+      "prep_style": "finrevet"
+    },
+    {
+      "local_id": "i4",
+      "component_id": "c1",
+      "name": "hvitløk",
+      "amount": 2,
+      "unit": "clove",
+      "prep_style": "finhakket"
+    },
+    {
+      "local_id": "i5",
+      "component_id": "c1",
+      "name": "olivenolje",
+      "amount": 1,
+      "unit": "tbsp"
+    },
+    {
+      "local_id": "i6",
+      "component_id": "c1",
+      "name": "tomatpuré",
+      "amount": 2,
+      "unit": "tbsp"
+    },
+    {
+      "local_id": "i7",
+      "component_id": "c1",
+      "name": "hermetiske tomater",
+      "amount": 400,
+      "unit": "g",
+      "prep_style": "hakkede"
+    },
+    {
+      "local_id": "i8",
+      "component_id": "c1",
+      "name": "oksebuljong",
+      "amount": 2,
+      "unit": "dl"
+    },
+    {
+      "local_id": "i9",
+      "component_id": "c1",
+      "name": "tørket oregano",
+      "amount": 1,
+      "unit": "tsp"
+    },
+    {
+      "local_id": "i10",
+      "component_id": "c1",
+      "name": "salt og pepper",
+      "prep_style": "etter smak"
+    },
+    {
+      "local_id": "i11",
+      "component_id": "c2",
+      "name": "smør",
+      "amount": 40,
+      "unit": "g"
+    },
+    {
+      "local_id": "i12",
+      "component_id": "c2",
+      "name": "hvetemel",
+      "amount": 40,
+      "unit": "g"
+    },
+    {
+      "local_id": "i13",
+      "component_id": "c2",
+      "name": "helmelk",
+      "amount": 6,
+      "unit": "dl"
+    },
+    {
+      "local_id": "i14",
+      "component_id": "c2",
+      "name": "revet muskat",
+      "amount": 1,
+      "unit": "pinch"
+    },
+    {
+      "local_id": "i15",
+      "component_id": "c2",
+      "name": "salt",
+      "amount": 0.5,
+      "unit": "tsp"
+    },
+    {
+      "local_id": "i16",
+      "component_id": "c3",
+      "name": "lasagneplater",
+      "amount": 9,
+      "unit": "piece"
+    },
+    {
+      "local_id": "i17",
+      "component_id": "c3",
+      "name": "revet ost",
+      "amount": 150,
+      "unit": "g"
+    },
+    {
+      "local_id": "i18",
+      "component_id": "c3",
+      "name": "parmesan",
+      "amount": 30,
+      "unit": "g",
+      "prep_style": "finrevet"
+    },
+    {
+      "local_id": "i19",
+      "component_id": "c4",
+      "name": "hjertesalat",
+      "amount": 1,
+      "unit": "piece",
+      "prep_style": "revet i biter"
+    },
+    {
+      "local_id": "i20",
+      "component_id": "c4",
+      "name": "agurk",
+      "amount": 0.5,
+      "unit": "piece",
+      "prep_style": "tynne skiver"
+    },
+    {
+      "local_id": "i21",
+      "component_id": "c4",
+      "name": "cherrytomater",
+      "amount": 150,
+      "unit": "g",
+      "prep_style": "delt i to"
+    },
+    {
+      "local_id": "i22",
+      "component_id": "c4",
+      "name": "olivenolje",
+      "amount": 3,
+      "unit": "tbsp"
+    },
+    {
+      "local_id": "i23",
+      "component_id": "c4",
+      "name": "rødvinseddik",
+      "amount": 1,
+      "unit": "tbsp"
+    },
+    {
+      "local_id": "i24",
+      "component_id": "c4",
+      "name": "dijonsennep",
+      "amount": 1,
+      "unit": "tsp"
+    },
+    {
+      "local_id": "i25",
+      "component_id": "c4",
+      "name": "honning",
+      "amount": 0.5,
+      "unit": "tsp"
+    },
+    {
+      "local_id": "i26",
+      "component_id": "c4",
+      "name": "salt og pepper",
+      "prep_style": "etter smak"
+    }
+  ],
+  "steps": [
+    {
+      "local_id": "s1",
+      "component_id": "c3",
+      "phase": "cook",
+      "short": "Forvarm ovnen",
+      "text": "Sett ovnen på 200 °C over- og undervarme, med rist midt i ovnen.",
+      "uses": [],
+      "after": [],
+      "active_minutes": 1,
+      "passive_minutes": 14,
+      "method": "preheat",
+      "equipment": [
+        "oven"
+      ],
+      "temp_c": 200,
+      "mode": "top_bottom",
+      "setup": true,
+      "done_when": "Ovnen har nådd temperaturen"
+    },
+    {
+      "local_id": "s2",
+      "component_id": "c1",
+      "phase": "prep",
+      "short": "Kutt grønnsakene",
+      "text": "Finhakk {i2} og {i4}, og riv {i3} fint.",
+      "uses": [
+        "i2",
+        "i4",
+        "i3"
+      ],
+      "after": [],
+      "active_minutes": 6,
+      "passive_minutes": 0,
+      "holds_minutes": 120,
+      "method": "chop",
+      "equipment": [
+        "grater"
+      ],
+      "setup": false
+    },
+    {
+      "local_id": "s3",
+      "component_id": "c1",
+      "phase": "cook",
+      "short": "Brun kjøttdeigen",
+      "text": "Varm {i5} i en gryte på høy varme og brun {i1} til den er smuldret.",
+      "uses": [
+        "i5",
+        "i1"
+      ],
+      "after": [],
+      "active_minutes": 6,
+      "passive_minutes": 0,
+      "method": "sear",
+      "equipment": [
+        "wide_pot"
+      ],
+      "mode": "high",
+      "setup": false,
+      "done_when": "Brun, ikke grå, og væsken har kokt bort"
+    },
+    {
+      "local_id": "s4",
+      "component_id": "c1",
+      "phase": "cook",
+      "short": "Fres grønnsakene",
+      "text": "Skru ned til middels varme. Rør grønnsakene inn i kjøttdeigen og fres i 4 minutter. Rør inn {i6}.",
+      "uses": [
+        "i6"
+      ],
+      "after": [
+        "s3",
+        "s2"
+      ],
+      "active_minutes": 5,
+      "passive_minutes": 0,
+      "method": "saute",
+      "equipment": [
+        "wide_pot"
+      ],
+      "mode": "medium",
+      "setup": false,
+      "done_when": "Løken er blank og myk"
+    },
+    {
+      "local_id": "s5",
+      "component_id": "c1",
+      "phase": "cook",
+      "short": "Kok kjøttsausen",
+      "text": "Ha i {i7}, {i8}, {i9} og {i10}. Småkok uten lokk i 30 minutter.",
+      "uses": [
+        "i7",
+        "i8",
+        "i9",
+        "i10"
+      ],
+      "after": [
+        "s4"
+      ],
+      "active_minutes": 2,
+      "passive_minutes": 28,
+      "holds_minutes": 2880,
+      "method": "simmer",
+      "equipment": [
+        "wide_pot"
+      ],
+      "mode": "low",
+      "setup": false,
+      "done_when": "Tykk, uten væske som renner fra når du drar en skje gjennom"
+    },
+    {
+      "local_id": "s6",
+      "component_id": "c2",
+      "phase": "cook",
+      "short": "Lag smørbolle",
+      "text": "Smelt {i11} i en kjele på middels varme. Rør inn {i12} og la det frese i ett minutt.",
+      "uses": [
+        "i11",
+        "i12"
+      ],
+      "after": [],
+      "active_minutes": 3,
+      "passive_minutes": 0,
+      "method": "saute",
+      "equipment": [
+        "saucepan"
+      ],
+      "mode": "medium",
+      "setup": false,
+      "done_when": "Skummer lett og lukter kjeks, uten å ta farge"
+    },
+    {
+      "local_id": "s7",
+      "component_id": "c2",
+      "phase": "cook",
+      "short": "Spe med melk",
+      "text": "Spe smørbollen med {i13}, litt om gangen, mens du visper. La sausen småkoke i 5 minutter, og smak til med {i14} og {i15}.",
+      "uses": [
+        "i13",
+        "i14",
+        "i15"
+      ],
+      "after": [
+        "s6"
+      ],
+      "active_minutes": 8,
+      "passive_minutes": 0,
+      "holds_minutes": 60,
+      "method": "simmer",
+      "equipment": [
+        "saucepan",
+        "whisk"
+      ],
+      "mode": "medium",
+      "setup": false,
+      "done_when": "Tykk som yoghurt og helt glatt"
+    },
+    {
+      "local_id": "s8",
+      "component_id": "c3",
+      "phase": "prep",
+      "short": "Legg lagvis",
+      "text": "Smør en form på ca. 20 × 30 cm. Legg tre lag med kjøttsausen, den hvite sausen og {i16}, og avslutt med hvit saus. Strø over {i17} og {i18}.",
+      "uses": [
+        "i16",
+        "i17",
+        "i18"
+      ],
+      "after": [
+        "s5",
+        "s7"
+      ],
+      "active_minutes": 8,
+      "passive_minutes": 0,
+      "holds_minutes": 1440,
+      "method": "assemble",
+      "equipment": [
+        "form_20x30"
+      ],
+      "setup": false,
+      "done_when": "Det øverste laget med hvit saus dekker platene helt"
+    },
+    {
+      "local_id": "s9",
+      "component_id": "c3",
+      "phase": "cook",
+      "short": "Stek lasagnen",
+      "text": "Stek lasagnen midt i ovnen i 35–40 minutter.",
+      "uses": [],
+      "after": [
+        "s8"
+      ],
+      "active_minutes": 1,
+      "passive_minutes": 37,
+      "method": "bake",
+      "equipment": [
+        "oven"
+      ],
+      "temp_c": 200,
+      "mode": "top_bottom",
+      "setup": false,
+      "done_when": "Osten er gyllen og bobler i kantene, og platene er myke når du stikker i dem"
+    },
+    {
+      "local_id": "s10",
+      "component_id": "c3",
+      "phase": "cook",
+      "short": "Hvil",
+      "text": "La lasagnen hvile i 10 minutter før du skjærer i den.",
+      "uses": [],
+      "after": [
+        "s9"
+      ],
+      "active_minutes": 0,
+      "passive_minutes": 10,
+      "holds_minutes": 20,
+      "method": "rest",
+      "equipment": [],
+      "setup": false
+    },
+    {
+      "local_id": "s11",
+      "component_id": "c4",
+      "phase": "prep",
+      "short": "Skyll salaten",
+      "text": "Skyll {i19}, riv bladene i biter og slyng dem tørre.",
+      "uses": [
+        "i19"
+      ],
+      "after": [],
+      "active_minutes": 4,
+      "passive_minutes": 0,
+      "holds_minutes": 120,
+      "method": "rinse",
+      "equipment": [
+        "salad_spinner"
+      ],
+      "setup": false
+    },
+    {
+      "local_id": "s12",
+      "component_id": "c4",
+      "phase": "prep",
+      "short": "Kutt agurk og tomat",
+      "text": "Skjær {i20} i tynne skiver og del {i21} i to.",
+      "uses": [
+        "i20",
+        "i21"
+      ],
+      "after": [],
+      "active_minutes": 4,
+      "passive_minutes": 0,
+      "holds_minutes": 120,
+      "method": "slice",
+      "equipment": [],
+      "setup": false
+    },
+    {
+      "local_id": "s13",
+      "component_id": "c4",
+      "phase": "prep",
+      "short": "Rist dressingen",
+      "text": "Rist sammen {i22}, {i23}, {i24}, {i25} og {i26} i et glass med lokk.",
+      "uses": [
+        "i22",
+        "i23",
+        "i24",
+        "i25",
+        "i26"
+      ],
+      "after": [],
+      "active_minutes": 2,
+      "passive_minutes": 0,
+      "holds_minutes": 1440,
+      "method": "mix",
+      "equipment": [
+        "jar"
+      ],
+      "setup": false
+    },
+    {
+      "local_id": "s14",
+      "component_id": "c4",
+      "phase": "serve",
+      "short": "Vend salaten",
+      "text": "Vend salatbladene og agurk og tomat med dressingen.",
+      "uses": [],
+      "after": [
+        "s11",
+        "s12",
+        "s13"
+      ],
+      "active_minutes": 1,
+      "passive_minutes": 0,
+      "holds_minutes": 10,
+      "method": "mix",
+      "equipment": [],
+      "setup": false,
+      "done_when": "Bladene er blanke, ikke slappe"
+    },
+    {
+      "local_id": "s15",
+      "component_id": "c3",
+      "phase": "serve",
+      "short": "Server",
+      "text": "Skjær lasagnen i stykker og server med salaten.",
+      "uses": [],
+      "after": [
+        "s10",
+        "s14"
+      ],
+      "active_minutes": 2,
+      "passive_minutes": 0,
+      "method": "serve",
+      "equipment": [],
+      "setup": false
+    }
+  ]
+}

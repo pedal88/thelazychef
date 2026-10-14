@@ -1,0 +1,248 @@
+{
+  "_doc": "Fast enhetskatalog for oppskriftsmodell v2 (fase 1-tabellen 'unit' i RECIPE_MODEL_V2.md). type: weight | volume | count | approx. ml/g er per enhet der det gir mening. Mengde null betyr 'etter smak' og har ingen enhet.",
+  "units": [
+    {
+      "id": "g",
+      "name": "g",
+      "plural": "g",
+      "name_en": "g",
+      "type": "weight",
+      "ml": null,
+      "g": 1
+    },
+    {
+      "id": "kg",
+      "name": "kg",
+      "plural": "kg",
+      "name_en": "kg",
+      "type": "weight",
+      "ml": null,
+      "g": 1000
+    },
+    {
+      "id": "ml",
+      "name": "ml",
+      "plural": "ml",
+      "name_en": "ml",
+      "type": "volume",
+      "ml": 1,
+      "g": null
+    },
+    {
+      "id": "cl",
+      "name": "cl",
+      "plural": "cl",
+      "name_en": "cl",
+      "type": "volume",
+      "ml": 10,
+      "g": null
+    },
+    {
+      "id": "dl",
+      "name": "dl",
+      "plural": "dl",
+      "name_en": "dl",
+      "type": "volume",
+      "ml": 100,
+      "g": null
+    },
+    {
+      "id": "l",
+      "name": "l",
+      "plural": "l",
+      "name_en": "l",
+      "type": "volume",
+      "ml": 1000,
+      "g": null
+    },
+    {
+      "id": "tsp",
+      "name": "ts",
+      "plural": "ts",
+      "name_en": "tsp",
+      "type": "volume",
+      "ml": 5,
+      "g": null
+    },
+    {
+      "id": "tbsp",
+      "name": "ss",
+      "plural": "ss",
+      "name_en": "tbsp",
+      "type": "volume",
+      "ml": 15,
+      "g": null
+    },
+    {
+      "id": "cup",
+      "name": "kopp",
+      "plural": "kopper",
+      "name_en": "cup",
+      "type": "volume",
+      "ml": 240,
+      "g": null
+    },
+    {
+      "id": "fl_oz",
+      "name": "fl oz",
+      "plural": "fl oz",
+      "name_en": "fl oz",
+      "type": "volume",
+      "ml": 29.6,
+      "g": null
+    },
+    {
+      "id": "oz",
+      "name": "oz",
+      "plural": "oz",
+      "name_en": "oz",
+      "type": "weight",
+      "ml": null,
+      "g": 28.35
+    },
+    {
+      "id": "lb",
+      "name": "lb",
+      "plural": "lb",
+      "name_en": "lb",
+      "type": "weight",
+      "ml": null,
+      "g": 453.6
+    },
+    {
+      "id": "piece",
+      "name": "stk",
+      "plural": "stk",
+      "name_en": "piece",
+      "type": "count",
+      "ml": null,
+      "g": null
+    },
+    {
+      "id": "clove",
+      "name": "fedd",
+      "plural": "fedd",
+      "name_en": "clove",
+      "type": "count",
+      "ml": null,
+      "g": null
+    },
+    {
+      "id": "slice",
+      "name": "skive",
+      "plural": "skiver",
+      "name_en": "slice",
+      "type": "count",
+      "ml": null,
+      "g": null
+    },
+    {
+      "id": "leaf",
+      "name": "blad",
+      "plural": "blader",
+      "name_en": "leaf",
+      "type": "count",
+      "ml": null,
+      "g": null
+    },
+    {
+      "id": "sprig",
+      "name": "kvist",
+      "plural": "kvister",
+      "name_en": "sprig",
+      "type": "count",
+      "ml": null,
+      "g": null
+    },
+    {
+      "id": "stalk",
+      "name": "stilk",
+      "plural": "stilker",
+      "name_en": "stalk",
+      "type": "count",
+      "ml": null,
+      "g": null
+    },
+    {
+      "id": "bunch",
+      "name": "bunt",
+      "plural": "bunter",
+      "name_en": "bunch",
+      "type": "count",
+      "ml": null,
+      "g": null
+    },
+    {
+      "id": "can",
+      "name": "boks",
+      "plural": "bokser",
+      "name_en": "can",
+      "type": "count",
+      "ml": null,
+      "g": null
+    },
+    {
+      "id": "package",
+      "name": "pakke",
+      "plural": "pakker",
+      "name_en": "package",
+      "type": "count",
+      "ml": null,
+      "g": null
+    },
+    {
+      "id": "sheet",
+      "name": "plate",
+      "plural": "plater",
+      "name_en": "sheet",
+      "type": "count",
+      "ml": null,
+      "g": null
+    },
+    {
+      "id": "cm",
+      "name": "cm",
+      "plural": "cm",
+      "name_en": "cm",
+      "type": "count",
+      "ml": null,
+      "g": null
+    },
+    {
+      "id": "pinch",
+      "name": "klype",
+      "plural": "klyper",
+      "name_en": "pinch",
+      "type": "approx",
+      "ml": 0.5,
+      "g": null
+    },
+    {
+      "id": "dash",
+      "name": "skvett",
+      "plural": "skvetter",
+      "name_en": "dash",
+      "type": "approx",
+      "ml": 5,
+      "g": null
+    },
+    {
+      "id": "handful",
+      "name": "håndfull",
+      "plural": "håndfuller",
+      "name_en": "handful",
+      "type": "approx",
+      "ml": null,
+      "g": null
+    },
+    {
+      "id": "drop",
+      "name": "dråpe",
+      "plural": "dråper",
+      "name_en": "drop",
+      "type": "approx",
+      "ml": 0.05,
+      "g": null
+    }
+  ]
+}

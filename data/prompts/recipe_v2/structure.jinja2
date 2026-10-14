@@ -1,0 +1,47 @@
+ROLE: You turn a recipe written as text into a recipe graph (recipe model v2).
+
+TASK: Read the SOURCE RECIPE at the bottom and return it as JSON in the given schema. Do not invent or drop ingredients, and keep the amounts. Write every human-readable field (component names, ingredient names, prep_style, short, text, done_when, chef_note) in the same language as the source recipe.
+
+THE MODEL
+- components: the parts you can point at on the plate ("Kjøttsaus", "Ris", "Pommes frites"). One component is fine for a simple dish. Ids c1, c2, ...
+- ingredients: one line per ingredient per moment it is added. Ids i1, i2, ...
+- steps: the method as a graph. Ids s1, s2, ...
+
+RULES FOR INGREDIENT LINES
+1. Every ingredient line is used by exactly one step. If the same ingredient is added at two different moments (garlic in the marinade and in the sauce, pecorino in the egg mix and on top), make two lines with their own amounts that add up to the total.
+2. component_id is the component the line ends up in.
+3. unit must be an id from the UNIT CATALOG. Countable items use "piece". Convert units to the closest catalog id (e.g. "ss" -> "tbsp", "ts" -> "tsp", "stk" -> "piece", "fedd" -> "clove").
+4. amount must be greater than 0. Leave out amount and unit only for lines like "salt og pepper etter smak"; then prep_style must say "etter smak" (or "to taste").
+5. prep_style is the state the ingredient should be in: "finhakket", "i terninger", "romtemperert". Leave it out if there is none.
+
+RULES FOR STEPS
+6. One step is one action in one place with one "done when". Start a new step when the food moves to a new container or when there is a waiting time. Example: "Brown the mince, add the onion and fry for 4 minutes" is two steps if the onion needs its own check; "Melt butter, stir in flour" in the same pan with one check is one step.
+7. text is the instruction with placeholders: write {i3} where ingredient line i3 is added. The renderer replaces {i3} with amount and name ("3 egg"), scaled to the servings. Every {iN} in the text must be in the same step's uses, and every line in uses should appear once in the text. Refer to results of earlier steps in plain words ("the sauce", "kjøttsausen"). Never write {s3} or any other placeholder.
+8. No time words in text: do not write "mens", "i mellomtiden", "while the ... ", "meanwhile". The app adds those from its plan. Technique inside one step is fine ("spe med melk mens du visper").
+9. uses: the ingredient lines added in this step.
+10. after: the steps whose food goes into this step. Only list a step in after when its result is physically used here. Do NOT use after for "wait until the oven is hot"; that wait is derived from setup steps (rule 13).
+11. The graph has exactly one final step: the last serve step. Every other step must lead to it through after, directly or via other steps. Exception: steps that only prepare equipment and use no ingredients (preheat the oven, line the tin) have empty uses and empty after and nothing points to them.
+12. phase: decided in this order. (a) The step uses heat, or the food rests right after heat (resting meat, cooling a cake, letting rice steam) -> "cook". This includes heating equipment. (b) The last touch right before eating (slice the finished roast, toss the salad in dressing, assemble, plate) -> "serve". (c) Everything else (cut, measure, mix, marinate, shape) -> "prep". A step whose method is a heat method MUST be "cook".
+13. setup: true for steps that heat equipment: preheat the oven, light the grill, bring water to the boil. Every other step whose first equipment is the same automatically waits for the setup step. So the step that bakes in the oven must have "oven" as equipment[0]. If the boiling water itself goes into the food (pasta cooked in it), the cooking step also lists the setup step in after.
+14. method: one id from the METHOD CATALOG. Heat methods are marked [heat].
+15. equipment: ids from the EQUIPMENT CATALOG. The first item is where the action happens (the pot, the pan, the oven, the bowl). Further items are tools (whisk, grater, tongs). Cutting board and knife may be left out. Use [] when nothing is needed.
+16. temp_c and mode describe equipment[0]. Oven modes: fan, top_bottom, grill_element. Hob and grill modes: low, medium_low, medium, medium_high, high, off. Leave them out when they do not apply.
+17. active_minutes is hands-on time. passive_minutes is time the food stands by itself (in the oven, simmering without attention, marinating, rising, resting). Simmering where you stir now and then is mostly passive.
+18. holds_minutes: how long the result of the step can wait before it is used without getting worse. Set it for things that deteriorate: cut fruit and vegetables, salad with dressing, fried or grilled food, cooked pasta and rice, whipped cream. Leave it out when there is no practical limit.
+19. done_when: a sensory checkpoint ("Golden and crisp at the edges", "No streaks of flour"). Always for cook steps, and for prep steps where it helps.
+20. short: a verb-first name of at most 4 words ("Brun kjøttdeigen").
+21. component_id of a step is the component it builds. A setup step belongs to the component of the first step that uses that equipment.
+
+CATALOGS
+METHOD CATALOG: {{ methods }}
+EQUIPMENT CATALOG: {{ equipment }}
+UNIT CATALOG: {{ units }}
+
+EXAMPLES OF CORRECT OUTPUT
+{% for ex in examples %}
+Example {{ loop.index }}: {{ ex.title }}
+{{ ex.json }}
+{% endfor %}
+
+SOURCE RECIPE
+{{ source }}
