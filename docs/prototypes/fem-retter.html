@@ -1,0 +1,1096 @@
+<title>Fem retter, seks visninger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600&family=GFS+Didot&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: kokebokark. Tekst i en smal spalte, visningene får full bredde opp til 1080px. Prep = oliven, cook = glo, serve = Egeerhavet. */
+:root{
+  --paper:#F9FAF6; --card:#FFFFFF; --ink:#1D2320; --muted:#5C655F; --line:#DCE0D5; --line-strong:#B9BFB2; --soft:#EFF1EA;
+  --prep:#5A7A3A; --prep-bg:#E5ECD8; --prep-ink:#2E441E;
+  --cook:#C2561C; --cook-bg:#F7E2D3; --cook-ink:#76300E;
+  --serve:#1E5A8A; --serve-bg:#DFEAF4; --serve-ink:#123A5B;
+  --now:#B3261E;
+  --l1:#1E5A8A; --l2:#5A7A3A; --l3:#8B4C7C; --l4:#B0841A;
+  --display:"GFS Didot","Didot","Bodoni 72",Georgia,serif;
+  --body:"Commissioner",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#141714; --card:#1C201C; --ink:#E9ECE4; --muted:#A2AA9F; --line:#2F352F; --line-strong:#4A5249; --soft:#232823;
+  --prep:#93B86C; --prep-bg:#25321C; --prep-ink:#CFE2B6;
+  --cook:#E8814A; --cook-bg:#3A2316; --cook-ink:#F5C8A8;
+  --serve:#7DB4E4; --serve-bg:#17293A; --serve-ink:#C4DDF3;
+  --now:#FF7A6E;
+  --l1:#7DB4E4; --l2:#93B86C; --l3:#D08DC0; --l4:#E0B755;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --paper:#141714; --card:#1C201C; --ink:#E9ECE4; --muted:#A2AA9F; --line:#2F352F; --line-strong:#4A5249; --soft:#232823;
+  --prep:#93B86C; --prep-bg:#25321C; --prep-ink:#CFE2B6;
+  --cook:#E8814A; --cook-bg:#3A2316; --cook-ink:#F5C8A8;
+  --serve:#7DB4E4; --serve-bg:#17293A; --serve-ink:#C4DDF3;
+  --now:#FF7A6E;
+  --l1:#7DB4E4; --l2:#93B86C; --l3:#D08DC0; --l4:#E0B755;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font:16px/1.6 var(--body);padding-inline:16px;padding-block:0 80px}
+.wrap{max-width:1080px;margin:0 auto}
+.prose{max-width:66ch}
+h1,h2,h3,h4{text-wrap:balance;margin:0}
+small,.muted{color:var(--muted)}
+.prep{--ph:var(--prep);--ph-bg:var(--prep-bg);--ph-ink:var(--prep-ink)}
+.cook{--ph:var(--cook);--ph-bg:var(--cook-bg);--ph-ink:var(--cook-ink)}
+.serve{--ph:var(--serve);--ph-bg:var(--serve-bg);--ph-ink:var(--serve-ink)}
+.eyebrow{font:500 12px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+button,.btn{font:inherit;font-size:14px;padding:7px 14px;border-radius:8px;border:1px solid var(--line-strong);background:var(--card);color:var(--ink);cursor:pointer}
+button:hover{border-color:var(--ink)}
+button:focus-visible,input:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--serve);outline-offset:2px}
+button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+a{color:var(--serve)}
+
+/* hero */
+.hero{padding-block:56px 28px;display:grid;gap:18px}
+.hero h1{font:400 clamp(44px,8vw,84px)/1 var(--display);letter-spacing:-.01em}
+.hero .gr{font:400 22px/1.2 var(--display);color:var(--muted);margin:0}
+.lede{margin:0;font-size:17px}
+.lede code{font:14px var(--mono);background:var(--soft);padding:1px 5px;border-radius:4px}
+
+/* sticky bar */
+.bar-top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);border-bottom:1px solid var(--line);padding-block:10px;display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center}
+.seg{display:inline-flex;gap:6px;align-items:center}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:14px;height:10px;border-radius:2px;background:var(--ph)}
+.sw.pas{background:repeating-linear-gradient(135deg,var(--cook) 0 2px,transparent 2px 5px);border:1px solid var(--cook)}
+
+/* index */
+.index{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin:22px 0 0;padding:0;list-style:none}
+.index a{display:block;text-decoration:none;color:inherit;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--card)}
+.index a:hover{border-color:var(--line-strong)}
+.index b{display:block;font-weight:600}
+.index small{display:block;font-size:13px}
+.tally{font:13px/1.6 var(--mono);color:var(--muted);margin:14px 0 0}
+
+/* recipe */
+.recipe{border-top:1px solid var(--line);padding-block:56px 8px;display:grid;gap:18px;scroll-margin-top:60px}
+.rhead{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:end}
+.rno{font:400 64px/0.9 var(--display);color:var(--line-strong)}
+.greek{font:400 clamp(30px,5vw,44px)/1.05 var(--display);margin:0}
+
+.tr{margin:0;color:var(--muted);font-style:italic;font-size:14px}
+.why{margin:0}
+.facts{display:flex;flex-wrap:wrap;gap:10px 28px;margin:0}
+.facts div{display:grid}
+.facts span{font:500 11px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.facts b{font-weight:500;font-variant-numeric:tabular-nums}
+details{border:1px solid var(--line);border-radius:10px;background:var(--card)}
+summary{cursor:pointer;padding:10px 16px;font-weight:500;font-size:14px}
+details>div,details>pre{padding:0 16px 16px}
+.ilist{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.ilist h4{font:500 12px/1.4 var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:4px}
+.ilist ul{margin:0;padding:0;list-style:none;font-size:14px}
+.ilist li{padding:2px 0}
+.amt{font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
+pre.json{margin:0;font:12px/1.5 var(--mono);overflow:auto;max-height:420px;white-space:pre}
+
+/* view block */
+.view{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;display:grid;gap:16px;min-width:0}
+.view-h{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline}
+.view-h h3{font:400 26px/1.1 var(--display)}
+.view-b{min-width:0}
+
+/* 2 tidslinje */
+.tl-scroll{overflow-x:auto}
+.tl{--lw:180px;position:relative;min-width:640px;padding-top:16px}
+.tl-row{display:grid;grid-template-columns:var(--lw) 1fr;align-items:center;min-height:34px;border-bottom:1px solid var(--soft)}
+.tl-l{display:grid;font-size:13px;line-height:1.25;padding-right:10px}
+.tl-l small{font-size:11.5px}
+.tl-t{position:relative;height:16px}
+.bar{position:absolute;top:0;height:16px;border-radius:3px;display:block}
+.bar.a{background:var(--ph)}
+.bar.p{background:repeating-linear-gradient(135deg,var(--ph) 0 2px,transparent 2px 6px);border:1px solid var(--ph)}
+.tl-axis{display:grid;grid-template-columns:var(--lw) 1fr;height:22px}
+.tl-axis div{position:relative;font:11px var(--mono);color:var(--muted)}
+.tl-axis span{position:absolute;top:4px;transform:translateX(-50%)}
+.nowline{position:absolute;top:0;bottom:22px;width:2px;background:var(--now);left:calc(var(--lw) + (100% - var(--lw)) * var(--x));pointer-events:none}
+.tl-ctl{display:grid;gap:8px}
+.tl-ctl label{display:flex;gap:12px;align-items:center;font-size:14px}
+.tl-ctl input{flex:1}
+.tl-status{font-size:14px;margin:0;min-height:3em}
+.tl-status b{font-weight:600}
+
+/* 3 baklengs */
+.back-top{display:flex;flex-wrap:wrap;gap:14px 36px;align-items:end}
+.back-top label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+.back-top input{font:500 22px var(--mono);padding:4px 8px;border:1px solid var(--line-strong);border-radius:8px;background:var(--card);color:var(--ink)}
+.start{display:grid}
+.start span{font-size:13px;color:var(--muted)}
+.start b{font:400 40px/1 var(--display)}
+.blist{list-style:none;margin:0;padding:0;display:grid}
+.blist li{display:grid;grid-template-columns:62px 14px 1fr;gap:12px;align-items:start;padding:8px 0;border-bottom:1px solid var(--soft)}
+.blist time{font:500 15px var(--mono);font-variant-numeric:tabular-nums;padding-top:1px}
+.blist .dot{width:12px;height:12px;border-radius:50%;background:var(--ph);margin-top:6px}
+.blist .txt{display:grid;font-size:15px}
+.blist .txt small{font-size:13px}
+.blist li.fin{border-bottom:0}
+.blist li.fin .dot{background:var(--ink)}
+.blist li.fin b{font-family:var(--display);font-size:20px;font-weight:400}
+
+/* 4 kort */
+.deck{display:grid;gap:12px;max-width:560px}
+.deck-top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:center;font-size:14px}
+.deck-top label{display:flex;gap:6px;align-items:center}
+.progress{display:flex;gap:3px}
+.progress i{flex:1;height:4px;border-radius:2px;background:var(--line)}
+.progress i.on{background:var(--ph)}
+.card{background:var(--ph-bg);color:var(--ph-ink);border-radius:16px;padding:22px;min-height:290px;display:flex;flex-direction:column;gap:12px}
+.card .meta{font:500 12px/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.card h4{font:400 32px/1.1 var(--display)}
+.card p{margin:0;font-size:18px;line-height:1.5}
+.card p b{font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips span{border:1px solid currentColor;border-radius:999px;padding:2px 10px;font-size:13px}
+.card .done{font-size:15px;border-top:1px solid currentColor;padding-top:10px;margin-top:auto}
+.card .done b{font-weight:600}
+.card-nav{display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap}
+.timers{display:flex;flex-wrap:wrap;gap:8px}
+.timers button{font-family:var(--mono);font-size:13px}
+.timers button.fin{background:var(--now);color:#fff;border-color:var(--now)}
+
+/* 1 mise en place */
+.bowls{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.bowl{border:1.5px solid var(--ph);background:var(--card);border-radius:14px 14px 90px 90px / 14px 14px 46px 46px;padding:14px 18px 26px;display:grid;gap:6px;align-content:start}
+.bowl-h{display:grid;line-height:1.25}
+.bowl-h b{font-weight:600;color:var(--ph-ink)}
+.bowl-h small{font-size:12px}
+.bowl ul,.tasks{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.bowl label,.tasks label{display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:start;font-size:14px;cursor:pointer;line-height:1.35}
+.bowl input,.tasks input{margin:2px 0 0;accent-color:var(--ph)}
+.bowl em,.tasks em{display:block;font-style:normal;font-size:12px;color:var(--muted)}
+label:has(input:checked) span{text-decoration:line-through;color:var(--muted)}
+.tasks-wrap{display:grid;gap:8px}
+.tasks li{border:1px dashed var(--line-strong);border-radius:10px;padding:8px 12px}
+.mise-foot{display:grid;gap:6px}
+.meter{height:8px;border-radius:4px;background:var(--soft);overflow:hidden}
+.meter span{display:block;height:100%;background:var(--prep);transition:width .2s}
+.mise-foot p{margin:0;font-size:14px}
+
+/* 7 ingredienser i steget */
+.isteps{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.isteps li{display:grid;grid-template-columns:32px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid var(--soft)}
+.isteps .num{width:28px;height:28px;border-radius:50%;background:var(--ph-bg);color:var(--ph-ink);display:grid;place-items:center;font:500 13px var(--mono)}
+.isteps .meta{font-size:12.5px;color:var(--muted)}
+.isteps .meta .tag{font:500 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--ph-ink);background:var(--ph-bg);border-radius:4px;padding:1px 6px;margin-right:6px}
+.isteps p{margin:2px 0 0;font-size:16px;line-height:1.8}
+.isteps p.done{font-size:13.5px;line-height:1.5;color:var(--muted)}
+.pill{background:var(--prep-bg);color:var(--prep-ink);border-radius:6px;padding:2px 7px;font-weight:500;white-space:nowrap;font-size:14.5px}
+.ref{font-style:italic;border-bottom:1px dotted currentColor}
+
+/* 6 metrokart */
+.m-scroll{overflow-x:auto}
+.m-svg{display:block}
+.m-line{fill:none;stroke-width:5;stroke-linecap:round}
+.m-st circle{fill:var(--card);stroke:var(--ph);stroke-width:3}
+.m-st.cook circle{fill:var(--ph)}
+.m-st.serve circle{fill:var(--ink);stroke:var(--ink)}
+.m-lbl{font:11.5px var(--body);fill:var(--ink)}
+.m-lane{font:500 11px var(--mono);fill:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.m-note{font-size:13px;margin:0}
+.m-guide{fill:none;stroke:var(--line-strong);stroke-width:1;stroke-dasharray:2 4}
+.m-tick{fill:none;stroke:var(--line);stroke-width:1;stroke-dasharray:1 3}
+.m-ax{font:500 10.5px var(--mono);fill:var(--muted)}
+.m-phase{fill:none;stroke:var(--line-strong);stroke-width:1;stroke-dasharray:5 5}
+.m-zone{font:500 10.5px var(--mono);fill:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.bar.h{background:transparent;border:1.5px dotted var(--ph);border-left:0;border-radius:0 3px 3px 0;opacity:.7}
+.bar.h.over{border-color:var(--now);opacity:1}
+.tl-me{--ph:var(--ink)}
+.bar.me{background:var(--ink)}
+.bar.free{background:var(--soft);border:1px dashed var(--line-strong);display:grid;place-items:center;overflow:hidden}
+.bar.free b{font:500 10px var(--mono);color:var(--muted);white-space:nowrap}
+.phline{position:absolute;top:0;bottom:22px;width:0;border-left:1px dashed var(--line-strong);left:calc(var(--lw) + (100% - var(--lw)) * var(--x));pointer-events:none}
+.phline span{position:absolute;top:0;left:4px;font:500 9.5px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em;background:var(--card);padding:0 2px}
+
+/* 11 tabell */
+.tscroll{overflow-x:auto}
+.tgrid{display:grid;gap:3px;font-size:13px}
+.tc{padding:6px 9px;border-radius:4px;line-height:1.3}
+.th{background:var(--soft);font-style:italic}
+.ti{background:var(--soft);display:grid;align-content:center}
+.ti small{font-size:11.5px}
+.ti b{font:500 12.5px var(--mono)}
+.ts{background:var(--ph-bg);color:var(--ph-ink);display:grid;align-content:center;justify-items:center;text-align:center;gap:2px}
+.ts b{font-weight:600}
+.ts small{color:inherit;font-size:11.5px;font-family:var(--mono)}
+
+.gallery-page{border-top:1px solid var(--line);padding-block:48px 8px;display:grid;gap:10px}
+.gallery-page h2{font:400 clamp(32px,5vw,46px)/1.1 var(--display)}
+.gal-note{margin:0;color:var(--muted);max-width:66ch}
+.gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 20px;margin-top:10px}
+.gallery figure{margin:0;display:grid;gap:6px}
+.gallery a{color:inherit;text-decoration:none;display:grid;gap:6px}
+.gallery img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px;background:var(--soft)}
+.gallery figcaption{display:flex;gap:8px;align-items:flex-start;font-size:14.5px;line-height:1.3}
+.gallery figcaption b{flex:none;background:var(--prep);color:var(--paper);border-radius:4px;padding:0 6px;font:500 12px/1.6 var(--mono)}
+.gallery figure.last{grid-column:2}
+.gal-src{margin:6px 0 0;font-size:12px;color:var(--muted)}
+@media (max-width:640px){.gallery{grid-template-columns:repeat(2,minmax(0,1fr))}.gallery figure.last{grid-column:auto}}
+.notes{border-top:1px solid var(--line);margin-top:56px;padding-top:28px;font-size:14px}
+.notes ul{padding-left:18px}
+
+@media (max-width:640px){
+  .tl{--lw:130px}
+  .rno{font-size:44px}
+  .card h4{font-size:26px}
+  .card p{font-size:17px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.print-only{display:none}
+.pcards{display:grid;grid-template-columns:1fr 1fr;gap:3mm}
+.pcard{background:var(--ph-bg);color:var(--ph-ink);border-radius:8px;padding:8px 10px;display:grid;gap:3px;align-content:start;font-size:12.5px;line-height:1.4}
+.pcard .meta{font:500 9.5px/1.3 var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.pcard h4{font:400 17px/1.15 var(--display)}
+.pcard p{margin:0}
+.pcard p b{font-weight:600}
+.pcard .done{border-top:1px solid currentColor;padding-top:3px;margin-top:2px;font-size:11.5px}
+.pcard .tm{font-family:var(--mono);font-size:10.5px}
+@page{size:A4;margin:13mm 12mm 14mm}
+@media print{
+  :root{--paper:#fff;--card:#fff;--ink:#1D2320;--muted:#58605A;--line:#D3D7CC;--line-strong:#A9B0A2;--soft:#F0F2EC;
+    --prep:#5A7A3A;--prep-bg:#E5ECD8;--prep-ink:#2E441E;--cook:#C2561C;--cook-bg:#F7E2D3;--cook-ink:#76300E;
+    --serve:#1E5A8A;--serve-bg:#DFEAF4;--serve-ink:#123A5B;--l1:#1E5A8A;--l2:#5A7A3A;--l3:#8B4C7C;--l4:#B0841A;color-scheme:light}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{font-size:12.5px;line-height:1.45;padding:0}
+  .wrap{max-width:none}
+  .no-print,.bar-top,.lede,details.json,.mise-foot,.tl-ctl,.nowline,.screen-only{display:none!important}
+  .print-only{display:block}
+  .hero{padding-block:30mm 8mm}
+  .index{grid-template-columns:1fr 1fr}
+  .index a{border-color:var(--line)}
+  .recipe{break-before:page;padding-block:0;gap:9px;border-top:0}
+  .rno{font-size:44px}
+  .greek{font-size:30px}
+  .view{padding:10px 12px;gap:8px;border-radius:8px}
+  .view-h h3{font-size:19px}
+  details{border:0}
+  summary{padding:0 0 4px;list-style:none;font:500 10px/1.4 var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+  summary::-webkit-details-marker{display:none}
+  details>div{padding:0}
+  .ilist{grid-template-columns:repeat(3,1fr);gap:8px}
+  .ilist ul{font-size:11.5px}
+  .tl{min-width:0;--lw:140px}
+  .tl-row{min-height:22px}
+  .tl-l{font-size:11px}
+  .tl-l small{font-size:9.5px}
+  .tl-t,.bar{height:11px}
+  .tgrid{min-width:0!important;font-size:11px}
+  .tc{padding:3px 6px}
+  .m-svg{max-width:100%;height:auto}
+  .blist li{padding:4px 0;break-inside:avoid}
+  .blist .txt{font-size:12.5px}
+  .start b{font-size:30px}
+  .back-top input{font-size:16px;border:0;padding:0}
+  .bowls{grid-template-columns:repeat(3,1fr);gap:8px}
+  .bowl{padding:8px 12px 18px;break-inside:avoid}
+  .bowl label,.tasks label{font-size:12px}
+  .tasks li{padding:5px 10px}
+  .isteps li{padding:5px 0;break-inside:avoid}
+  .isteps p{font-size:12.5px;line-height:1.65}
+  .pill{font-size:11.5px;padding:1px 5px}
+  .pcard,.tl-row,.ts,.ti{break-inside:avoid}
+  .notes{break-before:page;margin-top:0}
+  .gallery-page{break-before:page;border-top:0;padding-block:0;gap:6px}
+  .gallery-page h2{font-size:34px}
+  .gal-note{font-size:12.5px}
+  .gallery{gap:6mm 5mm;margin-top:4mm}
+  .gallery img{aspect-ratio:auto;height:52mm;border-radius:4px}
+  .gallery figcaption{font-size:12px}
+  .gallery figcaption b{font-size:10.5px;color:#fff}
+  .gal-src{font-size:9px;margin-top:5mm}
+  a{color:inherit;text-decoration:none}
+  .amt{font-family:inherit;font-size:inherit}
+  .back-top input::-webkit-calendar-picker-indicator{display:none}
+  .blist li{grid-template-columns:44px 10px 1fr;gap:8px;padding:2px 0}
+  .blist time{font-size:12px}
+  .blist .dot{width:9px;height:9px;margin-top:5px}
+  .blist .txt{display:block}
+  .blist .txt b{font-weight:600;margin-right:8px}
+  .blist .txt small{font-size:11px}
+  .blist li.fin b{font-size:15px}
+  .pcard{font-size:11.5px;padding:6px 9px}
+  .pcard h4{font-size:15px}
+  .pcards{gap:2.5mm}
+  .facts{gap:4px 22px}
+  .rhead{gap:12px}
+  .lists-all details[open]{display:none}
+  .view{break-inside:avoid}
+  .view~.view{break-before:page}
+  .ti b{font-family:inherit;font-size:inherit}
+}
+
+/* sammenligningssiden */
+.bar-top{display:grid;gap:8px}
+.seg{flex-wrap:wrap;gap:6px}
+.seg .lbl{font:500 11px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);min-width:64px}
+.seg button{padding:5px 11px;font-size:13.5px}
+#subnav{display:flex;flex-wrap:wrap;gap:10px 28px;align-items:center;padding-block:14px 4px}
+.variant{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:14px}
+.ilist .whole{background:var(--soft);border-radius:8px;padding:10px 12px}
+.eqline{font:500 12.5px/1.4 var(--mono)}
+.recipe:first-child{border-top:0;padding-top:28px}
+@media print{#subnav,.variant{display:none!important}.recipe:first-child{padding-top:0}}
+.phline.r span{left:auto;right:4px}
+.ts b,.ti span{overflow-wrap:anywhere}
+.bowl-h{grid-template-columns:auto 1fr;column-gap:8px;align-items:baseline}
+.bowl-h small{grid-column:1/-1}
+.bno{font:500 11px var(--mono);color:var(--paper);background:var(--ph);border-radius:50%;width:20px;height:20px;display:inline-grid;place-items:center}
+.eqchips label{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--line-strong);border-radius:999px;padding:3px 10px;font-size:13px;cursor:pointer}
+.eqchips input{margin:0;accent-color:var(--ink)}
+.chips.eqchips span{border:0;padding:0;font-size:inherit}
+.view-b>.tasks-wrap,.view-b>.eyebrow{margin-top:12px}
+.view-b>.tasks-wrap:first-child{margin-top:0}
+.while{font-weight:600;color:var(--ink)}
+
+/* ingrediensbilder og mise-typer */
+:root{--c-kjott:#B5523B;--c-meieri:#3E6FA3;--c-gront:#4F7A35;--c-krydder:#B0841A;--c-korn:#9A7B4F;--c-annet:#6E756F}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--c-kjott:#E08A72;--c-meieri:#86B3E3;--c-gront:#93B86C;--c-krydder:#E0B755;--c-korn:#CDB08A;--c-annet:#A2AA9F}}
+:root[data-theme="dark"]{--c-kjott:#E08A72;--c-meieri:#86B3E3;--c-gront:#93B86C;--c-krydder:#E0B755;--c-korn:#CDB08A;--c-annet:#A2AA9F}
+.ing-img{position:relative;flex:none;width:var(--s);height:var(--s);border-radius:28%;display:inline-grid;place-items:center;background:color-mix(in srgb,var(--cc) 16%,var(--card));border:1px solid color-mix(in srgb,var(--cc) 45%,transparent);color:var(--cc);font:600 calc(var(--s)*.42)/1 var(--body)}
+.ing-img img{width:100%;height:100%;object-fit:contain;border-radius:inherit}
+.ing-img .mark{position:absolute;right:-4px;bottom:-4px;width:16px;height:16px;border-radius:50%;background:var(--card);border:1px solid var(--line-strong);display:grid;place-items:center;color:var(--ink)}
+.ing-img .mark svg{width:10px;height:10px}
+.cat-kjøtt{--cc:var(--c-kjott)}.cat-meieri{--cc:var(--c-meieri)}.cat-grønt{--cc:var(--c-gront)}.cat-krydder{--cc:var(--c-krydder)}.cat-korn{--cc:var(--c-korn)}.cat-annet,.ing-img.more{--cc:var(--c-annet)}
+.ing-img.more{font-size:12px}
+.bowlpic{justify-self:center;width:118px;height:118px;border-radius:50%;border:1.5px solid var(--line-strong);background:radial-gradient(circle,var(--soft) 0 58%,transparent 59%);display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:4px;padding:18px;margin:4px 0}
+.bowlpic.one{padding:0}
+.fetches{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.fetch{display:grid;grid-template-columns:18px auto 1fr;gap:10px;align-items:center;border:1px solid var(--line);border-left:3px solid var(--ph);border-radius:0 10px 10px 0;padding:8px 10px;background:var(--card);cursor:pointer;font-size:14px}
+.fetch input{margin:0;accent-color:var(--ph)}
+.fetch .ft{display:grid;line-height:1.3}
+.fetch .ft small{font-size:11.5px}
+.fetch .bno{width:18px;height:18px;font-size:10px}
+.fetch:has(input:checked) b{text-decoration:line-through;color:var(--muted)}
+.eyebrow.okt{font-size:12.5px;color:var(--ink);border-top:1px solid var(--line);padding-top:10px;margin-top:6px}
+.benchrow{display:grid;gap:6px}
+.benchitems{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;font-size:13px}
+.benchitems>span{display:inline-flex;gap:6px;align-items:center}
+@media print{.bowlpic{width:90px;height:90px;padding:12px}}
+</style>
+
+<div class="wrap">
+  <header class="hero" style="padding-block:44px 20px">
+    <p class="eyebrow">Sammenligning av oppskriftsvisninger</p>
+    <h1 style="font-size:clamp(38px,6.5vw,68px)">Fem retter, seks visninger</h1>
+    <p class="lede prose">Fem retter med ulik oppbygning, tegnet på seks måter fra de samme dataene. Velg en rett for å se alle visningene av den, eller velg en visning og «Alle» retter for å se hvordan visningen takler ulike oppskrifter.</p>
+  </header>
+
+  <div class="bar-top" id="nav" role="region" aria-label="Velg rett og visning"></div>
+  <div id="subnav"></div>
+
+  <main id="recipes"></main>
+
+  <section class="notes prose">
+    <h3 style="font:400 24px var(--display);margin-bottom:8px">Forutsetninger</h3>
+    <ul>
+      <li>Mengdene er til 4 porsjoner og kan skaleres. Brownies er én form og skaleres ikke.</li>
+      <li>Én kokk gjør ett aktivt steg om gangen. Ovnen kan bare brukes til én ting om gangen.</li>
+      <li>Fasene følger regelen: varme er cook, siste hånd før spising er serve, alt annet er prep.</li>
+      <li>Tre planer. «Rolig» (standard) gjør prep før kokingen, men legger prep i frie perioder der bare varmen jobber, som når lasagnen står i ovnen. Prep havner aldri mellom to aktive cook-steg. «Prep først» gjør alt som ikke trenger varme før første cook-steg. «Akkurat i tide» legger hvert steg så sent som mulig.</li>
+      <li>Stegtekstene sier hva du gjør, ikke når. «Mens lasagnen står» lages fra planen.</li>
+      <li>En ingrediens som brukes på to tidspunkter, står som to linjer. Pecorinoen i carbonaraen er 60 g i eggeblandingen og 20 g på toppen. Ingredienslisten summerer dem.</li>
+      <li>Mise en place-brettet viser mise-elementer: det som står klart når prep er ferdig og helles i på samme tidspunkt. Brettet deler dem i tre: <b>skåler</b> (flere ingredienser eller forarbeid), <b>ta frem</b> (én ingrediens rett fra pakken) og <b>på benken</b> (salt, pepper og olje som står alene, og alt «etter smak»).</li>
+      <li>Ingrediensbildene er ikke generert ennå. Brettet viser forbokstav i kategorifargen, og bytter til bildet når pantryet har det. Merket nederst til høyre viser forarbeid: kniv for kuttet, rivjern for revet.</li>
+      <li>«Baklengs fra servering» er parkert og er ikke med her.</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+/* ---------- datamodell ---------- */
+const I=(id,c,name,amount,unit,prep,pl,x)=>Object.assign({id,c,name,amount,unit:unit||null,prep:prep||null,pl:pl||null},x||{});
+const S=o=>Object.assign({phase:'prep',uses:[],after:[],waits:[],active:0,passive:0},o);
+const OVN={id:'ovn',name:'Ovnen'};
+const OVEN=(temp,mode,text)=>S({id:'ov',c:'ovn',phase:'cook',setup:true,short:'Forvarm ovnen',text,active:1,passive:14,eq:'oven',temp,mode,done:'Ovnen har nådd temperaturen'});
+
+const carbonara=()=>({id:'r1',no:1,title:'Spaghetti carbonara',base:4,
+ why:'Kort rett der alt avgjøres de siste to minuttene. Tester ingrediensformer (egg og eggeplommer), en ingrediens som deles mellom to steg (pecorino) og et biprodukt som brukes senere (pastavannet).',
+ comps:[{id:'c1',name:'Carbonara'}],
+ ings:[
+  I('sp','c1','spaghetti',400,'g'),
+  I('gu','c1','guanciale eller pancetta',150,'g','i staver'),
+  I('eg','c1','egg',2,'stk','hele','egg'),
+  I('ey','c1','eggeplomme',4,'stk',null,'eggeplommer',{buy:['egg','egg',1,'eggehvite','eggehviter']}),
+  I('pe1','c1','pecorino romano',60,'g','finrevet'),
+  I('pe2','c1','pecorino romano',20,'g','finrevet'),
+  I('pp','c1','sort pepper',1.5,'ts','grovkvernet'),
+  I('sa','c1','salt',1,'ss','til kokevannet')],
+ steps:[
+  S({id:'w',c:'c1',phase:'cook',setup:true,short:'Kok opp vann',text:'Kok opp 3 liter vann i en stor kjele og tilsett {sa}.',uses:['sa'],active:1,passive:10,eq:'large_pot',mode:'high',done:'Vannet fosskoker',out:'det kokende vannet',hold:30}),
+  S({id:'e2',tools:['bowl','whisk','grater'],c:'c1',short:'Pisk eggeblandingen',text:'Pisk sammen {eg}, {ey}, {pe1} og {pp} i en bolle til en tykk krem.',uses:['eg','ey','pe1','pp'],active:3,done:'Tykk og jevn, uten klumper av ost',out:'eggeblandingen',hold:30}),
+  S({id:'g1',c:'c1',short:'Skjær guancialen',text:'Skjær {gu} i staver på ca. 1 cm.',uses:['gu'],active:3,out:'guancialen',hold:120}),
+  S({id:'g2',c:'c1',phase:'cook',short:'Stek guancialen',text:'Legg {g1} i en kald, stor stekepanne og stek på middels varme til fettet har smeltet. Ta panna av varmen.',after:['g1'],active:4,passive:6,eq:'frying_pan',mode:'medium',done:'Bitene er gylne og sprø, og det ligger blankt fett i panna',out:'guancialen og fettet',hold:10}),
+  S({id:'p1',c:'c1',phase:'cook',short:'Kok pastaen',text:'Kok {sp} i {w}, ett minutt kortere enn pakken sier.',uses:['sp'],after:['w'],active:1,passive:9,timer:9,eq:'large_pot',mode:'high',done:'Al dente: myk ytterst, fast kjerne',out:'pastaen',hold:1}),
+  S({id:'p2',tools:['ladle','colander'],c:'c1',phase:'cook',short:'Ta av pastavann',text:'Øs opp 2 dl av vannet pastaen har kokt i, og hell av resten.',after:['p1'],active:1,out:'pastavannet',hold:10}),
+  S({id:'t1',c:'c1',phase:'cook',short:'Vend pastaen i fettet',text:'Ha {p1} rett over i panna med {g2}. Vend den rundt utenfor varmen i et halvt minutt, så panna kjøler seg litt.',after:['p2','g2'],active:1,eq:'frying_pan',mode:'off',out:'pastaen'}),
+  S({id:'t2',tools:['tongs'],c:'c1',phase:'cook',short:'Rør inn eggeblandingen',text:'Hell {e2} over {t1} og rør raskt. Spe med {p2}, en skvett om gangen, til sausen er kremet.',after:['t1','e2'],active:2,eq:'frying_pan',mode:'off',done:'Sausen er blank og legger seg rundt pastaen. Blir den kornete, var panna for varm',out:'carbonaraen',hold:2}),
+  S({id:'end',c:'c1',phase:'serve',short:'Server',text:'Server {t2} med en gang, toppet med {pe2} og mer pepper.',uses:['pe2'],after:['t2'],active:1})]});
+
+const brownies=()=>({id:'r2',no:2,title:'Brownies',base:1,fixed:'Én form på 20 × 20 cm, 16 biter. Skaleres ikke.',
+ why:'Baking med nøyaktige gram og én lang steking, og retten tabellmetoden ble laget for. Smeltingen er cook, så prep kommer både før og etter varme.',
+ comps:[{id:'c1',name:'Brownies'},OVN],
+ ings:[
+  I('sm','c1','smør',150,'g','i terninger'),
+  I('sj','c1','mørk sjokolade',200,'g','grovhakket'),
+  I('su','c1','sukker',250,'g'),
+  I('va','c1','vaniljesukker',1,'ts'),
+  I('eg','c1','egg',3,'stk',null,'egg'),
+  I('me','c1','hvetemel',100,'g'),
+  I('ka','c1','kakao',30,'g'),
+  I('sa','c1','salt',0.25,'ts'),
+  I('no','c1','valnøtter',75,'g','grovhakket')],
+ steps:[
+  OVEN(175,'top_bottom','Sett ovnen på 175 °C over- og undervarme, med rist midt i ovnen.'),
+  S({id:'f0',tools:['form_20x20'],c:'c1',short:'Kle formen',text:'Kle en form på 20 × 20 cm med bakepapir.',active:2,hold:1440}),
+  S({id:'d1',tools:['sieve','bowl'],c:'c1',short:'Sikt det tørre',text:'Sikt sammen {me}, {ka} og {sa} i en bolle.',uses:['me','ka','sa'],active:2,out:'melblandingen',hold:1440}),
+  S({id:'n1',c:'c1',short:'Hakk nøttene',text:'Grovhakk {no}.',uses:['no'],active:2,out:'nøttene',hold:1440}),
+  S({id:'s1',c:'c1',phase:'cook',short:'Smelt smør og sjokolade',text:'Smelt {sm} og {sj} i en kjele på lav varme. Rør til blandingen er blank, ta den av varmen og la den kjøle seg i 5 minutter.',uses:['sm','sj'],active:5,passive:5,eq:'saucepan',mode:'low',done:'Blank og jevn, og lunken når du kjenner på kjelen',out:'sjokoladesmøret',hold:20}),
+  S({id:'s2',tools:['whisk'],c:'c1',short:'Pisk inn sukker og egg',text:'Pisk {su} og {va} inn i {s1}. Pisk så inn {eg}, ett om gangen.',uses:['su','va','eg'],after:['s1'],active:4,done:'Røren er blank og slipper kanten av kjelen',out:'sjokoladerøren',hold:15}),
+  S({id:'s3',tools:['spatula'],c:'c1',short:'Vend inn det tørre',text:'Vend {d1} og {n1} inn i {s2} med en slikkepott. Stopp så fort du ikke ser mer mel.',after:['s2','d1','n1'],active:2,done:'Ingen melstriper. Ikke rør mer enn nødvendig',out:'røren',hold:10}),
+  S({id:'s4',tools:['form_20x20'],c:'c1',phase:'cook',short:'Stek',text:'Hell {s3} i formen og stek midt i ovnen i 25–30 minutter.',after:['s3'],waits:['ov','f0'],active:2,passive:27,timer:25,eq:'oven',temp:175,mode:'top_bottom',excl:true,done:'Skorpen er matt og sprukket. En pinne i midten kommer ut med fuktige smuler, ikke flytende røre',out:'brownien'}),
+  S({id:'s5',tools:['rack'],c:'c1',phase:'cook',short:'Avkjøl',text:'La {s4} bli helt kald i formen, minst 1 time.',after:['s4'],passive:60,timer:60,hold:2880,done:'Formen er kald på undersiden',out:'brownien'}),
+  S({id:'end',c:'c1',phase:'serve',short:'Skjær i biter',text:'Løft {s5} ut etter bakepapiret og skjær i 16 biter.',after:['s5'],active:3})]});
+
+const tikka=()=>({id:'r3',no:3,title:'Kylling tikka masala med ris',base:4,
+ why:'Marinaden skal stå minst en time og tåler et døgn. Mange krydder i små mål, og hvitløk, ingefær og krydder deles mellom marinade og saus.',
+ comps:[{id:'c1',name:'Tikka masala'},{id:'ri',name:'Ris'},OVN],
+ ings:[
+  I('ky','c1','kyllinglårfilet',700,'g','biter à 3 cm'),
+  I('yo','c1','gresk yoghurt',1.5,'dl'),
+  I('si','c1','sitron',0.5,'stk','saften'),
+  I('hv1','c1','hvitløk',2,'fedd','finrevet'),
+  I('hv2','c1','hvitløk',3,'fedd','finrevet'),
+  I('in1','c1','ingefær',2,'cm','finrevet'),
+  I('in2','c1','ingefær',2,'cm','finrevet'),
+  I('gm1','c1','garam masala',1,'ss'),
+  I('gm2','c1','garam masala',1,'ss'),
+  I('pa1','c1','paprikapulver',1,'ts'),
+  I('pa2','c1','paprikapulver',1,'ts'),
+  I('gu','c1','gurkemeie',1,'ts'),
+  I('sp','c1','malt spisskummen',2,'ts'),
+  I('ch','c1','chilipulver',0.5,'ts'),
+  I('sa1','c1','salt',0.5,'ts'),
+  I('sa2','c1','salt',1,'ts'),
+  I('lo','c1','løk',1,'stk','finhakket','løk'),
+  I('sm','c1','smør',2,'ss'),
+  I('ol','c1','nøytral olje',1,'ss'),
+  I('tp','c1','tomatpuré',1,'ss'),
+  I('to','c1','hermetiske tomater',400,'g','knuste'),
+  I('fl','c1','kremfløte',2,'dl'),
+  I('sk','c1','sukker',1,'ts'),
+  I('ko','c1','frisk koriander',1,'håndfull','grovhakket'),
+  I('rr','ri','basmatiris',3,'dl'),
+  I('va','ri','vann',4.5,'dl'),
+  I('rs','ri','salt',0.5,'ts')],
+ steps:[
+  OVEN(250,'grill','Sett ovnen på 250 °C grillelement, med rist øverst.'),
+  S({id:'m1',tools:['bowl','grater'],c:'c1',short:'Rør marinaden',text:'Rør sammen {yo}, {hv1}, {in1}, {gm1}, {pa1}, {gu}, saften av {si} og {sa1}.',uses:['yo','hv1','in1','gm1','pa1','gu','si','sa1'],active:4,out:'marinaden',hold:60}),
+  S({id:'m2',c:'c1',short:'Mariner kyllingen',text:'Skjær {ky} i biter på 3 cm og vend dem i {m1}. Sett kaldt.',uses:['ky'],after:['m1'],active:6,passive:60,hold:1380,timer:60,done:'Minst 1 time, gjerne over natten',out:'kyllingen'}),
+  S({id:'s1',c:'c1',short:'Hakk løken',text:'Finhakk {lo}.',uses:['lo'],active:3,out:'løken',hold:120}),
+  S({id:'s0',tools:['small_bowl'],c:'c1',short:'Bland krydderet',text:'Bland {gm2}, {sp}, {pa2}, {ch} og {sa2} i en liten skål.',uses:['gm2','sp','pa2','ch','sa2'],active:2,out:'krydderblandingen',hold:1440}),
+  S({id:'k1',c:'c1',short:'Hakk korianderen',text:'Grovhakk {ko}.',uses:['ko'],active:1,out:'korianderen',hold:60}),
+  S({id:'r1',tools:['sieve'],c:'ri',short:'Skyll risen',text:'Skyll {rr} i kaldt vann til vannet er nesten klart.',uses:['rr'],active:2,done:'Vannet er nesten klart',out:'risen',hold:60}),
+  S({id:'m3',tools:['baking_tray','rack'],c:'c1',phase:'cook',short:'Grill kyllingen',text:'Legg {m2} på en rist over et stekebrett og grill øverst i ovnen i 10–12 minutter. Snu bitene halvveis.',after:['m2'],waits:['ov'],active:3,passive:9,timer:11,eq:'oven',temp:250,mode:'grill',excl:true,done:'Svidde kanter, og 75 °C i kjernen',out:'kyllingen',hold:15}),
+  S({id:'s2',c:'c1',phase:'cook',short:'Fres løken',text:'Smelt {sm} med {ol} i en vid kjele på middels varme. Fres {s1} til den er myk.',uses:['sm','ol'],after:['s1'],active:8,eq:'wide_pot',mode:'medium',done:'Myk og gyllen i kantene, ikke brun',out:'løken'}),
+  S({id:'s3',c:'c1',phase:'cook',short:'Fres krydderet',text:'Tilsett {hv2} og {in2} og fres i ett minutt. Rør inn {s0} og {tp} og fres i ett minutt til.',uses:['hv2','in2','tp'],after:['s2','s0'],active:2,eq:'wide_pot',mode:'medium',done:'Det lukter sterkt av krydder, og bunnen er så vidt tørr',out:'krydderbasen'}),
+  S({id:'s4',c:'c1',phase:'cook',short:'Kok sausen',text:'Ha i {to}, {fl} og {sk}. La sausen småkoke uten lokk i 15 minutter, og rør av og til.',uses:['to','fl','sk'],after:['s3'],active:2,passive:13,timer:15,eq:'wide_pot',mode:'low',done:'Tykk nok til å dekke baksiden av en skje',out:'sausen',hold:30}),
+  S({id:'s5',c:'c1',phase:'cook',short:'Kyllingen i sausen',text:'Vend {m3} inn i {s4} og la det trekke på lav varme i 5 minutter.',after:['s4','m3'],active:1,passive:4,eq:'wide_pot',mode:'low',out:'tikka masalaen',hold:20}),
+  S({id:'r2',c:'ri',phase:'cook',short:'Kok risen',text:'Kok opp {r1} med {va} og {rs} under lokk. Skru ned til laveste varme og la den stå i 12 minutter.',uses:['va','rs'],after:['r1'],active:3,passive:12,timer:12,eq:'saucepan',mode:'low',done:'Alt vannet er trukket inn',out:'risen'}),
+  S({id:'r3',c:'ri',phase:'cook',short:'La risen dampe',text:'Ta kjelen av platen og la {r2} stå under lokk i 10 minutter.',after:['r2'],passive:10,timer:10,hold:20,out:'risen'}),
+  S({id:'end',c:'c1',phase:'serve',short:'Server',text:'Luft {r3} med en gaffel. Server {s5} over risen, toppet med {k1}.',after:['s5','r3','k1'],active:3})]});
+
+const lasagne=()=>({id:'r4',no:4,title:'Lasagne',base:4,
+ why:'Komponentene møtes i formen, ikke på tallerkenen, og fortsetter som én ting i ovnen. Fasene kommer som cook, prep, cook, serve. Den grønne salaten viser forskjellen på planstrategiene: lages den først, eller mens lasagnen står i ovnen?',
+ comps:[{id:'ks',name:'Kjøttsaus'},{id:'hs',name:'Hvit saus'},{id:'la',name:'Lasagne'},{id:'sl',name:'Grønn salat'},OVN],
+ ings:[
+  I('kd','ks','kjøttdeig av storfe',400,'g'),
+  I('lo','ks','løk',1,'stk','finhakket','løk'),
+  I('gr','ks','gulrot',1,'stk','finrevet','gulrøtter'),
+  I('hv','ks','hvitløk',2,'fedd','finhakket'),
+  I('ol','ks','olivenolje',1,'ss'),
+  I('tp','ks','tomatpuré',2,'ss'),
+  I('to','ks','hermetiske tomater',400,'g','hakkede'),
+  I('bu','ks','oksebuljong',2,'dl'),
+  I('or','ks','tørket oregano',1,'ts'),
+  I('sa','ks','salt og pepper',null,null,'etter smak'),
+  I('sm','hs','smør',40,'g'),
+  I('me','hs','hvetemel',40,'g'),
+  I('ml','hs','helmelk',6,'dl'),
+  I('mu','hs','revet muskat',1,'klype'),
+  I('hsa','hs','salt',0.5,'ts'),
+  I('pl','la','lasagneplater',9,'stk',null,'lasagneplater'),
+  I('os','la','revet ost',150,'g'),
+  I('pa','la','parmesan',30,'g','finrevet'),
+  I('gs','sl','hjertesalat',1,'stk','revet i biter','hjertesalater'),
+  I('ag','sl','agurk',0.5,'stk','tynne skiver'),
+  I('ct','sl','cherrytomater',150,'g','delt i to'),
+  I('do','sl','olivenolje',3,'ss'),
+  I('de','sl','rødvinseddik',1,'ss'),
+  I('ds','sl','dijonsennep',1,'ts'),
+  I('dh','sl','honning',0.5,'ts'),
+  I('dp','sl','salt og pepper',null,null,'etter smak')],
+ steps:[
+  OVEN(200,'top_bottom','Sett ovnen på 200 °C over- og undervarme, med rist midt i ovnen.'),
+  S({id:'k1',tools:['grater'],c:'ks',short:'Kutt grønnsakene',text:'Finhakk {lo} og {hv}, og riv {gr} fint.',uses:['lo','hv','gr'],active:6,out:'grønnsakene',hold:120}),
+  S({id:'k2',c:'ks',phase:'cook',short:'Brun kjøttdeigen',text:'Varm {ol} i en gryte på høy varme og brun {kd} til den er smuldret.',uses:['ol','kd'],active:6,eq:'wide_pot',mode:'high',done:'Brun, ikke grå, og væsken har kokt bort',out:'kjøttdeigen'}),
+  S({id:'k3',c:'ks',phase:'cook',short:'Fres grønnsakene',text:'Skru ned til middels varme. Rør {k1} inn i {k2} og fres i 4 minutter. Rør inn {tp}.',uses:['tp'],after:['k2','k1'],active:5,eq:'wide_pot',mode:'medium',done:'Løken er blank og myk',out:'kjøttbasen'}),
+  S({id:'k4',c:'ks',phase:'cook',short:'Kok kjøttsausen',text:'Ha i {to}, {bu}, {or} og {sa}. Småkok uten lokk i 30 minutter.',uses:['to','bu','or','sa'],after:['k3'],active:2,passive:28,timer:30,eq:'wide_pot',mode:'low',done:'Tykk, uten væske som renner fra når du drar en skje gjennom',out:'kjøttsausen',hold:2880}),
+  S({id:'h1',c:'hs',phase:'cook',short:'Lag smørbolle',text:'Smelt {sm} i en kjele på middels varme. Rør inn {me} og la det frese i ett minutt.',uses:['sm','me'],active:3,eq:'saucepan',mode:'medium',done:'Skummer lett og lukter kjeks, uten å ta farge',out:'smørbollen'}),
+  S({id:'h2',tools:['whisk'],c:'hs',phase:'cook',short:'Spe med melk',text:'Spe {h1} med {ml}, litt om gangen, mens du visper. La sausen småkoke i 5 minutter, og smak til med {mu} og {hsa}.',uses:['ml','mu','hsa'],after:['h1'],active:8,eq:'saucepan',mode:'medium',done:'Tykk som yoghurt og helt glatt',out:'den hvite sausen',hold:60}),
+  S({id:'l1',tools:['form_20x30'],c:'la',short:'Legg lagvis',text:'Smør en form på ca. 20 × 30 cm. Legg tre lag med {k4}, {h2} og {pl}, og avslutt med hvit saus. Strø over {os} og {pa}.',uses:['pl','os','pa'],after:['k4','h2'],active:8,done:'Det øverste laget med hvit saus dekker platene helt',out:'lasagnen',hold:1440}),
+  S({id:'l3',c:'la',phase:'cook',short:'Stek lasagnen',text:'Stek {l1} midt i ovnen i 35–40 minutter.',after:['l1'],waits:['ov'],active:1,passive:37,timer:35,eq:'oven',temp:200,mode:'top_bottom',excl:true,done:'Osten er gyllen og bobler i kantene, og platene er myke når du stikker i dem',out:'lasagnen'}),
+  S({id:'l4',c:'la',phase:'cook',short:'Hvil',text:'La {l3} hvile i 10 minutter før du skjærer i den.',after:['l3'],passive:10,timer:10,hold:20,out:'lasagnen'}),
+  S({id:'g1',tools:['salad_spinner'],c:'sl',short:'Skyll salaten',text:'Skyll {gs}, riv bladene i biter og slyng dem tørre.',uses:['gs'],active:4,hold:120,out:'salatbladene'}),
+  S({id:'g2',c:'sl',short:'Kutt agurk og tomat',text:'Skjær {ag} i tynne skiver og del {ct} i to.',uses:['ag','ct'],active:4,hold:120,out:'agurk og tomat'}),
+  S({id:'g3',tools:['jar'],c:'sl',short:'Rist dressingen',text:'Rist sammen {do}, {de}, {ds}, {dh} og {dp} i et glass med lokk.',uses:['do','de','ds','dh','dp'],active:2,hold:1440,out:'dressingen'}),
+  S({id:'g4',c:'sl',phase:'serve',short:'Vend salaten',text:'Vend {g1} og {g2} med {g3}.',after:['g1','g2','g3'],active:1,hold:10,done:'Bladene er blanke, ikke slappe',out:'salaten'}),
+  S({id:'end',c:'la',phase:'serve',short:'Server',text:'Skjær {l4} i stykker og server med {g4}.',after:['l4','g4'],active:2})]});
+
+const burger=home=>({id:'r5',no:5,title:'Hamburger med '+(home?'hjemmelaget brød':'kjøpt brød')+' og pommes frites',base:4,variant:home,
+ why:'Tre spor som møtes ved servering. Brødet kan lages selv eller kjøpes, og brød og pommes frites skal i samme ovn.',
+ comps:[...(home?[{id:'br',name:'Hamburgerbrød'}]:[]),{id:'bu',name:'Burger'},{id:'pf',name:'Pommes frites'},OVN],
+ ings:[
+  ...(home?[
+  I('bm','br','hvetemel',300,'g'),
+  I('gj','br','tørrgjær',1.5,'ts'),
+  I('bs','br','sukker',1,'ss'),
+  I('bsa','br','salt',1,'ts'),
+  I('mk','br','melk',1.75,'dl','lunken'),
+  I('bsm','br','smør',30,'g','mykt'),
+  I('be','br','egg',1,'stk','sammenpisket, til pensling','egg'),
+  I('se','br','sesamfrø',1,'ss')]:[
+  I('kb','bu','hamburgerbrød',4,'stk',null,'hamburgerbrød')]),
+  I('kd','bu','kjøttdeig av storfe',600,'g','14–18 % fett'),
+  I('sp','bu','salt og pepper',null,null,'etter smak'),
+  I('bo','bu','nøytral olje',1,'ss'),
+  I('ch','bu','cheddar',4,'skive'),
+  I('to','bu','tomat',1,'stk','skiver','tomater'),
+  I('rl','bu','rødløk',0.5,'stk','tynne ringer','rødløk'),
+  I('hs','bu','hjertesalat',4,'blad'),
+  I('sy','bu','sylteagurk',8,'skive'),
+  I('ma','bu','majones',3,'ss'),
+  I('ke','bu','ketchup',1,'ss'),
+  I('sn','bu','sennep',1,'ts'),
+  I('po','pf','poteter',800,'g','melne, med skall'),
+  I('fo','pf','rapsolje',2,'ss'),
+  I('fs','pf','flaksalt',1,'ts')],
+ steps:[
+  OVEN(220,'fan','Sett ovnen på 220 °C varmluft, med rist midt i ovnen.'),
+  ...(home?[
+  S({id:'b1',tools:['bowl'],c:'br',short:'Elt deigen',text:'Bland {bm}, {gj}, {bs} og {bsa} i en bolle. Tilsett {mk} og {bsm}, og elt i 8 minutter.',uses:['bm','gj','bs','bsa','mk','bsm'],active:10,done:'Deigen er glatt og slipper bollen',out:'deigen'}),
+  S({id:'b2',c:'br',short:'Hev',text:'Dekk til {b1} og la den heve til dobbel størrelse.',after:['b1'],passive:60,timer:60,hold:30,done:'Dobbel størrelse. Et fingertrykk fjærer sakte tilbake',out:'deigen'}),
+  S({id:'b3',tools:['baking_tray'],c:'br',short:'Form brødene',text:'Del {b2} i like store emner, ett per burger. Trill runde boller og trykk dem litt flate på et brett med bakepapir.',after:['b2'],active:5,out:'brødene'}),
+  S({id:'b4',c:'br',short:'Etterhev',text:'La {b3} etterheve under et klede.',after:['b3'],passive:30,timer:30,hold:15,done:'Tydelig større, og de dirrer litt når du rister brettet',out:'brødene'}),
+  S({id:'b5',tools:['brush'],c:'br',short:'Pensle',text:'Pensle {b4} med {be} og strø over {se}.',uses:['be','se'],after:['b4'],active:2,out:'brødene',hold:10}),
+  S({id:'b6',c:'br',phase:'cook',short:'Stek brødene',text:'Stek {b5} midt i ovnen i 12–14 minutter.',after:['b5'],waits:['ov'],active:1,passive:12,timer:12,eq:'oven',temp:220,mode:'fan',excl:true,done:'Gylne, og de låter hule når du banker under',out:'brødene'}),
+  S({id:'b7',tools:['rack'],c:'br',phase:'cook',short:'Avkjøl',text:'La {b6} avkjøles på rist.',after:['b6'],passive:20,hold:1440,out:'brødene'})]:[]),
+  S({id:'f1',c:'pf',short:'Skjær potetene',text:'Skjær {po} i staver på 1 cm, med skallet på. Legg dem i kaldt vann.',uses:['po'],active:8,out:'potetstavene',hold:120}),
+  S({id:'f2',tools:['baking_tray'],c:'pf',short:'Tørk og olje',text:'Tørk {f1} godt. Vend dem i {fo} og {fs} på et stekebrett, og legg dem i ett lag.',uses:['fo','fs'],after:['f1'],active:4,out:'potetene',hold:30}),
+  S({id:'f3',c:'pf',phase:'cook',short:'Stek pommes frites',text:'Stek {f2} i ovnen i 30–35 minutter. Vend dem etter 20 minutter.',after:['f2'],waits:['ov'],active:2,passive:31,timer:20,eq:'oven',temp:220,mode:'fan',excl:true,done:'Gylne og sprø i kantene, myke inni',out:'pommes fritesen',hold:8}),
+  S({id:'u1',c:'bu',short:'Form burgerne',text:'Del {kd} i like store deler, én per person. Form flate kaker som er litt bredere enn brødene, og trykk en grop i midten.',uses:['kd'],active:5,out:'burgerne',hold:60}),
+  S({id:'t1',c:'bu',short:'Skjær toppingen',text:'Skjær {to} i skiver og {rl} i tynne ringer. Skyll {hs}.',uses:['to','rl','hs'],active:4,out:'toppingen',hold:60}),
+  S({id:'d1',tools:['small_bowl'],c:'bu',short:'Rør dressingen',text:'Rør sammen {ma}, {ke} og {sn}.',uses:['ma','ke','sn'],active:2,out:'dressingen',hold:1440}),
+  S({id:'u2',tools:['turner'],c:'bu',phase:'cook',short:'Stek burgerne',text:'Varm {bo} i en stekepanne på høy varme. Krydre {u1} med {sp} og stek dem i 3 minutter på hver side.',uses:['bo','sp'],after:['u1'],active:7,eq:'frying_pan',mode:'high',done:'Mørk stekeskorpe. 60 °C i kjernen for rosa, 70 °C for gjennomstekt',out:'burgerne'}),
+  S({id:'u3',c:'bu',phase:'cook',short:'Smelt osten',text:'Legg {ch} på {u2}, skru av varmen og legg på lokk i ett minutt.',uses:['ch'],after:['u2'],active:2,eq:'frying_pan',mode:'off',done:'Osten har lagt seg rundt kanten',out:'cheeseburgerne',hold:5}),
+  S(home?{id:'b8',c:'bu',phase:'serve',short:'Del brødene',text:'Del {b7} i to.',after:['b7'],active:1,out:'brødene'}:{id:'b8',c:'bu',phase:'serve',short:'Del brødene',text:'Del {kb} i to.',uses:['kb'],active:1,out:'brødene'}),
+  S({id:'end',c:'bu',phase:'serve',short:'Bygg burgerne',text:'Smør {d1} på {b8}. Bygg med {t1}, {u3} og {sy}, og server med {f3}.',uses:['sy'],after:['b8','d1','t1','u3','f3'],active:4})]});
+
+
+/* Mise-elementer: det som står klart når prep er ferdig, og helles i på samme tidspunkt.
+   items = ingredienslinjene i elementet (mise_element_id på linjen). used = steget det brukes i. */
+const MISE={
+ r1:[
+  {id:'me1',name:'Salt til kokevannet',items:['sa'],used:'w'},
+  {id:'me2',name:'Spaghetti',items:['sp'],used:'p1'},
+  {id:'me3',name:'Guanciale',items:['gu'],used:'g2'},
+  {id:'me4',name:'Eggeblandingen',items:['eg','ey','pe1','pp'],used:'t2'},
+  {id:'me5',name:'Pecorino til servering',items:['pe2'],used:'end'}],
+ r2:[
+  {id:'me1',name:'Smør og sjokolade',items:['sm','sj'],used:'s1'},
+  {id:'me2',name:'Sukker og vanilje',items:['su','va'],used:'s2'},
+  {id:'me3',name:'Egg',items:['eg'],used:'s2'},
+  {id:'me4',name:'Det tørre',items:['me','ka','sa','no'],used:'s3'}],
+ r3:[
+  {id:'me1',name:'Marinert kylling',items:['ky','yo','si','hv1','in1','gm1','pa1','gu','sa1'],used:'m3'},
+  {id:'me2',name:'Smør og olje',items:['sm','ol'],used:'s2'},
+  {id:'me3',name:'Løken',items:['lo'],used:'s2'},
+  {id:'me4',name:'Hvitløk og ingefær',items:['hv2','in2'],used:'s3'},
+  {id:'me5',name:'Krydder og tomatpuré',items:['gm2','sp','pa2','ch','sa2','tp'],used:'s3'},
+  {id:'me6',name:'Tomater, fløte og sukker',items:['to','fl','sk'],used:'s4'},
+  {id:'me7',name:'Ris, vann og salt',items:['rr','va','rs'],used:'r2'},
+  {id:'me8',name:'Koriander',items:['ko'],used:'end'}],
+ r4:[
+  {id:'me1',name:'Kjøttdeig',items:['kd'],used:'k2'},
+  {id:'me2',name:'Løk, gulrot og hvitløk',items:['lo','gr','hv'],used:'k3'},
+  {id:'me3',name:'Tomatpuré',items:['tp'],used:'k3'},
+  {id:'me0',name:'Olje',items:['ol'],used:'k2'},
+  {id:'me4',name:'Tomater, buljong og oregano',items:['to','bu','or','sa'],used:'k4'},
+  {id:'me5',name:'Smør',items:['sm'],used:'h1'},
+  {id:'me6',name:'Mel',items:['me'],used:'h1'},
+  {id:'me7',name:'Melk',items:['ml'],used:'h2'},
+  {id:'me8',name:'Muskat og salt',items:['mu','hsa'],used:'h2'},
+  {id:'me9',name:'Lasagneplater',items:['pl'],used:'l1'},
+  {id:'me10',name:'Ost',items:['os','pa'],used:'l1'},
+  {id:'me11',name:'Salat, agurk og tomat',items:['gs','ag','ct'],used:'g4'},
+  {id:'me12',name:'Dressing',items:['do','de','ds','dh','dp'],used:'g4'}],
+ r5:[
+  {id:'me1',name:'Det tørre til deigen',items:['bm','gj','bs','bsa'],used:'b1'},
+  {id:'me2',name:'Melk og smør',items:['mk','bsm'],used:'b1'},
+  {id:'me3',name:'Egg til pensling',items:['be'],used:'b5'},
+  {id:'me4',name:'Sesamfrø',items:['se'],used:'b5'},
+  {id:'me5',name:'Potetstaver med olje og salt',items:['po','fo','fs'],used:'f3'},
+  {id:'me0',name:'Olje',items:['bo'],used:'u2'},
+  {id:'me6',name:'Burgerne',items:['kd','sp'],used:'u2'},
+  {id:'me7',name:'Cheddar',items:['ch'],used:'u3'},
+  {id:'me8',name:'Dressing',items:['ma','ke','sn'],used:'end'},
+  {id:'me9',name:'Topping',items:['to','rl','hs','sy'],used:'end'}],
+ r5b:[
+  {id:'me1',name:'Hamburgerbrød',items:['kb'],used:'b8'},
+  {id:'me5',name:'Potetstaver med olje og salt',items:['po','fo','fs'],used:'f3'},
+  {id:'me0',name:'Olje',items:['bo'],used:'u2'},
+  {id:'me6',name:'Burgerne',items:['kd','sp'],used:'u2'},
+  {id:'me7',name:'Cheddar',items:['ch'],used:'u3'},
+  {id:'me8',name:'Dressing',items:['ma','ke','sn'],used:'end'},
+  {id:'me9',name:'Topping',items:['to','rl','hs','sy'],used:'end'}]};
+/* Basisvarer: is_staple på ingrediensen i pantryet. Simulert her med navn. */
+const STAPLES=new Set(['salt','flaksalt','sort pepper','salt og pepper','olivenolje','nøytral olje','rapsolje']);
+const RECIPES=[carbonara(),brownies(),tikka(),lasagne(),burger(true)];
+const ALT={r5:burger(false)};
+
+/* ---------- indekser, validering og planlegging ---------- */
+const state={serv:4,plan:'calm',dish:'r1',view:'all',alt:{},tl:{},cards:{},checks:{}};
+const isHeader=s=>!s.uses.length&&!s.after.length;
+function index(r){
+  r.ib=Object.fromEntries(r.ings.map(i=>[i.id,i]));
+  r.ings.forEach(i=>Object.defineProperty(i,'r',{value:r}));
+  r.steps.forEach(s=>{
+    s.use=s.uses.map(u=>{const[id,p]=String(u).split('@');return{id,p:p?+p:1};});
+    s.uses=s.use.map(u=>u.id);s.pm=Object.fromEntries(s.use.map(u=>[u.id,u.p]));});
+  r.sb=Object.fromEntries(r.steps.map(s=>[s.id,s]));
+  r.cb=Object.fromEntries(r.comps.map(c=>[c.id,c]));
+  r.mise=(MISE[r.id+(r.variant===false?'b':'')]||[]).map(e=>({...e}));
+  r.mise.forEach(e=>e.items.forEach(id=>{if(r.ib[id])r.ib[id].m=e.id;}));
+  r.ings.forEach(i=>{i.staple=STAPLES.has(i.name);});
+  r.steps.forEach(s=>{s.equipment=[...(s.eq?[s.eq]:[]),...(s.tools||[])];});
+}
+function validate(r){
+  const err=[],ids=new Set(),used={};
+  [...r.ings,...r.steps].forEach(x=>{if(ids.has(x.id))err.push('dupl '+x.id);ids.add(x.id);});
+  r.steps.forEach(s=>{
+    s.use.forEach(u=>{if(!r.ib[u.id])err.push(s.id+' uses '+u.id);used[u.id]=(used[u.id]||0)+u.p;});
+    [...s.after,...s.waits].forEach(a=>{if(!r.sb[a])err.push(s.id+' after '+a);});
+    (s.text.match(/\{(\w+)\}/g)||[]).forEach(m=>{const id=m.slice(1,-1);if(!r.ib[id]&&!r.sb[id])err.push(s.id+' text '+id);if(r.ib[id]&&!(id in s.pm))err.push(s.id+' nevner '+id+' uten uses');});
+    if(!r.cb[s.c])err.push(s.id+' comp '+s.c);
+  });
+  r.ings.forEach(i=>{if(Math.abs((used[i.id]||0)-1)>0.02)err.push(i.id+' brukt '+(used[i.id]||0));if(!r.cb[i.c])err.push(i.id+' comp '+i.c);});
+  /* Mise-elementer: hver linje unntatt basisvarer har et element, hvert element brukes, og linjene møtes før de brukes. */
+  const upstream=id=>{const seen=new Set();const go=x=>{if(seen.has(x))return;seen.add(x);(r.sb[x]?.after||[]).forEach(go);};go(id);return seen;};
+  const usedBy={};r.steps.forEach(s=>s.uses.forEach(u=>usedBy[u]=s.id));
+  r.ings.forEach(i=>{if(!i.m)err.push(i.id+' mangler mise-element');});
+  r.mise.forEach(e=>{if(!r.sb[e.used])err.push(e.id+' brukes i ukjent steg '+e.used);else{const up=upstream(e.used);
+    e.items.forEach(id=>{if(!r.ib[id])err.push(e.id+' ukjent linje '+id);else if(!up.has(usedBy[id]))err.push(e.id+': '+id+' når ikke '+e.used);});}});
+  const ns=r.steps.filter(s=>!isHeader(s)),refd=new Set(ns.flatMap(s=>s.after));
+  const roots=ns.filter(s=>!refd.has(s.id));if(roots.length!==1)err.push('røtter '+roots.map(s=>s.id));
+  return err;
+}
+/* Flytter et steg til første ledige plass. busy = kokkens aktive tid. eqb = utstyr som bare kan brukes til én ting om gangen. */
+function fit(busy,eqb,r,s){
+  for(let moved=true;moved;){moved=false;
+    if(s.active){const a=r+s.passive,b=a+s.active;for(const[x,y]of busy){if(a<y&&x<b){r=y-s.passive;moved=true;break;}}}
+    if(!moved&&s.excl){const a=r,b=r+s.active+s.passive;for(const[x,y]of(eqb[s.eq]||[])){if(a<y&&x<b){r=y;moved=true;break;}}}
+  }
+  return r;
+}
+/* Baklengs listeplanlegging. mode 'jit' = alt så sent som mulig. mode 'prep' = forhåndssteg ferdig før første cook-steg. */
+function schedule(r,mode){
+  const St=r.steps,by=r.sb,pre=s=>[...s.after,...s.waits],dur=s=>s.active+s.passive;
+  const succ={};St.forEach(s=>succ[s.id]=[]);St.forEach(s=>pre(s).forEach(a=>succ[a].push(s.id)));
+  const rr={};const rank=s=>rr[s.id]??=dur(s)+Math.max(0,...pre(s).map(a=>rank(by[a])));
+  St.forEach(rank);
+  const ah={};const ahead=s=>ah[s.id]??=(s.phase==='prep'&&pre(s).every(a=>ahead(by[a])));
+  St.forEach(ahead);
+  const R={},busy=[],eqb={};
+  /* Rolig: et prep-steg kan legges i en fri periode inne i kokingen (ingen aktive steg, plass til steget med 2 min slingring),
+     hvis resultatet brukes etter perioden. Ellers faller det tilbake til «prep først». */
+  const BUF=2;
+  const inWindow=(s,need,hi)=>{if(!s.active)return null;
+    const iv=busy.filter(([x])=>x<hi).sort((a,b)=>a[0]-b[0]),gaps=[];let cur=0;
+    for(const[x,y]of iv){if(x>cur)gaps.push([cur,x]);cur=Math.max(cur,y);}if(cur<hi)gaps.push([cur,hi]);
+    let best=null;for(const[x,y]of gaps){if(y-x<s.active+2*BUF)continue;const r0=Math.max(need,x+BUF-s.passive);
+      if(r0+s.passive+s.active<=y-BUF&&(s.hold==null||r0-need<=s.hold)&&(best==null||r0<best))best=r0;}
+    return best;};
+  const run=(ids,floor,win)=>{const left=new Set(ids);
+    while(left.size){
+      let best=null;
+      for(const id of left){
+        if(!succ[id].every(x=>R[x]))continue;const s=by[id];
+        /* Forhåndssteg legges før cook-start (floor), men aldri tidligere enn resultatet tåler å stå (hold). */
+        const need=Math.max(0,...succ[id].map(x=>R[x].e));let want=floor-s.passive;if(s.hold!=null)want=Math.min(want,need+s.hold);
+        let r0=fit(busy,eqb,Math.max(need,want),s);if(s.hold!=null&&r0-need>s.hold)r0=fit(busy,eqb,need,s);
+        if(win){const w=inWindow(s,need,win);if(w!=null&&w<r0)r0=w;}
+        if(!best||r0<best.r||(r0===best.r&&rr[id]>rr[best.id]))best={id,r:r0};
+      }
+      if(!best)throw new Error('Syklus i '+r.id);
+      const s=by[best.id];R[s.id]={r:best.r,e:best.r+dur(s)};
+      if(s.active)busy.push([best.r+s.passive,best.r+s.passive+s.active]);
+      if(s.excl)(eqb[s.eq]??=[]).push([best.r,best.r+dur(s)]);
+      left.delete(s.id);
+    }};
+  const late=St.filter(s=>!ah[s.id]).map(s=>s.id),early=St.filter(s=>ah[s.id]).map(s=>s.id);
+  run(late,0);
+  const cs=Math.max(0,...late.filter(id=>!by[id].setup).map(id=>R[id].e));
+  run(early,mode==='jit'?0:cs,mode==='calm'?cs:0);
+  const T=Math.max(...Object.values(R).map(x=>x.e)),plan={};
+  St.forEach(s=>{const st=T-R[s.id].e;plan[s.id]={start:st,aEnd:st+s.active,end:st+dur(s)};});
+  St.forEach(s=>{if(s.active||!s.after.length)return;const p=plan[s.id],ready=Math.max(...s.after.map(a=>plan[a].end));if(ready<p.start){p.start=p.aEnd=ready;}});
+  St.forEach(s=>{plan[s.id].use=succ[s.id].length?Math.min(...succ[s.id].map(x=>plan[x].start)):plan[s.id].end;});
+  const order=[...St].sort((a,b)=>plan[a.id].start-plan[b.id].start||plan[a.id].aEnd-plan[b.id].aEnd);
+  const act=St.filter(s=>s.active).map(s=>[plan[s.id].start,plan[s.id].aEnd]).sort((a,b)=>a[0]-b[0]);
+  const me=[];act.forEach(([x,y])=>{const l=me[me.length-1];if(l&&x<=l[1])l[1]=Math.max(l[1],y);else me.push([x,y]);});
+  const first=ph=>Math.min(T,...St.filter(s=>s.phase===ph&&!s.setup).map(s=>plan[s.id].start));
+  /* during = det passive cook-steget et prep-steg gjøres i ventetiden til («mens lasagnen står»). */
+  const c0=first('cook');
+  St.forEach(s=>{if(s.phase!=='prep')return;const p=plan[s.id];if(p.start<c0)return;
+    const w=St.filter(w=>w.phase==='cook'&&!w.setup&&w.passive>=8&&plan[w.id].aEnd<=p.start&&p.start<plan[w.id].end).sort((a,b)=>b.passive-a.passive)[0];
+    if(w)p.during=w.id;});
+  const over=St.filter(s=>s.hold!=null&&plan[s.id].use-plan[s.id].end>s.hold).map(s=>s.id);
+  return{plan,T,order,me,ahead:ah,over,cookStart:first('cook'),serveStart:first('serve'),A:St.reduce((n,s)=>n+s.active,0)};
+}
+[...RECIPES,...Object.values(ALT)].forEach(r=>{index(r);r.errors=validate(r);
+  r.plans={calm:schedule(r,'calm'),prep:schedule(r,'prep'),jit:schedule(r,'jit')};
+  Object.defineProperty(r,'sch',{get(){return r.plans[state.plan];}});
+  r.raw={title:r.title,servings:r.fixed?1:r.base,components:r.comps,ingredients:r.ings.map(({pl,...i})=>i),steps:r.steps.map(({use,pm,uses,...s})=>({...s,uses:use}))};});
+const cur=r=>state.alt[r.id]&&ALT[r.id]?ALT[r.id]:r;
+const R=id=>cur(RECIPES.find(r=>r.id===id));
+
+/* ---------- formatering ---------- */
+const F=r=>r.fixed?1:state.serv/r.base;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const UPL={kvist:'kvister',skive:'skiver',blad:'blader',klype:'klyper',håndfull:'håndfuller'};
+function frac(v){
+  const w=Math.floor(v+1e-9),rem=v-w;
+  const m=[[0,''],[0.25,'¼'],[1/3,'⅓'],[0.5,'½'],[2/3,'⅔'],[0.75,'¾'],[1,'']];
+  let best=m[0],d=9;m.forEach(x=>{const dd=Math.abs(rem-x[0]);if(dd<d){d=dd;best=x;}});
+  const whole=best[0]===1?w+1:w;return((whole?String(whole):'')+best[1])||'0';
+}
+function fmt(v,unit){
+  if(unit==='g'){const g=v>=100?Math.round(v/10)*10:Math.round(v/5)*5;return g+' g';}
+  const n=frac(v);if(!unit||unit==='stk')return n;
+  return n+' '+(v>1&&UPL[unit]?UPL[unit]:unit);
+}
+const qty=(i,p=1)=>i.amount*F(i.r)*p;
+const amtOf=(i,p=1)=>i.amount==null?'':fmt(qty(i,p),i.unit);
+const nameOf=(i,p=1)=>(i.unit==='stk'&&qty(i,p)>1&&i.pl)?i.pl:i.name;
+const labelOf=(i,p=1)=>{const a=amtOf(i,p);return a?a+' '+nameOf(i,p):nameOf(i,p);};
+const compName=(r,c)=>r.cb[c]?r.cb[c].name:c;
+const PH={prep:'Prep',cook:'Cook',serve:'Serve'};
+/* Fast utstyrskatalog (data/constraints/equipment.json i appen): id → navn og rolle. */
+const CAT={oven:['Ovn','koke'],saucepan:['Kjele','koke'],large_pot:['Stor kjele','koke'],wide_pot:['Vid gryte','koke'],frying_pan:['Stekepanne','koke'],
+ bowl:['Bolle','forberede'],small_bowl:['Liten skål','forberede'],whisk:['Visp','forberede'],grater:['Rivjern','forberede'],sieve:['Sil','forberede'],colander:['Dørslag','forberede'],brush:['Pensel','forberede'],
+ ladle:['Øse','koke'],tongs:['Tang','koke'],spatula:['Slikkepott','forberede'],turner:['Stekespade','koke'],baking_tray:['Stekebrett','koke'],form_20x20:['Form 20 × 20 cm','koke'],form_20x30:['Form 20 × 30 cm','koke'],
+ rack:['Rist','avlastning'],salad_spinner:['Salatslynge','forberede'],jar:['Glass med lokk','forberede']};
+const EQ=Object.fromEntries(Object.entries(CAT).map(([k,v])=>[k,v[0]]));
+const MODE={fan:'varmluft',top_bottom:'over- og undervarme',grill:'grillelement',low:'lav varme',medium:'middels varme',high:'høy varme',off:'av varmen'};
+const eqTxt=s=>!s.eq?'':EQ[s.eq]+(s.temp?' '+s.temp+' °C':'')+(s.mode?(s.temp?' ':', ')+MODE[s.mode]:'');
+function tpl(r,text,mode,s){
+  return esc(text).replace(/\{(\w+)\}/g,(m,id)=>{
+    const i=r.ib[id];
+    if(i){const t=esc(labelOf(i,s&&s.pm[id]||1));return mode==='pill'?`<span class="pill">${t}</span>`:`<b>${t}</b>`;}
+    const st=r.sb[id];if(st)return`<span class="ref">${esc(st.out||st.short.toLowerCase())}</span>`;
+    return m;});
+}
+/* Ingrediensbilde med reservekjede: form → ingrediens (i.img) → kategoriikon → forbokstav i kategorifarge.
+   Ingen bilder er generert ennå, så prototypen viser forbokstav. */
+const CATS=[['kjøtt',/kylling|svin|storfe|kjøttdeig|lam|guanciale|pancetta|biff|filet/],['meieri',/smør|melk|fløte|ost|pecorino|parmesan|cheddar|yoghurt|egg/],
+ ['grønt',/løk|hvitløk|gulrot|tomat|agurk|salat|koriander|persille|ingefær|sitron|potet|squash|aubergine|paprikapulver(?!)|rødløk/],
+ ['krydder',/salt|pepper|masala|paprika|gurkemeie|spisskummen|chili|oregano|muskat|vanilje|timian|rosmarin|sesam/],
+ ['korn',/spaghetti|pasta|lasagne|mel|ris|brød|gjær|kakao|sukker|honning|sjokolade|nøtter/],['annet',/./]];
+const catOf=i=>CATS.find(([c,re])=>re.test(i.name))[0];
+function ingImg(i,size,mark){
+  const c=catOf(i),src=i.form_img||i.img;
+  const inner=src?`<img src="${esc(src)}" alt="" width="${size}" height="${size}">`:`<span>${esc(i.name.charAt(0).toUpperCase())}</span>`;
+  return`<span class="ing-img cat-${c}" style="--s:${size}px" title="${esc(i.name)}">${inner}${mark?`<i class="mark">${MARKS[mark]}</i>`:''}</span>`;
+}
+/* Markør for kuttet tilstand, utledet fra prep_style eller handlingen i prep-steget. Ikke egne bilder per tilstand. */
+const MARKS={cut:'<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 10 L9 3 L10.5 4.5 L4 10 Z" fill="currentColor"/><rect x="1" y="9.2" width="3" height="1.6" rx=".6" fill="currentColor"/></svg>',
+ grate:'<svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2.5" y="1.5" width="7" height="9" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="5" cy="4.5" r=".7" fill="currentColor"/><circle cx="7" cy="6" r=".7" fill="currentColor"/><circle cx="5" cy="7.5" r=".7" fill="currentColor"/></svg>',
+ mix:'<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1 V6 M3.5 6 C3.5 9 8.5 9 8.5 6 Z" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>'};
+const markOf=(r,i,e)=>{const p=(i.prep||'').toLowerCase();
+  if(/revet|finrevet|rasp/.test(p))return'grate';
+  if(/hakket|skiver|staver|terninger|biter|delt|båter|ringer|strimler|revet i biter/.test(p))return'cut';
+  return null;};
+const whileTxt=(r,s)=>{const w=r.sch.plan[s.id].during;if(!w)return'';const ws=r.sb[w];return'mens '+(ws.out||ws.short.toLowerCase())+' står';};
+const hm=m=>m>=120?(Math.round(m/6)/10+' t').replace('.',','):m+' min';
+const flex=s=>s.passive>=30&&s.hold&&s.hold>=30&&s.hold<=1500;
+function durTxt(s){const p=[];if(s.active)p.push(s.active+' min');if(s.passive)p.push((s.active?'+ ':'')+(flex(s)?'minst ':'')+hm(s.passive)+' står'+(flex(s)?', maks '+hm(s.passive+s.hold):''));return p.join(' ');}
+
+/* ---------- ingredienslister ---------- */
+function agg(r){
+  const m=new Map();
+  r.ings.forEach(i=>{const b=i.buy,key=b?b[0]:i.name,e=m.get(key)||{name:key,pl:null,u:{},rest:[],bare:false};
+    if(b)e.pl=b[1];else if(i.pl)e.pl=i.pl;
+    if(i.amount==null)e.bare=true;else{const k=i.unit||'stk';e.u[k]=(e.u[k]||0)+qty(i)*(b?b[2]:1);if(b)e.rest.push([qty(i),b[3],b[4]]);}
+    m.set(key,e);});
+  return[...m.values()];
+}
+function vIngredients(r){
+  const whole=agg(r).map(e=>{const us=Object.entries(e.u);const a=us.map(([u,v])=>fmt(v,u)).join(' + ');
+    const many=us.length===1&&us[0][0]==='stk'&&us[0][1]>1;
+    const rest=e.rest.map(([n,s1,pl])=>`${frac(n)} ${n>1?pl:s1} til overs`).join(', ');
+    return`<li>${a?`<span class="amt">${esc(a)}</span> `:''}${esc(many&&e.pl?e.pl:e.name)}${rest?` <span class="muted">(${esc(rest)})</span>`:''}</li>`;}).join('');
+  const per=r.comps.map(c=>{const is=r.ings.filter(i=>i.c===c.id);if(!is.length)return'';const seen=new Set();
+    return`<div><h4>${esc(c.name)}</h4><ul>${is.filter(i=>{const k=i.name+'|'+i.unit;if(seen.has(k))return false;seen.add(k);return true;}).map(i=>{const tw=is.filter(j=>j.name===i.name&&j.unit===i.unit);const v=tw.reduce((n,j)=>n+(j.amount==null?0:qty(j)),0);
+      const a=i.amount==null?'':fmt(v,i.unit);const nm=(i.unit==='stk'&&v>1&&i.pl)?i.pl:i.name;return`<li>${a?`<span class="amt">${esc(a)}</span> `:''}${esc(nm)}${i.prep?`, <span class="muted">${esc(i.prep)}</span>`:''}${tw.length>1?` <span class="muted">(${tw.length} omganger)</span>`:''}</li>`;}).join('')}</ul></div>`;}).join('');
+  return`<div class="ilist"><div class="whole"><h4>Hele retten</h4><ul>${whole}</ul></div>${per}</div>`;
+}
+
+/* ---------- visning 2: tidslinje ---------- */
+function vTimeline(r){
+  const{plan,T,order,me,cookStart,serveStart}=r.sch;const pct=m=>(m/T*100).toFixed(3)+'%';
+  const m=state.tl[r.id]??Math.round(T*0.55);
+  let du='';me.forEach(([x,y],k)=>{du+=`<i class="bar me" style="left:${pct(x)};width:${pct(y-x)}"></i>`;
+    const nx=me[k+1];if(nx&&nx[0]-y>=4)du+=`<i class="bar free" style="left:${pct(y)};width:${pct(nx[0]-y)}">${(nx[0]-y)/T>0.09?`<b>fri ${nx[0]-y} min</b>`:''}</i>`;});
+  const duRow=`<div class="tl-row tl-me"><div class="tl-l"><span>Du</span><small>opptatt eller fri</small></div><div class="tl-t">${du}</div></div>`;
+  const rows=order.map(s=>{const p=plan[s.id],w=p.use-p.end;return`<div class="tl-row ${s.phase}"><div class="tl-l"><span>${esc(s.short)}</span><small>${esc(compName(r,s.c))}</small></div><div class="tl-t">${s.active?`<i class="bar a" style="left:${pct(p.start)};width:${pct(s.active)}"></i>`:''}${s.passive?`<i class="bar p" style="left:${pct(p.aEnd)};width:${pct(s.passive)}"></i>`:''}${s.hold!=null&&w>0?`<i class="bar h${w>s.hold?' over':''}" style="left:${pct(p.end)};width:${pct(w)}" title="Venter ${w} min. Tåler ${hm(s.hold)}."></i>`:''}</div></div>`;}).join('');
+  let ticks='';const step=T>150?30:T>70?15:10;for(let t=0;t<=T;t+=step)ticks+=`<span style="left:${pct(t)}">${t}</span>`;
+  const ph=(x,l)=>x>0&&x<T?`<div class="phline${x/T>0.9?' r':''}" style="--x:${x/T}"><span>${l}</span></div>`:'';
+  const ov=r.sch.over.length?` <b style="color:var(--now)">Rødt omriss: ${r.sch.over.map(id=>r.sb[id].short.toLowerCase()).join(', ')} venter lenger enn det tåler.</b>`:'';
+  return`<div class="tl-scroll"><div class="tl">${duRow}${rows}<div class="tl-axis"><div></div><div>${ticks}</div></div>${ph(cookStart,'cook')}${ph(serveStart,'serve')}<div class="nowline" id="tln-${r.id}" style="--x:${m/T}"></div></div></div>
+  <p class="m-note muted">Hel stolpe er aktivt arbeid, skravert står av seg selv, og prikket omriss er ventetid som maten tåler.${ov}</p>
+  <div class="tl-ctl"><label for="tl-${r.id}"><span>Spol</span><input type="range" id="tl-${r.id}" data-act="tl" data-r="${r.id}" min="0" max="${T}" step="1" value="${m}"></label><p class="tl-status" id="tls-${r.id}" aria-live="polite">${tlStatus(r,m)}</p></div>`;
+}
+function tlStatus(r,m){
+  const{plan,order}=r.sch;
+  const doing=order.filter(s=>s.active&&plan[s.id].start<=m&&m<plan[s.id].aEnd);
+  const wait=order.filter(s=>s.passive&&plan[s.id].aEnd<=m&&m<plan[s.id].end);
+  const next=order.find(s=>plan[s.id].start>m);
+  let t=`<b>Minutt ${m}.</b> `;
+  t+=doing.length?`Du gjør: ${doing.map(s=>esc(s.short)).join(', ')}. `:'Du har fri akkurat nå. ';
+  if(wait.length)t+=`Står: ${wait.map(s=>esc(s.short.toLowerCase())).join(', ')}. `;
+  if(next)t+=`Neste: ${esc(next.short.toLowerCase())} om ${plan[next.id].start-m} min.`;else t+='Maten er klar.';
+  return t;
+}
+
+/* ---------- visning 4: kortmodus ---------- */
+function vCards(r){
+  const cs=state.cards[r.id]||(state.cards[r.id]={i:0,cookOnly:false});
+  const list=r.sch.order.filter(s=>!cs.cookOnly||!r.sch.ahead[s.id]);
+  cs.i=Math.max(0,Math.min(cs.i,list.length-1));const s=list[cs.i];
+  const prog=list.map((x,k)=>`<i class="${x.phase} ${k<=cs.i?'on':''}"></i>`).join('');
+  return`<div class="print-only">${printCards(r)}</div><div class="deck no-print">
+   <div class="deck-top"><label><input type="checkbox" data-act="cookonly" data-r="${r.id}" ${cs.cookOnly?'checked':''}> Hopp over det som er gjort på brettet</label><span class="muted">${cs.i+1} av ${list.length}</span></div>
+   <div class="progress" aria-hidden="true">${prog}</div>
+   <article class="card ${s.phase}" aria-live="polite">
+     <div class="meta">${PH[s.phase]} · ${esc(compName(r,s.c))} · ${durTxt(s)||'kort'}${whileTxt(r,s)?' · '+esc(whileTxt(r,s)):''}</div>
+     <h4>${esc(s.short)}</h4>
+     ${s.eq?`<div class="eqline">${esc(eqTxt(s))}</div>`:''}
+     <p>${tpl(r,s.text,'bold',s)}</p>
+     ${s.use.length?`<div class="chips">${s.use.map(u=>`<span>${esc(labelOf(r.ib[u.id],u.p))}</span>`).join('')}</div>`:''}
+     ${s.done?`<div class="done"><b>Ferdig når:</b> ${esc(s.done)}</div>`:''}
+   </article>
+   <div class="card-nav"><button data-act="prev" data-r="${r.id}" ${cs.i===0?'aria-disabled="true"':''}>← Forrige</button>${s.timer?`<button data-act="timer" data-r="${r.id}" data-s="${s.id}">Start timer ${s.timer}:00</button>`:''}<button data-act="next" data-r="${r.id}">${cs.i===list.length-1?'Ferdig':'Neste →'}</button></div>
+   <div class="timers" id="tm-${r.id}"></div>
+  </div>`;
+}
+function printCards(r){
+  return`<div class="pcards">${r.sch.order.map((s,k)=>`<div class="pcard ${s.phase}"><div class="meta">${k+1} · ${PH[s.phase]} · ${esc(compName(r,s.c))}${whileTxt(r,s)?' · '+esc(whileTxt(r,s)):''}</div><h4>${esc(s.short)}</h4>${s.eq?`<div class="tm">${esc(eqTxt(s))}</div>`:''}<p>${tpl(r,s.text,'bold',s)}</p>${s.timer?`<div class="tm">Timer ${s.timer} min</div>`:''}${s.done?`<div class="done"><b>Ferdig når:</b> ${esc(s.done)}</div>`:''}</div>`).join('')}</div>`;
+}
+const timers=[];let tid=0;
+function renderTimers(rid){
+  const el=document.getElementById('tm-'+rid);if(!el)return;
+  el.innerHTML=timers.filter(t=>t.rid===rid).map(t=>`<button data-act="rmtimer" data-t="${t.id}" data-tid="${t.id}" title="Fjern timer">${esc(t.label)} ${fmtLeft(t)}</button>`).join('');
+  tick();
+}
+const fmtLeft=t=>{const s=Math.max(0,Math.round((t.end-Date.now())/1000));return s?String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'):'ferdig';};
+function tick(){timers.forEach(t=>{const b=document.querySelector(`[data-tid="${t.id}"]`);if(!b)return;b.textContent=t.label+' '+fmtLeft(t);b.classList.toggle('fin',Date.now()>=t.end);});}
+setInterval(tick,1000);
+
+/* ---------- visning 1: mise en place ---------- */
+function vMise(r){
+  const P=r.sch.plan,ck=k=>state.checks[k]?'checked':'';
+  const prepSteps=e=>{const ids=new Set(e.items);return r.sch.order.filter(s=>s.phase==='prep'&&s.uses.some(u=>ids.has(u))&&s.id!==e.used);};
+  /* Klassifisering, utledet: skål (flere linjer eller forarbeid), ta frem (én urørt linje), på benken (urørt basisvare, eller «etter smak»). */
+  /* Forarbeid i prep_style: kutt, riving, temperatur eller tilstand. «til kokevannet» er bare en merknad. */
+  const worked=i=>!!markOf(r,i)||/myk|lunken|romtemp|sammenpisket|smeltet|saften|skall|presset|knust|hakkede/.test((i.prep||'').toLowerCase());
+  const bench=[];
+  const els=[...r.mise].sort((a,b)=>P[a.used].start-P[b.used].start).map(e=>{
+    const lines=e.items.map(id=>r.ib[id]),vis=lines.filter(i=>i.amount!=null),ps=prepSteps(e);
+    lines.filter(i=>i.amount==null).forEach(i=>bench.push(i));
+    let kind='bowl';
+    if(!vis.length)kind='none';
+    else if(vis.length===1&&!ps.length&&!worked(vis[0]))kind=vis[0].staple?'bench':'fetch';
+    if(kind==='bench')bench.push(vis[0]);
+    return{e,vis,ps,kind};}).filter(x=>x.kind==='bowl'||x.kind==='fetch');
+  let n=0;els.forEach(x=>x.no=++n);
+  const grp=x=>x.ps.map(s=>P[s.id].during).find(Boolean)||'';
+  const keys=[...new Set(els.map(grp))].sort((a,b)=>a===''?-1:b===''?1:P[a].start-P[b].start);
+  const sub=x=>{const st=r.sb[x.e.used];return`${esc(compName(r,st.c))} · til «${esc(st.short.toLowerCase())}» etter ${P[x.e.used].start} min`;};
+  const line=(x,i)=>{const k=`${r.id}:${x.e.id}:${i.id}`;return`<li><label><input type="checkbox" data-act="chk" data-k="${k}" ${ck(k)}><span>${esc(labelOf(i))}${i.prep?`<em>${esc(i.prep)}</em>`:''}</span></label></li>`;};
+  const bowl=x=>{const st=r.sb[x.e.used],v=x.vis,show=v.length>4?v.slice(0,3):v,big=v.length===1;
+    const pic=`<div class="bowlpic${big?' one':''}">${show.map(i=>ingImg(i,big?56:36,markOf(r,i,x.e))).join('')}${v.length>4?`<span class="ing-img more" style="--s:36px"><span>+${v.length-3}</span></span>`:''}</div>`;
+    return`<div class="bowl ${st.phase}"><div class="bowl-h"><span class="bno">${x.no}</span><b>${esc(x.e.name)}</b><small>${sub(x)}${x.ps.length?' · forarbeid: '+esc(x.ps.map(s=>s.short.toLowerCase()).join(', ')):''}</small></div>${pic}<ul>${v.map(i=>line(x,i)).join('')}</ul></div>`;};
+  const fetch=x=>{const i=x.vis[0],st=r.sb[x.e.used],k=`${r.id}:${x.e.id}:${i.id}`;
+    return`<label class="fetch ${st.phase}"><input type="checkbox" data-act="chk" data-k="${k}" ${ck(k)}>${ingImg(i,44)}<span class="ft"><span><span class="bno">${x.no}</span> <b>${esc(labelOf(i))}</b></span><small>${sub(x)}</small></span></label>`;};
+  const sec=keys.map(k=>{const xs=els.filter(x=>grp(x)===k),bw=xs.filter(x=>x.kind==='bowl'),ft=xs.filter(x=>x.kind==='fetch');
+    const head=k?'Mens '+(r.sb[k].out||r.sb[k].short.toLowerCase())+' står':(keys.length>1?'Før du starter':'');
+    return`${head?`<p class="eyebrow okt">${esc(head)}</p>`:''}${bw.length?`<p class="eyebrow">Skåler</p><div class="bowls">${bw.map(bowl).join('')}</div>`:''}${ft.length?`<p class="eyebrow">Ta frem</p><div class="fetches">${ft.map(fetch).join('')}</div>`:''}`;}).join('');
+  const tasks=r.sch.order.filter(isHeader);
+  const first={};r.sch.order.forEach(s=>s.equipment.forEach(q=>{if(!(q in first))first[q]=P[s.id].start;}));
+  const eqs=Object.keys(first).sort((a,b)=>first[a]-first[b]);
+  const t=tasks.length?`<div class="tasks-wrap"><p class="eyebrow">Gjør først</p><ul class="tasks">${tasks.map(s=>{const k=`${r.id}:${s.id}`;return`<li><label><input type="checkbox" data-act="chk" data-k="${k}" ${ck(k)}><span>${esc(s.short)}<em>${esc(s.text)} ${durTxt(s)}</em></span></label></li>`;}).join('')}</ul></div>`:'';
+  const tools=`<div class="tasks-wrap"><p class="eyebrow">Utstyr, i den rekkefølgen det tas i bruk</p><div class="chips eqchips">${eqs.map(q=>{const k=`${r.id}:eq:${q}`;return`<label><input type="checkbox" data-act="chk" data-k="${k}" ${ck(k)}><span>${esc(EQ[q]||q)}</span></label>`;}).join('')}</div></div>`;
+  const seen=new Set(),bl=bench.filter(i=>{const k=i.name+'|'+(i.amount!=null?labelOf(i):'');if(seen.has(k))return false;seen.add(k);return true;});
+  const bas=`<div class="benchrow"><p class="eyebrow">På benken</p><div class="benchitems">${bl.map(i=>`<span>${ingImg(i,22)}${esc(i.amount!=null?labelOf(i)+(r.sb[r.mise.find(e=>e.items.includes(i.id))?.used]?' til «'+r.sb[r.mise.find(e=>e.items.includes(i.id)).used].short.toLowerCase()+'»':''):i.name+', etter smak')}</span>`).join('')}<span class="muted">Salt, pepper og olje står alltid fremme.</span></div></div>`;
+  return`${t}${tools}${sec}${bas}<div class="mise-foot" id="mf-${r.id}"></div>`;
+}
+function fillMise(r){
+  const host=document.getElementById(r.id+'-mise'),el=document.getElementById('mf-'+r.id);if(!host||!el)return;
+  const all=host.querySelectorAll('input[type=checkbox]'),n=[...all].filter(x=>x.checked).length;
+  el.innerHTML=`<div class="meter"><span style="width:${(n/all.length*100).toFixed(1)}%"></span></div><p>${n===all.length?'<b>Alt er klart.</b> Nå kan varmen på.':`${n} av ${all.length} klare`}</p>`;
+}
+
+/* ---------- visning 7: ingredienser i steget ---------- */
+function vInline(r){
+  return`<ol class="isteps">${r.sch.order.map((s,n)=>`<li class="${s.phase}"><span class="num">${n+1}</span><div><div class="meta"><span class="tag">${PH[s.phase]}</span>${esc(compName(r,s.c))}${durTxt(s)?' · '+durTxt(s):''}${s.eq?' · '+esc(eqTxt(s)):''}${whileTxt(r,s)?` · <b class="while">${esc(whileTxt(r,s))}</b>`:''}</div><p>${tpl(r,s.text,'pill',s)}</p>${s.done?`<p class="done">Ferdig når: ${esc(s.done)}</p>`:''}</div></li>`).join('')}</ol>`;
+}
+
+/* ---------- visning 6: metrokart ---------- */
+function vMetro(r){
+  const P=r.sch.plan,by=r.sb;
+  const ns=r.sch.order.filter(s=>!isHeader(s));
+  const col={};ns.forEach((s,k)=>col[s.id]=k);
+  const lanes=r.comps.filter(c=>ns.some(s=>s.c===c.id)).map(c=>c.id);
+  const LW=150,CW=74,LH=78,TOP=58,AX=34;
+  const W=LW+30+(ns.length-1)*CW+50,H=TOP+(lanes.length-1)*LH+44+AX;
+  const pos=s=>({x:LW+30+col[s.id]*CW,y:TOP+lanes.indexOf(s.c)*LH});
+  const colr=c=>`var(--l${lanes.indexOf(c)%4+1})`;
+  let lines='',st='',lb='',ax='';
+  lanes.forEach((c,li)=>{
+    const mine=ns.filter(s=>s.c===c),p=pos(mine[0]),y=TOP+li*LH;
+    lb+=`<text class="m-lane" x="0" y="${y+4}">${esc(compName(r,c))}</text>`;
+    if(p.x-22>LW)lines+=`<path class="m-guide" d="M${LW-12} ${y} H${p.x-22}"/>`;
+    lines+=`<path class="m-line" d="M${p.x-22} ${y} H${p.x}" style="stroke:${colr(c)}"/>`;
+    let last=null;
+    mine.forEach((s,k)=>{const q=pos(s);
+      const out=ns.filter(t=>t.after.includes(s.id)&&t.c!==s.c).map(t=>lanes.indexOf(t.c)-li)[0];
+      const below=s.id==='end'?false:out<0?true:out>0?false:k%2===1;
+      /* Naboer i samme bane på samme side får etiketten i to høyder, så de ikke kolliderer. */
+      const lvl=last&&last.below===below&&col[s.id]-last.col===1?1-last.lvl:0;last={below,col:col[s.id],lvl};
+      lb+=`<text class="m-lbl" x="${q.x}" y="${below?q.y+23+lvl*12:q.y-(s.id==='end'?17:14)-lvl*12}" text-anchor="middle">${esc(s.short)}</text>`;});
+  });
+  ns.forEach(s=>{const b=pos(s);s.after.forEach(a=>{const ps=by[a];if(isHeader(ps))return;const A=pos(ps);
+    const dx=Math.min(CW*0.9,(b.x-A.x)/2);
+    const d=A.y===b.y?`M${A.x} ${A.y} H${b.x}`:`M${A.x} ${A.y} H${b.x-2*dx} C${b.x-dx} ${A.y} ${b.x-dx} ${b.y} ${b.x} ${b.y}`;
+    lines+=`<path class="m-line" d="${d}" style="stroke:${colr(ps.c)}"/>`;});});
+  const ay=H-AX+16;
+  ns.forEach(s=>{const p=pos(s),big=s.phase==='serve'&&s.id==='end';
+    st+=`<g class="m-st ${s.phase}"><title>${esc(s.short)}${s.use.length?': '+esc(s.use.map(u=>labelOf(r.ib[u.id],u.p)).join(', ')):''}</title><circle cx="${p.x}" cy="${p.y}" r="${big?10:7}"/></g>`;
+    ax+=`<path class="m-tick" d="M${p.x} ${p.y+(big?12:9)} V${ay-12}"/><text class="m-ax" x="${p.x}" y="${ay}" text-anchor="middle">${P[s.id].start}</text>`;});
+  ax+=`<text class="m-lane" x="0" y="${ay}">Start, minutt</text>`;
+  /* Faseskiller: stiplet linje hver gang fasen skifter langs x-aksen. */
+  const X0=LW+30;let z0=0;
+  const zp=ns.map((s,k)=>{if(!s.setup)return s.phase;const nx=ns.slice(k+1).find(t=>!t.setup);return nx?nx.phase:s.phase;});
+  ns.forEach((s,k)=>{if(k<ns.length-1&&zp[k+1]===zp[k])return;const nx=ns[k+1];
+    ax+=`<text class="m-zone" x="${X0+(z0+k)/2*CW}" y="12" text-anchor="middle">${PH[zp[k]]}</text>`;
+    if(nx)ax+=`<path class="m-phase" d="M${X0+k*CW+CW/2} 8 V${ay-14}"/>`;z0=k+1;});
+  const hdr=r.steps.filter(isHeader).map(s=>`${s.short.toLowerCase()} (${s.active+s.passive} min)`).join(' og ');
+  return`<div class="m-scroll"><svg class="m-svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Metrokart for ${esc(r.title)}">${ax}${lines}${st}${lb}</svg></div><p class="m-note muted">Stasjonene står fra venstre mot høyre i den rekkefølgen du begynner på dem, og tallet under viser minuttet. ${hdr?`Før du starter: ${esc(hdr)}. `:''}<span class="screen-only">Hold musepekeren over en stasjon for å se ingrediensene. </span>Åpne ringer er prep, fylte er cook.</p>`;
+}
+
+/* ---------- visning 11: tabellmetoden ---------- */
+function vTable(r){
+  const hdr=r.steps.filter(isHeader),ns=r.steps.filter(s=>!isHeader(s));
+  const refd=new Set(ns.flatMap(s=>s.after)),root=ns.find(s=>!refd.has(s.id)),P=r.sch.plan;
+  const isIng=x=>'ing' in x;
+  const kids=s=>[...s.after.map(a=>r.sb[a]).filter(x=>!isHeader(x)).sort((a,b)=>P[a.id].start-P[b.id].start),...s.use.map(u=>({ing:r.ib[u.id],p:u.p}))];
+  const hmm={};const ht=x=>isIng(x)?0:(hmm[x.id]??=1+Math.max(0,...kids(x).map(ht)));
+  const Hh=ht(root),rows=[],cells=[],seen=new Set();
+  const dfs=x=>{if(isIng(x)){rows.push(x);return[rows.length-1,rows.length-1];}
+    if(seen.has(x.id))return null;seen.add(x.id);let lo=1e9,hi=-1;
+    kids(x).forEach(k=>{const sp=dfs(k);if(sp){lo=Math.min(lo,sp[0]);hi=Math.max(hi,sp[1]);}});
+    if(hi<0){rows.push(null);lo=hi=rows.length-1;}cells.push({s:x,lo,hi,col:ht(x)});return[lo,hi];};
+  dfs(root);
+  /* Alternativ 1: steg som gjøres underveis (starter etter at kokingen er i gang), høyrejusteres inntil steget som bruker det.
+     Alt annet står som før, etter antall bearbeidingsledd. */
+  const late=x=>!x.setup&&P[x.id].start>=r.sch.cookStart;
+  const col={};const place=(x,c)=>{col[x.id]=c;kids(x).filter(k=>!isIng(k)).forEach(k=>{if(col[k.id]==null)place(k,late(k)?Math.max(ht(k),c-1):ht(k));});};
+  place(root,Hh);cells.forEach(c=>c.col=col[c.s.id]);
+  const off=hdr.length;
+  let h=`<div class="tscroll"><div class="tgrid" style="grid-template-columns:minmax(170px,1.6fr) repeat(${Hh},minmax(76px,1fr));min-width:${180+Hh*82}px">`;
+  hdr.forEach((s,i)=>h+=`<div class="tc th" style="grid-row:${i+1};grid-column:1/-1">${esc(s.text)} <small>${s.active+s.passive} min</small></div>`);
+  rows.forEach((x,i)=>h+=`<div class="tc ti" style="grid-row:${off+i+1};grid-column:1">${x?`<span>${amtOf(x.ing,x.p)?`<b>${esc(amtOf(x.ing,x.p))}</b> `:''}${esc(nameOf(x.ing,x.p))}</span>${x.ing.prep?`<small>${esc(x.ing.prep)}</small>`:''}`:''}</div>`);
+  cells.forEach(c=>{const s=c.s,d=s.active+s.passive,meta=[s.temp?s.temp+'°':'',d>=3?hm(d):''].filter(Boolean).join(' · ');
+    h+=`<div class="tc ts ${s.phase}" style="grid-row:${off+c.lo+1}/${off+c.hi+2};grid-column:${c.col+1}" title="${esc(s.text.replace(/\{(\w+)\}/g,(m,id)=>r.ib[id]?labelOf(r.ib[id],s.pm[id]||1):(r.sb[id]?.out||id)))}"><b>${esc(s.short)}</b>${meta?`<small>${meta}</small>`:''}</div>`;});
+  return h+`</div></div><p class="m-note muted">Kolonnene viser rekkefølgen innenfor hver del av retten. Det som gjøres underveis, står inntil steget det brukes i.<span class="screen-only"> Hold musepekeren over en celle for hele steget.</span></p>`;
+}
+
+/* ---------- side ---------- */
+const VIEWS={mise:[1,'Mise en place-brettet',vMise],timeline:[2,'Tidslinjen',vTimeline],cards:[4,'Kortmodus',vCards],metro:[6,'Metrokartet',vMetro],inline:[7,'Ingredienser i steget',vInline],table:[11,'Tabellmetoden',vTable]};
+const ORDER=['mise','timeline','cards','metro','inline','table'];
+function vRecipe(r){
+  const views=state.view==='all'?ORDER:[state.view],full=state.view==='all';
+  const eqs=[...new Set(r.steps.filter(s=>s.eq).map(s=>EQ[s.eq]+(s.temp?' '+s.temp+' °C':'')))].join(', ');
+  const ncomp=r.comps.filter(c=>c.id!=='ovn');
+  return`<section class="recipe" id="${r.id}" aria-labelledby="${r.id}-t">
+   <div class="rhead"><div class="rno" aria-hidden="true">${r.no}</div><div><h2 class="greek" id="${r.id}-t">${esc(r.title)}</h2></div></div>
+   <p class="why prose">${esc(r.why)}</p>
+   <div class="facts"><div><span>Totaltid</span><b>${hm(r.sch.T)}</b></div><div><span>Aktiv tid</span><b>${r.sch.A} min</b></div><div><span>${ncomp.length} komponent${ncomp.length>1?'er':''}</span><b>${esc(ncomp.map(c=>c.name).join(', '))}</b></div><div><span>Utstyr</span><b>${esc(eqs)}</b></div><div><span>Mengde</span><b>${r.fixed?esc(r.fixed):state.serv+' porsjoner'}</b></div></div>
+   ${ALT[r.id]?`<div class="variant no-print"><span class="muted">Lag brødet selv</span><button data-act="alt" data-r="${r.id}" data-on="1" aria-pressed="${!state.alt[r.id]}">Ja</button><button data-act="alt" data-r="${r.id}" data-on="0" aria-pressed="${!!state.alt[r.id]}">Nei, kjøp</button></div>`:''}
+   <details ${full?'open':''}><summary>Ingredienser</summary>${vIngredients(r)}</details>
+   ${views.map(v=>`<div class="view" id="${r.id}-${v}"><div class="view-h"><span class="eyebrow">Visning ${VIEWS[v][0]}</span><h3>${VIEWS[v][1]}</h3></div><div class="view-b">${VIEWS[v][2](r)}</div></div>`).join('')}
+   ${full?`<details class="json"><summary>Oppskriften som data (JSON)</summary><pre class="json">${esc(JSON.stringify(r.raw,null,1))}</pre></details>`:''}
+   ${r.errors.length?`<p style="color:var(--now)">Valideringsfeil: ${esc(r.errors.join('; '))}</p>`:''}
+  </section>`;
+}
+function rerender(r,v){const el=document.querySelector(`#${r.id}-${v} .view-b`);if(!el)return;el.innerHTML=VIEWS[v][2](r);after(r);}
+function after(r){fillMise(r);renderTimers(r.id);}
+function shown(){return RECIPES.filter(r=>state.dish==='all'||r.id===state.dish).map(cur);}
+function renderNav(){
+  const b=(act,key,val,label,on)=>`<button data-act="${act}" data-${key}="${val}" aria-pressed="${on}">${label}</button>`;
+  document.getElementById('nav').innerHTML=
+   `<div class="seg" role="group" aria-label="Rett"><span class="lbl">Rett</span>${RECIPES.map(r=>b('dish','d',r.id,`${r.no} ${esc(r.title.split(' med ')[0])}`,state.dish===r.id)).join('')}${b('dish','d','all','Alle',state.dish==='all')}</div>
+    <div class="seg" role="group" aria-label="Visning"><span class="lbl">Visning</span>${b('view','v','all','Alle',state.view==='all')}${ORDER.map(v=>b('view','v',v,VIEWS[v][1],state.view===v)).join('')}</div>`;
+  document.getElementById('subnav').innerHTML=
+   `<div class="seg" role="group" aria-label="Porsjoner"><span class="lbl">Porsjoner</span>${[2,4,6].map(n=>b('serv','n',n,n,state.serv===n)).join('')}</div>
+    <div class="seg" role="group" aria-label="Plan"><span class="lbl">Plan</span>${b('plan','p','calm','Rolig',state.plan==='calm')}${b('plan','p','prep','Prep først',state.plan==='prep')}${b('plan','p','jit','Akkurat i tide',state.plan==='jit')}</div>
+    <div class="legend"><span class="prep"><i class="sw"></i>Prep</span><span class="cook"><i class="sw"></i>Cook</span><span class="serve"><i class="sw"></i>Serve</span><span><i class="sw pas"></i>Står av seg selv</span></div>`;
+}
+function renderAll(){
+  renderNav();
+  const rs=shown();
+  document.getElementById('recipes').innerHTML=rs.map(vRecipe).join('');
+  rs.forEach(after);
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b||b.tagName!=='BUTTON')return;const a=b.dataset.act;
+  if(a==='dish'){state.dish=b.dataset.d;renderAll();window.scrollTo({top:document.getElementById('nav').offsetTop-8});return;}
+  if(a==='view'){state.view=b.dataset.v;renderAll();return;}
+  if(a==='plan'){state.plan=b.dataset.p;state.tl={};renderAll();return;}
+  if(a==='serv'){state.serv=+b.dataset.n;renderAll();return;}
+  if(a==='alt'){state.alt[b.dataset.r]=b.dataset.on==='0';state.tl={};state.cards={};renderAll();return;}
+  const r=R(b.dataset.r);
+  if(a==='prev'||a==='next'){const cs=state.cards[r.id];cs.i+=a==='next'?1:-1;rerender(r,'cards');document.querySelector(`#${r.id}-cards [data-act=${a}]`)?.focus();}
+  if(a==='timer'){const s=r.sb[b.dataset.s];timers.push({id:++tid,rid:r.id,label:s.short,end:Date.now()+s.timer*60000});renderTimers(r.id);}
+  if(a==='rmtimer'){const k=timers.findIndex(t=>t.id===+b.dataset.t),rid=timers[k].rid;timers.splice(k,1);renderTimers(rid);}
+});
+document.addEventListener('input',e=>{
+  const x=e.target;if(!x.dataset||x.dataset.act!=='tl')return;const r=R(x.dataset.r),m=+x.value;
+  state.tl[r.id]=m;document.getElementById('tln-'+r.id).style.setProperty('--x',m/r.sch.T);document.getElementById('tls-'+r.id).innerHTML=tlStatus(r,m);
+});
+document.addEventListener('change',e=>{
+  const x=e.target;if(!x.dataset)return;
+  if(x.dataset.act==='chk'){state.checks[x.dataset.k]=x.checked;fillMise(R(x.dataset.k.split(':')[0]));}
+  if(x.dataset.act==='cookonly'){const r=R(x.dataset.r),cs=state.cards[r.id];cs.cookOnly=x.checked;cs.i=0;rerender(r,'cards');}
+});
+const[h0,h1]=(typeof location!=='undefined'&&location.hash||'').slice(1).split('-');if(h0==='alle')state.dish='all';else if(RECIPES.some(r=>r.id===h0))state.dish=h0;if(VIEWS[h1])state.view=h1;
+renderAll();
+</script>
