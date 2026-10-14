@@ -1,0 +1,552 @@
+{
+  "key": "db-165",
+  "set": "db",
+  "valid": true,
+  "attempts_used": 1,
+  "first_try_valid": true,
+  "failed_rules_any_attempt": [],
+  "model_version": "gemini-3.8-flash",
+  "examples_in_prompt": [
+    "carbonara",
+    "lasagne"
+  ],
+  "tokens": {
+    "prompt_tokens": 7112,
+    "output_tokens": 4117,
+    "thought_tokens": 11614
+  },
+  "cost_usd": 0.050749,
+  "api_seconds": 100.2,
+  "wall_seconds": 100.7,
+  "round1": null,
+  "attempts": [
+    {
+      "attempt": 1,
+      "valid": true,
+      "failed_rules": [],
+      "errors": [],
+      "warnings": [],
+      "model_version": "gemini-3.8-flash",
+      "prompt_tokens": 7112,
+      "output_tokens": 4117,
+      "thought_tokens": 11614,
+      "cost_usd": 0.050749,
+      "seconds": 100.21
+    }
+  ],
+  "source_text": "Title: Tacos al Pastor with Marinated Pork and Pineapple\nServings: 4\n\nIngredients (component | amount unit | name | prep_style | pantry food_id):\n- Al Pastor Pork | 500 g | pork shoulder |  | 000032\n- Al Pastor Pork | 2 tsp | Chili Powder |  | 000653\n- Al Pastor Pork | 1 tsp | smoked paprika |  | 000291\n- Al Pastor Pork | 1 tsp | Garlic Powder |  | 000643\n- Al Pastor Pork | 1 tsp | Ground Onion |  | 000644\n- Al Pastor Pork | 1 tsp | ground cumin |  | 000278\n- Al Pastor Pork | 1 tsp | dried oregano |  | 000257\n- Al Pastor Pork | 1 tsp | salted butter |  | 000211\n- Al Pastor Pork | 100 ml | pineapple juice |  | 000599\n- Al Pastor Pork | 30 ml | White Vinegar |  | 000637\n- Corn Tortillas | 8 pcs | tortilla |  | 000339\n- Garnish and Salsa | 150 g | pineapple |  | 000158\n- Garnish and Salsa | 50 g | onion |  | 000111\n- Garnish and Salsa | 20 g | cilantro |  | 000245\n- Garnish and Salsa | 2 pcs | lime |  | 000131\n\nSteps in order (component | phase | minutes | text):\n1. Corn Tortillas | Prep |  | Remove the corn tortillas from their packaging and separate them.\n2. Garnish and Salsa | Prep |  | Remove the skin and core from the pineapple and cut into small 1cm cubes.\n3. Al Pastor Pork | Prep |  | Thinly slice the pork shoulder into 1cm wide strips. SAFETY: Wash hands and all surfaces thoroughly after handling raw pork.\n4. Corn Tortillas | Cook |  | Preheat a dry flat griddle or skillet over medium-high heat.\n5. Garnish and Salsa | Prep |  | Finely dice the white onion into a uniform brunoise.\n6. Al Pastor Pork | Prep |  | In a large mixing bowl, whisk together the pineapple juice, white vinegar, chili powder, smoked paprika, garlic powder, onion powder, ground cumin, dried oregano, and salt.\n7. Corn Tortillas | Cook |  | Place a tortilla on the hot surface for approximately 30 seconds until it begins to puff slightly.\n8. Garnish and Salsa | Prep |  | Wash the cilantro thoroughly, pat dry, and roughly chop both the leaves and tender stems.\n9. Al Pastor Pork | Prep |  | Submerge the pork strips into the marinade, cover, and refrigerate for at least 1-2 hours to allow the enzymes to tenderize the meat.\n10. Corn Tortillas | Cook |  | Flip the tortilla and heat the other side for 20-30 seconds until warm and pliable.\n11. Garnish and Salsa | Prep |  | Cut the limes into eighths to create serving wedges.\n12. Al Pastor Pork | Cook |  | Heat a heavy cast-iron skillet over medium-high heat with a teaspoon of oil until shimmering.\n13. Corn Tortillas | Serve |  | Stack the warmed tortillas inside a clean kitchen towel or tortilla warmer to maintain heat and moisture.\n14. Garnish and Salsa | Cook |  | Optional: Quickly toss the pineapple chunks in the pan used for the pork for 2 minutes to caramelize the sugars.\n15. Al Pastor Pork | Cook |  | Sear the pork in small batches to avoid crowding the pan, cooking for 3-4 minutes per side until deeply charred on the edges.\n16. Garnish and Salsa | Serve |  | Combine the diced onion and chopped cilantro in a small bowl to create a fresh taco relish.\n17. Al Pastor Pork | Cook |  | Verify the pork has reached an internal temperature of 63°C before removing from heat.\n18. Al Pastor Pork | Serve |  | Let the meat rest for 5 minutes, then roughly chop into small bite-sized pieces for taco filling.\n19. Garnish and Salsa | Serve |  | Set out the pineapple, lime wedges, and onion-cilantro mix in separate serving dishes for custom assembly.",
+  "recipe": {
+    "title": "Tacos al Pastor with Marinated Pork and Pineapple",
+    "servings": 4,
+    "components": [
+      {
+        "local_id": "c1",
+        "name": "Al Pastor Pork"
+      },
+      {
+        "local_id": "c2",
+        "name": "Corn Tortillas"
+      },
+      {
+        "local_id": "c3",
+        "name": "Garnish and Salsa"
+      }
+    ],
+    "ingredients": [
+      {
+        "local_id": "i1",
+        "component_id": "c1",
+        "name": "pork shoulder",
+        "amount": 500.0,
+        "unit": "g",
+        "pantry_id": "000032"
+      },
+      {
+        "local_id": "i2",
+        "component_id": "c1",
+        "name": "Chili Powder",
+        "amount": 2.0,
+        "unit": "tsp",
+        "pantry_id": "000653"
+      },
+      {
+        "local_id": "i3",
+        "component_id": "c1",
+        "name": "smoked paprika",
+        "amount": 1.0,
+        "unit": "tsp",
+        "pantry_id": "000291"
+      },
+      {
+        "local_id": "i4",
+        "component_id": "c1",
+        "name": "Garlic Powder",
+        "amount": 1.0,
+        "unit": "tsp",
+        "pantry_id": "000643"
+      },
+      {
+        "local_id": "i5",
+        "component_id": "c1",
+        "name": "Ground Onion",
+        "amount": 1.0,
+        "unit": "tsp",
+        "pantry_id": "000644"
+      },
+      {
+        "local_id": "i6",
+        "component_id": "c1",
+        "name": "ground cumin",
+        "amount": 1.0,
+        "unit": "tsp",
+        "pantry_id": "000278"
+      },
+      {
+        "local_id": "i7",
+        "component_id": "c1",
+        "name": "dried oregano",
+        "amount": 1.0,
+        "unit": "tsp",
+        "pantry_id": "000257"
+      },
+      {
+        "local_id": "i8",
+        "component_id": "c1",
+        "name": "salted butter",
+        "amount": 1.0,
+        "unit": "tsp",
+        "pantry_id": "000211"
+      },
+      {
+        "local_id": "i9",
+        "component_id": "c1",
+        "name": "pineapple juice",
+        "amount": 100.0,
+        "unit": "ml",
+        "pantry_id": "000599"
+      },
+      {
+        "local_id": "i10",
+        "component_id": "c1",
+        "name": "White Vinegar",
+        "amount": 30.0,
+        "unit": "ml",
+        "pantry_id": "000637"
+      },
+      {
+        "local_id": "i11",
+        "component_id": "c2",
+        "name": "tortilla",
+        "amount": 8.0,
+        "unit": "piece",
+        "pantry_id": "000339"
+      },
+      {
+        "local_id": "i12",
+        "component_id": "c3",
+        "name": "pineapple",
+        "amount": 150.0,
+        "unit": "g",
+        "pantry_id": "000158"
+      },
+      {
+        "local_id": "i13",
+        "component_id": "c3",
+        "name": "onion",
+        "amount": 50.0,
+        "unit": "g",
+        "pantry_id": "000111"
+      },
+      {
+        "local_id": "i14",
+        "component_id": "c3",
+        "name": "cilantro",
+        "amount": 20.0,
+        "unit": "g",
+        "pantry_id": "000245"
+      },
+      {
+        "local_id": "i15",
+        "component_id": "c3",
+        "name": "lime",
+        "amount": 2.0,
+        "unit": "piece",
+        "pantry_id": "000131"
+      }
+    ],
+    "steps": [
+      {
+        "local_id": "s1",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Separate tortillas",
+        "text": "Remove {i11} from their packaging and separate them.",
+        "uses": [
+          "i11"
+        ],
+        "after": [],
+        "active_minutes": 1,
+        "passive_minutes": 0,
+        "holds_minutes": 60,
+        "method": "prepare",
+        "equipment": [],
+        "setup": false
+      },
+      {
+        "local_id": "s2",
+        "component_id": "c3",
+        "phase": "prep",
+        "short": "Cut pineapple",
+        "text": "Remove the skin and core from {i12} and cut into small 1cm cubes.",
+        "uses": [
+          "i12"
+        ],
+        "after": [],
+        "active_minutes": 4,
+        "passive_minutes": 0,
+        "holds_minutes": 120,
+        "method": "chop",
+        "equipment": [],
+        "setup": false
+      },
+      {
+        "local_id": "s3",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Slice pork",
+        "text": "Thinly slice {i1} into 1cm wide strips.",
+        "uses": [
+          "i1"
+        ],
+        "after": [],
+        "active_minutes": 5,
+        "passive_minutes": 0,
+        "holds_minutes": 60,
+        "method": "slice",
+        "equipment": [],
+        "setup": false
+      },
+      {
+        "local_id": "s4",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Preheat griddle",
+        "text": "Preheat a dry flat griddle or skillet over medium-high heat.",
+        "uses": [],
+        "after": [],
+        "active_minutes": 1,
+        "passive_minutes": 4,
+        "method": "preheat",
+        "equipment": [
+          "frying_pan"
+        ],
+        "mode": "medium_high",
+        "setup": true,
+        "done_when": "The pan is hot"
+      },
+      {
+        "local_id": "s5",
+        "component_id": "c3",
+        "phase": "prep",
+        "short": "Dice onion",
+        "text": "Finely dice {i13} into a uniform brunoise.",
+        "uses": [
+          "i13"
+        ],
+        "after": [],
+        "active_minutes": 3,
+        "passive_minutes": 0,
+        "holds_minutes": 120,
+        "method": "chop",
+        "equipment": [],
+        "setup": false
+      },
+      {
+        "local_id": "s6",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Whisk marinade",
+        "text": "In a large mixing bowl, whisk together {i9}, {i10}, {i2}, {i3}, {i4}, {i5}, {i6}, and {i7}.",
+        "uses": [
+          "i2",
+          "i3",
+          "i4",
+          "i5",
+          "i6",
+          "i7",
+          "i9",
+          "i10"
+        ],
+        "after": [],
+        "active_minutes": 3,
+        "passive_minutes": 0,
+        "holds_minutes": 240,
+        "method": "whisk",
+        "equipment": [
+          "large_bowl",
+          "whisk"
+        ],
+        "setup": false,
+        "done_when": "Evenly blended and smooth"
+      },
+      {
+        "local_id": "s7",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Heat tortillas",
+        "text": "Place the separated tortillas on the hot surface for approximately 30 seconds until they begin to puff slightly.",
+        "uses": [],
+        "after": [
+          "s1"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "method": "warm",
+        "equipment": [
+          "frying_pan"
+        ],
+        "mode": "medium_high",
+        "setup": false,
+        "done_when": "Tortillas begin to puff slightly"
+      },
+      {
+        "local_id": "s8",
+        "component_id": "c3",
+        "phase": "prep",
+        "short": "Chop cilantro",
+        "text": "Wash {i14} thoroughly, pat dry, and roughly chop both the leaves and tender stems.",
+        "uses": [
+          "i14"
+        ],
+        "after": [],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "holds_minutes": 120,
+        "method": "chop",
+        "equipment": [],
+        "setup": false
+      },
+      {
+        "local_id": "s9",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Marinate pork",
+        "text": "Submerge the pork strips into the marinade, cover, and refrigerate for at least 1–2 hours to allow the enzymes to tenderize the meat.",
+        "uses": [],
+        "after": [
+          "s3",
+          "s6"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 90,
+        "holds_minutes": 1440,
+        "method": "marinate",
+        "equipment": [
+          "plastic_wrap"
+        ],
+        "setup": false,
+        "done_when": "Pork is thoroughly coated in marinade"
+      },
+      {
+        "local_id": "s10",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Flip tortillas",
+        "text": "Flip the tortillas and heat the other side for 20–30 seconds.",
+        "uses": [],
+        "after": [
+          "s7"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 0,
+        "method": "warm",
+        "equipment": [
+          "frying_pan"
+        ],
+        "mode": "medium_high",
+        "setup": false,
+        "done_when": "Warm and pliable"
+      },
+      {
+        "local_id": "s11",
+        "component_id": "c3",
+        "phase": "prep",
+        "short": "Cut lime wedges",
+        "text": "Cut {i15} into eighths to create serving wedges.",
+        "uses": [
+          "i15"
+        ],
+        "after": [],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "holds_minutes": 120,
+        "method": "slice",
+        "equipment": [],
+        "setup": false
+      },
+      {
+        "local_id": "s12",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Heat skillet",
+        "text": "Heat a heavy cast-iron skillet over medium-high heat with {i8} until shimmering.",
+        "uses": [
+          "i8"
+        ],
+        "after": [],
+        "active_minutes": 1,
+        "passive_minutes": 2,
+        "method": "melt",
+        "equipment": [
+          "frying_pan"
+        ],
+        "mode": "medium_high",
+        "setup": false,
+        "done_when": "Melted and shimmering"
+      },
+      {
+        "local_id": "s13",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Wrap tortillas",
+        "text": "Stack the warmed tortillas inside a clean kitchen towel to maintain heat and moisture.",
+        "uses": [],
+        "after": [
+          "s10"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 0,
+        "holds_minutes": 20,
+        "method": "rest",
+        "equipment": [
+          "kitchen_towel"
+        ],
+        "setup": false
+      },
+      {
+        "local_id": "s15",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Sear pork",
+        "text": "Sear the marinated pork in small batches to avoid crowding the pan, cooking for 3–4 minutes per side.",
+        "uses": [],
+        "after": [
+          "s12",
+          "s9"
+        ],
+        "active_minutes": 8,
+        "passive_minutes": 0,
+        "method": "sear",
+        "equipment": [
+          "frying_pan"
+        ],
+        "mode": "medium_high",
+        "setup": false,
+        "done_when": "Deeply charred on the edges"
+      },
+      {
+        "local_id": "s16",
+        "component_id": "c3",
+        "phase": "serve",
+        "short": "Mix relish",
+        "text": "Combine the diced onion and chopped cilantro in a small bowl to create a fresh taco relish.",
+        "uses": [],
+        "after": [
+          "s5",
+          "s8"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 0,
+        "holds_minutes": 60,
+        "method": "mix",
+        "equipment": [
+          "small_bowl"
+        ],
+        "setup": false,
+        "done_when": "Evenly combined"
+      },
+      {
+        "local_id": "s17",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Verify pork temperature",
+        "text": "Verify the pork has reached an internal temperature of 63 °C before removing from heat.",
+        "uses": [],
+        "after": [
+          "s15"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 0,
+        "method": "sear",
+        "equipment": [
+          "frying_pan",
+          "thermometer"
+        ],
+        "setup": false,
+        "done_when": "Internal temperature reaches 63 °C"
+      },
+      {
+        "local_id": "s14",
+        "component_id": "c3",
+        "phase": "cook",
+        "short": "Caramelize pineapple",
+        "text": "Optionally toss the pineapple chunks in the pan used for the pork for 2 minutes to caramelize the sugars.",
+        "uses": [],
+        "after": [
+          "s2",
+          "s17"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "holds_minutes": 15,
+        "method": "saute",
+        "equipment": [
+          "frying_pan"
+        ],
+        "mode": "medium_high",
+        "setup": false,
+        "done_when": "Lightly charred and caramelized"
+      },
+      {
+        "local_id": "s18",
+        "component_id": "c1",
+        "phase": "serve",
+        "short": "Rest and chop pork",
+        "text": "Let the meat rest for 5 minutes, then roughly chop into small bite-sized pieces for taco filling.",
+        "uses": [],
+        "after": [
+          "s17"
+        ],
+        "active_minutes": 3,
+        "passive_minutes": 5,
+        "holds_minutes": 15,
+        "method": "chop",
+        "equipment": [],
+        "setup": false,
+        "done_when": "Finely chopped and juicy"
+      },
+      {
+        "local_id": "s19",
+        "component_id": "c3",
+        "phase": "serve",
+        "short": "Serve tacos",
+        "text": "Set out the pineapple, lime wedges, and onion-cilantro mix in separate serving dishes alongside the chopped pork and warm tortillas for custom assembly.",
+        "uses": [],
+        "after": [
+          "s18",
+          "s13",
+          "s14",
+          "s16",
+          "s11"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "method": "serve",
+        "equipment": [
+          "serving_dish"
+        ],
+        "setup": false
+      }
+    ]
+  }
+}

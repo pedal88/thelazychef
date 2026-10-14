@@ -1,0 +1,3761 @@
+[
+  {
+    "id": 126,
+    "title": "Caramelized Onion Hummus",
+    "servings": 4,
+    "ingredients": [
+      {
+        "component": "Caramelized Onions",
+        "amount": 200.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "onion",
+        "food_id": "000111"
+      },
+      {
+        "component": "Caramelized Onions",
+        "amount": 15.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "olive oil",
+        "food_id": "000378"
+      },
+      {
+        "component": "Caramelized Onions",
+        "amount": 2.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "sea salt",
+        "food_id": "000294"
+      },
+      {
+        "component": "Hummus Base",
+        "amount": 400.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "chickpeas",
+        "food_id": "000061"
+      },
+      {
+        "component": "Hummus Base",
+        "amount": 60.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "seed butters (tahini)",
+        "food_id": "000408"
+      },
+      {
+        "component": "Hummus Base",
+        "amount": 50.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "lemon",
+        "food_id": "000130"
+      },
+      {
+        "component": "Hummus Base",
+        "amount": 10.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "garlic",
+        "food_id": "000112"
+      },
+      {
+        "component": "Hummus Base",
+        "amount": 30.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "olive oil",
+        "food_id": "000378"
+      },
+      {
+        "component": "Hummus Base",
+        "amount": 3.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "sea salt",
+        "food_id": "000294"
+      },
+      {
+        "component": "Assembly and Garnish",
+        "amount": 2.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "smoked paprika",
+        "food_id": "000291"
+      },
+      {
+        "component": "Assembly and Garnish",
+        "amount": 5.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "dill",
+        "food_id": "000249"
+      },
+      {
+        "component": "Assembly and Garnish",
+        "amount": 10.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "olive oil",
+        "food_id": "000378"
+      }
+    ],
+    "steps": [
+      {
+        "component": "Caramelized Onions",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Peel and thinly slice the onions into uniform rounds or half-moons."
+      },
+      {
+        "component": "Caramelized Onions",
+        "phase": "Cook",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Heat 15g of olive oil in a pan over medium-low heat. Add onions and a pinch of salt, cooking for 25-30 minutes, stirring occasionally until deep golden brown and jammy."
+      },
+      {
+        "component": "Hummus Base",
+        "phase": "Prep",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Drain and rinse the chickpeas. Peel the garlic cloves and juice the lemon."
+      },
+      {
+        "component": "Hummus Base",
+        "phase": "Cook",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Place chickpeas, tahini, garlic, lemon juice, and salt in a food processor. Blitz until thick, then slowly drizzle in 30g of olive oil while processing until the hummus is perfectly smooth."
+      },
+      {
+        "component": "Assembly and Garnish",
+        "phase": "Serve",
+        "step_number": 5,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Spoon the hummus onto a wide plate and use the back of a spoon to create a deep swirl. Top with the warm caramelized onions, a dusting of smoked paprika, fresh dill, and a final drizzle of olive oil."
+      }
+    ]
+  },
+  {
+    "id": 151,
+    "title": "Greek Chicken Gyros with Protein Tzatziki",
+    "servings": 4,
+    "ingredients": [
+      {
+        "component": "Greek Marinated Chicken",
+        "amount": 500.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "chicken breast",
+        "food_id": "000044"
+      },
+      {
+        "component": "Greek Marinated Chicken",
+        "amount": 30.0,
+        "unit": "ml",
+        "prep_style": null,
+        "name": "olive oil",
+        "food_id": "000378"
+      },
+      {
+        "component": "Greek Marinated Chicken",
+        "amount": 20.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "lemon",
+        "food_id": "000130"
+      },
+      {
+        "component": "Greek Marinated Chicken",
+        "amount": 2.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "dried oregano",
+        "food_id": "000257"
+      },
+      {
+        "component": "Greek Marinated Chicken",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "ground cumin",
+        "food_id": "000278"
+      },
+      {
+        "component": "Greek Marinated Chicken",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "Garlic Powder",
+        "food_id": "000643"
+      },
+      {
+        "component": "Greek Marinated Chicken",
+        "amount": 0.5,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "Ground Onion",
+        "food_id": "000644"
+      },
+      {
+        "component": "Greek Marinated Chicken",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "table salt",
+        "food_id": "000292"
+      },
+      {
+        "component": "Greek Marinated Chicken",
+        "amount": 0.5,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "ground black pepper",
+        "food_id": "000285"
+      },
+      {
+        "component": "Homemade Tzatziki",
+        "amount": 250.0,
+        "unit": "ml",
+        "prep_style": null,
+        "name": "Protein Yoghurt",
+        "food_id": "000641"
+      },
+      {
+        "component": "Homemade Tzatziki",
+        "amount": 0.5,
+        "unit": "pcs",
+        "prep_style": null,
+        "name": "Cucumber",
+        "food_id": "000642"
+      },
+      {
+        "component": "Homemade Tzatziki",
+        "amount": 5.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "garlic",
+        "food_id": "000112"
+      },
+      {
+        "component": "Homemade Tzatziki",
+        "amount": 10.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "lemon",
+        "food_id": "000130"
+      },
+      {
+        "component": "Homemade Tzatziki",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "dried dill",
+        "food_id": "000261"
+      },
+      {
+        "component": "Homemade Tzatziki",
+        "amount": 0.25,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "table salt",
+        "food_id": "000292"
+      },
+      {
+        "component": "Assembly and Garnish",
+        "amount": 4.0,
+        "unit": "pcs",
+        "prep_style": null,
+        "name": "pita",
+        "food_id": "000340"
+      },
+      {
+        "component": "Assembly and Garnish",
+        "amount": 150.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "tomatoes",
+        "food_id": "000093"
+      },
+      {
+        "component": "Assembly and Garnish",
+        "amount": 50.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "onion",
+        "food_id": "000111"
+      },
+      {
+        "component": "Assembly and Garnish",
+        "amount": 100.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "lettuce",
+        "food_id": "000079"
+      }
+    ],
+    "steps": [
+      {
+        "component": "Greek Marinated Chicken",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "SAFETY: Wash your hands and clean the cutting board before handling raw chicken breast."
+      },
+      {
+        "component": "Homemade Tzatziki",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Grate the cucumber using the large holes of a box grater."
+      },
+      {
+        "component": "Assembly and Garnish",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Thinly slice the onion, dice the tomatoes, and shred the lettuce into fine ribbons."
+      },
+      {
+        "component": "Greek Marinated Chicken",
+        "phase": "Prep",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Cut the chicken breast into bite-sized strips or 2cm cubes for even cooking."
+      },
+      {
+        "component": "Homemade Tzatziki",
+        "phase": "Prep",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Place the grated cucumber in a clean kitchen towel and squeeze firmly to remove as much moisture as possible."
+      },
+      {
+        "component": "Assembly and Garnish",
+        "phase": "Cook",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Lightly brush the pita breads with a drop of olive oil and toast them in a dry pan over medium heat for 1 minute per side until soft and warm."
+      },
+      {
+        "component": "Greek Marinated Chicken",
+        "phase": "Prep",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "In a large bowl, whisk together the olive oil, lemon juice, dried oregano, ground cumin, garlic powder, ground onion, salt, and black pepper."
+      },
+      {
+        "component": "Homemade Tzatziki",
+        "phase": "Prep",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Finely mince the garlic cloves until they form a paste-like consistency."
+      },
+      {
+        "component": "Assembly and Garnish",
+        "phase": "Serve",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Lay a warm pita flat and spread a generous tablespoon of tzatziki sauce down the center."
+      },
+      {
+        "component": "Greek Marinated Chicken",
+        "phase": "Prep",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Add the chicken to the bowl, toss well to coat, cover, and marinate in the refrigerator for at least 30 minutes."
+      },
+      {
+        "component": "Homemade Tzatziki",
+        "phase": "Prep",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "In a medium bowl, combine the Protein Yoghurt, drained cucumber, and minced garlic."
+      },
+      {
+        "component": "Assembly and Garnish",
+        "phase": "Serve",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Place a handful of shredded lettuce on top of the sauce, followed by a portion of the cooked Greek chicken."
+      },
+      {
+        "component": "Greek Marinated Chicken",
+        "phase": "Cook",
+        "step_number": 5,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Heat a large skillet or grill pan over medium-high heat until it begins to smoke slightly."
+      },
+      {
+        "component": "Homemade Tzatziki",
+        "phase": "Prep",
+        "step_number": 5,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Stir in the lemon juice, dried dill, and salt until the mixture is uniform."
+      },
+      {
+        "component": "Assembly and Garnish",
+        "phase": "Serve",
+        "step_number": 5,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Top with sliced onions and diced tomatoes."
+      },
+      {
+        "component": "Greek Marinated Chicken",
+        "phase": "Cook",
+        "step_number": 6,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Add the chicken strips to the hot pan and sear for 6-8 minutes, turning occasionally until golden brown and the internal temperature reaches 74°C."
+      },
+      {
+        "component": "Homemade Tzatziki",
+        "phase": "Serve",
+        "step_number": 6,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Cover and refrigerate the tzatziki until ready to assemble the gyros to allow flavors to meld."
+      },
+      {
+        "component": "Assembly and Garnish",
+        "phase": "Serve",
+        "step_number": 6,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Fold the pita over the filling, wrap the bottom tightly with parchment paper or foil, and serve immediately."
+      },
+      {
+        "component": "Greek Marinated Chicken",
+        "phase": "Serve",
+        "step_number": 7,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Remove the chicken from the pan and let it rest on a clean plate for 3 minutes before serving."
+      }
+    ]
+  },
+  {
+    "id": 155,
+    "title": "Lasagna alla Bolognese with meat ragù and creamy béchamel",
+    "servings": 4,
+    "ingredients": [
+      {
+        "component": "Meat Ragù",
+        "amount": 400.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "beef ground beef",
+        "food_id": "000011"
+      },
+      {
+        "component": "Meat Ragù",
+        "amount": 200.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "pork ground pork",
+        "food_id": "000035"
+      },
+      {
+        "component": "Meat Ragù",
+        "amount": 100.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "onion",
+        "food_id": "000111"
+      },
+      {
+        "component": "Meat Ragù",
+        "amount": 10.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "garlic",
+        "food_id": "000112"
+      },
+      {
+        "component": "Meat Ragù",
+        "amount": 80.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "carrots",
+        "food_id": "000069"
+      },
+      {
+        "component": "Meat Ragù",
+        "amount": 80.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "celery",
+        "food_id": "000117"
+      },
+      {
+        "component": "Meat Ragù",
+        "amount": 800.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "canned tomatoes",
+        "food_id": "000415"
+      },
+      {
+        "component": "Meat Ragù",
+        "amount": 150.0,
+        "unit": "ml",
+        "prep_style": null,
+        "name": "red wine",
+        "food_id": "000572"
+      },
+      {
+        "component": "Meat Ragù",
+        "amount": 1.0,
+        "unit": "pcs",
+        "prep_style": null,
+        "name": "Beef Stock, Cube",
+        "food_id": "000639"
+      },
+      {
+        "component": "Meat Ragù",
+        "amount": 30.0,
+        "unit": "ml",
+        "prep_style": null,
+        "name": "olive oil",
+        "food_id": "000378"
+      },
+      {
+        "component": "Meat Ragù",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "table salt",
+        "food_id": "000292"
+      },
+      {
+        "component": "Meat Ragù",
+        "amount": 0.5,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "ground black pepper",
+        "food_id": "000285"
+      },
+      {
+        "component": "Creamy Béchamel",
+        "amount": 50.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "unsalted butter",
+        "food_id": "000212"
+      },
+      {
+        "component": "Creamy Béchamel",
+        "amount": 50.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "all-purpose flour",
+        "food_id": "000348"
+      },
+      {
+        "component": "Creamy Béchamel",
+        "amount": 750.0,
+        "unit": "ml",
+        "prep_style": null,
+        "name": "whole milk",
+        "food_id": "000182"
+      },
+      {
+        "component": "Creamy Béchamel",
+        "amount": 0.25,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "ground nutmeg",
+        "food_id": "000283"
+      },
+      {
+        "component": "Creamy Béchamel",
+        "amount": 0.5,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "table salt",
+        "food_id": "000292"
+      },
+      {
+        "component": "Pasta Assembly",
+        "amount": 250.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "lasagna sheets",
+        "food_id": "000327"
+      },
+      {
+        "component": "Pasta Assembly",
+        "amount": 100.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "parmesan",
+        "food_id": "000196"
+      }
+    ],
+    "steps": [
+      {
+        "component": "Meat Ragù",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Finely dice the onion, carrot, and celery. Mince the garlic cloves."
+      },
+      {
+        "component": "Creamy Béchamel",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Measure out the butter, flour, and milk. Pre-heat the milk slightly in a separate pan or microwave."
+      },
+      {
+        "component": "Pasta Assembly",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Preheat the oven to 180°C and finely grate the Parmigiano-Reggiano."
+      },
+      {
+        "component": "Meat Ragù",
+        "phase": "Cook",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Heat olive oil in a heavy-bottomed pot over medium heat and sauté the onion, carrot, and celery until softened."
+      },
+      {
+        "component": "Creamy Béchamel",
+        "phase": "Cook",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Melt the unsalted butter in a medium saucepan over medium-low heat."
+      },
+      {
+        "component": "Pasta Assembly",
+        "phase": "Prep",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Lightly grease a rectangular baking dish with butter or oil."
+      },
+      {
+        "component": "Meat Ragù",
+        "phase": "Cook",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Add the ground beef and ground pork. SAFE HANDLING: Ensure raw meat is cooked thoroughly until browned and handle raw juices with care by washing hands and tools immediately."
+      },
+      {
+        "component": "Creamy Béchamel",
+        "phase": "Cook",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Whisk in the all-purpose flour to form a roux and cook for 2 minutes while stirring constantly to avoid browning."
+      },
+      {
+        "component": "Pasta Assembly",
+        "phase": "Cook",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Spread a few spoonfuls of Meat Ragù over the bottom of the dish to prevent the pasta from sticking."
+      },
+      {
+        "component": "Meat Ragù",
+        "phase": "Cook",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Pour in the red wine to deglaze the pot, scraping up any browned bits, and simmer until the liquid is reduced by half."
+      },
+      {
+        "component": "Creamy Béchamel",
+        "phase": "Cook",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Slowly add a small amount of warm milk, whisking vigorously to incorporate and remove any lumps."
+      },
+      {
+        "component": "Pasta Assembly",
+        "phase": "Cook",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Place a layer of lasagna sheets over the sauce, trimming edges if necessary to fit the dish."
+      },
+      {
+        "component": "Meat Ragù",
+        "phase": "Cook",
+        "step_number": 5,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Add the canned tomatoes and the beef stock cube dissolved in 100ml of hot water."
+      },
+      {
+        "component": "Creamy Béchamel",
+        "phase": "Cook",
+        "step_number": 5,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Continue adding the milk in stages, whisking continuously until the mixture is smooth and begins to thicken."
+      },
+      {
+        "component": "Pasta Assembly",
+        "phase": "Cook",
+        "step_number": 5,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Add a layer of ragù, followed by a layer of Creamy Béchamel, and a sprinkle of Parmigiano-Reggiano."
+      },
+      {
+        "component": "Meat Ragù",
+        "phase": "Cook",
+        "step_number": 6,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Stir in the minced garlic, salt, and black pepper. Lower the heat and simmer gently for at least 90 minutes."
+      },
+      {
+        "component": "Creamy Béchamel",
+        "phase": "Cook",
+        "step_number": 6,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Simmer the sauce for 5-7 minutes until it reaches a velvety, coat-the-back-of-a-spoon consistency."
+      },
+      {
+        "component": "Pasta Assembly",
+        "phase": "Cook",
+        "step_number": 6,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Repeat the layers (pasta, ragù, béchamel, cheese) until all ingredients are used, ending with a final layer of béchamel."
+      },
+      {
+        "component": "Meat Ragù",
+        "phase": "Cook",
+        "step_number": 7,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Check the ragù consistency; it should be thick and rich. Adjust seasoning if necessary."
+      },
+      {
+        "component": "Creamy Béchamel",
+        "phase": "Cook",
+        "step_number": 7,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Season with ground nutmeg and salt. Remove from heat."
+      },
+      {
+        "component": "Pasta Assembly",
+        "phase": "Cook",
+        "step_number": 7,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Top generously with the remaining Parmigiano-Reggiano to create a golden crust."
+      },
+      {
+        "component": "Meat Ragù",
+        "phase": "Serve",
+        "step_number": 8,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Keep warm until ready to assemble the lasagna layers."
+      },
+      {
+        "component": "Creamy Béchamel",
+        "phase": "Prep",
+        "step_number": 8,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Cover the surface with plastic wrap to prevent a skin from forming as it cools slightly."
+      },
+      {
+        "component": "Pasta Assembly",
+        "phase": "Cook",
+        "step_number": 8,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Bake in the preheated oven for 30-40 minutes until the top is bubbling and deep golden brown."
+      },
+      {
+        "component": "Pasta Assembly",
+        "phase": "Serve",
+        "step_number": 9,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Remove from the oven and let rest for 15 minutes before slicing to ensure the layers stay intact."
+      }
+    ]
+  },
+  {
+    "id": 165,
+    "title": "Tacos al Pastor with Marinated Pork and Pineapple",
+    "servings": 4,
+    "ingredients": [
+      {
+        "component": "Al Pastor Pork",
+        "amount": 500.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "pork shoulder",
+        "food_id": "000032"
+      },
+      {
+        "component": "Al Pastor Pork",
+        "amount": 2.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "Chili Powder",
+        "food_id": "000653"
+      },
+      {
+        "component": "Al Pastor Pork",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "smoked paprika",
+        "food_id": "000291"
+      },
+      {
+        "component": "Al Pastor Pork",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "Garlic Powder",
+        "food_id": "000643"
+      },
+      {
+        "component": "Al Pastor Pork",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "Ground Onion",
+        "food_id": "000644"
+      },
+      {
+        "component": "Al Pastor Pork",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "ground cumin",
+        "food_id": "000278"
+      },
+      {
+        "component": "Al Pastor Pork",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "dried oregano",
+        "food_id": "000257"
+      },
+      {
+        "component": "Al Pastor Pork",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "salted butter",
+        "food_id": "000211"
+      },
+      {
+        "component": "Al Pastor Pork",
+        "amount": 100.0,
+        "unit": "ml",
+        "prep_style": null,
+        "name": "pineapple juice",
+        "food_id": "000599"
+      },
+      {
+        "component": "Al Pastor Pork",
+        "amount": 30.0,
+        "unit": "ml",
+        "prep_style": null,
+        "name": "White Vinegar",
+        "food_id": "000637"
+      },
+      {
+        "component": "Corn Tortillas",
+        "amount": 8.0,
+        "unit": "pcs",
+        "prep_style": null,
+        "name": "tortilla",
+        "food_id": "000339"
+      },
+      {
+        "component": "Garnish and Salsa",
+        "amount": 150.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "pineapple",
+        "food_id": "000158"
+      },
+      {
+        "component": "Garnish and Salsa",
+        "amount": 50.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "onion",
+        "food_id": "000111"
+      },
+      {
+        "component": "Garnish and Salsa",
+        "amount": 20.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "cilantro",
+        "food_id": "000245"
+      },
+      {
+        "component": "Garnish and Salsa",
+        "amount": 2.0,
+        "unit": "pcs",
+        "prep_style": null,
+        "name": "lime",
+        "food_id": "000131"
+      }
+    ],
+    "steps": [
+      {
+        "component": "Corn Tortillas",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Remove the corn tortillas from their packaging and separate them."
+      },
+      {
+        "component": "Garnish and Salsa",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Remove the skin and core from the pineapple and cut into small 1cm cubes."
+      },
+      {
+        "component": "Al Pastor Pork",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Thinly slice the pork shoulder into 1cm wide strips. SAFETY: Wash hands and all surfaces thoroughly after handling raw pork."
+      },
+      {
+        "component": "Corn Tortillas",
+        "phase": "Cook",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Preheat a dry flat griddle or skillet over medium-high heat."
+      },
+      {
+        "component": "Garnish and Salsa",
+        "phase": "Prep",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Finely dice the white onion into a uniform brunoise."
+      },
+      {
+        "component": "Al Pastor Pork",
+        "phase": "Prep",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "In a large mixing bowl, whisk together the pineapple juice, white vinegar, chili powder, smoked paprika, garlic powder, onion powder, ground cumin, dried oregano, and salt."
+      },
+      {
+        "component": "Corn Tortillas",
+        "phase": "Cook",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Place a tortilla on the hot surface for approximately 30 seconds until it begins to puff slightly."
+      },
+      {
+        "component": "Garnish and Salsa",
+        "phase": "Prep",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Wash the cilantro thoroughly, pat dry, and roughly chop both the leaves and tender stems."
+      },
+      {
+        "component": "Al Pastor Pork",
+        "phase": "Prep",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Submerge the pork strips into the marinade, cover, and refrigerate for at least 1-2 hours to allow the enzymes to tenderize the meat."
+      },
+      {
+        "component": "Corn Tortillas",
+        "phase": "Cook",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Flip the tortilla and heat the other side for 20-30 seconds until warm and pliable."
+      },
+      {
+        "component": "Garnish and Salsa",
+        "phase": "Prep",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Cut the limes into eighths to create serving wedges."
+      },
+      {
+        "component": "Al Pastor Pork",
+        "phase": "Cook",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Heat a heavy cast-iron skillet over medium-high heat with a teaspoon of oil until shimmering."
+      },
+      {
+        "component": "Corn Tortillas",
+        "phase": "Serve",
+        "step_number": 5,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Stack the warmed tortillas inside a clean kitchen towel or tortilla warmer to maintain heat and moisture."
+      },
+      {
+        "component": "Garnish and Salsa",
+        "phase": "Cook",
+        "step_number": 5,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Optional: Quickly toss the pineapple chunks in the pan used for the pork for 2 minutes to caramelize the sugars."
+      },
+      {
+        "component": "Al Pastor Pork",
+        "phase": "Cook",
+        "step_number": 5,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Sear the pork in small batches to avoid crowding the pan, cooking for 3-4 minutes per side until deeply charred on the edges."
+      },
+      {
+        "component": "Garnish and Salsa",
+        "phase": "Serve",
+        "step_number": 6,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Combine the diced onion and chopped cilantro in a small bowl to create a fresh taco relish."
+      },
+      {
+        "component": "Al Pastor Pork",
+        "phase": "Cook",
+        "step_number": 6,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Verify the pork has reached an internal temperature of 63°C before removing from heat."
+      },
+      {
+        "component": "Al Pastor Pork",
+        "phase": "Serve",
+        "step_number": 7,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Let the meat rest for 5 minutes, then roughly chop into small bite-sized pieces for taco filling."
+      },
+      {
+        "component": "Garnish and Salsa",
+        "phase": "Serve",
+        "step_number": 7,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Set out the pineapple, lime wedges, and onion-cilantro mix in separate serving dishes for custom assembly."
+      }
+    ]
+  },
+  {
+    "id": 166,
+    "title": "Enchiladas Verdes with Chicken and Queso Fresco",
+    "servings": 4,
+    "ingredients": [
+      {
+        "component": "Green Tomatillo Sauce",
+        "amount": 100.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "onion",
+        "food_id": "000111"
+      },
+      {
+        "component": "Green Tomatillo Sauce",
+        "amount": 15.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "garlic",
+        "food_id": "000112"
+      },
+      {
+        "component": "Green Tomatillo Sauce",
+        "amount": 40.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "chili peppers",
+        "food_id": "000097"
+      },
+      {
+        "component": "Green Tomatillo Sauce",
+        "amount": 10.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "cilantro",
+        "food_id": "000245"
+      },
+      {
+        "component": "Green Tomatillo Sauce",
+        "amount": 25.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "lime",
+        "food_id": "000131"
+      },
+      {
+        "component": "Green Tomatillo Sauce",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "table salt",
+        "food_id": "000292"
+      },
+      {
+        "component": "Chicken Filling",
+        "amount": 500.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "chicken breast",
+        "food_id": "000044"
+      },
+      {
+        "component": "Chicken Filling",
+        "amount": 20.0,
+        "unit": "ml",
+        "prep_style": null,
+        "name": "olive oil",
+        "food_id": "000378"
+      },
+      {
+        "component": "Chicken Filling",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "ground cumin",
+        "food_id": "000278"
+      },
+      {
+        "component": "Chicken Filling",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "Chili Powder",
+        "food_id": "000653"
+      },
+      {
+        "component": "Chicken Filling",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "Garlic Powder",
+        "food_id": "000643"
+      },
+      {
+        "component": "Chicken Filling",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "Ground Onion",
+        "food_id": "000644"
+      },
+      {
+        "component": "Enchilada Assembly and Baking",
+        "amount": 300.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "tortilla",
+        "food_id": "000339"
+      },
+      {
+        "component": "Enchilada Assembly and Baking",
+        "amount": 120.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "feta",
+        "food_id": "000197"
+      },
+      {
+        "component": "Enchilada Assembly and Baking",
+        "amount": 80.0,
+        "unit": "ml",
+        "prep_style": null,
+        "name": "sour cream",
+        "food_id": "000222"
+      },
+      {
+        "component": "Enchilada Assembly and Baking",
+        "amount": 60.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "lettuce",
+        "food_id": "000079"
+      }
+    ],
+    "steps": [
+      {
+        "component": "Green Tomatillo Sauce",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Roughly chop the onion and peel the garlic cloves."
+      },
+      {
+        "component": "Chicken Filling",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "SAFETY: Pat the chicken breasts dry with paper towels and wash hands immediately after handling raw meat."
+      },
+      {
+        "component": "Enchilada Assembly and Baking",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Preheat your oven to 180°C and lightly grease a 9x13 inch baking dish."
+      },
+      {
+        "component": "Green Tomatillo Sauce",
+        "phase": "Prep",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Remove the stems and seeds from the chili peppers to manage heat levels."
+      },
+      {
+        "component": "Chicken Filling",
+        "phase": "Prep",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Season the chicken thoroughly with cumin, chili powder, garlic powder, and ground onion."
+      },
+      {
+        "component": "Enchilada Assembly and Baking",
+        "phase": "Prep",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Flash-fry the tortillas in a dry pan for 15 seconds per side to make them pliable."
+      },
+      {
+        "component": "Green Tomatillo Sauce",
+        "phase": "Cook",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "In a pot of boiling water, simmer the onion, garlic, and chili peppers for 10 minutes until soft."
+      },
+      {
+        "component": "Chicken Filling",
+        "phase": "Cook",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Heat olive oil in a large skillet over medium-high heat."
+      },
+      {
+        "component": "Enchilada Assembly and Baking",
+        "phase": "Cook",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Dip each tortilla into the green sauce, then fill with a generous amount of shredded chicken."
+      },
+      {
+        "component": "Green Tomatillo Sauce",
+        "phase": "Cook",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Drain the vegetables and transfer them to a high-speed blender."
+      },
+      {
+        "component": "Chicken Filling",
+        "phase": "Cook",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Sear the chicken for 6-8 minutes per side until the internal temperature reaches 74°C."
+      },
+      {
+        "component": "Enchilada Assembly and Baking",
+        "phase": "Cook",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Roll the tortillas tightly and place them seam-side down in the baking dish."
+      },
+      {
+        "component": "Green Tomatillo Sauce",
+        "phase": "Cook",
+        "step_number": 5,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Add the fresh cilantro, lime juice, and salt to the blender jar."
+      },
+      {
+        "component": "Chicken Filling",
+        "phase": "Cook",
+        "step_number": 5,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Remove the chicken from the heat and allow it to rest for 5 minutes."
+      },
+      {
+        "component": "Enchilada Assembly and Baking",
+        "phase": "Cook",
+        "step_number": 5,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Pour the remaining green sauce over the rolls and sprinkle with half of the crumbled feta."
+      },
+      {
+        "component": "Green Tomatillo Sauce",
+        "phase": "Cook",
+        "step_number": 6,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Pulse until the sauce is smooth and emulsified; if too thick, add 15ml of water."
+      },
+      {
+        "component": "Chicken Filling",
+        "phase": "Cook",
+        "step_number": 6,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Using two forks, shred the chicken into thin strips."
+      },
+      {
+        "component": "Enchilada Assembly and Baking",
+        "phase": "Cook",
+        "step_number": 6,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Bake for 15-20 minutes until the sauce is bubbling and the edges are slightly golden."
+      },
+      {
+        "component": "Green Tomatillo Sauce",
+        "phase": "Serve",
+        "step_number": 7,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Keep the sauce warm in a small saucepan over low heat until assembly."
+      },
+      {
+        "component": "Chicken Filling",
+        "phase": "Serve",
+        "step_number": 7,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Toss the shredded meat with 30ml of the green sauce to keep it moist."
+      },
+      {
+        "component": "Enchilada Assembly and Baking",
+        "phase": "Serve",
+        "step_number": 7,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Top with shredded lettuce, a drizzle of sour cream, and the remaining feta before serving hot."
+      }
+    ]
+  },
+  {
+    "id": 177,
+    "title": "Classic Cheeseburger on Brioche",
+    "servings": 4,
+    "ingredients": [
+      {
+        "component": "Beef Patty",
+        "amount": 400.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "beef ground beef",
+        "food_id": "000011"
+      },
+      {
+        "component": "Beef Patty",
+        "amount": 0.5,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "Garlic Powder",
+        "food_id": "000643"
+      },
+      {
+        "component": "Beef Patty",
+        "amount": 0.5,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "Ground Onion",
+        "food_id": "000644"
+      },
+      {
+        "component": "Beef Patty",
+        "amount": 5.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "kosher salt",
+        "food_id": "000293"
+      },
+      {
+        "component": "Beef Patty",
+        "amount": 0.5,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "ground black pepper",
+        "food_id": "000285"
+      },
+      {
+        "component": "Burger Assembly",
+        "amount": 150.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "brioche",
+        "food_id": "000336"
+      },
+      {
+        "component": "Burger Assembly",
+        "amount": 40.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "cheddar",
+        "food_id": "000193"
+      },
+      {
+        "component": "Burger Assembly",
+        "amount": 20.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "lettuce",
+        "food_id": "000079"
+      },
+      {
+        "component": "Burger Assembly",
+        "amount": 60.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "Roma tomatoes, chopped",
+        "food_id": "IMP-6d4cd7"
+      },
+      {
+        "component": "Burger Assembly",
+        "amount": 20.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "pickled cucumbers (dill pickles)",
+        "food_id": "000446"
+      },
+      {
+        "component": "Burger Assembly",
+        "amount": 15.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "unsalted butter",
+        "food_id": "000212"
+      }
+    ],
+    "steps": [
+      {
+        "component": "Beef Patty",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Divide the chilled ground beef into two equal 200g portions."
+      },
+      {
+        "component": "Burger Assembly",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Slice the brioche buns horizontally and slice the Roma tomatoes into thin uniform rounds."
+      },
+      {
+        "component": "Beef Patty",
+        "phase": "Prep",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Form each portion into a patty about 10cm in diameter, slightly wider than your brioche bun."
+      },
+      {
+        "component": "Burger Assembly",
+        "phase": "Prep",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Rinse the lettuce leaves under cold water and pat them completely dry using a kitchen towel."
+      },
+      {
+        "component": "Beef Patty",
+        "phase": "Prep",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Press a small dimple into the center of each patty with your thumb to prevent shrinking and bulging during cooking."
+      },
+      {
+        "component": "Burger Assembly",
+        "phase": "Cook",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Spread softened butter onto the cut sides of the brioche bun halves."
+      },
+      {
+        "component": "Beef Patty",
+        "phase": "Prep",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "In a small bowl, whisk together the garlic powder, onion powder, salt, and black pepper."
+      },
+      {
+        "component": "Burger Assembly",
+        "phase": "Cook",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Place the buns in a separate skillet over medium heat and toast for 1-2 minutes until golden and crisp."
+      },
+      {
+        "component": "Beef Patty",
+        "phase": "Prep",
+        "step_number": 5,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Season the exterior of both patties generously on both sides with the spice mixture."
+      },
+      {
+        "component": "Burger Assembly",
+        "phase": "Cook",
+        "step_number": 5,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "During the final minute of cooking the patties, place cheddar slices on top and cover the pan to melt the cheese."
+      },
+      {
+        "component": "Beef Patty",
+        "phase": "Cook",
+        "step_number": 6,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Heat a cast-iron skillet over high heat. SAFETY: Wash your hands and all surfaces that contacted raw meat thoroughly with soap."
+      },
+      {
+        "component": "Burger Assembly",
+        "phase": "Serve",
+        "step_number": 6,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Lay the bottom toasted bun on a plate and place a piece of lettuce followed by the tomato slices."
+      },
+      {
+        "component": "Beef Patty",
+        "phase": "Cook",
+        "step_number": 7,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Place patties in the hot pan and sear for 4 minutes until a dark brown crust forms, then flip."
+      },
+      {
+        "component": "Burger Assembly",
+        "phase": "Serve",
+        "step_number": 7,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Carefully place the cheesed beef patty onto the tomatoes and top with the pickled cucumber slices."
+      },
+      {
+        "component": "Beef Patty",
+        "phase": "Serve",
+        "step_number": 8,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Remove the patties from the heat and let them rest for 2 minutes to allow the juices to redistribute."
+      },
+      {
+        "component": "Burger Assembly",
+        "phase": "Serve",
+        "step_number": 8,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Finish by placing the top bun over the pickles and serve immediately while hot."
+      }
+    ]
+  },
+  {
+    "id": 178,
+    "title": "Buffalo Wings with Spicy Cayenne Hot Sauce",
+    "servings": 4,
+    "ingredients": [
+      {
+        "component": "Buffalo Wings",
+        "amount": 1000.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "chicken wing",
+        "food_id": "000048"
+      },
+      {
+        "component": "Buffalo Wings",
+        "amount": 100.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "Cornstarch",
+        "food_id": "000649"
+      },
+      {
+        "component": "Buffalo Wings",
+        "amount": 5.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "table salt",
+        "food_id": "000292"
+      },
+      {
+        "component": "Buffalo Wings",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "ground black pepper",
+        "food_id": "000285"
+      },
+      {
+        "component": "Spicy Cayenne Hot Sauce",
+        "amount": 100.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "butter",
+        "food_id": "000384"
+      },
+      {
+        "component": "Spicy Cayenne Hot Sauce",
+        "amount": 3.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "Cayenne Pepper",
+        "food_id": "000652"
+      },
+      {
+        "component": "Spicy Cayenne Hot Sauce",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "Chili Powder",
+        "food_id": "000653"
+      },
+      {
+        "component": "Spicy Cayenne Hot Sauce",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "Garlic Powder",
+        "food_id": "000643"
+      },
+      {
+        "component": "Spicy Cayenne Hot Sauce",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "Ground Onion",
+        "food_id": "000644"
+      },
+      {
+        "component": "Spicy Cayenne Hot Sauce",
+        "amount": 60.0,
+        "unit": "ml",
+        "prep_style": null,
+        "name": "White Vinegar",
+        "food_id": "000637"
+      },
+      {
+        "component": "Spicy Cayenne Hot Sauce",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "table salt",
+        "food_id": "000292"
+      }
+    ],
+    "steps": [
+      {
+        "component": "Buffalo Wings",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Pat the chicken wings completely dry with paper towels; safety: ensure raw poultry is handled carefully and surfaces are sanitized afterward."
+      },
+      {
+        "component": "Spicy Cayenne Hot Sauce",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Melt the butter in a small saucepan over medium-low heat until completely liquid."
+      },
+      {
+        "component": "Buffalo Wings",
+        "phase": "Prep",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "In a large bowl, whisk together the cornstarch, salt, and ground black pepper."
+      },
+      {
+        "component": "Spicy Cayenne Hot Sauce",
+        "phase": "Cook",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Whisk in the cayenne pepper, chili powder, garlic powder, and ground onion, stirring for 1 minute to toast the spices."
+      },
+      {
+        "component": "Buffalo Wings",
+        "phase": "Prep",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Toss the dried wings in the cornstarch mixture until they are thinly and evenly coated, shaking off any excess powder."
+      },
+      {
+        "component": "Spicy Cayenne Hot Sauce",
+        "phase": "Cook",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Pour in the white vinegar and add a teaspoon of salt, whisking vigorously to emulsify the fat and liquid."
+      },
+      {
+        "component": "Buffalo Wings",
+        "phase": "Cook",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Heat deep-frying oil in a heavy pot or deep fryer to 190°C."
+      },
+      {
+        "component": "Spicy Cayenne Hot Sauce",
+        "phase": "Cook",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Simmer the sauce gently on low heat for 5 minutes until it thickens slightly and develops a glossy sheen."
+      },
+      {
+        "component": "Buffalo Wings",
+        "phase": "Cook",
+        "step_number": 5,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Fry the wings in small batches for 10-12 minutes until the skin is golden brown and very crispy."
+      },
+      {
+        "component": "Spicy Cayenne Hot Sauce",
+        "phase": "Serve",
+        "step_number": 5,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Place the hot fried wings in a large stainless steel bowl and pour the warm sauce over them."
+      },
+      {
+        "component": "Buffalo Wings",
+        "phase": "Cook",
+        "step_number": 6,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Ensure the internal temperature of the wings reaches 74°C for safety."
+      },
+      {
+        "component": "Spicy Cayenne Hot Sauce",
+        "phase": "Serve",
+        "step_number": 6,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Toss the wings until every piece is thoroughly glazed and serve immediately."
+      },
+      {
+        "component": "Buffalo Wings",
+        "phase": "Serve",
+        "step_number": 7,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Remove wings from the oil and drain on a wire rack for 2 minutes to maintain crispiness."
+      }
+    ]
+  },
+  {
+    "id": 180,
+    "title": "Butter Chicken with Tandoori-Grilled Chicken and Silky Tomato-Butter Sauce",
+    "servings": 4,
+    "ingredients": [
+      {
+        "component": "Tandoori Chicken",
+        "amount": 600.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "chicken breast",
+        "food_id": "000044"
+      },
+      {
+        "component": "Tandoori Chicken",
+        "amount": 150.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "plain yogurt",
+        "food_id": "000205"
+      },
+      {
+        "component": "Tandoori Chicken",
+        "amount": 15.0,
+        "unit": "ml",
+        "prep_style": null,
+        "name": "lemon juice",
+        "food_id": "IMP-0d29f9"
+      },
+      {
+        "component": "Tandoori Chicken",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "ground ginger",
+        "food_id": "000282"
+      },
+      {
+        "component": "Tandoori Chicken",
+        "amount": 15.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "garlic",
+        "food_id": "000112"
+      },
+      {
+        "component": "Tandoori Chicken",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "ground cumin",
+        "food_id": "000278"
+      },
+      {
+        "component": "Tandoori Chicken",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "ground coriander",
+        "food_id": "000279"
+      },
+      {
+        "component": "Tandoori Chicken",
+        "amount": 0.5,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "ground turmeric",
+        "food_id": "000280"
+      },
+      {
+        "component": "Tandoori Chicken",
+        "amount": 0.5,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "Cayenne Pepper",
+        "food_id": "000652"
+      },
+      {
+        "component": "Tandoori Chicken",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "salted butter",
+        "food_id": "000211"
+      },
+      {
+        "component": "Silky Tomato-Butter Sauce",
+        "amount": 80.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "butter",
+        "food_id": "000384"
+      },
+      {
+        "component": "Silky Tomato-Butter Sauce",
+        "amount": 400.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "canned tomatoes",
+        "food_id": "000415"
+      },
+      {
+        "component": "Silky Tomato-Butter Sauce",
+        "amount": 100.0,
+        "unit": "ml",
+        "prep_style": null,
+        "name": "heavy cream",
+        "food_id": "000219"
+      },
+      {
+        "component": "Silky Tomato-Butter Sauce",
+        "amount": 100.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "onion",
+        "food_id": "000111"
+      },
+      {
+        "component": "Silky Tomato-Butter Sauce",
+        "amount": 10.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "white sugar",
+        "food_id": "000358"
+      },
+      {
+        "component": "Silky Tomato-Butter Sauce",
+        "amount": 0.5,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "ground cinnamon",
+        "food_id": "000281"
+      },
+      {
+        "component": "Silky Tomato-Butter Sauce",
+        "amount": 0.25,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "ground cardamom",
+        "food_id": "000287"
+      },
+      {
+        "component": "Silky Tomato-Butter Sauce",
+        "amount": 0.25,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "ground cloves",
+        "food_id": "000284"
+      },
+      {
+        "component": "Silky Tomato-Butter Sauce",
+        "amount": 2.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "dried apricots",
+        "food_id": "000175"
+      }
+    ],
+    "steps": [
+      {
+        "component": "Tandoori Chicken",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Mince the garlic and combine it in a bowl with plain yogurt, lemon juice, ginger, cumin, coriander, turmeric, salt, and cayenne pepper."
+      },
+      {
+        "component": "Silky Tomato-Butter Sauce",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Finely dice the onion and set aside. If the canned tomatoes are whole, pulse them in a blender until perfectly smooth."
+      },
+      {
+        "component": "Tandoori Chicken",
+        "phase": "Prep",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Cut the chicken breast into 3cm cubes. Ensure all pieces are uniform for even grilling."
+      },
+      {
+        "component": "Silky Tomato-Butter Sauce",
+        "phase": "Cook",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "In a large heavy-bottomed pan, melt 40g of the butter over medium heat."
+      },
+      {
+        "component": "Tandoori Chicken",
+        "phase": "Prep",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Toss the chicken cubes in the tandoori marinade until well coated. Cover and refrigerate for at least 30 minutes."
+      },
+      {
+        "component": "Silky Tomato-Butter Sauce",
+        "phase": "Cook",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Add the diced onions and sauté for 6-8 minutes until they are soft and starting to turn golden."
+      },
+      {
+        "component": "Tandoori Chicken",
+        "phase": "Prep",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "SAFETY: Thoroughly wash your hands, utensils, and any surfaces that came into contact with raw chicken."
+      },
+      {
+        "component": "Silky Tomato-Butter Sauce",
+        "phase": "Cook",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Stir in the cinnamon, cardamom, and cloves. Toast the spices in the butter for 60 seconds until fragrant."
+      },
+      {
+        "component": "Tandoori Chicken",
+        "phase": "Cook",
+        "step_number": 5,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Preheat your oven grill or barbecue to 220°C."
+      },
+      {
+        "component": "Silky Tomato-Butter Sauce",
+        "phase": "Cook",
+        "step_number": 5,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Pour in the tomato puree and add the sugar. Simmer gently for 15-20 minutes, stirring occasionally, until the sauce reduces and darkens."
+      },
+      {
+        "component": "Tandoori Chicken",
+        "phase": "Cook",
+        "step_number": 6,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Thread chicken onto skewers or place on a wire rack over a baking sheet. Grill for 12-15 minutes, flipping once, until charred on the edges and cooked to an internal temperature of 75°C."
+      },
+      {
+        "component": "Silky Tomato-Butter Sauce",
+        "phase": "Cook",
+        "step_number": 6,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Lower the heat and stir in the heavy cream and the remaining 40g of butter. Mix until the sauce is silky and emulsified."
+      },
+      {
+        "component": "Tandoori Chicken",
+        "phase": "Serve",
+        "step_number": 7,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Remove the chicken from skewers and set aside to be incorporated into the sauce."
+      },
+      {
+        "component": "Silky Tomato-Butter Sauce",
+        "phase": "Cook",
+        "step_number": 7,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Add the grilled Tandoori Chicken pieces into the sauce. Simmer for an additional 5 minutes to let the flavors meld."
+      },
+      {
+        "component": "Silky Tomato-Butter Sauce",
+        "phase": "Serve",
+        "step_number": 8,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Rub the dried fenugreek leaves between your palms to release the oils and sprinkle over the hot butter chicken before serving."
+      }
+    ]
+  },
+  {
+    "id": 190,
+    "title": "Rotisserie-Style Chicken Gyros with Homemade Tzatziki",
+    "servings": 4,
+    "ingredients": [
+      {
+        "component": "Rotisserie-Style Chicken",
+        "amount": 30.0,
+        "unit": "ml",
+        "prep_style": null,
+        "name": "extra virgin olive oil",
+        "food_id": "000379"
+      },
+      {
+        "component": "Rotisserie-Style Chicken",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "dried oregano",
+        "food_id": "000257"
+      },
+      {
+        "component": "Rotisserie-Style Chicken",
+        "amount": 0.5,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "dried thyme",
+        "food_id": "000258"
+      },
+      {
+        "component": "Rotisserie-Style Chicken",
+        "amount": 0.5,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "dried basil",
+        "food_id": "000256"
+      },
+      {
+        "component": "Rotisserie-Style Chicken",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "Garlic Powder",
+        "food_id": "000643"
+      },
+      {
+        "component": "Rotisserie-Style Chicken",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "Ground Onion",
+        "food_id": "000644"
+      },
+      {
+        "component": "Rotisserie-Style Chicken",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "kosher salt",
+        "food_id": "000293"
+      },
+      {
+        "component": "Rotisserie-Style Chicken",
+        "amount": 0.5,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "ground black pepper",
+        "food_id": "000285"
+      },
+      {
+        "component": "Tzatziki Sauce",
+        "amount": 250.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "greek yogurt",
+        "food_id": "000206"
+      },
+      {
+        "component": "Tzatziki Sauce",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "dill",
+        "food_id": "000249"
+      },
+      {
+        "component": "Warm Pita Bread",
+        "amount": 4.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "pita",
+        "food_id": "000340"
+      },
+      {
+        "component": "Warm Pita Bread",
+        "amount": 15.0,
+        "unit": "ml",
+        "prep_style": null,
+        "name": "olive oil",
+        "food_id": "000378"
+      },
+      {
+        "component": "Vegetable Garnishes",
+        "amount": 2.0,
+        "unit": "units",
+        "prep_style": null,
+        "name": "Roma tomatoes, chopped",
+        "food_id": "IMP-6d4cd7"
+      },
+      {
+        "component": "Vegetable Garnishes",
+        "amount": 1.0,
+        "unit": "unit",
+        "prep_style": null,
+        "name": "red onion, medium, diced",
+        "food_id": "IMP-fa00e5"
+      },
+      {
+        "component": "Rotisserie-Style Chicken",
+        "amount": 600.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "chicken breast",
+        "food_id": "000044"
+      },
+      {
+        "component": "Rotisserie-Style Chicken",
+        "amount": 1.0,
+        "unit": "units",
+        "prep_style": null,
+        "name": "lemon",
+        "food_id": "000130"
+      },
+      {
+        "component": "Tzatziki Sauce",
+        "amount": 1.0,
+        "unit": "unit",
+        "prep_style": null,
+        "name": "Cucumber",
+        "food_id": "000642"
+      },
+      {
+        "component": "Tzatziki Sauce",
+        "amount": 2.0,
+        "unit": "unit",
+        "prep_style": null,
+        "name": "garlic",
+        "food_id": "000112"
+      },
+      {
+        "component": "Tzatziki Sauce",
+        "amount": 1.0,
+        "unit": "units",
+        "prep_style": null,
+        "name": "lemon",
+        "food_id": "000130"
+      }
+    ],
+    "steps": [
+      {
+        "component": "Rotisserie-Style Chicken",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Flag: Raw Meat Handling. Wash hands and surfaces after contact. Slice the chicken breasts into very thin 1cm wide strips."
+      },
+      {
+        "component": "Tzatziki Sauce",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Grate the cucumber using a box grater. Wrap the pulp in a clean kitchen towel and squeeze out all excess moisture."
+      },
+      {
+        "component": "Warm Pita Bread",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Lightly brush both sides of each pita bread with olive oil."
+      },
+      {
+        "component": "Vegetable Garnishes",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Wash the Roma tomatoes and chop them into uniform cubes."
+      },
+      {
+        "component": "Rotisserie-Style Chicken",
+        "phase": "Prep",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "In a large bowl, whisk together the olive oil, lemon juice, oregano, thyme, basil, onion powder, garlic powder, salt, and pepper."
+      },
+      {
+        "component": "Tzatziki Sauce",
+        "phase": "Prep",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Mince the garlic cloves and finely chop the fresh dill."
+      },
+      {
+        "component": "Warm Pita Bread",
+        "phase": "Cook",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Heat a large skillet over medium-high heat."
+      },
+      {
+        "component": "Vegetable Garnishes",
+        "phase": "Prep",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Peel the red onion and slice it into thin half-moons for a milder bite."
+      },
+      {
+        "component": "Rotisserie-Style Chicken",
+        "phase": "Prep",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Toss the chicken strips in the marinade until fully coated, cover, and refrigerate for 30 minutes."
+      },
+      {
+        "component": "Tzatziki Sauce",
+        "phase": "Cook",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "In a small bowl, blend the Greek yogurt with the squeezed cucumber, garlic, lemon juice, and dill."
+      },
+      {
+        "component": "Warm Pita Bread",
+        "phase": "Cook",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Toast each pita for 1 minute per side until they are soft, warm, and have light golden spots."
+      },
+      {
+        "component": "Vegetable Garnishes",
+        "phase": "Serve",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Arrange the tomatoes and onions on a platter to be added to the gyros during final assembly."
+      },
+      {
+        "component": "Rotisserie-Style Chicken",
+        "phase": "Cook",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Preheat the oven to 200°C. Place a wire roasting rack over a foil-lined baking sheet."
+      },
+      {
+        "component": "Tzatziki Sauce",
+        "phase": "Serve",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Season with a pinch of salt to taste and chill in the refrigerator until ready for use."
+      },
+      {
+        "component": "Warm Pita Bread",
+        "phase": "Serve",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Stack the pitas and wrap them in a clean towel to keep them soft and steam slightly before serving."
+      },
+      {
+        "component": "Rotisserie-Style Chicken",
+        "phase": "Cook",
+        "step_number": 5,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Arrange the marinated chicken strips in a single layer on the rack to allow air circulation, simulating a rotisserie environment."
+      },
+      {
+        "component": "Rotisserie-Style Chicken",
+        "phase": "Cook",
+        "step_number": 6,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Roast for 20-25 minutes, or until the chicken reaches 74°C internal temperature and the edges are slightly charred."
+      },
+      {
+        "component": "Rotisserie-Style Chicken",
+        "phase": "Serve",
+        "step_number": 7,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Remove from the oven and let the meat rest for 5 minutes before assembling the gyros."
+      }
+    ]
+  },
+  {
+    "id": 197,
+    "title": "Spanish Seafood and Chicken Paella",
+    "servings": 4,
+    "ingredients": [
+      {
+        "component": "Chicken and Seafood",
+        "amount": 400.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "chicken thigh",
+        "food_id": "000047"
+      },
+      {
+        "component": "Chicken and Seafood",
+        "amount": 200.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "shrimps",
+        "food_id": "000058"
+      },
+      {
+        "component": "Chicken and Seafood",
+        "amount": 200.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "scampi",
+        "food_id": "000059"
+      },
+      {
+        "component": "Chicken and Seafood",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "smoked paprika",
+        "food_id": "000291"
+      },
+      {
+        "component": "Chicken and Seafood",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "kosher salt",
+        "food_id": "000293"
+      },
+      {
+        "component": "Chicken and Seafood",
+        "amount": 0.5,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "ground black pepper",
+        "food_id": "000285"
+      },
+      {
+        "component": "Chicken and Seafood",
+        "amount": 30.0,
+        "unit": "ml",
+        "prep_style": null,
+        "name": "olive oil",
+        "food_id": "000378"
+      },
+      {
+        "component": "Chicken and Seafood",
+        "amount": 1.0,
+        "unit": "pcs",
+        "prep_style": null,
+        "name": "lemon",
+        "food_id": "000130"
+      },
+      {
+        "component": "Chicken and Seafood",
+        "amount": 10.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "parsley",
+        "food_id": "000246"
+      },
+      {
+        "component": "Saffron Rice and Vegetables",
+        "amount": 400.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "white rice",
+        "food_id": "000309"
+      },
+      {
+        "component": "Saffron Rice and Vegetables",
+        "amount": 150.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "green beans",
+        "food_id": "000106"
+      },
+      {
+        "component": "Saffron Rice and Vegetables",
+        "amount": 100.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "onion",
+        "food_id": "000111"
+      },
+      {
+        "component": "Saffron Rice and Vegetables",
+        "amount": 15.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "garlic",
+        "food_id": "000112"
+      },
+      {
+        "component": "Saffron Rice and Vegetables",
+        "amount": 200.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "tomatoes",
+        "food_id": "000093"
+      },
+      {
+        "component": "Saffron Rice and Vegetables",
+        "amount": 2.0,
+        "unit": "pcs",
+        "prep_style": null,
+        "name": "Chicken Bouillon Cube",
+        "food_id": "000635"
+      },
+      {
+        "component": "Saffron Rice and Vegetables",
+        "amount": 800.0,
+        "unit": "ml",
+        "prep_style": null,
+        "name": "Water",
+        "food_id": "IMP-b38735"
+      },
+      {
+        "component": "Saffron Rice and Vegetables",
+        "amount": 0.5,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "Saffron Threads",
+        "food_id": "pending-2b5d5a39"
+      },
+      {
+        "component": "Saffron Rice and Vegetables",
+        "amount": 0.5,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "ground turmeric",
+        "food_id": "000280"
+      }
+    ],
+    "steps": [
+      {
+        "component": "Chicken and Seafood",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Clean the shrimps and scampi, leaving the tails on if preferred, and cut the chicken thighs into 3cm bite-sized chunks."
+      },
+      {
+        "component": "Saffron Rice and Vegetables",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Finely dice the onion, mince the garlic cloves, and core and chop the tomatoes. Trim the ends of the green beans and cut into small pieces."
+      },
+      {
+        "component": "Chicken and Seafood",
+        "phase": "Prep",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Finely chop the fresh parsley and cut the lemon into six uniform wedges for the final garnish."
+      },
+      {
+        "component": "Saffron Rice and Vegetables",
+        "phase": "Prep",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "In a separate pot, dissolve the chicken bouillon cubes in boiling water and add the saffron threads and turmeric to infuse the liquid."
+      },
+      {
+        "component": "Chicken and Seafood",
+        "phase": "Prep",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "In a small bowl, toss the chicken pieces with half of the smoked paprika, salt, and black pepper until evenly coated."
+      },
+      {
+        "component": "Saffron Rice and Vegetables",
+        "phase": "Cook",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Using the same paella pan, sauté the onion and green beans over medium heat until the onion becomes translucent."
+      },
+      {
+        "component": "Chicken and Seafood",
+        "phase": "Cook",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Heat 15ml of olive oil in a wide paella pan or large flat-bottomed skillet over medium-high heat."
+      },
+      {
+        "component": "Saffron Rice and Vegetables",
+        "phase": "Cook",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Stir in the minced garlic and chopped tomatoes, cooking until the tomatoes break down into a thick, concentrated sofrito paste."
+      },
+      {
+        "component": "Chicken and Seafood",
+        "phase": "Cook",
+        "step_number": 5,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "[SAFETY] Add the chicken pieces to the pan and sear until golden brown and fully cooked through (about 6-8 minutes), then remove and set aside."
+      },
+      {
+        "component": "Saffron Rice and Vegetables",
+        "phase": "Cook",
+        "step_number": 5,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Add the white rice to the pan and stir for 2 minutes to toast the grains and coat them thoroughly in the vegetable oil mixture."
+      },
+      {
+        "component": "Chicken and Seafood",
+        "phase": "Cook",
+        "step_number": 6,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "[SAFETY] Add the remaining olive oil to the pan and sear the shrimps and scampi until they turn opaque and pink (2-3 minutes), then set aside."
+      },
+      {
+        "component": "Saffron Rice and Vegetables",
+        "phase": "Cook",
+        "step_number": 6,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Pour in the hot saffron-infused bouillon; spread the rice evenly across the pan but do not stir it again to ensure the 'socarrat' crust develops."
+      },
+      {
+        "component": "Chicken and Seafood",
+        "phase": "Serve",
+        "step_number": 7,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Keep the seared proteins on a warm plate covered loosely with foil while you prepare the rice base."
+      },
+      {
+        "component": "Saffron Rice and Vegetables",
+        "phase": "Cook",
+        "step_number": 7,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Simmer the rice on low heat for 15-18 minutes until most of the liquid is absorbed and the grains are tender."
+      },
+      {
+        "component": "Saffron Rice and Vegetables",
+        "phase": "Serve",
+        "step_number": 8,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Arrange the chicken, shrimps, and scampi on top of the cooked rice, garnish with lemon wedges and parsley, and rest for 5 minutes."
+      }
+    ]
+  },
+  {
+    "id": 203,
+    "title": "Loaded Baked Potato Soup with Crispy Skin Dippers",
+    "servings": 4,
+    "ingredients": [
+      {
+        "component": "Soup",
+        "amount": 1500.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "potatoes",
+        "food_id": "000070"
+      },
+      {
+        "component": "Soup",
+        "amount": 150.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "bacon",
+        "food_id": "000630"
+      },
+      {
+        "component": "Soup",
+        "amount": 100.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "celery",
+        "food_id": "000117"
+      },
+      {
+        "component": "Soup",
+        "amount": 150.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "onion",
+        "food_id": "000111"
+      },
+      {
+        "component": "Soup",
+        "amount": 5.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "garlic",
+        "food_id": "000112"
+      },
+      {
+        "component": "Soup",
+        "amount": 625.0,
+        "unit": "ml",
+        "prep_style": null,
+        "name": "chicken fat (schmaltz)",
+        "food_id": "000389"
+      },
+      {
+        "component": "Soup",
+        "amount": 250.0,
+        "unit": "ml",
+        "prep_style": null,
+        "name": "whole milk",
+        "food_id": "000182"
+      },
+      {
+        "component": "Soup",
+        "amount": 250.0,
+        "unit": "ml",
+        "prep_style": null,
+        "name": "heavy cream",
+        "food_id": "000219"
+      },
+      {
+        "component": "Soup",
+        "amount": 100.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "cheddar",
+        "food_id": "000193"
+      },
+      {
+        "component": "Soup",
+        "amount": 30.0,
+        "unit": "ml",
+        "prep_style": null,
+        "name": "olive oil",
+        "food_id": "000378"
+      },
+      {
+        "component": "Soup",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "table salt",
+        "food_id": "000292"
+      },
+      {
+        "component": "Soup",
+        "amount": 0.5,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "ground black pepper",
+        "food_id": "000285"
+      },
+      {
+        "component": "Crispy Potato Skin Dippers",
+        "amount": 15.0,
+        "unit": "ml",
+        "prep_style": null,
+        "name": "olive oil",
+        "food_id": "000378"
+      },
+      {
+        "component": "Crispy Potato Skin Dippers",
+        "amount": 0.25,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "table salt",
+        "food_id": "000292"
+      },
+      {
+        "component": "Crispy Potato Skin Dippers",
+        "amount": 0.25,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "ground black pepper",
+        "food_id": "000285"
+      },
+      {
+        "component": "Toppings",
+        "amount": 100.0,
+        "unit": "ml",
+        "prep_style": null,
+        "name": "sour cream",
+        "food_id": "000222"
+      },
+      {
+        "component": "Toppings",
+        "amount": 5.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "chives",
+        "food_id": "000248"
+      },
+      {
+        "component": "Toppings",
+        "amount": 50.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "cheddar",
+        "food_id": "000193"
+      }
+    ],
+    "steps": [
+      {
+        "component": "Soup",
+        "phase": "Cook",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Prick potatoes with a fork and coat in oil, salt, and pepper. Bake at 200°C for 1 hour or until soft."
+      },
+      {
+        "component": "Crispy Potato Skin Dippers",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Place the hollowed-out potato skins on a baking tray."
+      },
+      {
+        "component": "Toppings",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Dice the crispy bacon and finely chop the fresh chives."
+      },
+      {
+        "component": "Soup",
+        "phase": "Cook",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "In a large pot, fry bacon slices until crispy. Remove the bacon and set aside, leaving the fat in the pot."
+      },
+      {
+        "component": "Crispy Potato Skin Dippers",
+        "phase": "Cook",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Drizzle with olive oil and season with salt and pepper. Bake at the oven's highest temperature for 5 minutes until very crispy."
+      },
+      {
+        "component": "Toppings",
+        "phase": "Serve",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Ladle soup into bowls. Top with extra cheddar, chopped bacon, a dollollop of sour cream, and chives. Serve with the skin dippers."
+      },
+      {
+        "component": "Soup",
+        "phase": "Cook",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Add celery, onion, and garlic to the rendered bacon fat. Sauté over medium heat until softened."
+      },
+      {
+        "component": "Soup",
+        "phase": "Prep",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Slice cooked potatoes, scoop out the centers, and add the potato flesh to the soup pot."
+      },
+      {
+        "component": "Soup",
+        "phase": "Cook",
+        "step_number": 5,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Pour in chicken stock and half of the milk. Use an immersion blender to blitz until smooth."
+      },
+      {
+        "component": "Soup",
+        "phase": "Cook",
+        "step_number": 6,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Stir in heavy cream and season with salt and pepper. Simmer gently."
+      },
+      {
+        "component": "Soup",
+        "phase": "Cook",
+        "step_number": 7,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Turn off the heat and stir in the grated cheddar. Use the remaining milk to adjust the soup to your desired consistency."
+      }
+    ]
+  },
+  {
+    "id": 209,
+    "title": "Rotisserie-Style Chicken Gyros with Homemade Tzatziki",
+    "servings": 4,
+    "ingredients": [
+      {
+        "component": "Spiced Chicken",
+        "amount": 500.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "chicken thigh",
+        "food_id": "000047"
+      },
+      {
+        "component": "Spiced Chicken",
+        "amount": 100.0,
+        "unit": "ml",
+        "prep_style": null,
+        "name": "Protein Yoghurt",
+        "food_id": "000641"
+      },
+      {
+        "component": "Spiced Chicken",
+        "amount": 30.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "lemon",
+        "food_id": "000130"
+      },
+      {
+        "component": "Spiced Chicken",
+        "amount": 20.0,
+        "unit": "ml",
+        "prep_style": null,
+        "name": "olive oil",
+        "food_id": "000378"
+      },
+      {
+        "component": "Spiced Chicken",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "Garlic Powder",
+        "food_id": "000643"
+      },
+      {
+        "component": "Spiced Chicken",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "Ground Onion",
+        "food_id": "000644"
+      },
+      {
+        "component": "Spiced Chicken",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "oregano",
+        "food_id": "000251"
+      },
+      {
+        "component": "Spiced Chicken",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "ground cumin",
+        "food_id": "000278"
+      },
+      {
+        "component": "Spiced Chicken",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "ground paprika",
+        "food_id": "000290"
+      },
+      {
+        "component": "Spiced Chicken",
+        "amount": 5.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "salted butter",
+        "food_id": "000211"
+      },
+      {
+        "component": "Spiced Chicken",
+        "amount": 2.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "ground black pepper",
+        "food_id": "000285"
+      },
+      {
+        "component": "Homemade Tzatziki",
+        "amount": 200.0,
+        "unit": "ml",
+        "prep_style": null,
+        "name": "Protein Yoghurt",
+        "food_id": "000641"
+      },
+      {
+        "component": "Homemade Tzatziki",
+        "amount": 1.0,
+        "unit": "pcs",
+        "prep_style": null,
+        "name": "Cucumber",
+        "food_id": "000642"
+      },
+      {
+        "component": "Homemade Tzatziki",
+        "amount": 10.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "garlic",
+        "food_id": "000112"
+      },
+      {
+        "component": "Homemade Tzatziki",
+        "amount": 5.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "dill",
+        "food_id": "000249"
+      },
+      {
+        "component": "Homemade Tzatziki",
+        "amount": 15.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "lemon",
+        "food_id": "000130"
+      },
+      {
+        "component": "Pita and Assembly",
+        "amount": 320.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "pita",
+        "food_id": "000340"
+      },
+      {
+        "component": "Pita and Assembly",
+        "amount": 100.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "lettuce",
+        "food_id": "000079"
+      },
+      {
+        "component": "Pita and Assembly",
+        "amount": 100.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "tomatoes",
+        "food_id": "000093"
+      },
+      {
+        "component": "Pita and Assembly",
+        "amount": 50.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "onion",
+        "food_id": "000111"
+      }
+    ],
+    "steps": [
+      {
+        "component": "Spiced Chicken",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "SAFETY: Wash hands before and after handling raw poultry. Slice chicken thighs into thin, 1cm strips."
+      },
+      {
+        "component": "Homemade Tzatziki",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Grate the cucumber using a box grater and place in a clean kitchen towel; squeeze forcefully to remove all liquid."
+      },
+      {
+        "component": "Pita and Assembly",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Thinly shred the lettuce and slice the tomatoes and onions into thin rounds or half-moons."
+      },
+      {
+        "component": "Spiced Chicken",
+        "phase": "Prep",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "In a large mixing bowl, combine the yoghurt, lemon juice, olive oil, garlic powder, ground onion, oregano, cumin, and paprika."
+      },
+      {
+        "component": "Homemade Tzatziki",
+        "phase": "Prep",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Mince the fresh garlic and finely chop the dill leaves."
+      },
+      {
+        "component": "Pita and Assembly",
+        "phase": "Cook",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Heat a dry skillet over medium-high heat and warm each pita bread for about 45 seconds per side until soft and pliable."
+      },
+      {
+        "component": "Spiced Chicken",
+        "phase": "Prep",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Add the chicken to the marinade, ensure every piece is coated, and refrigerate for 30 minutes."
+      },
+      {
+        "component": "Homemade Tzatziki",
+        "phase": "Prep",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Whisk the yoghurt with the garlic, dill, and lemon juice until smooth."
+      },
+      {
+        "component": "Pita and Assembly",
+        "phase": "Serve",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Spread 2 tablespoons of tzatziki in the center of a warm pita."
+      },
+      {
+        "component": "Spiced Chicken",
+        "phase": "Cook",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Preheat your oven to 200°C and line a baking sheet with parchment paper."
+      },
+      {
+        "component": "Homemade Tzatziki",
+        "phase": "Serve",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Fold in the dry cucumber shreds and refrigerate until the chicken is ready."
+      },
+      {
+        "component": "Pita and Assembly",
+        "phase": "Serve",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Top with a handful of chicken, lettuce, tomatoes, and onions; roll tightly and serve immediately."
+      },
+      {
+        "component": "Spiced Chicken",
+        "phase": "Cook",
+        "step_number": 5,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Spread the chicken in a tight single layer and roast for 20-25 minutes until deep brown and slightly charred at the edges."
+      },
+      {
+        "component": "Spiced Chicken",
+        "phase": "Serve",
+        "step_number": 6,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Let the chicken rest for 5 minutes, then roughly chop it to create varying textures."
+      }
+    ]
+  },
+  {
+    "id": 212,
+    "title": "Classic Cheeseburger on Brioche",
+    "servings": 4,
+    "ingredients": [
+      {
+        "component": "Burger and Assembly",
+        "amount": 400.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "beef ground beef",
+        "food_id": "000011"
+      },
+      {
+        "component": "Burger and Assembly",
+        "amount": 160.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "brioche",
+        "food_id": "000336"
+      },
+      {
+        "component": "Burger and Assembly",
+        "amount": 40.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "cheddar",
+        "food_id": "000193"
+      },
+      {
+        "component": "Burger and Assembly",
+        "amount": 30.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "lettuce",
+        "food_id": "000079"
+      },
+      {
+        "component": "Burger and Assembly",
+        "amount": 60.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "tomatoes",
+        "food_id": "000093"
+      },
+      {
+        "component": "Burger and Assembly",
+        "amount": 30.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "onion",
+        "food_id": "000111"
+      },
+      {
+        "component": "Burger and Assembly",
+        "amount": 15.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "butter",
+        "food_id": "000384"
+      },
+      {
+        "component": "Burger and Assembly",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "Garlic Powder",
+        "food_id": "000643"
+      },
+      {
+        "component": "Burger and Assembly",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "Ground Onion",
+        "food_id": "000644"
+      },
+      {
+        "component": "Burger and Assembly",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "table salt",
+        "food_id": "000292"
+      },
+      {
+        "component": "Burger and Assembly",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "ground black pepper",
+        "food_id": "000285"
+      },
+      {
+        "component": "Burger Sauce",
+        "amount": 50.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "mayonnaise",
+        "food_id": "000520"
+      },
+      {
+        "component": "Burger Sauce",
+        "amount": 20.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "ketchup",
+        "food_id": "000518"
+      },
+      {
+        "component": "Burger Sauce",
+        "amount": 10.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "mustard",
+        "food_id": "000519"
+      },
+      {
+        "component": "Burger Sauce",
+        "amount": 30.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "dill pickles",
+        "food_id": "000538"
+      }
+    ],
+    "steps": [
+      {
+        "component": "Burger and Assembly",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Thinly slice the onion and tomato. Wash the lettuce leaves and pat dry with paper towels."
+      },
+      {
+        "component": "Burger Sauce",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Finely mince the dill pickles until they reach a relish-like consistency."
+      },
+      {
+        "component": "Burger and Assembly",
+        "phase": "Prep",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Divide the ground beef into two equal portions and form into circular patties about 2cm thick. Create a small dimple in the center of each patty with your thumb to prevent bulging during cooking."
+      },
+      {
+        "component": "Burger Sauce",
+        "phase": "Prep",
+        "step_number": 2,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "In a small mixing bowl, combine the mayonnaise, ketchup, and mustard."
+      },
+      {
+        "component": "Burger and Assembly",
+        "phase": "Prep",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Season both sides of the patties generously with salt, ground black pepper, garlic powder, and ground onion powder. **CAUTION: Wash your hands thoroughly after handling raw beef.**"
+      },
+      {
+        "component": "Burger Sauce",
+        "phase": "Prep",
+        "step_number": 3,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Add the minced pickles to the bowl and stir until the mixture is fully emulsified and uniform in color."
+      },
+      {
+        "component": "Burger and Assembly",
+        "phase": "Cook",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Heat a large skillet over medium-high heat. Spread butter onto the cut sides of the brioche buns and toast them in the skillet until golden brown, then remove and set aside."
+      },
+      {
+        "component": "Burger Sauce",
+        "phase": "Prep",
+        "step_number": 4,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Taste and adjust seasoning if necessary, then set aside in the refrigerator until ready to assemble."
+      },
+      {
+        "component": "Burger and Assembly",
+        "phase": "Cook",
+        "step_number": 5,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "In the same skillet, place the beef patties. Sear for 3-4 minutes on the first side without moving them to develop a deep crust."
+      },
+      {
+        "component": "Burger and Assembly",
+        "phase": "Cook",
+        "step_number": 6,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Flip the patties and immediately top each with a slice of cheddar cheese. Cover the skillet with a lid for 1-2 minutes to melt the cheese until the internal temperature of the meat reaches 71°C."
+      },
+      {
+        "component": "Burger and Assembly",
+        "phase": "Serve",
+        "step_number": 7,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Spread a generous layer of Burger Sauce on the bottom half of the toasted brioche buns."
+      },
+      {
+        "component": "Burger and Assembly",
+        "phase": "Serve",
+        "step_number": 8,
+        "global_order_index": null,
+        "estimated_minutes": null,
+        "text": "Layer the lettuce, the cheesy beef patty, sliced tomatoes, and onions. Top with the remaining bun half and serve immediately."
+      }
+    ]
+  },
+  {
+    "id": 236,
+    "title": "Caramelized and Sticky Pork Neck",
+    "servings": 4,
+    "ingredients": [
+      {
+        "component": "Caramelized Pork",
+        "amount": 1500.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "pork bone-in neck steaks",
+        "food_id": "000036"
+      },
+      {
+        "component": "Caramelized Pork",
+        "amount": 100.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "brown sugar",
+        "food_id": "000360"
+      },
+      {
+        "component": "Caramelized Pork",
+        "amount": 1.0,
+        "unit": "tbsp",
+        "prep_style": null,
+        "name": "Water",
+        "food_id": "IMP-b38735"
+      },
+      {
+        "component": "Caramelized Pork",
+        "amount": 2.0,
+        "unit": "pcs",
+        "prep_style": null,
+        "name": "shallots",
+        "food_id": "000113"
+      },
+      {
+        "component": "Caramelized Pork",
+        "amount": 2.0,
+        "unit": "cloves",
+        "prep_style": null,
+        "name": "garlic",
+        "food_id": "000112"
+      },
+      {
+        "component": "Caramelized Pork",
+        "amount": 1.0,
+        "unit": "tbsp",
+        "prep_style": null,
+        "name": "ground ginger",
+        "food_id": "000282"
+      },
+      {
+        "component": "Caramelized Pork",
+        "amount": 400.0,
+        "unit": "ml",
+        "prep_style": null,
+        "name": "coconut milk",
+        "food_id": "000191"
+      },
+      {
+        "component": "Caramelized Pork",
+        "amount": 0.5,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "ground white pepper",
+        "food_id": "000286"
+      },
+      {
+        "component": "Caramelized Pork",
+        "amount": 1.5,
+        "unit": "tbsp",
+        "prep_style": null,
+        "name": "fish sauce",
+        "food_id": "000487"
+      },
+      {
+        "component": "Side and Garnish",
+        "amount": 400.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "white rice",
+        "food_id": "000309"
+      },
+      {
+        "component": "Side and Garnish",
+        "amount": 3.0,
+        "unit": "stalks",
+        "prep_style": null,
+        "name": "spring onions",
+        "food_id": "000116"
+      },
+      {
+        "component": "Side and Garnish",
+        "amount": 10.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "cilantro",
+        "food_id": "000245"
+      },
+      {
+        "component": "Side and Garnish",
+        "amount": 1.0,
+        "unit": "pcs",
+        "prep_style": null,
+        "name": "chili peppers",
+        "food_id": "000097"
+      },
+      {
+        "component": "Side and Garnish",
+        "amount": 1.0,
+        "unit": "pcs",
+        "prep_style": null,
+        "name": "lime",
+        "food_id": "000131"
+      }
+    ],
+    "steps": [
+      {
+        "component": "Caramelized Pork",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": 1,
+        "estimated_minutes": 15,
+        "text": "Remove the bones from the pork neck steaks and rinse the meat thoroughly to remove any bone fragments. Finely chop the shallots, garlic, and ginger."
+      },
+      {
+        "component": "Caramelized Pork",
+        "phase": "Cook",
+        "step_number": 2,
+        "global_order_index": 2,
+        "estimated_minutes": 5,
+        "text": "In a large pot, melt the brown sugar with 1 tablespoon of water over medium-high heat until it turns into a dark caramel."
+      },
+      {
+        "component": "Caramelized Pork",
+        "phase": "Cook",
+        "step_number": 3,
+        "global_order_index": 3,
+        "estimated_minutes": 2,
+        "text": "Add the chopped shallots, garlic, and ginger to the caramel and stir to combine."
+      },
+      {
+        "component": "Caramelized Pork",
+        "phase": "Cook",
+        "step_number": 4,
+        "global_order_index": 4,
+        "estimated_minutes": 2,
+        "text": "Add the pork pieces to the pot. Handle raw meat with care and wash hands after contact."
+      },
+      {
+        "component": "Caramelized Pork",
+        "phase": "Cook",
+        "step_number": 5,
+        "global_order_index": 5,
+        "estimated_minutes": 5,
+        "text": "Pour in the coconut milk and add the white pepper and fish sauce. Bring the mixture to a boil on high heat."
+      },
+      {
+        "component": "Caramelized Pork",
+        "phase": "Cook",
+        "step_number": 6,
+        "global_order_index": 6,
+        "estimated_minutes": 120,
+        "text": "Reduce the heat to medium and let the pot simmer uncovered for 1.5 to 2 hours. Stir occasionally until the liquid evaporates and the sugar begins to caramelize around the meat."
+      },
+      {
+        "component": "Side and Garnish",
+        "phase": "Cook",
+        "step_number": 1,
+        "global_order_index": 7,
+        "estimated_minutes": 20,
+        "text": "While the pork is simmering, cook the jasmine rice according to package instructions."
+      },
+      {
+        "component": "Caramelized Pork",
+        "phase": "Cook",
+        "step_number": 7,
+        "global_order_index": 8,
+        "estimated_minutes": 30,
+        "text": "Once the liquid is reduced and the meat is tender enough to fall apart, continue to cook and brown the meat in its own rendered fat for another 20-30 minutes, stirring to prevent burning."
+      },
+      {
+        "component": "Side and Garnish",
+        "phase": "Prep",
+        "step_number": 2,
+        "global_order_index": 9,
+        "estimated_minutes": 5,
+        "text": "Finely slice the spring onions and chili peppers. Roughly chop the cilantro."
+      },
+      {
+        "component": "Side and Garnish",
+        "phase": "Serve",
+        "step_number": 3,
+        "global_order_index": 10,
+        "estimated_minutes": 2,
+        "text": "Serve the sticky caramelized pork over a bed of jasmine rice. Garnish with spring onions, cilantro, and chili. Squeeze fresh lime juice over the top before eating."
+      }
+    ]
+  },
+  {
+    "id": 257,
+    "title": "Honey and Thyme Roasted Carrots",
+    "servings": 4,
+    "ingredients": [
+      {
+        "component": "Main Dish",
+        "amount": 500.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "carrots",
+        "food_id": "000069"
+      },
+      {
+        "component": "Main Dish",
+        "amount": 30.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "honey",
+        "food_id": "000363"
+      },
+      {
+        "component": "Main Dish",
+        "amount": 2.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "thyme",
+        "food_id": "000250"
+      },
+      {
+        "component": "Main Dish",
+        "amount": 15.0,
+        "unit": "g",
+        "prep_style": null,
+        "name": "olive oil",
+        "food_id": "000378"
+      },
+      {
+        "component": "Main Dish",
+        "amount": 1.0,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "table salt",
+        "food_id": "000292"
+      },
+      {
+        "component": "Main Dish",
+        "amount": 0.5,
+        "unit": "tsp",
+        "prep_style": null,
+        "name": "ground black pepper",
+        "food_id": "000285"
+      }
+    ],
+    "steps": [
+      {
+        "component": "Main Dish",
+        "phase": "Prep",
+        "step_number": 1,
+        "global_order_index": 1,
+        "estimated_minutes": 5,
+        "text": "Preheat your oven to 200 Celsius and line a large baking sheet with parchment paper to prevent the honey from sticking."
+      },
+      {
+        "component": "Main Dish",
+        "phase": "Prep",
+        "step_number": 2,
+        "global_order_index": 2,
+        "estimated_minutes": 5,
+        "text": "Wash and peel the carrots; if they are thick, slice them in half lengthwise to ensure even roasting."
+      },
+      {
+        "component": "Main Dish",
+        "phase": "Prep",
+        "step_number": 3,
+        "global_order_index": 3,
+        "estimated_minutes": 2,
+        "text": "In a small mixing bowl, whisk together the honey, olive oil, salt, black pepper, and half of the fresh thyme leaves."
+      },
+      {
+        "component": "Main Dish",
+        "phase": "Prep",
+        "step_number": 4,
+        "global_order_index": 4,
+        "estimated_minutes": 1,
+        "text": "Place the prepared carrots onto the baking sheet and pour the honey-thyme mixture over them."
+      },
+      {
+        "component": "Main Dish",
+        "phase": "Prep",
+        "step_number": 5,
+        "global_order_index": 5,
+        "estimated_minutes": 1,
+        "text": "Use your hands or a spatula to toss the carrots thoroughly until every piece is generously coated in the glaze."
+      },
+      {
+        "component": "Main Dish",
+        "phase": "Cook",
+        "step_number": 6,
+        "global_order_index": 6,
+        "estimated_minutes": 30,
+        "text": "Spread the carrots out into a single layer and roast in the oven for 25 to 30 minutes, turning them halfway through with tongs."
+      },
+      {
+        "component": "Main Dish",
+        "phase": "Cook",
+        "step_number": 7,
+        "global_order_index": 7,
+        "estimated_minutes": 2,
+        "text": "Check for tenderness with a fork; the edges should be slightly caramelized and browned when finished."
+      },
+      {
+        "component": "Main Dish",
+        "phase": "Serve",
+        "step_number": 8,
+        "global_order_index": 8,
+        "estimated_minutes": 2,
+        "text": "Transfer the roasted carrots to a serving platter and garnish with the remaining fresh thyme for a vibrant finish."
+      }
+    ]
+  }
+]

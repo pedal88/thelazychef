@@ -1,0 +1,609 @@
+{
+  "key": "burger",
+  "set": "fasit",
+  "valid": true,
+  "attempts_used": 1,
+  "first_try_valid": true,
+  "failed_rules_any_attempt": [],
+  "model_version": "gemini-3.8-flash",
+  "examples_in_prompt": [
+    "carbonara",
+    "lasagne"
+  ],
+  "tokens": {
+    "prompt_tokens": 7773,
+    "output_tokens": 4776,
+    "thought_tokens": 9240
+  },
+  "cost_usd": 0.045935,
+  "api_seconds": 88.6,
+  "wall_seconds": 89.1,
+  "round1": {
+    "model_version": "gemini-3.8-flash",
+    "prompt_tokens": 202,
+    "output_tokens": 1463,
+    "thought_tokens": 1522,
+    "cost_usd": 0.009056,
+    "seconds": 28.69
+  },
+  "attempts": [
+    {
+      "attempt": 1,
+      "valid": true,
+      "failed_rules": [],
+      "errors": [],
+      "warnings": [],
+      "model_version": "gemini-3.8-flash",
+      "prompt_tokens": 7571,
+      "output_tokens": 3313,
+      "thought_tokens": 7718,
+      "cost_usd": 0.036879,
+      "seconds": 59.92
+    }
+  ],
+  "source_text": "Klassiske hamburgere med hjemmelagde briochebrød, smeltet cheddar og sprø ovnspoteter\n\n4 porsjoner\n\nIngredienser\n\nHamburgerbrød:\n2,5 dl helmelk (lunken, ca. 30–37 grader)\n25 g fersk gjær (eller 1/2 pakke tørrgjær)\n1 ss sukker\n1 ts salt\nca. 400 g hvetemel\n1 stort egg\n50 g meierismør, romtemperert og skåret i terninger\n1 egg vispet med 1 ss melk til pensling\n2 ss sesamfrø\n\nOvnstekte pommes frites:\n800 g kokefaste poteter (for eksempel Asterix eller Beate)\n3 ss nøytral olje (solsikke- eller rapsolje)\n1 ts flaksalt\n1/2 ts nykvernet sort pepper\n\nBurgere:\n600 g grovkvernet storfekjøtt (gjerne høyrygg eller burgerkjøttdeig med ca. 14–18 % fett)\n1 ts salt\n1/2 ts kvernet sort pepper\n1 ss nøytral olje eller smør til steking\n8 skiver ekte cheddarost\n\nTopping:\n4 store blader sprø salat (for eksempel hjertesalat)\n2 modne tomater, skåret i skiver\n1 rødløk, skåret i tynne ringer\n8 skiver sylteagurk\n4 ss god hamburgerdressing eller majones\n\nFremgangsmåte\n\n1. Lag deigen til hamburgerbrødene: Rør gjær og sukker ut i lunken melk i en bakebolle. Tilsett egg, mel og salt. Elt deigen i en kjøkkenmaskin på lav hastighet i omtrent 8 minutter. Tilsett det myke smøret i terninger litt etter litt, og elt videre på middels hastighet i 5–7 minutter til deigen slipper bollen, er smidig og har en glatt overflate. Dekk bollen med et klede og la heve på en lun plass i ca. 45–60 minutter, eller til deigen har doblet seg i størrelse.\n\n2. Klargjør potetene: Vask potetene godt (skallet kan gjerne sitte på) og kutt dem i jevne staver på omtrent 1 x 1 cm. Legg potetstavene i en bolle med kaldt vann i 15 minutter for å trekke ut overflødig stivelse. Hell av vannet og tørk potetene helt tørre med et rent kjøkkenhåndkle.\n\n3. Form og stek brødene: Forvarm ovnen til 200 grader over- og undervarme. Del den hevede deigen i 4 like store deler på en lett melet benk. Rull dem til stramme, runde boller og trykk dem flate med håndflaten (ca. 10–12 cm i diameter) på et stekebrett kledd med bakepapir. Etterhev under klede i ca. 30 minutter til de er luftige og spretter sakte tilbake ved et lett fingertrykk. Pensle forsiktig med sammenvispet egg og melk, og dryss over sesamfrø. Stek midt i ovnen i 12–15 minutter til de er gyllenbrune på toppen og har en hul lyd når du banker lett på undersiden. Avkjøl på rist.\n\n4. Stek pommes frites: Skru ovnen opp til 225 grader varmluft. Vend de tørkede potetstavene godt sammen med olje, salt og pepper i en bolle. Fordel dem utover et bakepapirkledd stekebrett slik at ingen poteter ligger oppå hverandre. Stek i ovnen i 25–35 minutter. Vend på dem etter halvparten av tiden. Pommes fritesen er ferdig når de er dypgyldne, har sprø kanter og er myke inni.\n\n5. Form burgerne: Del kjøttet forsiktig i 4 like store deler. Form flate karbonader som er litt større i diameter enn brødene (ca. 1,5 cm tykke), da kjøttet krymper under steking. Lag en liten fordypning i midten med tommelen for å hindre at de blåser seg opp som baller. Vent med å salte og pepre til like før steking for å bevare en saftig og mør tekstur.\n\n6. Stek burgerne: Varm opp en støpejernspanne eller tykkbunnet stekepanne over høy varme til den ryker lett. Ha i en spiseskje nøytral olje eller en klatt smør. Krydre burgerne rikelig med salt og pepper på begge sider like før de legges i pannen. Stek burgerne uforstyrret på høy varme i 2–3 minutter til det dannes en mørkebrun, sprø stekeskorpe. Snu burgerne, legg to skiver cheddar på hver burger umiddelbart, og skru ned til middels varme. Stek i 2–3 minutter til for medium stekt (kjernetemperatur rundt 60–65 grader), eller 4 minutter for gjennomstekt. Legg gjerne et lokk over pannen det siste minuttet slik at osten smelter perfekt. Løft burgerne over på en tallerken og la dem hvile i 2–3 minutter.\n\n7. Montering: Del de avkjølte hamburgerbrødene i to og rist snittflatene raskt i en tørr panne over middels varme i 1 minutt til de får en gyllen kant. Smør et godt lag dressing på bunnbrødet. Bygg opp med salatblad, den nystekte burgeren med smeltet cheddar, tomatskiver, rødløkringer og sylteagurk. Smør litt dressing på toppbrødet og legg det på toppen. Server umiddelbart sammen med de varme, sprø ovnspotetene.\n\nKokketips: Behandle kjøttdeigen så lite og skånsomt som mulig når du former burgerne. Hvis du elter inn salt på forhånd, trekkes proteinene ut og gjør burgeren kompakt som en kjøttkake fremfor saftig og luftig.",
+  "recipe": {
+    "title": "Klassiske hamburgere med hjemmelagde briochebrød, smeltet cheddar og sprø ovnspoteter",
+    "servings": 4,
+    "components": [
+      {
+        "local_id": "c1",
+        "name": "Hamburgerbrød"
+      },
+      {
+        "local_id": "c2",
+        "name": "Ovnstekte pommes frites"
+      },
+      {
+        "local_id": "c3",
+        "name": "Hamburgere"
+      }
+    ],
+    "ingredients": [
+      {
+        "local_id": "i1",
+        "component_id": "c1",
+        "name": "helmelk",
+        "amount": 2.5,
+        "unit": "dl",
+        "prep_style": "lunken, ca. 30–37 grader"
+      },
+      {
+        "local_id": "i2",
+        "component_id": "c1",
+        "name": "fersk gjær",
+        "amount": 25.0,
+        "unit": "g"
+      },
+      {
+        "local_id": "i3",
+        "component_id": "c1",
+        "name": "sukker",
+        "amount": 1.0,
+        "unit": "tbsp"
+      },
+      {
+        "local_id": "i4",
+        "component_id": "c1",
+        "name": "salt",
+        "amount": 1.0,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i5",
+        "component_id": "c1",
+        "name": "hvetemel",
+        "amount": 400.0,
+        "unit": "g"
+      },
+      {
+        "local_id": "i6",
+        "component_id": "c1",
+        "name": "egg",
+        "amount": 1.0,
+        "unit": "piece",
+        "prep_style": "stort"
+      },
+      {
+        "local_id": "i7",
+        "component_id": "c1",
+        "name": "meierismør",
+        "amount": 50.0,
+        "unit": "g",
+        "prep_style": "romtemperert og i terninger"
+      },
+      {
+        "local_id": "i8",
+        "component_id": "c1",
+        "name": "egg",
+        "amount": 1.0,
+        "unit": "piece",
+        "prep_style": "til pensling"
+      },
+      {
+        "local_id": "i9",
+        "component_id": "c1",
+        "name": "melk",
+        "amount": 1.0,
+        "unit": "tbsp",
+        "prep_style": "til pensling"
+      },
+      {
+        "local_id": "i10",
+        "component_id": "c1",
+        "name": "sesamfrø",
+        "amount": 2.0,
+        "unit": "tbsp"
+      },
+      {
+        "local_id": "i11",
+        "component_id": "c2",
+        "name": "kokefaste poteter",
+        "amount": 800.0,
+        "unit": "g"
+      },
+      {
+        "local_id": "i12",
+        "component_id": "c2",
+        "name": "nøytral olje",
+        "amount": 3.0,
+        "unit": "tbsp"
+      },
+      {
+        "local_id": "i13",
+        "component_id": "c2",
+        "name": "flaksalt",
+        "amount": 1.0,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i14",
+        "component_id": "c2",
+        "name": "nykvernet sort pepper",
+        "amount": 0.5,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i15",
+        "component_id": "c3",
+        "name": "grovkvernet storfekjøtt",
+        "amount": 600.0,
+        "unit": "g"
+      },
+      {
+        "local_id": "i16",
+        "component_id": "c3",
+        "name": "salt",
+        "amount": 1.0,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i17",
+        "component_id": "c3",
+        "name": "kvernet sort pepper",
+        "amount": 0.5,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i18",
+        "component_id": "c3",
+        "name": "nøytral olje eller smør",
+        "amount": 1.0,
+        "unit": "tbsp"
+      },
+      {
+        "local_id": "i19",
+        "component_id": "c3",
+        "name": "cheddarost",
+        "amount": 8.0,
+        "unit": "slice"
+      },
+      {
+        "local_id": "i20",
+        "component_id": "c3",
+        "name": "sprø salat",
+        "amount": 4.0,
+        "unit": "leaf"
+      },
+      {
+        "local_id": "i21",
+        "component_id": "c3",
+        "name": "tomater",
+        "amount": 2.0,
+        "unit": "piece",
+        "prep_style": "modne"
+      },
+      {
+        "local_id": "i22",
+        "component_id": "c3",
+        "name": "rødløk",
+        "amount": 1.0,
+        "unit": "piece"
+      },
+      {
+        "local_id": "i23",
+        "component_id": "c3",
+        "name": "sylteagurk",
+        "amount": 8.0,
+        "unit": "slice"
+      },
+      {
+        "local_id": "i24",
+        "component_id": "c3",
+        "name": "hamburgerdressing eller majones",
+        "amount": 4.0,
+        "unit": "tbsp"
+      }
+    ],
+    "steps": [
+      {
+        "local_id": "s1",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Forvarm ovnen til brød",
+        "text": "Sett stekeovnen på 200 °C over- og undervarme.",
+        "uses": [],
+        "after": [],
+        "active_minutes": 1,
+        "passive_minutes": 14,
+        "method": "preheat",
+        "equipment": [
+          "oven"
+        ],
+        "temp_c": 200,
+        "mode": "top_bottom",
+        "setup": true,
+        "done_when": "Ovnen har nådd 200 °C"
+      },
+      {
+        "local_id": "s2",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Elt deigen",
+        "text": "Rør ut {i2} og {i3} i {i1} i bollen til en kjøkkenmaskin. Tilsett {i6}, {i5} og {i4}, og elt på lav hastighet i omtrent 8 minutter. Tilsett {i7} litt etter litt og elt videre på middels hastighet i 5–7 minutter.",
+        "uses": [
+          "i1",
+          "i2",
+          "i3",
+          "i4",
+          "i5",
+          "i6",
+          "i7"
+        ],
+        "after": [],
+        "active_minutes": 15,
+        "passive_minutes": 0,
+        "method": "knead",
+        "equipment": [
+          "stand_mixer"
+        ],
+        "setup": false,
+        "done_when": "Deigen slipper bollen, er smidig og har en glatt overflate"
+      },
+      {
+        "local_id": "s3",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Hev deigen",
+        "text": "Dekk bollen med et klede og la heve på en lun plass i ca. 45–60 minutter.",
+        "uses": [],
+        "after": [
+          "s2"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 50,
+        "holds_minutes": 30,
+        "method": "proof",
+        "equipment": [
+          "bowl",
+          "kitchen_towel"
+        ],
+        "setup": false,
+        "done_when": "Deigen har doblet seg i størrelse"
+      },
+      {
+        "local_id": "s4",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Form hamburgerbrødene",
+        "text": "Del deigen i 4 like store deler på en lett melet benk. Rull til stramme, runde boller og trykk dem flate (ca. 10–12 cm i diameter) på et stekebrett kledd med bakepapir. Dekk med et klede og etterhev i ca. 30 minutter.",
+        "uses": [],
+        "after": [
+          "s3"
+        ],
+        "active_minutes": 6,
+        "passive_minutes": 30,
+        "holds_minutes": 15,
+        "method": "shape",
+        "equipment": [
+          "baking_tray",
+          "kitchen_towel"
+        ],
+        "setup": false,
+        "done_when": "Luftige og spretter sakte tilbake ved et lett fingertrykk"
+      },
+      {
+        "local_id": "s5",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Stek hamburgerbrødene",
+        "text": "Pisk sammen {i8} og {i9}, pensle brødene forsiktig og dryss over {i10}. Stek midt i ovnen i 12–15 minutter.",
+        "uses": [
+          "i8",
+          "i9",
+          "i10"
+        ],
+        "after": [
+          "s4"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 13,
+        "holds_minutes": 60,
+        "method": "bake",
+        "equipment": [
+          "oven",
+          "baking_tray",
+          "brush"
+        ],
+        "temp_c": 200,
+        "mode": "top_bottom",
+        "setup": false,
+        "done_when": "Gyllenbrune på toppen og har en hul lyd når du banker lett på undersiden"
+      },
+      {
+        "local_id": "s6",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Avkjøl brødene",
+        "text": "Avkjøl hamburgerbrødene på en rist.",
+        "uses": [],
+        "after": [
+          "s5"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 15,
+        "holds_minutes": 180,
+        "method": "cool",
+        "equipment": [
+          "rack"
+        ],
+        "setup": false,
+        "done_when": "Brødene er romtempererte"
+      },
+      {
+        "local_id": "s7",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Kutt potetene",
+        "text": "Vask potetene godt og kutt {i11} i jevne staver på omtrent 1 × 1 cm.",
+        "uses": [
+          "i11"
+        ],
+        "after": [],
+        "active_minutes": 5,
+        "passive_minutes": 0,
+        "holds_minutes": 30,
+        "method": "slice",
+        "equipment": [],
+        "setup": false,
+        "done_when": "Jevne potetstaver"
+      },
+      {
+        "local_id": "s8",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Vann ut potetene",
+        "text": "Legg potetstavene i en bolle med kaldt vann i 15 minutter. Hell av vannet og tørk dem helt tørre med et rent kjøkkenhåndkle.",
+        "uses": [],
+        "after": [
+          "s7"
+        ],
+        "active_minutes": 3,
+        "passive_minutes": 15,
+        "holds_minutes": 30,
+        "method": "soak",
+        "equipment": [
+          "bowl",
+          "kitchen_towel"
+        ],
+        "setup": false,
+        "done_when": "Potetstavene er helt tørre på overflaten"
+      },
+      {
+        "local_id": "s9",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Forvarm ovnen til poteter",
+        "text": "Skru stekeovnen opp til 225 °C varmluft.",
+        "uses": [],
+        "after": [],
+        "active_minutes": 1,
+        "passive_minutes": 9,
+        "method": "preheat",
+        "equipment": [
+          "oven"
+        ],
+        "temp_c": 225,
+        "mode": "fan",
+        "setup": true,
+        "done_when": "Ovnen har nådd 225 °C"
+      },
+      {
+        "local_id": "s10",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Krydre potetene",
+        "text": "Vend de tørkede potetstavene godt sammen med {i12}, {i13} og {i14} i en bolle.",
+        "uses": [
+          "i12",
+          "i13",
+          "i14"
+        ],
+        "after": [
+          "s8"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "holds_minutes": 15,
+        "method": "season",
+        "equipment": [
+          "bowl"
+        ],
+        "setup": false,
+        "done_when": "Alle potetstavene er jevnt dekket med olje og krydder"
+      },
+      {
+        "local_id": "s11",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Stek pommes frites",
+        "text": "Fordel potetstavene utover et bakepapirkledd stekebrett slik at ingen ligger oppå hverandre. Stek i ovnen i 25–35 minutter, og vend på dem etter halvparten av tiden.",
+        "uses": [],
+        "after": [
+          "s10"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 28,
+        "holds_minutes": 10,
+        "method": "bake",
+        "equipment": [
+          "oven",
+          "baking_tray"
+        ],
+        "temp_c": 225,
+        "mode": "fan",
+        "setup": false,
+        "done_when": "Dypgyldne, med sprø kanter og myke inni"
+      },
+      {
+        "local_id": "s12",
+        "component_id": "c3",
+        "phase": "prep",
+        "short": "Kutt grønnsakene",
+        "text": "Skjær {i21} i skiver og {i22} i tynne ringer.",
+        "uses": [
+          "i21",
+          "i22"
+        ],
+        "after": [],
+        "active_minutes": 3,
+        "passive_minutes": 0,
+        "holds_minutes": 60,
+        "method": "slice",
+        "equipment": [],
+        "setup": false,
+        "done_when": "Skiver av tomat og tynne ringer av rødløk"
+      },
+      {
+        "local_id": "s13",
+        "component_id": "c3",
+        "phase": "prep",
+        "short": "Form burgerne",
+        "text": "Del {i15} forsiktig i 4 like store deler. Form flate karbonader ca. 1,5 cm tykke og litt større i diameter enn brødene. Lag en liten fordypning i midten med tommelen.",
+        "uses": [
+          "i15"
+        ],
+        "after": [],
+        "active_minutes": 4,
+        "passive_minutes": 0,
+        "holds_minutes": 30,
+        "method": "shape",
+        "equipment": [],
+        "setup": false,
+        "done_when": "Fire jevne burgerkaker med fordypning i midten"
+      },
+      {
+        "local_id": "s14",
+        "component_id": "c3",
+        "phase": "cook",
+        "short": "Stek burgerne",
+        "text": "Varm en stekepanne over høy varme til den ryker lett og tilsett {i18}. Krydre burgerne rikelig med {i16} og {i17} på begge sider like før steking. Stek uforstyrret på høy varme i 2–3 minutter, snu, legg umiddelbart {i19} på hver burger og skru ned til middels varme. Stek i 2–3 minutter til under lokk.",
+        "uses": [
+          "i16",
+          "i17",
+          "i18",
+          "i19"
+        ],
+        "after": [
+          "s13"
+        ],
+        "active_minutes": 6,
+        "passive_minutes": 0,
+        "holds_minutes": 5,
+        "method": "pan_fry",
+        "equipment": [
+          "frying_pan",
+          "lid"
+        ],
+        "mode": "high",
+        "setup": false,
+        "done_when": "Mørkebrun stekeskorpe på begge sider og osten er helt smeltet"
+      },
+      {
+        "local_id": "s15",
+        "component_id": "c3",
+        "phase": "cook",
+        "short": "Hvil burgerne",
+        "text": "Løft burgerne over på en tallerken og la dem hvile i 2–3 minutter.",
+        "uses": [],
+        "after": [
+          "s14"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 2,
+        "holds_minutes": 5,
+        "method": "rest",
+        "equipment": [
+          "plate"
+        ],
+        "setup": false,
+        "done_when": "Kjøttsaften har satt seg"
+      },
+      {
+        "local_id": "s16",
+        "component_id": "c3",
+        "phase": "cook",
+        "short": "Rist hamburgerbrødene",
+        "text": "Del de avkjølte hamburgerbrødene i to og rist snittflatene i en tørr panne over middels varme i ca. 1 minutt.",
+        "uses": [],
+        "after": [
+          "s6"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "holds_minutes": 10,
+        "method": "toast",
+        "equipment": [
+          "frying_pan"
+        ],
+        "mode": "medium",
+        "setup": false,
+        "done_when": "Gyllen og lett sprø snittflate"
+      },
+      {
+        "local_id": "s17",
+        "component_id": "c3",
+        "phase": "serve",
+        "short": "Monter og server",
+        "text": "Smør et godt lag {i24} på bunnbrødet. Bygg opp med {i20}, burgerne med smeltet cheddar, tomatskiver, rødløkringer og {i23}. Smør litt dressing på toppbrødet og legg det på toppen. Server umiddelbart sammen med varme pommes frites.",
+        "uses": [
+          "i20",
+          "i23",
+          "i24"
+        ],
+        "after": [
+          "s16",
+          "s15",
+          "s12",
+          "s11"
+        ],
+        "active_minutes": 4,
+        "passive_minutes": 0,
+        "method": "serve",
+        "equipment": [],
+        "setup": false
+      }
+    ],
+    "chef_note": "Behandle kjøttdeigen så lite og skånsomt som mulig når du former burgerne. Hvis du elter inn salt på forhånd, trekkes proteinene ut og gjør burgeren kompakt som en kjøttkake fremfor saftig og luftig."
+  }
+}

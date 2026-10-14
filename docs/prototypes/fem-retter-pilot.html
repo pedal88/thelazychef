@@ -1101,7 +1101,7 @@ renderAll();
 /* ---------- last inn oppskrift (JSON) ----------
    Adapter fra v2-JSON (schemas/recipe_v2.py) til prototypens dataformat.
    - equipment[0] blir eq når det er et kokekar (rolle «koke») eller steget har temp/mode, resten blir tools.
-   - waits utledes: et steg venter på setup-steget med samme kokekar (RECIPE_MODEL_V2.md, forenkling 1).
+   - waits utledes: et steg venter på klargjøringen av samme kokekar (RECIPE_MODEL_V2.md, forenkling 1), se setupFor.
    - excl settes for utstyr som bare kan brukes til én ting om gangen (exclusive i katalogen).
    - Mise-elementer finnes ikke før fase 3. Her utledes de grovt: linjene følger prep-stegene til første
      steg som ikke er prep, og grupperes per steg og vei inn. */
@@ -1124,7 +1124,12 @@ function deriveMise(r){
 }
 function fromV2(v2,why){
   const id='v'+(++loadedN),steps=v2.steps||[];
-  const setupOn={};steps.forEach(s=>{const q=(s.equipment||[])[0];if(s.setup&&q&&!setupOn[q])setupOn[q]=s.local_id;});
+  /* Klargjøring av utstyr: setup-steg (oppvarming) og, som forslag fra piloten, steg uten ingredienser og uten after
+     («Kle formen»). Har samme kokekar flere, velges det med samme temperatur. */
+  const prepOf=s=>s.setup||(!(s.uses||[]).length&&!(s.after||[]).length);
+  const setupFor=s=>{const q=(s.equipment||[])[0];if(!q)return null;
+    const c=steps.filter(t=>t!==s&&prepOf(t)&&(t.equipment||[])[0]===q);
+    return(c.find(t=>t.temp_c&&t.temp_c===s.temp_c)||c[0]||{}).local_id||null;};
   const r={id,no:RECIPES.length+1,title:v2.title||'Uten tittel',base:v2.servings||4,why,
     comps:(v2.components||[]).map(c=>({id:c.local_id,name:c.name})),
     ings:(v2.ingredients||[]).map(i=>I(i.local_id,i.component_id,i.name,i.amount==null?null:i.amount,i.amount==null?null:(UNIT_NO[i.unit]||i.unit),i.prep_style)),
@@ -1134,7 +1139,7 @@ function fromV2(v2,why){
         eq:pot?q:undefined,tools:pot?e.slice(1):e,temp:s.temp_c,mode:s.mode==='grill_element'?'grill':s.mode}));
       if(pot&&cat&&cat[2]&&!s.setup)st.excl=true;
       if(st.passive)st.timer=st.passive;
-      const w=pot&&setupOn[q];if(w&&w!==s.local_id&&!s.setup&&!st.after.includes(w))st.waits=[w];
+      const w=pot&&!prepOf(s)&&setupFor(s);if(w&&!st.after.includes(w))st.waits=[w];
       return st;})};
   MISE[id]=deriveMise(r);
   return r;
