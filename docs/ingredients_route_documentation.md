@@ -9,7 +9,7 @@ The `/ingredients` route serves as the "Pantry" view, displaying a visual grid o
 
 ## 2. Backend Implementation
 
-**File:** `app.py`
+**File:** `routes/pantry_routes.py`
 
 ### Dependencies
 - **Models:** `Ingredient` (from `database.models`)
@@ -108,9 +108,9 @@ function filterItems() {
 If this route is deleted and needs to be restored:
 
 1.  **Restore Backend**:
-    *   Open `app.py`.
+    *   Open `routes/pantry_routes.py`.
     *   Import `Ingredient` from `database.models` if missing.
-    *   Add the `pantry_list` function decorated with `@app.route('/ingredients')` as shown in Section 2.
+    *   Add the `pantry_list` function decorated with `@pantry_bp.route('/ingredients')` as shown in Section 2.
     *   Ensure the template path matches `'pantry.html'`.
 
 2.  **Restore Frontend**:

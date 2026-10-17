@@ -45,3 +45,8 @@ logs/
 *.html.pinned
 # Sandbox fragment versions (v2, v3, v10, etc.)
 *.v[0-9]*.html
+
+# Build artifacts, logs and data dumps
+*.tar.gz
+*.log
+*_dump.json
