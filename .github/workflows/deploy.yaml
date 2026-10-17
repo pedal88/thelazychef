@@ -24,7 +24,8 @@ jobs:
     name: Lint & Test
     runs-on: ubuntu-latest
     env:
-      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+      # Testene kaller ikke Gemini, så CI trenger ingen ekte nøkkel.
+      GOOGLE_API_KEY: dummy-for-tests
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -113,7 +114,8 @@ jobs:
             --image ${{ env.GAR_LOCATION }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
             --region ${{ env.REGION }} \
             --command flask --args db,upgrade \
-            --set-env-vars FLASK_APP=app.py,GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }},DB_BACKEND=cloudsql,INSTANCE_CONNECTION_NAME=thelazychefai-prod:europe-north2:lazy-chef-db-eu,DB_USER=${{ secrets.DB_USER }},DB_PASS=${{ secrets.DB_PASS }},DB_NAME=${{ secrets.DB_NAME }}
+            --set-env-vars FLASK_APP=app.py,DB_BACKEND=cloudsql,INSTANCE_CONNECTION_NAME=thelazychefai-prod:europe-north2:lazy-chef-db-eu,DB_USER=${{ secrets.DB_USER }},DB_NAME=${{ secrets.DB_NAME }} \
+            --set-secrets GOOGLE_API_KEY=GOOGLE_API_KEY:latest,DB_PASS=DB_PASS:latest
 
       - name: Execute Migration Job
         run: |
@@ -126,14 +128,16 @@ jobs:
           region: ${{ env.REGION }}
           image: ${{ env.GAR_LOCATION }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
           flags: '--allow-unauthenticated'
+          # Hemmeligheter leses fra Secret Manager, ikke som klartekst i miljøvariabler.
+          secrets: |
+            GOOGLE_API_KEY=GOOGLE_API_KEY:latest
+            DB_PASS=DB_PASS:latest
+            SECRET_KEY=SECRET_KEY:latest
           env_vars: |
             FLASK_APP=app.py
-            GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
-            SECRET_KEY=${{ secrets.SECRET_KEY }}
             DB_BACKEND=cloudsql
             INSTANCE_CONNECTION_NAME=thelazychefai-prod:europe-north2:lazy-chef-db-eu
             DB_USER=${{ secrets.DB_USER }}
-            DB_PASS=${{ secrets.DB_PASS }}
             DB_NAME=${{ secrets.DB_NAME }}
             STORAGE_BACKEND=gcs
             GCS_BUCKET_NAME=thelazychef-assets
