@@ -12,6 +12,9 @@ Kjøres fra Mac minien. Verdiene skrives aldri på kommandolinjen eller i termin
 | Cloud SQL-instans | `lazy-chef-db-eu` |
 | Databasebruker | `postgres` |
 | Secrets | `GOOGLE_API_KEY`, `DB_PASS`, `SECRET_KEY` |
+| Gemini-nøkkel | Prosjektet `ai-chef-2026` (`gen-lang-client-0770637546`, kontoen pedal88, etterskuddsfakturering) |
+
+Gemini-nøkkelen ligger ikke i `thelazychefai-prod`. Der er Gemini-faktureringen forhåndsbetalt, og når kreditten er tom gir API-et `402 RESOURCE_EXHAUSTED` (appen viser «AI generation is temporarily unavailable (billing)»).
 
 Merk:
 - Steg 4 gir noen sekunders databasefeil mellom tjenesteoppdateringen og passordbyttet.
@@ -39,33 +42,41 @@ gcloud sql users list --instance=lazy-chef-db-eu
 
 ## 1. Lag en ny Gemini-nøkkel
 
-Lag den i samme prosjekt som den gamle, så kvoter og fakturering ikke endres. Finn den gamle:
+Lag den med gcloud i samme prosjekt som den gamle, så kvoter og fakturering ikke endres. Ikke bruk AI Studio: der vises nøkkelen i klartekst, og den nye `AQ.`-nøkkeltypen derfra ble avvist med `API_KEY_INVALID` i oktober 2026. gcloud lager en vanlig nøkkel og skriver den aldri ut.
+
+Logg inn med kontoen som eier prosjektet, og bytt tilbake til app-kontoen etterpå:
 
 ```bash
-gcloud services api-keys list --format='table(displayName,uid,createTime,restrictions.apiTargets[].service)'
+gcloud auth login --no-launch-browser   # i pedal88-profilen
+gcloud config set account thelazychefai@gmail.com
+```
+
+Finn den gamle nøkkelen (bare navn og ID-er vises):
+
+```bash
+gcloud services api-keys list --account=pedal88@gmail.com --project=gen-lang-client-0770637546 --format='table(displayName,uid,createTime,restrictions.apiTargets[].service)'
 ```
 
 Lag en ny, begrenset til Gemini. `--async` gjør at nøkkelen ikke skrives ut:
 
 ```bash
-gcloud services api-keys create --display-name=lazychef-gemini-ÅÅÅÅ-MM --api-target=service=generativelanguage.googleapis.com --async
-gcloud services api-keys list --format='table(displayName,uid,restrictions.apiTargets[].service)'
+gcloud services api-keys create --account=pedal88@gmail.com --project=gen-lang-client-0770637546 --display-name=lazychef-prod-ÅÅÅÅ-MM --api-target=service=generativelanguage.googleapis.com --async
 ```
 
-Ikke slett den gamle ennå.
+Kjør list-kommandoen igjen for å finne UID-en. Ikke slett den gamle ennå.
 
 ## 2. Legg nye verdier i Secret Manager
 
 Gemini-nøkkelen går rett fra API Keys til Secret Manager uten å vises (bytt ut `NY_UID` med UID-en fra steg 1):
 
 ```bash
-gcloud services api-keys get-key-string NY_UID --format='value(keyString)' | tr -d '\n' | gcloud secrets versions add GOOGLE_API_KEY --data-file=-
+gcloud services api-keys get-key-string NY_UID --account=pedal88@gmail.com --project=gen-lang-client-0770637546 --format='value(keyString)' | tr -d '\n' | gcloud secrets versions add GOOGLE_API_KEY --data-file=-
 ```
 
-Test den. Skal gi `200`, og gir den `403`, vent ett minutt:
+Test at den kan generere tekst, ikke bare liste modeller (det siste virker også når faktureringen ikke gjør det). Skal gi `200`. `403` betyr vent ett minutt, `400` ugyldig nøkkel og `402` tom kreditt:
 
 ```bash
-curl -s -o /dev/null -w '%{http_code}\n' -H "x-goog-api-key: $(gcloud secrets versions access latest --secret=GOOGLE_API_KEY)" https://generativelanguage.googleapis.com/v1beta/models
+curl -s -o /dev/null -w '%{http_code}\n' -H "x-goog-api-key: $(gcloud secrets versions access latest --secret=GOOGLE_API_KEY)" -H 'Content-Type: application/json' -d '{"contents":[{"parts":[{"text":"hi"}]}]}' https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent
 ```
 
 Nytt databasepassord og ny `SECRET_KEY`, generert. Lag secreten først hvis den mangler (`gcloud secrets create NAVN --replication-policy=automatic`):
@@ -131,15 +142,10 @@ gcloud run services logs read lazy-chef-app --region europe-west1 --limit 50
 
 `.github/workflows/deploy.yaml` gir tjenesten og migreringsjobben hemmelighetene fra Secret Manager i stedet for som miljøvariabler. Endringen merges først når steg 2–5 er gjort. Ellers feiler neste deploy fordi secreten mangler eller kontoen ikke har tilgang.
 
-Oppdater GitHub-secreten som testene bruker, med den nye Gemini-nøkkelen, uten at den vises:
+Testene i CI bruker en dummy-nøkkel, for de kaller ikke Gemini. Etter merge og en vellykket deploy brukes ikke disse GitHub-secretene lenger:
 
 ```bash
-gcloud secrets versions access latest --secret=GOOGLE_API_KEY | gh secret set GOOGLE_API_KEY --repo pedal88/thelazychef
-```
-
-Etter merge og en vellykket deploy brukes ikke disse GitHub-secretene lenger:
-
-```bash
+gh secret delete GOOGLE_API_KEY --repo pedal88/thelazychef
 gh secret delete DB_PASS --repo pedal88/thelazychef
 gh secret delete SECRET_KEY --repo pedal88/thelazychef
 ```
@@ -149,7 +155,7 @@ gh secret delete SECRET_KEY --repo pedal88/thelazychef
 - Slett den gamle Gemini-nøkkelen (UID fra steg 1):
 
   ```bash
-  gcloud services api-keys delete GAMMEL_UID
+  gcloud services api-keys delete GAMMEL_UID --account=pedal88@gmail.com --project=gen-lang-client-0770637546
   ```
 
 - Deaktiver de gamle versjonene i Secret Manager (`gcloud secrets versions list NAVN` viser numrene):
@@ -164,4 +170,4 @@ gh secret delete SECRET_KEY --repo pedal88/thelazychef
 
 ## Senere bytter
 
-Når alt ligger i Secret Manager, er et bytte enklere: legg til en ny versjon (steg 2), og lag en ny revisjon så alle instanser leser `latest` (`gcloud run services update lazy-chef-app --region europe-west1 --update-labels=rotated=ÅÅÅÅ-MM-DD`). For databasepassordet kjøres steg 4 B og C.
+Når alt ligger i Secret Manager, er et bytte enklere: legg til en ny versjon (steg 2), og test den med `generateContent`, og lag en ny revisjon så alle instanser leser `latest` (`gcloud run services update lazy-chef-app --region europe-west1 --update-labels=rotated=ÅÅÅÅ-MM-DD`). For databasepassordet kjøres steg 4 B og C.

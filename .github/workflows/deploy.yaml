@@ -24,7 +24,8 @@ jobs:
     name: Lint & Test
     runs-on: ubuntu-latest
     env:
-      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+      # Testene kaller ikke Gemini, så CI trenger ingen ekte nøkkel.
+      GOOGLE_API_KEY: dummy-for-tests
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
