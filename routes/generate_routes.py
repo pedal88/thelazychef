@@ -1,8 +1,5 @@
 """Generate Blueprint: create recipes from a prompt, a web page, pasted text or a video."""
-import json
-import os
-
-from flask import current_app, flash, jsonify, redirect, render_template, request, session, url_for
+from flask import flash, jsonify, redirect, render_template, request, session, url_for
 from flask_login import login_required
 
 from ai_engine import generate_recipe_ai, generate_recipe_from_video, generate_recipe_from_web_text
@@ -10,7 +7,7 @@ from database.models import Ingredient, Recipe, db
 from routes._flat import FlatBlueprint
 from services.pantry_service import get_slim_pantry_context
 from services.chef_service import get_chefs
-from services.recipe_service import STATUS_MISSING, process_recipe_workflow
+from services.recipe_service import process_recipe_workflow
 from services.social_media_service import SocialMediaExtractor
 from services.web_scraper_service import WebScraper
 from utils.ai_errors import friendly_ai_error
@@ -41,26 +38,6 @@ def _handle_workflow_result(result: dict, query_context: str, chef_id: str):
     """Shared response handler for all generation routes."""
     is_ajax = 'application/json' in request.headers.get('Accept', '')
 
-    if result['status'] == STATUS_MISSING:
-        if is_ajax:
-            missing_names = [m['name'] for m in result.get('missing_ingredients', [])]
-            return jsonify({
-                'success': False, 
-                'error': f"Missing ingredients: {', '.join(missing_names)}"
-            })
-            
-        data_dir = os.path.join(current_app.root_path, 'data', 'constraints')
-        with open(os.path.join(data_dir, 'categories.json'), 'r') as f:
-            cat_data = json.load(f)
-        return render_template(
-            'missing_ingredients_resolution.html',
-            missing_items=result['missing_ingredients'],
-            query=query_context,
-            chef_id=chef_id,
-            main_categories=cat_data.get('main_categories', []),
-            sub_categories_map=cat_data.get('sub_categories', {}),
-        )
-    # STATUS_SUCCESS
     recipe_id = result['recipe_id']
 
     # ── Pending sub-recipe link (from ingredient → generate flow) ──────────
