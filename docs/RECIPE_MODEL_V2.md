@@ -1,6 +1,6 @@
 # Beslutningsnotat: oppskriftsmodell versjon 2
 
-Dato: 14.10.2026, revidert 18.10.2026
+Dato: 14.10.2026, revidert 18.10.2026 (to ganger)
 Status: vedtatt
 Bakgrunn og begrunnelser: `docs/RECIPE_VISUALIZATIONS.md`, særlig kapittel 9.
 Fase 0: `docs/pilot/RECIPE_V2_PILOT.md`.
@@ -84,9 +84,10 @@ Nye tabeller erstatter `recipe_ingredient` og `instruction`. De gamle beholdes b
 | `component_id` | Fremmednøkkel, ikke fritekst |
 | `ingredient_id` | Pantry-ingrediensen |
 | `amount`, `unit` | `amount` er null bare for «etter smak». `unit` må finnes i enhetstabellen |
-| `prep_style`, `gram_weight` | Som i dag |
+| `ingredient_form_id` | Formen som brukes (fedd, eggeplomme). Tom betyr hele varen |
+| `prep_style` | Klargjøring i oppskriften fra fast liste (hakket, finhakket, revet, presset, romtemperert), med fritekst for nyanser. Hører til linjen, ikke ingrediensen |
+| `gram_weight` | Regnes ut fra mengde og enhet med tetthet eller gram per stykk (avsnitt 5, Ingrediensmodellen) |
 | `mise_element_id` | Fase 3 |
-| `ingredient_form_id` | Fase 3. Hel hvitløk eller fedd, egg eller eggeplomme |
 
 **Delte linjer:** en ingrediens som brukes på to tidspunkter, står som to linjer (pecorino 60 g og 20 g). Ingredienslisten summerer dem.
 
@@ -117,18 +118,43 @@ Alle koblinger får `ON DELETE CASCADE`, slik at sletting av en oppskrift eller 
 
 `id`, `recipe_id`, `local_id`, `name`, `used_in_step_id`. Definisjon: det som står klart når prep er ferdig, og helles i på samme tidspunkt. Alle ingredienslinjer har et mise-element. Om AI-en skal lage dem eller om de kan utledes, testes før fase 3.
 
+### Ingrediensmodellen (revidert 18.10.2026)
+
+Fire ting holdes atskilt: ingrediensen, formen, tilstanden og mengden.
+
+**Ingrediensen** (`ingredient`) er det man kjøper: hvitløk. Navn, kategori, næring per 100 g, bilde, alias og basisvare. Regel: **må handlelisten skille to varer, eller har de ulik næring eller bruk, er de to ingredienser.** Hvitløkspulver, hvitløkspasta og syltet hvitløk er egne ingredienser, ikke former.
+
+**Formen** (`ingredient_form`) er en fysisk utgave av samme vare: hel hvitløk og fedd, helt egg, plomme og hvite, hel sitron, saft og skall. Formen har:
+- navn i entall og flertall
+- gram per stykk (1 fedd ≈ 5 g)
+- forhold til kjøpevaren (1 hvitløk ≈ 10 fedd, 1 egg = 1 plomme + 1 hvite), slik at handlelisten summerer i det man kjøper
+- valgfri egen næring per 100 g, fordi plomme og hvite er svært ulike
+- eget bilde, med reserve til ingrediensens bilde
+
+**Tilstanden** er to ulike ting:
+- **Slik varen kjøpes** (fersk, fryst, hermetisk, tørket, røkt): egen ingrediens etter regelen over, med `base_ingredient_id` til grunnvaren («fryst hakket løk» → «løk»). Koblingen brukes til erstatninger og gruppering senere.
+- **Klargjøring i oppskriften** (hakket, revet, romtemperert): `prep_style` på ingredienslinjen. Vises som et lite merke på bildet, ikke som eget bilde.
+
+**Mengden** står på ingredienslinjen som skrevet (`amount`, `unit`), og `gram_weight` regnes ut: vekt direkte, volum × tetthet, antall × gram per stykk for formen. Gram driver næring, skalering og handleliste. Standard måleenhet ligger på formen når den finnes («fedd»), ellers på ingrediensen.
+
+**Allergener og kosthold** (gluten, laktose, melk, egg, nøtter, peanøtter, skalldyr, fisk, soya, sesam, selleri, sennep, sulfitt, lupin, bløtdyr, og vegansk/vegetarisk) lagres per ingrediens. Kostholdstaggene på en oppskrift **utledes fra ingrediensene** i stedet for å gjettes av AI-en. For et offentlig verktøy er det både mer pålitelig og et ansvarsspørsmål. Tallene settes i pantry-ryddingen før nygenereringen, og de som er usikre, merkes for gjennomgang.
+
 ### Pantry og kataloger
 
 | | Når | Innhold |
 |---|---|---|
-| `ingredient.is_staple` | v2-bygget | Salt, pepper og oljer |
+| `ingredient.is_staple` | Finnes | Salt, pepper og oljer |
+| `ingredient_alias` (ny tabell) | Grunnmur, ferdig | Navn → ingrediens. Leses av matcheren og skrives av flettingen |
 | `ingredient.density_g_per_ml` | v2-bygget | For omregning fra volum til gram |
+| `ingredient.base_ingredient_id` | v2-bygget | Fra variant til grunnvare |
+| Allergener og kosthold | v2-bygget | Per ingrediens, oppskriften utleder sine |
 | `unit` (ny tabell) | v2-bygget | Navn i entall og flertall, type (volum, vekt, antall, omtrentlig), ml per enhet |
-| `ingredient_alias` (ny tabell) | Grunnmur | Navn → ingrediens. Leses av matcheren og skrives av flettingen. Erstatter `synonyms.json` og JSON-feltet `aliases` |
+| `ingredient_form` (ny tabell) | **v2-bygget** (flyttet fra fase 3) | Se Ingrediensmodellen |
 | Næringskilde | v2-bygget | Se avsnitt 9 |
 | `data/constraints/equipment.json` | v2-bygget | ID, navn, rolle (koke, forberede, avlastning) |
 | `data/constraints/methods.json` | v2-bygget | ID, navn, om det er en varmemetode |
-| `ingredient_form` (ny tabell) | Fase 3 | Ingrediens, navn i entall og flertall, gram per stykk, forhold til kjøpevaren (1 egg = 1 plomme + 1 hvite), bilde |
+
+**Hvorfor formene flyttes fram:** oppskriftene lages på nytt i steg 8. Hvis formene først kom i fase 3, måtte alle oppskriftene struktureres en gang til for at «2 fedd hvitløk» skulle peke på formen. Mise en place blir værende i fase 3.
 
 ### Utledes, lagres ikke
 
@@ -146,7 +172,8 @@ Kjøres før lagring, i strukturerings-runden og ved redigering:
 6. Steg med varmemetode har `phase = cook`.
 7. `equipment`, `method` og `unit` finnes i katalogene.
 8. `amount` er større enn 0, eller null med «etter smak».
-9. Fase 3: hver linje har et mise-element, hvert mise-element brukes av et steg som finnes, og linjene når det steget gjennom prep-stegene.
+9. `ingredient_form_id` hører til linjens ingrediens, og enheten kan regnes om til gram (tetthet eller gram per stykk finnes).
+10. Fase 3: hver linje har et mise-element, hvert mise-element brukes av et steg som finnes, og linjene når det steget gjennom prep-stegene.
 
 Advarsler (lagres, men flagges):
 - `holds_minutes` overskrides i «rolig»-planen.
@@ -204,6 +231,8 @@ Tallene per 100 g kommer i dag fra Edamam, med AI-anslag der Edamam ikke fant in
 ## 10. Bilder og symboler
 
 - **Ingredienssymboler er illustrasjoner,** med tydelig silhuett som kan kjennes igjen i liten størrelse, fast vinkel og lys, felles palett og gjennomsiktig bakgrunn. Stilen bestemmes i prompt-lab (steg 6 i planen). Kandidater fra Style Center: «Vector Icon» og «Isometric 3D». Begge gjorde kyllingfilet oransje som laks, så laget per ingrediens trengs.
+- **Navnet vises sammen med symbolet** i oppskriftene (overlegg eller etikett). Bildet trenger derfor ikke skille alle varianter (risedikk fra hvitvinseddik) alene, og navnet kan oversettes og brukes som alt-tekst. Selve bildet inneholder aldri tekst.
+- **Stilen fra prompt-laben** (runde 1–5, 18.10.2026): `gemini-2.5-flash-image`, «vector», felles regler (én ingrediens, ingen rekvisitter, ren hvit bakgrunn, ingen tekst) og en regel per underkategori for hvordan varen vises (flaske, glass, papirpose, krukke eller hel vare). Enkeltingredienser som ikke passer kategorien sin, får egen form.
 - **Fram til da** brukes eksisterende bilder. Mangler en ingrediens bilde, vises forbokstaven i kategorifargen (`RECIPE_VISUALIZATIONS.md` 9.13).
 - **Symboler for innhold** (kosthold, kjøkken, utstyr, metoder) lages i samme stil som ingrediensene. **Kontrollikoner** (meny, lukk, del) kommer fra ett ferdig ikonbibliotek.
 - **Retter og komponenter:** rettbildet lages når oppskriften er validert. Komponentbildene lages med rettbildet som referanse (`RECIPE_VISUALIZATIONS.md` 9.7).
@@ -213,16 +242,16 @@ Tallene per 100 g kommer i dag fra Edamam, med AI-anslag der Edamam ikke fant in
 | # | Steg | Innhold |
 |---|---|---|
 | 0 | Fase 0 med Gemini | **Gjennomført.** 20/20 besto validatoren etter nye forsøk, og 19/20 i første forsøk, mot kravet om 80 %. Kostnad ca. 0,044 USD og median 86 sekunder per oppskrift. Ingen grunn til å forenkle modellen. Se pilotrapporten |
-| 1 | Kutt | Fjern Media Hub, TikTok Sidecar (adapterkoden beholdes), Photo Studio, Prompt Studio, Style Center, Concept Visuals, Recipe Card Lab, Bulk Generate, siden for manglende ingredienser, kokketipsene på oppskriftssiden, automatisk rettbilde, `social_hooks`, tabellen for innlegg til sosiale medier, videofilene i `static/` og død kode. Engangsskript arkiveres |
-| 2 | Grunnmur | Migreringskjede som stemmer med modellene, cascade ved sletting, fletting som summerer i stedet for å slette, én AI-modul med modellnavn, alias-tabell, og bare publisert innhold på offentlige endepunkter |
-| 3 | Pantry-rydding | Navn uten kutt og størrelse (kuttet går til `prep_style`), duplikater, enheter, ingredienser med 0 i næring, og åpenbare feil som schmaltz-linjen |
-| 4 | Prompt-lab | Avsnitt 8 |
+| 1 | Kutt | **Ferdig 18.10.2026** (PR #39–#42). Fjern Media Hub, TikTok Sidecar (adapterkoden beholdes), Photo Studio, Prompt Studio, Style Center, Concept Visuals, Recipe Card Lab, Bulk Generate, siden for manglende ingredienser, kokketipsene på oppskriftssiden, automatisk rettbilde, `social_hooks`, tabellen for innlegg til sosiale medier, videofilene i `static/` og død kode. Engangsskript arkiveres |
+| 2 | Grunnmur | **Ferdig 18.10.2026** (PR #43–#48): Migreringskjede som stemmer med modellene, cascade ved sletting, fletting som flytter linjer i stedet for å slette dem, én AI-modul med modellnavn, alias-tabell, og bare publisert innhold på offentlige endepunkter |
+| 3 | Pantry-rydding | **Ferdig 18.10.2026** (PR #49, #50): 27 flettet, 19 nye navn, 23 aktivert, alle navn med små bokstaver, og fuzzy-matching som krever samme ord. Formene, tettheten, allergenene og koblingen til grunnvaren fylles inn i v2-bygget |
+| 4 | Prompt-lab | **Ferdig 18.10.2026** (PR #51, #53, #54). Avsnitt 8 og `docs/PROMPT_LAB.md` |
 | 5 | Fase 0b med Claude | De samme 20 oppskriftene, Sonnet 5.5 mot Opus 5.5 og to effort-nivåer, med promptreglene fra piloten. I tillegg 3–4 kilder fra nettsider og video. Velg modell per steg, og test om mise-elementer kan utledes |
-| 6 | Stil på ingredienssymboler | Ankerbilder via prompt-lab. Deretter lages bildene for hele pantryet |
-| 7 | v2-bygget | Tabeller, kildeadaptere, to runder som bakgrunnsjobb, validator, lesemodell, nye visninger og design-tokens (med dagens uttrykk) |
+| 6 | Stil på ingredienssymboler | **Pågår.** Stilen er nesten satt etter fem runder (avsnitt 10). Gjenstår: felt for egen form og notater per ingrediens, bildene for hele pantryet i én kjøring, og et ark for godkjenning før de erstatter dagens bilder |
+| 7 | v2-bygget | Tabeller (inkludert former, enheter, tetthet, allergener og grunnvare), kildeadaptere, to runder som bakgrunnsjobb, validator, lesemodell, nye visninger og design-tokens (med dagens uttrykk) |
 | 8 | Nygenerering | De relevante oppskriftene lages på nytt. De gamle arkiveres, og gamle tabeller og kode slettes når resultatet er godkjent |
 | 9 | Bilder av retter og komponenter | Avsnitt 10 |
-| 10 | Fase 3 | Mise en place og ingrediensformer |
+| 10 | Fase 3 | Mise en place |
 
 ## 12. Senere
 
