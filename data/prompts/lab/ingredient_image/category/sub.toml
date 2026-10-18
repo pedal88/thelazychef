@@ -1,5 +1,6 @@
 # How each kind of ingredient is shown, by sub category with the main
-# category as fallback (round 5, 18.10.2026). One clear form per kind, so
+# category as fallback (round 5, 18.10.2026, adjusted after the first full
+# pantry run). One clear form per kind, so
 # liquids and dry goods get a container and solids do not. No bowls: the
 # style forbids them. The recipe shows the name next to the symbol, so the
 # image must look right and consistent, not tell every variety apart.
@@ -14,7 +15,7 @@ default = ""
 "liqueurs & cordials" = "Show one small glass bottle with the drink visible."
 "spirits / liquor" = "Show one small glass bottle with the drink visible."
 "wine" = "Show one glass of it."
-"coffee and coffee drinks" = "Show a small heap of roasted coffee beans."
+"coffee and coffee drinks" = "Show one cup or glass of the drink as it is served, with nothing next to it."
 "soft drinks & sodas" = "Show one glass bottle of it."
 "tea" = "Show a small heap of the dry tea leaves."
 "water" = "Show one clear glass of it."
@@ -86,7 +87,7 @@ default = ""
 # Sauces: runny ones in a bottle, thick ones in a jar
 "asian-style sauces" = "Show one glass bottle with a cork stopper and the sauce visible."
 "vinaigrettes & salad dressings" = "Show one glass bottle with a cork stopper and the contents visible."
-"other sauces & condiments" = "Show one glass bottle with a cork stopper and the contents visible."
+"other sauces & condiments" = "Show one small glass jar with the sauce visible."   # mostly thick; vinegars have their own form
 "savory condiments" = "Show one small glass jar with the contents visible."
 "cream & cheese sauces" = "Show one small glass jar with the sauce visible."
 "dips & dipping sauces" = "Show one small glass jar with the contents visible."
