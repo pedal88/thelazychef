@@ -59,12 +59,54 @@ jobs:
           fi
 
   # ------------------------------------------------------------------
+  # Migrations must build an empty database and match the models.
+  # Catches data migrations that only work on production data.
+  # ------------------------------------------------------------------
+  migrations:
+    name: Migrations on empty Postgres
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg15
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DB_BACKEND: local
+      DATABASE_URL: postgresql+pg8000://postgres:postgres@localhost:5432/postgres
+      GOOGLE_API_KEY: dummy-for-tests
+      SECRET_KEY: ci-only
+      STORAGE_BACKEND: local
+      FLASK_APP: app.py
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Upgrade an empty database and compare with the models
+        run: |
+          flask db upgrade
+          flask db check
+
+  # ------------------------------------------------------------------
   # STAGE 2: BUILD, SECURE & DEPLOY
   # Runs ONLY on push to main (Production Deploy)
   # ------------------------------------------------------------------
   deploy:
     name: Build & Deploy to Prod
-    needs: test
+    needs: [test, migrations]
     # One production deploy at a time. Two merges in quick succession used to
     # deploy in parallel: both ran the migration job at once, and the older
     # image could finish last and replace the newer one. A queued deploy
