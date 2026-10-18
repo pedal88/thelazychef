@@ -14,10 +14,16 @@ from services.ai_models import GEMINI_IMAGE, gemini_client
 
 
 def generate_image(prompt: str, model: str = GEMINI_IMAGE, references: list[bytes] | None = None,
-                   attempts: int = 3) -> tuple[bytes, dict]:
-    """Return (PNG bytes, meta). Retries transient errors (429, 5xx)."""
+                   attempts: int = 3, aspect_ratio: str = '1:1') -> tuple[bytes, dict]:
+    """Return (PNG bytes, meta). Retries transient errors (429, 5xx).
+
+    The aspect ratio is set in the request, not only in the prompt: without
+    it some models return wide images."""
     contents = [types.Part.from_bytes(data=ref, mime_type='image/png') for ref in references or []] + [prompt]
-    config = types.GenerateContentConfig(response_modalities=['IMAGE'])
+    config = types.GenerateContentConfig(
+        response_modalities=['IMAGE'],
+        image_config=types.ImageConfig(aspect_ratio=aspect_ratio),
+    )
 
     last_error = None
     for attempt in range(attempts):
