@@ -4,7 +4,7 @@ from app import app, db
 from database.models import Ingredient
 
 def load_pantry():
-    path = os.path.join(os.path.dirname(__file__), "data", "pantry.json")
+    path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "data", "pantry.json")
     with open(path, 'r') as f:
         data = json.load(f)
     

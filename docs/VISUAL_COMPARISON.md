@@ -169,7 +169,7 @@ Not broken or confusing
    - Stores actual PNG images
    - Served by Flask automatically
 
-5. **API** (`app.py` + `utils/image_helpers.py`)
+5. **API** (`routes/pantry_routes.py` + `utils/image_helpers.py`)
    - Optional SVG placeholder generator
    - Dynamic fallback images
 

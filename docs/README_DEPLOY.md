@@ -1,61 +1,51 @@
 # Deployment Guide
 
-This guide describes how to deploy the **The Lazy Chef** application to **Google Cloud Run** and initialize the production **Cloud SQL** database.
+Production runs on **Google Cloud Run** in project `thelazychefai-prod`, with **Cloud SQL (Postgres)** and a **Cloud Storage** bucket for assets. Deployment is fully automated by GitHub Actions (`.github/workflows/deploy.yaml`).
 
-## Prerequisites
-1.  **Google Cloud Project**: You need an active project ID.
-2.  **Tooling**:
-    *   **Google Cloud SDK (`gcloud`)**: [Install Guide](https://cloud.google.com/sdk/docs/install). Run `gcloud auth login` and `gcloud config set project [PROJECT_ID]`.
-    *   **Docker**: Installed and running locally.
-3.  **APIs Enabled**: Cloud Run, Cloud Build, Cloud SQL Admin.
-4.  **Infrastructure**:
-    *   **GCS Bucket**: `buildyourmeal-assets` (Created in Phase 1).
-    *   **Cloud SQL Instance**: Postgres 15+ (Created manually in Console).
-    *   **Database**: Created inside the instance (e.g., `kitchen_db`).
-    *   **User**: Created inside the instance (e.g., `appuser` with password).
+## How a deploy happens
 
-## 1. Deploy Application
+1.  Open a pull request → the **Lint & Test** job runs (flake8 syntax checks + `pytest tests/`).
+2.  Merge to `main` → **Lint & Test** runs again, then **Build & Deploy to Prod**:
+    1.  Authenticates to Google Cloud via Workload Identity Federation (no key files).
+    2.  Builds the Docker image and pushes it to Artifact Registry (`europe-north2-docker.pkg.dev/<PROJECT_ID>/app-repo/lazy-chef-app`).
+    3.  Scans the image with Trivy; **critical/high vulnerabilities fail the deploy**.
+    4.  Runs the Cloud Run job `lazy-chef-db-migration` (`flask db upgrade`) against Cloud SQL.
+    5.  Deploys the image to the Cloud Run service `lazy-chef-app` (region `europe-west1`).
 
-Run the deployment script. It will build the container and deploy it to Cloud Run.
+A deploy takes about 6 minutes. Watch it under the repo's **Actions** tab or with `gh run watch`.
 
-```bash
-chmod +x scripts/deploy.sh
-./scripts/deploy.sh [YOUR_PROJECT_ID]
-```
+To redeploy without a code change (e.g. after changing a secret), open the latest run on `main` in the Actions tab and click **Re-run all jobs**.
 
-You will be prompted for:
-*   **Database User**: `appuser`
-*   **Database Password**: `[HIDDEN]`
-*   **Database Name**: `kitchen_db`
-*   **Connection Name**: `project-id:region:instance-name`
+## Production infrastructure
 
-**Finding the Connection Name**:
-1.  Go to Google Cloud Console -> SQL.
-2.  Click on your instance.
-3.  Copy the "Connection name" from the Overview page.
+| Resource | Value |
+|---|---|
+| GCP project | `thelazychefai-prod` |
+| Cloud Run service | `lazy-chef-app` (`europe-west1`) |
+| Migration job | `lazy-chef-db-migration` |
+| Cloud SQL instance | `thelazychefai-prod:europe-north2:lazy-chef-db-eu` |
+| Asset bucket | `thelazychef-assets` |
+| Artifact Registry | `europe-north2-docker.pkg.dev/<PROJECT_ID>/app-repo` |
 
-## 2. Initialize Production Database
+## GitHub secrets
 
-After deployment (or before), you need to create the tables in the empty production database.
+Set under **Settings → Secrets and variables → Actions**. They're passed to Cloud Run as environment variables on every deploy.
 
-1.  Export the necessary credentials in your local shell (the script uses them to connect securely via proxy):
-    ```bash
-    export INSTANCE_CONNECTION_NAME='project-id:region:instance-name'
-    export DB_USER='appuser'
-    export DB_PASS='secret'
-    export DB_NAME='kitchen_db'
-    export GOOGLE_APPLICATION_CREDENTIALS='/path/to/key.json' # If not using gcloud auth
-    ```
+| Secret | Purpose |
+|---|---|
+| `SECRET_KEY` | Flask session signing key. **The app refuses to start on Cloud Run without it.** Generate with `python -c "import secrets; print(secrets.token_hex(32))"`. Changing it logs everyone out. |
+| `GOOGLE_API_KEY` | Gemini / Imagen API key. Its AI Studio project must have billing (Postpay recommended; a depleted prepay balance breaks generation with a 402 error). |
+| `DB_USER`, `DB_PASS`, `DB_NAME` | Cloud SQL credentials |
+| `PROJECT_ID` | GCP project for Artifact Registry |
+| `WIF_PROVIDER`, `WIF_SERVICE_ACCOUNT` | Workload Identity Federation for GitHub → Google Cloud auth |
 
-2.  Run the initialization script:
-    ```bash
-    python scripts/init_prod_db.py
-    ```
+After changing a secret, redeploy (see above) for it to take effect.
 
-3.  Confirm the prompt. The script will use the Google Cloud SQL Connector to safelytunnel to your instance and run `db.create_all()`.
+## Troubleshooting
 
-## 3. Verify Deployment
+*   **Deploy fails at "Deploy to Cloud Run" / revision won't start**: check the Cloud Run logs. A missing or empty `SECRET_KEY` raises `RuntimeError: SECRET_KEY environment variable must be set in production`.
+*   **Deploy fails at Trivy**: a dependency or base-image package has a known critical/high CVE. Bump the package in `requirements.txt` (see PR history for examples).
+*   **Recipe generation shows "AI generation is temporarily unavailable (billing)"**: the Gemini key's project is out of credits; top up or switch to Postpay in [AI Studio](https://ai.studio/projects).
+*   **Migration job fails**: run `gcloud run jobs executions list --job lazy-chef-db-migration --region europe-west1` and inspect the failing execution's logs.
 
-1.  Open the **Service URL** provided by the deployment script output.
-2.  Navigate to `/pantry`.
-3.  If successful, the app should load (likely empty/default data) without errors.
+Historical notes on the original manual setup: [README_CLOUD_DEPLOYMENT.md](README_CLOUD_DEPLOYMENT.md), [../DEPLOYMENT_TROUBLESHOOTING_POSTMORTEM.md](../DEPLOYMENT_TROUBLESHOOTING_POSTMORTEM.md), [../DEPLOY_VIA_CLOUD_SHELL.md](../DEPLOY_VIA_CLOUD_SHELL.md).
