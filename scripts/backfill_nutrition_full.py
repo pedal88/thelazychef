@@ -52,8 +52,8 @@ def fetch_edamam_data(ingredient_name, default_unit):
         
     url = "https://api.edamam.com/api/nutrition-data"
     params = {
-        'app_id': '144a8231',
-        'app_key': 'f4b119e11be9443f14e7f042d5e80eef',
+        'app_id': os.environ["EDAMAM_APP_ID"],
+        'app_key': os.environ["EDAMAM_APP_KEY"],
         'ingr': query
     }
     
