@@ -1,14 +1,11 @@
 import os
-import shutil
 import json
 import re
-import time
 import logging
-from typing import Optional
-from google.genai import types
 from PIL import Image
 from io import BytesIO
-from services.ai_models import IMAGEN, IMAGEN_FAST, gemini_client
+from services.ai_models import gemini_client
+from services.image_generation import generate_image
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +15,6 @@ PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT", "your-project-id")
 LOCATION = os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1")
 
 class VertexImageGenerator:
-    _force_fallback = False
 
     def __init__(self, storage_provider, root_path=None):
         self.storage = storage_provider
@@ -63,64 +59,9 @@ class VertexImageGenerator:
         safe_name = re.sub(r'_+', '_', safe_name).strip('_')
         return f"{safe_name}.png"
     
-    def _generate_with_fallback(self, prompt: str, config):
-        """Executes generation with tiered model fallback logic."""
-        if VertexImageGenerator._force_fallback:
-            models = [IMAGEN_FAST]
-        else:
-            models = [IMAGEN, IMAGEN_FAST]
-
-        last_error = None
-        for i, model_name in enumerate(models):
-            try:
-                response = self.client.models.generate_images(
-                    model=model_name,
-                    prompt=prompt,
-                    config=config
-                )
-                if response and response.generated_images:
-                    return response, model_name
-            except Exception as e:
-                error_msg = str(e).lower()
-                is_429 = "429" in error_msg or "resourceexhausted" in error_msg or "quota" in error_msg
-                last_error = e
-
-                if is_429:
-                    if "per_day" in error_msg or "daily" in error_msg:
-                        logger.critical(f"CRITICAL: {model_name} quota exhausted (daily). Falling back to next model for prompt: {prompt[:60]}")
-                        if model_name == IMAGEN:
-                            VertexImageGenerator._force_fallback = True
-                        continue # switch model completely
-                    
-                    elif "per_minute" in error_msg or "minute" in error_msg:
-                        if i == 0:  
-                            logger.warning(f"Minute quota exhausted for {model_name}. Sleeping 10s and retrying...")
-                            time.sleep(10)
-                            try:
-                                response = self.client.models.generate_images(
-                                    model=model_name,
-                                    prompt=prompt,
-                                    config=config
-                                )
-                                if response and response.generated_images:
-                                    return response, model_name
-                            except Exception as inner_e:
-                                logger.critical(f"CRITICAL: {model_name} quota exhausted (per_minute retried). Falling back. Inner err: {inner_e}")
-                                last_error = inner_e
-                                continue
-                        else:
-                            logger.critical(f"CRITICAL: {model_name} quota exhausted (per_minute). Falling back to next model...")
-                            continue
-                
-                # If it's a structural API error (e.g. 400 Bad Request, safety block), we shouldn't fallback blindly to different models as they likely fail too
-                logger.error(f"Error with model {model_name}: {e}")
-                raise e
-        
-        raise Exception(f"All fallback models exhausted. Last error: {last_error}")
-
     def generate_candidate(self, ingredient_name: str, prompt: str = None, scope: str = None) -> dict:
         """
-        Generates an image using Imagen and saves it to the candidates folder.
+        Generates an image with the Gemini image model and saves it to the candidates folder.
         """
         import time
 
@@ -151,16 +92,8 @@ class VertexImageGenerator:
 
             print(f"Generating candidate for {ingredient_name} → {filename} | Prompt: {str(prompt)[:60]}...")
 
-            config = types.GenerateImagesConfig(
-                number_of_images=1,
-                aspect_ratio='1:1'
-            )
-
-            response, model_used = self._generate_with_fallback(prompt, config)
-
-            if response.generated_images:
-                raw_image_bytes = response.generated_images[0].image.image_bytes
-                
+            raw_image_bytes, _meta = generate_image(prompt)
+            if raw_image_bytes:
                 if remove_bg:
                     from rembg import remove
                     output_image_bytes = remove(raw_image_bytes)

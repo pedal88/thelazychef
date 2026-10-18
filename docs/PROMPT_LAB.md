@@ -35,10 +35,11 @@ python -m promptlab render ingredient_image --vary style=vector --limit 3   # pr
 python -m promptlab run ingredient_image --vary style=default,vector,isometric
 python -m promptlab run ingredient_image --vary style=vector --vary category=default,none --sample style_center
 python -m promptlab run ingredient_image --vary style=vector --dry-run      # prompts and sheet only
+python -m promptlab run ingredient_image --vary style=vector --models GEMINI_IMAGE,gemini-3.1-flash-image,gemini-3-pro-image
 python -m promptlab score ~/promptlab-runs/<run> ~/Downloads/scores.json
 ```
 
-`--vary` takes every combination of the variants given. Layers you do not vary use `default`. `--sample` picks a set from `samples.toml` and `--limit` takes the first N.
+`--vary` takes every combination of the variants given. Layers you do not vary use `default`. `--models` runs every prompt on each model (a constant from `services/ai_models.py` or a model ID), one column per model. `--sample` picks a set from `samples.toml` and `--limit` takes the first N.
 
 A run needs the model's key in the environment (`GOOGLE_API_KEY` for Gemini; text tasks will use Claude from step 5 of the v2 plan). It costs real money: an image run is samples x combinations images.
 

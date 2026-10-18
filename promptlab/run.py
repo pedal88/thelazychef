@@ -29,36 +29,46 @@ def _sample_id(sample: dict, index: int) -> str:
     return str(sample.get('id') or sample.get('name') or index)
 
 
-def plan(task: Task, vary: dict[str, list[str]], sample_set: str, limit: int | None) -> list[dict]:
+def resolve_models(task: Task, models: list[str] | None) -> list[str]:
+    """Model names: a constant in services/ai_models.py, or a model ID as is."""
+    from services import ai_models
+
+    return [getattr(ai_models, m, m) for m in (models or [task.model])]
+
+
+def plan(task: Task, vary: dict[str, list[str]], sample_set: str, limit: int | None,
+         models: list[str] | None = None) -> list[dict]:
     samples = task.samples(sample_set)[:limit] if limit else task.samples(sample_set)
+    models = models or [task.model]
     cells = []
     for index, sample in enumerate(samples):
         for choice in combinations(task, vary):
-            cells.append({
-                'sample': _sample_id(sample, index),
-                'variant': label(choice),
-                'choice': choice,
-                'prompt': task.compose(choice, sample),
-            })
+            prompt = task.compose(choice, sample)
+            for model in models:
+                cells.append({
+                    'sample': _sample_id(sample, index),
+                    'variant': label(choice) + (f' · {model}' if len(models) > 1 else ''),
+                    'choice': choice,
+                    'model': model,
+                    'prompt': prompt,
+                })
     return cells
 
 
 def run(task: Task, vary: dict[str, list[str]], sample_set: str = 'default', limit: int | None = None,
-        dry_run: bool = False, runs_dir: Path = RUNS_DIR, runner=None) -> Path:
-    from services import ai_models
-
-    model = getattr(ai_models, task.model)
+        dry_run: bool = False, runs_dir: Path = RUNS_DIR, runner=None, models: list[str] | None = None) -> Path:
+    models = resolve_models(task, models)
     started = datetime.datetime.now()
     folder = runs_dir / f"{started:%Y%m%d-%H%M%S}-{task.name}{'-dry' if dry_run else ''}"
     (folder / 'outputs').mkdir(parents=True)
 
     record = {
-        'task': task.name, 'kind': task.kind, 'model': model, 'model_constant': task.model,
+        'task': task.name, 'kind': task.kind, 'model': ', '.join(models), 'models': models,
         'vary': vary, 'sample_set': sample_set, 'limit': limit, 'dry_run': dry_run,
         'started': started.isoformat(timespec='seconds'),
         'git_commit': _git('rev-parse', '--short', 'HEAD'),
         'git_dirty': bool(_git('status', '--porcelain', '--', str(task.path))),
-        'cells': plan(task, vary, sample_set, limit),
+        'cells': plan(task, vary, sample_set, limit, models),
     }
 
     if runner is None and not dry_run:
@@ -71,7 +81,7 @@ def run(task: Task, vary: dict[str, list[str]], sample_set: str = 'default', lim
             continue
         for attempt in range(3):
             try:
-                output, meta = runner(model, cell['prompt'])
+                output, meta = runner(cell['model'], cell['prompt'])
                 break
             except NotImplementedError:
                 raise

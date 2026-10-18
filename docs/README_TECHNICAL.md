@@ -33,7 +33,7 @@ Every model name lives in `services/ai_models.py`, together with the one shared 
 |---|---|---|
 | `GEMINI_TEXT` | `gemini-flash-latest` | Recipe generation and extraction, ingredient analysis, nutrients from text, recipe evaluation |
 | `GEMINI_TEXT_FAST` | `gemini-2.5-flash` | Ingredient evaluation and taxonomy suggestions |
-| `IMAGEN`, `IMAGEN_FAST` | `imagen-4.0-generate-001`, `imagen-4.0-fast-generate-001` | Ingredient and component images |
+| `GEMINI_IMAGE` | `gemini-2.5-flash-image` | Ingredient and component images (`services/image_generation.py`). Imagen 4 was retired in 2026 |
 
 ## 2. Recipe Generation Flow
 

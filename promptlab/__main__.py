@@ -10,8 +10,8 @@ from dotenv import load_dotenv  # noqa: E402
 
 load_dotenv()
 
-from promptlab.compose import LAB_DIR, label, load_task  # noqa: E402
-from promptlab.run import RUNS_DIR, merge_scores, plan, run  # noqa: E402
+from promptlab.compose import LAB_DIR, load_task  # noqa: E402
+from promptlab.run import RUNS_DIR, merge_scores, plan, resolve_models, run  # noqa: E402
 
 
 def parse_vary(items: list[str]) -> dict[str, list[str]]:
@@ -36,6 +36,7 @@ def main(argv=None):
         p.add_argument('--vary', action='append', metavar='LAYER=A,B', help='variants to compare (repeatable)')
         p.add_argument('--sample', default='default', help='sample set in samples.toml')
         p.add_argument('--limit', type=int, help='first N samples only')
+        p.add_argument('--models', help='compare models: constants from services/ai_models.py or model IDs, comma separated')
         if name == 'run':
             p.add_argument('--dry-run', action='store_true', help='build prompts and the sheet, call no model')
 
@@ -61,13 +62,14 @@ def main(argv=None):
 
     task = load_task(args.task)
     vary = parse_vary(args.vary)
+    models = [m for m in args.models.split(',') if m] if args.models else None
 
     if args.command == 'render':
-        for cell in plan(task, vary, args.sample, args.limit):
-            print(f"--- {cell['sample']} [{label(cell['choice'])}]\n{cell['prompt']}\n")
+        for cell in plan(task, vary, args.sample, args.limit, resolve_models(task, models)):
+            print(f"--- {cell['sample']} [{cell['variant']}]\n{cell['prompt']}\n")
         return
 
-    folder = run(task, vary, args.sample, args.limit, dry_run=args.dry_run, runs_dir=RUNS_DIR)
+    folder = run(task, vary, args.sample, args.limit, dry_run=args.dry_run, runs_dir=RUNS_DIR, models=models)
     print(f"\n{folder / 'sheet.html'}")
     if sys.platform == 'darwin' and not os.getenv('PROMPTLAB_NO_OPEN'):
         os.system(f"open '{folder / 'sheet.html'}'")
