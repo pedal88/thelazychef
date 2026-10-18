@@ -18,7 +18,7 @@ load_dotenv()
 from services import ai_models  # noqa: E402
 
 TEXT_MODELS = ['GEMINI_TEXT', 'GEMINI_TEXT_FAST']
-IMAGE_MODELS = ['GEMINI_IMAGE', 'IMAGEN', 'IMAGEN_FAST']
+IMAGE_MODELS = ['GEMINI_IMAGE']
 
 client = ai_models.gemini_client()
 ok = True

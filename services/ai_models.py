@@ -13,12 +13,12 @@ GEMINI_TEXT = "gemini-flash-latest"
 # Text: short, cheap tasks (taxonomy, quick analysis)
 GEMINI_TEXT_FAST = "gemini-2.5-flash"
 
-# Images
-# Gemini image model: takes reference images and can edit, which the v2
-# image flow needs. Confirm the ID with scripts/debug/verify_setup.py.
+# Images. Imagen 4 was retired from the Gemini API in 2026. The Gemini image
+# models take reference images and can edit, which the v2 image flow needs.
+# Others available on our key (October 2026): gemini-3.1-flash-image,
+# gemini-3.1-flash-lite-image, gemini-3-pro-image. Compare them in the
+# prompt lab with --models before switching.
 GEMINI_IMAGE = "gemini-2.5-flash-image"
-IMAGEN = "imagen-4.0-generate-001"
-IMAGEN_FAST = "imagen-4.0-fast-generate-001"
 
 _client = None
 

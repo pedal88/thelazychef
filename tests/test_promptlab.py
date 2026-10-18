@@ -76,13 +76,27 @@ class PromptLabTests(unittest.TestCase):
         folder = run(self.task, {'style': ['b']}, runs_dir=self.runs, runner=fake)
         record = json.loads((folder / 'run.json').read_text())
         self.assertEqual(len(calls), 2)
-        self.assertEqual(record['model'], 'gemini-flash-latest')
+        self.assertEqual(record['models'], ['gemini-flash-latest'])
         self.assertEqual(record['cells'][0]['output'], 'AN ICON OF ANISE. | SMALL HEAP OF ANISE. | STAR SHAPED.')
 
         scores = Path(self.tmp.name) / 'scores.json'
         scores.write_text(json.dumps({'c0': {'value': 4, 'best': True}}))
         self.assertEqual(merge_scores(folder, scores), 1)
         self.assertEqual(json.loads((folder / 'run.json').read_text())['cells'][0]['score'], {'value': 4, 'best': True})
+
+    def test_models_become_columns(self):
+        seen = []
+
+        def fake(model, prompt):
+            seen.append(model)
+            return 'ok', {}
+
+        folder = run(self.task, {}, runs_dir=self.runs, runner=fake, models=['GEMINI_TEXT', 'some-model-id'])
+        record = json.loads((folder / 'run.json').read_text())
+        self.assertEqual(record['models'], ['gemini-flash-latest', 'some-model-id'])
+        self.assertEqual(sorted(set(seen)), ['gemini-flash-latest', 'some-model-id'])
+        self.assertEqual({c['variant'] for c in record['cells']},
+                         {'default · gemini-flash-latest', 'default · some-model-id'})
 
 
 if __name__ == '__main__':
