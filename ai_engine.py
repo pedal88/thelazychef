@@ -6,9 +6,9 @@ import typing_extensions as typing # For TypedDict compatibility
 from pathlib import Path
 from thefuzz import process as fuzz_process
 from dotenv import load_dotenv
-from google import genai
 from google.genai import types
 from jinja2 import Environment, FileSystemLoader
+from services.ai_models import GEMINI_TEXT, gemini_client
 
 # Load Environment
 load_dotenv()
@@ -24,7 +24,7 @@ if not api_key:
     print("CRITICAL ERROR: GOOGLE_API_KEY environment variable is missing.")
     raise ValueError("GOOGLE_API_KEY environment variable is missing. Please check Secrets/Env Vars.")
 
-client = genai.Client(api_key=api_key)
+client = gemini_client()
 
 # --- Pydantic/TypedDict Schema Definitions ---
 # Using TypedDict as requested for Gemini response_schema
@@ -293,9 +293,9 @@ def generate_recipe_from_web_text(text: str, source_url: str = "User Input", sli
         print(f"ERROR: Failed to render web_extraction template: {e}")
         raise ValueError(f"Template rendering failed: {e}")
     
-    print(f"DEBUG: Generating from Web Text via 'gemini-flash-latest' (with pantry IDs)")
+    print(f"DEBUG: Generating from Web Text via {GEMINI_TEXT} (with pantry IDs)")
     response = client.models.generate_content(
-        model='gemini-flash-latest',
+        model=GEMINI_TEXT,
         contents=prompt,
         config=types.GenerateContentConfig(
             response_mime_type="application/json",
@@ -624,12 +624,10 @@ def generate_recipe_ai(
         raise ValueError(f"Template rendering failed: {e}")
 
 
-
-
-    print(f"DEBUG: Using Model 'gemini-flash-latest' with Few-Shot Prompt")
+    print(f"DEBUG: Using model {GEMINI_TEXT} with few-shot prompt")
     
     response = client.models.generate_content(
-        model='gemini-flash-latest',
+        model=GEMINI_TEXT,
         contents=prompt,
         config=types.GenerateContentConfig(
             response_mime_type="application/json",
@@ -734,10 +732,10 @@ def generate_recipe_from_video(video_path: str, caption: str, slim_context: list
         print(f"ERROR: Failed to render video_extraction template: {e}")
         raise ValueError(f"Template rendering failed: {e}")
     
-    print(f"DEBUG: Generating from Video via 'gemini-flash-latest' (with pantry IDs)")
+    print(f"DEBUG: Generating from Video via {GEMINI_TEXT} (with pantry IDs)")
     
     response = client.models.generate_content(
-        model='gemini-flash-latest',
+        model=GEMINI_TEXT,
         contents=[file_ref, prompt],
         config=types.GenerateContentConfig(
             response_mime_type="application/json",
@@ -758,7 +756,7 @@ def generate_recipe_from_video(video_path: str, caption: str, slim_context: list
 # --- Ingredient Analysis ---
 def analyze_ingredient_ai(prompt: str, valid_categories: dict) -> dict:
     
-    print(f"DEBUG: Analyzing ingredient '{prompt}' via 'gemini-flash-latest'")
+    print(f"DEBUG: Analyzing ingredient '{prompt}' via {GEMINI_TEXT}")
     
     # Load prompt from studio template
     from utils.prompt_manager import load_prompt
@@ -771,7 +769,7 @@ def analyze_ingredient_ai(prompt: str, valid_categories: dict) -> dict:
 
     try:
         response = client.models.generate_content(
-            model='gemini-flash-latest',
+            model=GEMINI_TEXT,
             contents=system_prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
@@ -834,7 +832,7 @@ def extract_nutrients_from_text(raw_text: str, ingredient_name: str = "") -> dic
 
     try:
         response = client.models.generate_content(
-            model='gemini-flash-latest',
+            model=GEMINI_TEXT,
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
@@ -856,40 +854,3 @@ def extract_nutrients_from_text(raw_text: str, ingredient_name: str = "") -> dic
         raise ValueError(f"Nutrient extraction failed: {e}")
 class HookGenerationSchema(typing.TypedDict):
     hook_text: str
-
-def generate_social_hook(recipe_data: dict, hook_type: str = "social") -> str:
-    """
-    Generates a high-converting short hook text for TikTok/Instagram Reels.
-    
-    recipe_data: dict containing 'title', 'cuisine', 'ingredients'
-    hook_type: 'social' (native controversies/hacks) or 'cinematic' (stunning transformations)
-    """
-    if hook_type == "cinematic":
-        sys_role = "You are a master of cinematic hook writing. You write dramatic, punchy hooks that focus on 'results first' or stunning visual transformations (e.g. 'Watch this $3 cabbage become a masterpiece'). Max 15 words. Short, punchy, beautiful tension."
-    else:
-        sys_role = "You are a top-tier TikTok recipe creator. You write highly engaging native social hooks that create controversy, curiosity or reveal a hack. (e.g. 'Italians will hate me for this pasta hack, but it works every single time.'). No emojis. Max 20 words."
-        
-    prompt = f"""
-    Recipe Name: {recipe_data.get('title', 'Unknown')}
-    Cuisine: {recipe_data.get('cuisine', 'Unknown')}
-    Key Ingredients: {recipe_data.get('ingredients', '')}
-    
-    Write exactly ONE hook text based on your role profile. Be visceral, surprising, and arresting.
-    """
-    
-    try:
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=prompt,
-            config=genai.types.GenerateContentConfig(
-                system_instruction=sys_role,
-                response_mime_type="application/json",
-                response_schema=HookGenerationSchema,
-                temperature=0.8,
-            )
-        )
-        data = json.loads(response.text)
-        return data.get("hook_text", "Warning: Generation failed. Try again!")
-    except Exception as e:
-        print(f"Hook generation error: {e}")
-        return "Warning: AI Generation encountered an error."

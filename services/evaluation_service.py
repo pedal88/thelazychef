@@ -1,10 +1,8 @@
-import os
 import json
 from pathlib import Path
 import typing_extensions as typing
 from dotenv import load_dotenv
 
-from google import genai
 from google.genai import types
 from jinja2 import Environment, FileSystemLoader
 from PIL import Image
@@ -13,18 +11,14 @@ from io import BytesIO
 
 from database.models import db, Recipe, RecipeEvaluation
 from app import app
+from services.ai_models import GEMINI_TEXT, gemini_client
 
 # Path resolution for Jinja templates
 PROMPTS_DIR = Path(__file__).parent.parent / 'data' / 'prompts'
 env = Environment(loader=FileSystemLoader(str(PROMPTS_DIR)))
 
-# Initialize genai client (falling back to .env for local vs injected env vars)
-load_dotenv()
-api_key = os.getenv("GOOGLE_API_KEY")
-if not api_key:
-    raise ValueError("GOOGLE_API_KEY environment variable is missing.")
-
-client = genai.Client(api_key=api_key)
+load_dotenv()  # .env locally; Cloud Run injects the key
+client = gemini_client()
 
 class RecipeEvaluationSchema(typing.TypedDict):
     """Strict schema for the LLM recipe QA Output enforcing Chain of Thought."""
@@ -120,10 +114,10 @@ def evaluate_recipe(recipe_id: int) -> dict:
         prompt += "\n[SYSTEM NOTE: NO IMAGE PROVIDED. Output 'No image provided' for reasoning_image and 0 for score_image.]"
         payload = [prompt]
 
-    # Call Gemini (using default gemini-flash-latest which matches active SDK tier)
+    # Call Gemini
     try:
         response = client.models.generate_content(
-            model='gemini-flash-latest',
+            model=GEMINI_TEXT,
             contents=payload,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",

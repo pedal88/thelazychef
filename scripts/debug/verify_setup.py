@@ -1,63 +1,42 @@
+"""Check that the Gemini key works and every model in services/ai_models.py exists.
+
+Text models get one tiny generate call, which also catches billing problems
+(402) and retired models (404). Image models are only looked up in the model
+list, so the check costs almost nothing.
+
+    python scripts/debug/verify_setup.py
+"""
 import os
-import json
-from dotenv import load_dotenv
-from google import genai
-from google.genai.types import GenerateContentConfig
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
+from dotenv import load_dotenv  # noqa: E402
 
 load_dotenv()
 
-api_key = os.getenv("GOOGLE_API_KEY")
-project_id = os.getenv("GOOGLE_CLOUD_PROJECT")
+from services import ai_models  # noqa: E402
 
-print(f"--- Configuration Check ---")
-print(f"Project ID from .env: {project_id}")
-print(f"API Key present: {bool(api_key)}")
-if api_key:
-    print(f"API Key prefix: {api_key[:8]}...")
+TEXT_MODELS = ['GEMINI_TEXT', 'GEMINI_TEXT_FAST']
+IMAGE_MODELS = ['IMAGEN', 'IMAGEN_FAST']
 
-if not api_key:
-    print("ERROR: No API Key found.")
-    exit(1)
+client = ai_models.gemini_client()
+ok = True
 
-client = genai.Client(api_key=api_key)
+for name in TEXT_MODELS:
+    model = getattr(ai_models, name)
+    try:
+        client.models.generate_content(model=model, contents='Reply with OK.')
+        print(f"OK       {name:<17} {model}")
+    except Exception as e:
+        ok = False
+        print(f"FAILED   {name:<17} {model}: {e}")
 
-print("\n--- Model Availability Check ---")
-try:
-    # List models to confirm what we can see
-    pager = client.models.list()
-    found_models = [m.name for m in pager]
-    print(f"Found {len(found_models)} models.")
-    
-    # Check for specific models
-    for target in ['gemini-1.5-flash', 'gemini-2.0-flash']:
-        # The list returns full resource names like 'models/gemini-1.5-flash'
-        match = any(target in m for m in found_models)
-        print(f"Model '{target}' available: {match}")
+available = {m.name.removeprefix('models/') for m in client.models.list()}
+for name in IMAGE_MODELS:
+    model = getattr(ai_models, name)
+    found = model in available
+    ok = ok and found
+    print(f"{'OK' if found else 'MISSING':<8} {name:<17} {model}")
 
-except Exception as e:
-    print(f"Error listing models: {e}")
-
-print("\n--- Billing/Quota Check (attempting generation) ---")
-# Try a simple generation with 1.5 Flash (Standard Paid Model)
-try:
-    print("Attempting generation with 'gemini-1.5-flash'...")
-    response = client.models.generate_content(
-        model='gemini-1.5-flash',
-        contents='Hello, are you working?'
-    )
-    print("Success! (Billing likely working or within free tier)")
-    print(f"Response: {response.text}")
-except Exception as e:
-    print(f"Error with gemini-1.5-flash: {e}")
-
-print("\n--- 2.0 Check ---")
-try:
-    print("Attempting generation with 'gemini-2.0-flash'...")
-    response = client.models.generate_content(
-        model='gemini-2.0-flash',
-        contents='Hello, are you working?'
-    )
-    print("Success! (gemini-2.0-flash working)")
-    print(f"Response: {response.text}")
-except Exception as e:
-    print(f"Error with gemini-2.0-flash: {e}")
+sys.exit(0 if ok else 1)

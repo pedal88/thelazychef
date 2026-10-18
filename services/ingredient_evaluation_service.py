@@ -8,19 +8,18 @@ Mirrors the recipe evaluation_service.py pattern exactly:
 from __future__ import annotations
 
 import json
-import os
 from pathlib import Path
 
 import requests
 import typing_extensions as typing
 from dotenv import load_dotenv
-from google import genai
 from google.genai import types
 from io import BytesIO
 from jinja2 import Environment, FileSystemLoader
 from PIL import Image
 
 from database.models import db, Ingredient, IngredientEvaluation
+from services.ai_models import GEMINI_TEXT_FAST, gemini_client
 
 # ---------------------------------------------------------------------------
 # Infrastructure setup (mirrors evaluation_service.py exactly)
@@ -29,12 +28,8 @@ from database.models import db, Ingredient, IngredientEvaluation
 PROMPTS_DIR = Path(__file__).parent.parent / "data" / "prompts"
 _jinja_env = Environment(loader=FileSystemLoader(str(PROMPTS_DIR)))
 
-load_dotenv()
-_api_key = os.getenv("GOOGLE_API_KEY")
-if not _api_key:
-    raise ValueError("GOOGLE_API_KEY environment variable is missing.")
-
-client = genai.Client(api_key=_api_key)
+load_dotenv()  # .env locally; Cloud Run injects the key
+client = gemini_client()
 
 
 # ---------------------------------------------------------------------------
@@ -151,7 +146,7 @@ def evaluate_ingredient(ingredient_id: int) -> dict:
     # ── Call Gemini with structured output ─────────────────────────
     try:
         api_response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model=GEMINI_TEXT_FAST,
             contents=payload,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
@@ -227,7 +222,7 @@ def suggest_ingredient_taxonomy(ingredient_id: int) -> dict:
 
     try:
         api_response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model=GEMINI_TEXT_FAST,
             contents=[prompt],
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",

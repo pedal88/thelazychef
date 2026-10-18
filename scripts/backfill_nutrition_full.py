@@ -9,6 +9,7 @@ from google import genai
 from google.genai import types
 from app import app
 from database.models import db, Ingredient
+from services.ai_models import GEMINI_TEXT_FAST
 
 _api_key = os.getenv("GOOGLE_API_KEY")
 gemini_client = genai.Client(api_key=_api_key) if _api_key else None
@@ -21,7 +22,7 @@ def generate_nutrition_estimate(ingredient_name):
     prompt = f"Provide a scientific nutritional estimate for 100g of {ingredient_name}. Return ONLY simple JSON with these exact numeric keys: weight (average weight in grams of 1 logical unit, default 1.0), calories, protein, fat, fat_saturated, carbs, sugar, fiber, sodium, cholesterol, calcium, potassium. Use only raw numbers."
     try:
         response = gemini_client.models.generate_content(
-            model='gemini-2.5-flash',
+            model=GEMINI_TEXT_FAST,
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
