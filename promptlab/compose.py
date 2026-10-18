@@ -2,8 +2,10 @@
 
 A layer variant is either a Jinja template (<variant>.j2) rendered with the
 sample's fields, or a lookup table (<variant>.toml) with a `by` field naming
-the sample field to look up and a `[values]` table; `default` is used when
-the value has no entry. Empty layers are skipped. The final prompt joins the
+the sample field to look up (or a list of fields, tried in order) and a
+`[values]` table; `default` is used when no field has an entry. A table may
+name an `override` field: when the sample has it, its text is used instead,
+for ingredients that do not fit their category. Empty layers are skipped. The final prompt joins the
 layers in the order task.toml lists them.
 """
 import itertools
@@ -46,8 +48,12 @@ class Task:
             text = _jinja.from_string(file.read_text()).render(**sample)
         else:
             table = tomllib.loads(file.read_text())
-            key = sample.get(table['by'], '')
-            text = table.get('values', {}).get(key, table.get('default', ''))
+            fields = table['by'] if isinstance(table['by'], list) else [table['by']]
+            values = table.get('values', {})
+            key = next((sample[f] for f in fields if sample.get(f) in values), None)
+            text = values[key] if key is not None else table.get('default', '')
+            if table.get('override') and sample.get(table['override']):
+                text = sample[table['override']]
             text = _jinja.from_string(text).render(**sample) if text else ''
         return ' '.join(text.split())
 

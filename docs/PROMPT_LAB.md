@@ -23,7 +23,7 @@ The style variants include the exact styles from the old Style Center (isometric
 A layer variant is either:
 
 - a Jinja template (`.j2`) rendered with the sample's fields, for example `{{ name }}`, or
-- a lookup table (`.toml`) with `by = "<sample field>"`, a `[values]` table and a `default`. The text can use the same fields.
+- a lookup table (`.toml`) with `by` (a sample field, or a list of fields tried in order), a `[values]` table and a `default`. The text can use the same fields. An optional `override` names a sample field whose text replaces the lookup, for the odd ingredient that does not fit its category (a stock cube filed under sauces).
 
 A layer that renders empty is left out. A missing field is an error, so a typo does not silently produce a worse prompt. `model` names a constant in `services/ai_models.py`.
 

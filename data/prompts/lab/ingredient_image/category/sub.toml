@@ -1,0 +1,98 @@
+# How each kind of ingredient is shown, by sub category with the main
+# category as fallback (round 5, 18.10.2026). One clear form per kind, so
+# liquids and dry goods get a container and solids do not. No bowls: the
+# style forbids them. The recipe shows the name next to the symbol, so the
+# image must look right and consistent, not tell every variety apart.
+by = ["sub_category", "main_category"]
+override = "form"   # a sample's own form wins, for ingredients that do not fit their category
+default = ""
+
+[values]
+# Drinks
+"beer" = "Show one glass bottle of it."
+"cider" = "Show one glass bottle of it."
+"liqueurs & cordials" = "Show one small glass bottle with the drink visible."
+"spirits / liquor" = "Show one small glass bottle with the drink visible."
+"wine" = "Show one glass of it."
+"coffee and coffee drinks" = "Show a small heap of roasted coffee beans."
+"soft drinks & sodas" = "Show one glass bottle of it."
+"tea" = "Show a small heap of the dry tea leaves."
+"water" = "Show one clear glass of it."
+
+# Bakery and baking
+"bread" = "Show one whole loaf."
+"flatbreads" = "Show one whole flatbread."
+"pastries" = "Show one piece."
+"chocolate" = "Show one bar, broken into two pieces."
+"flavorings" = "Show one small glass bottle with a cork."
+"flour" = "Show a small paper bag, open at the top, with the contents visible."
+"leavening agents" = "Show a small paper bag, open at the top, with the contents visible."
+"sugar" = "Show a small paper bag, open at the top, with the contents visible."
+"yeast" = "Show one small block of it."
+
+# Canned and preserved
+"canned fruits and fruit products" = "Show one simple closed can with a small picture of the food on the label and no words."
+"canned legumes & pulses" = "Show one simple closed can with a small picture of the food on the label and no words."
+"canned meat" = "Show one simple closed can with a small picture of the food on the label and no words."
+"canned vegetables" = "Show one simple closed can with a small picture of the food on the label and no words."
+"canned fish & seafood" = "Show one simple closed can with a small picture of the food on the label and no words."
+"pickled foods" = "Show one glass jar with the food visible inside."
+"pickles & relishes" = "Show one glass jar with the food visible inside."
+
+# Grains and pasta
+"breakfast cereals" = "Show a small paper bag, open at the top, with the contents visible."
+"noodles" = "Show one small bundle of the dry noodles."
+"pasta" = "Show a small handful of the dry pasta."
+"refined grains" = "Show a small paper bag, open at the top, with the contents visible."
+"whole grains" = "Show a small paper bag, open at the top, with the contents visible."
+"rice" = "Show a small paper bag, open at the top, with the rice visible."
+
+# Dairy and fats
+"butter and spreads" = "Show only the block, with nothing next to it."
+"cheese" = "Show one wedge or block."
+"cream products" = "Show one small glass jar with the contents visible."
+"eggs" = "Show the whole eggs."
+"milk and milk alternatives" = "Show one simple glass bottle of it."
+"yoghurt" = "Show one small glass jar with the contents visible."
+"animal fats" = "Show only the block, with nothing next to it."
+"plant-based solid fats" = "Show only the block, with nothing next to it."
+"cooking oils" = "Show one glass bottle with a cork stopper and the oil visible."
+"speciality & flavored oils" = "Show one glass bottle with a cork stopper and the oil visible."
+
+# Fish and meat: raw, natural color
+"fish and seafood" = "Show it raw, with its natural color."
+"meat" = "Show the raw, uncooked cut with its natural color."
+"sausages" = "Show two raw sausages."
+
+# Fruit and vegetables: whole, as bought
+"juices" = "Show one glass bottle of it."
+"dried fruits" = "Show a small heap of it."
+"berries" = "Show a small cluster of the fresh berries."
+"citrus fruits" = "Show one whole fruit."
+"fruit and fruit products" = "Show it whole and fresh, as bought."
+"leafy greens" = "Show one head or a small bunch."
+"legumes & pulses" = "Show a small heap of them."
+"mushrooms" = "Show two or three whole ones."
+"vegetables" = "Show it whole and fresh, as bought."
+
+# Nuts, seeds, spices
+"nuts and seeds" = "Show a small heap of them."
+"dried herbs" = "Show a small heap of the dried leaves."
+"fresh herbs" = "Show a small bunch."
+"ground spices" = "Show one small glass spice jar with the spice visible."
+"salts" = "Show one small glass spice jar with the salt visible."
+"whole spices" = "Show a few whole pieces."
+
+# Sauces: runny ones in a bottle, thick ones in a jar
+"asian-style sauces" = "Show one glass bottle with a cork stopper and the sauce visible."
+"vinaigrettes & salad dressings" = "Show one glass bottle with a cork stopper and the contents visible."
+"other sauces & condiments" = "Show one glass bottle with a cork stopper and the contents visible."
+"savory condiments" = "Show one small glass jar with the contents visible."
+"cream & cheese sauces" = "Show one small glass jar with the sauce visible."
+"dips & dipping sauces" = "Show one small glass jar with the contents visible."
+"herb & pesto sauces" = "Show one small glass jar with the sauce visible."
+"meat gravies & pan sauces" = "Show one small glass jar with the sauce visible."
+"mother & classic sauces" = "Show one small glass jar with the sauce visible."
+"spreads" = "Show one small glass jar with the contents visible."
+"sweet condiments & spreads" = "Show one small glass jar with the contents visible."
+"tomato-based sauces" = "Show one small glass jar with the sauce visible."
