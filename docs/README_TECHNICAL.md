@@ -33,7 +33,7 @@ Every model name lives in `services/ai_models.py`, together with the one shared 
 |---|---|---|
 | `GEMINI_TEXT` | `gemini-flash-latest` | Recipe generation and extraction, ingredient analysis, nutrients from text, recipe evaluation |
 | `GEMINI_TEXT_FAST` | `gemini-2.5-flash` | Ingredient evaluation and taxonomy suggestions |
-| `GEMINI_IMAGE` | `gemini-2.5-flash-image` | Ingredient and component images (`services/image_generation.py`). Imagen 4 was retired in 2026 |
+| `GEMINI_IMAGE` | `gemini-2.5-flash-image` | Ingredient symbols (`services/ingredient_symbols.py`, prompt from `data/prompts/lab/ingredient_image`, variants in its `[final]` table) and component images. Imagen 4 was retired in 2026 |
 
 ## 2. Recipe Generation Flow
 
@@ -76,7 +76,8 @@ Gemini errors are mapped to user-safe messages by `utils/ai_errors.friendly_ai_e
 | `User`, `UserRecipeInteraction`, `UserQueue` | Accounts (`is_admin`), favorites / made / feedback, personal queue |
 | `RecipeCollection`, `CollectionItem` | Curated collections |
 | `Resource` | Blog-style articles |
-| `VisualStyleGuide`, `ConceptVisual` | Style rules for ingredient images, and icons for the explore pages |
+| `ConceptVisual` | Icons for the explore pages |
+| `VisualStyleGuide` | Unused since ingredient symbols moved to the prompt lab (`services/ingredient_symbols.py`). Dropped in a later migration |
 
 Deleting a recipe, ingredient, collection, user or resource removes its child rows in the database (`ON DELETE CASCADE`). Optional links (`sub_recipe_id`, `primary_resource_id`) are cleared. A chef that has recipes, and an ingredient used in a recipe, cannot be deleted.
 

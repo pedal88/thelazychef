@@ -50,3 +50,28 @@ Each run gets a folder in `PROMPTLAB_DIR` (default `~/promptlab-runs`), outside 
 - `run.json`: task, model, the variants, git commit (and whether the prompts had uncommitted changes), and for each cell the full prompt, the output and timings.
 - `outputs/`: the images.
 - `sheet.html`: one row per sample, one column per combination. Give cells 1 to 5, mark the best in each row, then "Export scores" and run `python -m promptlab score`. Scores are stored in `run.json`, so later runs can be compared and an automated judge can be added on top.
+
+## From the lab to the app
+
+A task's `[final]` table in `task.toml` names the variant of each layer the app uses. For ingredient images that is `services/ingredient_symbols.py`, used both by "Regenerate image" in the pantry admin and by the batch script below, so the lab, the admin and the batch all build the same prompt. Try a change in the lab before changing `[final]`.
+
+Per ingredient, `image_form` replaces the category rule (the `override` field) and `image_notes` is added at the end. Both are columns on `ingredient`.
+
+### Ingredient symbols for the whole pantry
+
+`scripts/ingredient_symbols.py` makes a symbol for every active ingredient, lets you review them, and rolls out the approved ones:
+
+```bash
+python scripts/ingredient_symbols.py export                            # CSV of active ingredients from production
+python scripts/ingredient_symbols.py generate --input <csv>            # run folder in ~/promptlab-runs/symbols-<time>
+python scripts/ingredient_symbols.py review --run <run>                # writes review.html
+python scripts/ingredient_symbols.py decide --run <run> --decisions <decisions-<run>-<time>.json>
+python scripts/ingredient_symbols.py generate --run <run> --redo       # the rejected ones, with your notes
+python scripts/ingredient_symbols.py promote --run <run>               # upload and write the migration
+```
+
+`review.html` shows today's image next to the new one. Everything starts approved; reject the wrong ones and write what is wrong. `decide` stores the decisions in the run's `manifest.json` and adds the notes to `image_notes`, so `--redo` uses them and the next review only shows what is new. Repeat until you are happy.
+
+`promote` refuses while anything is unreviewed. It uploads the approved images as 512 px WebP to `gs://thelazychef-assets/pantry/symbols/<run>/` and writes one data migration with the new `image_url`, `image_prompt` and `image_notes`, plus the review notes for rejected ones. Downgrade restores the old URLs and notes. The migration goes through a PR like any other.
+
+`generate` is resumable (run it again with `--run` to do what is missing or failed), and `--dry-run` shows the count, the cost and a few prompts. Each image costs about USD 0.04.

@@ -162,6 +162,7 @@ class GoogleCloudStorageProvider(StorageProvider):
         if filename.endswith('.png'): return 'image/png'
         if filename.endswith('.jpg') or filename.endswith('.jpeg'): return 'image/jpeg'
         if filename.endswith('.gif'): return 'image/gif'
+        if filename.endswith('.webp'): return 'image/webp'
         if filename.endswith('.mp3'): return 'audio/mpeg'
         if filename.endswith('.mp4'): return 'video/mp4'
         if filename.endswith('.mov'): return 'video/quicktime'

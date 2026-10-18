@@ -6,9 +6,9 @@ from flask_login import login_required
 
 from database.models import Ingredient, IngredientEvaluation, RecipeIngredient, db
 from services.storage_service import get_storage_provider
-from services.vertex_image_service import VertexImageGenerator
 from utils.decorators import admin_required
 import os
+import time
 
 ingredients_bp = Blueprint(
     "ingredients_mgmt",
@@ -227,6 +227,8 @@ def inspect_ingredient(ing_id: int):
             "image_url": ing.image_url,
             "has_transparent_image": ing.has_transparent_image,
             "image_prompt": ing.image_prompt,
+            "image_form": ing.image_form,
+            "image_notes": ing.image_notes,
             "aliases": ing.aliases,
             "calories_per_100g": ing.calories_per_100g,
             "protein_per_100g": ing.protein_per_100g,
@@ -245,31 +247,24 @@ def inspect_ingredient(ing_id: int):
 @login_required
 @admin_required
 def regenerate_image(ing_id: int):
-    """Trigger Vertex AI image generation and persist the result to the ingredient record."""
-    from flask import current_app
+    """Make a new symbol for the ingredient in the app's style and save it to the record."""
+    from services.ingredient_symbols import generate_symbol, web_image
+
     ing = db.session.get(Ingredient, ing_id)
     if not ing:
         return jsonify({"success": False, "error": "Ingredient not found"}), 404
 
-    prompt = ing.image_prompt or f"A professional studio food photography shot of {ing.name}, isolated on a stark white background, brightly lit with absolutely zero drop shadows, clean and appetising."
+    try:
+        png, prompt, _meta = generate_symbol(ing)
+    except Exception as e:  # noqa: BLE001 - shown to the admin
+        return jsonify({"success": False, "error": str(e)}), 500
 
-    storage_provider = get_storage_provider()
-    generator = VertexImageGenerator(
-        storage_provider=storage_provider,
-        root_path=current_app.root_path,
-    )
-
-    result = generator.generate_candidate(ingredient_name=ing.name, prompt=prompt)
-
-    if result.get("success"):
-        # Persist the new URL directly to the ingredient record
-        ing.image_url = result["image_url"]
-        if "has_transparent_image" in result:
-            ing.has_transparent_image = result["has_transparent_image"]
-        db.session.commit()
-        return jsonify({"success": True, "image_url": ing.image_url})
-
-    return jsonify({"success": False, "error": result.get("error", "Unknown error")}), 500
+    filename = f"{ing.food_id}_{int(time.time())}.webp"
+    ing.image_url = get_storage_provider().save(web_image(png), filename, "pantry/symbols")
+    ing.image_prompt = prompt
+    ing.has_transparent_image = False
+    db.session.commit()
+    return jsonify({"success": True, "image_url": ing.image_url})
 
 
 @ingredients_bp.route("/api/<int:ing_id>/galaxy")
