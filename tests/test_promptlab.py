@@ -93,8 +93,12 @@ class PromptLabTests(unittest.TestCase):
         self.assertEqual(record['cells'][0]['output'], 'AN ICON OF ANISE. | SMALL HEAP OF ANISE. | STAR SHAPED.')
 
         scores = Path(self.tmp.name) / 'scores.json'
-        scores.write_text(json.dumps({'c0': {'value': 4, 'best': True}}))
+        scores.write_text(json.dumps({'run': record['started'], 'task': 'demo', 'scores': {'c0': {'value': 4, 'best': True}}}))
         self.assertEqual(merge_scores(folder, scores), 1)
+        wrong = Path(self.tmp.name) / 'wrong.json'
+        wrong.write_text(json.dumps({'run': '1999-01-01T00:00:00', 'scores': {'c0': {'value': 1}}}))
+        with self.assertRaises(ValueError):
+            merge_scores(folder, wrong)
         self.assertEqual(json.loads((folder / 'run.json').read_text())['cells'][0]['score'], {'value': 4, 'best': True})
 
     def test_models_become_columns(self):

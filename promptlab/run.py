@@ -110,7 +110,14 @@ def run(task: Task, vary: dict[str, list[str]], sample_set: str = 'default', lim
 def merge_scores(folder: Path, scores_file: Path) -> int:
     """Copy scores exported from sheet.html into run.json. Returns how many cells got a score."""
     record = json.loads((folder / 'run.json').read_text())
-    scores = json.loads(scores_file.read_text())
+    data = json.loads(scores_file.read_text())
+    if 'scores' in data:  # exports name the run they came from
+        if data.get('run') != record['started']:
+            raise ValueError(f"{scores_file.name} is from the run started {data.get('run')}, "
+                             f"not this one ({record['started']})")
+        scores = data['scores']
+    else:
+        scores = data
     count = 0
     for cell in record['cells']:
         if cell['id'] in scores:

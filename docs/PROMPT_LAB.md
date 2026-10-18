@@ -36,7 +36,7 @@ python -m promptlab run ingredient_image --vary style=default,vector,isometric
 python -m promptlab run ingredient_image --vary style=vector --vary category=default,none --sample style_center
 python -m promptlab run ingredient_image --vary style=vector --dry-run      # prompts and sheet only
 python -m promptlab run ingredient_image --vary style=vector --models GEMINI_IMAGE,gemini-3.1-flash-image,gemini-3-pro-image
-python -m promptlab score ~/promptlab-runs/<run> ~/Downloads/scores.json
+python -m promptlab score ~/promptlab-runs/<run> ~/Downloads/scores-<run>.json
 ```
 
 `--vary` takes every combination of the variants given. Layers you do not vary use `default`. `--models` runs every prompt on each model (a constant from `services/ai_models.py` or a model ID), one column per model. `--sample` picks a set from `samples.toml` and `--limit` takes the first N.
@@ -49,4 +49,4 @@ Each run gets a folder in `PROMPTLAB_DIR` (default `~/promptlab-runs`), outside 
 
 - `run.json`: task, model, the variants, git commit (and whether the prompts had uncommitted changes), and for each cell the full prompt, the output and timings.
 - `outputs/`: the images.
-- `sheet.html`: one row per sample, one column per combination. Give cells 1 to 5, mark the best in each row, then "Export scores" and run `python -m promptlab score`. Scores are stored in `run.json`, so later runs can be compared and an automated judge can be added on top.
+- `sheet.html`: one row per sample, one column per combination. Give cells 1 to 5, mark the best in each row, then "Export scores" (the file is named after the run) and run `python -m promptlab score`, which refuses a file from another run. Scores are stored in `run.json`, so later runs can be compared and an automated judge can be added on top.

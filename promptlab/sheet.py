@@ -53,8 +53,10 @@ document.addEventListener('click', e => {{
   paint();
 }});
 document.getElementById('export').onclick = () => {{
-  const blob = new Blob([JSON.stringify(scores, null, 2)], {{type: 'application/json'}});
-  const a = Object.assign(document.createElement('a'), {{href: URL.createObjectURL(blob), download: 'scores.json'}});
+  const payload = {{run: run.started, task: run.task, scores}};
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {{type: 'application/json'}});
+  const name = 'scores-' + run.started.replace(/[-:]/g, '').replace('T', '-') + '.json';
+  const a = Object.assign(document.createElement('a'), {{href: URL.createObjectURL(blob), download: name}});
   a.click();
 }};
 paint();
