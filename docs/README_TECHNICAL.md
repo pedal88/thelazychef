@@ -79,6 +79,16 @@ Gemini errors are mapped to user-safe messages by `utils/ai_errors.friendly_ai_e
 
 Schema changes: `flask db migrate -m "..."`, review the file in `migrations/versions/`, and commit it. Production runs `flask db upgrade` as part of each deploy.
 
+The chain starts at `9b03971c9808_baseline.py` (18.10.2026), which creates the whole schema and the chefs from `data/agents/chefs.json`. The 34 older migrations are in git history. Test a new migration against a real Postgres with pgvector before opening the PR:
+
+```bash
+createdb lazy_migrations
+DB_BACKEND=local DATABASE_URL=postgresql+pg8000://postgres@localhost:5432/lazy_migrations flask db upgrade
+DB_BACKEND=local DATABASE_URL=postgresql+pg8000://postgres@localhost:5432/lazy_migrations flask db check
+```
+
+`flask db check` should print "No new upgrade operations detected". To check production, run the migration job with `--args=db,check` (read-only).
+
 ## 4. Access Control
 
 *   `@login_required` (Flask-Login) for user features (favorites, feedback, queue).
