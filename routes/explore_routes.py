@@ -91,7 +91,7 @@ def explore_ingredient_galaxy():
 def get_global_ingredient_galaxy_graph():
     """Returns nodes and links for ingredients linked to main and sub categories."""
     ingredients = db.session.execute(
-        db.select(Ingredient).where(Ingredient.status != 'inactive')
+        db.select(Ingredient).where(Ingredient.status == 'active')
     ).scalars().all()
     
     nodes_dict = {}

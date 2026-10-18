@@ -7,7 +7,7 @@ from slugify import slugify
 
 from database.models import Resource, db
 from routes._flat import FlatBlueprint
-from routes._shared import get_storage
+from routes._shared import get_storage, viewer_is_admin
 from utils.decorators import admin_required
 
 resources_bp = FlatBlueprint("resources", __name__)
@@ -31,7 +31,7 @@ def resource_detail(slug):
          except ValueError:
              pass
 
-    if not resource:
+    if not resource or (resource.status != 'published' and not viewer_is_admin()):
         flash("Article not found", "error")
         return redirect(url_for('resources_list'))
     
