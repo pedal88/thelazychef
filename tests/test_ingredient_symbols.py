@@ -106,7 +106,7 @@ class BatchTests(unittest.TestCase):
         batch.decide(self.run, self.decisions({
             '1': {'status': 'approved', 'notes': ''},
             '2': {'status': 'approved', 'notes': ''},
-            '3': {'status': 'rejected', 'notes': 'No bag, a heap.'},
+            '3': {'status': 'rejected', 'notes': 'No bag, a heap.', 'form': 'Show a small heap of it.'},
         }))
         self.assertNotIn('flour', batch.review(self.run).read_text())
 
@@ -114,6 +114,8 @@ class BatchTests(unittest.TestCase):
         manifest = batch.generate(self.run, self.rows, redo=True, generate_one=redo, workers=1)
         self.assertEqual([c['id'] for c in redo.calls], [3])
         self.assertIn('No bag, a heap.', manifest['3']['prompt'])
+        self.assertIn('Show a small heap of it.', manifest['3']['prompt'])
+        self.assertNotIn('paper bag', manifest['3']['prompt'])
         self.assertEqual(manifest['3']['version'], 2)
 
         versions = Path(self.tmp.name) / 'versions'
@@ -137,22 +139,32 @@ class BatchTests(unittest.TestCase):
         engine = sa.create_engine('sqlite://')
         with engine.begin() as conn:
             conn.execute(sa.text('CREATE TABLE ingredient (id INTEGER PRIMARY KEY, food_id TEXT, image_url TEXT, '
-                                 'image_prompt TEXT, image_notes TEXT, has_transparent_image BOOLEAN)'))
+                                 'image_prompt TEXT, image_notes TEXT, image_form TEXT, has_transparent_image BOOLEAN)'))
             for r in self.rows:
-                conn.execute(sa.text('INSERT INTO ingredient VALUES (:id, :food_id, :image_url, NULL, :image_notes, true)'), r)
+                conn.execute(sa.text('INSERT INTO ingredient VALUES '
+                                     '(:id, :food_id, :image_url, NULL, :image_notes, :image_form, true)'), r)
             state = lambda: {r[0]: r[1:] for r in conn.execute(sa.text(  # noqa: E731
-                'SELECT id, image_url, image_notes, image_prompt IS NOT NULL FROM ingredient'))}
+                'SELECT id, image_url, image_notes, image_form, image_prompt IS NOT NULL FROM ingredient'))}
             before = state()
             with Operations.context(MigrationContext.configure(conn)):
                 module.upgrade()
                 after = state()
                 self.assertEqual(after[1][0], 'https://storage.googleapis.com/thelazychef-assets/pantry/symbols/symbols-test/000001-v1.webp')
-                self.assertTrue(after[1][2])
+                self.assertTrue(after[1][3])
                 self.assertEqual(after[3][0], 'https://example.com/old/flour.png')
-                self.assertEqual(after[3][1], 'No bag, a heap. Still a bag.')
+                self.assertEqual(after[3][1:3], ('No bag, a heap. Still a bag.', 'Show a small heap of it.'))
                 module.downgrade()
             restored = state()
-        self.assertEqual({i: v[:2] for i, v in restored.items()}, {i: v[:2] for i, v in before.items()})
+        self.assertEqual({i: v[:3] for i, v in restored.items()}, {i: v[:3] for i, v in before.items()})
+
+    def test_decide_waits_for_a_running_generate(self):
+        batch.generate(self.run, self.rows, generate_one=FakeGenerator(), workers=1)
+        batch.lock_path(self.run).write_text(str(os.getpid()))  # this process is alive
+        with self.assertRaises(SystemExit):
+            batch.decide(self.run, self.decisions({'1': {'status': 'approved'}}))
+        batch.lock_path(self.run).write_text('999999999')  # a dead process: the lock is stale
+        batch.decide(self.run, self.decisions({'1': {'status': 'approved'}}))
+        self.assertFalse(batch.lock_path(self.run).exists())
 
 
 if __name__ == '__main__':

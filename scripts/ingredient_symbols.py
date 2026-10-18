@@ -16,6 +16,10 @@ and writes one data migration that sets image_url. The migration keeps the
 old URLs, so downgrade restores them. Rejected ones keep their image; their
 review notes go into image_notes for later.
 
+A decisions file can also set a form for a rejected ingredient
+({"status": "rejected", "form": "Show ..."}), for one that does not fit its
+category rule. The form is used on redo and saved in image_form.
+
 generate needs GOOGLE_API_KEY and costs about USD 0.04 per image. export and
 promote need gcloud logged in.
 """
@@ -24,6 +28,7 @@ import csv
 import datetime
 import html
 import json
+import os
 import subprocess
 import sys
 import threading
@@ -83,8 +88,8 @@ def read_ingredients(path: Path) -> list[dict]:
 # --- the run ----------------------------------------------------------------
 # manifest.json maps ingredient id to an entry:
 #   name, food_id, categories, image_form   from the export
-#   db_notes, live_url                      image_notes and image_url in production now
-#   image_notes                             notes the prompt uses: db_notes plus review notes
+#   db_notes, db_form, live_url             image_notes, image_form and image_url in production now
+#   image_notes, image_form                 what the prompt uses: the db values plus review changes
 #   version, image, thumb, prompt, meta, error
 #   status                                  new (not reviewed), approved or rejected
 
@@ -99,6 +104,23 @@ def save_manifest(run: Path, manifest: dict) -> None:
     tmp.replace(run / 'manifest.json')
 
 
+def lock_path(run: Path) -> Path:
+    return run / 'generating.lock'
+
+
+def check_not_generating(run: Path) -> None:
+    """generate rewrites the manifest after every image, so nothing else may change it meanwhile."""
+    path = lock_path(run)
+    if not path.exists():
+        return
+    try:
+        os.kill(int(path.read_text()), 0)
+    except (ValueError, ProcessLookupError):
+        path.unlink()  # left behind by a run that was killed
+        return
+    raise SystemExit('generate is still running on this run. Wait until it is done.')
+
+
 def join_notes(*parts) -> str | None:
     return ' '.join(p.strip() for p in parts if p and p.strip()) or None
 
@@ -108,7 +130,7 @@ def new_entry(row: dict) -> dict:
         'id': row['id'], 'food_id': row['food_id'], 'name': row['name'],
         'main_category': row.get('main_category'), 'sub_category': row.get('sub_category'),
         'image_form': row.get('image_form'), 'image_notes': row.get('image_notes'),
-        'db_notes': row.get('image_notes'), 'live_url': row.get('image_url'),
+        'db_notes': row.get('image_notes'), 'db_form': row.get('image_form'), 'live_url': row.get('image_url'),
         'version': 0, 'image': None, 'status': 'new',
     }
 
@@ -120,6 +142,7 @@ def generate(run: Path, ingredients: list[dict], only: set[int] | None = None, r
         from services.ingredient_symbols import generate_symbol as generate_one
 
     (run / 'images').mkdir(parents=True, exist_ok=True)
+    check_not_generating(run)
     manifest = load_manifest(run)
     lock = threading.Lock()
 
@@ -135,7 +158,7 @@ def generate(run: Path, ingredients: list[dict], only: set[int] | None = None, r
         if wanted:
             todo.append(entry or new_entry(row))
 
-    print(f"{len(todo)} to generate, about USD {len(todo) * 0.04:.0f} ({len(manifest)} already in the run)")
+    print(f"{len(todo)} to generate, about USD {len(todo) * 0.04:.2f} ({len(manifest)} already in the run)")
     if dry_run:
         for entry in todo[:3]:
             print(f"\n--- {entry['name']}\n{symbol_prompt(entry)}")
@@ -159,8 +182,12 @@ def generate(run: Path, ingredients: list[dict], only: set[int] | None = None, r
             status = 'ERROR ' + entry['error'][:80] if entry.get('error') else 'ok'
             print(f"  {entry['id']} {entry['name']}: {status}", flush=True)
 
-    with ThreadPoolExecutor(max_workers=workers) as pool:
-        list(pool.map(work, todo))
+    lock_path(run).write_text(str(os.getpid()))
+    try:
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            list(pool.map(work, todo))
+    finally:
+        lock_path(run).unlink(missing_ok=True)
     failed = sum(1 for e in manifest.values() if e.get('error'))
     if failed:
         print(f"{failed} failed. Run generate --run {run} again to retry them.")
@@ -188,8 +215,9 @@ textarea{{width:100%;box-sizing:border-box;margin-top:6px;font:inherit;display:n
 <header><strong>{run}</strong><span id="count"></span>
 <label><input type="checkbox" id="onlyRejected"> only rejected</label>
 <button id="export">Export decisions</button></header>
-<p class="hint">Everything starts approved. Reject the wrong ones and say what is wrong: the note goes into the
-prompt when they are made again, and into image_notes. Then export and run decide.</p>
+<p class="hint">Everything starts approved. Reject the wrong ones and write what the image should show, as an
+instruction ("Show one can, nothing next to it"), not what went wrong: the note is added to the prompt when they are
+made again, and saved in image_notes. Then export and run decide.</p>
 <div class="grid">{cards}</div>
 <script>
 const RUN = {run_json};
@@ -239,7 +267,7 @@ def review(run: Path) -> Path:
             f'<h3>{esc(e["name"])}</h3><div class="cat">{esc(e.get("main_category") or "")} / '
             f'{esc(e.get("sub_category") or "")}</div>{notes}'
             f'<button data-toggle>{"Approve" if failed else "Reject"}</button>'
-            f'<textarea rows="2" placeholder="What is wrong?"></textarea></div>')
+            f'<textarea rows="2" placeholder="What should it show? e.g. Show one can, nothing next to it."></textarea></div>')
     path = run / 'review.html'
     path.write_text(REVIEW.format(run=esc(run.name), run_json=json.dumps(run.name), cards=''.join(cards)))
     print(f"{len(cards)} to review")
@@ -247,7 +275,9 @@ def review(run: Path) -> Path:
 
 
 def decide(run: Path, decisions_file: Path) -> dict:
-    """Record an exported review in the manifest. Review notes are added to image_notes."""
+    """Record an exported review in the manifest. Review notes are added to image_notes,
+    and a form replaces image_form."""
+    check_not_generating(run)
     data = json.loads(decisions_file.read_text())
     if data.get('run') != run.name:
         raise SystemExit(f"{decisions_file.name} is from run {data.get('run')}, not {run.name}")
@@ -263,6 +293,8 @@ def decide(run: Path, decisions_file: Path) -> dict:
         entry['status'] = status
         if status == 'rejected':
             entry['image_notes'] = join_notes(entry.get('image_notes'), d.get('notes'))
+            if (d.get('form') or '').strip():
+                entry['image_form'] = d['form'].strip()
         counts[status] += 1
     save_manifest(run, manifest)
     left = sum(1 for e in manifest.values() if e['status'] == 'new')
@@ -275,13 +307,13 @@ def decide(run: Path, decisions_file: Path) -> dict:
 MIGRATION = '''"""ingredient symbols {run}
 
 New ingredient symbols from run {run}, approved in review: {approved}
-ingredients get the new image_url and image_prompt, and image_notes with
-any review notes. {rejected} rejected ones keep their image and get their
-review notes in image_notes. The images are in
+ingredients get the new image_url and image_prompt, and image_notes and
+image_form with any changes from review. {rejected} rejected ones keep
+their image and get their review changes. The images are in
 gs://{bucket}/pantry/symbols/{run}/.
 
-Downgrade restores the old image_url and image_notes. The old image_prompt
-is not kept: it belonged to the retired image pipeline.
+Downgrade restores the old image_url, image_notes and image_form. The old
+image_prompt is not kept: it belonged to the retired image pipeline.
 
 Made by scripts/ingredient_symbols.py promote.
 
@@ -299,33 +331,33 @@ down_revision = '{down}'
 branch_labels = None
 depends_on = None
 
-# id: (food_id, new_url, new_prompt, new_notes, old_url, old_notes)
+# id: (food_id, new_url, new_prompt, (new_notes, new_form), old_url, (old_notes, old_form))
 APPROVED = {approved_map}
 
-# id: (food_id, new_notes, old_notes)
-NOTES = {notes_map}
+# id: (food_id, (new_notes, new_form), (old_notes, old_form)) for rejected ones changed in review
+REVIEWED = {reviewed_map}
+
+SET_IMAGE = ("UPDATE ingredient SET image_url = :u, image_prompt = :p, image_notes = :n, image_form = :m, "
+             "has_transparent_image = false WHERE id = :i AND food_id = :f")
+SET_TEXT = "UPDATE ingredient SET image_notes = :n, image_form = :m WHERE id = :i AND food_id = :f"
+RESTORE_IMAGE = ("UPDATE ingredient SET image_url = :u, image_prompt = NULL, image_notes = :n, image_form = :m "
+                 "WHERE id = :i AND food_id = :f")
 
 
 def upgrade():
     conn = op.get_bind()
-    for i, (food_id, url, prompt, notes, _old_url, _old_notes) in APPROVED.items():
-        conn.execute(sa.text(
-            "UPDATE ingredient SET image_url = :u, image_prompt = :p, image_notes = :n, has_transparent_image = false "
-            "WHERE id = :i AND food_id = :f"), {{'u': url, 'p': prompt, 'n': notes, 'i': i, 'f': food_id}})
-    for i, (food_id, notes, _old_notes) in NOTES.items():
-        conn.execute(sa.text("UPDATE ingredient SET image_notes = :n WHERE id = :i AND food_id = :f"),
-                     {{'n': notes, 'i': i, 'f': food_id}})
+    for i, (food_id, url, prompt, (notes, form), _old_url, _old) in APPROVED.items():
+        conn.execute(sa.text(SET_IMAGE), {{'u': url, 'p': prompt, 'n': notes, 'm': form, 'i': i, 'f': food_id}})
+    for i, (food_id, (notes, form), _old) in REVIEWED.items():
+        conn.execute(sa.text(SET_TEXT), {{'n': notes, 'm': form, 'i': i, 'f': food_id}})
 
 
 def downgrade():
     conn = op.get_bind()
-    for i, (food_id, _url, _prompt, _notes, old_url, old_notes) in APPROVED.items():
-        conn.execute(sa.text(
-            "UPDATE ingredient SET image_url = :u, image_prompt = NULL, image_notes = :n WHERE id = :i AND food_id = :f"),
-            {{'u': old_url, 'n': old_notes, 'i': i, 'f': food_id}})
-    for i, (food_id, _notes, old_notes) in NOTES.items():
-        conn.execute(sa.text("UPDATE ingredient SET image_notes = :n WHERE id = :i AND food_id = :f"),
-                     {{'n': old_notes, 'i': i, 'f': food_id}})
+    for i, (food_id, _url, _prompt, _new, old_url, (notes, form)) in APPROVED.items():
+        conn.execute(sa.text(RESTORE_IMAGE), {{'u': old_url, 'n': notes, 'm': form, 'i': i, 'f': food_id}})
+    for i, (food_id, _new, (notes, form)) in REVIEWED.items():
+        conn.execute(sa.text(SET_TEXT), {{'n': notes, 'm': form, 'i': i, 'f': food_id}})
 '''
 
 
@@ -353,16 +385,17 @@ def promote(run: Path, upload: bool = True, versions: Path = VERSIONS, down: str
 
     web = run / 'web'
     web.mkdir(exist_ok=True)
-    approved, notes = {}, {}
+    approved, reviewed = {}, {}
     for e in sorted(manifest.values(), key=lambda e: e['id']):
+        new, old = (e.get('image_notes'), e.get('image_form')), (e.get('db_notes'), e.get('db_form'))
         if e['status'] == 'approved':
             name = f"{e['food_id']}-v{e['version']}.webp"
             (web / name).write_bytes(web_image((run / e['image']).read_bytes()))
             url = f"https://storage.googleapis.com/{ASSET_BUCKET}/pantry/symbols/{run.name}/{name}"
-            approved[e['id']] = (e['food_id'], url, e['prompt'], e.get('image_notes'), e.get('live_url'), e.get('db_notes'))
-        elif e.get('image_notes') != e.get('db_notes'):
-            notes[e['id']] = (e['food_id'], e.get('image_notes'), e.get('db_notes'))
-    if not approved and not notes:
+            approved[e['id']] = (e['food_id'], url, e['prompt'], new, e.get('live_url'), old)
+        elif new != old:
+            reviewed[e['id']] = (e['food_id'], new, old)
+    if not approved and not reviewed:
         raise SystemExit('Nothing to promote')
 
     if upload and approved:
@@ -375,7 +408,7 @@ def promote(run: Path, upload: bool = True, versions: Path = VERSIONS, down: str
     path.write_text(MIGRATION.format(
         run=run.name, approved=len(approved), rejected=len(manifest) - len(approved), bucket=ASSET_BUCKET,
         rev=rev, down=down or current_head(), date=datetime.date.today().isoformat(),
-        approved_map=pprint.pformat(approved, width=120), notes_map=pprint.pformat(notes, width=120)))
+        approved_map=pprint.pformat(approved, width=120), reviewed_map=pprint.pformat(reviewed, width=120)))
     return path
 
 
