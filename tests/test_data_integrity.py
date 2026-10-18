@@ -143,6 +143,10 @@ class DataIntegrityTests(unittest.TestCase):
         db.session.commit()
         self.assertEqual(_resolve_ingredient({'name': 'Scallion'}).id, onion.id)
 
+    def test_ingredient_names_are_stored_lower_case(self):
+        onion = self._ingredient('  Red   Onion ')
+        self.assertEqual(onion.name, 'red onion')
+
     def test_deleting_ingredient_removes_its_aliases(self):
         onion = self._ingredient('spring onion', aliases=['scallion', 'green onion'])
         db.session.commit()

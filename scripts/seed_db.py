@@ -42,7 +42,7 @@ def seed_ingredients():
         
         if not existing:
             # Also check by name to avoid duplicates if food_id is different but name is same
-            stmt_name = select(Ingredient).where(Ingredient.name == data["name"])
+            stmt_name = select(Ingredient).where(Ingredient.name == " ".join(data["name"].split()).lower())
             existing_name = db.session.execute(stmt_name).scalar_one_or_none()
             
             if existing_name:
