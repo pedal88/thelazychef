@@ -65,6 +65,14 @@ jobs:
   deploy:
     name: Build & Deploy to Prod
     needs: test
+    # One production deploy at a time. Two merges in quick succession used to
+    # deploy in parallel: both ran the migration job at once, and the older
+    # image could finish last and replace the newer one. A queued deploy
+    # waits; GitHub keeps only the newest pending one, which builds the
+    # latest main anyway.
+    concurrency:
+      group: production-deploy
+      cancel-in-progress: false
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
