@@ -441,3 +441,28 @@ def clone_recipe(original_recipe_id: int, new_title: str, ingredient_overrides: 
     db_session.commit()
 
     return new_recipe.id
+
+
+def delete_recipes(recipe_ids: list[int]) -> int:
+    """Delete recipes and everything that belongs to them. Returns the count.
+
+    The ORM cascades on Recipe remove every child row (lines, steps, diets,
+    evaluations, queue items, collection items, interactions, social posts).
+    Ingredients that use a deleted recipe as their sub-recipe lose the link.
+    """
+    from sqlalchemy import update
+
+    recipes = db.session.execute(
+        db.select(Recipe).where(Recipe.id.in_(recipe_ids))
+    ).scalars().all()
+    if not recipes:
+        return 0
+
+    found_ids = [r.id for r in recipes]
+    db.session.execute(
+        update(Ingredient).where(Ingredient.sub_recipe_id.in_(found_ids)).values(sub_recipe_id=None)
+    )
+    for recipe in recipes:
+        db.session.delete(recipe)
+    db.session.commit()
+    return len(recipes)

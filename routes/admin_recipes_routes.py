@@ -8,18 +8,14 @@ from sqlalchemy.orm import joinedload
 
 from ai_engine import load_controlled_vocabularies
 from database.models import (
-    CollectionItem,
-    Instruction,
     Recipe,
     RecipeDiet,
     RecipeEvaluation,
-    RecipeIngredient,
     RecipeMealType,
-    UserQueue,
-    UserRecipeInteraction,
     db,
 )
 from routes._flat import FlatBlueprint
+from services.recipe_service import delete_recipes
 from utils.decorators import admin_required
 
 admin_recipes_bp = FlatBlueprint("admin_recipes", __name__)
@@ -209,11 +205,8 @@ def delete_recipe_api(recipe_id):
         if not recipe:
              return jsonify({'success': False, 'error': 'Recipe not found'}), 404
              
-        # Delete the recipe (Cascades should handle children, but let's be safe if configured)
-        # SQLAlchemy models have cascade="all, delete-orphan", so deleting parent is enough.
-        db.session.delete(recipe)
-        db.session.commit()
-        
+        delete_recipes([recipe_id])
+
         return jsonify({'success': True, 'message': f"Recipe {recipe_id} deleted successfully."})
         
     except Exception as e:
@@ -225,14 +218,7 @@ def delete_recipe_api(recipe_id):
 @login_required
 @admin_required
 def delete_bulk_recipes():
-    """Permanently delete one or more recipes and all their child records.
-
-    Uses SQLAlchemy ORM delete() + .in_() rather than raw text() SQL because
-    pg8000 cannot bind a Python tuple as a single IN-list parameter.
-    SQLAlchemy expands the IN list correctly for every driver.
-    """
-    from sqlalchemy import delete as sql_delete
-
+    """Permanently delete one or more recipes and all their child records."""
     data = request.get_json(silent=True) or {}
     recipe_ids = data.get('recipe_ids', [])
 
@@ -248,23 +234,7 @@ def delete_bulk_recipes():
         return jsonify({'success': False, 'error': 'No valid integer IDs after parsing'}), 400
 
     try:
-        # Delete child tables in FK-safe order (children before parent).
-        # ORM delete() + .in_() lets SQLAlchemy build the correct parameterized
-        # IN clause regardless of driver (pg8000, psycopg2, etc.).
-        db.session.execute(sql_delete(UserRecipeInteraction).where(UserRecipeInteraction.recipe_id.in_(recipe_ids)))
-        db.session.execute(sql_delete(UserQueue).where(UserQueue.recipe_id.in_(recipe_ids)))
-        db.session.execute(sql_delete(RecipeIngredient).where(RecipeIngredient.recipe_id.in_(recipe_ids)))
-        db.session.execute(sql_delete(Instruction).where(Instruction.recipe_id.in_(recipe_ids)))
-        db.session.execute(sql_delete(RecipeEvaluation).where(RecipeEvaluation.recipe_id.in_(recipe_ids)))
-        db.session.execute(sql_delete(RecipeMealType).where(RecipeMealType.recipe_id.in_(recipe_ids)))
-        db.session.execute(sql_delete(RecipeDiet).where(RecipeDiet.recipe_id.in_(recipe_ids)))
-        db.session.execute(sql_delete(CollectionItem).where(CollectionItem.recipe_id.in_(recipe_ids)))
-
-        # Delete parent recipes last
-        result = db.session.execute(sql_delete(Recipe).where(Recipe.id.in_(recipe_ids)))
-        deleted_count = result.rowcount
-        db.session.commit()
-
+        deleted_count = delete_recipes(recipe_ids)
         print(f"[Bulk Delete] Deleted {deleted_count} recipes: {recipe_ids}")
         return jsonify({'success': True, 'count': deleted_count,
                         'message': f"Deleted {deleted_count} recipes."})
