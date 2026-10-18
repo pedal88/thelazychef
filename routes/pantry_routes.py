@@ -527,10 +527,16 @@ def add_synonym_api():
         if not name or not food_id:
             return jsonify({'success': False, 'error': 'Missing name or food_id'}), 400
             
-        from ai_engine import add_synonym
-        add_synonym(name, food_id)
-        
-        return jsonify({'success': True})
+        ingredient = db.session.execute(
+            db.select(Ingredient).where(Ingredient.food_id == food_id)
+        ).scalars().first()
+        if not ingredient:
+            return jsonify({'success': False, 'error': 'Ingredient not found'}), 404
+
+        from services.ingredient_service import add_alias
+        added = add_alias(ingredient, name)
+        db.session.commit()
+        return jsonify({'success': True, 'added': added})
     except Exception as e:
         print(f"Synonym API Error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500

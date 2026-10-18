@@ -14,8 +14,8 @@ db = SQLAlchemy(model_class=Base)
 
 # Association table for linking resources to each other
 resource_relations = db.Table('resource_relations',
-    db.Column('source_id', db.Integer, db.ForeignKey('resource.id'), primary_key=True),
-    db.Column('related_id', db.Integer, db.ForeignKey('resource.id'), primary_key=True)
+    db.Column('source_id', db.Integer, db.ForeignKey('resource.id', ondelete='CASCADE'), primary_key=True),
+    db.Column('related_id', db.Integer, db.ForeignKey('resource.id', ondelete='CASCADE'), primary_key=True)
 )
 
 # Association table for User Favorites - DEPRECATED (Replaced by UserRecipeInteraction)
@@ -27,8 +27,8 @@ resource_relations = db.Table('resource_relations',
 
 class UserRecipeInteraction(db.Model):
     __tablename__ = 'user_recipe_interaction'
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
-    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id"), primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete='CASCADE'), primary_key=True)
+    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id", ondelete='CASCADE'), primary_key=True)
     status: Mapped[str] = mapped_column(String, nullable=False) # "pass", "favorite"
     is_super_like: Mapped[bool] = mapped_column(Boolean, default=False)
     timestamp: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)
@@ -124,7 +124,6 @@ class Ingredient(db.Model):
     average_g_per_unit: Mapped[float] = mapped_column(Float, nullable=True) # The weight of 1 unit in grams.
 
     # Intelligence
-    aliases: Mapped[str] = mapped_column(Text, default='[]') # JSON list of synonyms
     is_staple: Mapped[bool] = mapped_column(Boolean, default=False) # User preference: Staple ingredient?
     created_at: Mapped[str] = mapped_column(String, nullable=True) # ISO format date string
     # Lifecycle: 'active' | 'inactive' | 'pending'
@@ -157,9 +156,10 @@ class Ingredient(db.Model):
 
     recipe_ingredients: Mapped[list["RecipeIngredient"]] = relationship(back_populates="ingredient")
     evaluation: Mapped["IngredientEvaluation"] = relationship(back_populates="ingredient", uselist=False, cascade="all, delete-orphan")
+    alias_entries: Mapped[list["IngredientAlias"]] = relationship(back_populates="ingredient", cascade="all, delete-orphan", order_by="IngredientAlias.id")
 
     # Sub-recipe link: if set, this ingredient IS a recipe (e.g. "Chilli Mayo")
-    sub_recipe_id: Mapped[Optional[int]] = mapped_column(ForeignKey("recipe.id"), nullable=True)
+    sub_recipe_id: Mapped[Optional[int]] = mapped_column(ForeignKey("recipe.id", ondelete='SET NULL'), nullable=True)
     sub_recipe: Mapped[Optional["Recipe"]] = relationship(
         "Recipe",
         foreign_keys=[sub_recipe_id],
@@ -167,18 +167,41 @@ class Ingredient(db.Model):
     )
 
     # Knowledge Factory: link to the auto-generated "Official Deep Dive" article
-    primary_resource_id: Mapped[Optional[int]] = mapped_column(ForeignKey("resource.id"), nullable=True)
+    primary_resource_id: Mapped[Optional[int]] = mapped_column(ForeignKey("resource.id", ondelete='SET NULL'), nullable=True)
     primary_resource: Mapped[Optional["Resource"]] = relationship(
         "Resource",
         foreign_keys=[primary_resource_id],
     )
+
+    @property
+    def aliases(self) -> list[str]:
+        """Other names that resolve to this ingredient."""
+        return [a.name for a in self.alias_entries]
+
+
+class IngredientAlias(db.Model):
+    """Another name for an ingredient ("scallion" for "spring onion").
+
+    The matcher checks aliases after exact names and before fuzzy matching.
+    Merging two ingredients moves the loser's aliases to the winner and adds
+    the loser's name. Names are stored lower case and unique, so one alias
+    always points at one ingredient.
+    """
+    __tablename__ = 'ingredient_alias'
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    ingredient_id: Mapped[int] = mapped_column(ForeignKey("ingredient.id", ondelete='CASCADE'), nullable=False, index=True)
+    name: Mapped[str] = mapped_column(String(200), unique=True, nullable=False)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)
+
+    ingredient: Mapped["Ingredient"] = relationship(back_populates="alias_entries")
 
 
 class IngredientEvaluation(db.Model):
     """LLM-as-a-Judge QA result for a single Ingredient (One-to-One)."""
     __tablename__ = 'ingredient_evaluation'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    ingredient_id: Mapped[int] = mapped_column(ForeignKey("ingredient.id"), unique=True, nullable=False)
+    ingredient_id: Mapped[int] = mapped_column(ForeignKey("ingredient.id", ondelete='CASCADE'), unique=True, nullable=False)
 
     # Individual criterion scores (1-100)
     score_image:      Mapped[int] = mapped_column(Integer, nullable=True)
@@ -216,7 +239,7 @@ class Chef(db.Model):
 
 class RecipeMealType(db.Model):
     __tablename__ = 'recipe_meal_type'
-    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id"), primary_key=True)
+    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id", ondelete='CASCADE'), primary_key=True)
     meal_type: Mapped[str] = mapped_column(String, primary_key=True)
 
 
@@ -227,7 +250,7 @@ class RecipeDiet(db.Model):
     (e.g. both 'vegan' and 'gluten-free').
     """
     __tablename__ = 'recipe_diet'
-    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id"), primary_key=True)
+    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id", ondelete='CASCADE'), primary_key=True)
     diet: Mapped[str] = mapped_column(String, primary_key=True)
 
 class Recipe(db.Model):
@@ -276,7 +299,7 @@ class Recipe(db.Model):
     social_hooks: Mapped[dict] = mapped_column(JSON, default=dict, server_default='{}')
 
     # Knowledge Factory: link to the auto-generated "Official Deep Dive" article
-    primary_resource_id: Mapped[Optional[int]] = mapped_column(ForeignKey("resource.id"), nullable=True)
+    primary_resource_id: Mapped[Optional[int]] = mapped_column(ForeignKey("resource.id", ondelete='SET NULL'), nullable=True)
     primary_resource: Mapped[Optional["Resource"]] = relationship(
         "Resource",
         foreign_keys=[primary_resource_id],
@@ -309,7 +332,7 @@ class Recipe(db.Model):
 class Instruction(db.Model):
     __tablename__ = 'instruction'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id"), nullable=False)
+    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id", ondelete='CASCADE'), nullable=False)
     phase: Mapped[str] = mapped_column(String, nullable=False) # "Prep", "Cook", "Serve"
     component: Mapped[str] = mapped_column(String(100), nullable=False, default="Main Dish") # NEW: e.g., "The Steak", "The Sauce"
     step_number: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -322,7 +345,7 @@ class Instruction(db.Model):
 class RecipeEvaluation(db.Model):
     __tablename__ = 'recipe_evaluation'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id"), unique=True, nullable=False)
+    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id", ondelete='CASCADE'), unique=True, nullable=False)
     
     score_name: Mapped[int] = mapped_column(Integer) # 1-100 scale
     score_ingredients: Mapped[int] = mapped_column(Integer) # 1-100 scale
@@ -340,7 +363,7 @@ class RecipeEvaluation(db.Model):
 class RecipeIngredient(db.Model):
     __tablename__ = 'recipe_ingredient'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id"), nullable=False)
+    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id", ondelete='CASCADE'), nullable=False)
     ingredient_id: Mapped[int] = mapped_column(ForeignKey("ingredient.id"), nullable=False)
     amount: Mapped[float] = mapped_column(Float)
     unit: Mapped[str] = mapped_column(String)
@@ -406,10 +429,10 @@ class CollectionItem(db.Model):
     __tablename__ = 'collection_item'
 
     collection_id: Mapped[int] = mapped_column(
-        ForeignKey('recipe_collection.id'), primary_key=True
+        ForeignKey('recipe_collection.id', ondelete='CASCADE'), primary_key=True
     )
     recipe_id: Mapped[int] = mapped_column(
-        ForeignKey('recipe.id'), primary_key=True
+        ForeignKey('recipe.id', ondelete='CASCADE'), primary_key=True
     )
     added_at: Mapped[datetime.datetime] = mapped_column(
         DateTime, default=datetime.datetime.utcnow, nullable=False
@@ -431,8 +454,8 @@ class UserQueue(db.Model):
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False, index=True)
-    recipe_id: Mapped[int] = mapped_column(ForeignKey('recipe.id'), nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey('user.id', ondelete='CASCADE'), nullable=False, index=True)
+    recipe_id: Mapped[int] = mapped_column(ForeignKey('recipe.id', ondelete='CASCADE'), nullable=False)
     position: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     added_at: Mapped[datetime.datetime] = mapped_column(
         DateTime, default=datetime.datetime.utcnow, nullable=False
@@ -454,8 +477,8 @@ class UserLink(db.Model):
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id_1: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
-    user_id_2: Mapped[Optional[int]] = mapped_column(ForeignKey('user.id'), nullable=True)
+    user_id_1: Mapped[int] = mapped_column(ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    user_id_2: Mapped[Optional[int]] = mapped_column(ForeignKey('user.id', ondelete='CASCADE'), nullable=True)
     pairing_code: Mapped[str] = mapped_column(String(10), unique=True, index=True, nullable=False)
     status: Mapped[str] = mapped_column(String(20), default='PENDING', nullable=False)
     is_default: Mapped[bool] = mapped_column(Boolean, default=False, server_default='0', nullable=False)

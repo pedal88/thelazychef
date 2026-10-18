@@ -1,20 +1,25 @@
-import json
-
-from database.models import db, Ingredient
+from database.models import db, Ingredient, IngredientAlias
 from services.nutrition_service import calculate_nutritional_totals
 
-def get_list_from_json(field_value):
-    """Safely parse a JSON string into a list."""
-    if not field_value:
-        return []
-    try:
-        parsed = json.loads(field_value)
-        if isinstance(parsed, list):
-            return parsed
-        return [str(parsed)]
-    except (json.JSONDecodeError, TypeError):
-        # If it's a raw string (e.g. from an old format or just bad data), wrap it
-        return [str(field_value)]
+def normalize_alias(name: str) -> str:
+    return " ".join((name or "").split()).lower()
+
+
+def add_alias(ingredient: Ingredient, name: str) -> bool:
+    """Add an alias to an ingredient. Returns False when it is skipped: empty,
+    the ingredient's own name, or already an alias of some ingredient."""
+    alias = normalize_alias(name)
+    if not alias or alias == normalize_alias(ingredient.name):
+        return False
+    exists = db.session.execute(
+        db.select(IngredientAlias.id).where(IngredientAlias.name == alias)
+    ).first()
+    if exists:
+        return False
+    db.session.add(IngredientAlias(ingredient=ingredient, name=alias))
+    db.session.flush()
+    return True
+
 
 def merge_ingredients(winner_id: int, loser_id: int) -> dict:
     """
@@ -23,8 +28,8 @@ def merge_ingredients(winner_id: int, loser_id: int) -> dict:
     Every recipe line that used the loser now uses the winner. Lines are
     moved, never deleted or summed: a recipe may use the same ingredient on
     two lines (different amounts or units), so nothing is lost. The loser's
-    name and aliases become aliases on the winner, and recipe nutrition is
-    recalculated for the recipes that changed.
+    aliases move to the winner and its name becomes one, and recipe
+    nutrition is recalculated for the recipes that changed.
 
     Returns dict: {'success': bool, 'message': str}
     """
@@ -52,14 +57,15 @@ def merge_ingredients(winner_id: int, loser_id: int) -> dict:
         if winner.sub_recipe_id is None and loser.sub_recipe_id is not None:
             winner.sub_recipe_id = loser.sub_recipe_id
 
-        # 3. Merge aliases (case-insensitive, never the winner's own name)
-        winner_aliases = get_list_from_json(winner.aliases)
-        known = {a.lower() for a in winner_aliases} | {winner.name.lower()}
-        for alias in [loser.name] + get_list_from_json(loser.aliases):
-            if alias and alias.lower() not in known:
-                winner_aliases.append(alias)
-                known.add(alias.lower())
-        winner.aliases = json.dumps(winner_aliases)
+        # 3. Move the loser's aliases, then add the loser's own name
+        winner_name = normalize_alias(winner.name)
+        for entry in list(loser.alias_entries):
+            if entry.name == winner_name:
+                db.session.delete(entry)
+            else:
+                entry.ingredient = winner
+        db.session.flush()
+        add_alias(winner, loser.name)
 
         # 4. Delete the loser (its IngredientEvaluation cascades with it)
         loser_name = loser.name

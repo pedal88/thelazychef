@@ -14,9 +14,10 @@ import json
 
 from database.models import (
     db, Recipe, RecipeIngredient, RecipeMealType, RecipeDiet,
-    Instruction, Ingredient, Chef
+    Instruction, Ingredient, Chef, IngredientAlias
 )
 from ai_engine import get_pantry_id
+from services.ingredient_service import normalize_alias
 from services.nutrition_service import calculate_nutritional_totals
 from utils.unit_helpers import normalize_unit
 
@@ -38,14 +39,15 @@ def _extract_pre_resolved_id(ing) -> str | None:
 
 def _resolve_ingredient(ing) -> Ingredient | None:
     """
-    Try to resolve an ingredient to a DB record.
-    Priority 1: LLM-provided pantry_id.
-    Priority 2: Fuzzy name match via get_pantry_id.
+    Try to resolve an ingredient to a DB record, in this order:
+    1. The pantry_id the LLM picked (must exist).
+    2. An active ingredient with exactly this name.
+    3. An alias with this name (IngredientAlias).
+    4. Fuzzy name match via get_pantry_id.
     Returns the Ingredient ORM object or None.
     """
     pre_id = _extract_pre_resolved_id(ing)
 
-    # Priority 1: Pre-resolved ID (must exist in DB)
     if pre_id:
         record = db.session.execute(
             db.select(Ingredient).where(Ingredient.food_id == pre_id)
@@ -53,8 +55,22 @@ def _resolve_ingredient(ing) -> Ingredient | None:
         if record:
             return record
 
-    # Priority 2: Fuzzy match by name
     name = ing.name if hasattr(ing, 'name') else ing.get('name', '')
+    key = normalize_alias(name)
+    if key:
+        record = db.session.execute(
+            db.select(Ingredient)
+            .where(db.func.lower(Ingredient.name) == key, Ingredient.status == 'active')
+        ).scalars().first()
+        if record:
+            return record
+
+        alias = db.session.execute(
+            db.select(IngredientAlias).where(IngredientAlias.name == key)
+        ).scalars().first()
+        if alias:
+            return alias.ingredient
+
     food_id = get_pantry_id(name)
     if food_id:
         record = db.session.execute(
