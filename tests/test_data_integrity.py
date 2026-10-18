@@ -19,12 +19,12 @@ os.environ.pop('K_SERVICE', None)
 
 from app import app  # noqa: E402
 from database.models import (  # noqa: E402
-    CollectionItem, Ingredient, Instruction, Recipe, RecipeCollection, RecipeDiet,
+    CollectionItem, Ingredient, IngredientAlias, Instruction, Recipe, RecipeCollection, RecipeDiet,
     RecipeIngredient, RecipeMealType, User, UserQueue,
     UserRecipeInteraction, db,
 )
-from services.ingredient_service import merge_ingredients  # noqa: E402
-from services.recipe_service import delete_recipes  # noqa: E402
+from services.ingredient_service import add_alias, merge_ingredients  # noqa: E402
+from services.recipe_service import _resolve_ingredient, delete_recipes  # noqa: E402
 
 
 def _count(model, **filters):
@@ -46,10 +46,12 @@ class DataIntegrityTests(unittest.TestCase):
         db.drop_all()
         self.ctx.pop()
 
-    def _ingredient(self, name, **kw):
+    def _ingredient(self, name, aliases=(), **kw):
         ing = Ingredient(food_id=f"id-{name}", name=name, status='active', default_unit='g', **kw)
         db.session.add(ing)
         db.session.flush()
+        for alias in aliases:
+            add_alias(ing, alias)
         return ing
 
     def _recipe(self, title='Pasta'):
@@ -94,7 +96,7 @@ class DataIntegrityTests(unittest.TestCase):
     def test_merge_moves_lines_even_when_recipe_already_has_winner(self):
         recipe = self._recipe()
         winner = self._ingredient('red onion')
-        loser = self._ingredient('red onion, diced', aliases='["Red Onion", "rødløk"]')
+        loser = self._ingredient('red onion, diced', aliases=['rødløk'])
         db.session.add_all([
             RecipeIngredient(recipe_id=recipe.id, ingredient_id=winner.id, amount=100, unit='g'),
             RecipeIngredient(recipe_id=recipe.id, ingredient_id=loser.id, amount=2, unit='pcs'),
@@ -112,16 +114,41 @@ class DataIntegrityTests(unittest.TestCase):
         self.assertEqual([(line.ingredient_id, line.amount, line.unit) for line in lines],
                          [(winner.id, 2, 'pcs'), (winner.id, 100, 'g')])
 
-    def test_merge_aliases_are_case_insensitive_and_skip_winner_name(self):
-        winner = self._ingredient('red onion', aliases='["rødløk"]')
-        loser = self._ingredient('Red onion, diced', aliases='["Red Onion", "RØDLØK", "purple onion"]')
+    def test_merge_moves_aliases_and_adds_loser_name(self):
+        winner = self._ingredient('red onion', aliases=['rødløk'])
+        loser = self._ingredient('Red onion, diced', aliases=['purple onion'])
         db.session.commit()
 
         merge_ingredients(winner.id, loser.id)
 
-        import json
-        self.assertEqual(json.loads(db.session.get(Ingredient, winner.id).aliases),
-                         ['rødløk', 'Red onion, diced', 'purple onion'])
+        self.assertEqual(sorted(db.session.get(Ingredient, winner.id).aliases),
+                         ['purple onion', 'red onion, diced', 'rødløk'])
+        self.assertEqual(_count(IngredientAlias), 3)
+
+    def test_add_alias_skips_own_name_and_duplicates(self):
+        onion = self._ingredient('Red Onion')
+        shallot = self._ingredient('shallot')
+        self.assertFalse(add_alias(onion, '  red   ONION '))
+        self.assertTrue(add_alias(onion, 'Rødløk'))
+        self.assertFalse(add_alias(shallot, 'rødløk'))
+        self.assertEqual(onion.aliases, ['rødløk'])
+
+    def test_resolver_prefers_exact_name_then_alias(self):
+        onion = self._ingredient('spring onion', aliases=['scallion'])
+        scallion = self._ingredient('Scallion')
+        db.session.commit()
+
+        self.assertEqual(_resolve_ingredient({'name': 'scallion'}).id, scallion.id)
+        scallion.status = 'inactive'
+        db.session.commit()
+        self.assertEqual(_resolve_ingredient({'name': 'Scallion'}).id, onion.id)
+
+    def test_deleting_ingredient_removes_its_aliases(self):
+        onion = self._ingredient('spring onion', aliases=['scallion', 'green onion'])
+        db.session.commit()
+        db.session.delete(onion)
+        db.session.commit()
+        self.assertEqual(_count(IngredientAlias), 0)
 
     def test_merge_keeps_sub_recipe_link_from_loser(self):
         recipe = self._recipe('Chicken stock')

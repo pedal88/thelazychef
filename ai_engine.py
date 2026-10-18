@@ -115,45 +115,15 @@ class RecipeObj:
                     comp.steps = [RecipeObj(**s) if isinstance(s, dict) else s for s in comp.steps]
 
 # --- Data Loading (Retaining Pantry/Chef Context) ---
-# --- Data Loading (Retaining Pantry/Chef Context) ---
-SYNONYMS_PATH = os.path.join(os.path.dirname(__file__), 'data', 'constraints', 'synonyms.json')
 
 def load_json(path):
     with open(path, 'r') as f:
         return json.load(f)
 
-def load_pantry_memory():
-    """Loads pantry data and user-defined synonyms into memory."""
-    global pantry_map
-    pantry_map = {}
-    
-    # 1. Load Main Pantry (Seed Data)
-    try:
-        pantry_data = load_json("data/constraints/pantry.json")
-        for item in pantry_data:
-            # Handle both list formats if legacy exists
-            n = item.get('food_name', item.get('name', '')).lower()
-            i = item.get('food_id', item.get('id', ''))
-            if n and i:
-                pantry_map[n] = i
-    except Exception as e:
-        print(f"Warning: Error loading pantry.json: {e}")
 
-    # 2. Load User Synonyms (Overrides)
-    if os.path.exists(SYNONYMS_PATH):
-        try:
-            with open(SYNONYMS_PATH, 'r') as f:
-                syns = json.load(f)
-                for name, fid in syns.items():
-                    pantry_map[name.lower()] = fid
-        except Exception as e:
-            print(f"Warning: Error loading synonyms.json: {e}")
-
-# Initialize empty - will be populated by app via set_pantry_memory(db_context)
+# Name -> food_id for fuzzy matching. Filled from the database by
+# set_pantry_memory(); aliases live in the ingredient_alias table.
 pantry_map = {}
-
-# DEPRECATED: We no longer load from JSON on import. Database source of truth only.
-# load_pantry_memory()
 
 
 # --- RESTORED EXPORTS FOR APP COMPATIBILITY ---
@@ -385,32 +355,6 @@ def _fuzzy_match(query: str, pantry_keys: list[str]) -> str | None:
     
     return None
 
-def add_synonym(name: str, food_id: str):
-    """
-    Adds a manual synonym mapping (e.g. 'Soy Milk' -> '000123') and persists it.
-    This allows the AI to resolve missing ingredients to existing pantry items in future runs.
-    """
-    syns = {}
-    if os.path.exists(SYNONYMS_PATH):
-        try:
-            with open(SYNONYMS_PATH, 'r') as f:
-                syns = json.load(f)
-        except: pass
-        
-    syns[name.lower()] = food_id
-    
-    # Ensure directory exists
-    os.makedirs(os.path.dirname(SYNONYMS_PATH), exist_ok=True)
-    
-    with open(SYNONYMS_PATH, 'w') as f:
-        json.dump(syns, f, indent=2)
-        
-    # Update memory immediately
-    if 'pantry_map' in globals():
-        pantry_map[name.lower()] = food_id
-    print(f"✅ Added Synonym: '{name}' -> '{food_id}'")
-    return True
-
 
 def get_pantry_id(name: str):
     """
@@ -517,18 +461,18 @@ def get_top_pantry_suggestions(name: str, top_n: int = 3) -> list[dict]:
 
 def set_pantry_memory(slim_context):
     """
-    Populates pantry_map from DB ingredients via slim_context.
-    
-    CLEARS the map first to prevent accumulation across calls.
-    
+    Rebuilds pantry_map from DB ingredients via slim_context.
+
     Two-pass strategy:
       Pass 1: Add all staple pantry items (is_staple=True).
       Pass 2: Add non-staple items ONLY if their normalized form
               doesn't collide with an existing map entry.
     
-    IMP- food_ids are ALWAYS rejected (auto-created duplicates).
+    The map is built in full and then swapped in, so a request running at
+    the same time never sees it empty or half filled.
     """
-    pantry_map.clear()  # Prevent accumulation across calls
+    global pantry_map
+    new_map = {}
     
     added_staple = 0
     added_standard = 0
@@ -545,7 +489,7 @@ def set_pantry_memory(slim_context):
         # it's considered valid for injection.
         
         if name and pantry_id and is_staple:
-            pantry_map[name.lower()] = pantry_id
+            new_map[name.lower()] = pantry_id
             added_staple += 1
     
     # Pass 2: Non-staple items — add only if not a decorated duplicate
@@ -563,18 +507,19 @@ def set_pantry_memory(slim_context):
         n_clean = normalize_ingredient_name(name)
         
         # Skip if raw name already in map (staple takes precedence)
-        if n_lower in pantry_map:
+        if n_lower in new_map:
             skipped += 1
             continue
         # Skip if normalized form already in map (it's a decorated duplicate)
-        if n_clean != n_lower and n_clean in pantry_map:
+        if n_clean != n_lower and n_clean in new_map:
             skipped += 1
             continue
         
         # Clean standard item — add it (e.g. "olive", "avocado")
-        pantry_map[n_lower] = pantry_id
+        new_map[n_lower] = pantry_id
         added_standard += 1
     
+    pantry_map = new_map
     total = added_staple + added_standard
     print(f"📦 set_pantry_memory: {total} items ({added_staple} staples + {added_standard} standard active), skipped {skipped} duplicates/imports")
 

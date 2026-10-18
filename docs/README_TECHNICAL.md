@@ -69,13 +69,16 @@ Gemini errors are mapped to user-safe messages by `utils/ai_errors.friendly_ai_e
 | Model | Purpose |
 |---|---|
 | `Recipe`, `Instruction`, `RecipeIngredient` | Recipe, its steps, and gram-weighted ingredients (supports components and sub-recipes). `status`: `draft` → `approved` |
-| `Ingredient` | Curated ingredient with nutrition, synonyms, images, `embedding` (pgvector) and `status` |
+| `Ingredient` | Curated ingredient with nutrition, images, `embedding` (pgvector) and `status` |
+| `IngredientAlias` | Other names for an ingredient. Matching tries the AI's pantry id, then the exact name, then aliases, then fuzzy matching. Merging moves aliases to the winner |
 | `RecipeEvaluation`, `IngredientEvaluation` | AI quality scores |
 | `Chef` | Chef personas |
 | `User`, `UserRecipeInteraction`, `UserQueue` | Accounts (`is_admin`), favorites / made / feedback, personal queue |
 | `RecipeCollection`, `CollectionItem` | Curated collections |
 | `Resource` | Blog-style articles |
 | `VisualStyleGuide`, `ConceptVisual` | Style rules for ingredient images, and icons for the explore pages |
+
+Deleting a recipe, ingredient, collection, user or resource removes its child rows in the database (`ON DELETE CASCADE`). Optional links (`sub_recipe_id`, `primary_resource_id`) are cleared. A chef that has recipes, and an ingredient used in a recipe, cannot be deleted.
 
 Schema changes: `flask db migrate -m "..."`, review the file in `migrations/versions/`, and commit it. Production runs `flask db upgrade` as part of each deploy.
 
