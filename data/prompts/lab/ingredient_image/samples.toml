@@ -14,11 +14,13 @@ default = [
   { name = "banana", main_category = "fruit and fruit products", notes = "" },
 ]
 
-# The five items from the old Style Center sandbox, for comparison with its images.
+# The five items from the old Style Center sandbox, with the names it used, so
+# results compare one to one with its images (export in
+# ~/Documents/thelazychef-exports/style_sandbox_run_2026-10-18.csv on the Mac mini).
 style_center = [
-  { name = "banana", main_category = "fruit and fruit products", notes = "" },
-  { name = "chicken breast", main_category = "meat", notes = "" },
-  { name = "coconut milk", main_category = "canned and preserved", notes = "" },
-  { name = "salmon steak", main_category = "fish and seafood", notes = "" },
-  { name = "basil", main_category = "spices and herbs", notes = "" },
+  { name = "Banana", main_category = "fruit and fruit products", notes = "" },
+  { name = "Chicken Filet", main_category = "meat", notes = "" },
+  { name = "Canned Coconut Milk", main_category = "canned and preserved", notes = "" },
+  { name = "Salmon Steak", main_category = "fish and seafood", notes = "" },
+  { name = "Fresh Basil", main_category = "spices and herbs", notes = "" },
 ]

@@ -9,13 +9,16 @@ A task is a folder in `data/prompts/lab/`:
 ```
 data/prompts/lab/ingredient_image/
   task.toml        kind (image or text), model, layer order
-  style/           one file per variant: default.j2, vector.j2, isometric.j2
+  brief/           default.j2 (empty), style_center.j2
+  style/           one file per variant: default.j2, vector.j2, isometric.j2, cutout.j2, …
   category/        default.toml, none.toml
   item/            default.j2
   samples.toml     sample sets to run on
 ```
 
-The prompt is the layers joined in the order `task.toml` lists them. For ingredient images that is what every image shares (style), what an ingredient category needs, and notes for this one ingredient.
+The prompt is the layers joined in the order `task.toml` lists them. For ingredient images that is an optional brief for every image, the style, what an ingredient category needs, and notes for this one ingredient.
+
+The style variants include the exact styles from the old Style Center (isometric, vector, cutout, flatlay, editorial, macro, flat_vector_icon), recovered from a backup on 18.10.2026. To reproduce what it made, add its brief and leave out the newer layers: `--vary brief=style_center --vary category=none --sample style_center`. It used Imagen 4 Ultra; the lab uses the Gemini image model, so the same prompt gives a different image.
 
 A layer variant is either:
 
