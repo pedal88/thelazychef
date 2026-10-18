@@ -1,11 +1,12 @@
+import os
 import time
 import requests
 import re
 from app import app
 from database.models import db, Ingredient
 
-EDAMAM_APP_ID = "abe08a7b"
-EDAMAM_APP_KEY = "5114c5d8f2d86f403004020932f5b6bf"
+EDAMAM_APP_ID = os.environ["EDAMAM_APP_ID"]
+EDAMAM_APP_KEY = os.environ["EDAMAM_APP_KEY"]
 
 def fetch_edamam_data(ingredient_name, default_unit):
     # Sanitize the name by removing everything in parentheses
