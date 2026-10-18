@@ -20,7 +20,7 @@ os.environ.pop('K_SERVICE', None)
 from app import app  # noqa: E402
 from database.models import (  # noqa: E402
     CollectionItem, Ingredient, Instruction, Recipe, RecipeCollection, RecipeDiet,
-    RecipeIngredient, RecipeMealType, SocialMediaPost, User, UserQueue,
+    RecipeIngredient, RecipeMealType, User, UserQueue,
     UserRecipeInteraction, db,
 )
 from services.ingredient_service import merge_ingredients  # noqa: E402
@@ -75,7 +75,6 @@ class DataIntegrityTests(unittest.TestCase):
             CollectionItem(collection_id=collection.id, recipe_id=recipe.id),
             UserQueue(user_id=user.id, recipe_id=recipe.id),
             UserRecipeInteraction(user_id=user.id, recipe_id=recipe.id, status='favorite'),
-            SocialMediaPost(recipe_id=recipe.id, platform='tiktok', template_name='x.jinja2'),
         ])
         stock = self._ingredient('stock', sub_recipe_id=recipe.id)
         db.session.commit()
@@ -84,7 +83,7 @@ class DataIntegrityTests(unittest.TestCase):
 
         self.assertIsNone(db.session.get(Recipe, recipe.id))
         for model in (RecipeIngredient, Instruction, RecipeMealType, RecipeDiet, CollectionItem,
-                      UserQueue, UserRecipeInteraction, SocialMediaPost):
+                      UserQueue, UserRecipeInteraction):
             self.assertEqual(_count(model, recipe_id=recipe.id), 0, model.__name__)
         self.assertIsNone(db.session.get(Ingredient, stock.id).sub_recipe_id)
         self.assertIsNotNone(db.session.get(Ingredient, onion.id))
