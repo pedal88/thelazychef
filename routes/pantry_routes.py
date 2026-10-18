@@ -12,7 +12,7 @@ from flask_login import current_user, login_required
 from ai_engine import analyze_ingredient_ai, extract_nutrients_from_text, get_top_pantry_suggestions
 from database.models import Ingredient, Recipe, RecipeIngredient, db
 from routes._flat import FlatBlueprint
-from routes._shared import get_recipe_image_url, get_storage
+from routes._shared import get_recipe_image_url, get_storage, viewer_is_admin
 from services.pantry_service import get_slim_pantry_context
 from services.photographer_service import generate_actual_image
 from utils.decorators import admin_required
@@ -24,7 +24,10 @@ pantry_bp = FlatBlueprint("pantry", __name__)
 @pantry_bp.route('/ingredients')
 def pantry_management():
     # Fetch all ingredients sorted by Category then Name
-    ingredients = db.session.execute(db.select(Ingredient).order_by(Ingredient.main_category, Ingredient.name)).scalars().all()
+    query = db.select(Ingredient).order_by(Ingredient.main_category, Ingredient.name)
+    if not viewer_is_admin():
+        query = query.where(Ingredient.status == 'active')
+    ingredients = db.session.execute(query).scalars().all()
     
     # Load constraints for dependent filtering
     data_dir = os.path.join(current_app.root_path, 'data', 'constraints')
@@ -108,12 +111,10 @@ def search_ingredients_api():
             return jsonify({'success': True, 'results': []})
             
         # Search for name matches (ILIKE)
-        results = db.session.execute(
-            db.select(Ingredient)
-            .where(Ingredient.name.ilike(f"%{query}%"))
-            .order_by(Ingredient.name)
-            .limit(10)
-        ).scalars().all()
+        search = db.select(Ingredient).where(Ingredient.name.ilike(f"%{query}%"))
+        if not viewer_is_admin():
+            search = search.where(Ingredient.status == 'active')
+        results = db.session.execute(search.order_by(Ingredient.name).limit(10)).scalars().all()
         
         # Serialize results
         items = []
@@ -328,7 +329,7 @@ def generate_ingredient_image_api():
 def get_ingredient_details_api(id):
     try:
         ingredient = db.session.get(Ingredient, id)
-        if not ingredient:
+        if not ingredient or (ingredient.status != 'active' and not viewer_is_admin()):
             return jsonify({'success': False, 'error': 'Ingredient not found'}), 404
             
         return jsonify({

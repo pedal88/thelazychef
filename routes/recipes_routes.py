@@ -19,7 +19,7 @@ from database.models import (
     db,
 )
 from routes._flat import FlatBlueprint
-from routes._shared import get_recipe_image_url, get_storage, load_json_option
+from routes._shared import get_recipe_image_url, get_storage, load_json_option, viewer_is_admin
 from utils.decorators import admin_required
 
 recipes_bp = FlatBlueprint("recipes", __name__)
@@ -279,7 +279,10 @@ def get_sub_recipe(recipe_id):
     Returns only approved recipes (or any recipe whose id is referenced as
     a sub_recipe_id — admin may link draft sub-recipes intentionally)."""
     recipe = db.session.get(Recipe, recipe_id)
-    if not recipe:
+    linked = recipe is not None and db.session.execute(
+        db.select(Ingredient.id).where(Ingredient.sub_recipe_id == recipe.id).limit(1)
+    ).first() is not None
+    if not recipe or (recipe.status != 'approved' and not linked and not viewer_is_admin()):
         return jsonify({'success': False, 'error': 'Sub-recipe not found'}), 404
 
     # Build image URL helper (reuse existing context function)
@@ -352,7 +355,7 @@ def search_recipes_api():
 @recipes_bp.route('/recipe/<int:recipe_id>')
 def recipe_detail(recipe_id):
     recipe = db.session.get(Recipe, recipe_id)
-    if not recipe:
+    if not recipe or (recipe.status != 'approved' and not viewer_is_admin()):
         flash("Recipe not found.", "error")
         return redirect(url_for('discover'))
     
@@ -528,9 +531,9 @@ def recipe_kitchen_mode(recipe_id):
     )
     recipe = db.session.execute(query).unique().scalar_one_or_none()
 
-    if not recipe:
+    if not recipe or (recipe.status != 'approved' and not viewer_is_admin()):
         flash("Recipe not found.", "error")
-        return redirect(url_for('index'))
+        return redirect(url_for('discover'))
 
     return render_template('kitchen_mode.html', recipe=recipe)
 

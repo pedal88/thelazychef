@@ -3,8 +3,14 @@ import json
 import os
 
 from flask import current_app, url_for
+from flask_login import current_user
 
 from services.storage_service import GoogleCloudStorageProvider
+
+
+def viewer_is_admin() -> bool:
+    """Public routes show drafts, pending ingredients and unpublished pages only to admins."""
+    return bool(current_user.is_authenticated and getattr(current_user, 'is_admin', False))
 
 
 def get_storage():
