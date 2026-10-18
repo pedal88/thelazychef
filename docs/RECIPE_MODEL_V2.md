@@ -156,6 +156,21 @@ Fire ting holdes atskilt: ingrediensen, formen, tilstanden og mengden.
 
 **Hvorfor formene flyttes fram:** oppskriftene lages på nytt i steg 8. Hvis formene først kom i fase 3, måtte alle oppskriftene struktureres en gang til for at «2 fedd hvitløk» skulle peke på formen. Mise en place blir værende i fase 3.
 
+### Gjenstående pantry-feil
+
+Funnet under gjennomgangen av ingredienssymbolene 18.10.2026. De ryddes i v2-bygget, før nygenereringen, med fletting (linjene flyttes, navnet blir alias) og nye navn:
+
+- **Duplikater:**
+  - `mozzarella` (188) og `mozzarella cheese` (612).
+  - Tahini: `tahini` (509), `seed butters (tahini)` (394) og `sesame butter` (209).
+  - Peanøttsmør: `peanut butter` (516) og `nut butters (peanut` (393).
+  - Mandelsmør: `almond butter` (517) og `nut butters (e.g. almond)` (210).
+- **Navn kuttet i databasen:** `nut butters (peanut` (393) og `herbal tea (e.g. chamomile` (595).
+- **Uklart navn:** `filet` (56, fisk, underkategori «salmon») kan ikke stå alene. Trolig laksefilet, som finnes fra før som `salmon fillet` (656).
+- **Kanel:** `cinnamon` (361, under «flavorings» i bakevarer) ved siden av `cinnamon sticks` (266) og `ground cinnamon` (271). Bestem om den generelle skal flettes inn i en av dem.
+- **Smør i to kategorier:** `butter` (371) ligger under fett og oljer, mens `salted butter` og `unsalted butter` ligger under meieri. Smørvariantene hører sammen, og blir varianter av grunnvaren `butter` med `base_ingredient_id`.
+- **Underkategorier som samler ulike varer:** «flavorings» blander ekstrakter med krydder, og honning ligger under «sugar». Symbolene er løst med egen form per ingrediens, men kategoriene bør ryddes når allergenene og grunnvarene settes.
+
 ### Utledes, lagres ikke
 
 Plan og rekkefølge per strategi, økter og «mens …»-formuleringer, aktiv og total tid, ingrediensliste for hele retten, inndelingen av mise-elementer i skål, ta frem og på benken, komponenten til et mise-element, kolonnene i tabellmetoden og ventetid på utstyr.
@@ -230,10 +245,10 @@ Tallene per 100 g kommer i dag fra Edamam, med AI-anslag der Edamam ikke fant in
 
 ## 10. Bilder og symboler
 
-- **Ingredienssymboler er illustrasjoner,** med tydelig silhuett som kan kjennes igjen i liten størrelse, fast vinkel og lys, felles palett og gjennomsiktig bakgrunn. Stilen bestemmes i prompt-lab (steg 6 i planen). Kandidater fra Style Center: «Vector Icon» og «Isometric 3D». Begge gjorde kyllingfilet oransje som laks, så laget per ingrediens trengs.
+- **Ingredienssymboler er illustrasjoner,** med tydelig silhuett som kan kjennes igjen i liten størrelse, fast vinkel og lys, felles palett og ren hvit bakgrunn.
 - **Navnet vises sammen med symbolet** i oppskriftene (overlegg eller etikett). Bildet trenger derfor ikke skille alle varianter (risedikk fra hvitvinseddik) alene, og navnet kan oversettes og brukes som alt-tekst. Selve bildet inneholder aldri tekst.
-- **Stilen fra prompt-laben** (runde 1–5, 18.10.2026): `gemini-2.5-flash-image`, «vector», felles regler (én ingrediens, ingen rekvisitter, ren hvit bakgrunn, ingen tekst) og en regel per underkategori for hvordan varen vises (flaske, glass, papirpose, krukke eller hel vare). Enkeltingredienser som ikke passer kategorien sin, får egen form.
-- **Fram til da** brukes eksisterende bilder. Mangler en ingrediens bilde, vises forbokstaven i kategorifargen (`RECIPE_VISUALIZATIONS.md` 9.13).
+- **Stilen fra prompt-laben** (runde 1–5, 18.10.2026): `gemini-2.5-flash-image`, «vector_textured», felles regler (én ingrediens, ingen rekvisitter, ren hvit bakgrunn, ingen tekst) og en regel per underkategori for hvordan varen vises (flaske, glass, papirpose, krukke eller hel vare). Enkeltingredienser som ikke passer kategorien sin, får egen form (`image_form`), og notater fra gjennomgangen ligger i `image_notes`. Valget står i `[final]` i oppgaven, og appen, admin og batch-skriptet bygger samme prompt.
+- **Hele pantryet har symboler** fra 18.10.2026: 654 bilder i én kjøring, to runder gjennomgang og omtrent 28 USD. Flyten (lag, gjennomgå, lag på nytt, rull ut) er beskrevet i `docs/PROMPT_LAB.md`. Mangler en ingrediens bilde, vises forbokstaven i kategorifargen (`RECIPE_VISUALIZATIONS.md` 9.13).
 - **Symboler for innhold** (kosthold, kjøkken, utstyr, metoder) lages i samme stil som ingrediensene. **Kontrollikoner** (meny, lukk, del) kommer fra ett ferdig ikonbibliotek.
 - **Retter og komponenter:** rettbildet lages når oppskriften er validert. Komponentbildene lages med rettbildet som referanse (`RECIPE_VISUALIZATIONS.md` 9.7).
 
@@ -247,8 +262,8 @@ Tallene per 100 g kommer i dag fra Edamam, med AI-anslag der Edamam ikke fant in
 | 3 | Pantry-rydding | **Ferdig 18.10.2026** (PR #49, #50): 27 flettet, 19 nye navn, 23 aktivert, alle navn med små bokstaver, og fuzzy-matching som krever samme ord. Formene, tettheten, allergenene og koblingen til grunnvaren fylles inn i v2-bygget |
 | 4 | Prompt-lab | **Ferdig 18.10.2026** (PR #51, #53, #54). Avsnitt 8 og `docs/PROMPT_LAB.md` |
 | 5 | Fase 0b med Claude | De samme 20 oppskriftene, Sonnet 5.5 mot Opus 5.5 og to effort-nivåer, med promptreglene fra piloten. I tillegg 3–4 kilder fra nettsider og video. Velg modell per steg, og test om mise-elementer kan utledes |
-| 6 | Stil på ingredienssymboler | **Pågår.** Stilen er nesten satt etter fem runder (avsnitt 10). Gjenstår: felt for egen form og notater per ingrediens, bildene for hele pantryet i én kjøring, og et ark for godkjenning før de erstatter dagens bilder |
-| 7 | v2-bygget | Tabeller (inkludert former, enheter, tetthet, allergener og grunnvare), kildeadaptere, to runder som bakgrunnsjobb, validator, lesemodell, nye visninger og design-tokens (med dagens uttrykk) |
+| 6 | Stil på ingredienssymboler | **Ferdig 18.10.2026** (PR #57–#59). Stil satt etter fem lab-runder, 654 symboler laget, gjennomgått og rullet ut med en datamigrering som kan rulles tilbake. Avsnitt 10 |
+| 7 | v2-bygget | Gjenstående pantry-feil (avsnitt 5), tabeller (inkludert former, enheter, tetthet, allergener og grunnvare), kildeadaptere, to runder som bakgrunnsjobb, validator, lesemodell, nye visninger og design-tokens (med dagens uttrykk) |
 | 8 | Nygenerering | De relevante oppskriftene lages på nytt. De gamle arkiveres, og gamle tabeller og kode slettes når resultatet er godkjent |
 | 9 | Bilder av retter og komponenter | Avsnitt 10 |
 | 10 | Fase 3 | Mise en place |
