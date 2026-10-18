@@ -19,14 +19,12 @@ from database.models import (
 from ai_engine import get_pantry_id
 from services.nutrition_service import calculate_nutritional_totals
 from utils.unit_helpers import normalize_unit
-from services.photographer_service import generate_visual_prompt, generate_actual_image
 
 
 # ---------------------------------------------------------------------------
 # Return contract
 # ---------------------------------------------------------------------------
 STATUS_SUCCESS = "SUCCESS"
-STATUS_MISSING = "MISSING_INGREDIENTS"
 
 
 def _extract_pre_resolved_id(ing) -> str | None:
@@ -126,11 +124,13 @@ def process_recipe_workflow(recipe_data, query_context: str, chef_id: str, sourc
         chef_id:        Chef persona ID to assign (validated against DB).
         source_thumbnail_path: Raw thumbnail file extracted from Social Media.
 
+    Unknown ingredients are created with status 'pending', so this always
+    succeeds.
+
     Returns:
         dict with:
-            status:  STATUS_SUCCESS | STATUS_MISSING
-            recipe_id:  (int) — only when status == SUCCESS
-            missing_ingredients:  (list[dict]) — only when status == MISSING
+            status:  STATUS_SUCCESS
+            recipe_id:  (int)
     """
 
     # ── Step 0: Sanitize Lexical Drift ────────────────────────────────────
@@ -298,68 +298,23 @@ def process_recipe_workflow(recipe_data, query_context: str, chef_id: str, sourc
     except Exception as e:
         print(f"⚠️  Nutrition calculation failed (non-critical): {e}")
 
-    # 8b. Standardized AI Image Generation
-    try:
-        print(f"🎨 Auto-generating image for: {recipe_data.title}")
-        visual_context = f"{recipe_data.title} - {getattr(recipe_data, 'cuisine', 'International')} cuisine"
-        visual_prompt = generate_visual_prompt(visual_context)
-        images = generate_actual_image(visual_prompt)
-
-        if images:
-            img = images[0]
-            unique_suffix = str(uuid.uuid4())[:8]
-            filename = f"recipe_{new_recipe.id}_{unique_suffix}.png"
-
-            from io import BytesIO
-            buf = BytesIO()
-            img.save(buf, 'PNG')
-            img_bytes = buf.getvalue()
-
-            from services.storage_service import get_storage_provider
-            storage = get_storage_provider()
-            storage.save(img_bytes, filename, 'recipes')
-
-            new_recipe.image_filename = filename
-            db.session.commit()
-            print(f"✅ Image saved: {filename}")
-            
-        hero_prompt = getattr(recipe_data, 'hero_image_prompt', None)
-        if hero_prompt:
-            print(f"🎥 Found 'hero_image_prompt'. Generating source imitation image...")
-            source_images = generate_actual_image(hero_prompt)
-            if source_images:
-                s_img = source_images[0]
-                s_unique_suffix = str(uuid.uuid4())[:8]
-                s_filename = f"source_img_{new_recipe.id}_{s_unique_suffix}.png"
-                
-                s_buf = BytesIO()
-                s_img.save(s_buf, 'PNG')
-                s_bytes = s_buf.getvalue()
-                
-                from services.storage_service import get_storage_provider
-                storage = get_storage_provider()
-                storage.save(s_bytes, s_filename, 'recipes')
-                
-                new_recipe.source_image_filename = s_filename
-                db.session.commit()
-                print(f"✅ Source image (AI Generated) saved: {s_filename}")
-                
-        elif source_thumbnail_path and os.path.exists(source_thumbnail_path):
+    # 8b. Source thumbnail from a video import. Dish images are not generated
+    # here: the old prompt model was retired, and v2 makes them after validation.
+    if source_thumbnail_path and os.path.exists(source_thumbnail_path):
+        try:
             with open(source_thumbnail_path, 'rb') as f:
                 thumb_bytes = f.read()
-                
+
             from services.storage_service import get_storage_provider
             storage = get_storage_provider()
             thumb_ext = os.path.splitext(source_thumbnail_path)[1].lower()
             thumb_filename = f"source_img_{new_recipe.id}_{uuid.uuid4().hex[:8]}{thumb_ext}"
-            
+
             storage.save(thumb_bytes, thumb_filename, 'recipes')
             new_recipe.source_image_filename = thumb_filename
             db.session.commit()
-            print(f"✅ Source thumbnail (Raw File) saved: {thumb_filename}")
-
-    except Exception as img_err:
-        print(f"⚠️  Image generation failed (non-critical): {img_err}")
+        except Exception as thumb_err:
+            print(f"⚠️  Saving source thumbnail failed (non-critical): {thumb_err}")
 
     return {
         'status': STATUS_SUCCESS,
@@ -486,13 +441,3 @@ def clone_recipe(original_recipe_id: int, new_title: str, ingredient_overrides: 
     db_session.commit()
 
     return new_recipe.id
-
-def create_recipe_from_extracted_json(json_data: dict, source_url: str, chef_id: str = "gourmet") -> dict:
-    """
-    Bridge function for the TikTok Source Sidecar.
-    Bypasses AI extraction and feeds pre-extracted JSON directly into
-    the standard recipe persistence and normalization workflow.
-    """
-    from ai_engine import RecipeObj
-    recipe_obj = RecipeObj(**json_data)
-    return process_recipe_workflow(recipe_obj, query_context=source_url, chef_id=chef_id)

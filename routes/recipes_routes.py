@@ -470,26 +470,9 @@ def recipe_detail(recipe_id):
         if not alts:
             continue
 
-        # Ask Gemini for a Chef's Tip — keep it cheap: single sentence, flash model
-        chef_tip = ""
-        try:
-            from ai_engine import client as ai_client
-            tip_prompt = (
-                f"Give a single short sentence (max 20 words) chef's tip about substituting "
-                f"{ing.name} in a {recipe.title} recipe. Be practical and specific."
-            )
-            tip_resp = ai_client.models.generate_content(
-                model='gemini-2.0-flash-lite',
-                contents=tip_prompt,
-            )
-            chef_tip = tip_resp.text.strip().rstrip('.')
-        except Exception:
-            pass  # Tip is non-critical; silently skip on error
-
         substitutes[ri.id] = {
             'original': ing,
             'alts': alts,
-            'tip': chef_tip,
         }
 
     # Load current user's interaction for the feedback drawer
