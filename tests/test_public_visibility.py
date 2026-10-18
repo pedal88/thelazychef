@@ -61,7 +61,9 @@ class PublicVisibilityTests(unittest.TestCase):
         self.client = app.test_client()
 
     def tearDown(self):
+        # Other test modules share the in-memory database; leave it empty.
         db.session.remove()
+        db.drop_all()
         self.ctx.pop()
 
     def _login_admin(self):
