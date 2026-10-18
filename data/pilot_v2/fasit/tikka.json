@@ -1,0 +1,535 @@
+{
+  "title": "Kylling tikka masala med ris",
+  "servings": 4,
+  "components": [
+    {
+      "local_id": "c1",
+      "name": "Tikka masala"
+    },
+    {
+      "local_id": "c2",
+      "name": "Ris"
+    }
+  ],
+  "ingredients": [
+    {
+      "local_id": "i1",
+      "component_id": "c1",
+      "name": "kyllinglårfilet",
+      "amount": 700,
+      "unit": "g",
+      "prep_style": "biter à 3 cm"
+    },
+    {
+      "local_id": "i2",
+      "component_id": "c1",
+      "name": "gresk yoghurt",
+      "amount": 1.5,
+      "unit": "dl"
+    },
+    {
+      "local_id": "i3",
+      "component_id": "c1",
+      "name": "sitron",
+      "amount": 0.5,
+      "unit": "piece",
+      "prep_style": "saften"
+    },
+    {
+      "local_id": "i4",
+      "component_id": "c1",
+      "name": "hvitløk",
+      "amount": 2,
+      "unit": "clove",
+      "prep_style": "finrevet"
+    },
+    {
+      "local_id": "i5",
+      "component_id": "c1",
+      "name": "hvitløk",
+      "amount": 3,
+      "unit": "clove",
+      "prep_style": "finrevet"
+    },
+    {
+      "local_id": "i6",
+      "component_id": "c1",
+      "name": "ingefær",
+      "amount": 2,
+      "unit": "cm",
+      "prep_style": "finrevet"
+    },
+    {
+      "local_id": "i7",
+      "component_id": "c1",
+      "name": "ingefær",
+      "amount": 2,
+      "unit": "cm",
+      "prep_style": "finrevet"
+    },
+    {
+      "local_id": "i8",
+      "component_id": "c1",
+      "name": "garam masala",
+      "amount": 1,
+      "unit": "tbsp"
+    },
+    {
+      "local_id": "i9",
+      "component_id": "c1",
+      "name": "garam masala",
+      "amount": 1,
+      "unit": "tbsp"
+    },
+    {
+      "local_id": "i10",
+      "component_id": "c1",
+      "name": "paprikapulver",
+      "amount": 1,
+      "unit": "tsp"
+    },
+    {
+      "local_id": "i11",
+      "component_id": "c1",
+      "name": "paprikapulver",
+      "amount": 1,
+      "unit": "tsp"
+    },
+    {
+      "local_id": "i12",
+      "component_id": "c1",
+      "name": "gurkemeie",
+      "amount": 1,
+      "unit": "tsp"
+    },
+    {
+      "local_id": "i13",
+      "component_id": "c1",
+      "name": "malt spisskummen",
+      "amount": 2,
+      "unit": "tsp"
+    },
+    {
+      "local_id": "i14",
+      "component_id": "c1",
+      "name": "chilipulver",
+      "amount": 0.5,
+      "unit": "tsp"
+    },
+    {
+      "local_id": "i15",
+      "component_id": "c1",
+      "name": "salt",
+      "amount": 0.5,
+      "unit": "tsp"
+    },
+    {
+      "local_id": "i16",
+      "component_id": "c1",
+      "name": "salt",
+      "amount": 1,
+      "unit": "tsp"
+    },
+    {
+      "local_id": "i17",
+      "component_id": "c1",
+      "name": "løk",
+      "amount": 1,
+      "unit": "piece",
+      "prep_style": "finhakket"
+    },
+    {
+      "local_id": "i18",
+      "component_id": "c1",
+      "name": "smør",
+      "amount": 2,
+      "unit": "tbsp"
+    },
+    {
+      "local_id": "i19",
+      "component_id": "c1",
+      "name": "nøytral olje",
+      "amount": 1,
+      "unit": "tbsp"
+    },
+    {
+      "local_id": "i20",
+      "component_id": "c1",
+      "name": "tomatpuré",
+      "amount": 1,
+      "unit": "tbsp"
+    },
+    {
+      "local_id": "i21",
+      "component_id": "c1",
+      "name": "hermetiske tomater",
+      "amount": 400,
+      "unit": "g",
+      "prep_style": "knuste"
+    },
+    {
+      "local_id": "i22",
+      "component_id": "c1",
+      "name": "kremfløte",
+      "amount": 2,
+      "unit": "dl"
+    },
+    {
+      "local_id": "i23",
+      "component_id": "c1",
+      "name": "sukker",
+      "amount": 1,
+      "unit": "tsp"
+    },
+    {
+      "local_id": "i24",
+      "component_id": "c1",
+      "name": "frisk koriander",
+      "amount": 1,
+      "unit": "handful",
+      "prep_style": "grovhakket"
+    },
+    {
+      "local_id": "i25",
+      "component_id": "c2",
+      "name": "basmatiris",
+      "amount": 3,
+      "unit": "dl"
+    },
+    {
+      "local_id": "i26",
+      "component_id": "c2",
+      "name": "vann",
+      "amount": 4.5,
+      "unit": "dl"
+    },
+    {
+      "local_id": "i27",
+      "component_id": "c2",
+      "name": "salt",
+      "amount": 0.5,
+      "unit": "tsp"
+    }
+  ],
+  "steps": [
+    {
+      "local_id": "s1",
+      "component_id": "c1",
+      "phase": "cook",
+      "short": "Forvarm ovnen",
+      "text": "Sett ovnen på 250 °C grillelement, med rist øverst.",
+      "uses": [],
+      "after": [],
+      "active_minutes": 1,
+      "passive_minutes": 14,
+      "method": "preheat",
+      "equipment": [
+        "oven"
+      ],
+      "temp_c": 250,
+      "mode": "grill_element",
+      "setup": true,
+      "done_when": "Ovnen har nådd temperaturen"
+    },
+    {
+      "local_id": "s2",
+      "component_id": "c1",
+      "phase": "prep",
+      "short": "Rør marinaden",
+      "text": "Rør sammen {i2}, {i4}, {i6}, {i8}, {i10}, {i12}, saften av {i3} og {i15}.",
+      "uses": [
+        "i2",
+        "i4",
+        "i6",
+        "i8",
+        "i10",
+        "i12",
+        "i3",
+        "i15"
+      ],
+      "after": [],
+      "active_minutes": 4,
+      "passive_minutes": 0,
+      "holds_minutes": 60,
+      "method": "mix",
+      "equipment": [
+        "bowl",
+        "grater"
+      ],
+      "setup": false
+    },
+    {
+      "local_id": "s3",
+      "component_id": "c1",
+      "phase": "prep",
+      "short": "Mariner kyllingen",
+      "text": "Skjær {i1} i biter på 3 cm og vend dem i marinaden. Sett kaldt.",
+      "uses": [
+        "i1"
+      ],
+      "after": [
+        "s2"
+      ],
+      "active_minutes": 6,
+      "passive_minutes": 60,
+      "holds_minutes": 1380,
+      "method": "marinate",
+      "equipment": [],
+      "setup": false,
+      "done_when": "Minst 1 time, gjerne over natten"
+    },
+    {
+      "local_id": "s4",
+      "component_id": "c1",
+      "phase": "prep",
+      "short": "Hakk løken",
+      "text": "Finhakk {i17}.",
+      "uses": [
+        "i17"
+      ],
+      "after": [],
+      "active_minutes": 3,
+      "passive_minutes": 0,
+      "holds_minutes": 120,
+      "method": "chop",
+      "equipment": [],
+      "setup": false
+    },
+    {
+      "local_id": "s5",
+      "component_id": "c1",
+      "phase": "prep",
+      "short": "Bland krydderet",
+      "text": "Bland {i9}, {i13}, {i11}, {i14} og {i16} i en liten skål.",
+      "uses": [
+        "i9",
+        "i13",
+        "i11",
+        "i14",
+        "i16"
+      ],
+      "after": [],
+      "active_minutes": 2,
+      "passive_minutes": 0,
+      "holds_minutes": 1440,
+      "method": "mix",
+      "equipment": [
+        "small_bowl"
+      ],
+      "setup": false
+    },
+    {
+      "local_id": "s6",
+      "component_id": "c1",
+      "phase": "prep",
+      "short": "Hakk korianderen",
+      "text": "Grovhakk {i24}.",
+      "uses": [
+        "i24"
+      ],
+      "after": [],
+      "active_minutes": 1,
+      "passive_minutes": 0,
+      "holds_minutes": 60,
+      "method": "chop",
+      "equipment": [],
+      "setup": false
+    },
+    {
+      "local_id": "s7",
+      "component_id": "c2",
+      "phase": "prep",
+      "short": "Skyll risen",
+      "text": "Skyll {i25} i kaldt vann til vannet er nesten klart.",
+      "uses": [
+        "i25"
+      ],
+      "after": [],
+      "active_minutes": 2,
+      "passive_minutes": 0,
+      "holds_minutes": 60,
+      "method": "rinse",
+      "equipment": [
+        "sieve"
+      ],
+      "setup": false,
+      "done_when": "Vannet er nesten klart"
+    },
+    {
+      "local_id": "s8",
+      "component_id": "c1",
+      "phase": "cook",
+      "short": "Grill kyllingen",
+      "text": "Legg kyllingen på en rist over et stekebrett og grill øverst i ovnen i 10–12 minutter. Snu bitene halvveis.",
+      "uses": [],
+      "after": [
+        "s3"
+      ],
+      "active_minutes": 3,
+      "passive_minutes": 9,
+      "holds_minutes": 15,
+      "method": "grill",
+      "equipment": [
+        "oven",
+        "baking_tray",
+        "rack"
+      ],
+      "temp_c": 250,
+      "mode": "grill_element",
+      "setup": false,
+      "done_when": "Svidde kanter, og 75 °C i kjernen"
+    },
+    {
+      "local_id": "s9",
+      "component_id": "c1",
+      "phase": "cook",
+      "short": "Fres løken",
+      "text": "Smelt {i18} med {i19} i en vid kjele på middels varme. Fres løken til den er myk.",
+      "uses": [
+        "i18",
+        "i19"
+      ],
+      "after": [
+        "s4"
+      ],
+      "active_minutes": 8,
+      "passive_minutes": 0,
+      "method": "saute",
+      "equipment": [
+        "wide_pot"
+      ],
+      "mode": "medium",
+      "setup": false,
+      "done_when": "Myk og gyllen i kantene, ikke brun"
+    },
+    {
+      "local_id": "s10",
+      "component_id": "c1",
+      "phase": "cook",
+      "short": "Fres krydderet",
+      "text": "Tilsett {i5} og {i7} og fres i ett minutt. Rør inn krydderblandingen og {i20} og fres i ett minutt til.",
+      "uses": [
+        "i5",
+        "i7",
+        "i20"
+      ],
+      "after": [
+        "s9",
+        "s5"
+      ],
+      "active_minutes": 2,
+      "passive_minutes": 0,
+      "method": "saute",
+      "equipment": [
+        "wide_pot"
+      ],
+      "mode": "medium",
+      "setup": false,
+      "done_when": "Det lukter sterkt av krydder, og bunnen er så vidt tørr"
+    },
+    {
+      "local_id": "s11",
+      "component_id": "c1",
+      "phase": "cook",
+      "short": "Kok sausen",
+      "text": "Ha i {i21}, {i22} og {i23}. La sausen småkoke uten lokk i 15 minutter, og rør av og til.",
+      "uses": [
+        "i21",
+        "i22",
+        "i23"
+      ],
+      "after": [
+        "s10"
+      ],
+      "active_minutes": 2,
+      "passive_minutes": 13,
+      "holds_minutes": 30,
+      "method": "simmer",
+      "equipment": [
+        "wide_pot"
+      ],
+      "mode": "low",
+      "setup": false,
+      "done_when": "Tykk nok til å dekke baksiden av en skje"
+    },
+    {
+      "local_id": "s12",
+      "component_id": "c1",
+      "phase": "cook",
+      "short": "Kyllingen i sausen",
+      "text": "Vend kyllingen inn i sausen og la det trekke på lav varme i 5 minutter.",
+      "uses": [],
+      "after": [
+        "s11",
+        "s8"
+      ],
+      "active_minutes": 1,
+      "passive_minutes": 4,
+      "holds_minutes": 20,
+      "method": "simmer",
+      "equipment": [
+        "wide_pot"
+      ],
+      "mode": "low",
+      "setup": false
+    },
+    {
+      "local_id": "s13",
+      "component_id": "c2",
+      "phase": "cook",
+      "short": "Kok risen",
+      "text": "Kok opp risen med {i26} og {i27} under lokk. Skru ned til laveste varme og la den stå i 12 minutter.",
+      "uses": [
+        "i26",
+        "i27"
+      ],
+      "after": [
+        "s7"
+      ],
+      "active_minutes": 3,
+      "passive_minutes": 12,
+      "method": "simmer",
+      "equipment": [
+        "saucepan"
+      ],
+      "mode": "low",
+      "setup": false,
+      "done_when": "Alt vannet er trukket inn"
+    },
+    {
+      "local_id": "s14",
+      "component_id": "c2",
+      "phase": "cook",
+      "short": "La risen dampe",
+      "text": "Ta kjelen av platen og la risen stå under lokk i 10 minutter.",
+      "uses": [],
+      "after": [
+        "s13"
+      ],
+      "active_minutes": 0,
+      "passive_minutes": 10,
+      "holds_minutes": 20,
+      "method": "rest",
+      "equipment": [],
+      "setup": false
+    },
+    {
+      "local_id": "s15",
+      "component_id": "c1",
+      "phase": "serve",
+      "short": "Server",
+      "text": "Luft risen med en gaffel. Server tikka masalaen over risen, toppet med korianderen.",
+      "uses": [],
+      "after": [
+        "s12",
+        "s14",
+        "s6"
+      ],
+      "active_minutes": 3,
+      "passive_minutes": 0,
+      "method": "serve",
+      "equipment": [],
+      "setup": false
+    }
+  ]
+}

@@ -1,0 +1,264 @@
+{
+  "title": "Spaghetti carbonara",
+  "servings": 4,
+  "components": [
+    {
+      "local_id": "c1",
+      "name": "Carbonara"
+    }
+  ],
+  "ingredients": [
+    {
+      "local_id": "i1",
+      "component_id": "c1",
+      "name": "spaghetti",
+      "amount": 400,
+      "unit": "g"
+    },
+    {
+      "local_id": "i2",
+      "component_id": "c1",
+      "name": "guanciale eller pancetta",
+      "amount": 150,
+      "unit": "g",
+      "prep_style": "i staver"
+    },
+    {
+      "local_id": "i3",
+      "component_id": "c1",
+      "name": "egg",
+      "amount": 2,
+      "unit": "piece",
+      "prep_style": "hele"
+    },
+    {
+      "local_id": "i4",
+      "component_id": "c1",
+      "name": "eggeplomme",
+      "amount": 4,
+      "unit": "piece"
+    },
+    {
+      "local_id": "i5",
+      "component_id": "c1",
+      "name": "pecorino romano",
+      "amount": 60,
+      "unit": "g",
+      "prep_style": "finrevet"
+    },
+    {
+      "local_id": "i6",
+      "component_id": "c1",
+      "name": "pecorino romano",
+      "amount": 20,
+      "unit": "g",
+      "prep_style": "finrevet"
+    },
+    {
+      "local_id": "i7",
+      "component_id": "c1",
+      "name": "sort pepper",
+      "amount": 1.5,
+      "unit": "tsp",
+      "prep_style": "grovkvernet"
+    },
+    {
+      "local_id": "i8",
+      "component_id": "c1",
+      "name": "salt",
+      "amount": 1,
+      "unit": "tbsp",
+      "prep_style": "til kokevannet"
+    }
+  ],
+  "steps": [
+    {
+      "local_id": "s1",
+      "component_id": "c1",
+      "phase": "cook",
+      "short": "Kok opp vann",
+      "text": "Kok opp 3 liter vann i en stor kjele og tilsett {i8}.",
+      "uses": [
+        "i8"
+      ],
+      "after": [],
+      "active_minutes": 1,
+      "passive_minutes": 10,
+      "holds_minutes": 30,
+      "method": "boil",
+      "equipment": [
+        "large_pot"
+      ],
+      "mode": "high",
+      "setup": true,
+      "done_when": "Vannet fosskoker"
+    },
+    {
+      "local_id": "s2",
+      "component_id": "c1",
+      "phase": "prep",
+      "short": "Pisk eggeblandingen",
+      "text": "Pisk sammen {i3}, {i4}, {i5} og {i7} i en bolle til en tykk krem.",
+      "uses": [
+        "i3",
+        "i4",
+        "i5",
+        "i7"
+      ],
+      "after": [],
+      "active_minutes": 3,
+      "passive_minutes": 0,
+      "holds_minutes": 30,
+      "method": "whisk",
+      "equipment": [
+        "bowl",
+        "whisk",
+        "grater"
+      ],
+      "setup": false,
+      "done_when": "Tykk og jevn, uten klumper av ost"
+    },
+    {
+      "local_id": "s3",
+      "component_id": "c1",
+      "phase": "prep",
+      "short": "Skjær guancialen",
+      "text": "Skjær {i2} i staver på ca. 1 cm.",
+      "uses": [
+        "i2"
+      ],
+      "after": [],
+      "active_minutes": 3,
+      "passive_minutes": 0,
+      "holds_minutes": 120,
+      "method": "slice",
+      "equipment": [],
+      "setup": false
+    },
+    {
+      "local_id": "s4",
+      "component_id": "c1",
+      "phase": "cook",
+      "short": "Stek guancialen",
+      "text": "Legg guancialen i en kald, stor stekepanne og stek på middels varme til fettet har smeltet. Ta panna av varmen.",
+      "uses": [],
+      "after": [
+        "s3"
+      ],
+      "active_minutes": 4,
+      "passive_minutes": 6,
+      "holds_minutes": 10,
+      "method": "pan_fry",
+      "equipment": [
+        "frying_pan"
+      ],
+      "mode": "medium",
+      "setup": false,
+      "done_when": "Bitene er gylne og sprø, og det ligger blankt fett i panna"
+    },
+    {
+      "local_id": "s5",
+      "component_id": "c1",
+      "phase": "cook",
+      "short": "Kok pastaen",
+      "text": "Kok {i1} i det kokende vannet, ett minutt kortere enn pakken sier.",
+      "uses": [
+        "i1"
+      ],
+      "after": [
+        "s1"
+      ],
+      "active_minutes": 1,
+      "passive_minutes": 9,
+      "holds_minutes": 1,
+      "method": "boil",
+      "equipment": [
+        "large_pot"
+      ],
+      "mode": "high",
+      "setup": false,
+      "done_when": "Al dente: myk ytterst, fast kjerne"
+    },
+    {
+      "local_id": "s6",
+      "component_id": "c1",
+      "phase": "cook",
+      "short": "Ta av pastavann",
+      "text": "Øs opp 2 dl av vannet pastaen har kokt i, og hell av resten.",
+      "uses": [],
+      "after": [
+        "s5"
+      ],
+      "active_minutes": 1,
+      "passive_minutes": 0,
+      "holds_minutes": 10,
+      "method": "drain",
+      "equipment": [
+        "ladle",
+        "colander"
+      ],
+      "setup": false
+    },
+    {
+      "local_id": "s7",
+      "component_id": "c1",
+      "phase": "cook",
+      "short": "Vend pastaen i fettet",
+      "text": "Ha pastaen rett over i panna med guancialen og fettet. Vend den rundt utenfor varmen i et halvt minutt, så panna kjøler seg litt.",
+      "uses": [],
+      "after": [
+        "s6",
+        "s4"
+      ],
+      "active_minutes": 1,
+      "passive_minutes": 0,
+      "method": "mix",
+      "equipment": [
+        "frying_pan"
+      ],
+      "mode": "off",
+      "setup": false
+    },
+    {
+      "local_id": "s8",
+      "component_id": "c1",
+      "phase": "cook",
+      "short": "Rør inn eggeblandingen",
+      "text": "Hell eggeblandingen over pastaen og rør raskt. Spe med pastavannet, en skvett om gangen, til sausen er kremet.",
+      "uses": [],
+      "after": [
+        "s7",
+        "s2"
+      ],
+      "active_minutes": 2,
+      "passive_minutes": 0,
+      "holds_minutes": 2,
+      "method": "mix",
+      "equipment": [
+        "frying_pan",
+        "tongs"
+      ],
+      "mode": "off",
+      "setup": false,
+      "done_when": "Sausen er blank og legger seg rundt pastaen. Blir den kornete, var panna for varm"
+    },
+    {
+      "local_id": "s9",
+      "component_id": "c1",
+      "phase": "serve",
+      "short": "Server",
+      "text": "Server carbonaraen med en gang, toppet med {i6} og mer pepper.",
+      "uses": [
+        "i6"
+      ],
+      "after": [
+        "s8"
+      ],
+      "active_minutes": 1,
+      "passive_minutes": 0,
+      "method": "serve",
+      "equipment": [],
+      "setup": false
+    }
+  ]
+}

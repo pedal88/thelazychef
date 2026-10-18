@@ -1,0 +1,265 @@
+{
+  "_doc": "Fast metodekatalog for oppskriftsmodell v2. heat=true er varmemetoder: steg med en varmemetode skal ha phase=cook (valideringsregel 6). Hvile og avkjøling rett etter varme er ikke varmemetoder, men kan likevel være cook.",
+  "methods": [
+    {
+      "id": "preheat",
+      "name": "Forvarme",
+      "heat": true
+    },
+    {
+      "id": "boil",
+      "name": "Koke",
+      "heat": true
+    },
+    {
+      "id": "simmer",
+      "name": "Småkoke",
+      "heat": true
+    },
+    {
+      "id": "poach",
+      "name": "Trekke",
+      "heat": true
+    },
+    {
+      "id": "steam",
+      "name": "Dampe",
+      "heat": true
+    },
+    {
+      "id": "blanch",
+      "name": "Forvelle",
+      "heat": true
+    },
+    {
+      "id": "pan_fry",
+      "name": "Steke i panne",
+      "heat": true
+    },
+    {
+      "id": "saute",
+      "name": "Frese",
+      "heat": true
+    },
+    {
+      "id": "sear",
+      "name": "Brune",
+      "heat": true
+    },
+    {
+      "id": "stir_fry",
+      "name": "Wokke",
+      "heat": true
+    },
+    {
+      "id": "deep_fry",
+      "name": "Frityrsteke",
+      "heat": true
+    },
+    {
+      "id": "bake",
+      "name": "Bake",
+      "heat": true
+    },
+    {
+      "id": "roast",
+      "name": "Steke i ovn",
+      "heat": true
+    },
+    {
+      "id": "grill",
+      "name": "Grille",
+      "heat": true
+    },
+    {
+      "id": "airfry",
+      "name": "Steke i airfryer",
+      "heat": true
+    },
+    {
+      "id": "melt",
+      "name": "Smelte",
+      "heat": true
+    },
+    {
+      "id": "toast",
+      "name": "Riste",
+      "heat": true
+    },
+    {
+      "id": "reduce",
+      "name": "Redusere",
+      "heat": true
+    },
+    {
+      "id": "braise",
+      "name": "Braisere",
+      "heat": true
+    },
+    {
+      "id": "microwave",
+      "name": "Varme i mikro",
+      "heat": true
+    },
+    {
+      "id": "warm",
+      "name": "Varme opp",
+      "heat": true
+    },
+    {
+      "id": "chop",
+      "name": "Hakke",
+      "heat": false
+    },
+    {
+      "id": "slice",
+      "name": "Skjære",
+      "heat": false
+    },
+    {
+      "id": "grate",
+      "name": "Rive",
+      "heat": false
+    },
+    {
+      "id": "peel",
+      "name": "Skrelle",
+      "heat": false
+    },
+    {
+      "id": "rinse",
+      "name": "Skylle",
+      "heat": false
+    },
+    {
+      "id": "measure",
+      "name": "Måle opp",
+      "heat": false
+    },
+    {
+      "id": "mix",
+      "name": "Blande",
+      "heat": false
+    },
+    {
+      "id": "whisk",
+      "name": "Piske",
+      "heat": false
+    },
+    {
+      "id": "fold",
+      "name": "Vende inn",
+      "heat": false
+    },
+    {
+      "id": "knead",
+      "name": "Elte",
+      "heat": false
+    },
+    {
+      "id": "shape",
+      "name": "Forme",
+      "heat": false
+    },
+    {
+      "id": "roll",
+      "name": "Kjevle",
+      "heat": false
+    },
+    {
+      "id": "proof",
+      "name": "Heve",
+      "heat": false
+    },
+    {
+      "id": "marinate",
+      "name": "Marinere",
+      "heat": false
+    },
+    {
+      "id": "season",
+      "name": "Krydre",
+      "heat": false
+    },
+    {
+      "id": "sift",
+      "name": "Sikte",
+      "heat": false
+    },
+    {
+      "id": "brush",
+      "name": "Pensle",
+      "heat": false
+    },
+    {
+      "id": "blend",
+      "name": "Kjøre",
+      "heat": false
+    },
+    {
+      "id": "mash",
+      "name": "Mose",
+      "heat": false
+    },
+    {
+      "id": "juice",
+      "name": "Presse",
+      "heat": false
+    },
+    {
+      "id": "crush",
+      "name": "Knuse",
+      "heat": false
+    },
+    {
+      "id": "soak",
+      "name": "Bløtlegge",
+      "heat": false
+    },
+    {
+      "id": "drain",
+      "name": "Helle av",
+      "heat": false
+    },
+    {
+      "id": "prepare",
+      "name": "Gjøre klar",
+      "heat": false
+    },
+    {
+      "id": "assemble",
+      "name": "Sette sammen",
+      "heat": false
+    },
+    {
+      "id": "rest",
+      "name": "Hvile",
+      "heat": false
+    },
+    {
+      "id": "cool",
+      "name": "Avkjøle",
+      "heat": false
+    },
+    {
+      "id": "chill",
+      "name": "Kjøle",
+      "heat": false
+    },
+    {
+      "id": "freeze",
+      "name": "Fryse",
+      "heat": false
+    },
+    {
+      "id": "plate",
+      "name": "Anrette",
+      "heat": false
+    },
+    {
+      "id": "serve",
+      "name": "Servere",
+      "heat": false
+    }
+  ]
+}

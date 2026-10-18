@@ -1,0 +1,281 @@
+{
+  "title": "Brownies",
+  "servings": 1,
+  "components": [
+    {
+      "local_id": "c1",
+      "name": "Brownies"
+    }
+  ],
+  "ingredients": [
+    {
+      "local_id": "i1",
+      "component_id": "c1",
+      "name": "smør",
+      "amount": 150,
+      "unit": "g",
+      "prep_style": "i terninger"
+    },
+    {
+      "local_id": "i2",
+      "component_id": "c1",
+      "name": "mørk sjokolade",
+      "amount": 200,
+      "unit": "g",
+      "prep_style": "grovhakket"
+    },
+    {
+      "local_id": "i3",
+      "component_id": "c1",
+      "name": "sukker",
+      "amount": 250,
+      "unit": "g"
+    },
+    {
+      "local_id": "i4",
+      "component_id": "c1",
+      "name": "vaniljesukker",
+      "amount": 1,
+      "unit": "tsp"
+    },
+    {
+      "local_id": "i5",
+      "component_id": "c1",
+      "name": "egg",
+      "amount": 3,
+      "unit": "piece"
+    },
+    {
+      "local_id": "i6",
+      "component_id": "c1",
+      "name": "hvetemel",
+      "amount": 100,
+      "unit": "g"
+    },
+    {
+      "local_id": "i7",
+      "component_id": "c1",
+      "name": "kakao",
+      "amount": 30,
+      "unit": "g"
+    },
+    {
+      "local_id": "i8",
+      "component_id": "c1",
+      "name": "salt",
+      "amount": 0.25,
+      "unit": "tsp"
+    },
+    {
+      "local_id": "i9",
+      "component_id": "c1",
+      "name": "valnøtter",
+      "amount": 75,
+      "unit": "g",
+      "prep_style": "grovhakket"
+    }
+  ],
+  "steps": [
+    {
+      "local_id": "s1",
+      "component_id": "c1",
+      "phase": "cook",
+      "short": "Forvarm ovnen",
+      "text": "Sett ovnen på 175 °C over- og undervarme, med rist midt i ovnen.",
+      "uses": [],
+      "after": [],
+      "active_minutes": 1,
+      "passive_minutes": 14,
+      "method": "preheat",
+      "equipment": [
+        "oven"
+      ],
+      "temp_c": 175,
+      "mode": "top_bottom",
+      "setup": true,
+      "done_when": "Ovnen har nådd temperaturen"
+    },
+    {
+      "local_id": "s2",
+      "component_id": "c1",
+      "phase": "prep",
+      "short": "Kle formen",
+      "text": "Kle en form på 20 × 20 cm med bakepapir.",
+      "uses": [],
+      "after": [],
+      "active_minutes": 2,
+      "passive_minutes": 0,
+      "holds_minutes": 1440,
+      "method": "prepare",
+      "equipment": [
+        "form_20x20"
+      ],
+      "setup": false
+    },
+    {
+      "local_id": "s3",
+      "component_id": "c1",
+      "phase": "prep",
+      "short": "Sikt det tørre",
+      "text": "Sikt sammen {i6}, {i7} og {i8} i en bolle.",
+      "uses": [
+        "i6",
+        "i7",
+        "i8"
+      ],
+      "after": [],
+      "active_minutes": 2,
+      "passive_minutes": 0,
+      "holds_minutes": 1440,
+      "method": "sift",
+      "equipment": [
+        "sieve",
+        "bowl"
+      ],
+      "setup": false
+    },
+    {
+      "local_id": "s4",
+      "component_id": "c1",
+      "phase": "prep",
+      "short": "Hakk nøttene",
+      "text": "Grovhakk {i9}.",
+      "uses": [
+        "i9"
+      ],
+      "after": [],
+      "active_minutes": 2,
+      "passive_minutes": 0,
+      "holds_minutes": 1440,
+      "method": "chop",
+      "equipment": [],
+      "setup": false
+    },
+    {
+      "local_id": "s5",
+      "component_id": "c1",
+      "phase": "cook",
+      "short": "Smelt smør og sjokolade",
+      "text": "Smelt {i1} og {i2} i en kjele på lav varme. Rør til blandingen er blank, ta den av varmen og la den kjøle seg i 5 minutter.",
+      "uses": [
+        "i1",
+        "i2"
+      ],
+      "after": [],
+      "active_minutes": 5,
+      "passive_minutes": 5,
+      "holds_minutes": 20,
+      "method": "melt",
+      "equipment": [
+        "saucepan"
+      ],
+      "mode": "low",
+      "setup": false,
+      "done_when": "Blank og jevn, og lunken når du kjenner på kjelen"
+    },
+    {
+      "local_id": "s6",
+      "component_id": "c1",
+      "phase": "prep",
+      "short": "Pisk inn sukker og egg",
+      "text": "Pisk {i3} og {i4} inn i sjokoladesmøret. Pisk så inn {i5}, ett om gangen.",
+      "uses": [
+        "i3",
+        "i4",
+        "i5"
+      ],
+      "after": [
+        "s5"
+      ],
+      "active_minutes": 4,
+      "passive_minutes": 0,
+      "holds_minutes": 15,
+      "method": "whisk",
+      "equipment": [
+        "whisk"
+      ],
+      "setup": false,
+      "done_when": "Røren er blank og slipper kanten av kjelen"
+    },
+    {
+      "local_id": "s7",
+      "component_id": "c1",
+      "phase": "prep",
+      "short": "Vend inn det tørre",
+      "text": "Vend melblandingen og nøttene inn i sjokoladerøren med en slikkepott. Stopp så fort du ikke ser mer mel.",
+      "uses": [],
+      "after": [
+        "s6",
+        "s3",
+        "s4"
+      ],
+      "active_minutes": 2,
+      "passive_minutes": 0,
+      "holds_minutes": 10,
+      "method": "fold",
+      "equipment": [
+        "spatula"
+      ],
+      "setup": false,
+      "done_when": "Ingen melstriper. Ikke rør mer enn nødvendig"
+    },
+    {
+      "local_id": "s8",
+      "component_id": "c1",
+      "phase": "cook",
+      "short": "Stek",
+      "text": "Hell røren i formen og stek midt i ovnen i 25–30 minutter.",
+      "uses": [],
+      "after": [
+        "s7"
+      ],
+      "active_minutes": 2,
+      "passive_minutes": 27,
+      "method": "bake",
+      "equipment": [
+        "oven",
+        "form_20x20"
+      ],
+      "temp_c": 175,
+      "mode": "top_bottom",
+      "setup": false,
+      "done_when": "Skorpen er matt og sprukket. En pinne i midten kommer ut med fuktige smuler, ikke flytende røre"
+    },
+    {
+      "local_id": "s9",
+      "component_id": "c1",
+      "phase": "cook",
+      "short": "Avkjøl",
+      "text": "La brownien bli helt kald i formen, minst 1 time.",
+      "uses": [],
+      "after": [
+        "s8"
+      ],
+      "active_minutes": 0,
+      "passive_minutes": 60,
+      "holds_minutes": 2880,
+      "method": "cool",
+      "equipment": [
+        "rack"
+      ],
+      "setup": false,
+      "done_when": "Formen er kald på undersiden"
+    },
+    {
+      "local_id": "s10",
+      "component_id": "c1",
+      "phase": "serve",
+      "short": "Skjær i biter",
+      "text": "Løft brownien ut etter bakepapiret og skjær i 16 biter.",
+      "uses": [],
+      "after": [
+        "s9"
+      ],
+      "active_minutes": 3,
+      "passive_minutes": 0,
+      "method": "slice",
+      "equipment": [],
+      "setup": false
+    }
+  ]
+}

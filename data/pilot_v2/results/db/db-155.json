@@ -1,0 +1,523 @@
+{
+  "key": "db-155",
+  "set": "db",
+  "valid": true,
+  "attempts_used": 1,
+  "first_try_valid": true,
+  "failed_rules_any_attempt": [],
+  "model_version": "gemini-3.8-flash",
+  "examples_in_prompt": [
+    "carbonara",
+    "lasagne"
+  ],
+  "tokens": {
+    "prompt_tokens": 7453,
+    "output_tokens": 4009,
+    "thought_tokens": 12280
+  },
+  "cost_usd": 0.052594,
+  "api_seconds": 102.9,
+  "wall_seconds": 103.4,
+  "round1": null,
+  "attempts": [
+    {
+      "attempt": 1,
+      "valid": true,
+      "failed_rules": [],
+      "errors": [],
+      "warnings": [],
+      "model_version": "gemini-3.8-flash",
+      "prompt_tokens": 7453,
+      "output_tokens": 4009,
+      "thought_tokens": 12280,
+      "cost_usd": 0.052594,
+      "seconds": 102.87
+    }
+  ],
+  "source_text": "Title: Lasagna alla Bolognese with meat ragù and creamy béchamel\nServings: 4\n\nIngredients (component | amount unit | name | prep_style | pantry food_id):\n- Meat Ragù | 400 g | beef ground beef |  | 000011\n- Meat Ragù | 200 g | pork ground pork |  | 000035\n- Meat Ragù | 100 g | onion |  | 000111\n- Meat Ragù | 10 g | garlic |  | 000112\n- Meat Ragù | 80 g | carrots |  | 000069\n- Meat Ragù | 80 g | celery |  | 000117\n- Meat Ragù | 800 g | canned tomatoes |  | 000415\n- Meat Ragù | 150 ml | red wine |  | 000572\n- Meat Ragù | 1 pcs | Beef Stock, Cube |  | 000639\n- Meat Ragù | 30 ml | olive oil |  | 000378\n- Meat Ragù | 1 tsp | table salt |  | 000292\n- Meat Ragù | 0.5 tsp | ground black pepper |  | 000285\n- Creamy Béchamel | 50 g | unsalted butter |  | 000212\n- Creamy Béchamel | 50 g | all-purpose flour |  | 000348\n- Creamy Béchamel | 750 ml | whole milk |  | 000182\n- Creamy Béchamel | 0.25 tsp | ground nutmeg |  | 000283\n- Creamy Béchamel | 0.5 tsp | table salt |  | 000292\n- Pasta Assembly | 250 g | lasagna sheets |  | 000327\n- Pasta Assembly | 100 g | parmesan |  | 000196\n\nSteps in order (component | phase | minutes | text):\n1. Meat Ragù | Prep |  | Finely dice the onion, carrot, and celery. Mince the garlic cloves.\n2. Creamy Béchamel | Prep |  | Measure out the butter, flour, and milk. Pre-heat the milk slightly in a separate pan or microwave.\n3. Pasta Assembly | Prep |  | Preheat the oven to 180°C and finely grate the Parmigiano-Reggiano.\n4. Meat Ragù | Cook |  | Heat olive oil in a heavy-bottomed pot over medium heat and sauté the onion, carrot, and celery until softened.\n5. Creamy Béchamel | Cook |  | Melt the unsalted butter in a medium saucepan over medium-low heat.\n6. Pasta Assembly | Prep |  | Lightly grease a rectangular baking dish with butter or oil.\n7. Meat Ragù | Cook |  | Add the ground beef and ground pork. SAFE HANDLING: Ensure raw meat is cooked thoroughly until browned and handle raw juices with care by washing hands and tools immediately.\n8. Creamy Béchamel | Cook |  | Whisk in the all-purpose flour to form a roux and cook for 2 minutes while stirring constantly to avoid browning.\n9. Pasta Assembly | Cook |  | Spread a few spoonfuls of Meat Ragù over the bottom of the dish to prevent the pasta from sticking.\n10. Meat Ragù | Cook |  | Pour in the red wine to deglaze the pot, scraping up any browned bits, and simmer until the liquid is reduced by half.\n11. Creamy Béchamel | Cook |  | Slowly add a small amount of warm milk, whisking vigorously to incorporate and remove any lumps.\n12. Pasta Assembly | Cook |  | Place a layer of lasagna sheets over the sauce, trimming edges if necessary to fit the dish.\n13. Meat Ragù | Cook |  | Add the canned tomatoes and the beef stock cube dissolved in 100ml of hot water.\n14. Creamy Béchamel | Cook |  | Continue adding the milk in stages, whisking continuously until the mixture is smooth and begins to thicken.\n15. Pasta Assembly | Cook |  | Add a layer of ragù, followed by a layer of Creamy Béchamel, and a sprinkle of Parmigiano-Reggiano.\n16. Meat Ragù | Cook |  | Stir in the minced garlic, salt, and black pepper. Lower the heat and simmer gently for at least 90 minutes.\n17. Creamy Béchamel | Cook |  | Simmer the sauce for 5-7 minutes until it reaches a velvety, coat-the-back-of-a-spoon consistency.\n18. Pasta Assembly | Cook |  | Repeat the layers (pasta, ragù, béchamel, cheese) until all ingredients are used, ending with a final layer of béchamel.\n19. Meat Ragù | Cook |  | Check the ragù consistency; it should be thick and rich. Adjust seasoning if necessary.\n20. Creamy Béchamel | Cook |  | Season with ground nutmeg and salt. Remove from heat.\n21. Pasta Assembly | Cook |  | Top generously with the remaining Parmigiano-Reggiano to create a golden crust.\n22. Meat Ragù | Serve |  | Keep warm until ready to assemble the lasagna layers.\n23. Creamy Béchamel | Prep |  | Cover the surface with plastic wrap to prevent a skin from forming as it cools slightly.\n24. Pasta Assembly | Cook |  | Bake in the preheated oven for 30-40 minutes until the top is bubbling and deep golden brown.\n25. Pasta Assembly | Serve |  | Remove from the oven and let rest for 15 minutes before slicing to ensure the layers stay intact.",
+  "recipe": {
+    "title": "Lasagna alla Bolognese with meat ragù and creamy béchamel",
+    "servings": 4,
+    "components": [
+      {
+        "local_id": "c1",
+        "name": "Meat Ragù"
+      },
+      {
+        "local_id": "c2",
+        "name": "Creamy Béchamel"
+      },
+      {
+        "local_id": "c3",
+        "name": "Pasta Assembly"
+      }
+    ],
+    "ingredients": [
+      {
+        "local_id": "i1",
+        "component_id": "c1",
+        "name": "beef ground beef",
+        "amount": 400.0,
+        "unit": "g",
+        "pantry_id": "000011"
+      },
+      {
+        "local_id": "i2",
+        "component_id": "c1",
+        "name": "pork ground pork",
+        "amount": 200.0,
+        "unit": "g",
+        "pantry_id": "000035"
+      },
+      {
+        "local_id": "i3",
+        "component_id": "c1",
+        "name": "onion",
+        "amount": 100.0,
+        "unit": "g",
+        "pantry_id": "000111"
+      },
+      {
+        "local_id": "i4",
+        "component_id": "c1",
+        "name": "garlic",
+        "amount": 10.0,
+        "unit": "g",
+        "pantry_id": "000112"
+      },
+      {
+        "local_id": "i5",
+        "component_id": "c1",
+        "name": "carrots",
+        "amount": 80.0,
+        "unit": "g",
+        "pantry_id": "000069"
+      },
+      {
+        "local_id": "i6",
+        "component_id": "c1",
+        "name": "celery",
+        "amount": 80.0,
+        "unit": "g",
+        "pantry_id": "000117"
+      },
+      {
+        "local_id": "i7",
+        "component_id": "c1",
+        "name": "canned tomatoes",
+        "amount": 800.0,
+        "unit": "g",
+        "pantry_id": "000415"
+      },
+      {
+        "local_id": "i8",
+        "component_id": "c1",
+        "name": "red wine",
+        "amount": 150.0,
+        "unit": "ml",
+        "pantry_id": "000572"
+      },
+      {
+        "local_id": "i9",
+        "component_id": "c1",
+        "name": "Beef Stock, Cube",
+        "amount": 1.0,
+        "unit": "piece",
+        "pantry_id": "000639"
+      },
+      {
+        "local_id": "i10",
+        "component_id": "c1",
+        "name": "olive oil",
+        "amount": 30.0,
+        "unit": "ml",
+        "pantry_id": "000378"
+      },
+      {
+        "local_id": "i11",
+        "component_id": "c1",
+        "name": "table salt",
+        "amount": 1.0,
+        "unit": "tsp",
+        "pantry_id": "000292"
+      },
+      {
+        "local_id": "i12",
+        "component_id": "c1",
+        "name": "ground black pepper",
+        "amount": 0.5,
+        "unit": "tsp",
+        "pantry_id": "000285"
+      },
+      {
+        "local_id": "i13",
+        "component_id": "c2",
+        "name": "unsalted butter",
+        "amount": 50.0,
+        "unit": "g",
+        "pantry_id": "000212"
+      },
+      {
+        "local_id": "i14",
+        "component_id": "c2",
+        "name": "all-purpose flour",
+        "amount": 50.0,
+        "unit": "g",
+        "pantry_id": "000348"
+      },
+      {
+        "local_id": "i15",
+        "component_id": "c2",
+        "name": "whole milk",
+        "amount": 750.0,
+        "unit": "ml",
+        "pantry_id": "000182"
+      },
+      {
+        "local_id": "i16",
+        "component_id": "c2",
+        "name": "ground nutmeg",
+        "amount": 0.25,
+        "unit": "tsp",
+        "pantry_id": "000283"
+      },
+      {
+        "local_id": "i17",
+        "component_id": "c2",
+        "name": "table salt",
+        "amount": 0.5,
+        "unit": "tsp",
+        "pantry_id": "000292"
+      },
+      {
+        "local_id": "i18",
+        "component_id": "c3",
+        "name": "lasagna sheets",
+        "amount": 250.0,
+        "unit": "g",
+        "pantry_id": "000327"
+      },
+      {
+        "local_id": "i19",
+        "component_id": "c3",
+        "name": "parmesan",
+        "amount": 100.0,
+        "unit": "g",
+        "pantry_id": "000196"
+      }
+    ],
+    "steps": [
+      {
+        "local_id": "s1",
+        "component_id": "c3",
+        "phase": "cook",
+        "short": "Preheat the oven",
+        "text": "Preheat the oven to 180°C.",
+        "uses": [],
+        "after": [],
+        "active_minutes": 1,
+        "passive_minutes": 15,
+        "method": "preheat",
+        "equipment": [
+          "oven"
+        ],
+        "temp_c": 180,
+        "mode": "top_bottom",
+        "setup": true,
+        "done_when": "The oven has reached 180°C"
+      },
+      {
+        "local_id": "s2",
+        "component_id": "c3",
+        "phase": "prep",
+        "short": "Grate the parmesan",
+        "text": "Finely grate {i19}.",
+        "uses": [
+          "i19"
+        ],
+        "after": [],
+        "active_minutes": 3,
+        "passive_minutes": 0,
+        "holds_minutes": 60,
+        "method": "grate",
+        "equipment": [
+          "grater"
+        ],
+        "setup": false,
+        "done_when": "Finely and evenly grated"
+      },
+      {
+        "local_id": "s3",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Chop the vegetables",
+        "text": "Finely dice {i3}, {i5}, and {i6}. Mince {i4}.",
+        "uses": [
+          "i3",
+          "i5",
+          "i6",
+          "i4"
+        ],
+        "after": [],
+        "active_minutes": 10,
+        "passive_minutes": 0,
+        "holds_minutes": 120,
+        "method": "chop",
+        "equipment": [
+          "cutting_board",
+          "knife"
+        ],
+        "setup": false,
+        "done_when": "Vegetables are finely and evenly diced"
+      },
+      {
+        "local_id": "s4",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Sauté the vegetables",
+        "text": "Heat {i10} in a heavy-bottomed pot over medium heat and sauté the diced onion, carrot, and celery until softened.",
+        "uses": [
+          "i10"
+        ],
+        "after": [
+          "s3"
+        ],
+        "active_minutes": 6,
+        "passive_minutes": 0,
+        "method": "saute",
+        "equipment": [
+          "dutch_oven"
+        ],
+        "mode": "medium",
+        "setup": false,
+        "done_when": "Vegetables are soft and translucent, without browning"
+      },
+      {
+        "local_id": "s5",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Brown the meat",
+        "text": "Add {i1} and {i2} to the pot. Cook thoroughly until browned, breaking up any clumps.",
+        "uses": [
+          "i1",
+          "i2"
+        ],
+        "after": [
+          "s4"
+        ],
+        "active_minutes": 8,
+        "passive_minutes": 0,
+        "method": "sear",
+        "equipment": [
+          "dutch_oven"
+        ],
+        "mode": "medium_high",
+        "setup": false,
+        "done_when": "Meat is browned and no longer pink"
+      },
+      {
+        "local_id": "s6",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Deglaze with wine",
+        "text": "Pour in {i8} to deglaze the pot, scraping up any browned bits from the bottom, and simmer until the liquid is reduced by half.",
+        "uses": [
+          "i8"
+        ],
+        "after": [
+          "s5"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 4,
+        "method": "reduce",
+        "equipment": [
+          "dutch_oven"
+        ],
+        "mode": "medium",
+        "setup": false,
+        "done_when": "Wine is reduced by half and the alcohol smell has dissipated"
+      },
+      {
+        "local_id": "s7",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Simmer the ragù",
+        "text": "Add {i7}, {i9} dissolved in 100ml hot water, the minced garlic, {i11}, and {i12}. Lower the heat and simmer gently for at least 90 minutes until thick and rich.",
+        "uses": [
+          "i7",
+          "i9",
+          "i11",
+          "i12"
+        ],
+        "after": [
+          "s6",
+          "s3"
+        ],
+        "active_minutes": 5,
+        "passive_minutes": 90,
+        "holds_minutes": 180,
+        "method": "simmer",
+        "equipment": [
+          "dutch_oven"
+        ],
+        "mode": "low",
+        "setup": false,
+        "done_when": "Ragù is thick, rich, and fragrant"
+      },
+      {
+        "local_id": "s8",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Warm the milk",
+        "text": "Warm {i15} slightly in a saucepan or microwave.",
+        "uses": [
+          "i15"
+        ],
+        "after": [],
+        "active_minutes": 2,
+        "passive_minutes": 2,
+        "holds_minutes": 30,
+        "method": "warm",
+        "equipment": [
+          "saucepan"
+        ],
+        "mode": "medium_low",
+        "setup": false,
+        "done_when": "Milk is warm to the touch, not boiling"
+      },
+      {
+        "local_id": "s9",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Cook the roux",
+        "text": "Melt {i13} in a saucepan over medium-low heat. Whisk in {i14} and cook for 2 minutes while stirring constantly.",
+        "uses": [
+          "i13",
+          "i14"
+        ],
+        "after": [],
+        "active_minutes": 3,
+        "passive_minutes": 0,
+        "method": "saute",
+        "equipment": [
+          "saucepan",
+          "whisk"
+        ],
+        "mode": "medium_low",
+        "setup": false,
+        "done_when": "Roux is bubbly and smooth, without browning"
+      },
+      {
+        "local_id": "s10",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Simmer the béchamel",
+        "text": "Slowly add the warm milk in stages, whisking continuously to remove lumps. Simmer for 5–7 minutes until smooth and velvety.",
+        "uses": [],
+        "after": [
+          "s9",
+          "s8"
+        ],
+        "active_minutes": 6,
+        "passive_minutes": 2,
+        "method": "simmer",
+        "equipment": [
+          "saucepan",
+          "whisk"
+        ],
+        "mode": "medium_low",
+        "setup": false,
+        "done_when": "Thick and velvety, coats the back of a spoon"
+      },
+      {
+        "local_id": "s11",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Season the béchamel",
+        "text": "Season the béchamel with {i16} and {i17}. Cover the surface directly with plastic wrap to prevent a skin from forming.",
+        "uses": [
+          "i16",
+          "i17"
+        ],
+        "after": [
+          "s10"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "holds_minutes": 60,
+        "method": "season",
+        "equipment": [
+          "saucepan",
+          "plastic_wrap"
+        ],
+        "setup": false,
+        "done_when": "Smooth and evenly seasoned"
+      },
+      {
+        "local_id": "s12",
+        "component_id": "c3",
+        "phase": "prep",
+        "short": "Assemble the lasagna",
+        "text": "Lightly grease a rectangular baking dish. Spread a few spoonfuls of ragù over the bottom, then layer {i18}, ragù, béchamel, and the grated parmesan. Repeat the layers, ending with béchamel, and top with the remaining grated parmesan.",
+        "uses": [
+          "i18"
+        ],
+        "after": [
+          "s7",
+          "s11",
+          "s2"
+        ],
+        "active_minutes": 10,
+        "passive_minutes": 0,
+        "holds_minutes": 60,
+        "method": "assemble",
+        "equipment": [
+          "ovenproof_dish"
+        ],
+        "setup": false,
+        "done_when": "Evenly layered and covered with béchamel and parmesan"
+      },
+      {
+        "local_id": "s13",
+        "component_id": "c3",
+        "phase": "cook",
+        "short": "Bake the lasagna",
+        "text": "Bake in the preheated oven for 30–40 minutes until bubbling and deep golden brown.",
+        "uses": [],
+        "after": [
+          "s12"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 35,
+        "method": "bake",
+        "equipment": [
+          "oven"
+        ],
+        "temp_c": 180,
+        "mode": "top_bottom",
+        "setup": false,
+        "done_when": "The top is bubbling and deep golden brown"
+      },
+      {
+        "local_id": "s14",
+        "component_id": "c3",
+        "phase": "serve",
+        "short": "Rest and serve",
+        "text": "Remove from the oven and let rest for 15 minutes before slicing and serving.",
+        "uses": [],
+        "after": [
+          "s13"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 15,
+        "method": "serve",
+        "equipment": [
+          "knife",
+          "serving_dish"
+        ],
+        "setup": false,
+        "done_when": "Lasagna is set and slices hold their shape cleanly"
+      }
+    ]
+  }
+}
