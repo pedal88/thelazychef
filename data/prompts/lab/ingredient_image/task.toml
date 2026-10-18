@@ -5,3 +5,11 @@ kind = "image"
 model = "GEMINI_IMAGE"          # constant in services/ai_models.py
 layers = ["brief", "style", "category", "item"]
 join = " "
+
+# The variants the app and the batch use (chosen 18.10.2026 after round 5).
+# Change them here, try the change in the lab first, then regenerate.
+[final]
+brief = "default"
+style = "vector_textured"
+category = "sub"
+item = "default"

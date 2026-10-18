@@ -14,7 +14,8 @@ old name as an alias. Recipe nutrition totals are not recalculated here;
 the recipes are regenerated in v2 anyway.
 
 Every ID is checked against the name it had in the export first. If one
-differs, the migration stops and nothing is changed (one transaction).
+differs, the migration stops and nothing is changed (one transaction). A
+database with none of these ingredients (a fresh install) is skipped.
 
 Downgrade does nothing. Restore the Cloud SQL backup taken before the
 deploy to undo this.
@@ -226,6 +227,11 @@ def upgrade():
     now = datetime.datetime.utcnow()
 
     current = dict(run("SELECT id, name FROM ingredient WHERE id = ANY(:ids)", ids=list(EXPECTED_NAMES)).all())
+    if not current:
+        # A database without the production pantry (a fresh install or a test
+        # database built from the migrations): nothing to clean up.
+        print("Pantry cleanup: none of the production ingredients exist, skipping")
+        return
     wrong = {i: (n, current.get(i)) for i, n in EXPECTED_NAMES.items() if current.get(i) != n}
     if wrong:
         raise RuntimeError(f"Pantry changed since the export, nothing applied: {wrong}")

@@ -135,6 +135,13 @@ class Ingredient(db.Model):
     image_url: Mapped[str] = mapped_column(String, nullable=True)
     has_transparent_image: Mapped[bool] = mapped_column(Boolean, default=False, server_default='0')
     image_prompt: Mapped[str] = mapped_column(Text, nullable=True)
+    # Ingredient symbol inputs (services/ingredient_symbols.py). image_form
+    # replaces the sub-category rule for ingredients that do not fit it
+    # ("one unwrapped stock cube, no container"); image_notes adds details
+    # ("pale pink, clearly poultry, not salmon"). image_prompt keeps the
+    # prompt the current image was made with.
+    image_form: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    image_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     data_source: Mapped[str] = mapped_column(String(50), nullable=False, default='placeholder', server_default='placeholder')
 
     # AI Embedding (768 dimensions for Google models)
