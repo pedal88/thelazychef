@@ -1,26 +1,62 @@
 # notes go into the item layer: what makes this ingredient look right.
 default = [
-  { name = "chicken breast", main_category = "meat", notes = "Pale pink raw chicken breast with visible natural muscle grain and texture, clearly poultry, not salmon or pork." },
-  { name = "salmon fillet", main_category = "fish and seafood", notes = "Bright orange-pink raw salmon fillet with white fat lines." },
-  { name = "garlic", main_category = "vegetables", notes = "A whole garlic bulb with one loose clove." },
-  { name = "garlic powder", main_category = "spices and herbs", notes = "Fine pale beige powder, not cloves." },
-  { name = "star anise", main_category = "spices and herbs", notes = "Two or three whole star-shaped pods." },
-  { name = "soy sauce", main_category = "sauces and condiments", notes = "Very dark brown thin liquid." },
-  { name = "coconut milk", main_category = "canned and preserved", notes = "One closed can of coconut milk with a coconut on the label. No pouring, no loose coconuts." },
-  { name = "basil", main_category = "spices and herbs", notes = "A small bunch of fresh green leaves." },
-  { name = "eggs", main_category = "dairy and egg", notes = "Two whole brown eggs with clean, smooth, evenly colored shells, no spots or speckles." },
-  { name = "olive oil", main_category = "fats and oils", notes = "A small glass bottle of golden green olive oil, nothing next to it." },
-  { name = "parmesan", main_category = "dairy and egg", notes = "A wedge of hard aged cheese with rind." },
-  { name = "banana", main_category = "fruit and fruit products", notes = "One whole unpeeled yellow banana." },
+  { name = "chicken breast", main_category = "meat", sub_category = "chicken", notes = "Pale pink raw chicken breast with visible natural muscle grain and texture, clearly poultry, not salmon or pork." },
+  { name = "salmon fillet", main_category = "fish and seafood", sub_category = "salmon", notes = "Bright orange-pink raw salmon fillet with white fat lines." },
+  { name = "garlic", main_category = "vegetables", sub_category = "bulb vegetables", notes = "A whole garlic bulb with one loose clove." },
+  { name = "garlic powder", main_category = "spices and herbs", sub_category = "ground spices", notes = "Fine pale beige powder, not cloves." },
+  { name = "star anise", main_category = "spices and herbs", sub_category = "whole spices", notes = "Two or three whole star-shaped pods." },
+  { name = "soy sauce", main_category = "sauces and condiments", sub_category = "asian-style sauces", notes = "Very dark brown thin liquid." },
+  { name = "coconut milk", main_category = "canned and preserved", sub_category = "milk and milk alternatives", notes = "One closed can of coconut milk with a coconut on the label. No pouring, no loose coconuts." },
+  { name = "basil", main_category = "spices and herbs", sub_category = "fresh herbs", notes = "A small bunch of fresh green leaves." },
+  { name = "eggs", main_category = "dairy and egg", sub_category = "eggs", notes = "Two whole brown eggs, both clearly oval and egg-shaped (not round), with clean, smooth, evenly colored shells and no spots." },
+  { name = "olive oil", main_category = "fats and oils", sub_category = "cooking oils", notes = "A small glass bottle of golden green olive oil, nothing next to it." },
+  { name = "parmesan", main_category = "dairy and egg", sub_category = "cheese", notes = "A wedge of hard aged cheese with rind." },
+  { name = "banana", main_category = "fruit and fruit products", sub_category = "tropical fruits", notes = "One whole unpeeled yellow banana." },
 ]
 
 # The five items from the old Style Center sandbox, with the names it used, so
 # results compare one to one with its images (export in
 # ~/Documents/thelazychef-exports/style_sandbox_run_2026-10-18.csv on the Mac mini).
 style_center = [
-  { name = "Banana", main_category = "fruit and fruit products", notes = "" },
-  { name = "Chicken Filet", main_category = "meat", notes = "" },
-  { name = "Canned Coconut Milk", main_category = "canned and preserved", notes = "" },
-  { name = "Salmon Steak", main_category = "fish and seafood", notes = "" },
-  { name = "Fresh Basil", main_category = "spices and herbs", notes = "" },
+  { name = "Banana", main_category = "fruit and fruit products", sub_category = "tropical fruits", notes = "" },
+  { name = "Chicken Filet", main_category = "meat", sub_category = "", notes = "" },
+  { name = "Canned Coconut Milk", main_category = "canned and preserved", sub_category = "other", notes = "" },
+  { name = "Salmon Steak", main_category = "fish and seafood", sub_category = "", notes = "" },
+  { name = "Fresh Basil", main_category = "spices and herbs", sub_category = "", notes = "" },
+]
+
+# Two of the most used ingredients per category (after the 18.10 cleanup), with no
+# notes: most of the 654 will be generated without notes, so this shows whether
+# the style holds without hand-holding.
+pantry = [
+  { name = "red wine", main_category = "alcoholic beverages", sub_category = "wine", notes = "" },
+  { name = "cognac", main_category = "alcoholic beverages", sub_category = "spirits / liquor", notes = "" },
+  { name = "tortilla", main_category = "bakery and bread", sub_category = "flatbreads", notes = "" },
+  { name = "pita", main_category = "bakery and bread", sub_category = "flatbreads", notes = "" },
+  { name = "all-purpose flour", main_category = "baking ingredients", sub_category = "flour", notes = "" },
+  { name = "brown sugar", main_category = "baking ingredients", sub_category = "sugar", notes = "" },
+  { name = "canned tomatoes", main_category = "canned and preserved", sub_category = "canned vegetables", notes = "" },
+  { name = "pickled cucumbers (dill pickles)", main_category = "canned and preserved", sub_category = "pickled foods", notes = "" },
+  { name = "white rice", main_category = "cereal grains and pasta", sub_category = "refined grains", notes = "" },
+  { name = "oats", main_category = "cereal grains and pasta", sub_category = "whole grains", notes = "" },
+  { name = "salted butter", main_category = "dairy and egg", sub_category = "butter and spreads", notes = "" },
+  { name = "whole milk", main_category = "dairy and egg", sub_category = "milk and milk alternatives", notes = "" },
+  { name = "butter", main_category = "fats and oils", sub_category = "animal fats", notes = "" },
+  { name = "canola oil", main_category = "fats and oils", sub_category = "cooking oils", notes = "" },
+  { name = "shrimps", main_category = "fish and seafood", sub_category = "shrimps", notes = "" },
+  { name = "scampi", main_category = "fish and seafood", sub_category = "scampi", notes = "" },
+  { name = "lemon", main_category = "fruit and fruit products", sub_category = "citrus fruits", notes = "" },
+  { name = "lime", main_category = "fruit and fruit products", sub_category = "citrus fruits", notes = "" },
+  { name = "bacon", main_category = "meat", sub_category = "pork", notes = "" },
+  { name = "ground beef", main_category = "meat", sub_category = "beef", notes = "Lean minced beef, deep red with only small specks of fat." },
+  { name = "water", main_category = "non-alcoholic beverages", sub_category = "water", notes = "" },
+  { name = "sparkling water", main_category = "non-alcoholic beverages", sub_category = "water", notes = "" },
+  { name = "sesame seeds", main_category = "nuts and seeds", sub_category = "seeds", notes = "" },
+  { name = "walnuts", main_category = "nuts and seeds", sub_category = "nuts", notes = "" },
+  { name = "rice vinegar", main_category = "sauces and condiments", sub_category = "other sauces & condiments", notes = "" },
+  { name = "beef stock cube", main_category = "sauces and condiments", sub_category = "other sauces & condiments", form = "Show one unwrapped dark brown stock cube with nothing else, no container.", notes = "" },
+  { name = "ground black pepper", main_category = "spices and herbs", sub_category = "ground spices", notes = "" },
+  { name = "table salt", main_category = "spices and herbs", sub_category = "salts", notes = "" },
+  { name = "onion", main_category = "vegetables", sub_category = "bulb vegetables", notes = "" },
+  { name = "spring onions", main_category = "vegetables", sub_category = "bulb vegetables", notes = "" },
 ]

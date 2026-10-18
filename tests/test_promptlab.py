@@ -46,6 +46,19 @@ class PromptLabTests(unittest.TestCase):
         self.assertEqual(self.task.compose({}, anise), 'A photo of anise. | Small heap of anise. | Star shaped.')
         self.assertEqual(self.task.compose({'style': 'b'}, milk), 'An icon of milk. | Generic.')
 
+    def test_lookup_tries_fields_in_order(self):
+        (self.lab / 'demo' / 'category' / 'sub.toml').write_text(
+            'by = ["sub", "cat"]\ndefault = "Generic."\n[values]\n"star" = "Whole pods."\n"spice" = "A heap."\n')
+        self.assertEqual(self.task.render_layer('category', 'sub', {'name': 'x', 'sub': 'star', 'cat': 'spice'}), 'Whole pods.')
+        self.assertEqual(self.task.render_layer('category', 'sub', {'name': 'x', 'sub': 'other', 'cat': 'spice'}), 'A heap.')
+        self.assertEqual(self.task.render_layer('category', 'sub', {'name': 'x', 'cat': 'dairy'}), 'Generic.')
+
+    def test_override_field_replaces_the_lookup(self):
+        (self.lab / 'demo' / 'category' / 'sub.toml').write_text(
+            'by = "cat"\noverride = "form"\n[values]\n"spice" = "A heap."\n')
+        self.assertEqual(self.task.render_layer('category', 'sub', {'name': 'x', 'cat': 'spice', 'form': 'One cube.'}), 'One cube.')
+        self.assertEqual(self.task.render_layer('category', 'sub', {'name': 'x', 'cat': 'spice', 'form': ''}), 'A heap.')
+
     def test_combinations_cover_every_variant(self):
         self.assertEqual(combinations(self.task, {}), [{}])
         self.assertEqual(combinations(self.task, {'style': ['default', 'b']}),
