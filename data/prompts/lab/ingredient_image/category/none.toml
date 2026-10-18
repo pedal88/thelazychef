@@ -1,0 +1,3 @@
+# Leaves the category layer out, to see what it adds.
+by = "main_category"
+default = ""

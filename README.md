@@ -78,6 +78,7 @@ Merging to `main` deploys automatically to Google Cloud Run via GitHub Actions. 
 | [README_DEPLOY.md](docs/README_DEPLOY.md) | CI/CD pipeline, secrets, production infrastructure |
 | [README_TOP_COMMANDS.md](docs/README_TOP_COMMANDS.md) | Everyday commands |
 | [PROMPT_ENGINEERING_GUIDE.md](docs/PROMPT_ENGINEERING_GUIDE.md) | How the prompt templates are assembled |
+| [PROMPT_LAB.md](docs/PROMPT_LAB.md) | Compare prompt variants side by side and score them |
 | [INGREDIENT_IMAGES.md](docs/INGREDIENT_IMAGES.md) | Ingredient image pipeline |
 
 `docs/README_CLOUD_DEPLOYMENT.md` holds historical notes from the original manual deployment.
