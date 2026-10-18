@@ -19,8 +19,6 @@ The Lazy Chef is an AI recipe platform. Google Gemini writes structured recipes 
 *   **Ingredient database**: nutrition, synonyms, merging, vector embeddings and AI-generated ingredient images.
 *   **Missing-ingredient resolution**: when the AI uses an ingredient that isn't in the database, a human maps, substitutes or creates it.
 *   **Quality control**: AI evaluator scores recipes; recipes move from `draft` to `approved`.
-*   **Photo studio & style center**: generate, remix and approve dish photography.
-*   **Media hub**: renders social-media image sets, podcasts and videos from recipes.
 
 ## 🚀 How It Works
 
@@ -38,7 +36,7 @@ See [docs/README_TECHNICAL.md](docs/README_TECHNICAL.md) for the architecture.
 ### Prerequisites
 *   **Python 3.13** (the pinned requirements don't install on older versions)
 *   A Google Gemini API key ([AI Studio](https://aistudio.google.com/apikey))
-*   `ffmpeg` (only needed for video import and the media hub)
+*   `ffmpeg` (only needed for video import)
 
 ### Setup
 
@@ -80,7 +78,6 @@ Merging to `main` deploys automatically to Google Cloud Run via GitHub Actions. 
 | [README_DEPLOY.md](docs/README_DEPLOY.md) | CI/CD pipeline, secrets, production infrastructure |
 | [README_TOP_COMMANDS.md](docs/README_TOP_COMMANDS.md) | Everyday commands |
 | [PROMPT_ENGINEERING_GUIDE.md](docs/PROMPT_ENGINEERING_GUIDE.md) | How the prompt templates are assembled |
-| [mediahub.md](docs/mediahub.md) | Media hub / social image rendering |
 | [INGREDIENT_IMAGES.md](docs/INGREDIENT_IMAGES.md) | Ingredient image pipeline |
 
 `docs/README_CLOUD_DEPLOYMENT.md` holds historical notes from the original manual deployment.

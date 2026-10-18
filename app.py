@@ -21,8 +21,6 @@ app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 20 * 1024 * 1024 # 20MB limit
 
 # Register Blueprints
-from routes.studio_routes import prompts_bp
-app.register_blueprint(prompts_bp)
 
 from routes.admin_collections_routes import collections_bp
 app.register_blueprint(collections_bp)
@@ -32,19 +30,6 @@ app.register_blueprint(ingredients_bp)
 
 from routes.queue_routes import queue_bp
 app.register_blueprint(queue_bp)
-
-from routes.media_hub_routes import media_hub_bp
-app.register_blueprint(media_hub_bp)
-
-from routes.admin_tiktok_routes import tiktok_bp
-app.register_blueprint(tiktok_bp)
-
-from routes.admin_concept_routes import admin_concept_bp
-app.register_blueprint(admin_concept_bp)
-
-from routes.admin_style_center import admin_style_center_bp
-app.register_blueprint(admin_style_center_bp)
-
 
 from utils.markdown_extensions import VideoExtension
 
@@ -137,11 +122,6 @@ storage_provider = get_storage_provider(app.root_path)
 print(f"--- STORAGE SYSTEM ACTIVE: {storage_provider.__class__.__name__} ---")
 app.extensions['storage_provider'] = storage_provider
 
-# Inject storage provider into blueprint context
-# Note: Blueprints are registered earlier, but we can attach attributes to the object
-prompts_bp.storage_provider = storage_provider
-media_hub_bp.storage_provider = storage_provider
-
 # Initialize Flask-Login
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -170,8 +150,6 @@ app.register_blueprint(admin_chefs_bp)
 from routes.interactions_routes import interactions_bp
 app.register_blueprint(interactions_bp)
 
-from routes.admin_image_studio_routes import image_studio_bp
-app.register_blueprint(image_studio_bp)
 
 from routes.generate_routes import generate_bp
 app.register_blueprint(generate_bp)

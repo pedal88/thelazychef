@@ -103,7 +103,7 @@ class SmokeTests(unittest.TestCase):
                     response = client.open(url, method=method)
                     self.assertIn(response.status_code, (302, 401, 403),
                                   f"{method} {url} is reachable without logging in")
-        self.assertGreater(checked, 50)
+        self.assertGreater(checked, 40)  # guards against the loop silently checking nothing
 
     def test_regular_user_cannot_call_admin_routes(self):
         client = self._client(self.user_id)
