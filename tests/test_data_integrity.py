@@ -41,7 +41,9 @@ class DataIntegrityTests(unittest.TestCase):
         db.create_all()
 
     def tearDown(self):
+        # Other test modules share the in-memory database; leave it empty.
         db.session.remove()
+        db.drop_all()
         self.ctx.pop()
 
     def _ingredient(self, name, **kw):
