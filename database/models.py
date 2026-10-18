@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, validates
 from sqlalchemy import String, Integer, Boolean, Text, Float, ForeignKey, DateTime, JSON, UniqueConstraint
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -172,6 +172,11 @@ class Ingredient(db.Model):
         "Resource",
         foreign_keys=[primary_resource_id],
     )
+
+    @validates('name')
+    def _normalize_name(self, key, value):
+        """Names are stored in lower case with single spaces; views decide the casing."""
+        return " ".join(value.split()).lower() if value else value
 
     @property
     def aliases(self) -> list[str]:
