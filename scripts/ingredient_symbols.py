@@ -215,8 +215,9 @@ textarea{{width:100%;box-sizing:border-box;margin-top:6px;font:inherit;display:n
 <header><strong>{run}</strong><span id="count"></span>
 <label><input type="checkbox" id="onlyRejected"> only rejected</label>
 <button id="export">Export decisions</button></header>
-<p class="hint">Everything starts approved. Reject the wrong ones and say what is wrong: the note goes into the
-prompt when they are made again, and into image_notes. Then export and run decide.</p>
+<p class="hint">Everything starts approved. Reject the wrong ones and write what the image should show, as an
+instruction ("Show one can, nothing next to it"), not what went wrong: the note is added to the prompt when they are
+made again, and saved in image_notes. Then export and run decide.</p>
 <div class="grid">{cards}</div>
 <script>
 const RUN = {run_json};
@@ -266,7 +267,7 @@ def review(run: Path) -> Path:
             f'<h3>{esc(e["name"])}</h3><div class="cat">{esc(e.get("main_category") or "")} / '
             f'{esc(e.get("sub_category") or "")}</div>{notes}'
             f'<button data-toggle>{"Approve" if failed else "Reject"}</button>'
-            f'<textarea rows="2" placeholder="What is wrong?"></textarea></div>')
+            f'<textarea rows="2" placeholder="What should it show? e.g. Show one can, nothing next to it."></textarea></div>')
     path = run / 'review.html'
     path.write_text(REVIEW.format(run=esc(run.name), run_json=json.dumps(run.name), cards=''.join(cards)))
     print(f"{len(cards)} to review")
