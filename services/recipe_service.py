@@ -447,7 +447,7 @@ def delete_recipes(recipe_ids: list[int]) -> int:
     """Delete recipes and everything that belongs to them. Returns the count.
 
     The ORM cascades on Recipe remove every child row (lines, steps, diets,
-    evaluations, queue items, collection items, interactions, social posts).
+    evaluations, queue items, collection items, interactions).
     Ingredients that use a deleted recipe as their sub-recipe lose the link.
     """
     from sqlalchemy import update

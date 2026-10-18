@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy import String, Integer, Boolean, Text, Float, ForeignKey, DateTime, JSON, Index, UniqueConstraint
+from sqlalchemy import String, Integer, Boolean, Text, Float, ForeignKey, DateTime, JSON, UniqueConstraint
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
@@ -61,30 +61,6 @@ class VisualStyleGuide(db.Model):
     base_wrapper: Mapped[str] = mapped_column(Text, nullable=False)
     negative_prompt: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     remove_background: Mapped[bool] = mapped_column(Boolean, default=False, server_default='0')
-
-class StyleSandboxRun(db.Model):
-    """Stores the test generation results for the style matrix."""
-    __tablename__ = 'style_sandbox_run'
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    scope: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
-    preset_name: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
-    test_item: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
-    image_url: Mapped[str] = mapped_column(String(500), nullable=False)
-    prompt_used: Mapped[str] = mapped_column(Text, nullable=False)
-    model_used: Mapped[str] = mapped_column(String(100), nullable=False)
-    timestamp: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)
-
-class StyleSandboxPreset(db.Model):
-    """Dynamically manageable AI generation presets for the Style Sandbox."""
-    __tablename__ = 'style_sandbox_preset'
-    __table_args__ = (
-        UniqueConstraint('scope', 'name', name='uq_style_sandbox_preset_scope_name'),
-    )
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    scope: Mapped[str] = mapped_column(String(100), index=True, nullable=False, default='ingredient', server_default='ingredient')
-    name: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
-    prompt: Mapped[str] = mapped_column(Text, nullable=False)
-    order_index: Mapped[int] = mapped_column(Integer, default=0, server_default='0')
 
 
 class Resource(db.Model):
@@ -221,7 +197,6 @@ class IngredientEvaluation(db.Model):
     ingredient: Mapped["Ingredient"] = relationship(back_populates="evaluation")
 
 
-
 class Chef(db.Model):
     __tablename__ = 'chef'
     id: Mapped[str] = mapped_column(String, primary_key=True) # e.g. "french_classic"
@@ -330,7 +305,6 @@ class Recipe(db.Model):
     interactions: Mapped[list["UserRecipeInteraction"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
     collections: Mapped[list["CollectionItem"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
     queue_items: Mapped[list["UserQueue"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
-    social_posts: Mapped[list["SocialMediaPost"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
 
 class Instruction(db.Model):
     __tablename__ = 'instruction'
@@ -495,52 +469,13 @@ class UserLink(db.Model):
 # Social Media Content Generation (Media Hub)
 # ---------------------------------------------------------------------------
 
-class SocialMediaPost(db.Model):
-    """Tracks AI-generated social media content per recipe × platform."""
-    __tablename__ = 'social_media_post'
-    __table_args__ = (
-        UniqueConstraint('recipe_id', 'platform', 'template_name', name='uq_social_recipe_platform_template'),
-    )
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    recipe_id: Mapped[int] = mapped_column(ForeignKey('recipe.id'), nullable=False, index=True)
-    platform: Mapped[str] = mapped_column(String(20), nullable=False)  # 'tiktok' | 'instagram'
-    status: Mapped[str] = mapped_column(String(20), default='pending', nullable=False)  # pending | generating | ready | failed
-    template_name: Mapped[str] = mapped_column(String(100), nullable=False)  # e.g. 'tiktok_persona.jinja2'
-    voiceover_script: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    video_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
-    error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)
-
-    recipe: Mapped["Recipe"] = relationship(back_populates="social_posts")
 
 # ---------------------------------------------------------------------------
 # Sequence Templates (Media Hub)
 # ---------------------------------------------------------------------------
 
-class SequenceTemplate(db.Model):
-    """Stores reusable timeline sequence configurations for Media Hub."""
-    __tablename__ = 'sequence_template'
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
-    # JSON array of strings e.g. ["hero", "hook-social", "steps", "end"]
-    fragments_sequence: Mapped[list[str]] = mapped_column(JSON, default=list, server_default='[]')
-    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)
 
 # ---------------------------------------------------------------------------
 # TikTok Source Sidecar
 # ---------------------------------------------------------------------------
 
-class TikTokSource(db.Model):
-    """Stores raw extracted data from arbitrary TikTok URLs (Recipe vs Resource triage)"""
-    __tablename__ = 'tiktok_source'
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    tiktok_url: Mapped[str] = mapped_column(String(500), unique=True, index=True, nullable=False)
-    dish_name: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
-    entity_type: Mapped[str] = mapped_column(String(50), default='NO_MATCH', server_default='NO_MATCH', nullable=False) # 'RECIPE', 'RESOURCE', 'NO_MATCH'
-    format_type: Mapped[str] = mapped_column(String(50), default='UNKNOWN', server_default='UNKNOWN', nullable=False) # 'VIDEO', 'CAROUSEL_IMAGE', 'UNKNOWN'
-    status: Mapped[str] = mapped_column(String(50), default='SUGGESTED', server_default='SUGGESTED', nullable=False) # 'SUGGESTED', 'IGNORED', 'IMPORTED'
-    raw_caption: Mapped[Optional[str]] = mapped_column(Text, nullable=True) # The raw scraped text
-    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)

@@ -75,9 +75,7 @@ Gemini errors are mapped to user-safe messages by `utils/ai_errors.friendly_ai_e
 | `User`, `UserRecipeInteraction`, `UserQueue` | Accounts (`is_admin`), favorites / made / feedback, personal queue |
 | `RecipeCollection`, `CollectionItem` | Curated collections |
 | `Resource` | Blog-style articles |
-| `SocialMediaPost`, `SequenceTemplate`, `TikTokSource` | Unused since the media hub and TikTok sidecar were removed. Tables are dropped in a later migration |
 | `VisualStyleGuide`, `ConceptVisual` | Style rules for ingredient images, and icons for the explore pages |
-| `StyleSandboxRun`, `StyleSandboxPreset` | Unused since the style center was removed. Tables are dropped in a later migration |
 
 Schema changes: `flask db migrate -m "..."`, review the file in `migrations/versions/`, and commit it. Production runs `flask db upgrade` as part of each deploy.
 
