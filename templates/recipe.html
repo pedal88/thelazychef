@@ -44,19 +44,6 @@
                 class="px-3 h-10 bg-black/50 hover:bg-black/70 backdrop-blur text-white text-xs font-bold rounded-full flex items-center justify-center transition-all shadow-sm">
                 <span id="comp-gen-text">📸 Components</span>
             </button>
-            <a href="{{ url_for('recipe_image_generation_view', recipe_id=recipe.id) }}"
-                title="{% if recipe.image_filename %}Retake Photo{% else %}Generate Photo{% endif %}"
-                class="h-10 w-10 bg-black/50 hover:bg-black/70 backdrop-blur text-white rounded-full flex items-center justify-center transition-all shadow-sm">
-                {% if recipe.image_filename %}
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
-                    </path>
-                </svg>
-                {% else %}
-                <span class="text-lg">📸</span>
-                {% endif %}
-            </a>
         </div>
         {% endif %}
     </div>

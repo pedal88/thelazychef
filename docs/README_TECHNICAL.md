@@ -10,8 +10,7 @@ The Lazy Chef is a Flask monolith with server-rendered Jinja2 templates (Tailwin
 |---|---|---|
 | Web / routes | `app.py`, `routes/` | `app.py` sets up the app and registers blueprints; every route lives in a blueprint in `routes/` |
 | AI (text) | `ai_engine.py` | All recipe generation / extraction calls to Gemini |
-| Services | `services/` | Recipe workflow, pantry, nutrition, evaluation, photography, scraping, TikTok, storage, podcasts |
-| Media hub | `media_hub/` | Renders social images (Playwright), podcasts (Text-to-Speech) and videos from recipes |
+| Services | `services/` | Recipe workflow, pantry, nutrition, evaluation, photography, scraping, video download, storage |
 | Data | `database/models.py` | SQLAlchemy models; Alembic migrations in `migrations/` |
 | Prompts | `data/prompts/` | Jinja2 prompt templates, assembled at runtime |
 | Vocabularies | `data/constraints/`, `data/post_processing/` | Fixed lists (diets, cuisines, meal types, …) that constrain AI output |
@@ -34,8 +33,6 @@ The Lazy Chef is a Flask monolith with server-rendered Jinja2 templates (Tailwin
 | Recipe / ingredient evaluation | `gemini-flash-latest`, `gemini-2.x-flash` | `services/evaluation_service.py`, `services/ingredient_evaluation_service.py` |
 | Visual prompts & image analysis | `gemini-2.0-flash` | `services/photographer_service.py` |
 | Dish & ingredient images | `imagen-4.0-generate-001`, `imagen-4.0-fast-generate-001` | `services/photographer_service.py`, `services/vertex_image_service.py` |
-| TikTok ingestion, style center | `gemini-2.5-flash` | `services/tiktok_ingestion_service.py`, `routes/admin_style_center.py` |
-| Media hub scripts | `gemini-2.0-flash` | `media_hub/orchestrator.py` |
 
 ## 2. Recipe Generation Flow
 
@@ -77,8 +74,9 @@ Gemini errors are mapped to user-safe messages by `utils/ai_errors.friendly_ai_e
 | `User`, `UserRecipeInteraction`, `UserQueue` | Accounts (`is_admin`), favorites / made / feedback, personal queue |
 | `RecipeCollection`, `CollectionItem` | Curated collections |
 | `Resource` | Blog-style articles |
-| `SocialMediaPost`, `SequenceTemplate`, `TikTokSource` | Media hub and TikTok ingestion |
-| `VisualStyleGuide`, `StyleSandboxRun`, `StyleSandboxPreset`, `ConceptVisual` | Photo style center |
+| `SocialMediaPost`, `SequenceTemplate`, `TikTokSource` | Unused since the media hub and TikTok sidecar were removed. Tables are dropped in a later migration |
+| `VisualStyleGuide`, `ConceptVisual` | Style rules for ingredient images, and icons for the explore pages |
+| `StyleSandboxRun`, `StyleSandboxPreset` | Unused since the style center was removed. Tables are dropped in a later migration |
 
 Schema changes: `flask db migrate -m "..."`, review the file in `migrations/versions/`, and commit it. Production runs `flask db upgrade` as part of each deploy.
 

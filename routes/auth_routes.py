@@ -11,7 +11,7 @@ auth_bp = FlatBlueprint("auth", __name__)
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-         return redirect(url_for('studio_view') if current_user.is_admin else url_for('recipes_list'))
+         return redirect(url_for('new_recipe') if current_user.is_admin else url_for('recipes_list'))
     
     if request.method == 'POST':
         email = request.form.get('email')
@@ -23,7 +23,7 @@ def login():
             next_page = request.args.get('next')
             # Intelligent Redirect based on Role
             if not next_page:
-                next_page = url_for('studio_view') if user.is_admin else url_for('recipes_list')
+                next_page = url_for('new_recipe') if user.is_admin else url_for('recipes_list')
             return redirect(next_page)
         
         flash('Invalid email or password', 'error')

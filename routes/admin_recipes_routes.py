@@ -6,7 +6,7 @@ from flask_login import login_required
 from sqlalchemy import func, or_
 from sqlalchemy.orm import joinedload
 
-from ai_engine import generate_recipe_ai, load_controlled_vocabularies
+from ai_engine import load_controlled_vocabularies
 from database.models import (
     CollectionItem,
     Instruction,
@@ -20,8 +20,6 @@ from database.models import (
     db,
 )
 from routes._flat import FlatBlueprint
-from services.pantry_service import get_slim_pantry_context
-from services.recipe_service import process_recipe_workflow
 from utils.decorators import admin_required
 
 admin_recipes_bp = FlatBlueprint("admin_recipes", __name__)
@@ -199,106 +197,6 @@ def clone_recipe_api(recipe_id: int):
     except Exception as e:
         db.session.rollback()
         print(f"Error cloning recipe: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-
-@admin_recipes_bp.route('/admin/bulk-generate')
-@login_required
-@admin_required
-def bulk_generate_view():
-    return render_template('admin/bulk_generate.html')
-
-@admin_recipes_bp.route('/admin/api/generate-single-idea', methods=['POST'])
-@login_required
-@admin_required
-def api_generate_single_idea():
-    data = request.get_json()
-    if not data or not data.get('idea'):
-        return jsonify({'success': False, 'error': 'No idea provided'}), 400
-        
-    query = data.get('idea')
-    chef_id = data.get('chef_id', 'gourmet')
-    
-    try:
-        pantry_context = get_slim_pantry_context()
-        clean_context = pantry_context
-
-        recipe_data = generate_recipe_ai(query, clean_context, chef_id=chef_id)
-        result = process_recipe_workflow(recipe_data, query_context=query, chef_id=chef_id)
-        
-        if result.get('status') == 'SUCCESS':
-            return jsonify({
-                'success': True,
-                'recipe_id': result['recipe_id'],
-                'recipe_title': recipe_data.title
-            })
-        else:
-            missing_names = [m['name'] for m in result.get('missing_ingredients', [])]
-            return jsonify({
-                'success': False, 
-                'error': f"Missing ingredients: {', '.join(missing_names)}"
-            })
-            
-    except Exception as e:
-        db.session.rollback()
-        import traceback; traceback.print_exc()
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-
-@admin_recipes_bp.route('/admin/api/generate-single-url', methods=['POST'])
-@login_required
-@admin_required
-def api_generate_single_url():
-    data = request.get_json()
-    if not data or not data.get('url'):
-        return jsonify({'success': False, 'error': 'No URL provided'}), 400
-        
-    url = data.get('url')
-    chef_id = data.get('chef_id', 'gourmet')
-    
-    try:
-        from services.social_media_service import SocialMediaExtractor
-        from ai_engine import generate_recipe_from_video
-
-        # Download video to temporary storage
-        extract_result = SocialMediaExtractor.download_video(url)
-        video_path = extract_result['video_path']
-        caption = extract_result.get('caption', '')
-        
-        try:
-            pantry_context = get_slim_pantry_context()
-            clean_context = pantry_context
-
-            # Generate via video pipeline
-            recipe_data = generate_recipe_from_video(video_path, caption, clean_context)
-            
-            # The URL uniquely identifies this for the frontend as a Social Web Link
-            result = process_recipe_workflow(
-                recipe_data, 
-                query_context=url, 
-                chef_id=chef_id,
-                source_thumbnail_path=extract_result.get('thumbnail_path')
-            )
-            
-            if result.get('status') == 'SUCCESS':
-                return jsonify({
-                    'success': True,
-                    'recipe_id': result['recipe_id'],
-                    'recipe_title': recipe_data.title
-                })
-            else:
-                missing_names = [m['name'] for m in result.get('missing_ingredients', [])]
-                return jsonify({
-                    'success': False, 
-                    'error': f"Missing ingredients: {', '.join(missing_names)}"
-                })
-        finally:
-            # Always ensure the temp files are deleted
-            SocialMediaExtractor.cleanup(video_path, extract_result.get('thumbnail_path'))
-            
-    except Exception as e:
-        db.session.rollback()
-        import traceback; traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
