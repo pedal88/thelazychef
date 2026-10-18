@@ -229,6 +229,7 @@ Tallene per 100 g kommer i dag fra Edamam, med AI-anslag der Edamam ikke fant in
 Nevnt så de ikke glemmes, men ikke del av planen over:
 
 - **Kostnadstak og varsler** for AI hos Anthropic og Google. Stoppet på forhåndsbetalt kreditt 17.10.2026 viser at det trengs.
+- **Edamam-nøklene:** to Edamam-apper har hatt nøklene sine hardkodet i det offentlige repoet siden februar 2026 (fjernet fra koden i PR #38). Abonnementet er avsluttet, men appene må slettes eller nøklene byttes i Edamam-dashbordet. Det må også bestemmes hvor næringstall skal hentes fra framover (avsnitt 9).
 - **Innholds-API for sosiale medier:** lese-API med token for publisert innhold med `updated_since`, bilder med stabile URL-er i faste formater (original, 1:1, 4:5, 9:16) med alt-tekst og AI-merking, og varsel ved publisering (webhook eller JSON-feed).
 - **Ressurser, samlinger og kokker som filer** i repoet som synkes til databasen, redigert i Claude Code.
 - **Stil:** typografi, farger og avstander, logo og merkevare, og en stilguide-side som viser tokens og komponenter rett fra koden.
