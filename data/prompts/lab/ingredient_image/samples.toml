@@ -1,0 +1,26 @@
+# notes go into the item layer: what makes this ingredient look right.
+default = [
+  { name = "chicken breast", main_category = "meat", notes = "Pale pink raw chicken breast, clearly poultry, not salmon or pork." },
+  { name = "salmon fillet", main_category = "fish and seafood", notes = "Bright orange-pink raw salmon fillet with white fat lines." },
+  { name = "garlic", main_category = "vegetables", notes = "A whole garlic bulb with one loose clove." },
+  { name = "garlic powder", main_category = "spices and herbs", notes = "Fine pale beige powder, not cloves." },
+  { name = "star anise", main_category = "spices and herbs", notes = "Two or three whole star-shaped pods." },
+  { name = "soy sauce", main_category = "sauces and condiments", notes = "Very dark brown thin liquid." },
+  { name = "coconut milk", main_category = "canned and preserved", notes = "Thick white liquid; an open can is fine if it helps." },
+  { name = "basil", main_category = "spices and herbs", notes = "A small bunch of fresh green leaves." },
+  { name = "eggs", main_category = "dairy and egg", notes = "Two whole brown eggs." },
+  { name = "olive oil", main_category = "fats and oils", notes = "Golden green oil." },
+  { name = "parmesan", main_category = "dairy and egg", notes = "A wedge of hard aged cheese with rind." },
+  { name = "banana", main_category = "fruit and fruit products", notes = "" },
+]
+
+# The five items from the old Style Center sandbox, with the names it used, so
+# results compare one to one with its images (export in
+# ~/Documents/thelazychef-exports/style_sandbox_run_2026-10-18.csv on the Mac mini).
+style_center = [
+  { name = "Banana", main_category = "fruit and fruit products", notes = "" },
+  { name = "Chicken Filet", main_category = "meat", notes = "" },
+  { name = "Canned Coconut Milk", main_category = "canned and preserved", notes = "" },
+  { name = "Salmon Steak", main_category = "fish and seafood", notes = "" },
+  { name = "Fresh Basil", main_category = "spices and herbs", notes = "" },
+]

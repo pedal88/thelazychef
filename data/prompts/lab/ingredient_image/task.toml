@@ -1,0 +1,7 @@
+# Ingredient symbols: one image per pantry ingredient, shared by the whole app.
+# Layers are joined in this order: an optional brief for every image, the
+# style, what an ingredient category needs, and notes for this one ingredient.
+kind = "image"
+model = "GEMINI_IMAGE"          # constant in services/ai_models.py
+layers = ["brief", "style", "category", "item"]
+join = " "

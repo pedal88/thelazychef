@@ -1,0 +1,16 @@
+# What each category needs to be recognizable at 32-64 px.
+by = "main_category"
+default = ""
+
+[values]
+"meat" = "Show the raw, uncooked cut with its natural color."
+"fish and seafood" = "Show the raw fish or seafood with its natural color."
+"spices and herbs" = "Show a small heap or a few whole pieces, not a jar or a label."
+"sauces and condiments" = "Show it in a small plain bowl or an unlabeled jar so the color and texture are clear."
+"fats and oils" = "Show a small plain unlabeled bottle with the oil visible, or a block for solid fats."
+"canned and preserved" = "Show the food itself, not the can, unless the can is how people recognize it."
+"baking ingredients" = "Show a small heap of it."
+"cereal grains and pasta" = "Show a small heap of the dry, uncooked product."
+"dairy and egg" = "Show the product itself, not a carton or a label."
+"non-alcoholic beverages" = "Show it in a plain glass."
+"alcoholic beverages" = "Show it in a plain glass."

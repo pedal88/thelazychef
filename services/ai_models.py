@@ -14,6 +14,9 @@ GEMINI_TEXT = "gemini-flash-latest"
 GEMINI_TEXT_FAST = "gemini-2.5-flash"
 
 # Images
+# Gemini image model: takes reference images and can edit, which the v2
+# image flow needs. Confirm the ID with scripts/debug/verify_setup.py.
+GEMINI_IMAGE = "gemini-2.5-flash-image"
 IMAGEN = "imagen-4.0-generate-001"
 IMAGEN_FAST = "imagen-4.0-fast-generate-001"
 
