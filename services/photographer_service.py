@@ -1,15 +1,15 @@
 import os
 import time
-from google import genai
 from google.genai import types
 from PIL import Image
 from io import BytesIO
+from services.ai_models import IMAGEN, gemini_client
 
 # Initialize Client
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 client = None
 if GOOGLE_API_KEY:
-    client = genai.Client(api_key=GOOGLE_API_KEY)
+    client = gemini_client()
 
 
 def generate_actual_image(visual_prompt: str, number_of_images: int = 1) -> list[Image.Image]:
@@ -20,13 +20,7 @@ def generate_actual_image(visual_prompt: str, number_of_images: int = 1) -> list
     if not client:
         raise Exception("Google API Key not configured")
 
-    # Define model fallback strategy
-    # Primary: Imagen 3.0 (Fastest/Standard) -> Wait, user said Imagen 4 was primary in the logs?
-    # The logs showed: "model for flow_id: flow-juno-prompt-rewriter-vertex-imagen-jpe-v1-8"
-    # And code had 'imagen-4.0-generate-001'.
-    # We will try 4.0 first, then 3.0.
-    
-    models_to_try = ['imagen-4.0-generate-001']
+    models_to_try = [IMAGEN]
     last_exception = None
 
     for model_name in models_to_try:

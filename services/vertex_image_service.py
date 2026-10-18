@@ -5,10 +5,10 @@ import re
 import time
 import logging
 from typing import Optional
-from google import genai
 from google.genai import types
 from PIL import Image
 from io import BytesIO
+from services.ai_models import IMAGEN, IMAGEN_FAST, gemini_client
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ class VertexImageGenerator:
         # Initialize GenAI Client
         api_key = os.getenv("GOOGLE_API_KEY")
         if api_key:
-            self.client = genai.Client(api_key=api_key)
+            self.client = gemini_client()
         else:
             self.client = None
             print("WARNING: GOOGLE_API_KEY not set. VertexImageGenerator will fail.")
@@ -66,9 +66,9 @@ class VertexImageGenerator:
     def _generate_with_fallback(self, prompt: str, config):
         """Executes generation with tiered model fallback logic."""
         if VertexImageGenerator._force_fallback:
-            models = ['imagen-4.0-fast-generate-001']
+            models = [IMAGEN_FAST]
         else:
-            models = ['imagen-4.0-generate-001', 'imagen-4.0-fast-generate-001']
+            models = [IMAGEN, IMAGEN_FAST]
 
         last_error = None
         for i, model_name in enumerate(models):
@@ -88,7 +88,7 @@ class VertexImageGenerator:
                 if is_429:
                     if "per_day" in error_msg or "daily" in error_msg:
                         logger.critical(f"CRITICAL: {model_name} quota exhausted (daily). Falling back to next model for prompt: {prompt[:60]}")
-                        if model_name == 'imagen-4.0-generate-001':
+                        if model_name == IMAGEN:
                             VertexImageGenerator._force_fallback = True
                         continue # switch model completely
                     

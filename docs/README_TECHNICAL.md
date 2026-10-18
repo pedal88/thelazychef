@@ -27,12 +27,13 @@ The Lazy Chef is a Flask monolith with server-rendered Jinja2 templates (Tailwin
 
 ### AI models
 
-| Purpose | Model | Where |
+Every model name lives in `services/ai_models.py`, together with the one shared Gemini client. Change a model there, never at the call site. `python scripts/debug/verify_setup.py` checks that each model exists and answers.
+
+| Constant | Model | Used for |
 |---|---|---|
-| Recipe generation & extraction | `gemini-2.5-flash`, `gemini-flash-latest` | `ai_engine.py` |
-| Recipe / ingredient evaluation | `gemini-flash-latest`, `gemini-2.x-flash` | `services/evaluation_service.py`, `services/ingredient_evaluation_service.py` |
-| Visual prompts & image analysis | `gemini-2.0-flash` | `services/photographer_service.py` |
-| Dish & ingredient images | `imagen-4.0-generate-001`, `imagen-4.0-fast-generate-001` | `services/photographer_service.py`, `services/vertex_image_service.py` |
+| `GEMINI_TEXT` | `gemini-flash-latest` | Recipe generation and extraction, ingredient analysis, nutrients from text, recipe evaluation |
+| `GEMINI_TEXT_FAST` | `gemini-2.5-flash` | Ingredient evaluation and taxonomy suggestions |
+| `IMAGEN`, `IMAGEN_FAST` | `imagen-4.0-generate-001`, `imagen-4.0-fast-generate-001` | Ingredient and component images |
 
 ## 2. Recipe Generation Flow
 
