@@ -16,7 +16,7 @@ from database.models import (
     db, Recipe, RecipeIngredient, RecipeMealType, RecipeDiet,
     Instruction, Ingredient, Chef, IngredientAlias
 )
-from ai_engine import get_pantry_id
+from ai_engine import get_pantry_id, normalize_ingredient_name
 from services.ingredient_service import normalize_alias
 from services.nutrition_service import calculate_nutritional_totals
 from utils.unit_helpers import normalize_unit
@@ -43,6 +43,8 @@ def _resolve_ingredient(ing) -> Ingredient | None:
     1. The pantry_id the LLM picked (must exist).
     2. An active ingredient with exactly this name.
     3. An alias with this name (IngredientAlias).
+    Steps 2 and 3 are tried with the name as written, then without cooking
+    qualifiers.
     4. Fuzzy name match via get_pantry_id.
     Returns the Ingredient ORM object or None.
     """
@@ -56,8 +58,9 @@ def _resolve_ingredient(ing) -> Ingredient | None:
             return record
 
     name = ing.name if hasattr(ing, 'name') else ing.get('name', '')
-    key = normalize_alias(name)
-    if key:
+    # The name as written, then without cooking qualifiers ("feta, crumbled" -> "feta")
+    keys = list(dict.fromkeys(k for k in (normalize_alias(name), normalize_alias(normalize_ingredient_name(name))) if k))
+    for key in keys:
         record = db.session.execute(
             db.select(Ingredient)
             .where(db.func.lower(Ingredient.name) == key, Ingredient.status == 'active')

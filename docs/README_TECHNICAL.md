@@ -70,7 +70,7 @@ Gemini errors are mapped to user-safe messages by `utils/ai_errors.friendly_ai_e
 |---|---|
 | `Recipe`, `Instruction`, `RecipeIngredient` | Recipe, its steps, and gram-weighted ingredients (supports components and sub-recipes). `status`: `draft` → `approved` |
 | `Ingredient` | Curated ingredient with nutrition, images, `embedding` (pgvector) and `status` |
-| `IngredientAlias` | Other names for an ingredient. Matching tries the AI's pantry id, then the exact name, then aliases, then fuzzy matching. Merging moves aliases to the winner |
+| `IngredientAlias` | Other names for an ingredient. Matching tries the AI's pantry id, then the exact name and aliases (as written, then without cooking qualifiers), then fuzzy matching. Fuzzy matching needs the same words and only allows small spelling differences: an extra word such as "powder" or "juice" means another ingredient, so a miss creates a pending ingredient instead of a wrong match. Merging a pending ingredient into the right one adds its name as an alias |
 | `RecipeEvaluation`, `IngredientEvaluation` | AI quality scores |
 | `Chef` | Chef personas |
 | `User`, `UserRecipeInteraction`, `UserQueue` | Accounts (`is_admin`), favorites / made / feedback, personal queue |

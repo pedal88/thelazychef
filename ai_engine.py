@@ -286,27 +286,30 @@ def generate_recipe_from_web_text(text: str, source_url: str = "User Input", sli
 # Fuzzy matching threshold — scores below this are rejected.
 # 85 works well for food names: "Lrg Eggs" → "Whole Eggs" (88), 
 # but "Salt" ≠ "Unsalted Butter" (45).
-FUZZY_MATCH_THRESHOLD = 85
+FUZZY_MATCH_THRESHOLD = 90  # per word, see _match_score
 
 # Cooking qualifiers to strip before fuzzy matching.
 # These appear as adjectives/suffixes and add noise that dilutes match scores.
 COOKING_QUALIFIERS = {
+    # Words dropped before matching, but only when other words remain.
+    # Never add words that change what the ingredient is (salted/unsalted,
+    # dried, canned, frozen, pickled, smoked, roasted, light, dark): smoked
+    # salmon is not salmon.
     # Preparation styles
     'diced', 'chopped', 'minced', 'sliced', 'crushed', 'crumbled',
     'grated', 'shredded', 'julienned', 'cubed', 'halved', 'quartered',
     'torn', 'mashed', 'pureed', 'zested', 'peeled', 'deseeded',
     'pitted', 'cored', 'trimmed', 'deboned', 'deveined', 'seeded',
-    # Temperature / State
-    'fresh', 'frozen', 'dried', 'canned', 'uncooked', 'cooked',
-    'raw', 'roasted', 'toasted', 'smoked', 'pickled', 'marinated',
-    'softened', 'melted', 'chilled', 'warmed', 'blanched', 'ripe',
-    # Size / Descriptor
+    # State
+    'fresh', 'uncooked', 'cooked', 'raw', 'ripe',
+    'softened', 'melted', 'chilled', 'warmed', 'blanched',
+    # Size / shape / variety descriptors
     'boneless', 'skinless', 'whole', 'large', 'small',
     'medium', 'thin', 'thick', 'finely', 'roughly', 'thinly',
-    'extra', 'lrg', 'sml', 'med',
-    # Descriptor / Quality
-    'organic', 'pure', 'virgin', 'unsalted', 'salted',
-    'packed', 'loosely', 'firmly', 'light', 'dark',
+    'lrg', 'sml', 'med', 'roma', 'english',
+    'leaves', 'slices', 'sprigs', 'stalks',
+    # Quality / measuring
+    'organic', 'pure', 'packed', 'loosely', 'firmly',
 }
 
 def normalize_ingredient_name(name: str) -> str:
@@ -330,29 +333,60 @@ def normalize_ingredient_name(name: str) -> str:
     cleaned = [w for w in words if w not in COOKING_QUALIFIERS]
     return ' '.join(cleaned).strip() if cleaned else n
 
+def _singular(word: str) -> str:
+    if len(word) > 4 and word.endswith('ves'):
+        return word[:-3] + 'f'
+    if len(word) > 4 and word.endswith('ies'):
+        return word[:-3] + 'y'
+    if len(word) > 4 and word.endswith(('oes', 'ches', 'shes')):
+        return word[:-2]
+    if len(word) > 3 and word.endswith('s') and not word.endswith('ss'):
+        return word[:-1]
+    return word
+
+
+def _name_tokens(name: str) -> list[str]:
+    return sorted({_singular(w) for w in re.findall(r"[^\W_]+", name.lower())})
+
+
+def _match_score(query: str, key: str) -> float:
+    """0-100. Both names must have the same words, allowing small spelling
+    differences per word (chilli/chili, yoghurt/yogurt, plurals). An extra
+    word means no match, because in food it changes the ingredient: garlic
+    vs garlic powder, water vs canned tuna in water, salted vs unsalted."""
+    from thefuzz import fuzz as fuzz_scorer
+
+    q_tokens, k_tokens = _name_tokens(query), _name_tokens(key)
+    if not q_tokens or len(q_tokens) != len(k_tokens):
+        return 0
+    remaining = list(k_tokens)
+    scores = []
+    for token in q_tokens:
+        best = max(remaining, key=lambda k: fuzz_scorer.ratio(token, k))
+        score = fuzz_scorer.ratio(token, best)
+        if score < FUZZY_MATCH_THRESHOLD:
+            return 0
+        scores.append(score)
+        remaining.remove(best)
+    return sum(scores) / len(scores)
+
+
 def _fuzzy_match(query: str, pantry_keys: list[str]) -> str | None:
     """
-    Run fuzzy matching against pantry_keys. Returns food_id or None.
-    Uses WRatio first, then token_set_ratio as fallback.
-    """
-    from thefuzz import fuzz as fuzz_scorer
-    
-    # Stage A: WRatio (good for similar-length strings)
-    result = fuzz_process.extractOne(query, pantry_keys)
-    if result:
-        matched_key, score = result
-        if score >= FUZZY_MATCH_THRESHOLD:
-            print(f"🔗 Fuzzy Match (WRatio): '{query}' → '{matched_key}' (score: {score})")
-            return pantry_map[matched_key]
+    Best pantry key whose words all match the query's words. Returns food_id or None.
 
-    # Stage B: token_set_ratio (handles subsets: "feta" inside "feta cheese")
-    result_tsr = fuzz_process.extractOne(query, pantry_keys, scorer=fuzz_scorer.token_set_ratio)
-    if result_tsr:
-        matched_key_tsr, score_tsr = result_tsr
-        if score_tsr >= FUZZY_MATCH_THRESHOLD:
-            print(f"🔗 Fuzzy Match (token_set): '{query}' → '{matched_key_tsr}' (score: {score_tsr})")
-            return pantry_map[matched_key_tsr]
-    
+    Precision beats recall here: a miss creates a pending ingredient that an
+    admin reviews (and merging it adds an alias), while a wrong match silently
+    puts the wrong ingredient in a recipe.
+    """
+    best_key, best_score = None, 0
+    for key in pantry_keys:
+        score = _match_score(query, key)
+        if score > best_score:
+            best_key, best_score = key, score
+    if best_key:
+        print(f"🔗 Fuzzy Match: '{query}' → '{best_key}' (score: {best_score:.0f})")
+        return pantry_map[best_key]
     return None
 
 
