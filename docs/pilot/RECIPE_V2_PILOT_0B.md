@@ -119,7 +119,7 @@ Til v2-bygget (steg 7):
 
 - **Én kjøring per oppskrift og konfigurasjon.** Variasjon mellom kjøringer er ikke målt.
 - **Kvaliteten på grafene er målt med regler og stikkprøver**, ikke med en blind gjennomgang. Den beste testen er å lage noen av oppskriftene med telefonprototypen.
-- **De to Gemini-videokjøringene** (`web-68720e7b`, `web-a711fb72`) kan ha lest et eldre strukturprompt i runde 2, fordi arbeidskopien byttet gren i noen sekunder under kjøringen. De kjøres på nytt, og tallene for Gemini på nett oppdateres.
+- **De to Gemini-videokjøringene** (`web-68720e7b`, `web-a711fb72`) ble kjørt på nytt 19.10.2026, fordi arbeidskopien byttet gren i noen sekunder under første kjøring. Begge var gyldige i første forsøk, som før, og tallene over er fra den nye kjøringen.
 - **Prisene** er listepriser fra oktober 2026 og regnet fra token-tallene i svaret.
 - **Faste ingredienser mangler i pantryet:** ni av ingrediensene i de fem rettene finnes ikke (blant annet fersk ingefær, garam masala, tomatpuré og oksebuljong). Det påvirker ikke strukturen, men pantryet må fylles før nygenereringen.
 
