@@ -92,7 +92,9 @@ def read_csv(path):
 def problems(item):
     """What looks wrong: energy that does not fit the macros, parts larger than the whole."""
     out = []
-    expected = 4 * item['protein'] + 4 * item['carbs'] + 9 * item['fat'] + 7 * item['alcohol_g']
+    # USDA carbs include fiber, which gives about 2 kcal/g, not 4
+    fiber = min(item['fiber'], item['carbs'])
+    expected = 4 * item['protein'] + 4 * (item['carbs'] - fiber) + 2 * fiber + 9 * item['fat'] + 7 * item['alcohol_g']
     if max(item['calories'], expected) > 20 and abs(item['calories'] - expected) > 0.2 * max(item['calories'], expected):
         out.append(f"energy {item['calories']:.0f} kcal, macros give {expected:.0f}")
     if item['protein'] + item['fat'] + item['carbs'] + item['alcohol_g'] > 102:
