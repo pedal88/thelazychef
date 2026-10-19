@@ -20,7 +20,13 @@ GEMINI_TEXT_FAST = "gemini-2.5-flash"
 # prompt lab with --models before switching.
 GEMINI_IMAGE = "gemini-2.5-flash-image"
 
+# Claude, for recipe text and structuring in the v2 model (RECIPE_MODEL_V2.md,
+# section 7). Which model does which step is decided in phase 0b.
+CLAUDE_OPUS = "claude-opus-5-5"
+CLAUDE_SONNET = "claude-sonnet-5-5"
+
 _client = None
+_claude = None
 
 
 def gemini_client() -> genai.Client:
@@ -32,3 +38,16 @@ def gemini_client() -> genai.Client:
             raise ValueError("GOOGLE_API_KEY environment variable is missing.")
         _client = genai.Client(api_key=api_key)
     return _client
+
+
+def claude_client():
+    """The shared Anthropic client. Raises if ANTHROPIC_API_KEY is missing."""
+    global _claude
+    if _claude is None:
+        import anthropic
+
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+        if not api_key:
+            raise ValueError("ANTHROPIC_API_KEY environment variable is missing.")
+        _claude = anthropic.Anthropic(api_key=api_key, max_retries=4)
+    return _claude

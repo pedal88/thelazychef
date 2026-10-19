@@ -1,0 +1,553 @@
+{
+  "key": "db-166",
+  "set": "db",
+  "config": "gemini",
+  "model": "gemini-flash-latest",
+  "effort": null,
+  "valid": true,
+  "attempts_used": 1,
+  "first_try_valid": true,
+  "failed_rules_any_attempt": [],
+  "model_version": "gemini-3.8-flash",
+  "examples_in_prompt": [
+    "carbonara",
+    "lasagne"
+  ],
+  "tokens": {
+    "prompt_tokens": 7482,
+    "output_tokens": 4132,
+    "thought_tokens": 10585
+  },
+  "cost_usd": 0.047892,
+  "api_seconds": 95.7,
+  "wall_seconds": 95.7,
+  "round1": null,
+  "attempts": [
+    {
+      "attempt": 1,
+      "valid": true,
+      "failed_rules": [],
+      "errors": [],
+      "warnings": [],
+      "model_version": "gemini-3.8-flash",
+      "prompt_tokens": 7482,
+      "output_tokens": 4132,
+      "thought_tokens": 10585,
+      "cost_usd": 0.047892,
+      "seconds": 95.66
+    }
+  ],
+  "source_text": "Title: Enchiladas Verdes with Chicken and Queso Fresco\nServings: 4\n\nIngredients (component | amount unit | name | prep_style | pantry food_id):\n- Green Tomatillo Sauce | 100 g | onion |  | 000111\n- Green Tomatillo Sauce | 15 g | garlic |  | 000112\n- Green Tomatillo Sauce | 40 g | chili peppers |  | 000097\n- Green Tomatillo Sauce | 10 g | cilantro |  | 000245\n- Green Tomatillo Sauce | 25 g | lime |  | 000131\n- Green Tomatillo Sauce | 1 tsp | table salt |  | 000292\n- Chicken Filling | 500 g | chicken breast |  | 000044\n- Chicken Filling | 20 ml | olive oil |  | 000378\n- Chicken Filling | 1 tsp | ground cumin |  | 000278\n- Chicken Filling | 1 tsp | Chili Powder |  | 000653\n- Chicken Filling | 1 tsp | Garlic Powder |  | 000643\n- Chicken Filling | 1 tsp | Ground Onion |  | 000644\n- Enchilada Assembly and Baking | 300 g | tortilla |  | 000339\n- Enchilada Assembly and Baking | 120 g | feta |  | 000197\n- Enchilada Assembly and Baking | 80 ml | sour cream |  | 000222\n- Enchilada Assembly and Baking | 60 g | lettuce |  | 000079\n\nSteps in order (component | phase | minutes | text):\n1. Green Tomatillo Sauce | Prep |  | Roughly chop the onion and peel the garlic cloves.\n2. Chicken Filling | Prep |  | SAFETY: Pat the chicken breasts dry with paper towels and wash hands immediately after handling raw meat.\n3. Enchilada Assembly and Baking | Prep |  | Preheat your oven to 180°C and lightly grease a 9x13 inch baking dish.\n4. Green Tomatillo Sauce | Prep |  | Remove the stems and seeds from the chili peppers to manage heat levels.\n5. Chicken Filling | Prep |  | Season the chicken thoroughly with cumin, chili powder, garlic powder, and ground onion.\n6. Enchilada Assembly and Baking | Prep |  | Flash-fry the tortillas in a dry pan for 15 seconds per side to make them pliable.\n7. Green Tomatillo Sauce | Cook |  | In a pot of boiling water, simmer the onion, garlic, and chili peppers for 10 minutes until soft.\n8. Chicken Filling | Cook |  | Heat olive oil in a large skillet over medium-high heat.\n9. Enchilada Assembly and Baking | Cook |  | Dip each tortilla into the green sauce, then fill with a generous amount of shredded chicken.\n10. Green Tomatillo Sauce | Cook |  | Drain the vegetables and transfer them to a high-speed blender.\n11. Chicken Filling | Cook |  | Sear the chicken for 6-8 minutes per side until the internal temperature reaches 74°C.\n12. Enchilada Assembly and Baking | Cook |  | Roll the tortillas tightly and place them seam-side down in the baking dish.\n13. Green Tomatillo Sauce | Cook |  | Add the fresh cilantro, lime juice, and salt to the blender jar.\n14. Chicken Filling | Cook |  | Remove the chicken from the heat and allow it to rest for 5 minutes.\n15. Enchilada Assembly and Baking | Cook |  | Pour the remaining green sauce over the rolls and sprinkle with half of the crumbled feta.\n16. Green Tomatillo Sauce | Cook |  | Pulse until the sauce is smooth and emulsified; if too thick, add 15ml of water.\n17. Chicken Filling | Cook |  | Using two forks, shred the chicken into thin strips.\n18. Enchilada Assembly and Baking | Cook |  | Bake for 15-20 minutes until the sauce is bubbling and the edges are slightly golden.\n19. Green Tomatillo Sauce | Serve |  | Keep the sauce warm in a small saucepan over low heat until assembly.\n20. Chicken Filling | Serve |  | Toss the shredded meat with 30ml of the green sauce to keep it moist.\n21. Enchilada Assembly and Baking | Serve |  | Top with shredded lettuce, a drizzle of sour cream, and the remaining feta before serving hot.",
+  "recipe": {
+    "title": "Enchiladas Verdes with Chicken and Queso Fresco",
+    "servings": 4,
+    "components": [
+      {
+        "local_id": "c1",
+        "name": "Green Tomatillo Sauce"
+      },
+      {
+        "local_id": "c2",
+        "name": "Chicken Filling"
+      },
+      {
+        "local_id": "c3",
+        "name": "Enchiladas"
+      }
+    ],
+    "ingredients": [
+      {
+        "local_id": "i1",
+        "component_id": "c1",
+        "name": "onion",
+        "amount": 100.0,
+        "unit": "g",
+        "pantry_id": "000111"
+      },
+      {
+        "local_id": "i2",
+        "component_id": "c1",
+        "name": "garlic",
+        "amount": 15.0,
+        "unit": "g",
+        "pantry_id": "000112"
+      },
+      {
+        "local_id": "i3",
+        "component_id": "c1",
+        "name": "chili peppers",
+        "amount": 40.0,
+        "unit": "g",
+        "pantry_id": "000097"
+      },
+      {
+        "local_id": "i4",
+        "component_id": "c1",
+        "name": "cilantro",
+        "amount": 10.0,
+        "unit": "g",
+        "pantry_id": "000245"
+      },
+      {
+        "local_id": "i5",
+        "component_id": "c1",
+        "name": "lime",
+        "amount": 25.0,
+        "unit": "g",
+        "pantry_id": "000131"
+      },
+      {
+        "local_id": "i6",
+        "component_id": "c1",
+        "name": "table salt",
+        "amount": 1.0,
+        "unit": "tsp",
+        "pantry_id": "000292"
+      },
+      {
+        "local_id": "i7",
+        "component_id": "c2",
+        "name": "chicken breast",
+        "amount": 500.0,
+        "unit": "g",
+        "pantry_id": "000044"
+      },
+      {
+        "local_id": "i8",
+        "component_id": "c2",
+        "name": "olive oil",
+        "amount": 20.0,
+        "unit": "ml",
+        "pantry_id": "000378"
+      },
+      {
+        "local_id": "i9",
+        "component_id": "c2",
+        "name": "ground cumin",
+        "amount": 1.0,
+        "unit": "tsp",
+        "pantry_id": "000278"
+      },
+      {
+        "local_id": "i10",
+        "component_id": "c2",
+        "name": "chili powder",
+        "amount": 1.0,
+        "unit": "tsp",
+        "pantry_id": "000653"
+      },
+      {
+        "local_id": "i11",
+        "component_id": "c2",
+        "name": "garlic powder",
+        "amount": 1.0,
+        "unit": "tsp",
+        "pantry_id": "000643"
+      },
+      {
+        "local_id": "i12",
+        "component_id": "c2",
+        "name": "ground onion",
+        "amount": 1.0,
+        "unit": "tsp",
+        "pantry_id": "000644"
+      },
+      {
+        "local_id": "i13",
+        "component_id": "c3",
+        "name": "tortilla",
+        "amount": 300.0,
+        "unit": "g",
+        "pantry_id": "000339"
+      },
+      {
+        "local_id": "i14",
+        "component_id": "c3",
+        "name": "feta",
+        "amount": 60.0,
+        "unit": "g",
+        "prep_style": "crumbled",
+        "pantry_id": "000197"
+      },
+      {
+        "local_id": "i15",
+        "component_id": "c3",
+        "name": "feta",
+        "amount": 60.0,
+        "unit": "g",
+        "prep_style": "crumbled",
+        "pantry_id": "000197"
+      },
+      {
+        "local_id": "i16",
+        "component_id": "c3",
+        "name": "sour cream",
+        "amount": 80.0,
+        "unit": "ml",
+        "pantry_id": "000222"
+      },
+      {
+        "local_id": "i17",
+        "component_id": "c3",
+        "name": "lettuce",
+        "amount": 60.0,
+        "unit": "g",
+        "prep_style": "shredded",
+        "pantry_id": "000079"
+      }
+    ],
+    "steps": [
+      {
+        "local_id": "s1",
+        "component_id": "c3",
+        "phase": "cook",
+        "short": "Preheat the oven",
+        "text": "Preheat the oven to 180 °C and lightly grease a 9x13 inch baking dish.",
+        "uses": [],
+        "after": [],
+        "active_minutes": 1,
+        "passive_minutes": 14,
+        "method": "preheat",
+        "equipment": [
+          "oven"
+        ],
+        "temp_c": 180,
+        "setup": true,
+        "done_when": "The oven has reached 180 °C"
+      },
+      {
+        "local_id": "s2",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Chop onion and garlic",
+        "text": "Roughly chop {i1} and peel {i2}.",
+        "uses": [
+          "i1",
+          "i2"
+        ],
+        "after": [],
+        "active_minutes": 3,
+        "passive_minutes": 0,
+        "holds_minutes": 120,
+        "method": "chop",
+        "equipment": [],
+        "setup": false
+      },
+      {
+        "local_id": "s3",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Prepare chili peppers",
+        "text": "Remove the stems and seeds from {i3} to manage heat levels.",
+        "uses": [
+          "i3"
+        ],
+        "after": [],
+        "active_minutes": 3,
+        "passive_minutes": 0,
+        "holds_minutes": 120,
+        "method": "prepare",
+        "equipment": [],
+        "setup": false
+      },
+      {
+        "local_id": "s4",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Simmer vegetables",
+        "text": "In a pot of boiling water, simmer the chopped onion, peeled garlic, and chili peppers for 10 minutes until soft.",
+        "uses": [],
+        "after": [
+          "s2",
+          "s3"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 10,
+        "method": "simmer",
+        "equipment": [
+          "saucepan"
+        ],
+        "mode": "medium",
+        "setup": false,
+        "done_when": "Vegetables are completely softened"
+      },
+      {
+        "local_id": "s5",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Drain vegetables",
+        "text": "Drain the vegetables.",
+        "uses": [],
+        "after": [
+          "s4"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 0,
+        "holds_minutes": 10,
+        "method": "drain",
+        "equipment": [
+          "colander"
+        ],
+        "setup": false
+      },
+      {
+        "local_id": "s6",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Blend the sauce",
+        "text": "Transfer the vegetables to a high-speed blender. Add {i4}, {i5}, and {i6}. Pulse until the sauce is smooth and emulsified; if too thick, add 15ml of water.",
+        "uses": [
+          "i4",
+          "i5",
+          "i6"
+        ],
+        "after": [
+          "s5"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "holds_minutes": 60,
+        "method": "blend",
+        "equipment": [
+          "blender"
+        ],
+        "setup": false,
+        "done_when": "The sauce is smooth and emulsified"
+      },
+      {
+        "local_id": "s7",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Keep sauce warm",
+        "text": "Keep the sauce warm in a small saucepan over low heat until assembly.",
+        "uses": [],
+        "after": [
+          "s6"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 5,
+        "holds_minutes": 60,
+        "method": "warm",
+        "equipment": [
+          "saucepan"
+        ],
+        "mode": "low",
+        "setup": false
+      },
+      {
+        "local_id": "s8",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Dry the chicken",
+        "text": "Pat {i7} dry with paper towels and wash hands immediately after handling raw meat.",
+        "uses": [
+          "i7"
+        ],
+        "after": [],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "method": "prepare",
+        "equipment": [],
+        "setup": false
+      },
+      {
+        "local_id": "s9",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Season the chicken",
+        "text": "Season the chicken thoroughly with {i9}, {i10}, {i11}, and {i12}.",
+        "uses": [
+          "i9",
+          "i10",
+          "i11",
+          "i12"
+        ],
+        "after": [
+          "s8"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "method": "season",
+        "equipment": [],
+        "setup": false,
+        "done_when": "Chicken is evenly coated with the seasoning"
+      },
+      {
+        "local_id": "s10",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Sear the chicken",
+        "text": "Heat {i8} in a large skillet over medium-high heat and sear the chicken for 6-8 minutes per side until the internal temperature reaches 74°C.",
+        "uses": [
+          "i8"
+        ],
+        "after": [
+          "s9"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 14,
+        "method": "sear",
+        "equipment": [
+          "frying_pan",
+          "thermometer"
+        ],
+        "mode": "medium_high",
+        "setup": false,
+        "done_when": "Internal temperature reaches 74 °C"
+      },
+      {
+        "local_id": "s11",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Rest the chicken",
+        "text": "Remove the chicken from the heat and allow it to rest for 5 minutes.",
+        "uses": [],
+        "after": [
+          "s10"
+        ],
+        "active_minutes": 0,
+        "passive_minutes": 5,
+        "holds_minutes": 15,
+        "method": "rest",
+        "equipment": [],
+        "setup": false
+      },
+      {
+        "local_id": "s12",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Shred the chicken",
+        "text": "Using two forks, shred the chicken into thin strips.",
+        "uses": [],
+        "after": [
+          "s11"
+        ],
+        "active_minutes": 4,
+        "passive_minutes": 0,
+        "holds_minutes": 30,
+        "method": "prepare",
+        "equipment": [],
+        "setup": false
+      },
+      {
+        "local_id": "s13",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Toss chicken with sauce",
+        "text": "Toss the shredded meat with 30ml of the green sauce to keep it moist.",
+        "uses": [],
+        "after": [
+          "s12",
+          "s7"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 0,
+        "holds_minutes": 20,
+        "method": "mix",
+        "equipment": [],
+        "setup": false
+      },
+      {
+        "local_id": "s14",
+        "component_id": "c3",
+        "phase": "cook",
+        "short": "Flash-fry tortillas",
+        "text": "Flash-fry {i13} in a dry pan for 15 seconds per side to make them pliable.",
+        "uses": [
+          "i13"
+        ],
+        "after": [],
+        "active_minutes": 3,
+        "passive_minutes": 0,
+        "holds_minutes": 10,
+        "method": "pan_fry",
+        "equipment": [
+          "frying_pan"
+        ],
+        "setup": false,
+        "done_when": "Tortillas are soft and pliable"
+      },
+      {
+        "local_id": "s15",
+        "component_id": "c3",
+        "phase": "cook",
+        "short": "Fill and roll enchiladas",
+        "text": "Dip each tortilla into the green sauce, fill with a generous amount of shredded chicken, roll tightly, and place seam-side down in the baking dish.",
+        "uses": [],
+        "after": [
+          "s14",
+          "s13",
+          "s7"
+        ],
+        "active_minutes": 6,
+        "passive_minutes": 0,
+        "method": "assemble",
+        "equipment": [
+          "form_20x30"
+        ],
+        "setup": false,
+        "done_when": "All tortillas are rolled and arranged tightly in the dish"
+      },
+      {
+        "local_id": "s16",
+        "component_id": "c3",
+        "phase": "cook",
+        "short": "Sauce and top rolls",
+        "text": "Pour the remaining green sauce over the rolls and sprinkle with {i14}.",
+        "uses": [
+          "i14"
+        ],
+        "after": [
+          "s15"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "method": "assemble",
+        "equipment": [
+          "form_20x30"
+        ],
+        "setup": false
+      },
+      {
+        "local_id": "s17",
+        "component_id": "c3",
+        "phase": "cook",
+        "short": "Bake the enchiladas",
+        "text": "Bake for 15-20 minutes until the sauce is bubbling and the edges are slightly golden.",
+        "uses": [],
+        "after": [
+          "s16"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 17,
+        "method": "bake",
+        "equipment": [
+          "oven"
+        ],
+        "temp_c": 180,
+        "setup": false,
+        "done_when": "Sauce is bubbling and the edges are slightly golden"
+      },
+      {
+        "local_id": "s18",
+        "component_id": "c3",
+        "phase": "serve",
+        "short": "Garnish and serve",
+        "text": "Top with {i17}, a drizzle of {i16}, and {i15} before serving hot.",
+        "uses": [
+          "i15",
+          "i16",
+          "i17"
+        ],
+        "after": [
+          "s17"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "method": "serve",
+        "equipment": [],
+        "setup": false
+      }
+    ]
+  }
+}

@@ -1,0 +1,509 @@
+{
+  "key": "db-209",
+  "set": "db",
+  "config": "gemini",
+  "model": "gemini-flash-latest",
+  "effort": null,
+  "valid": true,
+  "attempts_used": 1,
+  "first_try_valid": true,
+  "failed_rules_any_attempt": [],
+  "model_version": "gemini-3.8-flash",
+  "examples_in_prompt": [
+    "carbonara",
+    "lasagne"
+  ],
+  "tokens": {
+    "prompt_tokens": 7378,
+    "output_tokens": 2339,
+    "thought_tokens": 9625
+  },
+  "cost_usd": 0.039581,
+  "api_seconds": 85.3,
+  "wall_seconds": 85.3,
+  "round1": null,
+  "attempts": [
+    {
+      "attempt": 1,
+      "valid": true,
+      "failed_rules": [],
+      "errors": [],
+      "warnings": [],
+      "model_version": "gemini-3.8-flash",
+      "prompt_tokens": 7378,
+      "output_tokens": 2339,
+      "thought_tokens": 9625,
+      "cost_usd": 0.039581,
+      "seconds": 85.32
+    }
+  ],
+  "source_text": "Title: Rotisserie-Style Chicken Gyros with Homemade Tzatziki\nServings: 4\n\nIngredients (component | amount unit | name | prep_style | pantry food_id):\n- Spiced Chicken | 500 g | chicken thigh |  | 000047\n- Spiced Chicken | 100 ml | Protein Yoghurt |  | 000641\n- Spiced Chicken | 30 g | lemon |  | 000130\n- Spiced Chicken | 20 ml | olive oil |  | 000378\n- Spiced Chicken | 1 tsp | Garlic Powder |  | 000643\n- Spiced Chicken | 1 tsp | Ground Onion |  | 000644\n- Spiced Chicken | 1 tsp | oregano |  | 000251\n- Spiced Chicken | 1 tsp | ground cumin |  | 000278\n- Spiced Chicken | 1 tsp | ground paprika |  | 000290\n- Spiced Chicken | 5 g | salted butter |  | 000211\n- Spiced Chicken | 2 g | ground black pepper |  | 000285\n- Homemade Tzatziki | 200 ml | Protein Yoghurt |  | 000641\n- Homemade Tzatziki | 1 pcs | Cucumber |  | 000642\n- Homemade Tzatziki | 10 g | garlic |  | 000112\n- Homemade Tzatziki | 5 g | dill |  | 000249\n- Homemade Tzatziki | 15 g | lemon |  | 000130\n- Pita and Assembly | 320 g | pita |  | 000340\n- Pita and Assembly | 100 g | lettuce |  | 000079\n- Pita and Assembly | 100 g | tomatoes |  | 000093\n- Pita and Assembly | 50 g | onion |  | 000111\n\nSteps in order (component | phase | minutes | text):\n1. Spiced Chicken | Prep |  | SAFETY: Wash hands before and after handling raw poultry. Slice chicken thighs into thin, 1cm strips.\n2. Homemade Tzatziki | Prep |  | Grate the cucumber using a box grater and place in a clean kitchen towel; squeeze forcefully to remove all liquid.\n3. Pita and Assembly | Prep |  | Thinly shred the lettuce and slice the tomatoes and onions into thin rounds or half-moons.\n4. Spiced Chicken | Prep |  | In a large mixing bowl, combine the yoghurt, lemon juice, olive oil, garlic powder, ground onion, oregano, cumin, and paprika.\n5. Homemade Tzatziki | Prep |  | Mince the fresh garlic and finely chop the dill leaves.\n6. Pita and Assembly | Cook |  | Heat a dry skillet over medium-high heat and warm each pita bread for about 45 seconds per side until soft and pliable.\n7. Spiced Chicken | Prep |  | Add the chicken to the marinade, ensure every piece is coated, and refrigerate for 30 minutes.\n8. Homemade Tzatziki | Prep |  | Whisk the yoghurt with the garlic, dill, and lemon juice until smooth.\n9. Pita and Assembly | Serve |  | Spread 2 tablespoons of tzatziki in the center of a warm pita.\n10. Spiced Chicken | Cook |  | Preheat your oven to 200°C and line a baking sheet with parchment paper.\n11. Homemade Tzatziki | Serve |  | Fold in the dry cucumber shreds and refrigerate until the chicken is ready.\n12. Pita and Assembly | Serve |  | Top with a handful of chicken, lettuce, tomatoes, and onions; roll tightly and serve immediately.\n13. Spiced Chicken | Cook |  | Spread the chicken in a tight single layer and roast for 20-25 minutes until deep brown and slightly charred at the edges.\n14. Spiced Chicken | Serve |  | Let the chicken rest for 5 minutes, then roughly chop it to create varying textures.",
+  "recipe": {
+    "title": "Rotisserie-Style Chicken Gyros with Homemade Tzatziki",
+    "servings": 4,
+    "components": [
+      {
+        "local_id": "c1",
+        "name": "Spiced Chicken"
+      },
+      {
+        "local_id": "c2",
+        "name": "Homemade Tzatziki"
+      },
+      {
+        "local_id": "c3",
+        "name": "Chicken Gyros"
+      }
+    ],
+    "ingredients": [
+      {
+        "local_id": "i1",
+        "component_id": "c1",
+        "name": "chicken thigh",
+        "amount": 500.0,
+        "unit": "g",
+        "pantry_id": "000047"
+      },
+      {
+        "local_id": "i2",
+        "component_id": "c1",
+        "name": "Protein Yoghurt",
+        "amount": 100.0,
+        "unit": "ml",
+        "pantry_id": "000641"
+      },
+      {
+        "local_id": "i3",
+        "component_id": "c1",
+        "name": "lemon",
+        "amount": 30.0,
+        "unit": "g",
+        "pantry_id": "000130"
+      },
+      {
+        "local_id": "i4",
+        "component_id": "c1",
+        "name": "olive oil",
+        "amount": 20.0,
+        "unit": "ml",
+        "pantry_id": "000378"
+      },
+      {
+        "local_id": "i5",
+        "component_id": "c1",
+        "name": "Garlic Powder",
+        "amount": 1.0,
+        "unit": "tsp",
+        "pantry_id": "000643"
+      },
+      {
+        "local_id": "i6",
+        "component_id": "c1",
+        "name": "Ground Onion",
+        "amount": 1.0,
+        "unit": "tsp",
+        "pantry_id": "000644"
+      },
+      {
+        "local_id": "i7",
+        "component_id": "c1",
+        "name": "oregano",
+        "amount": 1.0,
+        "unit": "tsp",
+        "pantry_id": "000251"
+      },
+      {
+        "local_id": "i8",
+        "component_id": "c1",
+        "name": "ground cumin",
+        "amount": 1.0,
+        "unit": "tsp",
+        "pantry_id": "000278"
+      },
+      {
+        "local_id": "i9",
+        "component_id": "c1",
+        "name": "ground paprika",
+        "amount": 1.0,
+        "unit": "tsp",
+        "pantry_id": "000290"
+      },
+      {
+        "local_id": "i10",
+        "component_id": "c1",
+        "name": "salted butter",
+        "amount": 5.0,
+        "unit": "g",
+        "pantry_id": "000211"
+      },
+      {
+        "local_id": "i11",
+        "component_id": "c1",
+        "name": "ground black pepper",
+        "amount": 2.0,
+        "unit": "g",
+        "pantry_id": "000285"
+      },
+      {
+        "local_id": "i12",
+        "component_id": "c2",
+        "name": "Protein Yoghurt",
+        "amount": 200.0,
+        "unit": "ml",
+        "pantry_id": "000641"
+      },
+      {
+        "local_id": "i13",
+        "component_id": "c2",
+        "name": "Cucumber",
+        "amount": 1.0,
+        "unit": "piece",
+        "pantry_id": "000642"
+      },
+      {
+        "local_id": "i14",
+        "component_id": "c2",
+        "name": "garlic",
+        "amount": 10.0,
+        "unit": "g",
+        "pantry_id": "000112"
+      },
+      {
+        "local_id": "i15",
+        "component_id": "c2",
+        "name": "dill",
+        "amount": 5.0,
+        "unit": "g",
+        "pantry_id": "000249"
+      },
+      {
+        "local_id": "i16",
+        "component_id": "c2",
+        "name": "lemon",
+        "amount": 15.0,
+        "unit": "g",
+        "pantry_id": "000130"
+      },
+      {
+        "local_id": "i17",
+        "component_id": "c3",
+        "name": "pita",
+        "amount": 320.0,
+        "unit": "g",
+        "pantry_id": "000340"
+      },
+      {
+        "local_id": "i18",
+        "component_id": "c3",
+        "name": "lettuce",
+        "amount": 100.0,
+        "unit": "g",
+        "pantry_id": "000079"
+      },
+      {
+        "local_id": "i19",
+        "component_id": "c3",
+        "name": "tomatoes",
+        "amount": 100.0,
+        "unit": "g",
+        "pantry_id": "000093"
+      },
+      {
+        "local_id": "i20",
+        "component_id": "c3",
+        "name": "onion",
+        "amount": 50.0,
+        "unit": "g",
+        "pantry_id": "000111"
+      }
+    ],
+    "steps": [
+      {
+        "local_id": "s1",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Preheat the oven",
+        "text": "Preheat your oven to 200°C and line a baking sheet with parchment paper.",
+        "uses": [],
+        "after": [],
+        "active_minutes": 2,
+        "passive_minutes": 13,
+        "method": "preheat",
+        "equipment": [
+          "oven",
+          "baking_tray",
+          "baking_paper"
+        ],
+        "temp_c": 200,
+        "setup": true,
+        "done_when": "Oven has reached 200°C"
+      },
+      {
+        "local_id": "s2",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Slice the chicken",
+        "text": "Slice {i1} into thin, 1cm strips.",
+        "uses": [
+          "i1"
+        ],
+        "after": [],
+        "active_minutes": 5,
+        "passive_minutes": 0,
+        "holds_minutes": 60,
+        "method": "slice",
+        "equipment": [],
+        "setup": false
+      },
+      {
+        "local_id": "s3",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Mix the marinade",
+        "text": "In a large mixing bowl, combine {i2}, {i3}, {i4}, {i5}, {i6}, {i7}, {i8}, {i9}, {i10}, and {i11}.",
+        "uses": [
+          "i2",
+          "i3",
+          "i4",
+          "i5",
+          "i6",
+          "i7",
+          "i8",
+          "i9",
+          "i10",
+          "i11"
+        ],
+        "after": [],
+        "active_minutes": 3,
+        "passive_minutes": 0,
+        "holds_minutes": 120,
+        "method": "mix",
+        "equipment": [
+          "large_bowl",
+          "whisk"
+        ],
+        "setup": false,
+        "done_when": "Marinade is thoroughly combined"
+      },
+      {
+        "local_id": "s4",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Marinate the chicken",
+        "text": "Add the chicken to the marinade, ensure every piece is coated, and refrigerate for 30 minutes.",
+        "uses": [],
+        "after": [
+          "s2",
+          "s3"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 30,
+        "holds_minutes": 120,
+        "method": "marinate",
+        "equipment": [
+          "large_bowl"
+        ],
+        "setup": false,
+        "done_when": "Every piece is thoroughly coated"
+      },
+      {
+        "local_id": "s5",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Roast the chicken",
+        "text": "Spread the chicken in a tight single layer on the prepared baking sheet and roast for 20–25 minutes.",
+        "uses": [],
+        "after": [
+          "s4"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 23,
+        "method": "roast",
+        "equipment": [
+          "oven",
+          "baking_tray"
+        ],
+        "temp_c": 200,
+        "setup": false,
+        "done_when": "Deep brown and slightly charred at the edges"
+      },
+      {
+        "local_id": "s6",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Rest and chop chicken",
+        "text": "Let the chicken rest for 5 minutes, then roughly chop it to create varying textures.",
+        "uses": [],
+        "after": [
+          "s5"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 5,
+        "holds_minutes": 20,
+        "method": "rest",
+        "equipment": [],
+        "setup": false
+      },
+      {
+        "local_id": "s7",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Grate the cucumber",
+        "text": "Grate {i13} using a box grater and place in a clean kitchen towel; squeeze forcefully to remove all liquid.",
+        "uses": [
+          "i13"
+        ],
+        "after": [],
+        "active_minutes": 4,
+        "passive_minutes": 0,
+        "holds_minutes": 60,
+        "method": "grate",
+        "equipment": [
+          "grater",
+          "kitchen_towel"
+        ],
+        "setup": false,
+        "done_when": "Liquid is thoroughly expelled and cucumber shreds are dry"
+      },
+      {
+        "local_id": "s8",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Chop garlic and dill",
+        "text": "Mince {i14} and finely chop {i15}.",
+        "uses": [
+          "i14",
+          "i15"
+        ],
+        "after": [],
+        "active_minutes": 3,
+        "passive_minutes": 0,
+        "holds_minutes": 60,
+        "method": "chop",
+        "equipment": [],
+        "setup": false
+      },
+      {
+        "local_id": "s9",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Whisk the tzatziki base",
+        "text": "Whisk {i12} with the minced garlic, chopped dill, and {i16} until smooth.",
+        "uses": [
+          "i12",
+          "i16"
+        ],
+        "after": [
+          "s8"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "holds_minutes": 120,
+        "method": "whisk",
+        "equipment": [
+          "bowl",
+          "whisk"
+        ],
+        "setup": false,
+        "done_when": "Smooth and well blended"
+      },
+      {
+        "local_id": "s10",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Chill the tzatziki",
+        "text": "Fold in the dry cucumber shreds and refrigerate until the chicken is ready.",
+        "uses": [],
+        "after": [
+          "s9",
+          "s7"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 20,
+        "holds_minutes": 1440,
+        "method": "chill",
+        "equipment": [
+          "bowl",
+          "spatula"
+        ],
+        "setup": false
+      },
+      {
+        "local_id": "s11",
+        "component_id": "c3",
+        "phase": "prep",
+        "short": "Prep vegetables",
+        "text": "Thinly shred {i18} and slice {i19} and {i20} into thin rounds or half-moons.",
+        "uses": [
+          "i18",
+          "i19",
+          "i20"
+        ],
+        "after": [],
+        "active_minutes": 5,
+        "passive_minutes": 0,
+        "holds_minutes": 60,
+        "method": "slice",
+        "equipment": [],
+        "setup": false
+      },
+      {
+        "local_id": "s12",
+        "component_id": "c3",
+        "phase": "cook",
+        "short": "Warm the pitas",
+        "text": "Heat a dry skillet over medium-high heat and warm each {i17} for about 45 seconds per side.",
+        "uses": [
+          "i17"
+        ],
+        "after": [],
+        "active_minutes": 4,
+        "passive_minutes": 0,
+        "holds_minutes": 10,
+        "method": "toast",
+        "equipment": [
+          "frying_pan"
+        ],
+        "mode": "medium_high",
+        "setup": false,
+        "done_when": "Soft and pliable"
+      },
+      {
+        "local_id": "s13",
+        "component_id": "c3",
+        "phase": "serve",
+        "short": "Spread tzatziki on pita",
+        "text": "Spread 2 tablespoons of tzatziki in the center of a warm pita.",
+        "uses": [],
+        "after": [
+          "s12",
+          "s10"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "holds_minutes": 5,
+        "method": "assemble",
+        "equipment": [],
+        "setup": false
+      },
+      {
+        "local_id": "s14",
+        "component_id": "c3",
+        "phase": "serve",
+        "short": "Assemble and roll gyros",
+        "text": "Top with a handful of chicken, lettuce, tomatoes, and onions; roll tightly and serve immediately.",
+        "uses": [],
+        "after": [
+          "s13",
+          "s6",
+          "s11"
+        ],
+        "active_minutes": 3,
+        "passive_minutes": 0,
+        "method": "serve",
+        "equipment": [],
+        "setup": false
+      }
+    ]
+  }
+}

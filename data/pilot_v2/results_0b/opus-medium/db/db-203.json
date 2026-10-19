@@ -1,0 +1,552 @@
+{
+  "key": "db-203",
+  "set": "db",
+  "config": "opus-medium",
+  "model": "claude-opus-5-5",
+  "effort": "medium",
+  "valid": true,
+  "attempts_used": 1,
+  "first_try_valid": true,
+  "failed_rules_any_attempt": [],
+  "model_version": "claude-opus-5-5",
+  "examples_in_prompt": [
+    "carbonara",
+    "lasagne"
+  ],
+  "tokens": {
+    "prompt_tokens": 11470,
+    "output_tokens": 5469,
+    "thought_tokens": 0
+  },
+  "cost_usd": 0.117935,
+  "api_seconds": 44.2,
+  "wall_seconds": 44.2,
+  "round1": null,
+  "attempts": [
+    {
+      "attempt": 1,
+      "valid": true,
+      "failed_rules": [],
+      "errors": [],
+      "warnings": [],
+      "model_version": "claude-opus-5-5",
+      "prompt_tokens": 11470,
+      "cache_read_tokens": 10368,
+      "output_tokens": 5469,
+      "thought_tokens": null,
+      "stop_reason": "end_turn",
+      "cost_usd": 0.117935,
+      "seconds": 44.21
+    }
+  ],
+  "source_text": "Title: Loaded Baked Potato Soup with Crispy Skin Dippers\nServings: 4\n\nIngredients (component | amount unit | name | prep_style | pantry food_id):\n- Soup | 1500 g | potatoes |  | 000070\n- Soup | 150 g | bacon |  | 000630\n- Soup | 100 g | celery |  | 000117\n- Soup | 150 g | onion |  | 000111\n- Soup | 5 g | garlic |  | 000112\n- Soup | 625 ml | chicken fat (schmaltz) |  | 000389\n- Soup | 250 ml | whole milk |  | 000182\n- Soup | 250 ml | heavy cream |  | 000219\n- Soup | 100 g | cheddar |  | 000193\n- Soup | 30 ml | olive oil |  | 000378\n- Soup | 1 tsp | table salt |  | 000292\n- Soup | 0.5 tsp | ground black pepper |  | 000285\n- Crispy Potato Skin Dippers | 15 ml | olive oil |  | 000378\n- Crispy Potato Skin Dippers | 0.25 tsp | table salt |  | 000292\n- Crispy Potato Skin Dippers | 0.25 tsp | ground black pepper |  | 000285\n- Toppings | 100 ml | sour cream |  | 000222\n- Toppings | 5 g | chives |  | 000248\n- Toppings | 50 g | cheddar |  | 000193\n\nSteps in order (component | phase | minutes | text):\n1. Soup | Cook |  | Prick potatoes with a fork and coat in oil, salt, and pepper. Bake at 200°C for 1 hour or until soft.\n2. Crispy Potato Skin Dippers | Prep |  | Place the hollowed-out potato skins on a baking tray.\n3. Toppings | Prep |  | Dice the crispy bacon and finely chop the fresh chives.\n4. Soup | Cook |  | In a large pot, fry bacon slices until crispy. Remove the bacon and set aside, leaving the fat in the pot.\n5. Crispy Potato Skin Dippers | Cook |  | Drizzle with olive oil and season with salt and pepper. Bake at the oven's highest temperature for 5 minutes until very crispy.\n6. Toppings | Serve |  | Ladle soup into bowls. Top with extra cheddar, chopped bacon, a dollollop of sour cream, and chives. Serve with the skin dippers.\n7. Soup | Cook |  | Add celery, onion, and garlic to the rendered bacon fat. Sauté over medium heat until softened.\n8. Soup | Prep |  | Slice cooked potatoes, scoop out the centers, and add the potato flesh to the soup pot.\n9. Soup | Cook |  | Pour in chicken stock and half of the milk. Use an immersion blender to blitz until smooth.\n10. Soup | Cook |  | Stir in heavy cream and season with salt and pepper. Simmer gently.\n11. Soup | Cook |  | Turn off the heat and stir in the grated cheddar. Use the remaining milk to adjust the soup to your desired consistency.",
+  "recipe": {
+    "servings": 4,
+    "components": [
+      {
+        "local_id": "c1",
+        "name": "Soup"
+      },
+      {
+        "local_id": "c2",
+        "name": "Crispy Potato Skin Dippers"
+      }
+    ],
+    "ingredients": [
+      {
+        "local_id": "i1",
+        "component_id": "c1",
+        "name": "potatoes",
+        "amount": 1500,
+        "unit": "g",
+        "pantry_id": "000070"
+      },
+      {
+        "local_id": "i2",
+        "component_id": "c1",
+        "name": "bacon",
+        "amount": 150,
+        "unit": "g",
+        "pantry_id": "000630"
+      },
+      {
+        "local_id": "i3",
+        "component_id": "c1",
+        "name": "celery",
+        "amount": 100,
+        "unit": "g",
+        "pantry_id": "000117"
+      },
+      {
+        "local_id": "i4",
+        "component_id": "c1",
+        "name": "onion",
+        "amount": 150,
+        "unit": "g",
+        "pantry_id": "000111"
+      },
+      {
+        "local_id": "i5",
+        "component_id": "c1",
+        "name": "garlic",
+        "amount": 5,
+        "unit": "g",
+        "pantry_id": "000112"
+      },
+      {
+        "local_id": "i6",
+        "component_id": "c1",
+        "name": "chicken fat (schmaltz)",
+        "amount": 625,
+        "unit": "ml",
+        "pantry_id": "000389"
+      },
+      {
+        "local_id": "i7",
+        "component_id": "c1",
+        "name": "whole milk",
+        "amount": 125,
+        "unit": "ml",
+        "pantry_id": "000182"
+      },
+      {
+        "local_id": "i8",
+        "component_id": "c1",
+        "name": "whole milk",
+        "amount": 125,
+        "unit": "ml",
+        "pantry_id": "000182"
+      },
+      {
+        "local_id": "i9",
+        "component_id": "c1",
+        "name": "heavy cream",
+        "amount": 250,
+        "unit": "ml",
+        "pantry_id": "000219"
+      },
+      {
+        "local_id": "i10",
+        "component_id": "c1",
+        "name": "cheddar",
+        "amount": 100,
+        "unit": "g",
+        "prep_style": "grated",
+        "pantry_id": "000193"
+      },
+      {
+        "local_id": "i11",
+        "component_id": "c1",
+        "name": "olive oil",
+        "amount": 30,
+        "unit": "ml",
+        "pantry_id": "000378"
+      },
+      {
+        "local_id": "i12",
+        "component_id": "c1",
+        "name": "table salt",
+        "amount": 0.5,
+        "unit": "tsp",
+        "pantry_id": "000292"
+      },
+      {
+        "local_id": "i13",
+        "component_id": "c1",
+        "name": "ground black pepper",
+        "amount": 0.25,
+        "unit": "tsp",
+        "pantry_id": "000285"
+      },
+      {
+        "local_id": "i14",
+        "component_id": "c1",
+        "name": "table salt",
+        "amount": 0.5,
+        "unit": "tsp",
+        "pantry_id": "000292"
+      },
+      {
+        "local_id": "i15",
+        "component_id": "c1",
+        "name": "ground black pepper",
+        "amount": 0.25,
+        "unit": "tsp",
+        "pantry_id": "000285"
+      },
+      {
+        "local_id": "i16",
+        "component_id": "c2",
+        "name": "olive oil",
+        "amount": 15,
+        "unit": "ml",
+        "pantry_id": "000378"
+      },
+      {
+        "local_id": "i17",
+        "component_id": "c2",
+        "name": "table salt",
+        "amount": 0.25,
+        "unit": "tsp",
+        "pantry_id": "000292"
+      },
+      {
+        "local_id": "i18",
+        "component_id": "c2",
+        "name": "ground black pepper",
+        "amount": 0.25,
+        "unit": "tsp",
+        "pantry_id": "000285"
+      },
+      {
+        "local_id": "i19",
+        "component_id": "c1",
+        "name": "sour cream",
+        "amount": 100,
+        "unit": "ml",
+        "pantry_id": "000222"
+      },
+      {
+        "local_id": "i20",
+        "component_id": "c1",
+        "name": "chives",
+        "amount": 5,
+        "unit": "g",
+        "prep_style": "finely chopped",
+        "pantry_id": "000248"
+      },
+      {
+        "local_id": "i21",
+        "component_id": "c1",
+        "name": "cheddar",
+        "amount": 50,
+        "unit": "g",
+        "pantry_id": "000193"
+      }
+    ],
+    "steps": [
+      {
+        "local_id": "s1",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Preheat the oven",
+        "text": "Heat the oven to 200 °C.",
+        "uses": [],
+        "after": [],
+        "active_minutes": 1,
+        "passive_minutes": 14,
+        "method": "preheat",
+        "equipment": [
+          "oven"
+        ],
+        "temp_c": 200,
+        "setup": true,
+        "done_when": "The oven has reached temperature"
+      },
+      {
+        "local_id": "s2",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Coat the potatoes",
+        "text": "Prick {i1} all over with a fork, place them on a baking tray and coat in {i11}, {i12} and {i13}.",
+        "uses": [
+          "i1",
+          "i11",
+          "i12",
+          "i13"
+        ],
+        "after": [],
+        "active_minutes": 4,
+        "passive_minutes": 0,
+        "method": "season",
+        "equipment": [
+          "baking_tray"
+        ],
+        "setup": false,
+        "done_when": "The potatoes are evenly coated in oil"
+      },
+      {
+        "local_id": "s3",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Bake the potatoes",
+        "text": "Bake the potatoes at 200 °C for about 1 hour, until soft.",
+        "uses": [],
+        "after": [
+          "s2"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 60,
+        "holds_minutes": 30,
+        "method": "bake",
+        "equipment": [
+          "oven"
+        ],
+        "temp_c": 200,
+        "setup": false,
+        "done_when": "A knife slides easily into the centre"
+      },
+      {
+        "local_id": "s4",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Chop the vegetables",
+        "text": "Chop {i3}, {i4} and {i5}.",
+        "uses": [
+          "i3",
+          "i4",
+          "i5"
+        ],
+        "after": [],
+        "active_minutes": 6,
+        "passive_minutes": 0,
+        "holds_minutes": 120,
+        "method": "chop",
+        "equipment": [],
+        "setup": false
+      },
+      {
+        "local_id": "s5",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Fry the bacon",
+        "text": "Fry {i2} in a large pot until crispy. Lift out the bacon and set it aside, leaving the fat in the pot.",
+        "uses": [
+          "i2"
+        ],
+        "after": [],
+        "active_minutes": 8,
+        "passive_minutes": 0,
+        "holds_minutes": 60,
+        "method": "pan_fry",
+        "equipment": [
+          "large_pot",
+          "tongs"
+        ],
+        "mode": "medium",
+        "setup": false,
+        "done_when": "The bacon is browned and crispy and the fat has rendered"
+      },
+      {
+        "local_id": "s6",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Sauté the vegetables",
+        "text": "Add the chopped vegetables to the bacon fat and sauté over medium heat until softened.",
+        "uses": [],
+        "after": [
+          "s5",
+          "s4"
+        ],
+        "active_minutes": 6,
+        "passive_minutes": 2,
+        "method": "saute",
+        "equipment": [
+          "large_pot",
+          "wooden_spoon"
+        ],
+        "mode": "medium",
+        "setup": false,
+        "done_when": "The onion is soft and translucent"
+      },
+      {
+        "local_id": "s7",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Scoop out the potatoes",
+        "text": "Slice the baked potatoes open, scoop out the centres and add the potato flesh to the soup pot. Keep the hollowed-out skins.",
+        "uses": [],
+        "after": [
+          "s3",
+          "s6"
+        ],
+        "active_minutes": 6,
+        "passive_minutes": 0,
+        "method": "prepare",
+        "equipment": [
+          "large_pot"
+        ],
+        "setup": false,
+        "done_when": "The skins are hollowed out with a thin layer of potato left"
+      },
+      {
+        "local_id": "s8",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Blend the soup",
+        "text": "Pour in {i6} and {i7}. Blitz with a stick blender until smooth.",
+        "uses": [
+          "i6",
+          "i7"
+        ],
+        "after": [
+          "s7"
+        ],
+        "active_minutes": 4,
+        "passive_minutes": 0,
+        "method": "blend",
+        "equipment": [
+          "large_pot",
+          "stick_blender"
+        ],
+        "mode": "medium",
+        "setup": false,
+        "done_when": "Smooth with no lumps of potato"
+      },
+      {
+        "local_id": "s9",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Simmer with cream",
+        "text": "Stir in {i9} and season with {i14} and {i15}. Simmer gently.",
+        "uses": [
+          "i9",
+          "i14",
+          "i15"
+        ],
+        "after": [
+          "s8"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 8,
+        "method": "simmer",
+        "equipment": [
+          "large_pot",
+          "wooden_spoon"
+        ],
+        "mode": "low",
+        "setup": false,
+        "done_when": "The soup is hot and gently bubbling"
+      },
+      {
+        "local_id": "s10",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Stir in the cheese",
+        "text": "Turn off the heat and stir in {i10}. Add {i8} until the soup has your desired consistency.",
+        "uses": [
+          "i10",
+          "i8"
+        ],
+        "after": [
+          "s9"
+        ],
+        "active_minutes": 3,
+        "passive_minutes": 0,
+        "holds_minutes": 20,
+        "method": "mix",
+        "equipment": [
+          "large_pot",
+          "wooden_spoon"
+        ],
+        "mode": "off",
+        "setup": false,
+        "done_when": "The cheese has melted and the soup is creamy"
+      },
+      {
+        "local_id": "s11",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Turn up the oven",
+        "text": "Heat the oven to its highest temperature.",
+        "uses": [],
+        "after": [],
+        "active_minutes": 1,
+        "passive_minutes": 10,
+        "method": "preheat",
+        "equipment": [
+          "oven"
+        ],
+        "temp_c": 250,
+        "setup": true,
+        "done_when": "The oven has reached temperature"
+      },
+      {
+        "local_id": "s12",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Season the skins",
+        "text": "Place the hollowed-out potato skins on a baking tray. Drizzle with {i16} and season with {i17} and {i18}.",
+        "uses": [
+          "i16",
+          "i17",
+          "i18"
+        ],
+        "after": [
+          "s7"
+        ],
+        "active_minutes": 3,
+        "passive_minutes": 0,
+        "method": "season",
+        "equipment": [
+          "baking_tray"
+        ],
+        "setup": false
+      },
+      {
+        "local_id": "s13",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Bake the skins",
+        "text": "Bake the skins at the highest temperature for 5 minutes until very crispy.",
+        "uses": [],
+        "after": [
+          "s12"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 5,
+        "holds_minutes": 15,
+        "method": "bake",
+        "equipment": [
+          "oven"
+        ],
+        "temp_c": 250,
+        "setup": false,
+        "done_when": "The skins are golden and very crispy"
+      },
+      {
+        "local_id": "s14",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Dice bacon, chop chives",
+        "text": "Dice the crispy bacon and finely chop {i20}.",
+        "uses": [
+          "i20"
+        ],
+        "after": [
+          "s5"
+        ],
+        "active_minutes": 3,
+        "passive_minutes": 0,
+        "holds_minutes": 60,
+        "method": "chop",
+        "equipment": [],
+        "setup": false
+      },
+      {
+        "local_id": "s15",
+        "component_id": "c1",
+        "phase": "serve",
+        "short": "Serve",
+        "text": "Ladle the soup into bowls. Top with {i21}, the diced bacon, a dollop of {i19} and the chives. Serve with the crispy skin dippers.",
+        "uses": [
+          "i21",
+          "i19"
+        ],
+        "after": [
+          "s10",
+          "s14",
+          "s13"
+        ],
+        "active_minutes": 3,
+        "passive_minutes": 0,
+        "method": "serve",
+        "equipment": [
+          "ladle"
+        ],
+        "setup": false
+      }
+    ],
+    "chef_note": "The source lists chicken fat (schmaltz) but the method calls it chicken stock; use the liquid as written in your ingredient list."
+  }
+}

@@ -1,0 +1,579 @@
+{
+  "key": "db-180",
+  "set": "db",
+  "config": "sonnet-high",
+  "model": "claude-sonnet-5-5",
+  "effort": "high",
+  "valid": true,
+  "attempts_used": 1,
+  "first_try_valid": true,
+  "failed_rules_any_attempt": [],
+  "model_version": "claude-sonnet-5-5",
+  "examples_in_prompt": [
+    "carbonara",
+    "lasagne"
+  ],
+  "tokens": {
+    "prompt_tokens": 12067,
+    "output_tokens": 6861,
+    "thought_tokens": 0
+  },
+  "cost_usd": 0.074082,
+  "api_seconds": 42.0,
+  "wall_seconds": 42.0,
+  "round1": null,
+  "attempts": [
+    {
+      "attempt": 1,
+      "valid": true,
+      "failed_rules": [],
+      "errors": [],
+      "warnings": [],
+      "model_version": "claude-sonnet-5-5",
+      "prompt_tokens": 12067,
+      "cache_read_tokens": 10368,
+      "output_tokens": 6861,
+      "thought_tokens": null,
+      "stop_reason": "end_turn",
+      "cost_usd": 0.074082,
+      "seconds": 41.97
+    }
+  ],
+  "source_text": "Title: Butter Chicken with Tandoori-Grilled Chicken and Silky Tomato-Butter Sauce\nServings: 4\n\nIngredients (component | amount unit | name | prep_style | pantry food_id):\n- Tandoori Chicken | 600 g | chicken breast |  | 000044\n- Tandoori Chicken | 150 g | plain yogurt |  | 000205\n- Tandoori Chicken | 15 ml | lemon juice |  | IMP-0d29f9\n- Tandoori Chicken | 1 tsp | ground ginger |  | 000282\n- Tandoori Chicken | 15 g | garlic |  | 000112\n- Tandoori Chicken | 1 tsp | ground cumin |  | 000278\n- Tandoori Chicken | 1 tsp | ground coriander |  | 000279\n- Tandoori Chicken | 0.5 tsp | ground turmeric |  | 000280\n- Tandoori Chicken | 0.5 tsp | Cayenne Pepper |  | 000652\n- Tandoori Chicken | 1 tsp | salted butter |  | 000211\n- Silky Tomato-Butter Sauce | 80 g | butter |  | 000384\n- Silky Tomato-Butter Sauce | 400 g | canned tomatoes |  | 000415\n- Silky Tomato-Butter Sauce | 100 ml | heavy cream |  | 000219\n- Silky Tomato-Butter Sauce | 100 g | onion |  | 000111\n- Silky Tomato-Butter Sauce | 10 g | white sugar |  | 000358\n- Silky Tomato-Butter Sauce | 0.5 tsp | ground cinnamon |  | 000281\n- Silky Tomato-Butter Sauce | 0.25 tsp | ground cardamom |  | 000287\n- Silky Tomato-Butter Sauce | 0.25 tsp | ground cloves |  | 000284\n- Silky Tomato-Butter Sauce | 2 g | dried apricots |  | 000175\n\nSteps in order (component | phase | minutes | text):\n1. Tandoori Chicken | Prep |  | Mince the garlic and combine it in a bowl with plain yogurt, lemon juice, ginger, cumin, coriander, turmeric, salt, and cayenne pepper.\n2. Silky Tomato-Butter Sauce | Prep |  | Finely dice the onion and set aside. If the canned tomatoes are whole, pulse them in a blender until perfectly smooth.\n3. Tandoori Chicken | Prep |  | Cut the chicken breast into 3cm cubes. Ensure all pieces are uniform for even grilling.\n4. Silky Tomato-Butter Sauce | Cook |  | In a large heavy-bottomed pan, melt 40g of the butter over medium heat.\n5. Tandoori Chicken | Prep |  | Toss the chicken cubes in the tandoori marinade until well coated. Cover and refrigerate for at least 30 minutes.\n6. Silky Tomato-Butter Sauce | Cook |  | Add the diced onions and sauté for 6-8 minutes until they are soft and starting to turn golden.\n7. Tandoori Chicken | Prep |  | SAFETY: Thoroughly wash your hands, utensils, and any surfaces that came into contact with raw chicken.\n8. Silky Tomato-Butter Sauce | Cook |  | Stir in the cinnamon, cardamom, and cloves. Toast the spices in the butter for 60 seconds until fragrant.\n9. Tandoori Chicken | Cook |  | Preheat your oven grill or barbecue to 220°C.\n10. Silky Tomato-Butter Sauce | Cook |  | Pour in the tomato puree and add the sugar. Simmer gently for 15-20 minutes, stirring occasionally, until the sauce reduces and darkens.\n11. Tandoori Chicken | Cook |  | Thread chicken onto skewers or place on a wire rack over a baking sheet. Grill for 12-15 minutes, flipping once, until charred on the edges and cooked to an internal temperature of 75°C.\n12. Silky Tomato-Butter Sauce | Cook |  | Lower the heat and stir in the heavy cream and the remaining 40g of butter. Mix until the sauce is silky and emulsified.\n13. Tandoori Chicken | Serve |  | Remove the chicken from skewers and set aside to be incorporated into the sauce.\n14. Silky Tomato-Butter Sauce | Cook |  | Add the grilled Tandoori Chicken pieces into the sauce. Simmer for an additional 5 minutes to let the flavors meld.\n15. Silky Tomato-Butter Sauce | Serve |  | Rub the dried fenugreek leaves between your palms to release the oils and sprinkle over the hot butter chicken before serving.",
+  "recipe": {
+    "servings": 4,
+    "components": [
+      {
+        "local_id": "c1",
+        "name": "Tandoori Chicken"
+      },
+      {
+        "local_id": "c2",
+        "name": "Silky Tomato-Butter Sauce"
+      }
+    ],
+    "ingredients": [
+      {
+        "local_id": "i1",
+        "component_id": "c1",
+        "name": "chicken breast",
+        "amount": 600,
+        "unit": "g",
+        "prep_style": "cut into 3 cm cubes",
+        "pantry_id": "000044"
+      },
+      {
+        "local_id": "i2",
+        "component_id": "c1",
+        "name": "plain yogurt",
+        "amount": 150,
+        "unit": "g",
+        "pantry_id": "000205"
+      },
+      {
+        "local_id": "i3",
+        "component_id": "c1",
+        "name": "lemon juice",
+        "amount": 15,
+        "unit": "ml",
+        "pantry_id": "IMP-0d29f9"
+      },
+      {
+        "local_id": "i4",
+        "component_id": "c1",
+        "name": "ground ginger",
+        "amount": 1,
+        "unit": "tsp",
+        "pantry_id": "000282"
+      },
+      {
+        "local_id": "i5",
+        "component_id": "c1",
+        "name": "garlic",
+        "amount": 15,
+        "unit": "g",
+        "prep_style": "minced",
+        "pantry_id": "000112"
+      },
+      {
+        "local_id": "i6",
+        "component_id": "c1",
+        "name": "ground cumin",
+        "amount": 1,
+        "unit": "tsp",
+        "pantry_id": "000278"
+      },
+      {
+        "local_id": "i7",
+        "component_id": "c1",
+        "name": "ground coriander",
+        "amount": 1,
+        "unit": "tsp",
+        "pantry_id": "000279"
+      },
+      {
+        "local_id": "i8",
+        "component_id": "c1",
+        "name": "ground turmeric",
+        "amount": 0.5,
+        "unit": "tsp",
+        "pantry_id": "000280"
+      },
+      {
+        "local_id": "i9",
+        "component_id": "c1",
+        "name": "cayenne pepper",
+        "amount": 0.5,
+        "unit": "tsp",
+        "pantry_id": "000652"
+      },
+      {
+        "local_id": "i10",
+        "component_id": "c1",
+        "name": "salted butter",
+        "amount": 1,
+        "unit": "tsp",
+        "pantry_id": "000211"
+      },
+      {
+        "local_id": "i11",
+        "component_id": "c2",
+        "name": "butter",
+        "amount": 40,
+        "unit": "g",
+        "pantry_id": "000384"
+      },
+      {
+        "local_id": "i12",
+        "component_id": "c2",
+        "name": "butter",
+        "amount": 40,
+        "unit": "g",
+        "pantry_id": "000384"
+      },
+      {
+        "local_id": "i13",
+        "component_id": "c2",
+        "name": "canned tomatoes",
+        "amount": 400,
+        "unit": "g",
+        "prep_style": "blended smooth",
+        "pantry_id": "000415"
+      },
+      {
+        "local_id": "i14",
+        "component_id": "c2",
+        "name": "heavy cream",
+        "amount": 100,
+        "unit": "ml",
+        "pantry_id": "000219"
+      },
+      {
+        "local_id": "i15",
+        "component_id": "c2",
+        "name": "onion",
+        "amount": 100,
+        "unit": "g",
+        "prep_style": "finely diced",
+        "pantry_id": "000111"
+      },
+      {
+        "local_id": "i16",
+        "component_id": "c2",
+        "name": "white sugar",
+        "amount": 10,
+        "unit": "g",
+        "pantry_id": "000358"
+      },
+      {
+        "local_id": "i17",
+        "component_id": "c2",
+        "name": "ground cinnamon",
+        "amount": 0.5,
+        "unit": "tsp",
+        "pantry_id": "000281"
+      },
+      {
+        "local_id": "i18",
+        "component_id": "c2",
+        "name": "ground cardamom",
+        "amount": 0.25,
+        "unit": "tsp",
+        "pantry_id": "000287"
+      },
+      {
+        "local_id": "i19",
+        "component_id": "c2",
+        "name": "ground cloves",
+        "amount": 0.25,
+        "unit": "tsp",
+        "pantry_id": "000284"
+      },
+      {
+        "local_id": "i20",
+        "component_id": "c2",
+        "name": "dried apricots",
+        "amount": 2,
+        "unit": "g",
+        "pantry_id": "000175"
+      }
+    ],
+    "steps": [
+      {
+        "local_id": "s1",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Preheat oven grill",
+        "text": "Set the oven to grill at 220 °C with a rack in the upper third.",
+        "uses": [],
+        "after": [],
+        "active_minutes": 1,
+        "passive_minutes": 10,
+        "holds_minutes": 30,
+        "method": "preheat",
+        "equipment": [
+          "oven"
+        ],
+        "temp_c": 220,
+        "mode": "grill_element",
+        "setup": true,
+        "done_when": "The oven has reached temperature"
+      },
+      {
+        "local_id": "s2",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Mix the marinade",
+        "text": "Combine {i5}, {i2}, {i3}, {i4}, {i6}, {i7}, {i8} and {i9} in a bowl.",
+        "uses": [
+          "i5",
+          "i2",
+          "i3",
+          "i4",
+          "i6",
+          "i7",
+          "i8",
+          "i9"
+        ],
+        "after": [],
+        "active_minutes": 4,
+        "passive_minutes": 0,
+        "holds_minutes": 240,
+        "method": "mix",
+        "equipment": [
+          "bowl",
+          "whisk"
+        ],
+        "setup": false,
+        "done_when": "Smooth, evenly coloured marinade"
+      },
+      {
+        "local_id": "s3",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Cube the chicken",
+        "text": "Cut {i1} into 3 cm cubes. Keep all pieces uniform for even grilling.",
+        "uses": [
+          "i1"
+        ],
+        "after": [],
+        "active_minutes": 5,
+        "passive_minutes": 0,
+        "holds_minutes": 120,
+        "method": "slice",
+        "equipment": [],
+        "setup": false,
+        "done_when": "All cubes are roughly the same size"
+      },
+      {
+        "local_id": "s4",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Marinate the chicken",
+        "text": "Toss the chicken cubes in the marinade until well coated. Cover and refrigerate for at least 30 minutes. Then wash your hands, utensils and any surfaces that touched raw chicken thoroughly.",
+        "uses": [],
+        "after": [
+          "s2",
+          "s3"
+        ],
+        "active_minutes": 3,
+        "passive_minutes": 30,
+        "holds_minutes": 720,
+        "method": "marinate",
+        "equipment": [
+          "bowl",
+          "plastic_wrap"
+        ],
+        "setup": false,
+        "done_when": "Every piece is coated in marinade"
+      },
+      {
+        "local_id": "s5",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Dice the onion",
+        "text": "Finely dice {i15} and set aside.",
+        "uses": [
+          "i15"
+        ],
+        "after": [],
+        "active_minutes": 4,
+        "passive_minutes": 0,
+        "holds_minutes": 120,
+        "method": "chop",
+        "equipment": [],
+        "setup": false,
+        "done_when": "Evenly fine dice"
+      },
+      {
+        "local_id": "s6",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Blend the tomatoes",
+        "text": "If the {i13} are whole, pulse them in a blender until perfectly smooth.",
+        "uses": [
+          "i13"
+        ],
+        "after": [],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "holds_minutes": 240,
+        "method": "blend",
+        "equipment": [
+          "blender"
+        ],
+        "setup": false,
+        "done_when": "Perfectly smooth, no pieces left"
+      },
+      {
+        "local_id": "s7",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Melt the butter",
+        "text": "In a large heavy-bottomed pan, melt {i11} over medium heat.",
+        "uses": [
+          "i11"
+        ],
+        "after": [],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "method": "melt",
+        "equipment": [
+          "wide_pot"
+        ],
+        "mode": "medium",
+        "setup": false,
+        "done_when": "Butter fully melted and foaming lightly"
+      },
+      {
+        "local_id": "s8",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Sauté the onion",
+        "text": "Add the diced onion and sauté for 6-8 minutes.",
+        "uses": [],
+        "after": [
+          "s7",
+          "s5"
+        ],
+        "active_minutes": 4,
+        "passive_minutes": 3,
+        "method": "saute",
+        "equipment": [
+          "wide_pot",
+          "wooden_spoon"
+        ],
+        "mode": "medium",
+        "setup": false,
+        "done_when": "Soft and starting to turn golden"
+      },
+      {
+        "local_id": "s9",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Toast the spices",
+        "text": "Stir in {i17}, {i18} and {i19}. Toast the spices in the butter for 60 seconds.",
+        "uses": [
+          "i17",
+          "i18",
+          "i19"
+        ],
+        "after": [
+          "s8"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 0,
+        "method": "toast",
+        "equipment": [
+          "wide_pot",
+          "wooden_spoon"
+        ],
+        "mode": "medium",
+        "setup": false,
+        "done_when": "Fragrant"
+      },
+      {
+        "local_id": "s10",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Simmer the sauce",
+        "text": "Pour in the tomato puree and add {i16}. Simmer gently for 15-20 minutes, stirring occasionally.",
+        "uses": [
+          "i16"
+        ],
+        "after": [
+          "s9",
+          "s6"
+        ],
+        "active_minutes": 4,
+        "passive_minutes": 14,
+        "method": "simmer",
+        "equipment": [
+          "wide_pot",
+          "wooden_spoon"
+        ],
+        "mode": "low",
+        "setup": false,
+        "done_when": "Sauce has reduced and darkened"
+      },
+      {
+        "local_id": "s11",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Finish with cream",
+        "text": "Lower the heat and stir in {i14} and {i12}. Mix until the sauce is silky and emulsified.",
+        "uses": [
+          "i14",
+          "i12"
+        ],
+        "after": [
+          "s10"
+        ],
+        "active_minutes": 3,
+        "passive_minutes": 0,
+        "holds_minutes": 30,
+        "method": "mix",
+        "equipment": [
+          "wide_pot",
+          "whisk"
+        ],
+        "mode": "low",
+        "setup": false,
+        "done_when": "Silky, glossy and emulsified"
+      },
+      {
+        "local_id": "s12",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Skewer the chicken",
+        "text": "Thread the marinated chicken onto skewers or place it on a wire rack over a baking sheet, and dot with {i10}.",
+        "uses": [
+          "i10"
+        ],
+        "after": [
+          "s4"
+        ],
+        "active_minutes": 5,
+        "passive_minutes": 0,
+        "holds_minutes": 20,
+        "method": "assemble",
+        "equipment": [
+          "baking_tray",
+          "rack",
+          "skewers"
+        ],
+        "setup": false,
+        "done_when": "Chicken evenly spaced, not crowded"
+      },
+      {
+        "local_id": "s13",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Grill the chicken",
+        "text": "Grill the chicken for 12-15 minutes, flipping once.",
+        "uses": [],
+        "after": [
+          "s12",
+          "s1"
+        ],
+        "active_minutes": 5,
+        "passive_minutes": 9,
+        "holds_minutes": 20,
+        "method": "grill",
+        "equipment": [
+          "oven",
+          "tongs",
+          "thermometer"
+        ],
+        "temp_c": 220,
+        "mode": "grill_element",
+        "setup": false,
+        "done_when": "Charred on the edges and 75 °C internal temperature"
+      },
+      {
+        "local_id": "s14",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Remove from skewers",
+        "text": "Remove the chicken from the skewers and set aside to go into the sauce.",
+        "uses": [],
+        "after": [
+          "s13"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "holds_minutes": 20,
+        "method": "prepare",
+        "equipment": [
+          "plate",
+          "tongs"
+        ],
+        "setup": false
+      },
+      {
+        "local_id": "s15",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Simmer chicken in sauce",
+        "text": "Add the grilled tandoori chicken pieces to the sauce. Simmer for 5 minutes to let the flavors meld.",
+        "uses": [],
+        "after": [
+          "s14",
+          "s11"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 4,
+        "holds_minutes": 30,
+        "method": "simmer",
+        "equipment": [
+          "wide_pot",
+          "wooden_spoon"
+        ],
+        "mode": "low",
+        "setup": false,
+        "done_when": "Chicken is hot and coated in sauce"
+      },
+      {
+        "local_id": "s16",
+        "component_id": "c2",
+        "phase": "serve",
+        "short": "Garnish and serve",
+        "text": "Rub {i20} between your palms to release the oils and sprinkle over the hot butter chicken before serving.",
+        "uses": [
+          "i20"
+        ],
+        "after": [
+          "s15"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 0,
+        "method": "serve",
+        "equipment": [
+          "serving_dish"
+        ],
+        "setup": false
+      }
+    ],
+    "chef_note": "The source method mentions salt in the marinade and dried fenugreek leaves as the garnish, but neither is in the ingredient list. The list has dried apricots (2 g) instead, so I kept the list as written. Add salt to the marinade to taste.\n"
+  }
+}

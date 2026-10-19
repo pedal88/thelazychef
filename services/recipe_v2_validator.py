@@ -20,6 +20,8 @@ ID_PATTERNS = {'component': r'c\d+', 'ingredient': r'i\d+', 'step': r's\d+'}
 PLACEHOLDER = re.compile(r'\{([^{}]*)\}')
 TO_TASTE = re.compile(r'etter smak|to taste|as needed|etter behov', re.IGNORECASE)
 # "spe med melk mens du visper" is technique inside one step and allowed.
+# Equipment that must be heated before food goes in (warning no_preheat).
+PREHEATED = ('oven', 'airfryer')
 TIME_WORDS = re.compile(r'\bi mellomtiden\b|\bmeanwhile\b|\bin the meantime\b|\bwhile the\b|\bmens (?!du\b)', re.IGNORECASE)
 
 RULES = {
@@ -226,8 +228,12 @@ def validate_recipe_v2(recipe, catalogs=None):
             warn('time_words', f'{sid}.text contains time words ("mens", "meanwhile"). Say what to do, not when.')
         if (s.get('active_minutes') or 0) + (s.get('passive_minutes') or 0) <= 0:
             warn('zero_time', f'{sid} has no active or passive time.')
-        if s.get('setup') and s.get('method') not in cat['heat_methods']:
-            warn('setup_without_heat', f'{sid} is setup but method {s.get("method")!r} is not a heat method.')
+        eq0 = (s.get('equipment') or [None])[0]
+        if eq0 in PREHEATED and s.get('temp_c') and not s.get('setup') and not any(
+                o.get('setup') and (o.get('equipment') or [None])[0] == eq0 and o.get('temp_c') == s.get('temp_c')
+                for o in steps):
+            warn('no_preheat', f'{sid} uses the {eq0} at {s.get("temp_c")} °C, but no setup step heats the {eq0} '
+                               f'to {s.get("temp_c")} °C.')
         if s.get('method') in cat['heat_methods'] and not s.get('equipment'):
             warn('heat_without_equipment', f'{sid} uses heat but has no equipment.')
         if len((s.get('short') or '').split()) > 5:

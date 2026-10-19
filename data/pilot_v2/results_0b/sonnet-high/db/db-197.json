@@ -1,0 +1,570 @@
+{
+  "key": "db-197",
+  "set": "db",
+  "config": "sonnet-high",
+  "model": "claude-sonnet-5-5",
+  "effort": "high",
+  "valid": true,
+  "attempts_used": 2,
+  "first_try_valid": false,
+  "failed_rules_any_attempt": [
+    4
+  ],
+  "model_version": "claude-sonnet-5-5",
+  "examples_in_prompt": [
+    "carbonara",
+    "lasagne"
+  ],
+  "tokens": {
+    "prompt_tokens": 32028,
+    "output_tokens": 12002,
+    "thought_tokens": 0
+  },
+  "cost_usd": 0.146752,
+  "api_seconds": 77.1,
+  "wall_seconds": 77.1,
+  "round1": null,
+  "attempts": [
+    {
+      "attempt": 1,
+      "valid": false,
+      "failed_rules": [
+        4
+      ],
+      "errors": [
+        {
+          "rule": 4,
+          "message": "i12 (lemon) is used by 2 steps (s3, s13). Split it into one ingredient line per step, each with its own amount."
+        },
+        {
+          "rule": 4,
+          "message": "i13 (parsley) is used by 2 steps (s3, s13). Split it into one ingredient line per step, each with its own amount."
+        }
+      ],
+      "warnings": [],
+      "model_version": "claude-sonnet-5-5",
+      "prompt_tokens": 12027,
+      "cache_read_tokens": 10368,
+      "output_tokens": 7832,
+      "thought_tokens": null,
+      "stop_reason": "end_turn",
+      "cost_usd": 0.083712,
+      "seconds": 51.44
+    },
+    {
+      "attempt": 2,
+      "valid": true,
+      "failed_rules": [],
+      "errors": [],
+      "warnings": [],
+      "model_version": "claude-sonnet-5-5",
+      "prompt_tokens": 20001,
+      "cache_read_tokens": 10368,
+      "output_tokens": 4170,
+      "thought_tokens": null,
+      "stop_reason": "end_turn",
+      "cost_usd": 0.06304,
+      "seconds": 25.63
+    }
+  ],
+  "source_text": "Title: Spanish Seafood and Chicken Paella\nServings: 4\n\nIngredients (component | amount unit | name | prep_style | pantry food_id):\n- Chicken and Seafood | 400 g | chicken thigh |  | 000047\n- Chicken and Seafood | 200 g | shrimps |  | 000058\n- Chicken and Seafood | 200 g | scampi |  | 000059\n- Chicken and Seafood | 1 tsp | smoked paprika |  | 000291\n- Chicken and Seafood | 1 tsp | kosher salt |  | 000293\n- Chicken and Seafood | 0.5 tsp | ground black pepper |  | 000285\n- Chicken and Seafood | 30 ml | olive oil |  | 000378\n- Chicken and Seafood | 1 pcs | lemon |  | 000130\n- Chicken and Seafood | 10 g | parsley |  | 000246\n- Saffron Rice and Vegetables | 400 g | white rice |  | 000309\n- Saffron Rice and Vegetables | 150 g | green beans |  | 000106\n- Saffron Rice and Vegetables | 100 g | onion |  | 000111\n- Saffron Rice and Vegetables | 15 g | garlic |  | 000112\n- Saffron Rice and Vegetables | 200 g | tomatoes |  | 000093\n- Saffron Rice and Vegetables | 2 pcs | Chicken Bouillon Cube |  | 000635\n- Saffron Rice and Vegetables | 800 ml | Water |  | IMP-b38735\n- Saffron Rice and Vegetables | 0.5 tsp | Saffron Threads |  | pending-2b5d5a39\n- Saffron Rice and Vegetables | 0.5 tsp | ground turmeric |  | 000280\n\nSteps in order (component | phase | minutes | text):\n1. Chicken and Seafood | Prep |  | Clean the shrimps and scampi, leaving the tails on if preferred, and cut the chicken thighs into 3cm bite-sized chunks.\n2. Saffron Rice and Vegetables | Prep |  | Finely dice the onion, mince the garlic cloves, and core and chop the tomatoes. Trim the ends of the green beans and cut into small pieces.\n3. Chicken and Seafood | Prep |  | Finely chop the fresh parsley and cut the lemon into six uniform wedges for the final garnish.\n4. Saffron Rice and Vegetables | Prep |  | In a separate pot, dissolve the chicken bouillon cubes in boiling water and add the saffron threads and turmeric to infuse the liquid.\n5. Chicken and Seafood | Prep |  | In a small bowl, toss the chicken pieces with half of the smoked paprika, salt, and black pepper until evenly coated.\n6. Saffron Rice and Vegetables | Cook |  | Using the same paella pan, sauté the onion and green beans over medium heat until the onion becomes translucent.\n7. Chicken and Seafood | Cook |  | Heat 15ml of olive oil in a wide paella pan or large flat-bottomed skillet over medium-high heat.\n8. Saffron Rice and Vegetables | Cook |  | Stir in the minced garlic and chopped tomatoes, cooking until the tomatoes break down into a thick, concentrated sofrito paste.\n9. Chicken and Seafood | Cook |  | [SAFETY] Add the chicken pieces to the pan and sear until golden brown and fully cooked through (about 6-8 minutes), then remove and set aside.\n10. Saffron Rice and Vegetables | Cook |  | Add the white rice to the pan and stir for 2 minutes to toast the grains and coat them thoroughly in the vegetable oil mixture.\n11. Chicken and Seafood | Cook |  | [SAFETY] Add the remaining olive oil to the pan and sear the shrimps and scampi until they turn opaque and pink (2-3 minutes), then set aside.\n12. Saffron Rice and Vegetables | Cook |  | Pour in the hot saffron-infused bouillon; spread the rice evenly across the pan but do not stir it again to ensure the 'socarrat' crust develops.\n13. Chicken and Seafood | Serve |  | Keep the seared proteins on a warm plate covered loosely with foil while you prepare the rice base.\n14. Saffron Rice and Vegetables | Cook |  | Simmer the rice on low heat for 15-18 minutes until most of the liquid is absorbed and the grains are tender.\n15. Saffron Rice and Vegetables | Serve |  | Arrange the chicken, shrimps, and scampi on top of the cooked rice, garnish with lemon wedges and parsley, and rest for 5 minutes.",
+  "recipe": {
+    "servings": 4,
+    "components": [
+      {
+        "local_id": "c1",
+        "name": "Chicken and Seafood"
+      },
+      {
+        "local_id": "c2",
+        "name": "Saffron Rice and Vegetables"
+      }
+    ],
+    "ingredients": [
+      {
+        "local_id": "i1",
+        "component_id": "c1",
+        "name": "chicken thigh",
+        "amount": 400,
+        "unit": "g",
+        "prep_style": "in 3 cm bite-sized chunks",
+        "pantry_id": "000047"
+      },
+      {
+        "local_id": "i2",
+        "component_id": "c1",
+        "name": "shrimps",
+        "amount": 200,
+        "unit": "g",
+        "prep_style": "cleaned",
+        "pantry_id": "000058"
+      },
+      {
+        "local_id": "i3",
+        "component_id": "c1",
+        "name": "scampi",
+        "amount": 200,
+        "unit": "g",
+        "prep_style": "cleaned",
+        "pantry_id": "000059"
+      },
+      {
+        "local_id": "i4",
+        "component_id": "c1",
+        "name": "smoked paprika",
+        "amount": 0.5,
+        "unit": "tsp",
+        "pantry_id": "000291"
+      },
+      {
+        "local_id": "i5",
+        "component_id": "c1",
+        "name": "kosher salt",
+        "amount": 0.5,
+        "unit": "tsp",
+        "pantry_id": "000293"
+      },
+      {
+        "local_id": "i6",
+        "component_id": "c1",
+        "name": "ground black pepper",
+        "amount": 0.25,
+        "unit": "tsp",
+        "pantry_id": "000285"
+      },
+      {
+        "local_id": "i7",
+        "component_id": "c1",
+        "name": "smoked paprika",
+        "amount": 0.5,
+        "unit": "tsp",
+        "pantry_id": "000291"
+      },
+      {
+        "local_id": "i8",
+        "component_id": "c1",
+        "name": "kosher salt",
+        "amount": 0.5,
+        "unit": "tsp",
+        "pantry_id": "000293"
+      },
+      {
+        "local_id": "i9",
+        "component_id": "c1",
+        "name": "ground black pepper",
+        "amount": 0.25,
+        "unit": "tsp",
+        "pantry_id": "000285"
+      },
+      {
+        "local_id": "i10",
+        "component_id": "c1",
+        "name": "olive oil",
+        "amount": 15,
+        "unit": "ml",
+        "pantry_id": "000378"
+      },
+      {
+        "local_id": "i11",
+        "component_id": "c1",
+        "name": "olive oil",
+        "amount": 15,
+        "unit": "ml",
+        "pantry_id": "000378"
+      },
+      {
+        "local_id": "i12",
+        "component_id": "c2",
+        "name": "lemon",
+        "amount": 1,
+        "unit": "piece",
+        "prep_style": "cut into six wedges",
+        "pantry_id": "000130"
+      },
+      {
+        "local_id": "i13",
+        "component_id": "c2",
+        "name": "parsley",
+        "amount": 10,
+        "unit": "g",
+        "prep_style": "finely chopped",
+        "pantry_id": "000246"
+      },
+      {
+        "local_id": "i14",
+        "component_id": "c2",
+        "name": "white rice",
+        "amount": 400,
+        "unit": "g",
+        "pantry_id": "000309"
+      },
+      {
+        "local_id": "i15",
+        "component_id": "c2",
+        "name": "green beans",
+        "amount": 150,
+        "unit": "g",
+        "prep_style": "trimmed and cut into small pieces",
+        "pantry_id": "000106"
+      },
+      {
+        "local_id": "i16",
+        "component_id": "c2",
+        "name": "onion",
+        "amount": 100,
+        "unit": "g",
+        "prep_style": "finely diced",
+        "pantry_id": "000111"
+      },
+      {
+        "local_id": "i17",
+        "component_id": "c2",
+        "name": "garlic",
+        "amount": 15,
+        "unit": "g",
+        "prep_style": "minced",
+        "pantry_id": "000112"
+      },
+      {
+        "local_id": "i18",
+        "component_id": "c2",
+        "name": "tomatoes",
+        "amount": 200,
+        "unit": "g",
+        "prep_style": "cored and chopped",
+        "pantry_id": "000093"
+      },
+      {
+        "local_id": "i19",
+        "component_id": "c2",
+        "name": "Chicken Bouillon Cube",
+        "amount": 2,
+        "unit": "piece",
+        "pantry_id": "000635"
+      },
+      {
+        "local_id": "i20",
+        "component_id": "c2",
+        "name": "Water",
+        "amount": 800,
+        "unit": "ml",
+        "pantry_id": "IMP-b38735"
+      },
+      {
+        "local_id": "i21",
+        "component_id": "c2",
+        "name": "Saffron Threads",
+        "amount": 0.5,
+        "unit": "tsp",
+        "pantry_id": "pending-2b5d5a39"
+      },
+      {
+        "local_id": "i22",
+        "component_id": "c2",
+        "name": "ground turmeric",
+        "amount": 0.5,
+        "unit": "tsp",
+        "pantry_id": "000280"
+      }
+    ],
+    "steps": [
+      {
+        "local_id": "s1",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Prepare chicken and seafood",
+        "text": "Clean {i2} and {i3}, leaving the tails on if preferred, and cut {i1} into 3 cm bite-sized chunks.",
+        "uses": [
+          "i1",
+          "i2",
+          "i3"
+        ],
+        "after": [],
+        "active_minutes": 10,
+        "passive_minutes": 0,
+        "holds_minutes": 60,
+        "method": "prepare",
+        "equipment": [
+          "cutting_board",
+          "knife"
+        ],
+        "setup": false,
+        "done_when": "Shellfish are clean and the chicken is in even chunks"
+      },
+      {
+        "local_id": "s2",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Chop the vegetables",
+        "text": "Finely dice {i16}, mince {i17}, and core and chop {i18}. Trim the ends of {i15} and cut into small pieces.",
+        "uses": [
+          "i15",
+          "i16",
+          "i17",
+          "i18"
+        ],
+        "after": [],
+        "active_minutes": 10,
+        "passive_minutes": 0,
+        "holds_minutes": 120,
+        "method": "chop",
+        "equipment": [
+          "cutting_board",
+          "knife"
+        ],
+        "setup": false
+      },
+      {
+        "local_id": "s3",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Prepare parsley and lemon",
+        "text": "Finely chop {i13} and cut {i12} into six uniform wedges for the final garnish.",
+        "uses": [
+          "i12",
+          "i13"
+        ],
+        "after": [],
+        "active_minutes": 4,
+        "passive_minutes": 0,
+        "holds_minutes": 120,
+        "method": "chop",
+        "equipment": [
+          "cutting_board",
+          "knife"
+        ],
+        "setup": false
+      },
+      {
+        "local_id": "s4",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Infuse the bouillon",
+        "text": "Bring {i20} to the boil in a separate pot, dissolve {i19} in it and add {i21} and {i22} to infuse the liquid.",
+        "uses": [
+          "i19",
+          "i20",
+          "i21",
+          "i22"
+        ],
+        "after": [],
+        "active_minutes": 3,
+        "passive_minutes": 8,
+        "holds_minutes": 30,
+        "method": "boil",
+        "equipment": [
+          "saucepan",
+          "whisk"
+        ],
+        "mode": "high",
+        "setup": false,
+        "done_when": "Bouillon is dissolved and the liquid is a deep golden colour"
+      },
+      {
+        "local_id": "s5",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Season the chicken",
+        "text": "In a small bowl, toss the chicken pieces with {i4}, {i5} and {i6} until evenly coated.",
+        "uses": [
+          "i4",
+          "i5",
+          "i6"
+        ],
+        "after": [
+          "s1"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "holds_minutes": 30,
+        "method": "season",
+        "equipment": [
+          "small_bowl"
+        ],
+        "setup": false,
+        "done_when": "Chicken is evenly coated in spices"
+      },
+      {
+        "local_id": "s6",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Sear the chicken",
+        "text": "Heat {i10} in a wide paella pan or large flat-bottomed skillet over medium-high heat. Add the chicken pieces and sear, then remove and set aside.",
+        "uses": [
+          "i10"
+        ],
+        "after": [
+          "s5"
+        ],
+        "active_minutes": 7,
+        "passive_minutes": 0,
+        "holds_minutes": 20,
+        "method": "sear",
+        "equipment": [
+          "frying_pan",
+          "tongs"
+        ],
+        "mode": "medium_high",
+        "setup": false,
+        "done_when": "Golden brown and fully cooked through, about 6-8 minutes"
+      },
+      {
+        "local_id": "s7",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Sear shrimps and scampi",
+        "text": "Add {i11} to the pan, season the shrimps and scampi with {i7}, {i8} and {i9}, and sear them, then set aside.",
+        "uses": [
+          "i11",
+          "i7",
+          "i8",
+          "i9"
+        ],
+        "after": [
+          "s1"
+        ],
+        "active_minutes": 3,
+        "passive_minutes": 0,
+        "holds_minutes": 15,
+        "method": "sear",
+        "equipment": [
+          "frying_pan",
+          "tongs"
+        ],
+        "mode": "medium_high",
+        "setup": false,
+        "done_when": "Opaque and pink, about 2-3 minutes"
+      },
+      {
+        "local_id": "s8",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Keep proteins warm",
+        "text": "Keep the seared chicken, shrimps and scampi on a warm plate, covered loosely with foil, while you prepare the rice base.",
+        "uses": [],
+        "after": [
+          "s6",
+          "s7"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 0,
+        "holds_minutes": 30,
+        "method": "rest",
+        "equipment": [
+          "plate",
+          "foil"
+        ],
+        "setup": false
+      },
+      {
+        "local_id": "s9",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Sauté onion and beans",
+        "text": "Using the same paella pan, sauté the onion and green beans over medium heat.",
+        "uses": [],
+        "after": [
+          "s2"
+        ],
+        "active_minutes": 5,
+        "passive_minutes": 0,
+        "method": "saute",
+        "equipment": [
+          "frying_pan",
+          "wooden_spoon"
+        ],
+        "mode": "medium",
+        "setup": false,
+        "done_when": "The onion is translucent"
+      },
+      {
+        "local_id": "s10",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Cook the sofrito",
+        "text": "Stir in the minced garlic and chopped tomatoes and cook.",
+        "uses": [],
+        "after": [
+          "s9",
+          "s2"
+        ],
+        "active_minutes": 8,
+        "passive_minutes": 0,
+        "method": "saute",
+        "equipment": [
+          "frying_pan",
+          "wooden_spoon"
+        ],
+        "mode": "medium",
+        "setup": false,
+        "done_when": "Tomatoes have broken down into a thick, concentrated sofrito paste"
+      },
+      {
+        "local_id": "s11",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Toast the rice",
+        "text": "Add {i14} to the pan and stir for 2 minutes to toast the grains and coat them thoroughly in the vegetable oil mixture.",
+        "uses": [
+          "i14"
+        ],
+        "after": [
+          "s10"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "method": "toast",
+        "equipment": [
+          "frying_pan",
+          "wooden_spoon"
+        ],
+        "mode": "medium",
+        "setup": false,
+        "done_when": "Grains are coated and glossy, and slightly translucent at the edges"
+      },
+      {
+        "local_id": "s12",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Simmer the rice",
+        "text": "Pour in the hot saffron-infused bouillon and spread the rice evenly across the pan, but do not stir it again so the 'socarrat' crust develops. Simmer on low heat for 15-18 minutes.",
+        "uses": [],
+        "after": [
+          "s11",
+          "s4"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 16,
+        "holds_minutes": 30,
+        "method": "simmer",
+        "equipment": [
+          "frying_pan"
+        ],
+        "mode": "low",
+        "setup": false,
+        "done_when": "Most of the liquid is absorbed and the grains are tender, with a crust forming on the bottom"
+      },
+      {
+        "local_id": "s13",
+        "component_id": "c2",
+        "phase": "serve",
+        "short": "Top and rest the paella",
+        "text": "Arrange the chicken, shrimps and scampi on top of the cooked rice, garnish with the lemon wedges and chopped parsley, and rest for 5 minutes before serving.",
+        "uses": [],
+        "after": [
+          "s12",
+          "s8",
+          "s3"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 5,
+        "method": "serve",
+        "equipment": [
+          "frying_pan"
+        ],
+        "setup": false
+      }
+    ],
+    "chef_note": "Do not stir the rice once the bouillon is added; the crisp socarrat crust on the bottom is the best part of a paella."
+  }
+}

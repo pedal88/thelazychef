@@ -1,0 +1,405 @@
+{
+  "key": "db-236",
+  "set": "db",
+  "config": "gemini",
+  "model": "gemini-flash-latest",
+  "effort": null,
+  "valid": true,
+  "attempts_used": 1,
+  "first_try_valid": true,
+  "failed_rules_any_attempt": [],
+  "model_version": "gemini-3.8-flash",
+  "examples_in_prompt": [
+    "carbonara",
+    "lasagne"
+  ],
+  "tokens": {
+    "prompt_tokens": 7186,
+    "output_tokens": 2910,
+    "thought_tokens": 7889
+  },
+  "cost_usd": 0.03599,
+  "api_seconds": 77.3,
+  "wall_seconds": 77.3,
+  "round1": null,
+  "attempts": [
+    {
+      "attempt": 1,
+      "valid": true,
+      "failed_rules": [],
+      "errors": [],
+      "warnings": [],
+      "model_version": "gemini-3.8-flash",
+      "prompt_tokens": 7186,
+      "output_tokens": 2910,
+      "thought_tokens": 7889,
+      "cost_usd": 0.03599,
+      "seconds": 77.31
+    }
+  ],
+  "source_text": "Title: Caramelized and Sticky Pork Neck\nServings: 4\n\nIngredients (component | amount unit | name | prep_style | pantry food_id):\n- Caramelized Pork | 1500 g | pork bone-in neck steaks |  | 000036\n- Caramelized Pork | 100 g | brown sugar |  | 000360\n- Caramelized Pork | 1 tbsp | Water |  | IMP-b38735\n- Caramelized Pork | 2 pcs | shallots |  | 000113\n- Caramelized Pork | 2 cloves | garlic |  | 000112\n- Caramelized Pork | 1 tbsp | ground ginger |  | 000282\n- Caramelized Pork | 400 ml | coconut milk |  | 000191\n- Caramelized Pork | 0.5 tsp | ground white pepper |  | 000286\n- Caramelized Pork | 1.5 tbsp | fish sauce |  | 000487\n- Side and Garnish | 400 g | white rice |  | 000309\n- Side and Garnish | 3 stalks | spring onions |  | 000116\n- Side and Garnish | 10 g | cilantro |  | 000245\n- Side and Garnish | 1 pcs | chili peppers |  | 000097\n- Side and Garnish | 1 pcs | lime |  | 000131\n\nSteps in order (component | phase | minutes | text):\n1. Caramelized Pork | Prep | 15 | Remove the bones from the pork neck steaks and rinse the meat thoroughly to remove any bone fragments. Finely chop the shallots, garlic, and ginger.\n2. Caramelized Pork | Cook | 5 | In a large pot, melt the brown sugar with 1 tablespoon of water over medium-high heat until it turns into a dark caramel.\n3. Caramelized Pork | Cook | 2 | Add the chopped shallots, garlic, and ginger to the caramel and stir to combine.\n4. Caramelized Pork | Cook | 2 | Add the pork pieces to the pot. Handle raw meat with care and wash hands after contact.\n5. Caramelized Pork | Cook | 5 | Pour in the coconut milk and add the white pepper and fish sauce. Bring the mixture to a boil on high heat.\n6. Caramelized Pork | Cook | 120 | Reduce the heat to medium and let the pot simmer uncovered for 1.5 to 2 hours. Stir occasionally until the liquid evaporates and the sugar begins to caramelize around the meat.\n7. Side and Garnish | Cook | 20 | While the pork is simmering, cook the jasmine rice according to package instructions.\n8. Caramelized Pork | Cook | 30 | Once the liquid is reduced and the meat is tender enough to fall apart, continue to cook and brown the meat in its own rendered fat for another 20-30 minutes, stirring to prevent burning.\n9. Side and Garnish | Prep | 5 | Finely slice the spring onions and chili peppers. Roughly chop the cilantro.\n10. Side and Garnish | Serve | 2 | Serve the sticky caramelized pork over a bed of jasmine rice. Garnish with spring onions, cilantro, and chili. Squeeze fresh lime juice over the top before eating.",
+  "recipe": {
+    "title": "Caramelized and Sticky Pork Neck",
+    "servings": 4,
+    "components": [
+      {
+        "local_id": "c1",
+        "name": "Caramelized pork"
+      },
+      {
+        "local_id": "c2",
+        "name": "Rice"
+      }
+    ],
+    "ingredients": [
+      {
+        "local_id": "i1",
+        "component_id": "c1",
+        "name": "pork bone-in neck steaks",
+        "amount": 1500.0,
+        "unit": "g",
+        "pantry_id": "000036"
+      },
+      {
+        "local_id": "i2",
+        "component_id": "c1",
+        "name": "brown sugar",
+        "amount": 100.0,
+        "unit": "g",
+        "pantry_id": "000360"
+      },
+      {
+        "local_id": "i3",
+        "component_id": "c1",
+        "name": "Water",
+        "amount": 1.0,
+        "unit": "tbsp",
+        "pantry_id": "IMP-b38735"
+      },
+      {
+        "local_id": "i4",
+        "component_id": "c1",
+        "name": "shallots",
+        "amount": 2.0,
+        "unit": "piece",
+        "pantry_id": "000113"
+      },
+      {
+        "local_id": "i5",
+        "component_id": "c1",
+        "name": "garlic",
+        "amount": 2.0,
+        "unit": "clove",
+        "pantry_id": "000112"
+      },
+      {
+        "local_id": "i6",
+        "component_id": "c1",
+        "name": "ground ginger",
+        "amount": 1.0,
+        "unit": "tbsp",
+        "pantry_id": "000282"
+      },
+      {
+        "local_id": "i7",
+        "component_id": "c1",
+        "name": "coconut milk",
+        "amount": 400.0,
+        "unit": "ml",
+        "pantry_id": "000191"
+      },
+      {
+        "local_id": "i8",
+        "component_id": "c1",
+        "name": "ground white pepper",
+        "amount": 0.5,
+        "unit": "tsp",
+        "pantry_id": "000286"
+      },
+      {
+        "local_id": "i9",
+        "component_id": "c1",
+        "name": "fish sauce",
+        "amount": 1.5,
+        "unit": "tbsp",
+        "pantry_id": "000487"
+      },
+      {
+        "local_id": "i10",
+        "component_id": "c2",
+        "name": "white rice",
+        "amount": 400.0,
+        "unit": "g",
+        "pantry_id": "000309"
+      },
+      {
+        "local_id": "i11",
+        "component_id": "c1",
+        "name": "spring onions",
+        "amount": 3.0,
+        "unit": "stalk",
+        "pantry_id": "000116"
+      },
+      {
+        "local_id": "i12",
+        "component_id": "c1",
+        "name": "cilantro",
+        "amount": 10.0,
+        "unit": "g",
+        "pantry_id": "000245"
+      },
+      {
+        "local_id": "i13",
+        "component_id": "c1",
+        "name": "chili peppers",
+        "amount": 1.0,
+        "unit": "piece",
+        "pantry_id": "000097"
+      },
+      {
+        "local_id": "i14",
+        "component_id": "c1",
+        "name": "lime",
+        "amount": 1.0,
+        "unit": "piece",
+        "pantry_id": "000131"
+      }
+    ],
+    "steps": [
+      {
+        "local_id": "s1",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Debone and rinse pork",
+        "text": "Remove the bones from {i1} and rinse the meat thoroughly to remove any bone fragments.",
+        "uses": [
+          "i1"
+        ],
+        "after": [],
+        "active_minutes": 10,
+        "passive_minutes": 0,
+        "method": "prepare",
+        "equipment": [
+          "cutting_board",
+          "knife"
+        ],
+        "setup": false
+      },
+      {
+        "local_id": "s2",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Chop aromatics",
+        "text": "Finely chop {i4}, {i5}, and {i6}.",
+        "uses": [
+          "i4",
+          "i5",
+          "i6"
+        ],
+        "after": [],
+        "active_minutes": 5,
+        "passive_minutes": 0,
+        "method": "chop",
+        "equipment": [
+          "cutting_board",
+          "knife"
+        ],
+        "setup": false
+      },
+      {
+        "local_id": "s3",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Make the caramel",
+        "text": "In a large pot, melt {i2} with {i3} over medium-high heat until it turns into a dark caramel.",
+        "uses": [
+          "i2",
+          "i3"
+        ],
+        "after": [],
+        "active_minutes": 5,
+        "passive_minutes": 0,
+        "method": "melt",
+        "equipment": [
+          "large_pot"
+        ],
+        "mode": "medium_high",
+        "setup": false,
+        "done_when": "The sugar turns into a dark caramel"
+      },
+      {
+        "local_id": "s4",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Add the aromatics",
+        "text": "Add the chopped shallots, garlic, and ginger to the caramel and stir to combine.",
+        "uses": [],
+        "after": [
+          "s3",
+          "s2"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "method": "saute",
+        "equipment": [
+          "large_pot",
+          "wooden_spoon"
+        ],
+        "mode": "medium_high",
+        "setup": false,
+        "done_when": "Fragrant and mixed into the caramel"
+      },
+      {
+        "local_id": "s5",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Add the pork",
+        "text": "Add the prepared pork pieces to the pot. Handle raw meat with care and wash hands after contact.",
+        "uses": [],
+        "after": [
+          "s4",
+          "s1"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "method": "sear",
+        "equipment": [
+          "large_pot",
+          "wooden_spoon"
+        ],
+        "mode": "medium_high",
+        "setup": false
+      },
+      {
+        "local_id": "s6",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Add liquids and boil",
+        "text": "Pour in {i7} and add {i8} and {i9}. Bring the mixture to a boil on high heat.",
+        "uses": [
+          "i7",
+          "i8",
+          "i9"
+        ],
+        "after": [
+          "s5"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 4,
+        "method": "boil",
+        "equipment": [
+          "large_pot"
+        ],
+        "mode": "high",
+        "setup": false,
+        "done_when": "Liquid is boiling rapidly"
+      },
+      {
+        "local_id": "s7",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Simmer the pork",
+        "text": "Reduce the heat to medium and let the pot simmer uncovered for 1.5 to 2 hours. Stir occasionally until the liquid evaporates and the sugar begins to caramelize around the meat.",
+        "uses": [],
+        "after": [
+          "s6"
+        ],
+        "active_minutes": 10,
+        "passive_minutes": 110,
+        "method": "simmer",
+        "equipment": [
+          "large_pot",
+          "wooden_spoon"
+        ],
+        "mode": "medium",
+        "setup": false,
+        "done_when": "Liquid has evaporated and sugar starts caramelizing on the meat"
+      },
+      {
+        "local_id": "s8",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Brown the pork",
+        "text": "Once the liquid is reduced and the meat is tender enough to fall apart, continue to cook and brown the meat in its own rendered fat for another 20 to 30 minutes, stirring to prevent burning.",
+        "uses": [],
+        "after": [
+          "s7"
+        ],
+        "active_minutes": 5,
+        "passive_minutes": 25,
+        "holds_minutes": 30,
+        "method": "sear",
+        "equipment": [
+          "large_pot",
+          "wooden_spoon"
+        ],
+        "mode": "medium",
+        "setup": false,
+        "done_when": "Meat is tender enough to fall apart and browned in rendered fat"
+      },
+      {
+        "local_id": "s9",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Cook the rice",
+        "text": "Cook {i10} according to package instructions.",
+        "uses": [
+          "i10"
+        ],
+        "after": [],
+        "active_minutes": 2,
+        "passive_minutes": 18,
+        "holds_minutes": 20,
+        "method": "boil",
+        "equipment": [
+          "saucepan"
+        ],
+        "mode": "medium_low",
+        "setup": false,
+        "done_when": "Rice is tender and all liquid is absorbed"
+      },
+      {
+        "local_id": "s10",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Slice garnishes",
+        "text": "Finely slice {i11} and {i13}. Roughly chop {i12}.",
+        "uses": [
+          "i11",
+          "i12",
+          "i13"
+        ],
+        "after": [],
+        "active_minutes": 5,
+        "passive_minutes": 0,
+        "holds_minutes": 60,
+        "method": "slice",
+        "equipment": [
+          "cutting_board",
+          "knife"
+        ],
+        "setup": false
+      },
+      {
+        "local_id": "s11",
+        "component_id": "c1",
+        "phase": "serve",
+        "short": "Assemble and serve",
+        "text": "Serve the sticky caramelized pork over a bed of the cooked rice. Garnish with the sliced spring onions, cilantro, and chili. Squeeze juice from {i14} over the top before eating.",
+        "uses": [
+          "i14"
+        ],
+        "after": [
+          "s8",
+          "s9",
+          "s10"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "method": "serve",
+        "equipment": [],
+        "setup": false
+      }
+    ]
+  }
+}

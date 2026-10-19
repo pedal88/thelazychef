@@ -1,0 +1,422 @@
+{
+  "key": "brownies",
+  "set": "fasit",
+  "config": "gemini",
+  "model": "gemini-flash-latest",
+  "effort": null,
+  "valid": true,
+  "attempts_used": 1,
+  "first_try_valid": true,
+  "failed_rules_any_attempt": [],
+  "model_version": "gemini-3.8-flash",
+  "examples_in_prompt": [
+    "carbonara",
+    "lasagne"
+  ],
+  "tokens": {
+    "prompt_tokens": 7540,
+    "output_tokens": 4200,
+    "thought_tokens": 2845
+  },
+  "cost_usd": 0.024905,
+  "api_seconds": 56.6,
+  "wall_seconds": 56.6,
+  "round1": {
+    "model_version": "gemini-3.8-flash",
+    "prompt_tokens": 207,
+    "output_tokens": 915,
+    "thought_tokens": 1600,
+    "cost_usd": 0.007648,
+    "seconds": 24.2
+  },
+  "attempts": [
+    {
+      "attempt": 1,
+      "valid": true,
+      "failed_rules": [],
+      "errors": [],
+      "warnings": [],
+      "model_version": "gemini-3.8-flash",
+      "prompt_tokens": 7333,
+      "output_tokens": 3285,
+      "thought_tokens": 1245,
+      "cost_usd": 0.017257,
+      "seconds": 32.42
+    }
+  ],
+  "source_text": "Brownies med mørk sjokolade og valnøtter\n\nAntall porsjoner: 16 biter (form på 20 × 20 cm)\n\nIngredienser\n\nBrownierøre:\n- 150 g meierismør\n- 180 g mørk sjokolade (ca. 70 % kakao), grovhakket\n- 3 store egg (romtempererte)\n- 150 g hvitt sukker\n- 60 g brunt sukker\n- 1 ts vaniljesukker\n- 80 g hvetemel\n- 25 g bakekakao\n- 0,5 ts flaksalt\n- 100 g valnøtter\n\nFremgangsmåte\n\n1. Forvarm stekeovnen til 170 grader over- og undervarme. Kle en firkantet form på 20 × 20 cm med bakepapir slik at papiret henger litt over kanten på to sider; da er kaken enkel å løfte ut etter steking.\n\n2. Varm en tørr stekepanne over middels varme. Ha i valnøttene og rist dem i 3–4 minutter under stadig omrøring, til de dufter nøtteaktig og har fått litt farge. Hell nøttene over på en fjel, la dem avkjøle seg litt og grovhakk dem.\n\n3. Smelt smøret i en liten kjele over lav varme. Trekk kjelen av platen, ha i den grovhakkede mørke sjokoladen og la den ligge i et minutt før du rører rundt med en slikkepott til alt er smeltet sammen til en glatt, blank masse. Sett blandingen til side så den rekker å bli lunken.\n\n4. Pisk egg, hvitt sukker, brunt sukker og vaniljesukker i en bakebolle med en elektrisk håndmikser på middels til høy hastighet i 3–4 minutter. Massen skal bli lys, kremete og luftig. Dette trinnet er avgjørende for å få den klassiske, tynne og sprø hinna på toppen av browniesen.\n\n5. Hell den lunkne sjokolade- og smørblandingen i bollen i en tynn stråle mens du vender den forsiktig inn i eggemassen med en slikkepott.\n\n6. Sikt hvetemel, bakekakao og salt over bollen. Vend det tørre inn i røren med rolige, store tak til melet akkurat har forsvunnet. Ikke rør mer enn nødvendig, ellers mister kaken den seige, saftige konsistensen. Vend til slutt inn de ristede valnøttene.\n\n7. Hell røren over i formen og jevn ut overflaten med slikkepotten.\n\n8. Stek kaken på midterste rille i ovnen ved 170 grader i 22–25 minutter. Du ser at browniesen er ferdig når kantene virker faste og toppen er tørr og krakelert, mens midten fremdeles er litt dissete og myk når du beveger forsiktig på formen. Stikker du en trepinne midt i kaken, skal det følge med fuktige kakesmuler, men ikke rå røre.\n\n9. Løft formen over på en rist og la kaken avkjøles helt i formen i romtemperatur. Sett den deretter i kjøleskapet i minst 2 timer for at sjokoladen skal sette seg skikkelig. Løft kaken ut av formen ved hjelp av bakepapiret, legg den på et skjærebrett og del den i 16 jevne biter (4 × 4 ruter).\n\nKokketips: For å få helt skarpe og profesjonelle snittflater, skyll en stor, skarp kokkekniv i varmt vann og tørk av bladet med et kjøkkenpapir mellom hvert eneste kutt.",
+  "recipe": {
+    "title": "Brownies med mørk sjokolade og valnøtter",
+    "servings": 16,
+    "components": [
+      {
+        "local_id": "c1",
+        "name": "Brownies"
+      }
+    ],
+    "ingredients": [
+      {
+        "local_id": "i1",
+        "component_id": "c1",
+        "name": "meierismør",
+        "amount": 150.0,
+        "unit": "g"
+      },
+      {
+        "local_id": "i2",
+        "component_id": "c1",
+        "name": "mørk sjokolade (ca. 70 % kakao)",
+        "amount": 180.0,
+        "unit": "g",
+        "prep_style": "grovhakket"
+      },
+      {
+        "local_id": "i3",
+        "component_id": "c1",
+        "name": "egg",
+        "amount": 3.0,
+        "unit": "piece",
+        "prep_style": "romtempererte"
+      },
+      {
+        "local_id": "i4",
+        "component_id": "c1",
+        "name": "hvitt sukker",
+        "amount": 150.0,
+        "unit": "g"
+      },
+      {
+        "local_id": "i5",
+        "component_id": "c1",
+        "name": "brunt sukker",
+        "amount": 60.0,
+        "unit": "g"
+      },
+      {
+        "local_id": "i6",
+        "component_id": "c1",
+        "name": "vaniljesukker",
+        "amount": 1.0,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i7",
+        "component_id": "c1",
+        "name": "hvetemel",
+        "amount": 80.0,
+        "unit": "g"
+      },
+      {
+        "local_id": "i8",
+        "component_id": "c1",
+        "name": "bakekakao",
+        "amount": 25.0,
+        "unit": "g"
+      },
+      {
+        "local_id": "i9",
+        "component_id": "c1",
+        "name": "flaksalt",
+        "amount": 0.5,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i10",
+        "component_id": "c1",
+        "name": "valnøtter",
+        "amount": 100.0,
+        "unit": "g"
+      }
+    ],
+    "steps": [
+      {
+        "local_id": "s1",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Forvarm ovnen",
+        "text": "Forvarm stekeovnen til 170 grader over- og undervarme.",
+        "uses": [],
+        "after": [],
+        "active_minutes": 1,
+        "passive_minutes": 14,
+        "method": "preheat",
+        "equipment": [
+          "oven"
+        ],
+        "temp_c": 170,
+        "mode": "top_bottom",
+        "setup": true,
+        "done_when": "Ovnen har nådd 170 grader"
+      },
+      {
+        "local_id": "s2",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Klargjør formen",
+        "text": "Kle en firkantet form på 20 × 20 cm med bakepapir slik at papiret henger litt over kanten på to sider.",
+        "uses": [],
+        "after": [],
+        "active_minutes": 3,
+        "passive_minutes": 0,
+        "method": "prepare",
+        "equipment": [
+          "form_20x20",
+          "baking_paper"
+        ],
+        "setup": true,
+        "done_when": "Formen er kledd med oppstikkende bakepapirkanter"
+      },
+      {
+        "local_id": "s3",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Rist valnøttene",
+        "text": "Varm en tørr stekepanne over middels varme. Ha i {i10} og rist under stadig omrøring i 3–4 minutter.",
+        "uses": [
+          "i10"
+        ],
+        "after": [],
+        "active_minutes": 4,
+        "passive_minutes": 0,
+        "method": "toast",
+        "equipment": [
+          "frying_pan"
+        ],
+        "mode": "medium",
+        "setup": false,
+        "done_when": "Nøttene dufter nøtteaktig og har fått litt farge"
+      },
+      {
+        "local_id": "s4",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Grovhakk valnøttene",
+        "text": "Hell valnøttene over på en fjel, la dem avkjøle seg litt og grovhakk dem.",
+        "uses": [],
+        "after": [
+          "s3"
+        ],
+        "active_minutes": 3,
+        "passive_minutes": 2,
+        "method": "chop",
+        "equipment": [
+          "cutting_board",
+          "knife"
+        ],
+        "setup": false,
+        "done_when": "Valnøttene er grovhakket"
+      },
+      {
+        "local_id": "s5",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Smelt smøret",
+        "text": "Smelt {i1} i en liten kjele over lav varme.",
+        "uses": [
+          "i1"
+        ],
+        "after": [],
+        "active_minutes": 1,
+        "passive_minutes": 3,
+        "method": "melt",
+        "equipment": [
+          "saucepan"
+        ],
+        "mode": "low",
+        "setup": false,
+        "done_when": "Smøret er helt smeltet"
+      },
+      {
+        "local_id": "s6",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Smelt sjokoladen i smøret",
+        "text": "Trekk kjelen av platen, ha i {i2} og la den ligge i ett minutt før du rører rundt med en slikkepott til alt er smeltet sammen til en glatt, blank masse. Sett blandingen til side så den rekker å bli lunken.",
+        "uses": [
+          "i2"
+        ],
+        "after": [
+          "s5"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 5,
+        "method": "mix",
+        "equipment": [
+          "saucepan",
+          "spatula"
+        ],
+        "mode": "off",
+        "setup": false,
+        "done_when": "Glatt, blank og lunken sjokolademasse"
+      },
+      {
+        "local_id": "s7",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Pisk egg og sukker",
+        "text": "Pisk {i3}, {i4}, {i5} og {i6} i en bolle med håndmikser på middels til høy hastighet i 3–4 minutter.",
+        "uses": [
+          "i3",
+          "i4",
+          "i5",
+          "i6"
+        ],
+        "after": [],
+        "active_minutes": 4,
+        "passive_minutes": 0,
+        "method": "whisk",
+        "equipment": [
+          "large_bowl",
+          "hand_mixer"
+        ],
+        "setup": false,
+        "done_when": "Massen er lys, kremete og luftig"
+      },
+      {
+        "local_id": "s8",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Vend inn sjokoladesmøret",
+        "text": "Hell den lunkne sjokolade- og smørblandingen i bollen i en tynn stråle mens du vender den forsiktig inn i eggemassen med en slikkepott.",
+        "uses": [],
+        "after": [
+          "s7",
+          "s6"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "method": "fold",
+        "equipment": [
+          "large_bowl",
+          "spatula"
+        ],
+        "setup": false,
+        "done_when": "Jevnt blandet røre uten striper"
+      },
+      {
+        "local_id": "s9",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Vend inn tørre ingredienser",
+        "text": "Sikt {i7}, {i8} og {i9} over bollen. Vend det tørre inn i røren med rolige, store tak til melet akkurat har forsvunnet, og vend til slutt inn valnøttene.",
+        "uses": [
+          "i7",
+          "i8",
+          "i9"
+        ],
+        "after": [
+          "s8",
+          "s4"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "method": "fold",
+        "equipment": [
+          "large_bowl",
+          "sieve",
+          "spatula"
+        ],
+        "setup": false,
+        "done_when": "Melet har akkurat forsvunnet og nøttene er jevnt fordelt"
+      },
+      {
+        "local_id": "s10",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Hell røren i formen",
+        "text": "Hell røren over i formen og jevn ut overflaten med slikkepotten.",
+        "uses": [],
+        "after": [
+          "s9",
+          "s2"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 0,
+        "method": "assemble",
+        "equipment": [
+          "form_20x20",
+          "spatula"
+        ],
+        "setup": false,
+        "done_when": "Røren er jevnt fordelt i formen"
+      },
+      {
+        "local_id": "s11",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Stek browniesen",
+        "text": "Stek kaken på midterste rille i ovnen ved 170 grader i 22–25 minutter.",
+        "uses": [],
+        "after": [
+          "s10"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 23,
+        "method": "bake",
+        "equipment": [
+          "oven"
+        ],
+        "temp_c": 170,
+        "mode": "top_bottom",
+        "setup": false,
+        "done_when": "Kantene er faste, toppen tørr og krakelert, midten litt dissete og en trepinne kommer ut med fuktige smuler"
+      },
+      {
+        "local_id": "s12",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Avkjøl browniesen",
+        "text": "Løft formen over på en rist og la kaken avkjøles helt i formen i romtemperatur.",
+        "uses": [],
+        "after": [
+          "s11"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 60,
+        "method": "cool",
+        "equipment": [
+          "rack"
+        ],
+        "setup": false,
+        "done_when": "Kaken er helt avkjølt til romtemperatur"
+      },
+      {
+        "local_id": "s13",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Sett i kjøleskapet",
+        "text": "Sett kaken i kjøleskapet i minst 2 timer for at sjokoladen skal sette seg skikkelig.",
+        "uses": [],
+        "after": [
+          "s12"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 120,
+        "method": "chill",
+        "equipment": [],
+        "setup": false,
+        "done_when": "Kaken har satt seg og er fast tvers igjennom"
+      },
+      {
+        "local_id": "s14",
+        "component_id": "c1",
+        "phase": "serve",
+        "short": "Del opp og server",
+        "text": "Løft kaken ut av formen ved hjelp av bakepapiret, legg den på et skjærebrett og del den i 16 jevne biter (4 × 4 ruter).",
+        "uses": [],
+        "after": [
+          "s13"
+        ],
+        "active_minutes": 3,
+        "passive_minutes": 0,
+        "method": "serve",
+        "equipment": [
+          "cutting_board",
+          "knife"
+        ],
+        "setup": false
+      }
+    ],
+    "chef_note": "For å få helt skarpe og profesjonelle snittflater, skyll en stor, skarp kokkekniv i varmt vann og tørk av bladet med et kjøkkenpapir mellom hvert eneste kutt."
+  }
+}

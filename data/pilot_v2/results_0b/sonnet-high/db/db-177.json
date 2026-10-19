@@ -1,0 +1,467 @@
+{
+  "key": "db-177",
+  "set": "db",
+  "config": "sonnet-high",
+  "model": "claude-sonnet-5-5",
+  "effort": "high",
+  "valid": true,
+  "attempts_used": 1,
+  "first_try_valid": true,
+  "failed_rules_any_attempt": [],
+  "model_version": "claude-sonnet-5-5",
+  "examples_in_prompt": [
+    "carbonara",
+    "lasagne"
+  ],
+  "tokens": {
+    "prompt_tokens": 11567,
+    "output_tokens": 5329,
+    "thought_tokens": 0
+  },
+  "cost_usd": 0.057762,
+  "api_seconds": 32.3,
+  "wall_seconds": 32.3,
+  "round1": null,
+  "attempts": [
+    {
+      "attempt": 1,
+      "valid": true,
+      "failed_rules": [],
+      "errors": [],
+      "warnings": [
+        {
+          "code": "zero_time",
+          "message": "s16 has no active or passive time."
+        }
+      ],
+      "model_version": "claude-sonnet-5-5",
+      "prompt_tokens": 11567,
+      "cache_read_tokens": 10368,
+      "output_tokens": 5329,
+      "thought_tokens": null,
+      "stop_reason": "end_turn",
+      "cost_usd": 0.057762,
+      "seconds": 32.3
+    }
+  ],
+  "source_text": "Title: Classic Cheeseburger on Brioche\nServings: 4\n\nIngredients (component | amount unit | name | prep_style | pantry food_id):\n- Beef Patty | 400 g | beef ground beef |  | 000011\n- Beef Patty | 0.5 tsp | Garlic Powder |  | 000643\n- Beef Patty | 0.5 tsp | Ground Onion |  | 000644\n- Beef Patty | 5 g | kosher salt |  | 000293\n- Beef Patty | 0.5 tsp | ground black pepper |  | 000285\n- Burger Assembly | 150 g | brioche |  | 000336\n- Burger Assembly | 40 g | cheddar |  | 000193\n- Burger Assembly | 20 g | lettuce |  | 000079\n- Burger Assembly | 60 g | Roma tomatoes, chopped |  | IMP-6d4cd7\n- Burger Assembly | 20 g | pickled cucumbers (dill pickles) |  | 000446\n- Burger Assembly | 15 g | unsalted butter |  | 000212\n\nSteps in order (component | phase | minutes | text):\n1. Beef Patty | Prep |  | Divide the chilled ground beef into two equal 200g portions.\n2. Burger Assembly | Prep |  | Slice the brioche buns horizontally and slice the Roma tomatoes into thin uniform rounds.\n3. Beef Patty | Prep |  | Form each portion into a patty about 10cm in diameter, slightly wider than your brioche bun.\n4. Burger Assembly | Prep |  | Rinse the lettuce leaves under cold water and pat them completely dry using a kitchen towel.\n5. Beef Patty | Prep |  | Press a small dimple into the center of each patty with your thumb to prevent shrinking and bulging during cooking.\n6. Burger Assembly | Cook |  | Spread softened butter onto the cut sides of the brioche bun halves.\n7. Beef Patty | Prep |  | In a small bowl, whisk together the garlic powder, onion powder, salt, and black pepper.\n8. Burger Assembly | Cook |  | Place the buns in a separate skillet over medium heat and toast for 1-2 minutes until golden and crisp.\n9. Beef Patty | Prep |  | Season the exterior of both patties generously on both sides with the spice mixture.\n10. Burger Assembly | Cook |  | During the final minute of cooking the patties, place cheddar slices on top and cover the pan to melt the cheese.\n11. Beef Patty | Cook |  | Heat a cast-iron skillet over high heat. SAFETY: Wash your hands and all surfaces that contacted raw meat thoroughly with soap.\n12. Burger Assembly | Serve |  | Lay the bottom toasted bun on a plate and place a piece of lettuce followed by the tomato slices.\n13. Beef Patty | Cook |  | Place patties in the hot pan and sear for 4 minutes until a dark brown crust forms, then flip.\n14. Burger Assembly | Serve |  | Carefully place the cheesed beef patty onto the tomatoes and top with the pickled cucumber slices.\n15. Beef Patty | Serve |  | Remove the patties from the heat and let them rest for 2 minutes to allow the juices to redistribute.\n16. Burger Assembly | Serve |  | Finish by placing the top bun over the pickles and serve immediately while hot.",
+  "recipe": {
+    "servings": 4,
+    "components": [
+      {
+        "local_id": "c1",
+        "name": "Beef Patty"
+      },
+      {
+        "local_id": "c2",
+        "name": "Cheeseburger"
+      }
+    ],
+    "ingredients": [
+      {
+        "local_id": "i1",
+        "component_id": "c1",
+        "name": "ground beef",
+        "amount": 400,
+        "unit": "g",
+        "prep_style": "chilled"
+      },
+      {
+        "local_id": "i2",
+        "component_id": "c1",
+        "name": "garlic powder",
+        "amount": 0.5,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i3",
+        "component_id": "c1",
+        "name": "ground onion",
+        "amount": 0.5,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i4",
+        "component_id": "c1",
+        "name": "kosher salt",
+        "amount": 5,
+        "unit": "g"
+      },
+      {
+        "local_id": "i5",
+        "component_id": "c1",
+        "name": "ground black pepper",
+        "amount": 0.5,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i6",
+        "component_id": "c2",
+        "name": "brioche",
+        "amount": 150,
+        "unit": "g"
+      },
+      {
+        "local_id": "i7",
+        "component_id": "c1",
+        "name": "cheddar",
+        "amount": 40,
+        "unit": "g",
+        "prep_style": "sliced"
+      },
+      {
+        "local_id": "i8",
+        "component_id": "c2",
+        "name": "lettuce",
+        "amount": 20,
+        "unit": "g"
+      },
+      {
+        "local_id": "i9",
+        "component_id": "c2",
+        "name": "Roma tomatoes",
+        "amount": 60,
+        "unit": "g",
+        "prep_style": "chopped"
+      },
+      {
+        "local_id": "i10",
+        "component_id": "c2",
+        "name": "pickled cucumbers (dill pickles)",
+        "amount": 20,
+        "unit": "g",
+        "prep_style": "sliced"
+      },
+      {
+        "local_id": "i11",
+        "component_id": "c2",
+        "name": "unsalted butter",
+        "amount": 15,
+        "unit": "g",
+        "prep_style": "softened"
+      }
+    ],
+    "steps": [
+      {
+        "local_id": "s1",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Heat the skillet",
+        "text": "Heat a cast-iron skillet over high heat.",
+        "uses": [],
+        "after": [],
+        "active_minutes": 1,
+        "passive_minutes": 4,
+        "holds_minutes": 15,
+        "method": "preheat",
+        "equipment": [
+          "frying_pan"
+        ],
+        "mode": "high",
+        "setup": true,
+        "done_when": "The pan is very hot and a drop of water sizzles off at once"
+      },
+      {
+        "local_id": "s2",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Divide the beef",
+        "text": "Divide the chilled {i1} into two equal 200 g portions. Wash your hands and all surfaces that touched raw meat thoroughly with soap afterwards.",
+        "uses": [
+          "i1"
+        ],
+        "after": [],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "holds_minutes": 30,
+        "method": "prepare",
+        "equipment": [
+          "kitchen_scale"
+        ],
+        "setup": false,
+        "done_when": "Two equal portions"
+      },
+      {
+        "local_id": "s3",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Form the patties",
+        "text": "Form each portion into a patty about 10 cm in diameter, slightly wider than your brioche bun. Press a small dimple into the center of each patty with your thumb to prevent shrinking and bulging during cooking.",
+        "uses": [],
+        "after": [
+          "s2"
+        ],
+        "active_minutes": 4,
+        "passive_minutes": 0,
+        "holds_minutes": 30,
+        "method": "shape",
+        "equipment": [],
+        "setup": false,
+        "done_when": "Even patties, each with a dimple in the center"
+      },
+      {
+        "local_id": "s4",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Mix the spices",
+        "text": "In a small bowl, whisk together {i2}, {i3}, {i4} and {i5}.",
+        "uses": [
+          "i2",
+          "i3",
+          "i4",
+          "i5"
+        ],
+        "after": [],
+        "active_minutes": 1,
+        "passive_minutes": 0,
+        "method": "whisk",
+        "equipment": [
+          "small_bowl",
+          "whisk"
+        ],
+        "setup": false,
+        "done_when": "Evenly mixed, no clumps"
+      },
+      {
+        "local_id": "s5",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Season the patties",
+        "text": "Season the exterior of both patties generously on both sides with the spice mixture.",
+        "uses": [],
+        "after": [
+          "s3",
+          "s4"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 0,
+        "holds_minutes": 15,
+        "method": "season",
+        "equipment": [],
+        "setup": false,
+        "done_when": "Both sides evenly coated"
+      },
+      {
+        "local_id": "s6",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Sear the patties",
+        "text": "Place the patties in the hot pan and sear for 4 minutes until a dark brown crust forms, then flip.",
+        "uses": [],
+        "after": [
+          "s5",
+          "s1"
+        ],
+        "active_minutes": 4,
+        "passive_minutes": 0,
+        "holds_minutes": 5,
+        "method": "sear",
+        "equipment": [
+          "frying_pan",
+          "turner"
+        ],
+        "mode": "high",
+        "setup": false,
+        "done_when": "A dark brown crust has formed"
+      },
+      {
+        "local_id": "s7",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Melt the cheese",
+        "text": "During the final minute of cooking the patties, place {i7} on top and cover the pan to melt the cheese.",
+        "uses": [
+          "i7"
+        ],
+        "after": [
+          "s6"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 0,
+        "holds_minutes": 5,
+        "method": "melt",
+        "equipment": [
+          "frying_pan",
+          "lid"
+        ],
+        "mode": "high",
+        "setup": false,
+        "done_when": "The cheese is melted and draping over the patties"
+      },
+      {
+        "local_id": "s8",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Rest the patties",
+        "text": "Remove the patties from the heat and let them rest for 2 minutes to allow the juices to redistribute.",
+        "uses": [],
+        "after": [
+          "s7"
+        ],
+        "active_minutes": 0,
+        "passive_minutes": 2,
+        "holds_minutes": 5,
+        "method": "rest",
+        "equipment": [
+          "plate"
+        ],
+        "setup": false
+      },
+      {
+        "local_id": "s9",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Slice buns and tomatoes",
+        "text": "Slice {i6} horizontally into buns and slice {i9} into thin uniform rounds.",
+        "uses": [
+          "i6",
+          "i9"
+        ],
+        "after": [],
+        "active_minutes": 4,
+        "passive_minutes": 0,
+        "holds_minutes": 60,
+        "method": "slice",
+        "equipment": [
+          "cutting_board",
+          "knife"
+        ],
+        "setup": false,
+        "done_when": "Buns cut cleanly in half and tomato rounds even"
+      },
+      {
+        "local_id": "s10",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Rinse the lettuce",
+        "text": "Rinse {i8} leaves under cold water and pat them completely dry using a kitchen towel.",
+        "uses": [
+          "i8"
+        ],
+        "after": [],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "holds_minutes": 120,
+        "method": "rinse",
+        "equipment": [
+          "kitchen_towel"
+        ],
+        "setup": false,
+        "done_when": "Leaves are completely dry"
+      },
+      {
+        "local_id": "s11",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Butter the buns",
+        "text": "Spread {i11} onto the cut sides of the brioche bun halves.",
+        "uses": [
+          "i11"
+        ],
+        "after": [
+          "s9"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "holds_minutes": 15,
+        "method": "prepare",
+        "equipment": [],
+        "setup": false,
+        "done_when": "Cut sides evenly buttered"
+      },
+      {
+        "local_id": "s12",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Toast the buns",
+        "text": "Place the buttered buns, cut side down, in a separate skillet over medium heat and toast for 1-2 minutes.",
+        "uses": [],
+        "after": [
+          "s11"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "holds_minutes": 10,
+        "method": "toast",
+        "equipment": [
+          "frying_pan"
+        ],
+        "mode": "medium",
+        "setup": false,
+        "done_when": "Golden and crisp"
+      },
+      {
+        "local_id": "s13",
+        "component_id": "c2",
+        "phase": "serve",
+        "short": "Build the bottom layer",
+        "text": "Lay the bottom toasted bun on a plate and place a piece of lettuce followed by the tomato slices.",
+        "uses": [],
+        "after": [
+          "s12",
+          "s10",
+          "s9"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 0,
+        "method": "assemble",
+        "equipment": [
+          "plate"
+        ],
+        "setup": false
+      },
+      {
+        "local_id": "s14",
+        "component_id": "c2",
+        "phase": "serve",
+        "short": "Add patty and pickles",
+        "text": "Carefully place the cheesed beef patty onto the tomatoes and top with {i10}.",
+        "uses": [
+          "i10"
+        ],
+        "after": [
+          "s13",
+          "s8"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 0,
+        "method": "assemble",
+        "equipment": [
+          "plate"
+        ],
+        "setup": false
+      },
+      {
+        "local_id": "s15",
+        "component_id": "c2",
+        "phase": "serve",
+        "short": "Top and serve",
+        "text": "Finish by placing the top bun over the pickles and serve immediately while hot.",
+        "uses": [],
+        "after": [
+          "s14"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 0,
+        "method": "serve",
+        "equipment": [],
+        "setup": false
+      },
+      {
+        "local_id": "s16",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Placeholder removed",
+        "text": "",
+        "uses": [],
+        "after": [],
+        "active_minutes": 0,
+        "passive_minutes": 0,
+        "method": "prepare",
+        "equipment": [],
+        "setup": false
+      }
+    ],
+    "chef_note": "Cook the patties hot and fast, and rest them briefly so the burger stays juicy.}</br>"
+  }
+}

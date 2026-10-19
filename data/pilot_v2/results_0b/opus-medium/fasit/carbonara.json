@@ -1,0 +1,382 @@
+{
+  "key": "carbonara",
+  "set": "fasit",
+  "config": "opus-medium",
+  "model": "claude-opus-5-5",
+  "effort": "medium",
+  "valid": true,
+  "attempts_used": 1,
+  "first_try_valid": true,
+  "failed_rules_any_attempt": [],
+  "model_version": "claude-opus-5-5",
+  "examples_in_prompt": [
+    "tikka",
+    "lasagne"
+  ],
+  "tokens": {
+    "prompt_tokens": 13978,
+    "output_tokens": 6477,
+    "thought_tokens": 0
+  },
+  "cost_usd": 0.141798,
+  "api_seconds": 62.7,
+  "wall_seconds": 62.7,
+  "round1": {
+    "model_version": "claude-opus-5-5",
+    "prompt_tokens": 332,
+    "cache_read_tokens": 0,
+    "output_tokens": 2041,
+    "thought_tokens": null,
+    "stop_reason": "end_turn",
+    "cost_usd": 0.042148,
+    "seconds": 26.78
+  },
+  "attempts": [
+    {
+      "attempt": 1,
+      "valid": true,
+      "failed_rules": [],
+      "errors": [],
+      "warnings": [],
+      "model_version": "claude-opus-5-5",
+      "prompt_tokens": 13646,
+      "cache_read_tokens": 12126,
+      "output_tokens": 4436,
+      "thought_tokens": null,
+      "stop_reason": "end_turn",
+      "cost_usd": 0.09965,
+      "seconds": 35.94
+    }
+  ],
+  "source_text": "Spaghetti carbonara på klassisk vis\n\n4 porsjoner\n\nIngredienser\n\nPasta og guanciale\n400 g spaghetti (gjerne bronsetrukket)\n200 g guanciale\n4 liter vann\n25 g grovt salt (ca. 1,5 ss) til pastavannet\n\nEggesaus\n2 hele egg (romtemperert)\n4 eggeplommer (romtemperert)\n100 g pecorino romano, finrevet (pluss litt ekstra til servering)\n2 ts sort pepper, grovknust (pluss litt ekstra til servering)\n\nFremgangsmåte\n\n1. Ta eggene ut av kjøleskapet minst 30 minutter før du starter. Romtempererte egg gir en jevnere saus som ikke skiller seg like lett.\n\n2. Skjær av den harde ytterkanten og eventuelt pepperskorpen på guancialen. Del kjøttet i staver på ca. 1 cm tykkelse og 3–4 cm lengde.\n\n3. Kok opp 4 liter vann i en stor kjele. Salt vannet når det koker. Bruk litt mindre salt enn du ellers ville gjort, fordi både pecorino og guanciale er salte.\n\n4. Legg guancialen i en stor, kald stekepanne uten fett. Sett pannen på middels varme (5–6 av 9). Stek i 8–12 minutter og rør av og til. Fettet skal smelte sakte ut. Guancialen er ferdig når den er gyllen og sprø i kantene, men fortsatt litt saftig inni. Ta pannen av platen og la fettet bli liggende i pannen.\n\n5. Mens guancialen steker, rister du den grovknuste pepperen i en tørr, liten panne på middels varme i 30–60 sekunder, til det dufter godt. Legg den til side.\n\n6. Pisk sammen hele egg, eggeplommer, pecorino og det meste av den ristede pepperen i en bolle. Du skal få en tykk, kremet masse. Den skal være så tykk at den nesten er en pasta.\n\n7. Kok spaghettien i det kokende vannet ca. 1 minutt kortere enn det som står på pakken, vanligvis 8–10 minutter. Den skal være al dente, altså myk utenpå men med en tydelig fasthet i midten. Ta vare på ca. 3 dl pastavann før du heller av.\n\n8. Rør 2–3 ss av det varme pastavannet inn i eggeblandingen. Rør kontinuerlig mens du heller. Dette varmer opp eggene forsiktig og gjør sausen smidigere.\n\n9. Sett pannen med guanciale på lav varme et øyeblikk, slik at fettet blir varmt igjen. Ha i den avrente spaghettien og vend godt rundt i fettet i ca. 30 sekunder. Ta deretter pannen helt av platen og la den stå i ca. 1 minutt, slik at temperaturen faller litt.\n\n10. Hell eggeblandingen over pastaen og vend kraftig og raskt med en tang i 1–2 minutter. Tilsett litt pastavann om gangen, 1–2 ss av gangen, til sausen er blank og kremet og legger seg rundt hver spaghettitråd. Sausen er riktig når den er tykk som en tynn vaniljesaus og ikke har klumper. Ser du antydning til eggerøre, er pannen for varm. Tilsett da litt mer pastavann og rør videre.\n\n11. Er sausen for tynn, setter du pannen tilbake på svak varme (2–3 av 9) i noen sekunder om gangen mens du rører hele tiden, til den tykner. Sausen bør holde 65–70 °C, så den skal aldri koke.\n\n12. Server umiddelbart på varme tallerkener. Strø over litt ekstra pecorino og den siste ristede pepperen.\n\nKokketips: Hold sausen i en metallbolle over en kjele med svakt sjarmende vann (bain-marie) hvis du er usikker på varmen. Ha pasta, fett og eggeblanding i bollen og rør til sausen tykner. Da har du full kontroll og unngår eggerøre. Ekte carbonara inneholder verken fløte, hvitløk eller løk. Kremaktigheten skal komme fra eggene, osten og stivelsen i pastavannet.",
+  "recipe": {
+    "servings": 4,
+    "components": [
+      {
+        "local_id": "c1",
+        "name": "Eggesaus"
+      },
+      {
+        "local_id": "c2",
+        "name": "Spaghetti carbonara"
+      }
+    ],
+    "ingredients": [
+      {
+        "local_id": "i1",
+        "component_id": "c2",
+        "name": "spaghetti (gjerne bronsetrukket)",
+        "amount": 400,
+        "unit": "g"
+      },
+      {
+        "local_id": "i2",
+        "component_id": "c2",
+        "name": "guanciale",
+        "amount": 200,
+        "unit": "g",
+        "prep_style": "i staver på ca. 1 × 3–4 cm"
+      },
+      {
+        "local_id": "i3",
+        "component_id": "c2",
+        "name": "vann",
+        "amount": 4,
+        "unit": "l"
+      },
+      {
+        "local_id": "i4",
+        "component_id": "c2",
+        "name": "grovt salt",
+        "amount": 25,
+        "unit": "g"
+      },
+      {
+        "local_id": "i5",
+        "component_id": "c1",
+        "name": "egg",
+        "amount": 2,
+        "unit": "piece",
+        "prep_style": "romtemperert"
+      },
+      {
+        "local_id": "i6",
+        "component_id": "c1",
+        "name": "eggeplommer",
+        "amount": 4,
+        "unit": "piece",
+        "prep_style": "romtemperert"
+      },
+      {
+        "local_id": "i7",
+        "component_id": "c1",
+        "name": "pecorino romano",
+        "amount": 100,
+        "unit": "g",
+        "prep_style": "finrevet"
+      },
+      {
+        "local_id": "i8",
+        "component_id": "c1",
+        "name": "sort pepper",
+        "amount": 2,
+        "unit": "tsp",
+        "prep_style": "grovknust"
+      },
+      {
+        "local_id": "i9",
+        "component_id": "c2",
+        "name": "pecorino romano",
+        "prep_style": "etter smak"
+      },
+      {
+        "local_id": "i10",
+        "component_id": "c2",
+        "name": "sort pepper",
+        "prep_style": "etter smak"
+      }
+    ],
+    "steps": [
+      {
+        "local_id": "s1",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Romtemperer eggene",
+        "text": "Ta {i5} og {i6} ut av kjøleskapet minst 30 minutter før du starter.",
+        "uses": [
+          "i5",
+          "i6"
+        ],
+        "after": [],
+        "active_minutes": 1,
+        "passive_minutes": 30,
+        "method": "prepare",
+        "equipment": [],
+        "setup": false,
+        "done_when": "Eggene er ikke lenger kjøleskapskalde"
+      },
+      {
+        "local_id": "s2",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Skjær guancialen",
+        "text": "Skjær av den harde ytterkanten og eventuelt pepperskorpen på {i2}. Del kjøttet i staver på ca. 1 cm tykkelse og 3–4 cm lengde.",
+        "uses": [
+          "i2"
+        ],
+        "after": [],
+        "active_minutes": 6,
+        "passive_minutes": 0,
+        "holds_minutes": 1440,
+        "method": "slice",
+        "equipment": [
+          "cutting_board",
+          "knife"
+        ],
+        "setup": false
+      },
+      {
+        "local_id": "s3",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Kok opp pastavannet",
+        "text": "Kok opp {i3} i en stor kjele. Salt vannet med {i4} når det koker. Bruk heller litt mindre salt enn ellers, fordi pecorino og guanciale er salte.",
+        "uses": [
+          "i3",
+          "i4"
+        ],
+        "after": [],
+        "active_minutes": 1,
+        "passive_minutes": 15,
+        "method": "boil",
+        "equipment": [
+          "large_pot",
+          "lid"
+        ],
+        "mode": "high",
+        "setup": true,
+        "done_when": "Vannet koker kraftig"
+      },
+      {
+        "local_id": "s4",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Stek guancialen",
+        "text": "Legg guancialen i en stor, kald stekepanne uten fett. Sett pannen på middels varme og stek i 8–12 minutter, og rør av og til. Ta pannen av platen og la fettet bli liggende i pannen.",
+        "uses": [],
+        "after": [
+          "s2"
+        ],
+        "active_minutes": 3,
+        "passive_minutes": 8,
+        "holds_minutes": 20,
+        "method": "pan_fry",
+        "equipment": [
+          "frying_pan",
+          "wooden_spoon"
+        ],
+        "mode": "medium",
+        "setup": false,
+        "done_when": "Gyllen og sprø i kantene, men fortsatt litt saftig inni"
+      },
+      {
+        "local_id": "s5",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Rist pepperen",
+        "text": "Rist {i8} i en tørr, liten panne på middels varme i 30–60 sekunder, til det dufter godt. Legg den til side.",
+        "uses": [
+          "i8"
+        ],
+        "after": [],
+        "active_minutes": 1,
+        "passive_minutes": 0,
+        "method": "toast",
+        "equipment": [
+          "frying_pan"
+        ],
+        "mode": "medium",
+        "setup": false,
+        "done_when": "Det dufter godt av pepper"
+      },
+      {
+        "local_id": "s6",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Pisk eggemassen",
+        "text": "Pisk sammen eggene, eggeplommene, {i7} og det meste av den ristede pepperen i en bolle. Ta vare på resten av pepperen til servering.",
+        "uses": [
+          "i7"
+        ],
+        "after": [
+          "s1",
+          "s5"
+        ],
+        "active_minutes": 3,
+        "passive_minutes": 0,
+        "holds_minutes": 30,
+        "method": "whisk",
+        "equipment": [
+          "bowl",
+          "whisk"
+        ],
+        "setup": false,
+        "done_when": "Tykk og kremet, nesten som en pasta"
+      },
+      {
+        "local_id": "s7",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Kok spaghettien",
+        "text": "Kok {i1} i det kokende vannet ca. 1 minutt kortere enn det som står på pakken, vanligvis 8–10 minutter. Ta vare på ca. 3 dl pastavann før du heller av.",
+        "uses": [
+          "i1"
+        ],
+        "after": [
+          "s3"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 8,
+        "holds_minutes": 2,
+        "method": "boil",
+        "equipment": [
+          "large_pot",
+          "colander"
+        ],
+        "mode": "high",
+        "setup": false,
+        "done_when": "Al dente: myk utenpå, men med tydelig fasthet i midten"
+      },
+      {
+        "local_id": "s8",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Temperer eggemassen",
+        "text": "Rør 2–3 ss av det varme pastavannet inn i eggeblandingen. Rør kontinuerlig mens du heller.",
+        "uses": [],
+        "after": [
+          "s6",
+          "s7"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 0,
+        "holds_minutes": 5,
+        "method": "mix",
+        "equipment": [
+          "bowl",
+          "whisk"
+        ],
+        "setup": false,
+        "done_when": "Eggemassen er smidigere og jevn"
+      },
+      {
+        "local_id": "s9",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Vend pasta i fettet",
+        "text": "Sett pannen med guanciale på lav varme et øyeblikk, slik at fettet blir varmt igjen. Ha i den avrente spaghettien og vend godt rundt i fettet i ca. 30 sekunder. Ta pannen helt av platen og la den stå i ca. 1 minutt.",
+        "uses": [],
+        "after": [
+          "s4",
+          "s7"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 1,
+        "holds_minutes": 2,
+        "method": "warm",
+        "equipment": [
+          "frying_pan",
+          "tongs"
+        ],
+        "mode": "low",
+        "setup": false,
+        "done_when": "Spaghettien er dekket av fett, og pannen har kjølt seg litt"
+      },
+      {
+        "local_id": "s10",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Vend inn eggesausen",
+        "text": "Hell eggeblandingen over pastaen og vend kraftig og raskt med en tang i 1–2 minutter. Tilsett resten av pastavannet litt om gangen, 1–2 ss av gangen, til sausen er blank og kremet. Ser du antydning til eggerøre, tilsett litt mer pastavann og rør videre. Er sausen for tynn, sett pannen tilbake på svak varme noen sekunder om gangen og rør hele tiden til den tykner. Sausen skal aldri koke.",
+        "uses": [],
+        "after": [
+          "s8",
+          "s9"
+        ],
+        "active_minutes": 3,
+        "passive_minutes": 0,
+        "holds_minutes": 2,
+        "method": "mix",
+        "equipment": [
+          "frying_pan",
+          "tongs"
+        ],
+        "mode": "low",
+        "setup": false,
+        "done_when": "Tykk som en tynn vaniljesaus, blank og uten klumper, og legger seg rundt hver spaghettitråd"
+      },
+      {
+        "local_id": "s11",
+        "component_id": "c2",
+        "phase": "serve",
+        "short": "Server",
+        "text": "Server umiddelbart på varme tallerkener. Strø over {i9}, resten av den ristede pepperen og {i10}.",
+        "uses": [
+          "i9",
+          "i10"
+        ],
+        "after": [
+          "s10"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "method": "serve",
+        "equipment": [
+          "plate"
+        ],
+        "setup": false
+      }
+    ],
+    "chef_note": "Er du usikker på varmen, kan du ha pasta, fett og eggeblanding i en metallbolle over en kjele med svakt småkokende vann (bain-marie) og røre til sausen tykner. Da har du full kontroll og unngår eggerøre. Ekte carbonara inneholder verken fløte, hvitløk eller løk; kremaktigheten kommer fra eggene, osten og stivelsen i pastavannet."
+  }
+}
