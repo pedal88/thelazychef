@@ -263,7 +263,10 @@ Tallene per 100 g kommer i dag fra Edamam, med AI-anslag der Edamam ikke fant in
 | 4 | Prompt-lab | **Ferdig 18.10.2026** (PR #51, #53, #54). Avsnitt 8 og `docs/PROMPT_LAB.md` |
 | 5 | Fase 0b med Claude | **Gjennomført 19.10.2026** (PR #61). Opus 5.5 med effort `low` for runde 1 og 2: 23 av 24 gyldige i første forsøk, 29 sekunder og ca. 0,07 USD per strukturering, og alltid pantry-ID. Sonnet trengte flere nye forsøk, Gemini er tre ganger tregere. Ni promptendringer til bygget. Se `docs/pilot/RECIPE_V2_PILOT_0B.md` |
 | 6 | Stil på ingredienssymboler | **Ferdig 18.10.2026** (PR #57–#59). Stil satt etter fem lab-runder, 654 symboler laget, gjennomgått og rullet ut med en datamigrering som kan rulles tilbake. Avsnitt 10 |
-| 7 | v2-bygget | Gjenstående pantry-feil (avsnitt 5), tabeller (inkludert former, enheter, tetthet, allergener og grunnvare), kildeadaptere, to runder som bakgrunnsjobb, validator, lesemodell, nye visninger og design-tokens (med dagens uttrykk) |
+| 7a | Mobil og stor skjerm | Før bygget, i prototypen. Hvilke visninger som finnes på telefon og på stor skjerm, hvordan de fungerer i en smal skjerm, og hvordan man går mellom stegene mens man lager mat. Telefonen er førstevalget, stor skjerm brukes til planlegging og oversikt. Avsnitt 13 |
+| 7b | v2-bygget, tynn skive | Én oppskrift hele veien i produksjon: input-feltet, begge rundene som bakgrunnsjobb, de nye tabellene og én visning på oppskriftssiden, bygget på design-tokens med dagens uttrykk. Finner integrasjonsproblemene (Cloud Tasks, planleggeren i Python, databasemodellen) mens de er billige |
+| 7c | v2-bygget, i bredden | Gjenstående pantry-feil (avsnitt 5), resten av tabellene (former, enheter, tetthet, allergener og grunnvare), alle kildeadapterne, resten av visningene, næring og redigering |
+| 7d | Helhetlig uttrykk | Etter den tynne skiven og før steg 9, gjerne parallelt med 7c og 8: palett, typografi, avstander, symboler, logo og merkevare, og en stilguide-side som viser tokens og komponenter rett fra koden. Gjøres med ekte oppskrifter foran seg. Avsnitt 13 |
 | 8 | Nygenerering | De relevante oppskriftene lages på nytt. De gamle arkiveres, og gamle tabeller og kode slettes når resultatet er godkjent |
 | 9 | Bilder av retter og komponenter | Avsnitt 10 |
 | 10 | Fase 3 | Mise en place |
@@ -276,6 +279,14 @@ Nevnt så de ikke glemmes, men ikke del av planen over:
 - **Edamam-nøklene:** to Edamam-apper har hatt nøklene sine hardkodet i det offentlige repoet siden februar 2026 (fjernet fra koden i PR #38). Abonnementet er avsluttet, men appene må slettes eller nøklene byttes i Edamam-dashbordet. Det må også bestemmes hvor næringstall skal hentes fra framover (avsnitt 9).
 - **Innholds-API for sosiale medier:** lese-API med token for publisert innhold med `updated_since`, bilder med stabile URL-er i faste formater (original, 1:1, 4:5, 9:16) med alt-tekst og AI-merking, og varsel ved publisering (webhook eller JSON-feed).
 - **Ressurser, samlinger og kokker som filer** i repoet som synkes til databasen, redigert i Claude Code.
-- **Stil:** typografi, farger og avstander, logo og merkevare, og en stilguide-side som viser tokens og komponenter rett fra koden.
 - **Norsk** for vanlige brukere.
 - Erstatninger (`RECIPE_VISUALIZATIONS.md` 9.5), økter og forkant ved lang ventetid (9.11), tilsyn i passiv tid, historikk for revisjoner og underoppskrifter.
+
+## 13. Utseende: struktur tidlig, stil sent
+
+Endringer i hvordan appen ser ut koster ulikt, og det bestemmer rekkefølgen (vedtatt 19.10.2026):
+
+1. **Mobil og stor skjerm er struktur** (steg 7a): hvilke visninger som finnes, hva som får plass, og hvordan man navigerer. Det er dyrt å endre når visningene er bygget, og avgjøres derfor i prototypen før bygget.
+2. **Design-tokens fra første linje** (steg 7b): farger, fonter og avstander samles på ett sted i stedet for å spres i koden. Da blir stil billig å endre senere.
+3. **Helhetlig uttrykk** (steg 7d) gjøres med ekte innhold foran seg og må være på plass før bildene av retter og komponenter (steg 9), fordi stilen på dem skal passe paletten. Ingredienssymbolene kan lages på nytt for rundt 30 USD hvis uttrykket krever det.
+4. **Finjustering** av farger, luft og tetthet gjøres fortløpende fra visningene viser ekte oppskrifter, i 7c og 8. Det er bortkastet å pusse før tokens finnes.
