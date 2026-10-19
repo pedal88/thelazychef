@@ -222,15 +222,89 @@ def fetch_sources(urls):
         if key in sources:
             print(f'{key} finnes: {url}')
             continue
-        if re.search(r'tiktok\.com|instagram\.com|youtube\.com|youtu\.be', url):
-            sources[key] = fetch_video(url)
-        else:
-            from services.web_scraper_service import WebScraper
-            page = WebScraper().scrape_url(url)
-            sources[key] = {'kind': 'web', 'url': url, 'text': page['text']}
+        try:
+            if re.search(r'tiktok\.com|tiktokv\.com|instagram\.com|youtube\.com|youtu\.be', url):
+                sources[key] = fetch_video(url)
+            else:
+                sources[key] = fetch_web(url)
+        except Exception as e:  # noqa: BLE001 - a source the adapter cannot read is a finding, not a stop
+            print(f'{key} FEILET: {url}: {str(e)[:200]}')
+            continue
         print(f"{key} {sources[key]['kind']}: {len(sources[key]['text'])} tegn fra {url}")
         p0.save_json(SOURCES, sources)
     return sources
+
+
+def fetch_web(url):
+    """The web adapter, as the v2 build should have it: the schema.org Recipe on the page when
+    there is one (most recipe sites have it, and it is free of ads and stories), otherwise the
+    page text. The app's WebScraper cuts pages at 20 000 characters, which on long blogs drops
+    the recipe card, so the fallback keeps more."""
+    import requests
+    from bs4 import BeautifulSoup
+
+    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 '
+                             '(KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36'}
+    resp = requests.get(url, headers=headers, timeout=15)
+    resp.raise_for_status()
+    soup = BeautifulSoup(resp.content, 'html.parser')
+    for script in soup.find_all('script', type='application/ld+json'):
+        try:
+            found = next(jsonld_recipes(json.loads(script.string or 'null')), None)
+        except ValueError:
+            continue
+        if found and found.get('recipeIngredient'):
+            return {'kind': 'web', 'adapter': 'jsonld', 'url': url, 'text': jsonld_text(found)}
+    for tag in soup(['script', 'style', 'nav', 'footer', 'header']):
+        tag.decompose()
+    return {'kind': 'web', 'adapter': 'text', 'url': url, 'text': soup.get_text(separator=' ', strip=True)[:60000]}
+
+
+def jsonld_recipes(node):
+    if isinstance(node, list):
+        for n in node:
+            yield from jsonld_recipes(n)
+    elif isinstance(node, dict):
+        types = node.get('@type') if isinstance(node.get('@type'), list) else [node.get('@type')]
+        if 'Recipe' in types:
+            yield node
+        for k in ('@graph', 'mainEntity'):
+            if k in node:
+                yield from jsonld_recipes(node[k])
+
+
+def jsonld_text(r):
+    """A schema.org Recipe as plain recipe text for round 1."""
+    from html import unescape
+
+    def clean(x):
+        return unescape(re.sub(r'<[^>]+>', ' ', str(x))).strip()
+
+    yields = r.get('recipeYield')
+    yields = ', '.join(map(str, yields)) if isinstance(yields, list) else yields
+    lines = [clean(r.get('name', '')), f'Servings: {clean(yields)}' if yields else '', '', 'Ingredients:']
+    lines += [f'- {clean(i)}' for i in r.get('recipeIngredient', [])]
+    lines += ['', 'Method:']
+
+    def steps(items, n=0):
+        out = []
+        for it in items if isinstance(items, list) else [items]:
+            if isinstance(it, str):
+                n += 1
+                out.append(f'{n}. {clean(it)}')
+            elif it.get('@type') == 'HowToSection':
+                out.append(clean(it.get('name', '')) + ':')
+                sub, n = steps(it.get('itemListElement', []), n)
+                out += sub
+            else:
+                n += 1
+                out.append(f"{n}. {clean(it.get('text') or it.get('name', ''))}")
+        return out, n
+
+    lines += steps(r.get('recipeInstructions', []))[0]
+    if r.get('description'):
+        lines += ['', 'Note: ' + clean(r['description'])]
+    return '\n'.join(lines)
 
 
 def fetch_video(url):
