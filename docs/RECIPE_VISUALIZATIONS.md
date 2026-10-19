@@ -842,7 +842,7 @@ Definisjonen av mise-element står uendret. To ting er endret:
 1. **Alle ingredienslinjer får et mise-element**, også olje til steking og salt i kokevannet. Validatoren krever det uten unntak.
 2. **Basisvarer er en egenskap ved ingrediensen i pantryet** (`is_staple` på salt, pepper og oljer), ikke en liste per oppskrift.
 
-Brettet deler mise-elementene i tre. Inndelingen utledes og lagres ikke:
+Brettet deler mise-elementene i tre. Inndelingen utledes og lagres ikke. **Reglene for skål er strammet inn i 9.15** (oktober 2026), så lasagnen får fire skåler i stedet for ti. Tabellen under er den første versjonen:
 
 | Type | Regel | Vises som |
 |---|---|---|
@@ -865,6 +865,60 @@ Kolonnene i tabellmetoden er ikke en tidsakse. Et steg står i kolonnen som tils
 Regel: **steg som starter etter at kokingen er i gang, høyrejusteres inntil steget som bruker dem.** Steg i prep-økten står som før. Med «Rolig» havner salaten i samme kolonne som «Stek lasagnen», og den hvite sausen flytter seg til høyre for kjøttsausen. Med «Prep først» står salaten til venstre, og «Vend salaten» står rett før servering.
 
 Teksten under tabellen er rettet til: «Kolonnene viser rekkefølgen innenfor hver del av retten. Det som gjøres underveis, står inntil steget det brukes i.» Den gamle teksten («Kolonnene går fra venstre mot høyre i tid») var feil.
+
+---
+
+### 9.15 Telefonflyten (steg 7a, oktober 2026)
+
+Prototype: `docs/prototypes/telefon.html`, laget i tre runder med tilbakemelding 19.10.2026. Oppskriftene, planleggeren og mise-utledningen er de samme som i `fem-retter.html`, og symbolene er ingredienssymbolene fra produksjon.
+
+**Fordeling:** telefonen er for å lage maten, stor skjerm for å forstå og planlegge den. Av de seks visningene fungerer kortmodus og ingredienser i steget godt på telefon, og mise en place-brettet fungerer som sjekkliste. Tidslinjen, metrokartet og tabellmetoden fungerer ikke i 375 px bredde. De vises ikke på telefon. Det nyttige fra tidslinjen, «nå og neste», er flyttet inn i kortmodus.
+
+| | Telefon | Stor skjerm |
+|---|---|---|
+| Før du starter | Oversikt | Oversikt og metrokartet |
+| Forberedelse | Gjør klart | Gjør klart ved siden av handlelisten |
+| Matlaging | Kort med «pågår», eller liste over steg | Ingredienser i steget med tidslinjen ved siden av |
+| Plan og oversikt | Ikke tilgjengelig | Tidslinjen, metrokartet og tabellmetoden |
+
+Telefonflyten bygges først (steg 7b). Utformingen på stor skjerm gjøres i 7c. Nettbrett på kjøkkenbenken regnes som stor skjerm.
+
+**Flyten:** tre steg i toppfeltet: Oversikt, Gjør klart, Lag mat. Mengde, plan og variant (brødet til hamburgeren) ligger bak en meny (☰) og gjelder alle tre.
+
+**Oversikt** viser totaltid, aktiv tid, mengde, delene retten består av, én handleliste og utstyret. Handlelisten har hver ingrediens én gang, summert, med en merknad når den brukes flere ganger («brukes 2 ganger») eller i flere deler («Kjøttsaus og salat»). En liste per del ble valgt bort: når samme ingrediens brukes to ganger i samme del (hvitløk i marinaden og i sausen), sto den to ganger under samme overskrift. Fordelingen per del og steg kommer i Gjør klart og på kortene, der den brukes.
+
+**Gjør klart** viser bare det som trenger en skål, som skål. Et mise-element er en **skål** når minst ett av disse gjelder:
+
+1. **Forarbeid:** et prep-steg rører linjen, eller `prep_style` beskriver kutt, riving, temperatur eller tilstand. Produktbeskrivelser som «hakkede» og «knuste» tomater er ikke forarbeid. De hører hjemme i pantryet som egne varer.
+2. **Blanding:** minst tre små mengder (ts, ss, klype eller høyst 30 g) går i samme steg, som en krydderblanding.
+3. **Tidspress:** minst to linjer går i et steg med varme på middels eller høyere og høyst 2 aktive minutter, så det ikke er tid til å måle ved komfyren.
+
+Resten er **ta frem**: et rutenett av fliser med symbol, mengde og navn, som måles når de brukes. Basisvarer alene og alt «etter smak» står **på benken**. Ett trykk per skål og per flis merker den som klar, uten avkrysning per linje. Bare skålene nummereres, i den rekkefølgen de brukes.
+
+| Rett | Nummererte elementer før | Skåler nå | Ta frem nå |
+|---|---|---|---|
+| Carbonara | 4 | 3 | 1 |
+| Brownies | 4 | 2 | 3 |
+| Tikka masala | 8 | 6 | 5 |
+| Lasagne | 10 | 4 | 11 |
+| Hamburger | 9 | 7 | 2 |
+
+**Mise-elementene utledes fra grafen med disse reglene. AI-en trenger ikke lage dem** (spørsmålet i `RECIPE_MODEL_V2.md`, avsnitt 5). Den kan eventuelt foreslå bedre navn på skålene.
+
+**Lag mat** er kortmodus med fire tillegg:
+
+- **Din del og ventetiden er skilt.** Kortet gjelder det du gjør. Har steget passiv tid, heter hovedknappen «Start, så videre», og steget legges i et **pågår**-felt øverst med nedtelling og «ferdig når». Når tiden er ute, blir det rødt, piper og vibrerer.
+- **«Mens pastaen står»** vises på alle steg som etter planen starter i et annet stegs ventetid, ikke bare prep-steg.
+- **«Venter på … , ca. 3 min»** vises når et steg trenger resultatet fra et steg som fortsatt står.
+- **Du trenger** viser det som faktisk står foran deg: skålene fra Gjør klart som helles i her (nummer, symboler og innhold), ingredienser som ikke ligger i en skål, og resultater fra tidligere steg («Pastaen, fra steg 5»). Resultater av prep som er gjort i Gjør klart, ligger allerede i en skål og vises ikke to ganger.
+
+I tillegg: listen over alle steg (ingredienser i steget) med symbolet inne i mengdepillen, sveip som gjør det samme som hovedknappen, skjermen holdes våken, og fremgangen lagres på enheten.
+
+**`prep_style` i stegteksten:** i cook- og serve-steg vises klargjøringen i parentes etter ingrediensen («Tilsett 3 fedd hvitløk (finrevet)»). I prep-steg vises den ikke, fordi teksten der beskriver klargjøringen selv. Før dette sto det bare «3 fedd hvitløk» der hvitløken skulle inn finrevet.
+
+**Utstyr** vises med plassholdere etter rolle (koke, forberede, avlastning) til utstyrskatalogen får egne symboler i 7c.
+
+**Ikke testet ennå:** matlaging med prototypen på telefonen. Det er siste del av 7a.
 
 ---
 
