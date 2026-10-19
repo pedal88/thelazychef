@@ -53,6 +53,8 @@ Vi går fra dagens listemodell (ingredienser og steg som fritekst) til en grafmo
 12. **Planstrategi er en brukerinnstilling**, med «rolig» som standard (`RECIPE_VISUALIZATIONS.md` 9.12).
 13. **Promptregel for mengder:** `{iN}` er alltid totalmengden. «Fordel {i4} på burgerne», ikke «{i4} på hver burger».
 14. **Promptregel for sluttsteg:** mangler kilden et serveringssteg, legges det til et kort «Server»-steg som samler komponentene.
+15. **`prep_style` i stegteksten (steg 7a):** `{iN}` rendres med mengde og navn. I cook- og serve-steg legges klargjøringen til i parentes («3 fedd hvitløk (finrevet)»), i prep-steg ikke, fordi teksten der beskriver klargjøringen. Promptet må vite det, så modellen ikke skriver klargjøringen to ganger.
+16. **Mise-elementer utledes** fra grafen med faste regler for skål, ta frem og på benken (`RECIPE_VISUALIZATIONS.md` 9.15). AI-en lager dem ikke.
 
 ## 5. Modellen
 
@@ -116,7 +118,7 @@ Alle koblinger får `ON DELETE CASCADE`, slik at sletting av en oppskrift eller 
 
 ### Mise-element (`mise_element`, fase 3)
 
-`id`, `recipe_id`, `local_id`, `name`, `used_in_step_id`. Definisjon: det som står klart når prep er ferdig, og helles i på samme tidspunkt. Alle ingredienslinjer har et mise-element. Om AI-en skal lage dem eller om de kan utledes, testes før fase 3.
+`id`, `recipe_id`, `local_id`, `name`, `used_in_step_id`. Definisjon: det som står klart når prep er ferdig, og helles i på samme tidspunkt. Alle ingredienslinjer har et mise-element. **Avgjort i steg 7a:** elementene utledes fra grafen, og AI-en lager dem ikke (avklaring 16). Det åpner for å flytte dem fram fra fase 3, siden de ikke koster noen ekstra AI-runde.
 
 ### Ingrediensmodellen (revidert 18.10.2026)
 
@@ -169,6 +171,8 @@ Funnet under gjennomgangen av ingredienssymbolene 18.10.2026. De ryddes i v2-byg
 - **Uklart navn:** `filet` (56, fisk, underkategori «salmon») kan ikke stå alene. Trolig laksefilet, som finnes fra før som `salmon fillet` (656).
 - **Kanel:** `cinnamon` (361, under «flavorings» i bakevarer) ved siden av `cinnamon sticks` (266) og `ground cinnamon` (271). Bestem om den generelle skal flettes inn i en av dem.
 - **Smør i to kategorier:** `butter` (371) ligger under fett og oljer, mens `salted butter` og `unsalted butter` ligger under meieri. Smørvariantene hører sammen, og blir varianter av grunnvaren `butter` med `base_ingredient_id`.
+- **Produktbeskrivelser i `prep_style`:** «hermetiske tomater, hakkede» og «, knuste» beskriver produktet, ikke klargjøring. De skal være egne varer i pantryet, ellers regnes de som forarbeid i Gjør klart.
+- **Varer som mangler:** ni av ingrediensene i de fem prototyperettene finnes ikke i pantryet: fersk ingefær, garam masala, tomatpuré, oksebuljong, mørk sjokolade, vaniljesukker, basmatiris, dijonsennep og rødvinseddik. Pantryet må fylles før nygenereringen.
 - **Underkategorier som samler ulike varer:** «flavorings» blander ekstrakter med krydder, og honning ligger under «sugar». Symbolene er løst med egen form per ingrediens, men kategoriene bør ryddes når allergenene og grunnvarene settes.
 
 ### Utledes, lagres ikke
@@ -263,7 +267,7 @@ Tallene per 100 g kommer i dag fra Edamam, med AI-anslag der Edamam ikke fant in
 | 4 | Prompt-lab | **Ferdig 18.10.2026** (PR #51, #53, #54). Avsnitt 8 og `docs/PROMPT_LAB.md` |
 | 5 | Fase 0b med Claude | **Gjennomført 19.10.2026** (PR #61). Opus 5.5 med effort `low` for runde 1 og 2: 23 av 24 gyldige i første forsøk, 29 sekunder og ca. 0,07 USD per strukturering, og alltid pantry-ID. Sonnet trengte flere nye forsøk, Gemini er tre ganger tregere. Ni promptendringer til bygget. Se `docs/pilot/RECIPE_V2_PILOT_0B.md` |
 | 6 | Stil på ingredienssymboler | **Ferdig 18.10.2026** (PR #57–#59). Stil satt etter fem lab-runder, 654 symboler laget, gjennomgått og rullet ut med en datamigrering som kan rulles tilbake. Avsnitt 10 |
-| 7a | Mobil og stor skjerm | Før bygget, i prototypen. Hvilke visninger som finnes på telefon og på stor skjerm, hvordan de fungerer i en smal skjerm, og hvordan man går mellom stegene mens man lager mat. Telefonen er førstevalget, stor skjerm brukes til planlegging og oversikt. Avsnitt 13 |
+| 7a | Mobil og stor skjerm | **Nesten ferdig 19.10.2026:** telefonflyten er satt etter tre runder (`docs/prototypes/telefon.html`, `RECIPE_VISUALIZATIONS.md` 9.15). Gjenstår: lage mat med den på telefonen. Før bygget, i prototypen. Hvilke visninger som finnes på telefon og på stor skjerm, hvordan de fungerer i en smal skjerm, og hvordan man går mellom stegene mens man lager mat. Telefonen er førstevalget, stor skjerm brukes til planlegging og oversikt. Avsnitt 13 |
 | 7b | v2-bygget, tynn skive | Én oppskrift hele veien i produksjon: input-feltet, begge rundene som bakgrunnsjobb, de nye tabellene og én visning på oppskriftssiden, bygget på design-tokens med dagens uttrykk. Finner integrasjonsproblemene (Cloud Tasks, planleggeren i Python, databasemodellen) mens de er billige |
 | 7c | v2-bygget, i bredden | Gjenstående pantry-feil (avsnitt 5), resten av tabellene (former, enheter, tetthet, allergener og grunnvare), alle kildeadapterne, resten av visningene, næring og redigering |
 | 7d | Helhetlig uttrykk | Etter den tynne skiven og før steg 9, gjerne parallelt med 7c og 8: palett, typografi, avstander, symboler, logo og merkevare, og en stilguide-side som viser tokens og komponenter rett fra koden. Gjøres med ekte oppskrifter foran seg. Avsnitt 13 |
@@ -286,7 +290,7 @@ Nevnt så de ikke glemmes, men ikke del av planen over:
 
 Endringer i hvordan appen ser ut koster ulikt, og det bestemmer rekkefølgen (vedtatt 19.10.2026):
 
-1. **Mobil og stor skjerm er struktur** (steg 7a): hvilke visninger som finnes, hva som får plass, og hvordan man navigerer. Det er dyrt å endre når visningene er bygget, og avgjøres derfor i prototypen før bygget.
+1. **Mobil og stor skjerm er struktur** (steg 7a): hvilke visninger som finnes, hva som får plass, og hvordan man navigerer. Det er dyrt å endre når visningene er bygget, og avgjøres derfor i prototypen før bygget. Avgjort: telefonen er for å lage maten (oversikt, gjør klart, lag mat), stor skjerm for å forstå og planlegge (i tillegg tidslinjen, metrokartet og tabellmetoden). Se `RECIPE_VISUALIZATIONS.md` 9.15.
 2. **Design-tokens fra første linje** (steg 7b): farger, fonter og avstander samles på ett sted i stedet for å spres i koden. Da blir stil billig å endre senere.
 3. **Helhetlig uttrykk** (steg 7d) gjøres med ekte innhold foran seg og må være på plass før bildene av retter og komponenter (steg 9), fordi stilen på dem skal passe paletten. Ingredienssymbolene kan lages på nytt for rundt 30 USD hvis uttrykket krever det.
 4. **Finjustering** av farger, luft og tetthet gjøres fortløpende fra visningene viser ekte oppskrifter, i 7c og 8. Det er bortkastet å pusse før tokens finnes.
