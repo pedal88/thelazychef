@@ -52,6 +52,11 @@ def merge_ingredients(winner_id: int, loser_id: int) -> dict:
             usage.ingredient = winner
             affected_recipe_ids.add(usage.recipe_id)
             moved += 1
+        # Lines in v2 recipes (recipe_line) move the same way.
+        for line in list(loser.recipe_lines):
+            line.ingredient = winner
+            affected_recipe_ids.add(line.recipe_id)
+            moved += 1
 
         # 2. Keep a sub-recipe link if only the loser had one
         if winner.sub_recipe_id is None and loser.sub_recipe_id is not None:
