@@ -23,7 +23,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 MAX_RETRIES = 2
 # Hand-made reference recipes shown to the model as examples of correct output.
 EXAMPLES = ('carbonara', 'lasagne')
-SOURCE_TYPES = {'idea': 'description', 'text': 'text'}  # recipe.source_type, as the old generation uses it
+SOURCE_TYPES = {'idea': 'description', 'text': 'text', 'web': 'web'}  # recipe.source_type, as the old generation uses it
 
 env = Environment(loader=FileSystemLoader(os.path.join(ROOT, 'data', 'prompts')))
 
@@ -68,8 +68,14 @@ def structure_prompt(source):
 
 
 def write_text(kind, source, language='English', call=None):
-    """Round 1. kind 'idea' writes a recipe from a short idea; 'text' tidies a pasted recipe and keeps its language."""
-    if kind == 'idea':
+    """Round 1. kind 'idea' writes a recipe from a short idea; 'text' tidies a pasted recipe and keeps its
+    language; 'web' reads the recipe at the link (services/recipe_v2/sources.py) and tidies it."""
+    if kind == 'web':
+        from services.recipe_v2.sources import fetch_recipe_text
+
+        page, _ = fetch_recipe_text(source)
+        prompt = env.get_template('recipe_v2/normalize.jinja2').render(kind='a web page', source=page)
+    elif kind == 'idea':
         prompt = env.get_template('recipe_v2/idea.jinja2').render(idea=source, language=language)
     elif kind == 'text':
         prompt = env.get_template('recipe_v2/normalize.jinja2').render(kind='text pasted by the user', source=source)

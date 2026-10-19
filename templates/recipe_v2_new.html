@@ -10,9 +10,9 @@
   <a class="back" href="{{ url_for('new_recipe') }}">← New recipe</a>
   <p class="eyebrow">Recipe model v2 · admin</p>
   <h1>Make a recipe</h1>
-  <p class="hint">Write an idea ("Chicken tikka masala for four") or paste a whole recipe. Claude writes it out, turns it into steps and matches the ingredients to the pantry. It takes about a minute, and the recipe is saved as a draft.</p>
+  <p class="hint">Write an idea ("Chicken tikka masala for four"), paste a whole recipe, or paste a link to a recipe page. Claude writes it out, turns it into steps and matches the ingredients to the pantry. It takes about a minute, and the recipe is saved as a draft.</p>
   <form method="post" class="newform">
-    <label for="source" class="eyebrow">Idea or recipe</label>
+    <label for="source" class="eyebrow">Idea, recipe or link</label>
     <textarea id="source" name="source" rows="6" required placeholder="Lasagne with a green salad, for four">{{ source }}</textarea>
     {% if error %}<p class="formerror" role="alert">{{ error }}</p>{% endif %}
     <button type="submit" class="go">Make the recipe</button>
