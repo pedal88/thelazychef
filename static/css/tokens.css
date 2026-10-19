@@ -1,0 +1,39 @@
+/* Design tokens: colours, fonts and spacing in one place (RECIPE_MODEL_V2.md, section 13).
+   The values are today's look, taken from base.html (Tailwind palette, Inter and Playfair Display).
+   The overall look (step 7d) changes these values, not the components that use them.
+   Phase colours follow the meaning the palette already has: green for fresh ingredients (prep),
+   orange for heat (cook), blue for serving. */
+:root {
+  --color-ink: #0f172a;          /* slate-900 */
+  --color-muted: #64748b;        /* slate-500 */
+  --color-line: #e2e8f0;         /* slate-200 */
+  --color-soft: #f8fafc;         /* slate-50 */
+  --color-paper: #ffffff;
+  --color-accent: #ea580c;       /* orange-600 */
+  --color-warning: #b45309;      /* amber-700 */
+
+  --color-prep: #16a34a;         /* green-600 */
+  --color-prep-soft: #f0fdf4;
+  --color-prep-ink: #166534;
+  --color-cook: #ea580c;         /* orange-600 */
+  --color-cook-soft: #fff7ed;
+  --color-cook-ink: #9a3412;
+  --color-serve: #2563eb;        /* blue-600 */
+  --color-serve-soft: #eff6ff;
+  --color-serve-ink: #1e40af;
+
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --radius-sm: 8px;
+  --radius: 14px;
+  --radius-pill: 999px;
+  --tap: 44px;                   /* smallest touch target */
+}
