@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{# New recipe in model v2: one field for an idea or a pasted recipe (RECIPE_MODEL_V2.md, section 7). #}
+{% block title %}New recipe (v2) - The Lazy Chef{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/recipe_v2.css') }}">
+{% endblock %}
+{% block content %}
+<article class="rv2">
+  <a class="back" href="{{ url_for('new_recipe') }}">← New recipe</a>
+  <p class="eyebrow">Recipe model v2 · admin</p>
+  <h1>Make a recipe</h1>
+  <p class="hint">Write an idea ("Chicken tikka masala for four") or paste a whole recipe. Claude writes it out, turns it into steps and matches the ingredients to the pantry. It takes about a minute, and the recipe is saved as a draft.</p>
+  <form method="post" class="newform">
+    <label for="source" class="eyebrow">Idea or recipe</label>
+    <textarea id="source" name="source" rows="6" required placeholder="Lasagne with a green salad, for four">{{ source }}</textarea>
+    {% if error %}<p class="formerror" role="alert">{{ error }}</p>{% endif %}
+    <button type="submit" class="go">Make the recipe</button>
+  </form>
+</article>
+{% endblock %}

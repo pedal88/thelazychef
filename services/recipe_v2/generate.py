@@ -67,7 +67,7 @@ def structure_prompt(source):
     return head, 'SOURCE RECIPE\n' + tail
 
 
-def write_text(kind, source, language='English', call=claude.call):
+def write_text(kind, source, language='English', call=None):
     """Round 1. kind 'idea' writes a recipe from a short idea; 'text' tidies a pasted recipe and keeps its language."""
     if kind == 'idea':
         prompt = env.get_template('recipe_v2/idea.jinja2').render(idea=source, language=language)
@@ -75,12 +75,13 @@ def write_text(kind, source, language='English', call=claude.call):
         prompt = env.get_template('recipe_v2/normalize.jinja2').render(kind='text pasted by the user', source=source)
     else:
         raise ValueError(f'Unknown source kind {kind!r}')
-    msg, usage = call(RECIPE_V2_MODEL, RECIPE_V2_EFFORT, [{'role': 'user', 'content': prompt}])
+    msg, usage = (call or claude.call)(RECIPE_V2_MODEL, RECIPE_V2_EFFORT, [{'role': 'user', 'content': prompt}])
     return claude.text_of(msg), usage
 
 
-def structure(text, call=claude.call):
+def structure(text, call=None):
     """Round 2 with the validator in a loop. Returns (recipe dict or None, attempts)."""
+    call = call or claude.call
     system, user = structure_prompt(text)
     schema = claude.recipe_json_schema()
     messages = [{'role': 'user', 'content': user}]
@@ -129,8 +130,10 @@ def match_pantry(data):
     return ids, missing
 
 
-def create_recipe(kind, source, chef_id=None, language='English', call=claude.call):
+def create_recipe(kind, source, chef_id=None, language='English', call=None, recipe=None):
     """Run both rounds and save the result as a draft. Returns (recipe, report).
+
+    recipe is the placeholder made when the job was queued; without it a new recipe is made.
 
     The recipe is flagged for review when it is still invalid after the retries,
     or when some lines are not in the pantry."""
@@ -141,10 +144,11 @@ def create_recipe(kind, source, chef_id=None, language='English', call=claude.ca
     # The model's title, else the first line of the round 1 text, which is the title there.
     first_line = next((line.strip() for line in text.splitlines() if line.strip()), '')
     title = ((data or {}).get('title') or '').strip() or first_line[:200] or source[:120]
-    recipe = Recipe(title=title, cuisine='', difficulty='', chef_id=chef_id,
-                    status='draft', source_type=SOURCE_TYPES[kind], source_input=source[:500], source_text=text,
-                    schema_version=2)
-    db.session.add(recipe)
+    if recipe is None:
+        recipe = Recipe(cuisine='', difficulty='', chef_id=chef_id)
+        db.session.add(recipe)
+    recipe.title, recipe.status, recipe.source_type = title, 'draft', SOURCE_TYPES[kind]
+    recipe.source_input, recipe.source_text, recipe.schema_version = source[:500], text, 2
     missing = []
     if data:
         ids, missing = match_pantry(data)
