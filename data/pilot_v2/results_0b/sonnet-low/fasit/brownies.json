@@ -1,0 +1,363 @@
+{
+  "key": "brownies",
+  "set": "fasit",
+  "config": "sonnet-low",
+  "model": "claude-sonnet-5-5",
+  "effort": "low",
+  "valid": true,
+  "attempts_used": 1,
+  "first_try_valid": true,
+  "failed_rules_any_attempt": [],
+  "model_version": "claude-sonnet-5-5",
+  "examples_in_prompt": [
+    "carbonara",
+    "lasagne"
+  ],
+  "tokens": {
+    "prompt_tokens": 11807,
+    "output_tokens": 3580,
+    "thought_tokens": 0
+  },
+  "cost_usd": 0.064598,
+  "api_seconds": 26.6,
+  "wall_seconds": 26.6,
+  "round1": {
+    "model_version": "claude-sonnet-5-5",
+    "prompt_tokens": 324,
+    "cache_read_tokens": 0,
+    "output_tokens": 1100,
+    "thought_tokens": null,
+    "stop_reason": "end_turn",
+    "cost_usd": 0.011648,
+    "seconds": 13.15
+  },
+  "attempts": [
+    {
+      "attempt": 1,
+      "valid": true,
+      "failed_rules": [],
+      "errors": [],
+      "warnings": [],
+      "model_version": "claude-sonnet-5-5",
+      "prompt_tokens": 11483,
+      "cache_read_tokens": 0,
+      "output_tokens": 2480,
+      "thought_tokens": null,
+      "stop_reason": "end_turn",
+      "cost_usd": 0.05295,
+      "seconds": 13.49
+    }
+  ],
+  "source_text": "Brownies med mørk sjokolade og valnøtter\n\nPorsjoner: 16 biter (form på 20 × 20 cm)\n\nIngredienser\n\nBrownies:\n- 200 g usaltet smør, pluss litt til forming\n- 200 g mørk sjokolade (minst 60 % kakao), grovhakket\n- 250 g sukker\n- 3 egg, romtemperatur\n- 1 ts vaniljesukker eller 1 ts vaniljeekstrakt\n- 1 ts fint salt\n- 100 g hvetemel\n- 30 g kakaopulver, siktet\n- 100 g valnøtter, grovhakket\n\nTil toppen:\n- 1 klype flaksalt (valgfritt)\n\nFremgangsmåte\n\n1. Sett ovnen på 175 °C (over- og undervarme). Smør en form på 20 × 20 cm og kle den med bakepapir, slik at papiret henger over to av kantene. Da er det lett å løfte brownien ut etterpå.\n\n2. Fordel valnøttene på en tørr plate og rist dem i ovnen i 5–7 minutter, til de dufter og har fått litt farge. Ta dem ut og la dem avkjøles.\n\n3. Smelt smør og sjokolade sammen i en middels stor kjele på lav varme. Rør jevnlig til blandingen er blank og helt glatt. Ta kjelen av platen og la den stå i 5 minutter, så den ikke er altfor varm.\n\n4. Rør sukkeret inn i sjokoladeblandingen. Tilsett eggene ett om gangen, og rør godt etter hvert egg. Rør inn vanilje og salt. Blandingen skal bli blank og tykk.\n\n5. Sikt mel og kakao ned i røren. Vend dem inn med slikkepott i bare 10–15 rør, til du ikke ser mer tørt mel. Ikke overrør, ellers blir brownien seig.\n\n6. Vend inn tre fjerdedeler av valnøttene. Hell røren i formen og stryk den jevn. Dryss over resten av valnøttene og eventuelt litt flaksalt.\n\n7. Stek midt i ovnen i 25–30 minutter. Brownien er ferdig når kantene har festnet og overflaten har en tynn, litt sprø skorpe, mens midten fortsatt er svakt bløt. En tannpirker i midten skal komme ut med noen fuktige smuler, ikke flytende røre.\n\n8. Sett formen på rist og la brownien avkjøles helt i formen, minst 2 timer. For en enda fastere og mer fudgy konsistens kan du kjøle den i kjøleskapet i 1 time.\n\n9. Løft brownien ut ved hjelp av bakepapiret. Skjær i 4 × 4 biter med en stor, skarp kniv. Tørk av kniven mellom hvert snitt for rene kanter.\n\nKokketips: Bruk sjokolade du liker å spise alene, for smaken bærer hele kaken. Brownies holder seg i en tett boks i 4–5 dager på kjøkkenet, og smaker aller best dagen etter. Server gjerne med vaniljeis eller en skje crème fraîche.",
+  "recipe": {
+    "servings": 16,
+    "components": [
+      {
+        "local_id": "c1",
+        "name": "Brownies"
+      }
+    ],
+    "ingredients": [
+      {
+        "local_id": "i1",
+        "component_id": "c1",
+        "name": "usaltet smør",
+        "amount": 10,
+        "unit": "g",
+        "prep_style": "til forming"
+      },
+      {
+        "local_id": "i2",
+        "component_id": "c1",
+        "name": "valnøtter",
+        "amount": 100,
+        "unit": "g",
+        "prep_style": "grovhakket"
+      },
+      {
+        "local_id": "i3",
+        "component_id": "c1",
+        "name": "usaltet smør",
+        "amount": 200,
+        "unit": "g"
+      },
+      {
+        "local_id": "i4",
+        "component_id": "c1",
+        "name": "mørk sjokolade (minst 60 % kakao)",
+        "amount": 200,
+        "unit": "g",
+        "prep_style": "grovhakket"
+      },
+      {
+        "local_id": "i5",
+        "component_id": "c1",
+        "name": "sukker",
+        "amount": 250,
+        "unit": "g"
+      },
+      {
+        "local_id": "i6",
+        "component_id": "c1",
+        "name": "egg",
+        "amount": 3,
+        "unit": "piece",
+        "prep_style": "romtemperert"
+      },
+      {
+        "local_id": "i7",
+        "component_id": "c1",
+        "name": "vaniljesukker eller vaniljeekstrakt",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i8",
+        "component_id": "c1",
+        "name": "fint salt",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i9",
+        "component_id": "c1",
+        "name": "hvetemel",
+        "amount": 100,
+        "unit": "g"
+      },
+      {
+        "local_id": "i10",
+        "component_id": "c1",
+        "name": "kakaopulver",
+        "amount": 30,
+        "unit": "g",
+        "prep_style": "siktet"
+      },
+      {
+        "local_id": "i11",
+        "component_id": "c1",
+        "name": "flaksalt (valgfritt)",
+        "amount": 1,
+        "unit": "pinch"
+      }
+    ],
+    "steps": [
+      {
+        "local_id": "s1",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Forvarm ovnen",
+        "text": "Sett ovnen på 175 °C over- og undervarme.",
+        "uses": [],
+        "after": [],
+        "active_minutes": 1,
+        "passive_minutes": 14,
+        "method": "preheat",
+        "equipment": [
+          "oven"
+        ],
+        "temp_c": 175,
+        "mode": "top_bottom",
+        "setup": true,
+        "done_when": "Ovnen har nådd temperaturen"
+      },
+      {
+        "local_id": "s2",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Klargjør formen",
+        "text": "Smør en form på 20 × 20 cm med {i1} og kle den med bakepapir, slik at papiret henger over to av kantene.",
+        "uses": [
+          "i1"
+        ],
+        "after": [],
+        "active_minutes": 3,
+        "passive_minutes": 0,
+        "method": "prepare",
+        "equipment": [
+          "form_20x20",
+          "baking_paper"
+        ],
+        "setup": true,
+        "done_when": "Papiret dekker bunn og to kanter"
+      },
+      {
+        "local_id": "s3",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Rist valnøttene",
+        "text": "Fordel {i2} på en tørr plate og rist dem i ovnen i 5–7 minutter. Ta dem ut og la dem avkjøles.",
+        "uses": [
+          "i2"
+        ],
+        "after": [],
+        "active_minutes": 1,
+        "passive_minutes": 6,
+        "holds_minutes": 240,
+        "method": "toast",
+        "equipment": [
+          "oven",
+          "baking_tray"
+        ],
+        "temp_c": 175,
+        "mode": "top_bottom",
+        "setup": false,
+        "done_when": "Nøttene dufter og har fått litt farge"
+      },
+      {
+        "local_id": "s4",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Smelt smør og sjokolade",
+        "text": "Smelt {i3} og {i4} sammen i en middels stor kjele på lav varme. Rør jevnlig. Ta kjelen av platen og la den stå i 5 minutter.",
+        "uses": [
+          "i3",
+          "i4"
+        ],
+        "after": [],
+        "active_minutes": 5,
+        "passive_minutes": 5,
+        "method": "melt",
+        "equipment": [
+          "saucepan",
+          "wooden_spoon"
+        ],
+        "mode": "low",
+        "setup": false,
+        "done_when": "Blank og helt glatt"
+      },
+      {
+        "local_id": "s5",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Rør inn sukker og egg",
+        "text": "Rør {i5} inn i sjokoladeblandingen. Tilsett {i6} ett om gangen, og rør godt etter hvert egg. Rør inn {i7} og {i8}.",
+        "uses": [
+          "i5",
+          "i6",
+          "i7",
+          "i8"
+        ],
+        "after": [
+          "s4"
+        ],
+        "active_minutes": 5,
+        "passive_minutes": 0,
+        "method": "mix",
+        "equipment": [
+          "saucepan",
+          "wooden_spoon"
+        ],
+        "setup": false,
+        "done_when": "Blank og tykk"
+      },
+      {
+        "local_id": "s6",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Vend inn mel og kakao",
+        "text": "Sikt {i9} og {i10} ned i røren. Vend dem inn med slikkepott i bare 10–15 rør.",
+        "uses": [
+          "i9",
+          "i10"
+        ],
+        "after": [
+          "s5"
+        ],
+        "active_minutes": 3,
+        "passive_minutes": 0,
+        "method": "fold",
+        "equipment": [
+          "saucepan",
+          "sieve",
+          "spatula"
+        ],
+        "setup": false,
+        "done_when": "Ingen tørt mel synlig"
+      },
+      {
+        "local_id": "s7",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Fyll formen",
+        "text": "Vend inn tre fjerdedeler av de ristede valnøttene. Hell røren i formen og stryk den jevn. Dryss over resten av valnøttene og {i11}.",
+        "uses": [
+          "i11"
+        ],
+        "after": [
+          "s6",
+          "s3",
+          "s2"
+        ],
+        "active_minutes": 4,
+        "passive_minutes": 0,
+        "method": "assemble",
+        "equipment": [
+          "form_20x20",
+          "spatula"
+        ],
+        "setup": false
+      },
+      {
+        "local_id": "s8",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Stek brownien",
+        "text": "Stek midt i ovnen i 25–30 minutter.",
+        "uses": [],
+        "after": [
+          "s7"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 27,
+        "method": "bake",
+        "equipment": [
+          "oven"
+        ],
+        "temp_c": 175,
+        "mode": "top_bottom",
+        "setup": false,
+        "done_when": "Kantene er festnet, overflaten har tynn skorpe, midten svakt bløt, og en tannpirker kommer ut med fuktige smuler"
+      },
+      {
+        "local_id": "s9",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Avkjøl brownien",
+        "text": "Sett formen på rist og la brownien avkjøles helt i formen, minst 2 timer.",
+        "uses": [],
+        "after": [
+          "s8"
+        ],
+        "active_minutes": 0,
+        "passive_minutes": 120,
+        "method": "cool",
+        "equipment": [
+          "rack"
+        ],
+        "setup": false,
+        "done_when": "Helt kald"
+      },
+      {
+        "local_id": "s10",
+        "component_id": "c1",
+        "phase": "serve",
+        "short": "Skjær og server",
+        "text": "Løft brownien ut ved hjelp av bakepapiret. Skjær i 4 × 4 biter med en stor, skarp kniv, og tørk av kniven mellom hvert snitt.",
+        "uses": [],
+        "after": [
+          "s9"
+        ],
+        "active_minutes": 5,
+        "passive_minutes": 0,
+        "method": "serve",
+        "equipment": [
+          "knife"
+        ],
+        "setup": false,
+        "done_when": "Rene kanter på alle bitene"
+      }
+    ],
+    "chef_note": "Bruk sjokolade du liker å spise alene, for smaken bærer hele kaken. Brownies holder seg i en tett boks i 4–5 dager på kjøkkenet, og smaker aller best dagen etter. Server gjerne med vaniljeis eller en skje crème fraîche."
+  }
+}

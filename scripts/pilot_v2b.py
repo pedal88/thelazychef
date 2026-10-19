@@ -353,13 +353,30 @@ def findings(recipe):
 
 
 def faithfulness(recipe, source_recipe):
-    """Ingredients and amounts against the database source: missing, added, changed (by pantry id)."""
-    src, out = {}, {}
+    """Ingredients and amounts against the database source: missing, added, changed.
+
+    Lines are matched on pantry id, and on the name when the model left the id out
+    (old pantry names like "beef ground beef" match "ground beef")."""
+    def words(name):
+        return set(re.findall(r'[a-zæøå]+', (name or '').lower()))
+
+    src_names = {}
+    src = {}
     for i in source_recipe['ingredients']:
         k = i.get('food_id') or (i.get('name') or '').lower()
         src[k] = src.get(k, 0) + (i.get('amount') or 0)
+        src_names[k] = words(i.get('name'))
+
+    def key_of(i):
+        if i.get('pantry_id') in src:
+            return i['pantry_id']
+        w = words(i.get('name'))
+        hits = [k for k, sw in src_names.items() if w and (w <= sw or sw <= w)]
+        return hits[0] if len(hits) == 1 else i.get('pantry_id') or (i.get('name') or '').lower()
+
+    out = {}
     for i in recipe.get('ingredients') or []:
-        k = i.get('pantry_id') or (i.get('name') or '').lower()
+        k = key_of(i)
         out[k] = out.get(k, 0) + (i.get('amount') or 0)
     changed = [k for k in src if k in out and src[k] and abs(out[k] - src[k]) / src[k] > 0.05]
     return {'missing': [k for k in src if k not in out], 'added': [k for k in out if k not in src], 'amount_changed': changed}

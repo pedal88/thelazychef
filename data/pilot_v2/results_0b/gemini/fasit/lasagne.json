@@ -1,0 +1,561 @@
+{
+  "key": "lasagne",
+  "set": "fasit",
+  "config": "gemini",
+  "model": "gemini-flash-latest",
+  "effort": null,
+  "valid": true,
+  "attempts_used": 2,
+  "first_try_valid": false,
+  "failed_rules_any_attempt": [
+    7
+  ],
+  "model_version": "gemini-3.8-flash",
+  "examples_in_prompt": [
+    "carbonara",
+    "brownies"
+  ],
+  "tokens": {
+    "prompt_tokens": 17941,
+    "output_tokens": 8711,
+    "thought_tokens": 6275
+  },
+  "cost_usd": 0.053929,
+  "api_seconds": 112.6,
+  "wall_seconds": 112.6,
+  "round1": {
+    "model_version": "gemini-3.8-flash",
+    "prompt_tokens": 199,
+    "output_tokens": 1430,
+    "thought_tokens": 1843,
+    "cost_usd": 0.009919,
+    "seconds": 31.13
+  },
+  "attempts": [
+    {
+      "attempt": 1,
+      "valid": false,
+      "failed_rules": [
+        7
+      ],
+      "errors": [
+        {
+          "rule": 7,
+          "message": "s5.method 'roux' is not in the method catalog."
+        }
+      ],
+      "warnings": [],
+      "model_version": "gemini-3.8-flash",
+      "prompt_tokens": 6605,
+      "output_tokens": 4487,
+      "thought_tokens": 2518,
+      "cost_usd": 0.024317,
+      "seconds": 49.81
+    },
+    {
+      "attempt": 2,
+      "valid": true,
+      "failed_rules": [],
+      "errors": [],
+      "warnings": [],
+      "model_version": "gemini-3.8-flash",
+      "prompt_tokens": 11137,
+      "output_tokens": 2794,
+      "thought_tokens": 1914,
+      "cost_usd": 0.019693,
+      "seconds": 31.66
+    }
+  ],
+  "source_text": "Klassisk lasagne med frisk grønn salat\n\nAntall porsjoner: 4\n\nIngredienser\n\nKjøttsaus:\n- 400 g kjøttdeig eller karbonadedeig\n- 1 stk gul løk, finhakket\n- 2 fedd hvitløk, finhakket\n- 1 stk gulrot, finrevet\n- 2 ss tomatpuré\n- 1 boks (400 g) hermetiske hakkede tomater\n- 1 dl vann eller oksekraft\n- 1 ts tørket oregano\n- 1 ts tørket basilikum\n- 2 ss olivenolje til steking\n- 1 ts salt\n- 0,5 ts kvernet sort pepper\n\nHvit saus (béchamel):\n- 3 ss smør (ca. 45 g)\n- 3 ss hvetemel\n- 6 dl helmelk (eller lettmelk)\n- 0,25 ts revet muskatnøtt\n- 1 ts salt\n- 0,5 ts hvit eller sort pepper\n- 40 g revet parmesan (valgfritt)\n\nMontering:\n- 9–12 stk tørre lasagneplater\n- 150 g revet gulost (f.eks. Jarlsberg, Norvegia eller mozzarella)\n\nGrønn salat med dressing:\n- 1 stk hjertesalat eller tilsvarende mengde sprø småsalat (ca. 100 g)\n- 0,5 stk agurk\n- 3 ss ekstra jomfru olivenolje\n- 1 ss sitronsaft eller hvitvinseddik\n- 0,5 ts dijonsennep\n- 1 klype salt og kvernet pepper\n\nFremgangsmåte\n\n1. Kjøttsaus: Varm 2 spiseskjeer olivenolje i en vid gryte eller dyp stekepanne over middels høy varme. Ha i finhakket løk, hvitløk og revet gulrot. La det surre i 3–4 minutter til løken er myk og blank uten å bli brent. Tilsett kjøttdeigen, skru opp til høy varme og brun kjøttet mens du hakker det opp med en sleiv. Kjøttet skal være gjennomstekt og lett gyllent etter ca. 5 minutter.\n\n2. Rør inn tomatpuréen og la den frese sammen med kjøttet i 1 minutt for å trekke ut sødmen. Hell i de hermetiske tomatene, vann/kraft, oregano og basilikum. Rør godt og la det koke opp. Skru deretter platen ned til lav varme, legg på lokk, og la sausen småkoke i minst 20–25 minutter (gjerne 40 minutter hvis du har tid). Smak til med salt og pepper. Sausen er ferdig når den har tyknet og fått en dyp, fyldig rød farge.\n\n3. Forvarming: Sett stekeovnen på 200 grader over- og undervarme (eller 180 grader varmluft) slik at den er gjennomvarm til monteringen er ferdig.\n\n4. Hvit saus: Smelt smøret i en kjele på middels varme. Visp inn hvetemelet og la blandingen boble lett i ca. 1 minutt under omrøring, uten at det tar farge (det skal være lyst). Spe forsiktig med melken – hell i litt av gangen mens du visper kraftig for å unngå klumper. La sausen koke forsiktig opp på middels varme under konstant omrøring, og la den deretter småkoke på lav varme i 4–5 minutter så melsmaken forsvinner. Sausen er ferdig når den er glatt, kremete og tykk nok til å dekke baksiden av en treskje. Trekk kjelen av platen og smak til med muskatnøtt, salt, pepper og eventuelt parmesan.\n\n5. Montering: Finn frem en ildfast form på ca. 20 x 30 cm. Start med et tynt lag kjøttsaus i bunnen. Legg et lag lasagneplater over så de dekker flaten. Hell deretter et lag hvit saus over platene, fulgt av et nytt lag kjøttsaus. Gjenta denne rekkefølgen til du har 3–4 lag med plater. Avslutt med hvit saus på toppen, og fordel den revne osten jevnt over hele overflaten.\n\n6. Steking: Sett formen på midterste rille i ovnen og stek i 30–35 minutter på 200 grader. Lasagnen er ferdig når osten på toppen er gyllenbrun og bobler i kantene, og du enkelt kan stikke en spiss kniv tvers igjennom formen uten å kjenne hard motstand fra pastaplatene. \n\n7. Hviling: Ta lasagnen ut av ovnen og la den stå på benken og hvile i 15 minutter før du skjærer i den. Dette er avgjørende for at sausene og ostelaget skal sette seg så bitene holder formen ved servering.\n\n8. Salat og dressing: Mens lasagnen hviler, vasker og tørker du salaten godt, og river den i passe biter. Skjær agurken i tynne skiver. I en liten bolle eller et syltetøyglass rister eller visper du sammen olivenolje, sitronsaft, dijonsennep, salt og pepper til dressingen tykner og blander seg helt (emulgerer). Vend dressingen forsiktig inn i salaten rett før servering, slik at salatbladene holder seg sprø.\n\nKokketips:\nIkke hopp over hviletiden på 15 minutter etter at lasagnen er tatt ut av ovnen. Skjærer du i den med en gang, vil fyllet renne utover fatet. Når den får hvile, suger pastaplatene til seg den siste væsken, og du får faste, pene og saftige stykker.",
+  "recipe": {
+    "title": "Klassisk lasagne med frisk grønn salat",
+    "servings": 4,
+    "components": [
+      {
+        "local_id": "c1",
+        "name": "Kjøttsaus"
+      },
+      {
+        "local_id": "c2",
+        "name": "Hvit saus"
+      },
+      {
+        "local_id": "c3",
+        "name": "Lasagne"
+      },
+      {
+        "local_id": "c4",
+        "name": "Grønn salat"
+      }
+    ],
+    "ingredients": [
+      {
+        "local_id": "i1",
+        "component_id": "c1",
+        "name": "olivenolje",
+        "amount": 2.0,
+        "unit": "tbsp"
+      },
+      {
+        "local_id": "i2",
+        "component_id": "c1",
+        "name": "gul løk",
+        "amount": 1.0,
+        "unit": "piece",
+        "prep_style": "finhakket"
+      },
+      {
+        "local_id": "i3",
+        "component_id": "c1",
+        "name": "hvitløk",
+        "amount": 2.0,
+        "unit": "clove",
+        "prep_style": "finhakket"
+      },
+      {
+        "local_id": "i4",
+        "component_id": "c1",
+        "name": "gulrot",
+        "amount": 1.0,
+        "unit": "piece",
+        "prep_style": "finrevet"
+      },
+      {
+        "local_id": "i5",
+        "component_id": "c1",
+        "name": "kjøttdeig eller karbonadedeig",
+        "amount": 400.0,
+        "unit": "g"
+      },
+      {
+        "local_id": "i6",
+        "component_id": "c1",
+        "name": "tomatpuré",
+        "amount": 2.0,
+        "unit": "tbsp"
+      },
+      {
+        "local_id": "i7",
+        "component_id": "c1",
+        "name": "hermetiske hakkede tomater",
+        "amount": 1.0,
+        "unit": "can"
+      },
+      {
+        "local_id": "i8",
+        "component_id": "c1",
+        "name": "vann eller oksekraft",
+        "amount": 1.0,
+        "unit": "dl"
+      },
+      {
+        "local_id": "i9",
+        "component_id": "c1",
+        "name": "tørket oregano",
+        "amount": 1.0,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i10",
+        "component_id": "c1",
+        "name": "tørket basilikum",
+        "amount": 1.0,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i11",
+        "component_id": "c1",
+        "name": "salt",
+        "amount": 1.0,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i12",
+        "component_id": "c1",
+        "name": "kvernet sort pepper",
+        "amount": 0.5,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i13",
+        "component_id": "c2",
+        "name": "smør",
+        "amount": 3.0,
+        "unit": "tbsp"
+      },
+      {
+        "local_id": "i14",
+        "component_id": "c2",
+        "name": "hvetemel",
+        "amount": 3.0,
+        "unit": "tbsp"
+      },
+      {
+        "local_id": "i15",
+        "component_id": "c2",
+        "name": "helmelk",
+        "amount": 6.0,
+        "unit": "dl"
+      },
+      {
+        "local_id": "i16",
+        "component_id": "c2",
+        "name": "revet muskatnøtt",
+        "amount": 0.25,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i17",
+        "component_id": "c2",
+        "name": "salt",
+        "amount": 1.0,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i18",
+        "component_id": "c2",
+        "name": "hvit eller sort pepper",
+        "amount": 0.5,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i19",
+        "component_id": "c2",
+        "name": "revet parmesan",
+        "amount": 40.0,
+        "unit": "g"
+      },
+      {
+        "local_id": "i20",
+        "component_id": "c3",
+        "name": "lasagneplater",
+        "amount": 10.0,
+        "unit": "piece"
+      },
+      {
+        "local_id": "i21",
+        "component_id": "c3",
+        "name": "revet gulost",
+        "amount": 150.0,
+        "unit": "g"
+      },
+      {
+        "local_id": "i22",
+        "component_id": "c4",
+        "name": "hjertesalat",
+        "amount": 1.0,
+        "unit": "piece"
+      },
+      {
+        "local_id": "i23",
+        "component_id": "c4",
+        "name": "agurk",
+        "amount": 0.5,
+        "unit": "piece",
+        "prep_style": "i tynne skiver"
+      },
+      {
+        "local_id": "i24",
+        "component_id": "c4",
+        "name": "ekstra jomfru olivenolje",
+        "amount": 3.0,
+        "unit": "tbsp"
+      },
+      {
+        "local_id": "i25",
+        "component_id": "c4",
+        "name": "sitronsaft",
+        "amount": 1.0,
+        "unit": "tbsp"
+      },
+      {
+        "local_id": "i26",
+        "component_id": "c4",
+        "name": "dijonsennep",
+        "amount": 0.5,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i27",
+        "component_id": "c4",
+        "name": "salt og kvernet pepper",
+        "amount": 1.0,
+        "unit": "pinch"
+      }
+    ],
+    "steps": [
+      {
+        "local_id": "s1",
+        "component_id": "c3",
+        "phase": "cook",
+        "short": "Forvarm stekeovnen",
+        "text": "Sett stekeovnen på 200 °C over- og undervarme med rist i midterste rille.",
+        "uses": [],
+        "after": [],
+        "active_minutes": 1,
+        "passive_minutes": 15,
+        "method": "preheat",
+        "equipment": [
+          "oven"
+        ],
+        "temp_c": 200,
+        "mode": "top_bottom",
+        "setup": true,
+        "done_when": "Ovnen er gjennomvarm"
+      },
+      {
+        "local_id": "s2",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Surr grønnsakene",
+        "text": "Varm {i1} i en vid gryte over middels høy varme. Ha i {i2}, {i3} og {i4}, og la det surre under omrøring til løken er myk og blank.",
+        "uses": [
+          "i1",
+          "i2",
+          "i3",
+          "i4"
+        ],
+        "after": [],
+        "active_minutes": 2,
+        "passive_minutes": 2,
+        "method": "saute",
+        "equipment": [
+          "wide_pot",
+          "wooden_spoon"
+        ],
+        "mode": "medium_high",
+        "setup": false,
+        "done_when": "Løken er myk og blank uten å ha tatt farge"
+      },
+      {
+        "local_id": "s3",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Brun kjøttdeigen",
+        "text": "Tilsett {i5}, skru opp til høy varme og brun kjøttet mens du hakker det opp med sleiven.",
+        "uses": [
+          "i5"
+        ],
+        "after": [
+          "s2"
+        ],
+        "active_minutes": 5,
+        "passive_minutes": 0,
+        "method": "sear",
+        "equipment": [
+          "wide_pot",
+          "wooden_spoon"
+        ],
+        "mode": "high",
+        "setup": false,
+        "done_when": "Kjøttet er gjennomstekt og lett gyllent"
+      },
+      {
+        "local_id": "s4",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Småkok kjøttsausen",
+        "text": "Rør inn {i6} og la frese i 1 minutt. Hell i {i7}, {i8}, {i9} og {i10}. La sausen koke opp, skru ned til lav varme, legg på lokk og la småkoke i 25 minutter. Rør inn {i11} og {i12}.",
+        "uses": [
+          "i6",
+          "i7",
+          "i8",
+          "i9",
+          "i10",
+          "i11",
+          "i12"
+        ],
+        "after": [
+          "s3"
+        ],
+        "active_minutes": 3,
+        "passive_minutes": 25,
+        "holds_minutes": 60,
+        "method": "simmer",
+        "equipment": [
+          "wide_pot",
+          "lid",
+          "wooden_spoon"
+        ],
+        "mode": "low",
+        "setup": false,
+        "done_when": "Sausen har tyknet og fått en dyp, fyldig rød farge"
+      },
+      {
+        "local_id": "s5",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Lag hvit saus",
+        "text": "Smelt {i13} i en kjele på middels varme og visp inn {i14}. La det boble lett i 1 minutt under omrøring uten å ta farge. Spe gradvis med {i15} mens du visper kraftig for å unngå klumper. La koke forsiktig opp under omrøring og småkoke på lav varme i 4–5 minutter. Trekk kjelen av varmen og rør inn {i16}, {i17}, {i18} og {i19}.",
+        "uses": [
+          "i13",
+          "i14",
+          "i15",
+          "i16",
+          "i17",
+          "i18",
+          "i19"
+        ],
+        "after": [],
+        "active_minutes": 8,
+        "passive_minutes": 0,
+        "holds_minutes": 30,
+        "method": "simmer",
+        "equipment": [
+          "saucepan",
+          "whisk"
+        ],
+        "mode": "medium",
+        "setup": false,
+        "done_when": "Glatt, kremete og tykk nok til å dekke baksiden av en treskje"
+      },
+      {
+        "local_id": "s6",
+        "component_id": "c3",
+        "phase": "prep",
+        "short": "Monter lasagnen",
+        "text": "Smør et tynt lag kjøttsaus i bunnen av en form på ca. 20 × 30 cm. Legg lagvis {i20}, hvit saus og kjøttsaus i 3–4 lag. Avslutt med hvit saus på toppen og dryss over {i21}.",
+        "uses": [
+          "i20",
+          "i21"
+        ],
+        "after": [
+          "s4",
+          "s5"
+        ],
+        "active_minutes": 5,
+        "passive_minutes": 0,
+        "method": "assemble",
+        "equipment": [
+          "form_20x30"
+        ],
+        "setup": false,
+        "done_when": "Formen er fylt lagvis med ost jevnt fordelt på toppen"
+      },
+      {
+        "local_id": "s7",
+        "component_id": "c3",
+        "phase": "cook",
+        "short": "Stek lasagnen",
+        "text": "Sett formen på midterste rille i ovnen og stek i 30–35 minutter.",
+        "uses": [],
+        "after": [
+          "s6"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 32,
+        "method": "bake",
+        "equipment": [
+          "oven",
+          "form_20x30"
+        ],
+        "temp_c": 200,
+        "mode": "top_bottom",
+        "setup": false,
+        "done_when": "Osten på toppen er gyllenbrun og bobler i kantene, og en kniv glir lett igjennom uten motstand fra platene"
+      },
+      {
+        "local_id": "s8",
+        "component_id": "c3",
+        "phase": "cook",
+        "short": "Hvil lasagnen",
+        "text": "Ta formen ut av ovnen og la lasagnen hvile på benken i 15 minutter før du skjærer i den.",
+        "uses": [],
+        "after": [
+          "s7"
+        ],
+        "active_minutes": 0,
+        "passive_minutes": 15,
+        "holds_minutes": 30,
+        "method": "rest",
+        "equipment": [],
+        "setup": false,
+        "done_when": "Lasagnen har satt seg slik at stykkene holder fasongen"
+      },
+      {
+        "local_id": "s9",
+        "component_id": "c4",
+        "phase": "prep",
+        "short": "Pisk dressingen",
+        "text": "Visp sammen {i24}, {i25}, {i26} og {i27} i en liten bolle til dressingen tykner og emulgerer.",
+        "uses": [
+          "i24",
+          "i25",
+          "i26",
+          "i27"
+        ],
+        "after": [],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "holds_minutes": 60,
+        "method": "whisk",
+        "equipment": [
+          "small_bowl",
+          "whisk"
+        ],
+        "setup": false,
+        "done_when": "Jevn og lett tyknet dressing"
+      },
+      {
+        "local_id": "s10",
+        "component_id": "c4",
+        "phase": "prep",
+        "short": "Klargjør salaten",
+        "text": "Vask og tørk {i22} godt, og riv den i biter. Ha salatbitene og {i23} i en bolle.",
+        "uses": [
+          "i22",
+          "i23"
+        ],
+        "after": [],
+        "active_minutes": 4,
+        "passive_minutes": 0,
+        "holds_minutes": 30,
+        "method": "prepare",
+        "equipment": [
+          "bowl"
+        ],
+        "setup": false,
+        "done_when": "Salaten er tørr og revet i munnfuller"
+      },
+      {
+        "local_id": "s11",
+        "component_id": "c4",
+        "phase": "serve",
+        "short": "Vend salaten i dressing",
+        "text": "Hell dressingen over salaten og vend forsiktig rundt.",
+        "uses": [],
+        "after": [
+          "s9",
+          "s10"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 0,
+        "holds_minutes": 10,
+        "method": "mix",
+        "equipment": [
+          "bowl"
+        ],
+        "setup": false,
+        "done_when": "Salatbladene er jevnt dekket av dressing"
+      },
+      {
+        "local_id": "s12",
+        "component_id": "c3",
+        "phase": "serve",
+        "short": "Server lasagne og salat",
+        "text": "Skjær lasagnen i porsjonsstykker og server med frisk grønn salat.",
+        "uses": [],
+        "after": [
+          "s8",
+          "s11"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "method": "serve",
+        "equipment": [],
+        "setup": false
+      }
+    ],
+    "chef_note": "Ikke hopp over hviletiden på 15 minutter etter at lasagnen er tatt ut av ovnen. Skjærer du i den med en gang, vil fyllet renne utover fatet. Når den får hvile, suger pastaplatene til seg den siste væsken, og du får faste, pene og saftige stykker."
+  }
+}

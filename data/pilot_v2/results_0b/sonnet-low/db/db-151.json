@@ -1,0 +1,608 @@
+{
+  "key": "db-151",
+  "set": "db",
+  "config": "sonnet-low",
+  "model": "claude-sonnet-5-5",
+  "effort": "low",
+  "valid": true,
+  "attempts_used": 2,
+  "first_try_valid": false,
+  "failed_rules_any_attempt": [
+    1,
+    4,
+    5
+  ],
+  "model_version": "claude-sonnet-5-5",
+  "examples_in_prompt": [
+    "carbonara",
+    "lasagne"
+  ],
+  "tokens": {
+    "prompt_tokens": 26062,
+    "output_tokens": 5870,
+    "thought_tokens": 0
+  },
+  "cost_usd": 0.0735,
+  "api_seconds": 32.5,
+  "wall_seconds": 32.5,
+  "round1": null,
+  "attempts": [
+    {
+      "attempt": 1,
+      "valid": false,
+      "failed_rules": [
+        1,
+        4,
+        5
+      ],
+      "errors": [
+        {
+          "rule": 1,
+          "message": "step local_id 'i_dummy' must look like s1, s2, ..."
+        },
+        {
+          "rule": 4,
+          "message": "i10 (protein yoghurt) is not used by any step."
+        },
+        {
+          "rule": 4,
+          "message": "i11 (cucumber) is not used by any step."
+        },
+        {
+          "rule": 4,
+          "message": "i12 (garlic) is not used by any step."
+        },
+        {
+          "rule": 4,
+          "message": "i13 (lemon juice) is not used by any step."
+        },
+        {
+          "rule": 4,
+          "message": "i14 (dried dill) is not used by any step."
+        },
+        {
+          "rule": 4,
+          "message": "i15 (table salt) is not used by any step."
+        },
+        {
+          "rule": 4,
+          "message": "i16 (pita) is not used by any step."
+        },
+        {
+          "rule": 4,
+          "message": "i17 (tomatoes) is not used by any step."
+        },
+        {
+          "rule": 4,
+          "message": "i18 (onion) is not used by any step."
+        },
+        {
+          "rule": 4,
+          "message": "i19 (lettuce) is not used by any step."
+        },
+        {
+          "rule": 5,
+          "message": "Expected exactly one final step, found 2: s1, i_dummy. Every step except pure equipment steps (preheat, line the tin) must lead to the final serving step through after."
+        }
+      ],
+      "warnings": [],
+      "model_version": "claude-sonnet-5-5",
+      "prompt_tokens": 12091,
+      "cache_read_tokens": 10368,
+      "output_tokens": 1507,
+      "thought_tokens": null,
+      "stop_reason": "end_turn",
+      "cost_usd": 0.02059,
+      "seconds": 8.38
+    },
+    {
+      "attempt": 2,
+      "valid": true,
+      "failed_rules": [],
+      "errors": [],
+      "warnings": [],
+      "model_version": "claude-sonnet-5-5",
+      "prompt_tokens": 13971,
+      "cache_read_tokens": 10368,
+      "output_tokens": 4363,
+      "thought_tokens": null,
+      "stop_reason": "end_turn",
+      "cost_usd": 0.05291,
+      "seconds": 24.13
+    }
+  ],
+  "source_text": "Title: Greek Chicken Gyros with Protein Tzatziki\nServings: 4\n\nIngredients (component | amount unit | name | prep_style | pantry food_id):\n- Greek Marinated Chicken | 500 g | chicken breast |  | 000044\n- Greek Marinated Chicken | 30 ml | olive oil |  | 000378\n- Greek Marinated Chicken | 20 g | lemon |  | 000130\n- Greek Marinated Chicken | 2 tsp | dried oregano |  | 000257\n- Greek Marinated Chicken | 1 tsp | ground cumin |  | 000278\n- Greek Marinated Chicken | 1 tsp | Garlic Powder |  | 000643\n- Greek Marinated Chicken | 0.5 tsp | Ground Onion |  | 000644\n- Greek Marinated Chicken | 1 tsp | table salt |  | 000292\n- Greek Marinated Chicken | 0.5 tsp | ground black pepper |  | 000285\n- Homemade Tzatziki | 250 ml | Protein Yoghurt |  | 000641\n- Homemade Tzatziki | 0.5 pcs | Cucumber |  | 000642\n- Homemade Tzatziki | 5 g | garlic |  | 000112\n- Homemade Tzatziki | 10 g | lemon |  | 000130\n- Homemade Tzatziki | 1 tsp | dried dill |  | 000261\n- Homemade Tzatziki | 0.25 tsp | table salt |  | 000292\n- Assembly and Garnish | 4 pcs | pita |  | 000340\n- Assembly and Garnish | 150 g | tomatoes |  | 000093\n- Assembly and Garnish | 50 g | onion |  | 000111\n- Assembly and Garnish | 100 g | lettuce |  | 000079\n\nSteps in order (component | phase | minutes | text):\n1. Greek Marinated Chicken | Prep |  | SAFETY: Wash your hands and clean the cutting board before handling raw chicken breast.\n2. Homemade Tzatziki | Prep |  | Grate the cucumber using the large holes of a box grater.\n3. Assembly and Garnish | Prep |  | Thinly slice the onion, dice the tomatoes, and shred the lettuce into fine ribbons.\n4. Greek Marinated Chicken | Prep |  | Cut the chicken breast into bite-sized strips or 2cm cubes for even cooking.\n5. Homemade Tzatziki | Prep |  | Place the grated cucumber in a clean kitchen towel and squeeze firmly to remove as much moisture as possible.\n6. Assembly and Garnish | Cook |  | Lightly brush the pita breads with a drop of olive oil and toast them in a dry pan over medium heat for 1 minute per side until soft and warm.\n7. Greek Marinated Chicken | Prep |  | In a large bowl, whisk together the olive oil, lemon juice, dried oregano, ground cumin, garlic powder, ground onion, salt, and black pepper.\n8. Homemade Tzatziki | Prep |  | Finely mince the garlic cloves until they form a paste-like consistency.\n9. Assembly and Garnish | Serve |  | Lay a warm pita flat and spread a generous tablespoon of tzatziki sauce down the center.\n10. Greek Marinated Chicken | Prep |  | Add the chicken to the bowl, toss well to coat, cover, and marinate in the refrigerator for at least 30 minutes.\n11. Homemade Tzatziki | Prep |  | In a medium bowl, combine the Protein Yoghurt, drained cucumber, and minced garlic.\n12. Assembly and Garnish | Serve |  | Place a handful of shredded lettuce on top of the sauce, followed by a portion of the cooked Greek chicken.\n13. Greek Marinated Chicken | Cook |  | Heat a large skillet or grill pan over medium-high heat until it begins to smoke slightly.\n14. Homemade Tzatziki | Prep |  | Stir in the lemon juice, dried dill, and salt until the mixture is uniform.\n15. Assembly and Garnish | Serve |  | Top with sliced onions and diced tomatoes.\n16. Greek Marinated Chicken | Cook |  | Add the chicken strips to the hot pan and sear for 6-8 minutes, turning occasionally until golden brown and the internal temperature reaches 74°C.\n17. Homemade Tzatziki | Serve |  | Cover and refrigerate the tzatziki until ready to assemble the gyros to allow flavors to meld.\n18. Assembly and Garnish | Serve |  | Fold the pita over the filling, wrap the bottom tightly with parchment paper or foil, and serve immediately.\n19. Greek Marinated Chicken | Serve |  | Remove the chicken from the pan and let it rest on a clean plate for 3 minutes before serving.",
+  "recipe": {
+    "servings": 4,
+    "components": [
+      {
+        "local_id": "c1",
+        "name": "Greek Marinated Chicken"
+      },
+      {
+        "local_id": "c2",
+        "name": "Homemade Tzatziki"
+      },
+      {
+        "local_id": "c3",
+        "name": "Pita Gyros"
+      }
+    ],
+    "ingredients": [
+      {
+        "local_id": "i1",
+        "component_id": "c1",
+        "name": "chicken breast",
+        "amount": 500,
+        "unit": "g",
+        "prep_style": "cut into strips or 2 cm cubes",
+        "pantry_id": "000044"
+      },
+      {
+        "local_id": "i2",
+        "component_id": "c1",
+        "name": "olive oil",
+        "amount": 30,
+        "unit": "ml",
+        "pantry_id": "000378"
+      },
+      {
+        "local_id": "i3",
+        "component_id": "c1",
+        "name": "lemon juice",
+        "amount": 20,
+        "unit": "g",
+        "pantry_id": "000130"
+      },
+      {
+        "local_id": "i4",
+        "component_id": "c1",
+        "name": "dried oregano",
+        "amount": 2,
+        "unit": "tsp",
+        "pantry_id": "000257"
+      },
+      {
+        "local_id": "i5",
+        "component_id": "c1",
+        "name": "ground cumin",
+        "amount": 1,
+        "unit": "tsp",
+        "pantry_id": "000278"
+      },
+      {
+        "local_id": "i6",
+        "component_id": "c1",
+        "name": "garlic powder",
+        "amount": 1,
+        "unit": "tsp",
+        "pantry_id": "000643"
+      },
+      {
+        "local_id": "i7",
+        "component_id": "c1",
+        "name": "ground onion",
+        "amount": 0.5,
+        "unit": "tsp",
+        "pantry_id": "000644"
+      },
+      {
+        "local_id": "i8",
+        "component_id": "c1",
+        "name": "table salt",
+        "amount": 1,
+        "unit": "tsp",
+        "pantry_id": "000292"
+      },
+      {
+        "local_id": "i9",
+        "component_id": "c1",
+        "name": "ground black pepper",
+        "amount": 0.5,
+        "unit": "tsp",
+        "pantry_id": "000285"
+      },
+      {
+        "local_id": "i10",
+        "component_id": "c2",
+        "name": "protein yoghurt",
+        "amount": 250,
+        "unit": "ml",
+        "pantry_id": "000641"
+      },
+      {
+        "local_id": "i11",
+        "component_id": "c2",
+        "name": "cucumber",
+        "amount": 0.5,
+        "unit": "piece",
+        "prep_style": "grated",
+        "pantry_id": "000642"
+      },
+      {
+        "local_id": "i12",
+        "component_id": "c2",
+        "name": "garlic",
+        "amount": 5,
+        "unit": "g",
+        "prep_style": "finely minced",
+        "pantry_id": "000112"
+      },
+      {
+        "local_id": "i13",
+        "component_id": "c2",
+        "name": "lemon juice",
+        "amount": 10,
+        "unit": "g",
+        "pantry_id": "000130"
+      },
+      {
+        "local_id": "i14",
+        "component_id": "c2",
+        "name": "dried dill",
+        "amount": 1,
+        "unit": "tsp",
+        "pantry_id": "000261"
+      },
+      {
+        "local_id": "i15",
+        "component_id": "c2",
+        "name": "table salt",
+        "amount": 0.25,
+        "unit": "tsp",
+        "pantry_id": "000292"
+      },
+      {
+        "local_id": "i16",
+        "component_id": "c3",
+        "name": "pita",
+        "amount": 4,
+        "unit": "piece",
+        "pantry_id": "000340"
+      },
+      {
+        "local_id": "i17",
+        "component_id": "c3",
+        "name": "tomatoes",
+        "amount": 150,
+        "unit": "g",
+        "prep_style": "diced",
+        "pantry_id": "000093"
+      },
+      {
+        "local_id": "i18",
+        "component_id": "c3",
+        "name": "onion",
+        "amount": 50,
+        "unit": "g",
+        "prep_style": "thinly sliced",
+        "pantry_id": "000111"
+      },
+      {
+        "local_id": "i19",
+        "component_id": "c3",
+        "name": "lettuce",
+        "amount": 100,
+        "unit": "g",
+        "prep_style": "shredded into fine ribbons",
+        "pantry_id": "000079"
+      }
+    ],
+    "steps": [
+      {
+        "local_id": "s1",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Heat the pan",
+        "text": "Heat a large skillet over medium-high heat until it begins to smoke slightly.",
+        "uses": [],
+        "after": [],
+        "active_minutes": 1,
+        "passive_minutes": 4,
+        "method": "preheat",
+        "equipment": [
+          "frying_pan"
+        ],
+        "mode": "medium_high",
+        "setup": true,
+        "done_when": "The pan smokes slightly"
+      },
+      {
+        "local_id": "s2",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Cut the chicken",
+        "text": "Wash your hands and clean the cutting board before handling raw chicken. Cut {i1} into bite-sized strips or 2 cm cubes for even cooking.",
+        "uses": [
+          "i1"
+        ],
+        "after": [],
+        "active_minutes": 6,
+        "passive_minutes": 0,
+        "method": "slice",
+        "equipment": [
+          "cutting_board",
+          "knife"
+        ],
+        "setup": false
+      },
+      {
+        "local_id": "s3",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Whisk the marinade",
+        "text": "In a large bowl, whisk together {i2}, {i3}, {i4}, {i5}, {i6}, {i7}, {i8} and {i9}.",
+        "uses": [
+          "i2",
+          "i3",
+          "i4",
+          "i5",
+          "i6",
+          "i7",
+          "i8",
+          "i9"
+        ],
+        "after": [],
+        "active_minutes": 3,
+        "passive_minutes": 0,
+        "method": "whisk",
+        "equipment": [
+          "large_bowl",
+          "whisk"
+        ],
+        "setup": false,
+        "done_when": "Evenly mixed with no clumps of spice"
+      },
+      {
+        "local_id": "s4",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Marinate the chicken",
+        "text": "Add the chicken to the bowl, toss well to coat, cover and marinate in the refrigerator for at least 30 minutes.",
+        "uses": [],
+        "after": [
+          "s2",
+          "s3"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 30,
+        "method": "marinate",
+        "equipment": [
+          "large_bowl"
+        ],
+        "setup": false,
+        "done_when": "Every piece is coated in marinade"
+      },
+      {
+        "local_id": "s5",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Sear the chicken",
+        "text": "Add the chicken strips to the hot pan and sear for 6-8 minutes, turning occasionally.",
+        "uses": [],
+        "after": [
+          "s4",
+          "s1"
+        ],
+        "active_minutes": 8,
+        "passive_minutes": 0,
+        "holds_minutes": 10,
+        "method": "sear",
+        "equipment": [
+          "frying_pan",
+          "tongs"
+        ],
+        "mode": "medium_high",
+        "setup": false,
+        "done_when": "Golden brown, internal temperature 74°C"
+      },
+      {
+        "local_id": "s6",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Rest the chicken",
+        "text": "Remove the chicken from the pan and let it rest on a clean plate for 3 minutes before serving.",
+        "uses": [],
+        "after": [
+          "s5"
+        ],
+        "active_minutes": 0,
+        "passive_minutes": 3,
+        "holds_minutes": 10,
+        "method": "rest",
+        "equipment": [
+          "plate"
+        ],
+        "setup": false
+      },
+      {
+        "local_id": "s7",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Grate the cucumber",
+        "text": "Grate {i11} using the large holes of a box grater.",
+        "uses": [
+          "i11"
+        ],
+        "after": [],
+        "active_minutes": 3,
+        "passive_minutes": 0,
+        "method": "grate",
+        "equipment": [
+          "grater"
+        ],
+        "setup": false
+      },
+      {
+        "local_id": "s8",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Squeeze the cucumber",
+        "text": "Place the grated cucumber in a clean kitchen towel and squeeze firmly to remove as much moisture as possible.",
+        "uses": [],
+        "after": [
+          "s7"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "method": "drain",
+        "equipment": [
+          "kitchen_towel"
+        ],
+        "setup": false,
+        "done_when": "Cucumber is dry and no more liquid drips out"
+      },
+      {
+        "local_id": "s9",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Mince the garlic",
+        "text": "Finely mince {i12} until it forms a paste-like consistency.",
+        "uses": [
+          "i12"
+        ],
+        "after": [],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "method": "chop",
+        "equipment": [
+          "cutting_board",
+          "knife"
+        ],
+        "setup": false,
+        "done_when": "Paste-like consistency"
+      },
+      {
+        "local_id": "s10",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Combine yoghurt mixture",
+        "text": "In a medium bowl, combine {i10}, the drained cucumber and the minced garlic.",
+        "uses": [
+          "i10"
+        ],
+        "after": [
+          "s8",
+          "s9"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "method": "mix",
+        "equipment": [
+          "bowl",
+          "spatula"
+        ],
+        "setup": false
+      },
+      {
+        "local_id": "s11",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Season the tzatziki",
+        "text": "Stir in {i13}, {i14} and {i15} until the mixture is uniform.",
+        "uses": [
+          "i13",
+          "i14",
+          "i15"
+        ],
+        "after": [
+          "s10"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 0,
+        "method": "mix",
+        "equipment": [
+          "bowl",
+          "spatula"
+        ],
+        "setup": false,
+        "done_when": "Uniform with no streaks"
+      },
+      {
+        "local_id": "s12",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Chill the tzatziki",
+        "text": "Cover and refrigerate the tzatziki until ready to assemble the gyros, so the flavors meld.",
+        "uses": [],
+        "after": [
+          "s11"
+        ],
+        "active_minutes": 0,
+        "passive_minutes": 30,
+        "holds_minutes": 1440,
+        "method": "chill",
+        "equipment": [
+          "bowl",
+          "plastic_wrap"
+        ],
+        "setup": false
+      },
+      {
+        "local_id": "s13",
+        "component_id": "c3",
+        "phase": "prep",
+        "short": "Prepare the toppings",
+        "text": "Thinly slice {i18}, dice {i17} and shred {i19} into fine ribbons.",
+        "uses": [
+          "i17",
+          "i18",
+          "i19"
+        ],
+        "after": [],
+        "active_minutes": 8,
+        "passive_minutes": 0,
+        "holds_minutes": 120,
+        "method": "slice",
+        "equipment": [
+          "cutting_board",
+          "knife"
+        ],
+        "setup": false
+      },
+      {
+        "local_id": "s14",
+        "component_id": "c3",
+        "phase": "cook",
+        "short": "Toast the pita",
+        "text": "Toast {i16} in a dry pan over medium heat for 1 minute per side.",
+        "uses": [
+          "i16"
+        ],
+        "after": [],
+        "active_minutes": 4,
+        "passive_minutes": 0,
+        "holds_minutes": 10,
+        "method": "toast",
+        "equipment": [
+          "frying_pan"
+        ],
+        "mode": "medium",
+        "setup": false,
+        "done_when": "Soft and warm"
+      },
+      {
+        "local_id": "s15",
+        "component_id": "c3",
+        "phase": "serve",
+        "short": "Assemble the gyros",
+        "text": "Lay a warm pita flat and spread a generous tablespoon of tzatziki down the center. Top with shredded lettuce, then a portion of the cooked chicken, then sliced onions and diced tomatoes. Fold the pita over the filling, wrap the bottom tightly with parchment paper or foil, and serve immediately.",
+        "uses": [],
+        "after": [
+          "s6",
+          "s12",
+          "s13",
+          "s14"
+        ],
+        "active_minutes": 6,
+        "passive_minutes": 0,
+        "method": "assemble",
+        "equipment": [
+          "baking_paper"
+        ],
+        "setup": false
+      }
+    ],
+    "chef_note": "Squeeze the cucumber well so the tzatziki stays thick.  ,"
+  }
+}

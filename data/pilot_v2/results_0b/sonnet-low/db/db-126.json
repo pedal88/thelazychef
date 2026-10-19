@@ -1,0 +1,274 @@
+{
+  "key": "db-126",
+  "set": "db",
+  "config": "sonnet-low",
+  "model": "claude-sonnet-5-5",
+  "effort": "low",
+  "valid": true,
+  "attempts_used": 1,
+  "first_try_valid": true,
+  "failed_rules_any_attempt": [],
+  "model_version": "claude-sonnet-5-5",
+  "examples_in_prompt": [
+    "carbonara",
+    "lasagne"
+  ],
+  "tokens": {
+    "prompt_tokens": 11120,
+    "output_tokens": 1589,
+    "thought_tokens": 0
+  },
+  "cost_usd": 0.019468,
+  "api_seconds": 9.3,
+  "wall_seconds": 9.4,
+  "round1": null,
+  "attempts": [
+    {
+      "attempt": 1,
+      "valid": true,
+      "failed_rules": [],
+      "errors": [],
+      "warnings": [],
+      "model_version": "claude-sonnet-5-5",
+      "prompt_tokens": 11120,
+      "cache_read_tokens": 10368,
+      "output_tokens": 1589,
+      "thought_tokens": null,
+      "stop_reason": "end_turn",
+      "cost_usd": 0.019468,
+      "seconds": 9.35
+    }
+  ],
+  "source_text": "Title: Caramelized Onion Hummus\nServings: 4\n\nIngredients (component | amount unit | name | prep_style | pantry food_id):\n- Caramelized Onions | 200 g | onion |  | 000111\n- Caramelized Onions | 15 g | olive oil |  | 000378\n- Caramelized Onions | 2 g | sea salt |  | 000294\n- Hummus Base | 400 g | chickpeas |  | 000061\n- Hummus Base | 60 g | seed butters (tahini) |  | 000408\n- Hummus Base | 50 g | lemon |  | 000130\n- Hummus Base | 10 g | garlic |  | 000112\n- Hummus Base | 30 g | olive oil |  | 000378\n- Hummus Base | 3 g | sea salt |  | 000294\n- Assembly and Garnish | 2 g | smoked paprika |  | 000291\n- Assembly and Garnish | 5 g | dill |  | 000249\n- Assembly and Garnish | 10 g | olive oil |  | 000378\n\nSteps in order (component | phase | minutes | text):\n1. Caramelized Onions | Prep |  | Peel and thinly slice the onions into uniform rounds or half-moons.\n2. Caramelized Onions | Cook |  | Heat 15g of olive oil in a pan over medium-low heat. Add onions and a pinch of salt, cooking for 25-30 minutes, stirring occasionally until deep golden brown and jammy.\n3. Hummus Base | Prep |  | Drain and rinse the chickpeas. Peel the garlic cloves and juice the lemon.\n4. Hummus Base | Cook |  | Place chickpeas, tahini, garlic, lemon juice, and salt in a food processor. Blitz until thick, then slowly drizzle in 30g of olive oil while processing until the hummus is perfectly smooth.\n5. Assembly and Garnish | Serve |  | Spoon the hummus onto a wide plate and use the back of a spoon to create a deep swirl. Top with the warm caramelized onions, a dusting of smoked paprika, fresh dill, and a final drizzle of olive oil.",
+  "recipe": {
+    "servings": 4,
+    "components": [
+      {
+        "local_id": "c1",
+        "name": "Caramelized Onions"
+      },
+      {
+        "local_id": "c2",
+        "name": "Hummus"
+      }
+    ],
+    "ingredients": [
+      {
+        "local_id": "i1",
+        "component_id": "c1",
+        "name": "onion",
+        "amount": 200,
+        "unit": "g",
+        "prep_style": "thinly sliced",
+        "pantry_id": "000111"
+      },
+      {
+        "local_id": "i2",
+        "component_id": "c1",
+        "name": "olive oil",
+        "amount": 15,
+        "unit": "g",
+        "pantry_id": "000378"
+      },
+      {
+        "local_id": "i3",
+        "component_id": "c1",
+        "name": "sea salt",
+        "amount": 2,
+        "unit": "g",
+        "pantry_id": "000294"
+      },
+      {
+        "local_id": "i4",
+        "component_id": "c2",
+        "name": "chickpeas",
+        "amount": 400,
+        "unit": "g",
+        "prep_style": "drained and rinsed",
+        "pantry_id": "000061"
+      },
+      {
+        "local_id": "i5",
+        "component_id": "c2",
+        "name": "seed butters (tahini)",
+        "amount": 60,
+        "unit": "g",
+        "pantry_id": "000408"
+      },
+      {
+        "local_id": "i6",
+        "component_id": "c2",
+        "name": "lemon",
+        "amount": 50,
+        "unit": "g",
+        "prep_style": "juiced",
+        "pantry_id": "000130"
+      },
+      {
+        "local_id": "i7",
+        "component_id": "c2",
+        "name": "garlic",
+        "amount": 10,
+        "unit": "g",
+        "prep_style": "peeled",
+        "pantry_id": "000112"
+      },
+      {
+        "local_id": "i8",
+        "component_id": "c2",
+        "name": "olive oil",
+        "amount": 30,
+        "unit": "g",
+        "pantry_id": "000378"
+      },
+      {
+        "local_id": "i9",
+        "component_id": "c2",
+        "name": "sea salt",
+        "amount": 3,
+        "unit": "g",
+        "pantry_id": "000294"
+      },
+      {
+        "local_id": "i10",
+        "component_id": "c2",
+        "name": "smoked paprika",
+        "amount": 2,
+        "unit": "g",
+        "pantry_id": "000291"
+      },
+      {
+        "local_id": "i11",
+        "component_id": "c2",
+        "name": "dill",
+        "amount": 5,
+        "unit": "g",
+        "pantry_id": "000249"
+      },
+      {
+        "local_id": "i12",
+        "component_id": "c2",
+        "name": "olive oil",
+        "amount": 10,
+        "unit": "g",
+        "pantry_id": "000378"
+      }
+    ],
+    "steps": [
+      {
+        "local_id": "s1",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Slice the onions",
+        "text": "Peel and thinly slice {i1} into uniform rounds or half-moons.",
+        "uses": [
+          "i1"
+        ],
+        "after": [],
+        "active_minutes": 6,
+        "passive_minutes": 0,
+        "holds_minutes": 120,
+        "method": "slice",
+        "equipment": [
+          "knife",
+          "cutting_board"
+        ],
+        "setup": false
+      },
+      {
+        "local_id": "s2",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Caramelize the onions",
+        "text": "Heat {i2} in a pan over medium-low heat. Add the onions and {i3}, and cook for 25-30 minutes, stirring occasionally.",
+        "uses": [
+          "i2",
+          "i3"
+        ],
+        "after": [
+          "s1"
+        ],
+        "active_minutes": 8,
+        "passive_minutes": 20,
+        "holds_minutes": 120,
+        "method": "saute",
+        "equipment": [
+          "frying_pan",
+          "wooden_spoon"
+        ],
+        "mode": "medium_low",
+        "setup": false,
+        "done_when": "Deep golden brown and jammy"
+      },
+      {
+        "local_id": "s3",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Prepare chickpeas, garlic, lemon",
+        "text": "Drain and rinse {i4}. Peel {i7} and juice {i6}.",
+        "uses": [
+          "i4",
+          "i7",
+          "i6"
+        ],
+        "after": [],
+        "active_minutes": 5,
+        "passive_minutes": 0,
+        "holds_minutes": 120,
+        "method": "prepare",
+        "equipment": [
+          "colander"
+        ],
+        "setup": false
+      },
+      {
+        "local_id": "s4",
+        "component_id": "c2",
+        "phase": "prep",
+        "short": "Blitz the hummus",
+        "text": "Place the chickpeas, {i5}, the garlic, the lemon juice and {i9} in a food processor. Blitz until thick, then slowly drizzle in {i8} while processing.",
+        "uses": [
+          "i5",
+          "i9",
+          "i8"
+        ],
+        "after": [
+          "s3"
+        ],
+        "active_minutes": 6,
+        "passive_minutes": 0,
+        "holds_minutes": 2880,
+        "method": "blend",
+        "equipment": [
+          "food_processor"
+        ],
+        "setup": false,
+        "done_when": "Perfectly smooth and thick"
+      },
+      {
+        "local_id": "s5",
+        "component_id": "c2",
+        "phase": "serve",
+        "short": "Plate and garnish",
+        "text": "Spoon the hummus onto a wide plate and use the back of a spoon to create a deep swirl. Top with the warm caramelized onions, {i10}, {i11} and {i12}.",
+        "uses": [
+          "i10",
+          "i11",
+          "i12"
+        ],
+        "after": [
+          "s4",
+          "s2"
+        ],
+        "active_minutes": 3,
+        "passive_minutes": 0,
+        "method": "plate",
+        "equipment": [
+          "plate"
+        ],
+        "setup": false
+      }
+    ],
+    "chef_note": "Keep the onions warm so they contrast with the cool, creamy hummus."
+  }
+}

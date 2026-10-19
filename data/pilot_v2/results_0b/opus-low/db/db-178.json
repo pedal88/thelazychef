@@ -1,0 +1,382 @@
+{
+  "key": "db-178",
+  "set": "db",
+  "config": "opus-low",
+  "model": "claude-opus-5-5",
+  "effort": "low",
+  "valid": true,
+  "attempts_used": 1,
+  "first_try_valid": true,
+  "failed_rules_any_attempt": [],
+  "model_version": "claude-opus-5-5",
+  "examples_in_prompt": [
+    "carbonara",
+    "lasagne"
+  ],
+  "tokens": {
+    "prompt_tokens": 11575,
+    "output_tokens": 2451,
+    "thought_tokens": 0
+  },
+  "cost_usd": 0.057995,
+  "api_seconds": 17.4,
+  "wall_seconds": 17.4,
+  "round1": null,
+  "attempts": [
+    {
+      "attempt": 1,
+      "valid": true,
+      "failed_rules": [],
+      "errors": [],
+      "warnings": [],
+      "model_version": "claude-opus-5-5",
+      "prompt_tokens": 11575,
+      "cache_read_tokens": 10368,
+      "output_tokens": 2451,
+      "thought_tokens": null,
+      "stop_reason": "end_turn",
+      "cost_usd": 0.057995,
+      "seconds": 17.37
+    }
+  ],
+  "source_text": "Title: Buffalo Wings with Spicy Cayenne Hot Sauce\nServings: 4\n\nIngredients (component | amount unit | name | prep_style | pantry food_id):\n- Buffalo Wings | 1000 g | chicken wing |  | 000048\n- Buffalo Wings | 100 g | Cornstarch |  | 000649\n- Buffalo Wings | 5 g | table salt |  | 000292\n- Buffalo Wings | 1 tsp | ground black pepper |  | 000285\n- Spicy Cayenne Hot Sauce | 100 g | butter |  | 000384\n- Spicy Cayenne Hot Sauce | 3 tsp | Cayenne Pepper |  | 000652\n- Spicy Cayenne Hot Sauce | 1 tsp | Chili Powder |  | 000653\n- Spicy Cayenne Hot Sauce | 1 tsp | Garlic Powder |  | 000643\n- Spicy Cayenne Hot Sauce | 1 tsp | Ground Onion |  | 000644\n- Spicy Cayenne Hot Sauce | 60 ml | White Vinegar |  | 000637\n- Spicy Cayenne Hot Sauce | 1 tsp | table salt |  | 000292\n\nSteps in order (component | phase | minutes | text):\n1. Buffalo Wings | Prep |  | Pat the chicken wings completely dry with paper towels; safety: ensure raw poultry is handled carefully and surfaces are sanitized afterward.\n2. Spicy Cayenne Hot Sauce | Prep |  | Melt the butter in a small saucepan over medium-low heat until completely liquid.\n3. Buffalo Wings | Prep |  | In a large bowl, whisk together the cornstarch, salt, and ground black pepper.\n4. Spicy Cayenne Hot Sauce | Cook |  | Whisk in the cayenne pepper, chili powder, garlic powder, and ground onion, stirring for 1 minute to toast the spices.\n5. Buffalo Wings | Prep |  | Toss the dried wings in the cornstarch mixture until they are thinly and evenly coated, shaking off any excess powder.\n6. Spicy Cayenne Hot Sauce | Cook |  | Pour in the white vinegar and add a teaspoon of salt, whisking vigorously to emulsify the fat and liquid.\n7. Buffalo Wings | Cook |  | Heat deep-frying oil in a heavy pot or deep fryer to 190°C.\n8. Spicy Cayenne Hot Sauce | Cook |  | Simmer the sauce gently on low heat for 5 minutes until it thickens slightly and develops a glossy sheen.\n9. Buffalo Wings | Cook |  | Fry the wings in small batches for 10-12 minutes until the skin is golden brown and very crispy.\n10. Spicy Cayenne Hot Sauce | Serve |  | Place the hot fried wings in a large stainless steel bowl and pour the warm sauce over them.\n11. Buffalo Wings | Cook |  | Ensure the internal temperature of the wings reaches 74°C for safety.\n12. Spicy Cayenne Hot Sauce | Serve |  | Toss the wings until every piece is thoroughly glazed and serve immediately.\n13. Buffalo Wings | Serve |  | Remove wings from the oil and drain on a wire rack for 2 minutes to maintain crispiness.",
+  "recipe": {
+    "servings": 4,
+    "components": [
+      {
+        "local_id": "c1",
+        "name": "Buffalo Wings"
+      },
+      {
+        "local_id": "c2",
+        "name": "Spicy Cayenne Hot Sauce"
+      }
+    ],
+    "ingredients": [
+      {
+        "local_id": "i1",
+        "component_id": "c1",
+        "name": "chicken wing",
+        "amount": 1000,
+        "unit": "g",
+        "pantry_id": "000048"
+      },
+      {
+        "local_id": "i2",
+        "component_id": "c1",
+        "name": "Cornstarch",
+        "amount": 100,
+        "unit": "g",
+        "pantry_id": "000649"
+      },
+      {
+        "local_id": "i3",
+        "component_id": "c1",
+        "name": "table salt",
+        "amount": 5,
+        "unit": "g",
+        "pantry_id": "000292"
+      },
+      {
+        "local_id": "i4",
+        "component_id": "c1",
+        "name": "ground black pepper",
+        "amount": 1,
+        "unit": "tsp",
+        "pantry_id": "000285"
+      },
+      {
+        "local_id": "i5",
+        "component_id": "c2",
+        "name": "butter",
+        "amount": 100,
+        "unit": "g",
+        "pantry_id": "000384"
+      },
+      {
+        "local_id": "i6",
+        "component_id": "c2",
+        "name": "Cayenne Pepper",
+        "amount": 3,
+        "unit": "tsp",
+        "pantry_id": "000652"
+      },
+      {
+        "local_id": "i7",
+        "component_id": "c2",
+        "name": "Chili Powder",
+        "amount": 1,
+        "unit": "tsp",
+        "pantry_id": "000653"
+      },
+      {
+        "local_id": "i8",
+        "component_id": "c2",
+        "name": "Garlic Powder",
+        "amount": 1,
+        "unit": "tsp",
+        "pantry_id": "000643"
+      },
+      {
+        "local_id": "i9",
+        "component_id": "c2",
+        "name": "Ground Onion",
+        "amount": 1,
+        "unit": "tsp",
+        "pantry_id": "000644"
+      },
+      {
+        "local_id": "i10",
+        "component_id": "c2",
+        "name": "White Vinegar",
+        "amount": 60,
+        "unit": "ml",
+        "pantry_id": "000637"
+      },
+      {
+        "local_id": "i11",
+        "component_id": "c2",
+        "name": "table salt",
+        "amount": 1,
+        "unit": "tsp",
+        "pantry_id": "000292"
+      }
+    ],
+    "steps": [
+      {
+        "local_id": "s1",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Dry the wings",
+        "text": "Pat {i1} completely dry with paper towels. Handle raw poultry carefully and sanitize surfaces afterward.",
+        "uses": [
+          "i1"
+        ],
+        "after": [],
+        "active_minutes": 5,
+        "passive_minutes": 0,
+        "method": "prepare",
+        "equipment": [
+          "kitchen_towel"
+        ],
+        "setup": false,
+        "done_when": "Skin feels dry to the touch"
+      },
+      {
+        "local_id": "s2",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Mix the coating",
+        "text": "In a large bowl, whisk together {i2}, {i3} and {i4}.",
+        "uses": [
+          "i2",
+          "i3",
+          "i4"
+        ],
+        "after": [],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "method": "whisk",
+        "equipment": [
+          "large_bowl",
+          "whisk"
+        ],
+        "setup": false
+      },
+      {
+        "local_id": "s3",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Coat the wings",
+        "text": "Toss the dried wings in the cornstarch mixture until thinly and evenly coated, shaking off any excess powder.",
+        "uses": [],
+        "after": [
+          "s1",
+          "s2"
+        ],
+        "active_minutes": 4,
+        "passive_minutes": 0,
+        "holds_minutes": 30,
+        "method": "mix",
+        "equipment": [
+          "large_bowl"
+        ],
+        "setup": false,
+        "done_when": "Thin, even coating with no clumps"
+      },
+      {
+        "local_id": "s4",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Heat the oil",
+        "text": "Heat deep-frying oil in a heavy pot or deep fryer to 190 °C.",
+        "uses": [],
+        "after": [],
+        "active_minutes": 1,
+        "passive_minutes": 12,
+        "method": "preheat",
+        "equipment": [
+          "deep_fryer",
+          "thermometer"
+        ],
+        "temp_c": 190,
+        "setup": true,
+        "done_when": "Oil reads 190 °C"
+      },
+      {
+        "local_id": "s5",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Fry the wings",
+        "text": "Fry the wings in small batches for 10–12 minutes until golden brown and very crispy. Check that the internal temperature reaches 74 °C.",
+        "uses": [],
+        "after": [
+          "s3",
+          "s4"
+        ],
+        "active_minutes": 6,
+        "passive_minutes": 18,
+        "method": "deep_fry",
+        "equipment": [
+          "deep_fryer",
+          "thermometer",
+          "tongs"
+        ],
+        "temp_c": 190,
+        "setup": false,
+        "done_when": "Skin golden brown and very crispy, 74 °C inside"
+      },
+      {
+        "local_id": "s6",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Drain the wings",
+        "text": "Remove the wings from the oil and drain on a wire rack for 2 minutes to keep them crisp.",
+        "uses": [],
+        "after": [
+          "s5"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 2,
+        "holds_minutes": 10,
+        "method": "drain",
+        "equipment": [
+          "rack"
+        ],
+        "setup": false,
+        "done_when": "No oil dripping from the wings"
+      },
+      {
+        "local_id": "s7",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Melt the butter",
+        "text": "Melt {i5} in a small saucepan over medium-low heat until completely liquid.",
+        "uses": [
+          "i5"
+        ],
+        "after": [],
+        "active_minutes": 3,
+        "passive_minutes": 0,
+        "method": "melt",
+        "equipment": [
+          "saucepan"
+        ],
+        "mode": "medium_low",
+        "setup": false,
+        "done_when": "Butter fully liquid"
+      },
+      {
+        "local_id": "s8",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Toast the spices",
+        "text": "Whisk in {i6}, {i7}, {i8} and {i9}, stirring for 1 minute to toast the spices.",
+        "uses": [
+          "i6",
+          "i7",
+          "i8",
+          "i9"
+        ],
+        "after": [
+          "s7"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 0,
+        "method": "toast",
+        "equipment": [
+          "saucepan",
+          "whisk"
+        ],
+        "mode": "medium_low",
+        "setup": false,
+        "done_when": "Spices smell fragrant"
+      },
+      {
+        "local_id": "s9",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Emulsify the sauce",
+        "text": "Pour in {i10} and add {i11}, whisking vigorously to emulsify the fat and liquid.",
+        "uses": [
+          "i10",
+          "i11"
+        ],
+        "after": [
+          "s8"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 0,
+        "method": "whisk",
+        "equipment": [
+          "saucepan",
+          "whisk"
+        ],
+        "mode": "medium_low",
+        "setup": false,
+        "done_when": "Sauce looks smooth and combined"
+      },
+      {
+        "local_id": "s10",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Simmer the sauce",
+        "text": "Simmer the sauce gently on low heat for 5 minutes until it thickens slightly.",
+        "uses": [],
+        "after": [
+          "s9"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 4,
+        "holds_minutes": 30,
+        "method": "simmer",
+        "equipment": [
+          "saucepan"
+        ],
+        "mode": "low",
+        "setup": false,
+        "done_when": "Slightly thickened with a glossy sheen"
+      },
+      {
+        "local_id": "s11",
+        "component_id": "c1",
+        "phase": "serve",
+        "short": "Glaze and serve",
+        "text": "Place the hot wings in a large bowl, pour the warm sauce over them and toss until every piece is thoroughly glazed. Serve immediately.",
+        "uses": [],
+        "after": [
+          "s6",
+          "s10"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "method": "serve",
+        "equipment": [
+          "large_bowl"
+        ],
+        "setup": false,
+        "done_when": "Every wing is evenly glazed"
+      }
+    ]
+  }
+}

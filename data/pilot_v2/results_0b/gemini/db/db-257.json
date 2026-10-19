@@ -1,0 +1,236 @@
+{
+  "key": "db-257",
+  "set": "db",
+  "config": "gemini",
+  "model": "gemini-flash-latest",
+  "effort": null,
+  "valid": true,
+  "attempts_used": 1,
+  "first_try_valid": true,
+  "failed_rules_any_attempt": [],
+  "model_version": "gemini-3.8-flash",
+  "examples_in_prompt": [
+    "carbonara",
+    "lasagne"
+  ],
+  "tokens": {
+    "prompt_tokens": 6865,
+    "output_tokens": 1550,
+    "thought_tokens": 7051
+  },
+  "cost_usd": 0.029236,
+  "api_seconds": 54.7,
+  "wall_seconds": 54.7,
+  "round1": null,
+  "attempts": [
+    {
+      "attempt": 1,
+      "valid": true,
+      "failed_rules": [],
+      "errors": [],
+      "warnings": [],
+      "model_version": "gemini-3.8-flash",
+      "prompt_tokens": 6865,
+      "output_tokens": 1550,
+      "thought_tokens": 7051,
+      "cost_usd": 0.029236,
+      "seconds": 54.74
+    }
+  ],
+  "source_text": "Title: Honey and Thyme Roasted Carrots\nServings: 4\n\nIngredients (component | amount unit | name | prep_style | pantry food_id):\n- Main Dish | 500 g | carrots |  | 000069\n- Main Dish | 30 g | honey |  | 000363\n- Main Dish | 2 tsp | thyme |  | 000250\n- Main Dish | 15 g | olive oil |  | 000378\n- Main Dish | 1 tsp | table salt |  | 000292\n- Main Dish | 0.5 tsp | ground black pepper |  | 000285\n\nSteps in order (component | phase | minutes | text):\n1. Main Dish | Prep | 5 | Preheat your oven to 200 Celsius and line a large baking sheet with parchment paper to prevent the honey from sticking.\n2. Main Dish | Prep | 5 | Wash and peel the carrots; if they are thick, slice them in half lengthwise to ensure even roasting.\n3. Main Dish | Prep | 2 | In a small mixing bowl, whisk together the honey, olive oil, salt, black pepper, and half of the fresh thyme leaves.\n4. Main Dish | Prep | 1 | Place the prepared carrots onto the baking sheet and pour the honey-thyme mixture over them.\n5. Main Dish | Prep | 1 | Use your hands or a spatula to toss the carrots thoroughly until every piece is generously coated in the glaze.\n6. Main Dish | Cook | 30 | Spread the carrots out into a single layer and roast in the oven for 25 to 30 minutes, turning them halfway through with tongs.\n7. Main Dish | Cook | 2 | Check for tenderness with a fork; the edges should be slightly caramelized and browned when finished.\n8. Main Dish | Serve | 2 | Transfer the roasted carrots to a serving platter and garnish with the remaining fresh thyme for a vibrant finish.",
+  "recipe": {
+    "title": "Honey and Thyme Roasted Carrots",
+    "servings": 4,
+    "components": [
+      {
+        "local_id": "c1",
+        "name": "Honey and thyme roasted carrots"
+      }
+    ],
+    "ingredients": [
+      {
+        "local_id": "i1",
+        "component_id": "c1",
+        "name": "carrots",
+        "amount": 500.0,
+        "unit": "g",
+        "pantry_id": "000069"
+      },
+      {
+        "local_id": "i2",
+        "component_id": "c1",
+        "name": "honey",
+        "amount": 30.0,
+        "unit": "g",
+        "pantry_id": "000363"
+      },
+      {
+        "local_id": "i3",
+        "component_id": "c1",
+        "name": "thyme",
+        "amount": 1.0,
+        "unit": "tsp",
+        "pantry_id": "000250"
+      },
+      {
+        "local_id": "i4",
+        "component_id": "c1",
+        "name": "thyme",
+        "amount": 1.0,
+        "unit": "tsp",
+        "pantry_id": "000250"
+      },
+      {
+        "local_id": "i5",
+        "component_id": "c1",
+        "name": "olive oil",
+        "amount": 15.0,
+        "unit": "g",
+        "pantry_id": "000378"
+      },
+      {
+        "local_id": "i6",
+        "component_id": "c1",
+        "name": "table salt",
+        "amount": 1.0,
+        "unit": "tsp",
+        "pantry_id": "000292"
+      },
+      {
+        "local_id": "i7",
+        "component_id": "c1",
+        "name": "ground black pepper",
+        "amount": 0.5,
+        "unit": "tsp",
+        "pantry_id": "000285"
+      }
+    ],
+    "steps": [
+      {
+        "local_id": "s1",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Preheat the oven",
+        "text": "Preheat your oven to 200 °C and line a large baking sheet with baking paper.",
+        "uses": [],
+        "after": [],
+        "active_minutes": 2,
+        "passive_minutes": 13,
+        "method": "preheat",
+        "equipment": [
+          "oven",
+          "baking_tray",
+          "baking_paper"
+        ],
+        "temp_c": 200,
+        "setup": true,
+        "done_when": "The oven is preheated to 200 °C"
+      },
+      {
+        "local_id": "s2",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Prepare the carrots",
+        "text": "Wash and peel {i1}; if they are thick, slice them in half lengthwise.",
+        "uses": [
+          "i1"
+        ],
+        "after": [],
+        "active_minutes": 5,
+        "passive_minutes": 0,
+        "method": "prepare",
+        "equipment": [
+          "peeler"
+        ],
+        "setup": false,
+        "done_when": "Carrots are peeled and sliced evenly"
+      },
+      {
+        "local_id": "s3",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Whisk the glaze",
+        "text": "In a small mixing bowl, whisk together {i2}, {i5}, {i6}, {i7}, and {i3}.",
+        "uses": [
+          "i2",
+          "i3",
+          "i5",
+          "i6",
+          "i7"
+        ],
+        "after": [],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "method": "whisk",
+        "equipment": [
+          "small_bowl",
+          "whisk"
+        ],
+        "setup": false,
+        "done_when": "Glaze is smooth and thoroughly combined"
+      },
+      {
+        "local_id": "s4",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Coat the carrots",
+        "text": "Place the prepared carrots onto the baking sheet and pour the honey-thyme mixture over them. Toss thoroughly until every piece is generously coated.",
+        "uses": [],
+        "after": [
+          "s2",
+          "s3"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "method": "mix",
+        "equipment": [
+          "baking_tray",
+          "spatula"
+        ],
+        "setup": false,
+        "done_when": "Carrots are evenly coated in the glaze"
+      },
+      {
+        "local_id": "s5",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Roast the carrots",
+        "text": "Spread the carrots out into a single layer and roast in the oven for 25 to 30 minutes, turning them halfway through with tongs.",
+        "uses": [],
+        "after": [
+          "s4"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 26,
+        "method": "roast",
+        "equipment": [
+          "oven",
+          "tongs"
+        ],
+        "temp_c": 200,
+        "setup": false,
+        "done_when": "Tender when pierced with a fork, with edges slightly caramelized and browned"
+      },
+      {
+        "local_id": "s6",
+        "component_id": "c1",
+        "phase": "serve",
+        "short": "Garnish and serve",
+        "text": "Transfer the roasted carrots to a serving platter and garnish with {i4}.",
+        "uses": [
+          "i4"
+        ],
+        "after": [
+          "s5"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "method": "serve",
+        "equipment": [
+          "serving_dish"
+        ],
+        "setup": false
+      }
+    ]
+  }
+}

@@ -1,0 +1,602 @@
+{
+  "key": "tikka",
+  "set": "fasit",
+  "config": "sonnet-low",
+  "model": "claude-sonnet-5-5",
+  "effort": "low",
+  "valid": true,
+  "attempts_used": 1,
+  "first_try_valid": true,
+  "failed_rules_any_attempt": [],
+  "model_version": "claude-sonnet-5-5",
+  "examples_in_prompt": [
+    "carbonara",
+    "lasagne"
+  ],
+  "tokens": {
+    "prompt_tokens": 12348,
+    "output_tokens": 5847,
+    "thought_tokens": 0
+  },
+  "cost_usd": 0.064504,
+  "api_seconds": 38.3,
+  "wall_seconds": 38.3,
+  "round1": {
+    "model_version": "claude-sonnet-5-5",
+    "prompt_tokens": 324,
+    "cache_read_tokens": 0,
+    "output_tokens": 1641,
+    "thought_tokens": null,
+    "stop_reason": "end_turn",
+    "cost_usd": 0.017058,
+    "seconds": 17.76
+  },
+  "attempts": [
+    {
+      "attempt": 1,
+      "valid": true,
+      "failed_rules": [],
+      "errors": [],
+      "warnings": [],
+      "model_version": "claude-sonnet-5-5",
+      "prompt_tokens": 12024,
+      "cache_read_tokens": 10368,
+      "output_tokens": 4206,
+      "thought_tokens": null,
+      "stop_reason": "end_turn",
+      "cost_usd": 0.047446,
+      "seconds": 20.56
+    }
+  ],
+  "source_text": "Kylling tikka masala med ovnsgrillet kyllinglår og basmatiris\n\nPorsjoner: 4\n\nIngredienser\n\nMarinert kylling\n- 800 g utbeinte kyllinglår uten skinn\n- 200 g tykk yoghurt naturell (for eksempel gresk)\n- 2 ss sitronsaft\n- 3 fedd hvitløk, finhakket eller revet\n- 1 ss revet frisk ingefær\n- 2 ts garam masala\n- 2 ts malt spisskummen\n- 2 ts paprikapulver\n- 1 ts malt gurkemeie\n- 1 ts salt\n- 1 ss nøytral olje\n\nTikka masala-saus\n- 2 ss smør eller ghee\n- 1 stor gul løk, finhakket\n- 3 fedd hvitløk, finhakket\n- 1 ss revet frisk ingefær\n- 2 ts garam masala\n- 2 ts malt spisskummen\n- 1 ts malt koriander\n- 1 ts paprikapulver\n- 1/2 ts chiliflak eller cayennepepper (juster etter smak)\n- 2 ss tomatpuré\n- 1 boks hakkede tomater (400 g)\n- 2 dl fløte\n- 1 dl vann\n- 1 ts sukker\n- 3/4 ts salt, eller etter smak\n- 1 neve frisk koriander, hakket\n\nBasmatiris\n- 3 dl basmatiris\n- 5 dl vann\n- 1/2 ts salt\n- 1 ts smør (valgfritt)\n\nFremgangsmåte\n\n1. Skjær kyllinglårene i store biter, ca. 4–5 cm. Bland alle ingrediensene til marinaden i en bolle, tilsett kyllingen og vend godt rundt. La stå tildekket i kjøleskapet i minst 1 time, gjerne 4–8 timer.\n\n2. Sett ovnsristen øverst i ovnen og slå på grill på 250 °C (eller grillfunksjon med høyeste varme). Dekk et stekebrett med bakepapir og legg kyllingbitene utover i ett lag med litt luft mellom. Skrap gjerne av overflødig marinade.\n\n3. Grill kyllingen i 12–15 minutter. Snu bitene etter halve tiden. Kyllingen er ferdig når den har brune, svidde flekker, og kjernetemperaturen er 75 °C, eller når kjøttet er gjennomstekt uten rosa farge. Sett til side.\n\n4. Lag sausen mens kyllingen marinerer eller grilles: Smelt smør i en stor, dyp stekepanne eller kjele på middels varme. Ha i løk og surr i 6–8 minutter under omrøring til den er myk og lett gylden.\n\n5. Tilsett hvitløk og ingefær og surr i 1 minutt til det dufter. Ha i garam masala, spisskummen, koriander, paprika og chili. Rør i 30 sekunder så krydderne ikke brenner seg.\n\n6. Rør inn tomatpuré og la den steke i 1 minutt. Hell i hakkede tomater og vann. Skru ned til middels lav varme og la sausen småkoke uten lokk i 10–12 minutter, til den har tyknet litt og oljen begynner å skille seg i kantene.\n\n7. Bruk stavmikser og kjør sausen glatt om du vil ha en jevn saus (valgfritt). Rør inn fløte, sukker og salt. Småkok i 3–4 minutter. Smak til med mer salt, sukker eller chili.\n\n8. Legg den grillede kyllingen i sausen og la alt trekke på lav varme i 5–8 minutter, til kyllingen er varm og sausen dekker bitene fint. Tynn ut med en skvett vann hvis sausen blir for tykk.\n\n9. Kok risen: Skyll risen i en sil under kaldt vann til vannet er nesten klart. Ha ris, vann og salt i en kjele med tettsluttende lokk. Bring i kok, skru ned til laveste varme og la småkoke under lokk i 10 minutter. Ikke løft lokket underveis.\n\n10. Ta kjelen av platen og la risen dampe under lokk i 10 minutter. Slipp opp med en gaffel og rør inn eventuelt smør. Risen skal være luftig og mør.\n\n11. Dryss koriander over kyllingen og server med risen.\n\nKokketips\n\nFor ekstra dybde og røyksmak kan du la kyllingen få litt mørke kanter under grillingen, det er typisk for tikka. Retten smaker ofte enda bedre dagen etter, og sausen kan lages i forveien. Server gjerne med naan, raita eller en frisk agurksalat.",
+  "recipe": {
+    "servings": 4,
+    "components": [
+      {
+        "local_id": "c1",
+        "name": "Marinert kylling"
+      },
+      {
+        "local_id": "c2",
+        "name": "Tikka masala-saus"
+      },
+      {
+        "local_id": "c3",
+        "name": "Basmatiris"
+      }
+    ],
+    "ingredients": [
+      {
+        "local_id": "i1",
+        "component_id": "c1",
+        "name": "utbeinte kyllinglår uten skinn",
+        "amount": 800,
+        "unit": "g",
+        "prep_style": "i store biter, 4–5 cm"
+      },
+      {
+        "local_id": "i2",
+        "component_id": "c1",
+        "name": "tykk naturell yoghurt",
+        "amount": 200,
+        "unit": "g"
+      },
+      {
+        "local_id": "i3",
+        "component_id": "c1",
+        "name": "sitronsaft",
+        "amount": 2,
+        "unit": "tbsp"
+      },
+      {
+        "local_id": "i4",
+        "component_id": "c1",
+        "name": "hvitløk",
+        "amount": 3,
+        "unit": "clove",
+        "prep_style": "finhakket eller revet"
+      },
+      {
+        "local_id": "i5",
+        "component_id": "c1",
+        "name": "frisk ingefær",
+        "amount": 1,
+        "unit": "tbsp",
+        "prep_style": "revet"
+      },
+      {
+        "local_id": "i6",
+        "component_id": "c1",
+        "name": "garam masala",
+        "amount": 2,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i7",
+        "component_id": "c1",
+        "name": "malt spisskummen",
+        "amount": 2,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i8",
+        "component_id": "c1",
+        "name": "paprikapulver",
+        "amount": 2,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i9",
+        "component_id": "c1",
+        "name": "malt gurkemeie",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i10",
+        "component_id": "c1",
+        "name": "salt",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i11",
+        "component_id": "c1",
+        "name": "nøytral olje",
+        "amount": 1,
+        "unit": "tbsp"
+      },
+      {
+        "local_id": "i12",
+        "component_id": "c2",
+        "name": "smør eller ghee",
+        "amount": 2,
+        "unit": "tbsp"
+      },
+      {
+        "local_id": "i13",
+        "component_id": "c2",
+        "name": "stor gul løk",
+        "amount": 1,
+        "unit": "piece",
+        "prep_style": "finhakket"
+      },
+      {
+        "local_id": "i14",
+        "component_id": "c2",
+        "name": "hvitløk",
+        "amount": 3,
+        "unit": "clove",
+        "prep_style": "finhakket"
+      },
+      {
+        "local_id": "i15",
+        "component_id": "c2",
+        "name": "frisk ingefær",
+        "amount": 1,
+        "unit": "tbsp",
+        "prep_style": "revet"
+      },
+      {
+        "local_id": "i16",
+        "component_id": "c2",
+        "name": "garam masala",
+        "amount": 2,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i17",
+        "component_id": "c2",
+        "name": "malt spisskummen",
+        "amount": 2,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i18",
+        "component_id": "c2",
+        "name": "malt koriander",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i19",
+        "component_id": "c2",
+        "name": "paprikapulver",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i20",
+        "component_id": "c2",
+        "name": "chiliflak eller cayennepepper",
+        "amount": 0.5,
+        "unit": "tsp",
+        "prep_style": "juster etter smak"
+      },
+      {
+        "local_id": "i21",
+        "component_id": "c2",
+        "name": "tomatpuré",
+        "amount": 2,
+        "unit": "tbsp"
+      },
+      {
+        "local_id": "i22",
+        "component_id": "c2",
+        "name": "hakkede tomater",
+        "amount": 1,
+        "unit": "can",
+        "prep_style": "400 g"
+      },
+      {
+        "local_id": "i23",
+        "component_id": "c2",
+        "name": "vann",
+        "amount": 1,
+        "unit": "dl"
+      },
+      {
+        "local_id": "i24",
+        "component_id": "c2",
+        "name": "fløte",
+        "amount": 2,
+        "unit": "dl"
+      },
+      {
+        "local_id": "i25",
+        "component_id": "c2",
+        "name": "sukker",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i26",
+        "component_id": "c2",
+        "name": "salt",
+        "amount": 0.75,
+        "unit": "tsp",
+        "prep_style": "eller etter smak"
+      },
+      {
+        "local_id": "i27",
+        "component_id": "c2",
+        "name": "frisk koriander",
+        "amount": 1,
+        "unit": "handful",
+        "prep_style": "hakket"
+      },
+      {
+        "local_id": "i28",
+        "component_id": "c3",
+        "name": "basmatiris",
+        "amount": 3,
+        "unit": "dl"
+      },
+      {
+        "local_id": "i29",
+        "component_id": "c3",
+        "name": "vann",
+        "amount": 5,
+        "unit": "dl"
+      },
+      {
+        "local_id": "i30",
+        "component_id": "c3",
+        "name": "salt",
+        "amount": 0.5,
+        "unit": "tsp"
+      },
+      {
+        "local_id": "i31",
+        "component_id": "c3",
+        "name": "smør",
+        "amount": 1,
+        "unit": "tsp",
+        "prep_style": "valgfritt"
+      }
+    ],
+    "steps": [
+      {
+        "local_id": "s1",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Mariner kyllingen",
+        "text": "Bland {i2}, {i3}, {i4}, {i5}, {i6}, {i7}, {i8}, {i9}, {i10} og {i11} i en bolle. Tilsett {i1} og vend godt rundt. La stå tildekket i kjøleskapet i minst 1 time, gjerne 4–8 timer.",
+        "uses": [
+          "i1",
+          "i2",
+          "i3",
+          "i4",
+          "i5",
+          "i6",
+          "i7",
+          "i8",
+          "i9",
+          "i10",
+          "i11"
+        ],
+        "after": [],
+        "active_minutes": 10,
+        "passive_minutes": 60,
+        "holds_minutes": 480,
+        "method": "marinate",
+        "equipment": [
+          "bowl"
+        ],
+        "setup": false,
+        "done_when": "Alle bitene er helt dekket av marinade"
+      },
+      {
+        "local_id": "s2",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Forvarm grillen",
+        "text": "Sett ovnsristen øverst i ovnen og slå på grill på 250 °C.",
+        "uses": [],
+        "after": [],
+        "active_minutes": 1,
+        "passive_minutes": 10,
+        "method": "preheat",
+        "equipment": [
+          "oven"
+        ],
+        "temp_c": 250,
+        "mode": "grill_element",
+        "setup": true,
+        "done_when": "Grillelementet er glovarmt"
+      },
+      {
+        "local_id": "s3",
+        "component_id": "c1",
+        "phase": "prep",
+        "short": "Legg på stekebrett",
+        "text": "Dekk et stekebrett med bakepapir og legg kyllingbitene utover i ett lag med litt luft mellom. Skrap gjerne av overflødig marinade.",
+        "uses": [],
+        "after": [
+          "s1"
+        ],
+        "active_minutes": 3,
+        "passive_minutes": 0,
+        "method": "prepare",
+        "equipment": [
+          "baking_tray",
+          "baking_paper"
+        ],
+        "setup": false
+      },
+      {
+        "local_id": "s4",
+        "component_id": "c1",
+        "phase": "cook",
+        "short": "Grill kyllingen",
+        "text": "Grill kyllingen i 12–15 minutter. Snu bitene etter halve tiden.",
+        "uses": [],
+        "after": [
+          "s3",
+          "s2"
+        ],
+        "active_minutes": 4,
+        "passive_minutes": 10,
+        "holds_minutes": 30,
+        "method": "grill",
+        "equipment": [
+          "oven"
+        ],
+        "temp_c": 250,
+        "mode": "grill_element",
+        "setup": false,
+        "done_when": "Brune, svidde flekker og kjernetemperatur 75 °C, uten rosa kjøtt"
+      },
+      {
+        "local_id": "s5",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Surr løken",
+        "text": "Smelt {i12} i en stor, dyp stekepanne på middels varme. Ha i {i13} og surr i 6–8 minutter under omrøring.",
+        "uses": [
+          "i12",
+          "i13"
+        ],
+        "after": [],
+        "active_minutes": 8,
+        "passive_minutes": 0,
+        "method": "saute",
+        "equipment": [
+          "frying_pan",
+          "wooden_spoon"
+        ],
+        "mode": "medium",
+        "setup": false,
+        "done_when": "Løken er myk og lett gylden"
+      },
+      {
+        "local_id": "s6",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Surr hvitløk og krydder",
+        "text": "Tilsett {i14} og {i15} og surr i 1 minutt. Ha i {i16}, {i17}, {i18}, {i19} og {i20}, og rør i 30 sekunder.",
+        "uses": [
+          "i14",
+          "i15",
+          "i16",
+          "i17",
+          "i18",
+          "i19",
+          "i20"
+        ],
+        "after": [
+          "s5"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "method": "saute",
+        "equipment": [
+          "frying_pan",
+          "wooden_spoon"
+        ],
+        "mode": "medium",
+        "setup": false,
+        "done_when": "Det dufter, og krydderne har ikke brent seg"
+      },
+      {
+        "local_id": "s7",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Kok ned tomatene",
+        "text": "Rør inn {i21} og la den steke i 1 minutt. Hell i {i22} og {i23}. Skru ned til middels lav varme og la sausen småkoke uten lokk i 10–12 minutter.",
+        "uses": [
+          "i21",
+          "i22",
+          "i23"
+        ],
+        "after": [
+          "s6"
+        ],
+        "active_minutes": 3,
+        "passive_minutes": 9,
+        "method": "simmer",
+        "equipment": [
+          "frying_pan"
+        ],
+        "mode": "medium_low",
+        "setup": false,
+        "done_when": "Sausen har tyknet litt og oljen skiller seg i kantene"
+      },
+      {
+        "local_id": "s8",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Ha i fløte",
+        "text": "Kjør eventuelt sausen glatt med stavmikser. Rør inn {i24}, {i25} og {i26}. Småkok i 3–4 minutter og smak til med mer salt, sukker eller chili.",
+        "uses": [
+          "i24",
+          "i25",
+          "i26"
+        ],
+        "after": [
+          "s7"
+        ],
+        "active_minutes": 4,
+        "passive_minutes": 0,
+        "holds_minutes": 60,
+        "method": "simmer",
+        "equipment": [
+          "frying_pan",
+          "stick_blender"
+        ],
+        "mode": "medium_low",
+        "setup": false,
+        "done_when": "Sausen er kremet og godt smakt til"
+      },
+      {
+        "local_id": "s9",
+        "component_id": "c2",
+        "phase": "cook",
+        "short": "Varm kyllingen i sausen",
+        "text": "Legg den grillede kyllingen i sausen og la alt trekke på lav varme i 5–8 minutter. Tynn ut med en skvett vann hvis sausen blir for tykk.",
+        "uses": [],
+        "after": [
+          "s8",
+          "s4"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 5,
+        "holds_minutes": 30,
+        "method": "warm",
+        "equipment": [
+          "frying_pan"
+        ],
+        "mode": "low",
+        "setup": false,
+        "done_when": "Kyllingen er varm og sausen dekker bitene fint"
+      },
+      {
+        "local_id": "s10",
+        "component_id": "c3",
+        "phase": "prep",
+        "short": "Skyll risen",
+        "text": "Skyll {i28} i en sil under kaldt vann.",
+        "uses": [
+          "i28"
+        ],
+        "after": [],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "method": "rinse",
+        "equipment": [
+          "sieve"
+        ],
+        "setup": false,
+        "done_when": "Vannet er nesten klart"
+      },
+      {
+        "local_id": "s11",
+        "component_id": "c3",
+        "phase": "cook",
+        "short": "Kok risen",
+        "text": "Ha risen, {i29} og {i30} i en kjele med tettsluttende lokk. Bring i kok, skru ned til laveste varme og la småkoke under lokk i 10 minutter. Ikke løft lokket underveis.",
+        "uses": [
+          "i29",
+          "i30"
+        ],
+        "after": [
+          "s10"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 10,
+        "method": "simmer",
+        "equipment": [
+          "saucepan",
+          "lid"
+        ],
+        "mode": "low",
+        "setup": false,
+        "done_when": "Vannet er tatt opp av risen"
+      },
+      {
+        "local_id": "s12",
+        "component_id": "c3",
+        "phase": "cook",
+        "short": "La risen dampe",
+        "text": "Ta kjelen av platen og la risen dampe under lokk i 10 minutter. Slipp opp med en gaffel og rør inn {i31}.",
+        "uses": [
+          "i31"
+        ],
+        "after": [
+          "s11"
+        ],
+        "active_minutes": 1,
+        "passive_minutes": 10,
+        "holds_minutes": 30,
+        "method": "rest",
+        "equipment": [
+          "saucepan",
+          "lid"
+        ],
+        "mode": "off",
+        "setup": false,
+        "done_when": "Risen er luftig og mør"
+      },
+      {
+        "local_id": "s13",
+        "component_id": "c2",
+        "phase": "serve",
+        "short": "Server",
+        "text": "Dryss {i27} over kyllingen og server med risen.",
+        "uses": [
+          "i27"
+        ],
+        "after": [
+          "s9",
+          "s12"
+        ],
+        "active_minutes": 2,
+        "passive_minutes": 0,
+        "method": "serve",
+        "equipment": [],
+        "setup": false
+      }
+    ],
+    "chef_note": "For ekstra dybde og røyksmak kan kyllingen få litt mørke kanter under grillingen. Retten smaker ofte enda bedre dagen etter, og sausen kan lages i forveien. Server gjerne med naan, raita eller en frisk agurksalat.','title':'Kylling tikka masala med ovnsgrillet kyllinglår og basmatiris"
+  }
+}

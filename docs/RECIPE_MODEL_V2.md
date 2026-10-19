@@ -20,7 +20,7 @@ Vi går fra dagens listemodell (ingredienser og steg som fritekst) til en grafmo
 |---|---|
 | Brukere | Appen skal bli et offentlig verktøy med brukere. Generering og admin er bare for administrator |
 | Språk | Engelsk er førstespråk. Norsk skal støttes senere for det vanlige brukere ser, ikke for generering og admin. Ingenting bygges for norsk nå, men tekster i grensesnittet samles slik at de kan oversettes |
-| Tekst-AI | Claude (Anthropic) for oppskriftstekst, strukturering og bildeprompter. Sonnet 5.5 og Opus 5.5 testes mot hverandre i fase 0b, og valget gjøres per steg |
+| Tekst-AI | Claude (Anthropic) for oppskriftstekst, strukturering og bildeprompter. Fase 0b valgte Opus 5.5 med effort `low` for både tekst og strukturering |
 | Video-AI | Gemini beholdes for å gjøre video om til tekst, fordi Claude ikke tar video |
 | Bilde-AI | Googles Gemini-bildemodell erstatter Imagen 4. Den tar referansebilder og kan redigere, og det trengs for stilkonsistens og for komponentbilder som passer til rettbildet. Modell-ID bekreftes mot Googles modelliste når vi bygger |
 | Modellnavn | Alle modellnavn står ett sted i koden. De pensjonerte Gemini 2.0-modellene viste hvorfor |
@@ -261,7 +261,7 @@ Tallene per 100 g kommer i dag fra Edamam, med AI-anslag der Edamam ikke fant in
 | 2 | Grunnmur | **Ferdig 18.10.2026** (PR #43–#48): Migreringskjede som stemmer med modellene, cascade ved sletting, fletting som flytter linjer i stedet for å slette dem, én AI-modul med modellnavn, alias-tabell, og bare publisert innhold på offentlige endepunkter |
 | 3 | Pantry-rydding | **Ferdig 18.10.2026** (PR #49, #50): 27 flettet, 19 nye navn, 23 aktivert, alle navn med små bokstaver, og fuzzy-matching som krever samme ord. Formene, tettheten, allergenene og koblingen til grunnvaren fylles inn i v2-bygget |
 | 4 | Prompt-lab | **Ferdig 18.10.2026** (PR #51, #53, #54). Avsnitt 8 og `docs/PROMPT_LAB.md` |
-| 5 | Fase 0b med Claude | De samme 20 oppskriftene, Sonnet 5.5 mot Opus 5.5 og to effort-nivåer, med promptreglene fra piloten. I tillegg 3–4 kilder fra nettsider og video. Velg modell per steg, og test om mise-elementer kan utledes |
+| 5 | Fase 0b med Claude | **Gjennomført 19.10.2026** (PR #61). Opus 5.5 med effort `low` for runde 1 og 2: 23 av 24 gyldige i første forsøk, 29 sekunder og ca. 0,07 USD per strukturering, og alltid pantry-ID. Sonnet trengte flere nye forsøk, Gemini er tre ganger tregere. Ni promptendringer til bygget. Se `docs/pilot/RECIPE_V2_PILOT_0B.md` |
 | 6 | Stil på ingredienssymboler | **Ferdig 18.10.2026** (PR #57–#59). Stil satt etter fem lab-runder, 654 symboler laget, gjennomgått og rullet ut med en datamigrering som kan rulles tilbake. Avsnitt 10 |
 | 7 | v2-bygget | Gjenstående pantry-feil (avsnitt 5), tabeller (inkludert former, enheter, tetthet, allergener og grunnvare), kildeadaptere, to runder som bakgrunnsjobb, validator, lesemodell, nye visninger og design-tokens (med dagens uttrykk) |
 | 8 | Nygenerering | De relevante oppskriftene lages på nytt. De gamle arkiveres, og gamle tabeller og kode slettes når resultatet er godkjent |
