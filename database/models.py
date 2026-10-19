@@ -162,6 +162,9 @@ class Ingredient(db.Model):
     potassium_mg_per_100g: Mapped[float] = mapped_column(Float, nullable=True)
 
     recipe_ingredients: Mapped[list["RecipeIngredient"]] = relationship(back_populates="ingredient")
+    # passive_deletes='all': the ORM must not unlink v2 lines when an ingredient is deleted.
+    # The foreign key blocks the delete instead, as for recipe_ingredient. Merge first.
+    recipe_lines: Mapped[list["RecipeLine"]] = relationship(back_populates="ingredient", passive_deletes='all')
     evaluation: Mapped["IngredientEvaluation"] = relationship(back_populates="ingredient", uselist=False, cascade="all, delete-orphan")
     alias_entries: Mapped[list["IngredientAlias"]] = relationship(back_populates="ingredient", cascade="all, delete-orphan", order_by="IngredientAlias.id")
 
@@ -291,6 +294,17 @@ class Recipe(db.Model):
     source_input: Mapped[str] = mapped_column(String(500), nullable=True)
     source_type: Mapped[str] = mapped_column(String(50), default='manual', server_default='manual')
 
+    # Recipe model v2 (docs/RECIPE_MODEL_V2.md). schema_version 1 = the old lists
+    # (ingredients, instructions), 2 = the graph (components, lines, steps).
+    schema_version: Mapped[int] = mapped_column(Integer, default=1, server_default='1', nullable=False)
+    # Goes up when the content changes (lines, steps, amounts, text), not for status or images.
+    revision: Mapped[int] = mapped_column(Integer, default=1, server_default='1', nullable=False)
+    revised_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime, nullable=True)
+    source_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # round 1 text, for restructuring later
+    validation_errors: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)  # empty or null when valid
+    chef_note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    yield_text: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)  # "én form på 24 cm", for recipes not scaled per serving
+
     # Nutrition Totals (Calculated)
     total_calories: Mapped[float] = mapped_column(Float, nullable=True)
     total_protein: Mapped[float] = mapped_column(Float, nullable=True)
@@ -319,6 +333,9 @@ class Recipe(db.Model):
 
     instructions: Mapped[list["Instruction"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
     ingredients: Mapped[list["RecipeIngredient"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
+    components: Mapped[list["RecipeComponent"]] = relationship(back_populates="recipe", cascade="all, delete-orphan", order_by="RecipeComponent.sort_order")
+    steps: Mapped[list["RecipeStep"]] = relationship(back_populates="recipe", cascade="all, delete-orphan", order_by="RecipeStep.sort_order")
+    lines: Mapped[list["RecipeLine"]] = relationship(back_populates="recipe", cascade="all, delete-orphan", order_by="RecipeLine.sort_order")
     chef: Mapped["Chef"] = relationship(back_populates="recipes")
     meal_types: Mapped[list["RecipeMealType"]] = relationship(cascade="all, delete-orphan")
     diets: Mapped[list["RecipeDiet"]] = relationship(cascade="all, delete-orphan")
@@ -385,6 +402,95 @@ class RecipeIngredient(db.Model):
 
     recipe: Mapped["Recipe"] = relationship(back_populates="ingredients")
     ingredient: Mapped["Ingredient"] = relationship(back_populates="recipe_ingredients")
+
+# ---------------------------------------------------------------------------
+# Recipe model v2: the recipe as a graph (docs/RECIPE_MODEL_V2.md, section 5).
+# local_id ("c1", "i3", "s2") is the id inside the recipe, used in step text
+# ({i3}) and by the AI. Rows hang off the recipe and go with it on delete.
+# ---------------------------------------------------------------------------
+
+# after: the steps whose food goes into this step.
+recipe_step_after = db.Table('recipe_step_after',
+    db.Column('step_id', db.Integer, db.ForeignKey('recipe_step.id', ondelete='CASCADE'), primary_key=True),
+    db.Column('after_step_id', db.Integer, db.ForeignKey('recipe_step.id', ondelete='CASCADE'), primary_key=True),
+)
+
+
+class RecipeComponent(db.Model):
+    """A part of the dish you can point at, or a sauce made on its own: "Kjøttsaus", "Ris"."""
+    __tablename__ = 'recipe_component'
+    __table_args__ = (UniqueConstraint('recipe_id', 'local_id', name='uq_recipe_component_local_id'),)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id", ondelete='CASCADE'), nullable=False, index=True)
+    local_id: Mapped[str] = mapped_column(String(16), nullable=False)
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    image_filename: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+
+    recipe: Mapped["Recipe"] = relationship(back_populates="components")
+
+
+class RecipeStep(db.Model):
+    """One action in one place with one "done when". Order is not stored: the planner derives it."""
+    __tablename__ = 'recipe_step'
+    __table_args__ = (UniqueConstraint('recipe_id', 'local_id', name='uq_recipe_step_local_id'),)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id", ondelete='CASCADE'), nullable=False, index=True)
+    component_id: Mapped[int] = mapped_column(ForeignKey("recipe_component.id", ondelete='CASCADE'), nullable=False, index=True)
+    local_id: Mapped[str] = mapped_column(String(16), nullable=False)
+    sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)  # order in the source, not the plan
+    phase: Mapped[str] = mapped_column(String(10), nullable=False)  # prep | cook | serve
+    short: Mapped[str] = mapped_column(String(120), nullable=False)
+    text: Mapped[str] = mapped_column(Text, nullable=False)  # template with {iN}
+    active_minutes: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    passive_minutes: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    holds_minutes: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # null = no limit
+    method: Mapped[str] = mapped_column(String(40), nullable=False)  # id in data/constraints/methods.json
+    equipment: Mapped[list] = mapped_column(JSON, nullable=False, default=list)  # ids in equipment.json, first is the cookware
+    temp_c: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    mode: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    setup: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    done_when: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    recipe: Mapped["Recipe"] = relationship(back_populates="steps")
+    component: Mapped["RecipeComponent"] = relationship()
+    lines: Mapped[list["RecipeLine"]] = relationship(back_populates="step", order_by="RecipeLine.sort_order")
+    after: Mapped[list["RecipeStep"]] = relationship(
+        secondary=recipe_step_after,
+        primaryjoin=lambda: RecipeStep.id == recipe_step_after.c.step_id,
+        secondaryjoin=lambda: RecipeStep.id == recipe_step_after.c.after_step_id,
+        backref="before",
+    )
+
+
+class RecipeLine(db.Model):
+    """An ingredient at one moment in the recipe. The same ingredient used twice is two lines.
+
+    step_id is the step that uses the line ("uses" in the model). Every line is used by exactly
+    one step, so it is a column here rather than a link table.
+    """
+    __tablename__ = 'recipe_line'
+    __table_args__ = (UniqueConstraint('recipe_id', 'local_id', name='uq_recipe_line_local_id'),)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id", ondelete='CASCADE'), nullable=False, index=True)
+    component_id: Mapped[int] = mapped_column(ForeignKey("recipe_component.id", ondelete='CASCADE'), nullable=False, index=True)
+    step_id: Mapped[int] = mapped_column(ForeignKey("recipe_step.id", ondelete='CASCADE'), nullable=False, index=True)
+    # No ondelete: like recipe_ingredient, a used ingredient cannot be deleted, only merged.
+    # Null while the ingredient is missing from the pantry; the recipe is then flagged.
+    ingredient_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ingredient.id"), nullable=True, index=True)
+    local_id: Mapped[str] = mapped_column(String(16), nullable=False)
+    sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    name: Mapped[str] = mapped_column(String(200), nullable=False)  # as written in the recipe
+    amount: Mapped[Optional[float]] = mapped_column(Float, nullable=True)  # null only for "to taste"
+    unit: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)  # id in data/constraints/units.json
+    prep_style: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
+    gram_weight: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+
+    recipe: Mapped["Recipe"] = relationship(back_populates="lines")
+    component: Mapped["RecipeComponent"] = relationship()
+    step: Mapped["RecipeStep"] = relationship(back_populates="lines")
+    ingredient: Mapped[Optional["Ingredient"]] = relationship(back_populates="recipe_lines")
+
 
 class User(UserMixin, db.Model):
     __tablename__ = 'user'

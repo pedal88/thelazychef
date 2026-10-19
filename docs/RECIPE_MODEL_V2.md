@@ -74,7 +74,7 @@ Vi går fra dagens listemodell (ingredienser og steg som fritekst) til en grafmo
 
 ### Barnetabeller
 
-Nye tabeller erstatter `recipe_ingredient` og `instruction`. De gamle beholdes bare til de gamle oppskriftene er slettet, og fjernes deretter sammen med koden som leser dem. Endelige tabellnavn settes i bygget.
+Nye tabeller erstatter `recipe_ingredient` og `instruction`: `recipe_component`, `recipe_line`, `recipe_step` og `recipe_step_after` (migrering `ce7d5aeeecf0`, steg 7b). De gamle beholdes bare til de gamle oppskriftene er slettet, og fjernes deretter sammen med koden som leser dem.
 
 **Komponent** (`component`): `id`, `recipe_id`, `local_id` (`c1`), `name`, `sort_order`, `image_filename`.
 
@@ -102,7 +102,7 @@ Nye tabeller erstatter `recipe_ingredient` og `instruction`. De gamle beholdes b
 | `phase` | Lagres, valideres mot `method` |
 | `short` | Kort navn, maks ca. 4 ord. Brukes i metrokart, tabell og kort |
 | `text` | Maltekst med `{iN}`. Ingen tidsord som «mens». Teknikk inne i steget («mens du visper») er greit |
-| `uses` | Koblingstabell steg → ingredienslinje |
+| `uses` | `step_id` på ingredienslinjen. Hver linje brukes av nøyaktig ett steg, så det er en kolonne og ikke en koblingstabell |
 | `after` | Koblingstabell steg → steg. Bare der maten går videre |
 | `active_minutes`, `passive_minutes` | |
 | `holds_minutes` | Valgfri. Null betyr ingen grense |
