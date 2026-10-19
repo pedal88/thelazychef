@@ -130,6 +130,11 @@ class Ingredient(db.Model):
     # 'inactive' is a soft-delete — ingredient stays in DB to protect recipe FK relationships.
     # 'pending' = newly imported, awaiting review.
     status: Mapped[str] = mapped_column(String(20), default='active', index=True, nullable=False, server_default='active')
+    # Pantry tier (RECIPE_MODEL_V2.md, "Kjerne og lang hale"): 'core' is what most dishes need and is
+    # curated in full; 'long_tail' is kept because a recipe needs it. Null = not reviewed yet.
+    tier: Mapped[Optional[str]] = mapped_column(String(12), nullable=True, index=True)
+    # The base ingredient a variant belongs to ("thai basil" -> "basil"): substitutions and grouping later.
+    base_ingredient_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ingredient.id", ondelete='SET NULL'), nullable=True)
 
     # Payload (Flattened)
     image_url: Mapped[str] = mapped_column(String, nullable=True)
@@ -165,6 +170,7 @@ class Ingredient(db.Model):
     # passive_deletes='all': the ORM must not unlink v2 lines when an ingredient is deleted.
     # The foreign key blocks the delete instead, as for recipe_ingredient. Merge first.
     recipe_lines: Mapped[list["RecipeLine"]] = relationship(back_populates="ingredient", passive_deletes='all')
+    base_ingredient: Mapped[Optional["Ingredient"]] = relationship(remote_side="Ingredient.id")
     evaluation: Mapped["IngredientEvaluation"] = relationship(back_populates="ingredient", uselist=False, cascade="all, delete-orphan")
     alias_entries: Mapped[list["IngredientAlias"]] = relationship(back_populates="ingredient", cascade="all, delete-orphan", order_by="IngredientAlias.id")
 

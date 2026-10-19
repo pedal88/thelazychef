@@ -1,0 +1,11 @@
+{% include 'pantry/definition.jinja2' %}
+
+TASK
+Sort the pantry entries in the message into: core, long_tail, not_cooking or duplicate.
+- For duplicate, "of" is the exact name of the entry it duplicates (from the full list below), the one to keep: the plainer, more common name.
+- "base" is the exact name of the base ingredient from the full list, or empty.
+- "reason" is one short line a person can check quickly.
+Use the full list to find duplicates and bases; only sort the entries in the message.
+
+FULL PANTRY (id | name | category / sub category)
+{{ pantry }}
