@@ -1,0 +1,9871 @@
+{
+ "fasit/brownies.json": {
+  "calm": {
+   "T": 114,
+   "A": 23,
+   "cookStart": 2,
+   "serveStart": 111,
+   "order": [
+    "s4",
+    "s5",
+    "s1",
+    "s3",
+    "s6",
+    "s7",
+    "s8",
+    "s9",
+    "s2",
+    "s10"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     8
+    ],
+    [
+     12,
+     14
+    ],
+    [
+     16,
+     24
+    ],
+    [
+     107,
+     109
+    ],
+    [
+     111,
+     114
+    ]
+   ],
+   "ahead": [
+    "s2",
+    "s3",
+    "s4"
+   ],
+   "plan": {
+    "s1": {
+     "start": 7,
+     "end": 22,
+     "use": 22,
+     "during": null
+    },
+    "s2": {
+     "start": 107,
+     "end": 109,
+     "use": 109,
+     "during": "s9"
+    },
+    "s3": {
+     "start": 12,
+     "end": 14,
+     "use": 20,
+     "during": null
+    },
+    "s4": {
+     "start": 0,
+     "end": 2,
+     "use": 20,
+     "during": null
+    },
+    "s5": {
+     "start": 2,
+     "end": 12,
+     "use": 16,
+     "during": null
+    },
+    "s6": {
+     "start": 16,
+     "end": 20,
+     "use": 20,
+     "during": null
+    },
+    "s7": {
+     "start": 20,
+     "end": 22,
+     "use": 22,
+     "during": null
+    },
+    "s8": {
+     "start": 22,
+     "end": 51,
+     "use": 51,
+     "during": null
+    },
+    "s9": {
+     "start": 51,
+     "end": 111,
+     "use": 111,
+     "during": null
+    },
+    "s10": {
+     "start": 111,
+     "end": 114,
+     "use": 114,
+     "during": null
+    }
+   }
+  },
+  "prep": {
+   "T": 118,
+   "A": 23,
+   "cookStart": 6,
+   "serveStart": 115,
+   "order": [
+    "s4",
+    "s3",
+    "s2",
+    "s5",
+    "s1",
+    "s6",
+    "s7",
+    "s8",
+    "s9",
+    "s10"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     12
+    ],
+    [
+     20,
+     28
+    ],
+    [
+     115,
+     118
+    ]
+   ],
+   "ahead": [
+    "s2",
+    "s3",
+    "s4"
+   ],
+   "plan": {
+    "s1": {
+     "start": 11,
+     "end": 26,
+     "use": 26,
+     "during": null
+    },
+    "s2": {
+     "start": 4,
+     "end": 6,
+     "use": 6,
+     "during": null
+    },
+    "s3": {
+     "start": 2,
+     "end": 4,
+     "use": 24,
+     "during": null
+    },
+    "s4": {
+     "start": 0,
+     "end": 2,
+     "use": 24,
+     "during": null
+    },
+    "s5": {
+     "start": 6,
+     "end": 16,
+     "use": 20,
+     "during": null
+    },
+    "s6": {
+     "start": 20,
+     "end": 24,
+     "use": 24,
+     "during": null
+    },
+    "s7": {
+     "start": 24,
+     "end": 26,
+     "use": 26,
+     "during": null
+    },
+    "s8": {
+     "start": 26,
+     "end": 55,
+     "use": 55,
+     "during": null
+    },
+    "s9": {
+     "start": 55,
+     "end": 115,
+     "use": 115,
+     "during": null
+    },
+    "s10": {
+     "start": 115,
+     "end": 118,
+     "use": 118,
+     "during": null
+    }
+   }
+  },
+  "jit": {
+   "T": 112,
+   "A": 23,
+   "cookStart": 0,
+   "serveStart": 109,
+   "order": [
+    "s5",
+    "s1",
+    "s4",
+    "s3",
+    "s6",
+    "s7",
+    "s8",
+    "s9",
+    "s2",
+    "s10"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     6
+    ],
+    [
+     10,
+     22
+    ],
+    [
+     107,
+     112
+    ]
+   ],
+   "ahead": [
+    "s2",
+    "s3",
+    "s4"
+   ],
+   "plan": {
+    "s1": {
+     "start": 5,
+     "end": 20,
+     "use": 20,
+     "during": null
+    },
+    "s2": {
+     "start": 107,
+     "end": 109,
+     "use": 109,
+     "during": "s9"
+    },
+    "s3": {
+     "start": 12,
+     "end": 14,
+     "use": 18,
+     "during": null
+    },
+    "s4": {
+     "start": 10,
+     "end": 12,
+     "use": 18,
+     "during": null
+    },
+    "s5": {
+     "start": 0,
+     "end": 10,
+     "use": 14,
+     "during": null
+    },
+    "s6": {
+     "start": 14,
+     "end": 18,
+     "use": 18,
+     "during": null
+    },
+    "s7": {
+     "start": 18,
+     "end": 20,
+     "use": 20,
+     "during": null
+    },
+    "s8": {
+     "start": 20,
+     "end": 49,
+     "use": 49,
+     "during": null
+    },
+    "s9": {
+     "start": 49,
+     "end": 109,
+     "use": 109,
+     "during": null
+    },
+    "s10": {
+     "start": 109,
+     "end": 112,
+     "use": 112,
+     "during": null
+    }
+   }
+  }
+ },
+ "fasit/burger.json": {
+  "calm": {
+   "T": 157,
+   "A": 58,
+   "cookStart": 107,
+   "serveStart": 152,
+   "order": [
+    "s2",
+    "s3",
+    "s4",
+    "s5",
+    "s1",
+    "s9",
+    "s6",
+    "s7",
+    "s10",
+    "s8",
+    "s11",
+    "s14",
+    "s13",
+    "s12",
+    "s15",
+    "s16",
+    "s17",
+    "s18"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     10
+    ],
+    [
+     70,
+     75
+    ],
+    [
+     92,
+     93
+    ],
+    [
+     97,
+     108
+    ],
+    [
+     114,
+     118
+    ],
+    [
+     120,
+     122
+    ],
+    [
+     126,
+     128
+    ],
+    [
+     130,
+     134
+    ],
+    [
+     136,
+     141
+    ],
+    [
+     143,
+     157
+    ]
+   ],
+   "ahead": [
+    "s10",
+    "s12",
+    "s13",
+    "s14",
+    "s2",
+    "s3",
+    "s4",
+    "s5",
+    "s6",
+    "s9"
+   ],
+   "plan": {
+    "s1": {
+     "start": 92,
+     "end": 107,
+     "use": 107,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 10,
+     "use": 10,
+     "during": null
+    },
+    "s3": {
+     "start": 10,
+     "end": 70,
+     "use": 70,
+     "during": null
+    },
+    "s4": {
+     "start": 70,
+     "end": 75,
+     "use": 75,
+     "during": null
+    },
+    "s5": {
+     "start": 75,
+     "end": 105,
+     "use": 105,
+     "during": null
+    },
+    "s6": {
+     "start": 105,
+     "end": 107,
+     "use": 107,
+     "during": null
+    },
+    "s7": {
+     "start": 107,
+     "end": 120,
+     "use": 120,
+     "during": null
+    },
+    "s8": {
+     "start": 120,
+     "end": 152,
+     "use": 152,
+     "during": null
+    },
+    "s9": {
+     "start": 97,
+     "end": 105,
+     "use": 114,
+     "during": null
+    },
+    "s10": {
+     "start": 114,
+     "end": 118,
+     "use": 120,
+     "during": "s7"
+    },
+    "s11": {
+     "start": 120,
+     "end": 153,
+     "use": 153,
+     "during": null
+    },
+    "s12": {
+     "start": 136,
+     "end": 141,
+     "use": 143,
+     "during": "s11"
+    },
+    "s13": {
+     "start": 130,
+     "end": 134,
+     "use": 153,
+     "during": "s11"
+    },
+    "s14": {
+     "start": 126,
+     "end": 128,
+     "use": 153,
+     "during": "s11"
+    },
+    "s15": {
+     "start": 143,
+     "end": 150,
+     "use": 150,
+     "during": null
+    },
+    "s16": {
+     "start": 150,
+     "end": 152,
+     "use": 153,
+     "during": null
+    },
+    "s17": {
+     "start": 152,
+     "end": 153,
+     "use": 153,
+     "during": null
+    },
+    "s18": {
+     "start": 153,
+     "end": 157,
+     "use": 157,
+     "during": null
+    }
+   }
+  },
+  "prep": {
+   "T": 157,
+   "A": 58,
+   "cookStart": 107,
+   "serveStart": 152,
+   "order": [
+    "s2",
+    "s3",
+    "s4",
+    "s5",
+    "s14",
+    "s12",
+    "s1",
+    "s9",
+    "s10",
+    "s6",
+    "s7",
+    "s8",
+    "s11",
+    "s13",
+    "s15",
+    "s16",
+    "s17",
+    "s18"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     10
+    ],
+    [
+     70,
+     75
+    ],
+    [
+     85,
+     108
+    ],
+    [
+     120,
+     122
+    ],
+    [
+     139,
+     157
+    ]
+   ],
+   "ahead": [
+    "s10",
+    "s12",
+    "s13",
+    "s14",
+    "s2",
+    "s3",
+    "s4",
+    "s5",
+    "s6",
+    "s9"
+   ],
+   "plan": {
+    "s1": {
+     "start": 92,
+     "end": 107,
+     "use": 107,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 10,
+     "use": 10,
+     "during": null
+    },
+    "s3": {
+     "start": 10,
+     "end": 70,
+     "use": 70,
+     "during": null
+    },
+    "s4": {
+     "start": 70,
+     "end": 75,
+     "use": 75,
+     "during": null
+    },
+    "s5": {
+     "start": 75,
+     "end": 105,
+     "use": 105,
+     "during": null
+    },
+    "s6": {
+     "start": 105,
+     "end": 107,
+     "use": 107,
+     "during": null
+    },
+    "s7": {
+     "start": 107,
+     "end": 120,
+     "use": 120,
+     "during": null
+    },
+    "s8": {
+     "start": 120,
+     "end": 152,
+     "use": 152,
+     "during": null
+    },
+    "s9": {
+     "start": 93,
+     "end": 101,
+     "use": 101,
+     "during": null
+    },
+    "s10": {
+     "start": 101,
+     "end": 105,
+     "use": 120,
+     "during": null
+    },
+    "s11": {
+     "start": 120,
+     "end": 153,
+     "use": 153,
+     "during": null
+    },
+    "s12": {
+     "start": 87,
+     "end": 92,
+     "use": 143,
+     "during": null
+    },
+    "s13": {
+     "start": 139,
+     "end": 143,
+     "use": 153,
+     "during": "s11"
+    },
+    "s14": {
+     "start": 85,
+     "end": 87,
+     "use": 153,
+     "during": null
+    },
+    "s15": {
+     "start": 143,
+     "end": 150,
+     "use": 150,
+     "during": null
+    },
+    "s16": {
+     "start": 150,
+     "end": 152,
+     "use": 153,
+     "during": null
+    },
+    "s17": {
+     "start": 152,
+     "end": 153,
+     "use": 153,
+     "during": null
+    },
+    "s18": {
+     "start": 153,
+     "end": 157,
+     "use": 157,
+     "during": null
+    }
+   }
+  },
+  "jit": {
+   "T": 157,
+   "A": 58,
+   "cookStart": 107,
+   "serveStart": 152,
+   "order": [
+    "s2",
+    "s3",
+    "s4",
+    "s5",
+    "s1",
+    "s6",
+    "s7",
+    "s9",
+    "s10",
+    "s8",
+    "s11",
+    "s14",
+    "s13",
+    "s12",
+    "s15",
+    "s16",
+    "s17",
+    "s18"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     10
+    ],
+    [
+     70,
+     75
+    ],
+    [
+     92,
+     93
+    ],
+    [
+     105,
+     122
+    ],
+    [
+     132,
+     157
+    ]
+   ],
+   "ahead": [
+    "s10",
+    "s12",
+    "s13",
+    "s14",
+    "s2",
+    "s3",
+    "s4",
+    "s5",
+    "s6",
+    "s9"
+   ],
+   "plan": {
+    "s1": {
+     "start": 92,
+     "end": 107,
+     "use": 107,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 10,
+     "use": 10,
+     "during": null
+    },
+    "s3": {
+     "start": 10,
+     "end": 70,
+     "use": 70,
+     "during": null
+    },
+    "s4": {
+     "start": 70,
+     "end": 75,
+     "use": 75,
+     "during": null
+    },
+    "s5": {
+     "start": 75,
+     "end": 105,
+     "use": 105,
+     "during": null
+    },
+    "s6": {
+     "start": 105,
+     "end": 107,
+     "use": 107,
+     "during": null
+    },
+    "s7": {
+     "start": 107,
+     "end": 120,
+     "use": 120,
+     "during": null
+    },
+    "s8": {
+     "start": 120,
+     "end": 152,
+     "use": 152,
+     "during": null
+    },
+    "s9": {
+     "start": 108,
+     "end": 116,
+     "use": 116,
+     "during": "s7"
+    },
+    "s10": {
+     "start": 116,
+     "end": 120,
+     "use": 120,
+     "during": "s7"
+    },
+    "s11": {
+     "start": 120,
+     "end": 153,
+     "use": 153,
+     "during": null
+    },
+    "s12": {
+     "start": 138,
+     "end": 143,
+     "use": 143,
+     "during": "s11"
+    },
+    "s13": {
+     "start": 134,
+     "end": 138,
+     "use": 153,
+     "during": "s11"
+    },
+    "s14": {
+     "start": 132,
+     "end": 134,
+     "use": 153,
+     "during": "s11"
+    },
+    "s15": {
+     "start": 143,
+     "end": 150,
+     "use": 150,
+     "during": null
+    },
+    "s16": {
+     "start": 150,
+     "end": 152,
+     "use": 153,
+     "during": null
+    },
+    "s17": {
+     "start": 152,
+     "end": 153,
+     "use": 153,
+     "during": null
+    },
+    "s18": {
+     "start": 153,
+     "end": 157,
+     "use": 157,
+     "during": null
+    }
+   }
+  }
+ },
+ "fasit/carbonara.json": {
+  "calm": {
+   "T": 26,
+   "A": 17,
+   "cookStart": 11,
+   "serveStart": 25,
+   "order": [
+    "s1",
+    "s3",
+    "s2",
+    "s5",
+    "s4",
+    "s6",
+    "s7",
+    "s8",
+    "s9"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     1
+    ],
+    [
+     5,
+     16
+    ],
+    [
+     21,
+     26
+    ]
+   ],
+   "ahead": [
+    "s2",
+    "s3"
+   ],
+   "plan": {
+    "s1": {
+     "start": 0,
+     "end": 11,
+     "use": 11,
+     "during": null
+    },
+    "s2": {
+     "start": 8,
+     "end": 11,
+     "use": 23,
+     "during": null
+    },
+    "s3": {
+     "start": 5,
+     "end": 8,
+     "use": 12,
+     "during": null
+    },
+    "s4": {
+     "start": 12,
+     "end": 22,
+     "use": 22,
+     "during": null
+    },
+    "s5": {
+     "start": 11,
+     "end": 21,
+     "use": 21,
+     "during": null
+    },
+    "s6": {
+     "start": 21,
+     "end": 22,
+     "use": 22,
+     "during": null
+    },
+    "s7": {
+     "start": 22,
+     "end": 23,
+     "use": 23,
+     "during": null
+    },
+    "s8": {
+     "start": 23,
+     "end": 25,
+     "use": 25,
+     "during": null
+    },
+    "s9": {
+     "start": 25,
+     "end": 26,
+     "use": 26,
+     "during": null
+    }
+   }
+  },
+  "prep": {
+   "T": 26,
+   "A": 17,
+   "cookStart": 11,
+   "serveStart": 25,
+   "order": [
+    "s1",
+    "s3",
+    "s2",
+    "s5",
+    "s4",
+    "s6",
+    "s7",
+    "s8",
+    "s9"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     1
+    ],
+    [
+     5,
+     16
+    ],
+    [
+     21,
+     26
+    ]
+   ],
+   "ahead": [
+    "s2",
+    "s3"
+   ],
+   "plan": {
+    "s1": {
+     "start": 0,
+     "end": 11,
+     "use": 11,
+     "during": null
+    },
+    "s2": {
+     "start": 8,
+     "end": 11,
+     "use": 23,
+     "during": null
+    },
+    "s3": {
+     "start": 5,
+     "end": 8,
+     "use": 12,
+     "during": null
+    },
+    "s4": {
+     "start": 12,
+     "end": 22,
+     "use": 22,
+     "during": null
+    },
+    "s5": {
+     "start": 11,
+     "end": 21,
+     "use": 21,
+     "during": null
+    },
+    "s6": {
+     "start": 21,
+     "end": 22,
+     "use": 22,
+     "during": null
+    },
+    "s7": {
+     "start": 22,
+     "end": 23,
+     "use": 23,
+     "during": null
+    },
+    "s8": {
+     "start": 23,
+     "end": 25,
+     "use": 25,
+     "during": null
+    },
+    "s9": {
+     "start": 25,
+     "end": 26,
+     "use": 26,
+     "during": null
+    }
+   }
+  },
+  "jit": {
+   "T": 26,
+   "A": 17,
+   "cookStart": 11,
+   "serveStart": 25,
+   "order": [
+    "s1",
+    "s3",
+    "s5",
+    "s4",
+    "s2",
+    "s6",
+    "s7",
+    "s8",
+    "s9"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     1
+    ],
+    [
+     8,
+     16
+    ],
+    [
+     18,
+     26
+    ]
+   ],
+   "ahead": [
+    "s2",
+    "s3"
+   ],
+   "plan": {
+    "s1": {
+     "start": 0,
+     "end": 11,
+     "use": 11,
+     "during": null
+    },
+    "s2": {
+     "start": 18,
+     "end": 21,
+     "use": 23,
+     "during": "s5"
+    },
+    "s3": {
+     "start": 8,
+     "end": 11,
+     "use": 12,
+     "during": null
+    },
+    "s4": {
+     "start": 12,
+     "end": 22,
+     "use": 22,
+     "during": null
+    },
+    "s5": {
+     "start": 11,
+     "end": 21,
+     "use": 21,
+     "during": null
+    },
+    "s6": {
+     "start": 21,
+     "end": 22,
+     "use": 22,
+     "during": null
+    },
+    "s7": {
+     "start": 22,
+     "end": 23,
+     "use": 23,
+     "during": null
+    },
+    "s8": {
+     "start": 23,
+     "end": 25,
+     "use": 25,
+     "during": null
+    },
+    "s9": {
+     "start": 25,
+     "end": 26,
+     "use": 26,
+     "during": null
+    }
+   }
+  }
+ },
+ "fasit/lasagne.json": {
+  "calm": {
+   "T": 105,
+   "A": 53,
+   "cookStart": 6,
+   "serveStart": 102,
+   "order": [
+    "s2",
+    "s3",
+    "s4",
+    "s5",
+    "s6",
+    "s7",
+    "s1",
+    "s8",
+    "s9",
+    "s13",
+    "s12",
+    "s10",
+    "s11",
+    "s14",
+    "s15"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     19
+    ],
+    [
+     29,
+     41
+    ],
+    [
+     47,
+     56
+    ],
+    [
+     86,
+     88
+    ],
+    [
+     90,
+     94
+    ],
+    [
+     96,
+     100
+    ],
+    [
+     102,
+     105
+    ]
+   ],
+   "ahead": [
+    "s11",
+    "s12",
+    "s13",
+    "s2"
+   ],
+   "plan": {
+    "s1": {
+     "start": 40,
+     "end": 55,
+     "use": 55,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 6,
+     "use": 12,
+     "during": null
+    },
+    "s3": {
+     "start": 6,
+     "end": 12,
+     "use": 12,
+     "during": null
+    },
+    "s4": {
+     "start": 12,
+     "end": 17,
+     "use": 17,
+     "during": null
+    },
+    "s5": {
+     "start": 17,
+     "end": 47,
+     "use": 47,
+     "during": null
+    },
+    "s6": {
+     "start": 29,
+     "end": 32,
+     "use": 32,
+     "during": null
+    },
+    "s7": {
+     "start": 32,
+     "end": 40,
+     "use": 47,
+     "during": null
+    },
+    "s8": {
+     "start": 47,
+     "end": 55,
+     "use": 55,
+     "during": null
+    },
+    "s9": {
+     "start": 55,
+     "end": 93,
+     "use": 93,
+     "during": null
+    },
+    "s10": {
+     "start": 93,
+     "end": 103,
+     "use": 103,
+     "during": null
+    },
+    "s11": {
+     "start": 96,
+     "end": 100,
+     "use": 102,
+     "during": "s10"
+    },
+    "s12": {
+     "start": 90,
+     "end": 94,
+     "use": 102,
+     "during": "s9"
+    },
+    "s13": {
+     "start": 86,
+     "end": 88,
+     "use": 102,
+     "during": "s9"
+    },
+    "s14": {
+     "start": 102,
+     "end": 103,
+     "use": 103,
+     "during": null
+    },
+    "s15": {
+     "start": 103,
+     "end": 105,
+     "use": 105,
+     "during": null
+    }
+   }
+  },
+  "prep": {
+   "T": 115,
+   "A": 53,
+   "cookStart": 16,
+   "serveStart": 112,
+   "order": [
+    "s13",
+    "s12",
+    "s11",
+    "s2",
+    "s3",
+    "s4",
+    "s5",
+    "s6",
+    "s7",
+    "s1",
+    "s8",
+    "s9",
+    "s10",
+    "s14",
+    "s15"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     29
+    ],
+    [
+     39,
+     51
+    ],
+    [
+     57,
+     66
+    ],
+    [
+     112,
+     115
+    ]
+   ],
+   "ahead": [
+    "s11",
+    "s12",
+    "s13",
+    "s2"
+   ],
+   "plan": {
+    "s1": {
+     "start": 50,
+     "end": 65,
+     "use": 65,
+     "during": null
+    },
+    "s2": {
+     "start": 10,
+     "end": 16,
+     "use": 22,
+     "during": null
+    },
+    "s3": {
+     "start": 16,
+     "end": 22,
+     "use": 22,
+     "during": null
+    },
+    "s4": {
+     "start": 22,
+     "end": 27,
+     "use": 27,
+     "during": null
+    },
+    "s5": {
+     "start": 27,
+     "end": 57,
+     "use": 57,
+     "during": null
+    },
+    "s6": {
+     "start": 39,
+     "end": 42,
+     "use": 42,
+     "during": null
+    },
+    "s7": {
+     "start": 42,
+     "end": 50,
+     "use": 57,
+     "during": null
+    },
+    "s8": {
+     "start": 57,
+     "end": 65,
+     "use": 65,
+     "during": null
+    },
+    "s9": {
+     "start": 65,
+     "end": 103,
+     "use": 103,
+     "during": null
+    },
+    "s10": {
+     "start": 103,
+     "end": 113,
+     "use": 113,
+     "during": null
+    },
+    "s11": {
+     "start": 6,
+     "end": 10,
+     "use": 112,
+     "during": null
+    },
+    "s12": {
+     "start": 2,
+     "end": 6,
+     "use": 112,
+     "during": null
+    },
+    "s13": {
+     "start": 0,
+     "end": 2,
+     "use": 112,
+     "during": null
+    },
+    "s14": {
+     "start": 112,
+     "end": 113,
+     "use": 113,
+     "during": null
+    },
+    "s15": {
+     "start": 113,
+     "end": 115,
+     "use": 115,
+     "during": null
+    }
+   }
+  },
+  "jit": {
+   "T": 105,
+   "A": 53,
+   "cookStart": 6,
+   "serveStart": 102,
+   "order": [
+    "s2",
+    "s3",
+    "s4",
+    "s5",
+    "s6",
+    "s7",
+    "s1",
+    "s8",
+    "s9",
+    "s13",
+    "s10",
+    "s12",
+    "s11",
+    "s14",
+    "s15"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     19
+    ],
+    [
+     29,
+     41
+    ],
+    [
+     47,
+     56
+    ],
+    [
+     92,
+     105
+    ]
+   ],
+   "ahead": [
+    "s11",
+    "s12",
+    "s13",
+    "s2"
+   ],
+   "plan": {
+    "s1": {
+     "start": 40,
+     "end": 55,
+     "use": 55,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 6,
+     "use": 12,
+     "during": null
+    },
+    "s3": {
+     "start": 6,
+     "end": 12,
+     "use": 12,
+     "during": null
+    },
+    "s4": {
+     "start": 12,
+     "end": 17,
+     "use": 17,
+     "during": null
+    },
+    "s5": {
+     "start": 17,
+     "end": 47,
+     "use": 47,
+     "during": null
+    },
+    "s6": {
+     "start": 29,
+     "end": 32,
+     "use": 32,
+     "during": null
+    },
+    "s7": {
+     "start": 32,
+     "end": 40,
+     "use": 47,
+     "during": null
+    },
+    "s8": {
+     "start": 47,
+     "end": 55,
+     "use": 55,
+     "during": null
+    },
+    "s9": {
+     "start": 55,
+     "end": 93,
+     "use": 93,
+     "during": null
+    },
+    "s10": {
+     "start": 93,
+     "end": 103,
+     "use": 103,
+     "during": null
+    },
+    "s11": {
+     "start": 98,
+     "end": 102,
+     "use": 102,
+     "during": "s10"
+    },
+    "s12": {
+     "start": 94,
+     "end": 98,
+     "use": 102,
+     "during": "s10"
+    },
+    "s13": {
+     "start": 92,
+     "end": 94,
+     "use": 102,
+     "during": "s9"
+    },
+    "s14": {
+     "start": 102,
+     "end": 103,
+     "use": 103,
+     "during": null
+    },
+    "s15": {
+     "start": 103,
+     "end": 105,
+     "use": 105,
+     "during": null
+    }
+   }
+  }
+ },
+ "fasit/tikka.json": {
+  "calm": {
+   "T": 90,
+   "A": 41,
+   "cookStart": 47,
+   "serveStart": 87,
+   "order": [
+    "s2",
+    "s3",
+    "s7",
+    "s4",
+    "s9",
+    "s1",
+    "s5",
+    "s13",
+    "s10",
+    "s11",
+    "s8",
+    "s14",
+    "s6",
+    "s12",
+    "s15"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     10
+    ],
+    [
+     42,
+     56
+    ],
+    [
+     58,
+     60
+    ],
+    [
+     62,
+     69
+    ],
+    [
+     70,
+     73
+    ],
+    [
+     79,
+     80
+    ],
+    [
+     82,
+     83
+    ],
+    [
+     87,
+     90
+    ]
+   ],
+   "ahead": [
+    "s2",
+    "s3",
+    "s4",
+    "s5",
+    "s6",
+    "s7"
+   ],
+   "plan": {
+    "s1": {
+     "start": 55,
+     "end": 70,
+     "use": 70,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 4,
+     "use": 4,
+     "during": null
+    },
+    "s3": {
+     "start": 4,
+     "end": 70,
+     "use": 70,
+     "during": null
+    },
+    "s4": {
+     "start": 44,
+     "end": 47,
+     "use": 47,
+     "during": null
+    },
+    "s5": {
+     "start": 58,
+     "end": 60,
+     "use": 65,
+     "during": null
+    },
+    "s6": {
+     "start": 79,
+     "end": 80,
+     "use": 87,
+     "during": "s11"
+    },
+    "s7": {
+     "start": 42,
+     "end": 44,
+     "use": 62,
+     "during": null
+    },
+    "s8": {
+     "start": 70,
+     "end": 82,
+     "use": 82,
+     "during": null
+    },
+    "s9": {
+     "start": 47,
+     "end": 55,
+     "use": 65,
+     "during": null
+    },
+    "s10": {
+     "start": 65,
+     "end": 67,
+     "use": 67,
+     "during": null
+    },
+    "s11": {
+     "start": 67,
+     "end": 82,
+     "use": 82,
+     "during": null
+    },
+    "s12": {
+     "start": 82,
+     "end": 87,
+     "use": 87,
+     "during": null
+    },
+    "s13": {
+     "start": 62,
+     "end": 77,
+     "use": 77,
+     "during": null
+    },
+    "s14": {
+     "start": 77,
+     "end": 87,
+     "use": 87,
+     "during": null
+    },
+    "s15": {
+     "start": 87,
+     "end": 90,
+     "use": 90,
+     "during": null
+    }
+   }
+  },
+  "prep": {
+   "T": 90,
+   "A": 41,
+   "cookStart": 47,
+   "serveStart": 87,
+   "order": [
+    "s2",
+    "s3",
+    "s6",
+    "s7",
+    "s5",
+    "s4",
+    "s9",
+    "s1",
+    "s13",
+    "s10",
+    "s11",
+    "s8",
+    "s14",
+    "s12",
+    "s15"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     10
+    ],
+    [
+     39,
+     56
+    ],
+    [
+     62,
+     69
+    ],
+    [
+     70,
+     73
+    ],
+    [
+     82,
+     83
+    ],
+    [
+     87,
+     90
+    ]
+   ],
+   "ahead": [
+    "s2",
+    "s3",
+    "s4",
+    "s5",
+    "s6",
+    "s7"
+   ],
+   "plan": {
+    "s1": {
+     "start": 55,
+     "end": 70,
+     "use": 70,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 4,
+     "use": 4,
+     "during": null
+    },
+    "s3": {
+     "start": 4,
+     "end": 70,
+     "use": 70,
+     "during": null
+    },
+    "s4": {
+     "start": 44,
+     "end": 47,
+     "use": 47,
+     "during": null
+    },
+    "s5": {
+     "start": 42,
+     "end": 44,
+     "use": 65,
+     "during": null
+    },
+    "s6": {
+     "start": 39,
+     "end": 40,
+     "use": 87,
+     "during": null
+    },
+    "s7": {
+     "start": 40,
+     "end": 42,
+     "use": 62,
+     "during": null
+    },
+    "s8": {
+     "start": 70,
+     "end": 82,
+     "use": 82,
+     "during": null
+    },
+    "s9": {
+     "start": 47,
+     "end": 55,
+     "use": 65,
+     "during": null
+    },
+    "s10": {
+     "start": 65,
+     "end": 67,
+     "use": 67,
+     "during": null
+    },
+    "s11": {
+     "start": 67,
+     "end": 82,
+     "use": 82,
+     "during": null
+    },
+    "s12": {
+     "start": 82,
+     "end": 87,
+     "use": 87,
+     "during": null
+    },
+    "s13": {
+     "start": 62,
+     "end": 77,
+     "use": 77,
+     "during": null
+    },
+    "s14": {
+     "start": 77,
+     "end": 87,
+     "use": 87,
+     "during": null
+    },
+    "s15": {
+     "start": 87,
+     "end": 90,
+     "use": 90,
+     "during": null
+    }
+   }
+  },
+  "jit": {
+   "T": 90,
+   "A": 41,
+   "cookStart": 47,
+   "serveStart": 87,
+   "order": [
+    "s2",
+    "s3",
+    "s4",
+    "s9",
+    "s1",
+    "s7",
+    "s5",
+    "s13",
+    "s10",
+    "s11",
+    "s8",
+    "s14",
+    "s12",
+    "s6",
+    "s15"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     10
+    ],
+    [
+     44,
+     56
+    ],
+    [
+     58,
+     69
+    ],
+    [
+     70,
+     73
+    ],
+    [
+     82,
+     83
+    ],
+    [
+     86,
+     90
+    ]
+   ],
+   "ahead": [
+    "s2",
+    "s3",
+    "s4",
+    "s5",
+    "s6",
+    "s7"
+   ],
+   "plan": {
+    "s1": {
+     "start": 55,
+     "end": 70,
+     "use": 70,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 4,
+     "use": 4,
+     "during": null
+    },
+    "s3": {
+     "start": 4,
+     "end": 70,
+     "use": 70,
+     "during": null
+    },
+    "s4": {
+     "start": 44,
+     "end": 47,
+     "use": 47,
+     "during": null
+    },
+    "s5": {
+     "start": 60,
+     "end": 62,
+     "use": 65,
+     "during": null
+    },
+    "s6": {
+     "start": 86,
+     "end": 87,
+     "use": 87,
+     "during": "s14"
+    },
+    "s7": {
+     "start": 58,
+     "end": 60,
+     "use": 62,
+     "during": null
+    },
+    "s8": {
+     "start": 70,
+     "end": 82,
+     "use": 82,
+     "during": null
+    },
+    "s9": {
+     "start": 47,
+     "end": 55,
+     "use": 65,
+     "during": null
+    },
+    "s10": {
+     "start": 65,
+     "end": 67,
+     "use": 67,
+     "during": null
+    },
+    "s11": {
+     "start": 67,
+     "end": 82,
+     "use": 82,
+     "during": null
+    },
+    "s12": {
+     "start": 82,
+     "end": 87,
+     "use": 87,
+     "during": null
+    },
+    "s13": {
+     "start": 62,
+     "end": 77,
+     "use": 77,
+     "during": null
+    },
+    "s14": {
+     "start": 77,
+     "end": 87,
+     "use": 87,
+     "during": null
+    },
+    "s15": {
+     "start": 87,
+     "end": 90,
+     "use": 90,
+     "during": null
+    }
+   }
+  }
+ },
+ "opus-low/fasit/brownies.json": {
+  "calm": {
+   "T": 129,
+   "A": 26,
+   "cookStart": 15,
+   "serveStart": 126,
+   "order": [
+    "s1",
+    "s2",
+    "s3",
+    "s5",
+    "s4",
+    "s6",
+    "s7",
+    "s8",
+    "s9",
+    "s10",
+    "s11",
+    "s12"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     1
+    ],
+    [
+     12,
+     16
+    ],
+    [
+     18,
+     26
+    ],
+    [
+     29,
+     39
+    ],
+    [
+     126,
+     129
+    ]
+   ],
+   "ahead": [
+    "s2",
+    "s6"
+   ],
+   "plan": {
+    "s1": {
+     "start": 0,
+     "end": 15,
+     "use": 15,
+     "during": null
+    },
+    "s2": {
+     "start": 12,
+     "end": 15,
+     "use": 36,
+     "during": null
+    },
+    "s3": {
+     "start": 15,
+     "end": 23,
+     "use": 23,
+     "during": null
+    },
+    "s4": {
+     "start": 23,
+     "end": 36,
+     "use": 36,
+     "during": null
+    },
+    "s5": {
+     "start": 18,
+     "end": 28,
+     "use": 33,
+     "during": null
+    },
+    "s6": {
+     "start": 29,
+     "end": 33,
+     "use": 33,
+     "during": "s4"
+    },
+    "s7": {
+     "start": 33,
+     "end": 34,
+     "use": 34,
+     "during": "s4"
+    },
+    "s8": {
+     "start": 34,
+     "end": 36,
+     "use": 36,
+     "during": "s4"
+    },
+    "s9": {
+     "start": 36,
+     "end": 38,
+     "use": 38,
+     "during": null
+    },
+    "s10": {
+     "start": 38,
+     "end": 66,
+     "use": 66,
+     "during": null
+    },
+    "s11": {
+     "start": 66,
+     "end": 126,
+     "use": 126,
+     "during": null
+    },
+    "s12": {
+     "start": 126,
+     "end": 129,
+     "use": 129,
+     "during": null
+    }
+   }
+  },
+  "prep": {
+   "T": 129,
+   "A": 26,
+   "cookStart": 15,
+   "serveStart": 126,
+   "order": [
+    "s1",
+    "s2",
+    "s3",
+    "s5",
+    "s4",
+    "s6",
+    "s7",
+    "s8",
+    "s9",
+    "s10",
+    "s11",
+    "s12"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     1
+    ],
+    [
+     12,
+     16
+    ],
+    [
+     18,
+     26
+    ],
+    [
+     29,
+     39
+    ],
+    [
+     126,
+     129
+    ]
+   ],
+   "ahead": [
+    "s2",
+    "s6"
+   ],
+   "plan": {
+    "s1": {
+     "start": 0,
+     "end": 15,
+     "use": 15,
+     "during": null
+    },
+    "s2": {
+     "start": 12,
+     "end": 15,
+     "use": 36,
+     "during": null
+    },
+    "s3": {
+     "start": 15,
+     "end": 23,
+     "use": 23,
+     "during": null
+    },
+    "s4": {
+     "start": 23,
+     "end": 36,
+     "use": 36,
+     "during": null
+    },
+    "s5": {
+     "start": 18,
+     "end": 28,
+     "use": 33,
+     "during": null
+    },
+    "s6": {
+     "start": 29,
+     "end": 33,
+     "use": 33,
+     "during": "s4"
+    },
+    "s7": {
+     "start": 33,
+     "end": 34,
+     "use": 34,
+     "during": "s4"
+    },
+    "s8": {
+     "start": 34,
+     "end": 36,
+     "use": 36,
+     "during": "s4"
+    },
+    "s9": {
+     "start": 36,
+     "end": 38,
+     "use": 38,
+     "during": null
+    },
+    "s10": {
+     "start": 38,
+     "end": 66,
+     "use": 66,
+     "during": null
+    },
+    "s11": {
+     "start": 66,
+     "end": 126,
+     "use": 126,
+     "during": null
+    },
+    "s12": {
+     "start": 126,
+     "end": 129,
+     "use": 129,
+     "during": null
+    }
+   }
+  },
+  "jit": {
+   "T": 129,
+   "A": 26,
+   "cookStart": 15,
+   "serveStart": 126,
+   "order": [
+    "s1",
+    "s3",
+    "s5",
+    "s4",
+    "s2",
+    "s6",
+    "s7",
+    "s8",
+    "s9",
+    "s10",
+    "s11",
+    "s12"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     1
+    ],
+    [
+     15,
+     16
+    ],
+    [
+     18,
+     39
+    ],
+    [
+     126,
+     129
+    ]
+   ],
+   "ahead": [
+    "s2",
+    "s6"
+   ],
+   "plan": {
+    "s1": {
+     "start": 0,
+     "end": 15,
+     "use": 15,
+     "during": null
+    },
+    "s2": {
+     "start": 26,
+     "end": 29,
+     "use": 36,
+     "during": "s4"
+    },
+    "s3": {
+     "start": 15,
+     "end": 23,
+     "use": 23,
+     "during": null
+    },
+    "s4": {
+     "start": 23,
+     "end": 36,
+     "use": 36,
+     "during": null
+    },
+    "s5": {
+     "start": 18,
+     "end": 28,
+     "use": 33,
+     "during": null
+    },
+    "s6": {
+     "start": 29,
+     "end": 33,
+     "use": 33,
+     "during": "s4"
+    },
+    "s7": {
+     "start": 33,
+     "end": 34,
+     "use": 34,
+     "during": "s4"
+    },
+    "s8": {
+     "start": 34,
+     "end": 36,
+     "use": 36,
+     "during": "s4"
+    },
+    "s9": {
+     "start": 36,
+     "end": 38,
+     "use": 38,
+     "during": null
+    },
+    "s10": {
+     "start": 38,
+     "end": 66,
+     "use": 66,
+     "during": null
+    },
+    "s11": {
+     "start": 66,
+     "end": 126,
+     "use": 126,
+     "during": null
+    },
+    "s12": {
+     "start": 126,
+     "end": 129,
+     "use": 129,
+     "during": null
+    }
+   }
+  }
+ },
+ "opus-low/fasit/burger.json": {
+  "calm": {
+   "T": 158,
+   "A": 82,
+   "cookStart": 0,
+   "serveStart": 154,
+   "order": [
+    "s1",
+    "s2",
+    "s3",
+    "s8",
+    "s4",
+    "s9",
+    "s16",
+    "s5",
+    "s10",
+    "s6",
+    "s14",
+    "s12",
+    "s13",
+    "s7",
+    "s15",
+    "s17",
+    "s19",
+    "s18",
+    "s11",
+    "s20"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     15
+    ],
+    [
+     53,
+     63
+    ],
+    [
+     65,
+     73
+    ],
+    [
+     76,
+     77
+    ],
+    [
+     79,
+     85
+    ],
+    [
+     87,
+     88
+    ],
+    [
+     97,
+     101
+    ],
+    [
+     103,
+     106
+    ],
+    [
+     108,
+     111
+    ],
+    [
+     113,
+     117
+    ],
+    [
+     119,
+     122
+    ],
+    [
+     128,
+     129
+    ],
+    [
+     132,
+     139
+    ],
+    [
+     141,
+     153
+    ],
+    [
+     154,
+     158
+    ]
+   ],
+   "ahead": [
+    "s10",
+    "s12",
+    "s14",
+    "s15",
+    "s16",
+    "s8",
+    "s9"
+   ],
+   "plan": {
+    "s1": {
+     "start": 0,
+     "end": 4,
+     "use": 4,
+     "during": null
+    },
+    "s2": {
+     "start": 4,
+     "end": 14,
+     "use": 14,
+     "during": null
+    },
+    "s3": {
+     "start": 14,
+     "end": 65,
+     "use": 65,
+     "during": null
+    },
+    "s4": {
+     "start": 65,
+     "end": 103,
+     "use": 103,
+     "during": null
+    },
+    "s5": {
+     "start": 87,
+     "end": 103,
+     "use": 103,
+     "during": null
+    },
+    "s6": {
+     "start": 103,
+     "end": 119,
+     "use": 128,
+     "during": null
+    },
+    "s7": {
+     "start": 128,
+     "end": 149,
+     "use": 149,
+     "during": null
+    },
+    "s8": {
+     "start": 53,
+     "end": 63,
+     "use": 76,
+     "during": null
+    },
+    "s9": {
+     "start": 76,
+     "end": 97,
+     "use": 97,
+     "during": null
+    },
+    "s10": {
+     "start": 97,
+     "end": 101,
+     "use": 113,
+     "during": null
+    },
+    "s11": {
+     "start": 152,
+     "end": 158,
+     "use": 158,
+     "during": null
+    },
+    "s12": {
+     "start": 113,
+     "end": 117,
+     "use": 119,
+     "during": "s6"
+    },
+    "s13": {
+     "start": 119,
+     "end": 154,
+     "use": 154,
+     "during": null
+    },
+    "s14": {
+     "start": 108,
+     "end": 111,
+     "use": 154,
+     "during": "s6"
+    },
+    "s15": {
+     "start": 132,
+     "end": 139,
+     "use": 154,
+     "during": "s13"
+    },
+    "s16": {
+     "start": 79,
+     "end": 85,
+     "use": 141,
+     "during": null
+    },
+    "s17": {
+     "start": 141,
+     "end": 149,
+     "use": 151,
+     "during": null
+    },
+    "s18": {
+     "start": 151,
+     "end": 154,
+     "use": 154,
+     "during": null
+    },
+    "s19": {
+     "start": 149,
+     "end": 151,
+     "use": 154,
+     "during": null
+    },
+    "s20": {
+     "start": 154,
+     "end": 158,
+     "use": 158,
+     "during": null
+    }
+   }
+  },
+  "prep": {
+   "T": 197,
+   "A": 82,
+   "cookStart": 39,
+   "serveStart": 193,
+   "order": [
+    "s8",
+    "s9",
+    "s14",
+    "s16",
+    "s10",
+    "s12",
+    "s1",
+    "s2",
+    "s3",
+    "s15",
+    "s4",
+    "s5",
+    "s6",
+    "s13",
+    "s7",
+    "s17",
+    "s19",
+    "s18",
+    "s11",
+    "s20"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     11
+    ],
+    [
+     22,
+     54
+    ],
+    [
+     96,
+     103
+    ],
+    [
+     104,
+     112
+    ],
+    [
+     126,
+     127
+    ],
+    [
+     142,
+     145
+    ],
+    [
+     158,
+     161
+    ],
+    [
+     167,
+     168
+    ],
+    [
+     180,
+     192
+    ],
+    [
+     193,
+     197
+    ]
+   ],
+   "ahead": [
+    "s10",
+    "s12",
+    "s14",
+    "s15",
+    "s16",
+    "s8",
+    "s9"
+   ],
+   "plan": {
+    "s1": {
+     "start": 39,
+     "end": 43,
+     "use": 43,
+     "during": null
+    },
+    "s2": {
+     "start": 43,
+     "end": 53,
+     "use": 53,
+     "during": null
+    },
+    "s3": {
+     "start": 53,
+     "end": 104,
+     "use": 104,
+     "during": null
+    },
+    "s4": {
+     "start": 104,
+     "end": 142,
+     "use": 142,
+     "during": null
+    },
+    "s5": {
+     "start": 126,
+     "end": 142,
+     "use": 142,
+     "during": null
+    },
+    "s6": {
+     "start": 142,
+     "end": 158,
+     "use": 167,
+     "during": null
+    },
+    "s7": {
+     "start": 167,
+     "end": 188,
+     "use": 188,
+     "during": null
+    },
+    "s8": {
+     "start": 0,
+     "end": 10,
+     "use": 10,
+     "during": null
+    },
+    "s9": {
+     "start": 10,
+     "end": 31,
+     "use": 31,
+     "during": null
+    },
+    "s10": {
+     "start": 31,
+     "end": 35,
+     "use": 35,
+     "during": null
+    },
+    "s11": {
+     "start": 191,
+     "end": 197,
+     "use": 197,
+     "during": null
+    },
+    "s12": {
+     "start": 35,
+     "end": 39,
+     "use": 158,
+     "during": null
+    },
+    "s13": {
+     "start": 158,
+     "end": 193,
+     "use": 193,
+     "during": null
+    },
+    "s14": {
+     "start": 22,
+     "end": 25,
+     "use": 193,
+     "during": null
+    },
+    "s15": {
+     "start": 96,
+     "end": 103,
+     "use": 193,
+     "during": null
+    },
+    "s16": {
+     "start": 25,
+     "end": 31,
+     "use": 180,
+     "during": null
+    },
+    "s17": {
+     "start": 180,
+     "end": 188,
+     "use": 190,
+     "during": null
+    },
+    "s18": {
+     "start": 190,
+     "end": 193,
+     "use": 193,
+     "during": null
+    },
+    "s19": {
+     "start": 188,
+     "end": 190,
+     "use": 193,
+     "during": null
+    },
+    "s20": {
+     "start": 193,
+     "end": 197,
+     "use": 197,
+     "during": null
+    }
+   }
+  },
+  "jit": {
+   "T": 158,
+   "A": 82,
+   "cookStart": 0,
+   "serveStart": 154,
+   "order": [
+    "s1",
+    "s2",
+    "s3",
+    "s4",
+    "s8",
+    "s5",
+    "s9",
+    "s6",
+    "s10",
+    "s12",
+    "s13",
+    "s16",
+    "s7",
+    "s14",
+    "s15",
+    "s17",
+    "s19",
+    "s18",
+    "s11",
+    "s20"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     15
+    ],
+    [
+     65,
+     73
+    ],
+    [
+     77,
+     88
+    ],
+    [
+     90,
+     91
+    ],
+    [
+     103,
+     106
+    ],
+    [
+     111,
+     129
+    ],
+    [
+     131,
+     153
+    ],
+    [
+     154,
+     158
+    ]
+   ],
+   "ahead": [
+    "s10",
+    "s12",
+    "s14",
+    "s15",
+    "s16",
+    "s8",
+    "s9"
+   ],
+   "plan": {
+    "s1": {
+     "start": 0,
+     "end": 4,
+     "use": 4,
+     "during": null
+    },
+    "s2": {
+     "start": 4,
+     "end": 14,
+     "use": 14,
+     "during": null
+    },
+    "s3": {
+     "start": 14,
+     "end": 65,
+     "use": 65,
+     "during": null
+    },
+    "s4": {
+     "start": 65,
+     "end": 103,
+     "use": 103,
+     "during": null
+    },
+    "s5": {
+     "start": 87,
+     "end": 103,
+     "use": 103,
+     "during": null
+    },
+    "s6": {
+     "start": 103,
+     "end": 119,
+     "use": 128,
+     "during": null
+    },
+    "s7": {
+     "start": 128,
+     "end": 149,
+     "use": 149,
+     "during": null
+    },
+    "s8": {
+     "start": 77,
+     "end": 87,
+     "use": 90,
+     "during": null
+    },
+    "s9": {
+     "start": 90,
+     "end": 111,
+     "use": 111,
+     "during": null
+    },
+    "s10": {
+     "start": 111,
+     "end": 115,
+     "use": 115,
+     "during": "s6"
+    },
+    "s11": {
+     "start": 152,
+     "end": 158,
+     "use": 158,
+     "during": null
+    },
+    "s12": {
+     "start": 115,
+     "end": 119,
+     "use": 119,
+     "during": "s6"
+    },
+    "s13": {
+     "start": 119,
+     "end": 154,
+     "use": 154,
+     "during": null
+    },
+    "s14": {
+     "start": 131,
+     "end": 134,
+     "use": 154,
+     "during": "s13"
+    },
+    "s15": {
+     "start": 134,
+     "end": 141,
+     "use": 154,
+     "during": "s13"
+    },
+    "s16": {
+     "start": 122,
+     "end": 128,
+     "use": 141,
+     "during": "s13"
+    },
+    "s17": {
+     "start": 141,
+     "end": 149,
+     "use": 151,
+     "during": null
+    },
+    "s18": {
+     "start": 151,
+     "end": 154,
+     "use": 154,
+     "during": null
+    },
+    "s19": {
+     "start": 149,
+     "end": 151,
+     "use": 154,
+     "during": null
+    },
+    "s20": {
+     "start": 154,
+     "end": 158,
+     "use": 158,
+     "during": null
+    }
+   }
+  }
+ },
+ "opus-low/fasit/carbonara.json": {
+  "calm": {
+   "T": 29,
+   "A": 23,
+   "cookStart": 7,
+   "serveStart": 27,
+   "order": [
+    "s2",
+    "s1",
+    "s3",
+    "s4",
+    "s6",
+    "s5",
+    "s8",
+    "s7",
+    "s9",
+    "s10"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     1
+    ],
+    [
+     2,
+     15
+    ],
+    [
+     20,
+     29
+    ]
+   ],
+   "ahead": [
+    "s1"
+   ],
+   "plan": {
+    "s1": {
+     "start": 2,
+     "end": 7,
+     "use": 10,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 13,
+     "use": 13,
+     "during": null
+    },
+    "s3": {
+     "start": 7,
+     "end": 10,
+     "use": 10,
+     "during": null
+    },
+    "s4": {
+     "start": 10,
+     "end": 20,
+     "use": 23,
+     "during": null
+    },
+    "s5": {
+     "start": 20,
+     "end": 23,
+     "use": 24,
+     "during": "s6"
+    },
+    "s6": {
+     "start": 13,
+     "end": 23,
+     "use": 23,
+     "during": null
+    },
+    "s7": {
+     "start": 24,
+     "end": 25,
+     "use": 25,
+     "during": null
+    },
+    "s8": {
+     "start": 23,
+     "end": 24,
+     "use": 25,
+     "during": null
+    },
+    "s9": {
+     "start": 25,
+     "end": 27,
+     "use": 27,
+     "during": null
+    },
+    "s10": {
+     "start": 27,
+     "end": 29,
+     "use": 29,
+     "during": null
+    }
+   }
+  },
+  "prep": {
+   "T": 29,
+   "A": 23,
+   "cookStart": 7,
+   "serveStart": 27,
+   "order": [
+    "s2",
+    "s1",
+    "s3",
+    "s4",
+    "s6",
+    "s5",
+    "s8",
+    "s7",
+    "s9",
+    "s10"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     1
+    ],
+    [
+     2,
+     15
+    ],
+    [
+     20,
+     29
+    ]
+   ],
+   "ahead": [
+    "s1"
+   ],
+   "plan": {
+    "s1": {
+     "start": 2,
+     "end": 7,
+     "use": 10,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 13,
+     "use": 13,
+     "during": null
+    },
+    "s3": {
+     "start": 7,
+     "end": 10,
+     "use": 10,
+     "during": null
+    },
+    "s4": {
+     "start": 10,
+     "end": 20,
+     "use": 23,
+     "during": null
+    },
+    "s5": {
+     "start": 20,
+     "end": 23,
+     "use": 24,
+     "during": "s6"
+    },
+    "s6": {
+     "start": 13,
+     "end": 23,
+     "use": 23,
+     "during": null
+    },
+    "s7": {
+     "start": 24,
+     "end": 25,
+     "use": 25,
+     "during": null
+    },
+    "s8": {
+     "start": 23,
+     "end": 24,
+     "use": 25,
+     "during": null
+    },
+    "s9": {
+     "start": 25,
+     "end": 27,
+     "use": 27,
+     "during": null
+    },
+    "s10": {
+     "start": 27,
+     "end": 29,
+     "use": 29,
+     "during": null
+    }
+   }
+  },
+  "jit": {
+   "T": 29,
+   "A": 23,
+   "cookStart": 7,
+   "serveStart": 27,
+   "order": [
+    "s2",
+    "s1",
+    "s3",
+    "s4",
+    "s6",
+    "s5",
+    "s8",
+    "s7",
+    "s9",
+    "s10"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     1
+    ],
+    [
+     2,
+     15
+    ],
+    [
+     20,
+     29
+    ]
+   ],
+   "ahead": [
+    "s1"
+   ],
+   "plan": {
+    "s1": {
+     "start": 2,
+     "end": 7,
+     "use": 10,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 13,
+     "use": 13,
+     "during": null
+    },
+    "s3": {
+     "start": 7,
+     "end": 10,
+     "use": 10,
+     "during": null
+    },
+    "s4": {
+     "start": 10,
+     "end": 20,
+     "use": 23,
+     "during": null
+    },
+    "s5": {
+     "start": 20,
+     "end": 23,
+     "use": 24,
+     "during": "s6"
+    },
+    "s6": {
+     "start": 13,
+     "end": 23,
+     "use": 23,
+     "during": null
+    },
+    "s7": {
+     "start": 24,
+     "end": 25,
+     "use": 25,
+     "during": null
+    },
+    "s8": {
+     "start": 23,
+     "end": 24,
+     "use": 25,
+     "during": null
+    },
+    "s9": {
+     "start": 25,
+     "end": 27,
+     "use": 27,
+     "during": null
+    },
+    "s10": {
+     "start": 27,
+     "end": 29,
+     "use": 29,
+     "during": null
+    }
+   }
+  }
+ },
+ "opus-low/fasit/lasagne.json": {
+  "calm": {
+   "T": 96,
+   "A": 48,
+   "cookStart": 0,
+   "serveStart": 93,
+   "order": [
+    "s1",
+    "s2",
+    "s3",
+    "s5",
+    "s4",
+    "s6",
+    "s7",
+    "s10",
+    "s8",
+    "s9",
+    "s11",
+    "s12"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     15
+    ],
+    [
+     19,
+     30
+    ],
+    [
+     37,
+     46
+    ],
+    [
+     81,
+     83
+    ],
+    [
+     85,
+     96
+    ]
+   ],
+   "ahead": [
+    "s10",
+    "s9"
+   ],
+   "plan": {
+    "s1": {
+     "start": 0,
+     "end": 5,
+     "use": 5,
+     "during": null
+    },
+    "s2": {
+     "start": 5,
+     "end": 11,
+     "use": 11,
+     "during": null
+    },
+    "s3": {
+     "start": 11,
+     "end": 37,
+     "use": 37,
+     "during": null
+    },
+    "s4": {
+     "start": 29,
+     "end": 45,
+     "use": 45,
+     "during": null
+    },
+    "s5": {
+     "start": 19,
+     "end": 29,
+     "use": 37,
+     "during": null
+    },
+    "s6": {
+     "start": 37,
+     "end": 45,
+     "use": 45,
+     "during": null
+    },
+    "s7": {
+     "start": 45,
+     "end": 84,
+     "use": 84,
+     "during": null
+    },
+    "s8": {
+     "start": 84,
+     "end": 94,
+     "use": 94,
+     "during": null
+    },
+    "s9": {
+     "start": 85,
+     "end": 93,
+     "use": 93,
+     "during": "s8"
+    },
+    "s10": {
+     "start": 81,
+     "end": 83,
+     "use": 93,
+     "during": "s7"
+    },
+    "s11": {
+     "start": 93,
+     "end": 94,
+     "use": 94,
+     "during": null
+    },
+    "s12": {
+     "start": 94,
+     "end": 96,
+     "use": 96,
+     "during": null
+    }
+   }
+  },
+  "prep": {
+   "T": 98,
+   "A": 48,
+   "cookStart": 2,
+   "serveStart": 95,
+   "order": [
+    "s10",
+    "s1",
+    "s2",
+    "s3",
+    "s5",
+    "s4",
+    "s6",
+    "s7",
+    "s8",
+    "s9",
+    "s11",
+    "s12"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     17
+    ],
+    [
+     21,
+     32
+    ],
+    [
+     39,
+     48
+    ],
+    [
+     87,
+     98
+    ]
+   ],
+   "ahead": [
+    "s10",
+    "s9"
+   ],
+   "plan": {
+    "s1": {
+     "start": 2,
+     "end": 7,
+     "use": 7,
+     "during": null
+    },
+    "s2": {
+     "start": 7,
+     "end": 13,
+     "use": 13,
+     "during": null
+    },
+    "s3": {
+     "start": 13,
+     "end": 39,
+     "use": 39,
+     "during": null
+    },
+    "s4": {
+     "start": 31,
+     "end": 47,
+     "use": 47,
+     "during": null
+    },
+    "s5": {
+     "start": 21,
+     "end": 31,
+     "use": 39,
+     "during": null
+    },
+    "s6": {
+     "start": 39,
+     "end": 47,
+     "use": 47,
+     "during": null
+    },
+    "s7": {
+     "start": 47,
+     "end": 86,
+     "use": 86,
+     "during": null
+    },
+    "s8": {
+     "start": 86,
+     "end": 96,
+     "use": 96,
+     "during": null
+    },
+    "s9": {
+     "start": 87,
+     "end": 95,
+     "use": 95,
+     "during": "s8"
+    },
+    "s10": {
+     "start": 0,
+     "end": 2,
+     "use": 95,
+     "during": null
+    },
+    "s11": {
+     "start": 95,
+     "end": 96,
+     "use": 96,
+     "during": null
+    },
+    "s12": {
+     "start": 96,
+     "end": 98,
+     "use": 98,
+     "during": null
+    }
+   }
+  },
+  "jit": {
+   "T": 96,
+   "A": 48,
+   "cookStart": 0,
+   "serveStart": 93,
+   "order": [
+    "s1",
+    "s2",
+    "s3",
+    "s5",
+    "s4",
+    "s6",
+    "s7",
+    "s10",
+    "s8",
+    "s9",
+    "s11",
+    "s12"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     15
+    ],
+    [
+     19,
+     30
+    ],
+    [
+     37,
+     46
+    ],
+    [
+     83,
+     96
+    ]
+   ],
+   "ahead": [
+    "s10",
+    "s9"
+   ],
+   "plan": {
+    "s1": {
+     "start": 0,
+     "end": 5,
+     "use": 5,
+     "during": null
+    },
+    "s2": {
+     "start": 5,
+     "end": 11,
+     "use": 11,
+     "during": null
+    },
+    "s3": {
+     "start": 11,
+     "end": 37,
+     "use": 37,
+     "during": null
+    },
+    "s4": {
+     "start": 29,
+     "end": 45,
+     "use": 45,
+     "during": null
+    },
+    "s5": {
+     "start": 19,
+     "end": 29,
+     "use": 37,
+     "during": null
+    },
+    "s6": {
+     "start": 37,
+     "end": 45,
+     "use": 45,
+     "during": null
+    },
+    "s7": {
+     "start": 45,
+     "end": 84,
+     "use": 84,
+     "during": null
+    },
+    "s8": {
+     "start": 84,
+     "end": 94,
+     "use": 94,
+     "during": null
+    },
+    "s9": {
+     "start": 85,
+     "end": 93,
+     "use": 93,
+     "during": "s8"
+    },
+    "s10": {
+     "start": 83,
+     "end": 85,
+     "use": 93,
+     "during": "s7"
+    },
+    "s11": {
+     "start": 93,
+     "end": 94,
+     "use": 94,
+     "during": null
+    },
+    "s12": {
+     "start": 94,
+     "end": 96,
+     "use": 96,
+     "during": null
+    }
+   }
+  }
+ },
+ "opus-low/fasit/tikka.json": {
+  "calm": {
+   "T": 278,
+   "A": 49,
+   "cookStart": 224,
+   "serveStart": 274,
+   "order": [
+    "s1",
+    "s2",
+    "s5",
+    "s9",
+    "s3",
+    "s10",
+    "s11",
+    "s6",
+    "s12",
+    "s7",
+    "s4",
+    "s8",
+    "s13",
+    "s14",
+    "s15",
+    "s16",
+    "s17"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     11
+    ],
+    [
+     221,
+     238
+    ],
+    [
+     239,
+     244
+    ],
+    [
+     245,
+     247
+    ],
+    [
+     249,
+     254
+    ],
+    [
+     262,
+     266
+    ],
+    [
+     269,
+     270
+    ],
+    [
+     274,
+     278
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s2",
+    "s5"
+   ],
+   "plan": {
+    "s1": {
+     "start": 0,
+     "end": 5,
+     "use": 5,
+     "during": null
+    },
+    "s2": {
+     "start": 5,
+     "end": 251,
+     "use": 251,
+     "during": null
+    },
+    "s3": {
+     "start": 236,
+     "end": 251,
+     "use": 251,
+     "during": null
+    },
+    "s4": {
+     "start": 251,
+     "end": 269,
+     "use": 269,
+     "during": null
+    },
+    "s5": {
+     "start": 221,
+     "end": 224,
+     "use": 249,
+     "during": null
+    },
+    "s6": {
+     "start": 243,
+     "end": 249,
+     "use": 249,
+     "during": null
+    },
+    "s7": {
+     "start": 249,
+     "end": 262,
+     "use": 262,
+     "during": null
+    },
+    "s8": {
+     "start": 262,
+     "end": 274,
+     "use": 274,
+     "during": null
+    },
+    "s9": {
+     "start": 224,
+     "end": 236,
+     "use": 239,
+     "during": null
+    },
+    "s10": {
+     "start": 239,
+     "end": 241,
+     "use": 241,
+     "during": null
+    },
+    "s11": {
+     "start": 241,
+     "end": 243,
+     "use": 245,
+     "during": null
+    },
+    "s12": {
+     "start": 245,
+     "end": 262,
+     "use": 262,
+     "during": null
+    },
+    "s13": {
+     "start": 262,
+     "end": 264,
+     "use": 264,
+     "during": null
+    },
+    "s14": {
+     "start": 264,
+     "end": 269,
+     "use": 269,
+     "during": null
+    },
+    "s15": {
+     "start": 269,
+     "end": 275,
+     "use": 275,
+     "during": null
+    },
+    "s16": {
+     "start": 274,
+     "end": 275,
+     "use": 275,
+     "during": null
+    },
+    "s17": {
+     "start": 275,
+     "end": 278,
+     "use": 278,
+     "during": null
+    }
+   }
+  },
+  "prep": {
+   "T": 278,
+   "A": 49,
+   "cookStart": 224,
+   "serveStart": 274,
+   "order": [
+    "s1",
+    "s2",
+    "s5",
+    "s9",
+    "s3",
+    "s10",
+    "s11",
+    "s6",
+    "s12",
+    "s7",
+    "s4",
+    "s8",
+    "s13",
+    "s14",
+    "s15",
+    "s16",
+    "s17"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     11
+    ],
+    [
+     221,
+     238
+    ],
+    [
+     239,
+     244
+    ],
+    [
+     245,
+     247
+    ],
+    [
+     249,
+     254
+    ],
+    [
+     262,
+     266
+    ],
+    [
+     269,
+     270
+    ],
+    [
+     274,
+     278
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s2",
+    "s5"
+   ],
+   "plan": {
+    "s1": {
+     "start": 0,
+     "end": 5,
+     "use": 5,
+     "during": null
+    },
+    "s2": {
+     "start": 5,
+     "end": 251,
+     "use": 251,
+     "during": null
+    },
+    "s3": {
+     "start": 236,
+     "end": 251,
+     "use": 251,
+     "during": null
+    },
+    "s4": {
+     "start": 251,
+     "end": 269,
+     "use": 269,
+     "during": null
+    },
+    "s5": {
+     "start": 221,
+     "end": 224,
+     "use": 249,
+     "during": null
+    },
+    "s6": {
+     "start": 243,
+     "end": 249,
+     "use": 249,
+     "during": null
+    },
+    "s7": {
+     "start": 249,
+     "end": 262,
+     "use": 262,
+     "during": null
+    },
+    "s8": {
+     "start": 262,
+     "end": 274,
+     "use": 274,
+     "during": null
+    },
+    "s9": {
+     "start": 224,
+     "end": 236,
+     "use": 239,
+     "during": null
+    },
+    "s10": {
+     "start": 239,
+     "end": 241,
+     "use": 241,
+     "during": null
+    },
+    "s11": {
+     "start": 241,
+     "end": 243,
+     "use": 245,
+     "during": null
+    },
+    "s12": {
+     "start": 245,
+     "end": 262,
+     "use": 262,
+     "during": null
+    },
+    "s13": {
+     "start": 262,
+     "end": 264,
+     "use": 264,
+     "during": null
+    },
+    "s14": {
+     "start": 264,
+     "end": 269,
+     "use": 269,
+     "during": null
+    },
+    "s15": {
+     "start": 269,
+     "end": 275,
+     "use": 275,
+     "during": null
+    },
+    "s16": {
+     "start": 274,
+     "end": 275,
+     "use": 275,
+     "during": null
+    },
+    "s17": {
+     "start": 275,
+     "end": 278,
+     "use": 278,
+     "during": null
+    }
+   }
+  },
+  "jit": {
+   "T": 278,
+   "A": 49,
+   "cookStart": 224,
+   "serveStart": 274,
+   "order": [
+    "s1",
+    "s2",
+    "s5",
+    "s9",
+    "s3",
+    "s10",
+    "s11",
+    "s6",
+    "s12",
+    "s7",
+    "s4",
+    "s8",
+    "s13",
+    "s14",
+    "s15",
+    "s16",
+    "s17"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     11
+    ],
+    [
+     221,
+     238
+    ],
+    [
+     239,
+     244
+    ],
+    [
+     245,
+     247
+    ],
+    [
+     249,
+     254
+    ],
+    [
+     262,
+     266
+    ],
+    [
+     269,
+     270
+    ],
+    [
+     274,
+     278
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s2",
+    "s5"
+   ],
+   "plan": {
+    "s1": {
+     "start": 0,
+     "end": 5,
+     "use": 5,
+     "during": null
+    },
+    "s2": {
+     "start": 5,
+     "end": 251,
+     "use": 251,
+     "during": null
+    },
+    "s3": {
+     "start": 236,
+     "end": 251,
+     "use": 251,
+     "during": null
+    },
+    "s4": {
+     "start": 251,
+     "end": 269,
+     "use": 269,
+     "during": null
+    },
+    "s5": {
+     "start": 221,
+     "end": 224,
+     "use": 249,
+     "during": null
+    },
+    "s6": {
+     "start": 243,
+     "end": 249,
+     "use": 249,
+     "during": null
+    },
+    "s7": {
+     "start": 249,
+     "end": 262,
+     "use": 262,
+     "during": null
+    },
+    "s8": {
+     "start": 262,
+     "end": 274,
+     "use": 274,
+     "during": null
+    },
+    "s9": {
+     "start": 224,
+     "end": 236,
+     "use": 239,
+     "during": null
+    },
+    "s10": {
+     "start": 239,
+     "end": 241,
+     "use": 241,
+     "during": null
+    },
+    "s11": {
+     "start": 241,
+     "end": 243,
+     "use": 245,
+     "during": null
+    },
+    "s12": {
+     "start": 245,
+     "end": 262,
+     "use": 262,
+     "during": null
+    },
+    "s13": {
+     "start": 262,
+     "end": 264,
+     "use": 264,
+     "during": null
+    },
+    "s14": {
+     "start": 264,
+     "end": 269,
+     "use": 269,
+     "during": null
+    },
+    "s15": {
+     "start": 269,
+     "end": 275,
+     "use": 275,
+     "during": null
+    },
+    "s16": {
+     "start": 274,
+     "end": 275,
+     "use": 275,
+     "during": null
+    },
+    "s17": {
+     "start": 275,
+     "end": 278,
+     "use": 278,
+     "during": null
+    }
+   }
+  }
+ },
+ "opus-low/db/db-126.json": {
+  "calm": {
+   "T": 36,
+   "A": 23,
+   "cookStart": 5,
+   "serveStart": 33,
+   "order": [
+    "s1",
+    "s2",
+    "s3",
+    "s4",
+    "s5"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     10
+    ],
+    [
+     19,
+     24
+    ],
+    [
+     26,
+     31
+    ],
+    [
+     33,
+     36
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s3",
+    "s4"
+   ],
+   "plan": {
+    "s1": {
+     "start": 0,
+     "end": 5,
+     "use": 5,
+     "during": null
+    },
+    "s2": {
+     "start": 5,
+     "end": 33,
+     "use": 33,
+     "during": null
+    },
+    "s3": {
+     "start": 19,
+     "end": 24,
+     "use": 26,
+     "during": "s2"
+    },
+    "s4": {
+     "start": 26,
+     "end": 31,
+     "use": 33,
+     "during": "s2"
+    },
+    "s5": {
+     "start": 33,
+     "end": 36,
+     "use": 36,
+     "during": null
+    }
+   }
+  },
+  "prep": {
+   "T": 46,
+   "A": 23,
+   "cookStart": 15,
+   "serveStart": 43,
+   "order": [
+    "s3",
+    "s1",
+    "s4",
+    "s2",
+    "s5"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     20
+    ],
+    [
+     43,
+     46
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s3",
+    "s4"
+   ],
+   "plan": {
+    "s1": {
+     "start": 5,
+     "end": 10,
+     "use": 15,
+     "during": null
+    },
+    "s2": {
+     "start": 15,
+     "end": 43,
+     "use": 43,
+     "during": null
+    },
+    "s3": {
+     "start": 0,
+     "end": 5,
+     "use": 10,
+     "during": null
+    },
+    "s4": {
+     "start": 10,
+     "end": 15,
+     "use": 43,
+     "during": null
+    },
+    "s5": {
+     "start": 43,
+     "end": 46,
+     "use": 46,
+     "during": null
+    }
+   }
+  },
+  "jit": {
+   "T": 36,
+   "A": 23,
+   "cookStart": 5,
+   "serveStart": 33,
+   "order": [
+    "s1",
+    "s2",
+    "s3",
+    "s4",
+    "s5"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     10
+    ],
+    [
+     23,
+     36
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s3",
+    "s4"
+   ],
+   "plan": {
+    "s1": {
+     "start": 0,
+     "end": 5,
+     "use": 5,
+     "during": null
+    },
+    "s2": {
+     "start": 5,
+     "end": 33,
+     "use": 33,
+     "during": null
+    },
+    "s3": {
+     "start": 23,
+     "end": 28,
+     "use": 28,
+     "during": "s2"
+    },
+    "s4": {
+     "start": 28,
+     "end": 33,
+     "use": 33,
+     "during": "s2"
+    },
+    "s5": {
+     "start": 33,
+     "end": 36,
+     "use": 36,
+     "during": null
+    }
+   }
+  }
+ },
+ "opus-low/db/db-151.json": {
+  "calm": {
+   "T": 57,
+   "A": 43,
+   "cookStart": 40,
+   "serveStart": 51,
+   "order": [
+    "s1",
+    "s2",
+    "s3",
+    "s9",
+    "s7",
+    "s8",
+    "s10",
+    "s11",
+    "s12",
+    "s4",
+    "s5",
+    "s6",
+    "s13",
+    "s14"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     10
+    ],
+    [
+     20,
+     36
+    ],
+    [
+     40,
+     57
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s10",
+    "s11",
+    "s12",
+    "s2",
+    "s3",
+    "s7",
+    "s8",
+    "s9"
+   ],
+   "plan": {
+    "s1": {
+     "start": 0,
+     "end": 3,
+     "use": 8,
+     "during": null
+    },
+    "s2": {
+     "start": 3,
+     "end": 8,
+     "use": 8,
+     "during": null
+    },
+    "s3": {
+     "start": 8,
+     "end": 40,
+     "use": 40,
+     "during": null
+    },
+    "s4": {
+     "start": 35,
+     "end": 40,
+     "use": 40,
+     "during": null
+    },
+    "s5": {
+     "start": 40,
+     "end": 47,
+     "use": 47,
+     "during": null
+    },
+    "s6": {
+     "start": 47,
+     "end": 51,
+     "use": 51,
+     "during": null
+    },
+    "s7": {
+     "start": 22,
+     "end": 24,
+     "use": 24,
+     "during": null
+    },
+    "s8": {
+     "start": 24,
+     "end": 26,
+     "use": 26,
+     "during": null
+    },
+    "s9": {
+     "start": 20,
+     "end": 22,
+     "use": 26,
+     "during": null
+    },
+    "s10": {
+     "start": 26,
+     "end": 29,
+     "use": 29,
+     "during": null
+    },
+    "s11": {
+     "start": 29,
+     "end": 51,
+     "use": 51,
+     "during": null
+    },
+    "s12": {
+     "start": 29,
+     "end": 35,
+     "use": 51,
+     "during": null
+    },
+    "s13": {
+     "start": 47,
+     "end": 51,
+     "use": 51,
+     "during": null
+    },
+    "s14": {
+     "start": 51,
+     "end": 57,
+     "use": 57,
+     "during": null
+    }
+   }
+  },
+  "prep": {
+   "T": 57,
+   "A": 43,
+   "cookStart": 40,
+   "serveStart": 51,
+   "order": [
+    "s1",
+    "s2",
+    "s3",
+    "s9",
+    "s7",
+    "s8",
+    "s10",
+    "s11",
+    "s12",
+    "s4",
+    "s5",
+    "s6",
+    "s13",
+    "s14"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     10
+    ],
+    [
+     20,
+     36
+    ],
+    [
+     40,
+     57
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s10",
+    "s11",
+    "s12",
+    "s2",
+    "s3",
+    "s7",
+    "s8",
+    "s9"
+   ],
+   "plan": {
+    "s1": {
+     "start": 0,
+     "end": 3,
+     "use": 8,
+     "during": null
+    },
+    "s2": {
+     "start": 3,
+     "end": 8,
+     "use": 8,
+     "during": null
+    },
+    "s3": {
+     "start": 8,
+     "end": 40,
+     "use": 40,
+     "during": null
+    },
+    "s4": {
+     "start": 35,
+     "end": 40,
+     "use": 40,
+     "during": null
+    },
+    "s5": {
+     "start": 40,
+     "end": 47,
+     "use": 47,
+     "during": null
+    },
+    "s6": {
+     "start": 47,
+     "end": 51,
+     "use": 51,
+     "during": null
+    },
+    "s7": {
+     "start": 22,
+     "end": 24,
+     "use": 24,
+     "during": null
+    },
+    "s8": {
+     "start": 24,
+     "end": 26,
+     "use": 26,
+     "during": null
+    },
+    "s9": {
+     "start": 20,
+     "end": 22,
+     "use": 26,
+     "during": null
+    },
+    "s10": {
+     "start": 26,
+     "end": 29,
+     "use": 29,
+     "during": null
+    },
+    "s11": {
+     "start": 29,
+     "end": 51,
+     "use": 51,
+     "during": null
+    },
+    "s12": {
+     "start": 29,
+     "end": 35,
+     "use": 51,
+     "during": null
+    },
+    "s13": {
+     "start": 47,
+     "end": 51,
+     "use": 51,
+     "during": null
+    },
+    "s14": {
+     "start": 51,
+     "end": 57,
+     "use": 57,
+     "during": null
+    }
+   }
+  },
+  "jit": {
+   "T": 57,
+   "A": 43,
+   "cookStart": 40,
+   "serveStart": 51,
+   "order": [
+    "s1",
+    "s2",
+    "s3",
+    "s9",
+    "s7",
+    "s8",
+    "s10",
+    "s11",
+    "s12",
+    "s4",
+    "s5",
+    "s6",
+    "s13",
+    "s14"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     10
+    ],
+    [
+     20,
+     36
+    ],
+    [
+     40,
+     57
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s10",
+    "s11",
+    "s12",
+    "s2",
+    "s3",
+    "s7",
+    "s8",
+    "s9"
+   ],
+   "plan": {
+    "s1": {
+     "start": 0,
+     "end": 3,
+     "use": 8,
+     "during": null
+    },
+    "s2": {
+     "start": 3,
+     "end": 8,
+     "use": 8,
+     "during": null
+    },
+    "s3": {
+     "start": 8,
+     "end": 40,
+     "use": 40,
+     "during": null
+    },
+    "s4": {
+     "start": 35,
+     "end": 40,
+     "use": 40,
+     "during": null
+    },
+    "s5": {
+     "start": 40,
+     "end": 47,
+     "use": 47,
+     "during": null
+    },
+    "s6": {
+     "start": 47,
+     "end": 51,
+     "use": 51,
+     "during": null
+    },
+    "s7": {
+     "start": 22,
+     "end": 24,
+     "use": 24,
+     "during": null
+    },
+    "s8": {
+     "start": 24,
+     "end": 26,
+     "use": 26,
+     "during": null
+    },
+    "s9": {
+     "start": 20,
+     "end": 22,
+     "use": 26,
+     "during": null
+    },
+    "s10": {
+     "start": 26,
+     "end": 29,
+     "use": 29,
+     "during": null
+    },
+    "s11": {
+     "start": 29,
+     "end": 51,
+     "use": 51,
+     "during": null
+    },
+    "s12": {
+     "start": 29,
+     "end": 35,
+     "use": 51,
+     "during": null
+    },
+    "s13": {
+     "start": 47,
+     "end": 51,
+     "use": 51,
+     "during": null
+    },
+    "s14": {
+     "start": 51,
+     "end": 57,
+     "use": 57,
+     "during": null
+    }
+   }
+  }
+ },
+ "opus-low/db/db-155.json": {
+  "calm": {
+   "T": 190,
+   "A": 66,
+   "cookStart": 8,
+   "serveStart": 188,
+   "order": [
+    "s2",
+    "s3",
+    "s4",
+    "s5",
+    "s6",
+    "s11",
+    "s8",
+    "s7",
+    "s9",
+    "s10",
+    "s1",
+    "s12",
+    "s13",
+    "s14",
+    "s15"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     26
+    ],
+    [
+     30,
+     35
+    ],
+    [
+     96,
+     99
+    ],
+    [
+     101,
+     106
+    ],
+    [
+     109,
+     120
+    ],
+    [
+     122,
+     123
+    ],
+    [
+     125,
+     138
+    ],
+    [
+     188,
+     190
+    ]
+   ],
+   "ahead": [
+    "s11",
+    "s2"
+   ],
+   "plan": {
+    "s1": {
+     "start": 122,
+     "end": 137,
+     "use": 137,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 8,
+     "use": 8,
+     "during": null
+    },
+    "s3": {
+     "start": 8,
+     "end": 16,
+     "use": 16,
+     "during": null
+    },
+    "s4": {
+     "start": 16,
+     "end": 24,
+     "use": 24,
+     "during": null
+    },
+    "s5": {
+     "start": 24,
+     "end": 30,
+     "use": 30,
+     "during": null
+    },
+    "s6": {
+     "start": 30,
+     "end": 125,
+     "use": 125,
+     "during": null
+    },
+    "s7": {
+     "start": 105,
+     "end": 109,
+     "use": 109,
+     "during": null
+    },
+    "s8": {
+     "start": 101,
+     "end": 105,
+     "use": 109,
+     "during": null
+    },
+    "s9": {
+     "start": 109,
+     "end": 119,
+     "use": 119,
+     "during": null
+    },
+    "s10": {
+     "start": 119,
+     "end": 125,
+     "use": 125,
+     "during": null
+    },
+    "s11": {
+     "start": 96,
+     "end": 99,
+     "use": 125,
+     "during": "s6"
+    },
+    "s12": {
+     "start": 125,
+     "end": 137,
+     "use": 137,
+     "during": null
+    },
+    "s13": {
+     "start": 137,
+     "end": 173,
+     "use": 173,
+     "during": null
+    },
+    "s14": {
+     "start": 173,
+     "end": 188,
+     "use": 188,
+     "during": null
+    },
+    "s15": {
+     "start": 188,
+     "end": 190,
+     "use": 190,
+     "during": null
+    }
+   }
+  },
+  "prep": {
+   "T": 193,
+   "A": 66,
+   "cookStart": 11,
+   "serveStart": 191,
+   "order": [
+    "s11",
+    "s2",
+    "s3",
+    "s4",
+    "s5",
+    "s6",
+    "s8",
+    "s7",
+    "s9",
+    "s10",
+    "s1",
+    "s12",
+    "s13",
+    "s14",
+    "s15"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     29
+    ],
+    [
+     33,
+     38
+    ],
+    [
+     104,
+     109
+    ],
+    [
+     112,
+     123
+    ],
+    [
+     125,
+     126
+    ],
+    [
+     128,
+     141
+    ],
+    [
+     191,
+     193
+    ]
+   ],
+   "ahead": [
+    "s11",
+    "s2"
+   ],
+   "plan": {
+    "s1": {
+     "start": 125,
+     "end": 140,
+     "use": 140,
+     "during": null
+    },
+    "s2": {
+     "start": 3,
+     "end": 11,
+     "use": 11,
+     "during": null
+    },
+    "s3": {
+     "start": 11,
+     "end": 19,
+     "use": 19,
+     "during": null
+    },
+    "s4": {
+     "start": 19,
+     "end": 27,
+     "use": 27,
+     "during": null
+    },
+    "s5": {
+     "start": 27,
+     "end": 33,
+     "use": 33,
+     "during": null
+    },
+    "s6": {
+     "start": 33,
+     "end": 128,
+     "use": 128,
+     "during": null
+    },
+    "s7": {
+     "start": 108,
+     "end": 112,
+     "use": 112,
+     "during": null
+    },
+    "s8": {
+     "start": 104,
+     "end": 108,
+     "use": 112,
+     "during": null
+    },
+    "s9": {
+     "start": 112,
+     "end": 122,
+     "use": 122,
+     "during": null
+    },
+    "s10": {
+     "start": 122,
+     "end": 128,
+     "use": 128,
+     "during": null
+    },
+    "s11": {
+     "start": 0,
+     "end": 3,
+     "use": 128,
+     "during": null
+    },
+    "s12": {
+     "start": 128,
+     "end": 140,
+     "use": 140,
+     "during": null
+    },
+    "s13": {
+     "start": 140,
+     "end": 176,
+     "use": 176,
+     "during": null
+    },
+    "s14": {
+     "start": 176,
+     "end": 191,
+     "use": 191,
+     "during": null
+    },
+    "s15": {
+     "start": 191,
+     "end": 193,
+     "use": 193,
+     "during": null
+    }
+   }
+  },
+  "jit": {
+   "T": 190,
+   "A": 66,
+   "cookStart": 8,
+   "serveStart": 188,
+   "order": [
+    "s2",
+    "s3",
+    "s4",
+    "s5",
+    "s6",
+    "s8",
+    "s7",
+    "s11",
+    "s9",
+    "s10",
+    "s1",
+    "s12",
+    "s13",
+    "s14",
+    "s15"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     26
+    ],
+    [
+     30,
+     35
+    ],
+    [
+     101,
+     120
+    ],
+    [
+     122,
+     123
+    ],
+    [
+     125,
+     138
+    ],
+    [
+     188,
+     190
+    ]
+   ],
+   "ahead": [
+    "s11",
+    "s2"
+   ],
+   "plan": {
+    "s1": {
+     "start": 122,
+     "end": 137,
+     "use": 137,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 8,
+     "use": 8,
+     "during": null
+    },
+    "s3": {
+     "start": 8,
+     "end": 16,
+     "use": 16,
+     "during": null
+    },
+    "s4": {
+     "start": 16,
+     "end": 24,
+     "use": 24,
+     "during": null
+    },
+    "s5": {
+     "start": 24,
+     "end": 30,
+     "use": 30,
+     "during": null
+    },
+    "s6": {
+     "start": 30,
+     "end": 125,
+     "use": 125,
+     "during": null
+    },
+    "s7": {
+     "start": 105,
+     "end": 109,
+     "use": 109,
+     "during": null
+    },
+    "s8": {
+     "start": 101,
+     "end": 105,
+     "use": 109,
+     "during": null
+    },
+    "s9": {
+     "start": 109,
+     "end": 119,
+     "use": 119,
+     "during": null
+    },
+    "s10": {
+     "start": 119,
+     "end": 125,
+     "use": 125,
+     "during": null
+    },
+    "s11": {
+     "start": 106,
+     "end": 109,
+     "use": 125,
+     "during": "s6"
+    },
+    "s12": {
+     "start": 125,
+     "end": 137,
+     "use": 137,
+     "during": null
+    },
+    "s13": {
+     "start": 137,
+     "end": 173,
+     "use": 173,
+     "during": null
+    },
+    "s14": {
+     "start": 173,
+     "end": 188,
+     "use": 188,
+     "during": null
+    },
+    "s15": {
+     "start": 188,
+     "end": 190,
+     "use": 190,
+     "during": null
+    }
+   }
+  }
+ },
+ "opus-low/db/db-165.json": {
+  "calm": {
+   "T": 132,
+   "A": 61,
+   "cookStart": 103,
+   "serveStart": 101,
+   "order": [
+    "s2",
+    "s1",
+    "s3",
+    "s10",
+    "s12",
+    "s11",
+    "s8",
+    "s4",
+    "s14",
+    "s13",
+    "s15",
+    "s5",
+    "s6",
+    "s16",
+    "s9",
+    "s7",
+    "s17"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     13
+    ],
+    [
+     84,
+     132
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s10",
+    "s11",
+    "s12",
+    "s14",
+    "s2",
+    "s3",
+    "s8"
+   ],
+   "plan": {
+    "s1": {
+     "start": 3,
+     "end": 11,
+     "use": 11,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 3,
+     "use": 11,
+     "during": null
+    },
+    "s3": {
+     "start": 11,
+     "end": 103,
+     "use": 103,
+     "during": null
+    },
+    "s4": {
+     "start": 99,
+     "end": 103,
+     "use": 103,
+     "during": null
+    },
+    "s5": {
+     "start": 103,
+     "end": 117,
+     "use": 117,
+     "during": null
+    },
+    "s6": {
+     "start": 117,
+     "end": 127,
+     "use": 127,
+     "during": null
+    },
+    "s7": {
+     "start": 127,
+     "end": 130,
+     "use": 130,
+     "during": null
+    },
+    "s8": {
+     "start": 93,
+     "end": 99,
+     "use": 125,
+     "during": null
+    },
+    "s9": {
+     "start": 125,
+     "end": 127,
+     "use": 130,
+     "during": null
+    },
+    "s10": {
+     "start": 84,
+     "end": 86,
+     "use": 130,
+     "during": null
+    },
+    "s11": {
+     "start": 89,
+     "end": 93,
+     "use": 101,
+     "during": null
+    },
+    "s12": {
+     "start": 86,
+     "end": 89,
+     "use": 101,
+     "during": null
+    },
+    "s13": {
+     "start": 101,
+     "end": 102,
+     "use": 130,
+     "during": null
+    },
+    "s14": {
+     "start": 100,
+     "end": 101,
+     "use": 117,
+     "during": null
+    },
+    "s15": {
+     "start": 102,
+     "end": 106,
+     "use": 117,
+     "during": null
+    },
+    "s16": {
+     "start": 117,
+     "end": 125,
+     "use": 130,
+     "during": null
+    },
+    "s17": {
+     "start": 130,
+     "end": 132,
+     "use": 132,
+     "during": null
+    }
+   }
+  },
+  "prep": {
+   "T": 132,
+   "A": 61,
+   "cookStart": 103,
+   "serveStart": 101,
+   "order": [
+    "s2",
+    "s1",
+    "s3",
+    "s10",
+    "s12",
+    "s11",
+    "s8",
+    "s4",
+    "s14",
+    "s13",
+    "s15",
+    "s5",
+    "s6",
+    "s16",
+    "s9",
+    "s7",
+    "s17"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     13
+    ],
+    [
+     84,
+     132
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s10",
+    "s11",
+    "s12",
+    "s14",
+    "s2",
+    "s3",
+    "s8"
+   ],
+   "plan": {
+    "s1": {
+     "start": 3,
+     "end": 11,
+     "use": 11,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 3,
+     "use": 11,
+     "during": null
+    },
+    "s3": {
+     "start": 11,
+     "end": 103,
+     "use": 103,
+     "during": null
+    },
+    "s4": {
+     "start": 99,
+     "end": 103,
+     "use": 103,
+     "during": null
+    },
+    "s5": {
+     "start": 103,
+     "end": 117,
+     "use": 117,
+     "during": null
+    },
+    "s6": {
+     "start": 117,
+     "end": 127,
+     "use": 127,
+     "during": null
+    },
+    "s7": {
+     "start": 127,
+     "end": 130,
+     "use": 130,
+     "during": null
+    },
+    "s8": {
+     "start": 93,
+     "end": 99,
+     "use": 125,
+     "during": null
+    },
+    "s9": {
+     "start": 125,
+     "end": 127,
+     "use": 130,
+     "during": null
+    },
+    "s10": {
+     "start": 84,
+     "end": 86,
+     "use": 130,
+     "during": null
+    },
+    "s11": {
+     "start": 89,
+     "end": 93,
+     "use": 101,
+     "during": null
+    },
+    "s12": {
+     "start": 86,
+     "end": 89,
+     "use": 101,
+     "during": null
+    },
+    "s13": {
+     "start": 101,
+     "end": 102,
+     "use": 130,
+     "during": null
+    },
+    "s14": {
+     "start": 100,
+     "end": 101,
+     "use": 117,
+     "during": null
+    },
+    "s15": {
+     "start": 102,
+     "end": 106,
+     "use": 117,
+     "during": null
+    },
+    "s16": {
+     "start": 117,
+     "end": 125,
+     "use": 130,
+     "during": null
+    },
+    "s17": {
+     "start": 130,
+     "end": 132,
+     "use": 132,
+     "during": null
+    }
+   }
+  },
+  "jit": {
+   "T": 132,
+   "A": 61,
+   "cookStart": 103,
+   "serveStart": 101,
+   "order": [
+    "s2",
+    "s1",
+    "s3",
+    "s10",
+    "s12",
+    "s11",
+    "s8",
+    "s4",
+    "s14",
+    "s13",
+    "s15",
+    "s5",
+    "s6",
+    "s16",
+    "s9",
+    "s7",
+    "s17"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     13
+    ],
+    [
+     84,
+     132
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s10",
+    "s11",
+    "s12",
+    "s14",
+    "s2",
+    "s3",
+    "s8"
+   ],
+   "plan": {
+    "s1": {
+     "start": 3,
+     "end": 11,
+     "use": 11,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 3,
+     "use": 11,
+     "during": null
+    },
+    "s3": {
+     "start": 11,
+     "end": 103,
+     "use": 103,
+     "during": null
+    },
+    "s4": {
+     "start": 99,
+     "end": 103,
+     "use": 103,
+     "during": null
+    },
+    "s5": {
+     "start": 103,
+     "end": 117,
+     "use": 117,
+     "during": null
+    },
+    "s6": {
+     "start": 117,
+     "end": 127,
+     "use": 127,
+     "during": null
+    },
+    "s7": {
+     "start": 127,
+     "end": 130,
+     "use": 130,
+     "during": null
+    },
+    "s8": {
+     "start": 93,
+     "end": 99,
+     "use": 125,
+     "during": null
+    },
+    "s9": {
+     "start": 125,
+     "end": 127,
+     "use": 130,
+     "during": null
+    },
+    "s10": {
+     "start": 84,
+     "end": 86,
+     "use": 130,
+     "during": null
+    },
+    "s11": {
+     "start": 89,
+     "end": 93,
+     "use": 101,
+     "during": null
+    },
+    "s12": {
+     "start": 86,
+     "end": 89,
+     "use": 101,
+     "during": null
+    },
+    "s13": {
+     "start": 101,
+     "end": 102,
+     "use": 130,
+     "during": null
+    },
+    "s14": {
+     "start": 100,
+     "end": 101,
+     "use": 117,
+     "during": null
+    },
+    "s15": {
+     "start": 102,
+     "end": 106,
+     "use": 117,
+     "during": null
+    },
+    "s16": {
+     "start": 117,
+     "end": 125,
+     "use": 130,
+     "during": null
+    },
+    "s17": {
+     "start": 130,
+     "end": 132,
+     "use": 132,
+     "during": null
+    }
+   }
+  }
+ },
+ "opus-low/db/db-166.json": {
+  "calm": {
+   "T": 75,
+   "A": 42,
+   "cookStart": 13,
+   "serveStart": 73,
+   "order": [
+    "s6",
+    "s2",
+    "s1",
+    "s3",
+    "s7",
+    "s4",
+    "s5",
+    "s11",
+    "s8",
+    "s12",
+    "s9",
+    "s10",
+    "s13",
+    "s14",
+    "s15"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     5
+    ],
+    [
+     8,
+     14
+    ],
+    [
+     17,
+     21
+    ],
+    [
+     24,
+     28
+    ],
+    [
+     31,
+     32
+    ],
+    [
+     34,
+     43
+    ],
+    [
+     45,
+     56
+    ],
+    [
+     73,
+     75
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s11",
+    "s6"
+   ],
+   "plan": {
+    "s1": {
+     "start": 8,
+     "end": 13,
+     "use": 13,
+     "during": null
+    },
+    "s2": {
+     "start": 4,
+     "end": 13,
+     "use": 13,
+     "during": null
+    },
+    "s3": {
+     "start": 13,
+     "end": 24,
+     "use": 24,
+     "during": null
+    },
+    "s4": {
+     "start": 24,
+     "end": 27,
+     "use": 27,
+     "during": null
+    },
+    "s5": {
+     "start": 27,
+     "end": 38,
+     "use": 38,
+     "during": null
+    },
+    "s6": {
+     "start": 0,
+     "end": 4,
+     "use": 17,
+     "during": null
+    },
+    "s7": {
+     "start": 17,
+     "end": 33,
+     "use": 33,
+     "during": null
+    },
+    "s8": {
+     "start": 33,
+     "end": 38,
+     "use": 38,
+     "during": null
+    },
+    "s9": {
+     "start": 38,
+     "end": 42,
+     "use": 45,
+     "during": null
+    },
+    "s10": {
+     "start": 42,
+     "end": 55,
+     "use": 55,
+     "during": null
+    },
+    "s11": {
+     "start": 31,
+     "end": 32,
+     "use": 45,
+     "during": "s7"
+    },
+    "s12": {
+     "start": 34,
+     "end": 38,
+     "use": 45,
+     "during": null
+    },
+    "s13": {
+     "start": 45,
+     "end": 55,
+     "use": 55,
+     "during": null
+    },
+    "s14": {
+     "start": 55,
+     "end": 73,
+     "use": 73,
+     "during": null
+    },
+    "s15": {
+     "start": 73,
+     "end": 75,
+     "use": 75,
+     "during": null
+    }
+   }
+  },
+  "prep": {
+   "T": 75,
+   "A": 42,
+   "cookStart": 13,
+   "serveStart": 73,
+   "order": [
+    "s6",
+    "s2",
+    "s11",
+    "s1",
+    "s3",
+    "s7",
+    "s4",
+    "s5",
+    "s8",
+    "s12",
+    "s9",
+    "s10",
+    "s13",
+    "s14",
+    "s15"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     5
+    ],
+    [
+     7,
+     14
+    ],
+    [
+     17,
+     21
+    ],
+    [
+     24,
+     28
+    ],
+    [
+     34,
+     43
+    ],
+    [
+     45,
+     56
+    ],
+    [
+     73,
+     75
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s11",
+    "s6"
+   ],
+   "plan": {
+    "s1": {
+     "start": 8,
+     "end": 13,
+     "use": 13,
+     "during": null
+    },
+    "s2": {
+     "start": 4,
+     "end": 13,
+     "use": 13,
+     "during": null
+    },
+    "s3": {
+     "start": 13,
+     "end": 24,
+     "use": 24,
+     "during": null
+    },
+    "s4": {
+     "start": 24,
+     "end": 27,
+     "use": 27,
+     "during": null
+    },
+    "s5": {
+     "start": 27,
+     "end": 38,
+     "use": 38,
+     "during": null
+    },
+    "s6": {
+     "start": 0,
+     "end": 4,
+     "use": 17,
+     "during": null
+    },
+    "s7": {
+     "start": 17,
+     "end": 33,
+     "use": 33,
+     "during": null
+    },
+    "s8": {
+     "start": 33,
+     "end": 38,
+     "use": 38,
+     "during": null
+    },
+    "s9": {
+     "start": 38,
+     "end": 42,
+     "use": 45,
+     "during": null
+    },
+    "s10": {
+     "start": 42,
+     "end": 55,
+     "use": 55,
+     "during": null
+    },
+    "s11": {
+     "start": 7,
+     "end": 8,
+     "use": 45,
+     "during": null
+    },
+    "s12": {
+     "start": 34,
+     "end": 38,
+     "use": 45,
+     "during": null
+    },
+    "s13": {
+     "start": 45,
+     "end": 55,
+     "use": 55,
+     "during": null
+    },
+    "s14": {
+     "start": 55,
+     "end": 73,
+     "use": 73,
+     "during": null
+    },
+    "s15": {
+     "start": 73,
+     "end": 75,
+     "use": 75,
+     "during": null
+    }
+   }
+  },
+  "jit": {
+   "T": 75,
+   "A": 42,
+   "cookStart": 13,
+   "serveStart": 73,
+   "order": [
+    "s6",
+    "s2",
+    "s1",
+    "s3",
+    "s7",
+    "s4",
+    "s5",
+    "s8",
+    "s12",
+    "s9",
+    "s10",
+    "s11",
+    "s13",
+    "s14",
+    "s15"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     5
+    ],
+    [
+     8,
+     14
+    ],
+    [
+     17,
+     21
+    ],
+    [
+     24,
+     28
+    ],
+    [
+     34,
+     43
+    ],
+    [
+     44,
+     56
+    ],
+    [
+     73,
+     75
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s11",
+    "s6"
+   ],
+   "plan": {
+    "s1": {
+     "start": 8,
+     "end": 13,
+     "use": 13,
+     "during": null
+    },
+    "s2": {
+     "start": 4,
+     "end": 13,
+     "use": 13,
+     "during": null
+    },
+    "s3": {
+     "start": 13,
+     "end": 24,
+     "use": 24,
+     "during": null
+    },
+    "s4": {
+     "start": 24,
+     "end": 27,
+     "use": 27,
+     "during": null
+    },
+    "s5": {
+     "start": 27,
+     "end": 38,
+     "use": 38,
+     "during": null
+    },
+    "s6": {
+     "start": 0,
+     "end": 4,
+     "use": 17,
+     "during": null
+    },
+    "s7": {
+     "start": 17,
+     "end": 33,
+     "use": 33,
+     "during": null
+    },
+    "s8": {
+     "start": 33,
+     "end": 38,
+     "use": 38,
+     "during": null
+    },
+    "s9": {
+     "start": 38,
+     "end": 42,
+     "use": 45,
+     "during": null
+    },
+    "s10": {
+     "start": 42,
+     "end": 55,
+     "use": 55,
+     "during": null
+    },
+    "s11": {
+     "start": 44,
+     "end": 45,
+     "use": 45,
+     "during": null
+    },
+    "s12": {
+     "start": 34,
+     "end": 38,
+     "use": 45,
+     "during": null
+    },
+    "s13": {
+     "start": 45,
+     "end": 55,
+     "use": 55,
+     "during": null
+    },
+    "s14": {
+     "start": 55,
+     "end": 73,
+     "use": 73,
+     "during": null
+    },
+    "s15": {
+     "start": 73,
+     "end": 75,
+     "use": 75,
+     "during": null
+    }
+   }
+  }
+ },
+ "opus-low/db/db-177.json": {
+  "calm": {
+   "T": 26,
+   "A": 19,
+   "cookStart": 13,
+   "serveStart": 24,
+   "order": [
+    "s2",
+    "s8",
+    "s1",
+    "s4",
+    "s9",
+    "s10",
+    "s3",
+    "s5",
+    "s6",
+    "s7",
+    "s11",
+    "s12"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     14
+    ],
+    [
+     18,
+     19
+    ],
+    [
+     22,
+     26
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s10",
+    "s2",
+    "s3",
+    "s8",
+    "s9"
+   ],
+   "plan": {
+    "s1": {
+     "start": 4,
+     "end": 8,
+     "use": 12,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 1,
+     "use": 12,
+     "during": null
+    },
+    "s3": {
+     "start": 12,
+     "end": 13,
+     "use": 13,
+     "during": null
+    },
+    "s4": {
+     "start": 8,
+     "end": 13,
+     "use": 13,
+     "during": null
+    },
+    "s5": {
+     "start": 13,
+     "end": 18,
+     "use": 18,
+     "during": null
+    },
+    "s6": {
+     "start": 18,
+     "end": 22,
+     "use": 22,
+     "during": null
+    },
+    "s7": {
+     "start": 22,
+     "end": 24,
+     "use": 24,
+     "during": null
+    },
+    "s8": {
+     "start": 1,
+     "end": 4,
+     "use": 11,
+     "during": null
+    },
+    "s9": {
+     "start": 9,
+     "end": 11,
+     "use": 24,
+     "during": null
+    },
+    "s10": {
+     "start": 11,
+     "end": 12,
+     "use": 22,
+     "during": null
+    },
+    "s11": {
+     "start": 22,
+     "end": 24,
+     "use": 24,
+     "during": null
+    },
+    "s12": {
+     "start": 24,
+     "end": 26,
+     "use": 26,
+     "during": null
+    }
+   }
+  },
+  "prep": {
+   "T": 26,
+   "A": 19,
+   "cookStart": 13,
+   "serveStart": 24,
+   "order": [
+    "s2",
+    "s8",
+    "s1",
+    "s4",
+    "s9",
+    "s10",
+    "s3",
+    "s5",
+    "s6",
+    "s7",
+    "s11",
+    "s12"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     14
+    ],
+    [
+     18,
+     19
+    ],
+    [
+     22,
+     26
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s10",
+    "s2",
+    "s3",
+    "s8",
+    "s9"
+   ],
+   "plan": {
+    "s1": {
+     "start": 4,
+     "end": 8,
+     "use": 12,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 1,
+     "use": 12,
+     "during": null
+    },
+    "s3": {
+     "start": 12,
+     "end": 13,
+     "use": 13,
+     "during": null
+    },
+    "s4": {
+     "start": 8,
+     "end": 13,
+     "use": 13,
+     "during": null
+    },
+    "s5": {
+     "start": 13,
+     "end": 18,
+     "use": 18,
+     "during": null
+    },
+    "s6": {
+     "start": 18,
+     "end": 22,
+     "use": 22,
+     "during": null
+    },
+    "s7": {
+     "start": 22,
+     "end": 24,
+     "use": 24,
+     "during": null
+    },
+    "s8": {
+     "start": 1,
+     "end": 4,
+     "use": 11,
+     "during": null
+    },
+    "s9": {
+     "start": 9,
+     "end": 11,
+     "use": 24,
+     "during": null
+    },
+    "s10": {
+     "start": 11,
+     "end": 12,
+     "use": 22,
+     "during": null
+    },
+    "s11": {
+     "start": 22,
+     "end": 24,
+     "use": 24,
+     "during": null
+    },
+    "s12": {
+     "start": 24,
+     "end": 26,
+     "use": 26,
+     "during": null
+    }
+   }
+  },
+  "jit": {
+   "T": 22,
+   "A": 19,
+   "cookStart": 9,
+   "serveStart": 20,
+   "order": [
+    "s1",
+    "s4",
+    "s2",
+    "s3",
+    "s5",
+    "s8",
+    "s6",
+    "s9",
+    "s10",
+    "s7",
+    "s11",
+    "s12"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     5
+    ],
+    [
+     7,
+     10
+    ],
+    [
+     11,
+     22
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s10",
+    "s2",
+    "s3",
+    "s8",
+    "s9"
+   ],
+   "plan": {
+    "s1": {
+     "start": 0,
+     "end": 4,
+     "use": 8,
+     "during": null
+    },
+    "s2": {
+     "start": 7,
+     "end": 8,
+     "use": 8,
+     "during": null
+    },
+    "s3": {
+     "start": 8,
+     "end": 9,
+     "use": 9,
+     "during": null
+    },
+    "s4": {
+     "start": 4,
+     "end": 9,
+     "use": 9,
+     "during": null
+    },
+    "s5": {
+     "start": 9,
+     "end": 14,
+     "use": 14,
+     "during": null
+    },
+    "s6": {
+     "start": 14,
+     "end": 18,
+     "use": 18,
+     "during": null
+    },
+    "s7": {
+     "start": 18,
+     "end": 20,
+     "use": 20,
+     "during": null
+    },
+    "s8": {
+     "start": 11,
+     "end": 14,
+     "use": 17,
+     "during": null
+    },
+    "s9": {
+     "start": 15,
+     "end": 17,
+     "use": 20,
+     "during": null
+    },
+    "s10": {
+     "start": 17,
+     "end": 18,
+     "use": 18,
+     "during": null
+    },
+    "s11": {
+     "start": 18,
+     "end": 20,
+     "use": 20,
+     "during": null
+    },
+    "s12": {
+     "start": 20,
+     "end": 22,
+     "use": 22,
+     "during": null
+    }
+   }
+  }
+ },
+ "opus-low/db/db-178.json": {
+  "calm": {
+   "T": 42,
+   "A": 27,
+   "cookStart": 13,
+   "serveStart": 40,
+   "order": [
+    "s4",
+    "s2",
+    "s1",
+    "s3",
+    "s5",
+    "s7",
+    "s8",
+    "s9",
+    "s10",
+    "s6",
+    "s11"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     1
+    ],
+    [
+     2,
+     19
+    ],
+    [
+     30,
+     36
+    ],
+    [
+     37,
+     38
+    ],
+    [
+     40,
+     42
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s2",
+    "s3"
+   ],
+   "plan": {
+    "s1": {
+     "start": 4,
+     "end": 9,
+     "use": 9,
+     "during": null
+    },
+    "s2": {
+     "start": 2,
+     "end": 4,
+     "use": 9,
+     "during": null
+    },
+    "s3": {
+     "start": 9,
+     "end": 13,
+     "use": 13,
+     "during": null
+    },
+    "s4": {
+     "start": 0,
+     "end": 13,
+     "use": 13,
+     "during": null
+    },
+    "s5": {
+     "start": 13,
+     "end": 37,
+     "use": 37,
+     "during": null
+    },
+    "s6": {
+     "start": 37,
+     "end": 40,
+     "use": 40,
+     "during": null
+    },
+    "s7": {
+     "start": 30,
+     "end": 33,
+     "use": 33,
+     "during": null
+    },
+    "s8": {
+     "start": 33,
+     "end": 34,
+     "use": 34,
+     "during": null
+    },
+    "s9": {
+     "start": 34,
+     "end": 35,
+     "use": 35,
+     "during": null
+    },
+    "s10": {
+     "start": 35,
+     "end": 40,
+     "use": 40,
+     "during": null
+    },
+    "s11": {
+     "start": 40,
+     "end": 42,
+     "use": 42,
+     "during": null
+    }
+   }
+  },
+  "prep": {
+   "T": 42,
+   "A": 27,
+   "cookStart": 13,
+   "serveStart": 40,
+   "order": [
+    "s4",
+    "s2",
+    "s1",
+    "s3",
+    "s5",
+    "s7",
+    "s8",
+    "s9",
+    "s10",
+    "s6",
+    "s11"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     1
+    ],
+    [
+     2,
+     19
+    ],
+    [
+     30,
+     36
+    ],
+    [
+     37,
+     38
+    ],
+    [
+     40,
+     42
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s2",
+    "s3"
+   ],
+   "plan": {
+    "s1": {
+     "start": 4,
+     "end": 9,
+     "use": 9,
+     "during": null
+    },
+    "s2": {
+     "start": 2,
+     "end": 4,
+     "use": 9,
+     "during": null
+    },
+    "s3": {
+     "start": 9,
+     "end": 13,
+     "use": 13,
+     "during": null
+    },
+    "s4": {
+     "start": 0,
+     "end": 13,
+     "use": 13,
+     "during": null
+    },
+    "s5": {
+     "start": 13,
+     "end": 37,
+     "use": 37,
+     "during": null
+    },
+    "s6": {
+     "start": 37,
+     "end": 40,
+     "use": 40,
+     "during": null
+    },
+    "s7": {
+     "start": 30,
+     "end": 33,
+     "use": 33,
+     "during": null
+    },
+    "s8": {
+     "start": 33,
+     "end": 34,
+     "use": 34,
+     "during": null
+    },
+    "s9": {
+     "start": 34,
+     "end": 35,
+     "use": 35,
+     "during": null
+    },
+    "s10": {
+     "start": 35,
+     "end": 40,
+     "use": 40,
+     "during": null
+    },
+    "s11": {
+     "start": 40,
+     "end": 42,
+     "use": 42,
+     "during": null
+    }
+   }
+  },
+  "jit": {
+   "T": 42,
+   "A": 27,
+   "cookStart": 13,
+   "serveStart": 40,
+   "order": [
+    "s4",
+    "s2",
+    "s1",
+    "s3",
+    "s5",
+    "s7",
+    "s8",
+    "s9",
+    "s10",
+    "s6",
+    "s11"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     1
+    ],
+    [
+     2,
+     19
+    ],
+    [
+     30,
+     36
+    ],
+    [
+     37,
+     38
+    ],
+    [
+     40,
+     42
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s2",
+    "s3"
+   ],
+   "plan": {
+    "s1": {
+     "start": 4,
+     "end": 9,
+     "use": 9,
+     "during": null
+    },
+    "s2": {
+     "start": 2,
+     "end": 4,
+     "use": 9,
+     "during": null
+    },
+    "s3": {
+     "start": 9,
+     "end": 13,
+     "use": 13,
+     "during": null
+    },
+    "s4": {
+     "start": 0,
+     "end": 13,
+     "use": 13,
+     "during": null
+    },
+    "s5": {
+     "start": 13,
+     "end": 37,
+     "use": 37,
+     "during": null
+    },
+    "s6": {
+     "start": 37,
+     "end": 40,
+     "use": 40,
+     "during": null
+    },
+    "s7": {
+     "start": 30,
+     "end": 33,
+     "use": 33,
+     "during": null
+    },
+    "s8": {
+     "start": 33,
+     "end": 34,
+     "use": 34,
+     "during": null
+    },
+    "s9": {
+     "start": 34,
+     "end": 35,
+     "use": 35,
+     "during": null
+    },
+    "s10": {
+     "start": 35,
+     "end": 40,
+     "use": 40,
+     "during": null
+    },
+    "s11": {
+     "start": 40,
+     "end": 42,
+     "use": 42,
+     "during": null
+    }
+   }
+  }
+ },
+ "opus-low/db/db-180.json": {
+  "calm": {
+   "T": 66,
+   "A": 43,
+   "cookStart": 23,
+   "serveStart": 65,
+   "order": [
+    "s4",
+    "s1",
+    "s5",
+    "s3",
+    "s2",
+    "s6",
+    "s7",
+    "s9",
+    "s8",
+    "s10",
+    "s11",
+    "s12",
+    "s13",
+    "s14",
+    "s15"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     13
+    ],
+    [
+     17,
+     33
+    ],
+    [
+     36,
+     40
+    ],
+    [
+     43,
+     47
+    ],
+    [
+     55,
+     60
+    ],
+    [
+     65,
+     66
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s2",
+    "s3",
+    "s4",
+    "s5"
+   ],
+   "plan": {
+    "s1": {
+     "start": 5,
+     "end": 10,
+     "use": 10,
+     "during": null
+    },
+    "s2": {
+     "start": 19,
+     "end": 23,
+     "use": 25,
+     "during": null
+    },
+    "s3": {
+     "start": 17,
+     "end": 19,
+     "use": 37,
+     "during": null
+    },
+    "s4": {
+     "start": 0,
+     "end": 5,
+     "use": 10,
+     "during": null
+    },
+    "s5": {
+     "start": 10,
+     "end": 43,
+     "use": 43,
+     "during": null
+    },
+    "s6": {
+     "start": 23,
+     "end": 25,
+     "use": 25,
+     "during": null
+    },
+    "s7": {
+     "start": 25,
+     "end": 32,
+     "use": 36,
+     "during": null
+    },
+    "s8": {
+     "start": 36,
+     "end": 37,
+     "use": 37,
+     "during": null
+    },
+    "s9": {
+     "start": 32,
+     "end": 43,
+     "use": 43,
+     "during": null
+    },
+    "s10": {
+     "start": 37,
+     "end": 55,
+     "use": 55,
+     "during": null
+    },
+    "s11": {
+     "start": 43,
+     "end": 57,
+     "use": 57,
+     "during": null
+    },
+    "s12": {
+     "start": 55,
+     "end": 57,
+     "use": 59,
+     "during": null
+    },
+    "s13": {
+     "start": 57,
+     "end": 59,
+     "use": 59,
+     "during": null
+    },
+    "s14": {
+     "start": 59,
+     "end": 65,
+     "use": 65,
+     "during": null
+    },
+    "s15": {
+     "start": 65,
+     "end": 66,
+     "use": 66,
+     "during": null
+    }
+   }
+  },
+  "prep": {
+   "T": 66,
+   "A": 43,
+   "cookStart": 23,
+   "serveStart": 65,
+   "order": [
+    "s4",
+    "s1",
+    "s5",
+    "s3",
+    "s2",
+    "s6",
+    "s7",
+    "s9",
+    "s8",
+    "s10",
+    "s11",
+    "s12",
+    "s13",
+    "s14",
+    "s15"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     13
+    ],
+    [
+     17,
+     33
+    ],
+    [
+     36,
+     40
+    ],
+    [
+     43,
+     47
+    ],
+    [
+     55,
+     60
+    ],
+    [
+     65,
+     66
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s2",
+    "s3",
+    "s4",
+    "s5"
+   ],
+   "plan": {
+    "s1": {
+     "start": 5,
+     "end": 10,
+     "use": 10,
+     "during": null
+    },
+    "s2": {
+     "start": 19,
+     "end": 23,
+     "use": 25,
+     "during": null
+    },
+    "s3": {
+     "start": 17,
+     "end": 19,
+     "use": 37,
+     "during": null
+    },
+    "s4": {
+     "start": 0,
+     "end": 5,
+     "use": 10,
+     "during": null
+    },
+    "s5": {
+     "start": 10,
+     "end": 43,
+     "use": 43,
+     "during": null
+    },
+    "s6": {
+     "start": 23,
+     "end": 25,
+     "use": 25,
+     "during": null
+    },
+    "s7": {
+     "start": 25,
+     "end": 32,
+     "use": 36,
+     "during": null
+    },
+    "s8": {
+     "start": 36,
+     "end": 37,
+     "use": 37,
+     "during": null
+    },
+    "s9": {
+     "start": 32,
+     "end": 43,
+     "use": 43,
+     "during": null
+    },
+    "s10": {
+     "start": 37,
+     "end": 55,
+     "use": 55,
+     "during": null
+    },
+    "s11": {
+     "start": 43,
+     "end": 57,
+     "use": 57,
+     "during": null
+    },
+    "s12": {
+     "start": 55,
+     "end": 57,
+     "use": 59,
+     "during": null
+    },
+    "s13": {
+     "start": 57,
+     "end": 59,
+     "use": 59,
+     "during": null
+    },
+    "s14": {
+     "start": 59,
+     "end": 65,
+     "use": 65,
+     "during": null
+    },
+    "s15": {
+     "start": 65,
+     "end": 66,
+     "use": 66,
+     "during": null
+    }
+   }
+  },
+  "jit": {
+   "T": 66,
+   "A": 43,
+   "cookStart": 23,
+   "serveStart": 65,
+   "order": [
+    "s4",
+    "s1",
+    "s5",
+    "s2",
+    "s6",
+    "s7",
+    "s9",
+    "s3",
+    "s8",
+    "s10",
+    "s11",
+    "s12",
+    "s13",
+    "s14",
+    "s15"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     13
+    ],
+    [
+     19,
+     33
+    ],
+    [
+     34,
+     40
+    ],
+    [
+     43,
+     47
+    ],
+    [
+     55,
+     60
+    ],
+    [
+     65,
+     66
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s2",
+    "s3",
+    "s4",
+    "s5"
+   ],
+   "plan": {
+    "s1": {
+     "start": 5,
+     "end": 10,
+     "use": 10,
+     "during": null
+    },
+    "s2": {
+     "start": 19,
+     "end": 23,
+     "use": 25,
+     "during": null
+    },
+    "s3": {
+     "start": 34,
+     "end": 36,
+     "use": 37,
+     "during": null
+    },
+    "s4": {
+     "start": 0,
+     "end": 5,
+     "use": 10,
+     "during": null
+    },
+    "s5": {
+     "start": 10,
+     "end": 43,
+     "use": 43,
+     "during": null
+    },
+    "s6": {
+     "start": 23,
+     "end": 25,
+     "use": 25,
+     "during": null
+    },
+    "s7": {
+     "start": 25,
+     "end": 32,
+     "use": 36,
+     "during": null
+    },
+    "s8": {
+     "start": 36,
+     "end": 37,
+     "use": 37,
+     "during": null
+    },
+    "s9": {
+     "start": 32,
+     "end": 43,
+     "use": 43,
+     "during": null
+    },
+    "s10": {
+     "start": 37,
+     "end": 55,
+     "use": 55,
+     "during": null
+    },
+    "s11": {
+     "start": 43,
+     "end": 57,
+     "use": 57,
+     "during": null
+    },
+    "s12": {
+     "start": 55,
+     "end": 57,
+     "use": 59,
+     "during": null
+    },
+    "s13": {
+     "start": 57,
+     "end": 59,
+     "use": 59,
+     "during": null
+    },
+    "s14": {
+     "start": 59,
+     "end": 65,
+     "use": 65,
+     "during": null
+    },
+    "s15": {
+     "start": 65,
+     "end": 66,
+     "use": 66,
+     "during": null
+    }
+   }
+  }
+ },
+ "opus-low/db/db-190.json": {
+  "calm": {
+   "T": 78,
+   "A": 54,
+   "cookStart": 45,
+   "serveStart": 71,
+   "order": [
+    "s2",
+    "s1",
+    "s3",
+    "s13",
+    "s5",
+    "s17",
+    "s4",
+    "s9",
+    "s10",
+    "s11",
+    "s6",
+    "s7",
+    "s16",
+    "s12",
+    "s14",
+    "s15",
+    "s8",
+    "s18",
+    "s19"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     12
+    ],
+    [
+     23,
+     31
+    ],
+    [
+     32,
+     46
+    ],
+    [
+     50,
+     53
+    ],
+    [
+     55,
+     56
+    ],
+    [
+     59,
+     68
+    ],
+    [
+     71,
+     78
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s10",
+    "s11",
+    "s13",
+    "s16",
+    "s17",
+    "s2",
+    "s3",
+    "s5",
+    "s6",
+    "s9"
+   ],
+   "plan": {
+    "s1": {
+     "start": 4,
+     "end": 10,
+     "use": 10,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 4,
+     "use": 10,
+     "during": null
+    },
+    "s3": {
+     "start": 10,
+     "end": 42,
+     "use": 42,
+     "during": null
+    },
+    "s4": {
+     "start": 30,
+     "end": 45,
+     "use": 45,
+     "during": null
+    },
+    "s5": {
+     "start": 25,
+     "end": 27,
+     "use": 42,
+     "during": null
+    },
+    "s6": {
+     "start": 42,
+     "end": 45,
+     "use": 45,
+     "during": null
+    },
+    "s7": {
+     "start": 45,
+     "end": 68,
+     "use": 68,
+     "during": null
+    },
+    "s8": {
+     "start": 68,
+     "end": 73,
+     "use": 73,
+     "during": null
+    },
+    "s9": {
+     "start": 32,
+     "end": 37,
+     "use": 37,
+     "during": null
+    },
+    "s10": {
+     "start": 37,
+     "end": 42,
+     "use": 42,
+     "during": null
+    },
+    "s11": {
+     "start": 42,
+     "end": 73,
+     "use": 73,
+     "during": null
+    },
+    "s12": {
+     "start": 55,
+     "end": 59,
+     "use": 59,
+     "during": null
+    },
+    "s13": {
+     "start": 23,
+     "end": 25,
+     "use": 59,
+     "during": null
+    },
+    "s14": {
+     "start": 59,
+     "end": 67,
+     "use": 67,
+     "during": null
+    },
+    "s15": {
+     "start": 67,
+     "end": 73,
+     "use": 73,
+     "during": null
+    },
+    "s16": {
+     "start": 50,
+     "end": 53,
+     "use": 71,
+     "during": "s7"
+    },
+    "s17": {
+     "start": 27,
+     "end": 30,
+     "use": 71,
+     "during": null
+    },
+    "s18": {
+     "start": 71,
+     "end": 73,
+     "use": 73,
+     "during": null
+    },
+    "s19": {
+     "start": 73,
+     "end": 78,
+     "use": 78,
+     "during": null
+    }
+   }
+  },
+  "prep": {
+   "T": 78,
+   "A": 54,
+   "cookStart": 45,
+   "serveStart": 71,
+   "order": [
+    "s2",
+    "s1",
+    "s3",
+    "s13",
+    "s5",
+    "s17",
+    "s16",
+    "s4",
+    "s9",
+    "s10",
+    "s11",
+    "s6",
+    "s7",
+    "s12",
+    "s14",
+    "s15",
+    "s8",
+    "s18",
+    "s19"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     12
+    ],
+    [
+     20,
+     31
+    ],
+    [
+     32,
+     46
+    ],
+    [
+     55,
+     56
+    ],
+    [
+     59,
+     68
+    ],
+    [
+     71,
+     78
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s10",
+    "s11",
+    "s13",
+    "s16",
+    "s17",
+    "s2",
+    "s3",
+    "s5",
+    "s6",
+    "s9"
+   ],
+   "plan": {
+    "s1": {
+     "start": 4,
+     "end": 10,
+     "use": 10,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 4,
+     "use": 10,
+     "during": null
+    },
+    "s3": {
+     "start": 10,
+     "end": 42,
+     "use": 42,
+     "during": null
+    },
+    "s4": {
+     "start": 30,
+     "end": 45,
+     "use": 45,
+     "during": null
+    },
+    "s5": {
+     "start": 22,
+     "end": 24,
+     "use": 42,
+     "during": null
+    },
+    "s6": {
+     "start": 42,
+     "end": 45,
+     "use": 45,
+     "during": null
+    },
+    "s7": {
+     "start": 45,
+     "end": 68,
+     "use": 68,
+     "during": null
+    },
+    "s8": {
+     "start": 68,
+     "end": 73,
+     "use": 73,
+     "during": null
+    },
+    "s9": {
+     "start": 32,
+     "end": 37,
+     "use": 37,
+     "during": null
+    },
+    "s10": {
+     "start": 37,
+     "end": 42,
+     "use": 42,
+     "during": null
+    },
+    "s11": {
+     "start": 42,
+     "end": 73,
+     "use": 73,
+     "during": null
+    },
+    "s12": {
+     "start": 55,
+     "end": 59,
+     "use": 59,
+     "during": null
+    },
+    "s13": {
+     "start": 20,
+     "end": 22,
+     "use": 59,
+     "during": null
+    },
+    "s14": {
+     "start": 59,
+     "end": 67,
+     "use": 67,
+     "during": null
+    },
+    "s15": {
+     "start": 67,
+     "end": 73,
+     "use": 73,
+     "during": null
+    },
+    "s16": {
+     "start": 27,
+     "end": 30,
+     "use": 71,
+     "during": null
+    },
+    "s17": {
+     "start": 24,
+     "end": 27,
+     "use": 71,
+     "during": null
+    },
+    "s18": {
+     "start": 71,
+     "end": 73,
+     "use": 73,
+     "during": null
+    },
+    "s19": {
+     "start": 73,
+     "end": 78,
+     "use": 78,
+     "during": null
+    }
+   }
+  },
+  "jit": {
+   "T": 78,
+   "A": 54,
+   "cookStart": 45,
+   "serveStart": 71,
+   "order": [
+    "s2",
+    "s1",
+    "s3",
+    "s5",
+    "s4",
+    "s9",
+    "s10",
+    "s11",
+    "s6",
+    "s7",
+    "s13",
+    "s12",
+    "s17",
+    "s14",
+    "s15",
+    "s8",
+    "s16",
+    "s18",
+    "s19"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     12
+    ],
+    [
+     28,
+     31
+    ],
+    [
+     32,
+     46
+    ],
+    [
+     53,
+     78
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s10",
+    "s11",
+    "s13",
+    "s16",
+    "s17",
+    "s2",
+    "s3",
+    "s5",
+    "s6",
+    "s9"
+   ],
+   "plan": {
+    "s1": {
+     "start": 4,
+     "end": 10,
+     "use": 10,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 4,
+     "use": 10,
+     "during": null
+    },
+    "s3": {
+     "start": 10,
+     "end": 42,
+     "use": 42,
+     "during": null
+    },
+    "s4": {
+     "start": 30,
+     "end": 45,
+     "use": 45,
+     "during": null
+    },
+    "s5": {
+     "start": 28,
+     "end": 30,
+     "use": 42,
+     "during": null
+    },
+    "s6": {
+     "start": 42,
+     "end": 45,
+     "use": 45,
+     "during": null
+    },
+    "s7": {
+     "start": 45,
+     "end": 68,
+     "use": 68,
+     "during": null
+    },
+    "s8": {
+     "start": 68,
+     "end": 73,
+     "use": 73,
+     "during": null
+    },
+    "s9": {
+     "start": 32,
+     "end": 37,
+     "use": 37,
+     "during": null
+    },
+    "s10": {
+     "start": 37,
+     "end": 42,
+     "use": 42,
+     "during": null
+    },
+    "s11": {
+     "start": 42,
+     "end": 73,
+     "use": 73,
+     "during": null
+    },
+    "s12": {
+     "start": 55,
+     "end": 59,
+     "use": 59,
+     "during": null
+    },
+    "s13": {
+     "start": 53,
+     "end": 55,
+     "use": 59,
+     "during": "s7"
+    },
+    "s14": {
+     "start": 59,
+     "end": 67,
+     "use": 67,
+     "during": null
+    },
+    "s15": {
+     "start": 67,
+     "end": 73,
+     "use": 73,
+     "during": null
+    },
+    "s16": {
+     "start": 68,
+     "end": 71,
+     "use": 71,
+     "during": null
+    },
+    "s17": {
+     "start": 56,
+     "end": 59,
+     "use": 71,
+     "during": "s7"
+    },
+    "s18": {
+     "start": 71,
+     "end": 73,
+     "use": 73,
+     "during": null
+    },
+    "s19": {
+     "start": 73,
+     "end": 78,
+     "use": 78,
+     "during": null
+    }
+   }
+  }
+ },
+ "opus-low/db/db-197.json": {
+  "calm": {
+   "T": 81,
+   "A": 59,
+   "cookStart": 22,
+   "serveStart": 80,
+   "order": [
+    "s2",
+    "s1",
+    "s5",
+    "s6",
+    "s7",
+    "s8",
+    "s9",
+    "s4",
+    "s10",
+    "s11",
+    "s3",
+    "s12",
+    "s13"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     50
+    ],
+    [
+     53,
+     56
+    ],
+    [
+     68,
+     71
+    ],
+    [
+     73,
+     75
+    ],
+    [
+     80,
+     81
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s2",
+    "s3",
+    "s5"
+   ],
+   "plan": {
+    "s1": {
+     "start": 10,
+     "end": 20,
+     "use": 20,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 10,
+     "use": 35,
+     "during": null
+    },
+    "s3": {
+     "start": 68,
+     "end": 71,
+     "use": 73,
+     "during": "s11"
+    },
+    "s4": {
+     "start": 47,
+     "end": 55,
+     "use": 55,
+     "during": null
+    },
+    "s5": {
+     "start": 20,
+     "end": 22,
+     "use": 22,
+     "during": null
+    },
+    "s6": {
+     "start": 22,
+     "end": 31,
+     "use": 31,
+     "during": null
+    },
+    "s7": {
+     "start": 31,
+     "end": 35,
+     "use": 35,
+     "during": null
+    },
+    "s8": {
+     "start": 35,
+     "end": 40,
+     "use": 40,
+     "during": null
+    },
+    "s9": {
+     "start": 40,
+     "end": 47,
+     "use": 53,
+     "during": null
+    },
+    "s10": {
+     "start": 53,
+     "end": 55,
+     "use": 55,
+     "during": null
+    },
+    "s11": {
+     "start": 55,
+     "end": 73,
+     "use": 73,
+     "during": null
+    },
+    "s12": {
+     "start": 73,
+     "end": 80,
+     "use": 80,
+     "during": null
+    },
+    "s13": {
+     "start": 80,
+     "end": 81,
+     "use": 81,
+     "during": null
+    }
+   }
+  },
+  "prep": {
+   "T": 81,
+   "A": 59,
+   "cookStart": 22,
+   "serveStart": 80,
+   "order": [
+    "s2",
+    "s1",
+    "s5",
+    "s6",
+    "s7",
+    "s8",
+    "s9",
+    "s4",
+    "s10",
+    "s11",
+    "s3",
+    "s12",
+    "s13"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     50
+    ],
+    [
+     53,
+     56
+    ],
+    [
+     70,
+     75
+    ],
+    [
+     80,
+     81
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s2",
+    "s3",
+    "s5"
+   ],
+   "plan": {
+    "s1": {
+     "start": 10,
+     "end": 20,
+     "use": 20,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 10,
+     "use": 35,
+     "during": null
+    },
+    "s3": {
+     "start": 70,
+     "end": 73,
+     "use": 73,
+     "during": "s11"
+    },
+    "s4": {
+     "start": 47,
+     "end": 55,
+     "use": 55,
+     "during": null
+    },
+    "s5": {
+     "start": 20,
+     "end": 22,
+     "use": 22,
+     "during": null
+    },
+    "s6": {
+     "start": 22,
+     "end": 31,
+     "use": 31,
+     "during": null
+    },
+    "s7": {
+     "start": 31,
+     "end": 35,
+     "use": 35,
+     "during": null
+    },
+    "s8": {
+     "start": 35,
+     "end": 40,
+     "use": 40,
+     "during": null
+    },
+    "s9": {
+     "start": 40,
+     "end": 47,
+     "use": 53,
+     "during": null
+    },
+    "s10": {
+     "start": 53,
+     "end": 55,
+     "use": 55,
+     "during": null
+    },
+    "s11": {
+     "start": 55,
+     "end": 73,
+     "use": 73,
+     "during": null
+    },
+    "s12": {
+     "start": 73,
+     "end": 80,
+     "use": 80,
+     "during": null
+    },
+    "s13": {
+     "start": 80,
+     "end": 81,
+     "use": 81,
+     "during": null
+    }
+   }
+  },
+  "jit": {
+   "T": 81,
+   "A": 59,
+   "cookStart": 22,
+   "serveStart": 80,
+   "order": [
+    "s2",
+    "s1",
+    "s5",
+    "s6",
+    "s7",
+    "s8",
+    "s9",
+    "s4",
+    "s10",
+    "s11",
+    "s3",
+    "s12",
+    "s13"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     50
+    ],
+    [
+     53,
+     56
+    ],
+    [
+     70,
+     75
+    ],
+    [
+     80,
+     81
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s2",
+    "s3",
+    "s5"
+   ],
+   "plan": {
+    "s1": {
+     "start": 10,
+     "end": 20,
+     "use": 20,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 10,
+     "use": 35,
+     "during": null
+    },
+    "s3": {
+     "start": 70,
+     "end": 73,
+     "use": 73,
+     "during": "s11"
+    },
+    "s4": {
+     "start": 47,
+     "end": 55,
+     "use": 55,
+     "during": null
+    },
+    "s5": {
+     "start": 20,
+     "end": 22,
+     "use": 22,
+     "during": null
+    },
+    "s6": {
+     "start": 22,
+     "end": 31,
+     "use": 31,
+     "during": null
+    },
+    "s7": {
+     "start": 31,
+     "end": 35,
+     "use": 35,
+     "during": null
+    },
+    "s8": {
+     "start": 35,
+     "end": 40,
+     "use": 40,
+     "during": null
+    },
+    "s9": {
+     "start": 40,
+     "end": 47,
+     "use": 53,
+     "during": null
+    },
+    "s10": {
+     "start": 53,
+     "end": 55,
+     "use": 55,
+     "during": null
+    },
+    "s11": {
+     "start": 55,
+     "end": 73,
+     "use": 73,
+     "during": null
+    },
+    "s12": {
+     "start": 73,
+     "end": 80,
+     "use": 80,
+     "during": null
+    },
+    "s13": {
+     "start": 80,
+     "end": 81,
+     "use": 81,
+     "during": null
+    }
+   }
+  }
+ },
+ "opus-low/db/db-203.json": {
+  "calm": {
+   "T": 104,
+   "A": 42,
+   "cookStart": 13,
+   "serveStart": 101,
+   "order": [
+    "s1",
+    "s2",
+    "s3",
+    "s4",
+    "s5",
+    "s6",
+    "s9",
+    "s7",
+    "s10",
+    "s11",
+    "s12",
+    "s8",
+    "s13"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     1
+    ],
+    [
+     13,
+     16
+    ],
+    [
+     61,
+     87
+    ],
+    [
+     89,
+     91
+    ],
+    [
+     94,
+     104
+    ]
+   ],
+   "ahead": [],
+   "plan": {
+    "s1": {
+     "start": 0,
+     "end": 13,
+     "use": 13,
+     "during": null
+    },
+    "s2": {
+     "start": 13,
+     "end": 76,
+     "use": 76,
+     "during": null
+    },
+    "s3": {
+     "start": 61,
+     "end": 69,
+     "use": 69,
+     "during": null
+    },
+    "s4": {
+     "start": 69,
+     "end": 76,
+     "use": 76,
+     "during": null
+    },
+    "s5": {
+     "start": 76,
+     "end": 82,
+     "use": 82,
+     "during": null
+    },
+    "s6": {
+     "start": 82,
+     "end": 86,
+     "use": 89,
+     "during": null
+    },
+    "s7": {
+     "start": 89,
+     "end": 99,
+     "use": 99,
+     "during": null
+    },
+    "s8": {
+     "start": 99,
+     "end": 101,
+     "use": 101,
+     "during": null
+    },
+    "s9": {
+     "start": 86,
+     "end": 95,
+     "use": 95,
+     "during": null
+    },
+    "s10": {
+     "start": 94,
+     "end": 95,
+     "use": 95,
+     "during": "s7"
+    },
+    "s11": {
+     "start": 95,
+     "end": 101,
+     "use": 101,
+     "during": null
+    },
+    "s12": {
+     "start": 96,
+     "end": 99,
+     "use": 101,
+     "during": "s7"
+    },
+    "s13": {
+     "start": 101,
+     "end": 104,
+     "use": 104,
+     "during": null
+    }
+   }
+  },
+  "prep": {
+   "T": 104,
+   "A": 42,
+   "cookStart": 13,
+   "serveStart": 101,
+   "order": [
+    "s1",
+    "s2",
+    "s3",
+    "s4",
+    "s5",
+    "s6",
+    "s9",
+    "s7",
+    "s10",
+    "s11",
+    "s12",
+    "s8",
+    "s13"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     1
+    ],
+    [
+     13,
+     16
+    ],
+    [
+     61,
+     87
+    ],
+    [
+     89,
+     91
+    ],
+    [
+     94,
+     104
+    ]
+   ],
+   "ahead": [],
+   "plan": {
+    "s1": {
+     "start": 0,
+     "end": 13,
+     "use": 13,
+     "during": null
+    },
+    "s2": {
+     "start": 13,
+     "end": 76,
+     "use": 76,
+     "during": null
+    },
+    "s3": {
+     "start": 61,
+     "end": 69,
+     "use": 69,
+     "during": null
+    },
+    "s4": {
+     "start": 69,
+     "end": 76,
+     "use": 76,
+     "during": null
+    },
+    "s5": {
+     "start": 76,
+     "end": 82,
+     "use": 82,
+     "during": null
+    },
+    "s6": {
+     "start": 82,
+     "end": 86,
+     "use": 89,
+     "during": null
+    },
+    "s7": {
+     "start": 89,
+     "end": 99,
+     "use": 99,
+     "during": null
+    },
+    "s8": {
+     "start": 99,
+     "end": 101,
+     "use": 101,
+     "during": null
+    },
+    "s9": {
+     "start": 86,
+     "end": 95,
+     "use": 95,
+     "during": null
+    },
+    "s10": {
+     "start": 94,
+     "end": 95,
+     "use": 95,
+     "during": "s7"
+    },
+    "s11": {
+     "start": 95,
+     "end": 101,
+     "use": 101,
+     "during": null
+    },
+    "s12": {
+     "start": 96,
+     "end": 99,
+     "use": 101,
+     "during": "s7"
+    },
+    "s13": {
+     "start": 101,
+     "end": 104,
+     "use": 104,
+     "during": null
+    }
+   }
+  },
+  "jit": {
+   "T": 104,
+   "A": 42,
+   "cookStart": 13,
+   "serveStart": 101,
+   "order": [
+    "s1",
+    "s2",
+    "s3",
+    "s4",
+    "s5",
+    "s6",
+    "s9",
+    "s7",
+    "s10",
+    "s11",
+    "s12",
+    "s8",
+    "s13"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     1
+    ],
+    [
+     13,
+     16
+    ],
+    [
+     61,
+     87
+    ],
+    [
+     89,
+     91
+    ],
+    [
+     94,
+     104
+    ]
+   ],
+   "ahead": [],
+   "plan": {
+    "s1": {
+     "start": 0,
+     "end": 13,
+     "use": 13,
+     "during": null
+    },
+    "s2": {
+     "start": 13,
+     "end": 76,
+     "use": 76,
+     "during": null
+    },
+    "s3": {
+     "start": 61,
+     "end": 69,
+     "use": 69,
+     "during": null
+    },
+    "s4": {
+     "start": 69,
+     "end": 76,
+     "use": 76,
+     "during": null
+    },
+    "s5": {
+     "start": 76,
+     "end": 82,
+     "use": 82,
+     "during": null
+    },
+    "s6": {
+     "start": 82,
+     "end": 86,
+     "use": 89,
+     "during": null
+    },
+    "s7": {
+     "start": 89,
+     "end": 99,
+     "use": 99,
+     "during": null
+    },
+    "s8": {
+     "start": 99,
+     "end": 101,
+     "use": 101,
+     "during": null
+    },
+    "s9": {
+     "start": 86,
+     "end": 95,
+     "use": 95,
+     "during": null
+    },
+    "s10": {
+     "start": 94,
+     "end": 95,
+     "use": 95,
+     "during": "s7"
+    },
+    "s11": {
+     "start": 95,
+     "end": 101,
+     "use": 101,
+     "during": null
+    },
+    "s12": {
+     "start": 96,
+     "end": 99,
+     "use": 101,
+     "during": "s7"
+    },
+    "s13": {
+     "start": 101,
+     "end": 104,
+     "use": 104,
+     "during": null
+    }
+   }
+  }
+ },
+ "opus-low/db/db-209.json": {
+  "calm": {
+   "T": 76,
+   "A": 44,
+   "cookStart": 40,
+   "serveStart": 71,
+   "order": [
+    "s2",
+    "s1",
+    "s3",
+    "s5",
+    "s4",
+    "s9",
+    "s8",
+    "s12",
+    "s6",
+    "s10",
+    "s11",
+    "s13",
+    "s7",
+    "s14"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     10
+    ],
+    [
+     24,
+     42
+    ],
+    [
+     46,
+     48
+    ],
+    [
+     50,
+     51
+    ],
+    [
+     58,
+     66
+    ],
+    [
+     71,
+     76
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s10",
+    "s11",
+    "s12",
+    "s2",
+    "s3",
+    "s5",
+    "s8",
+    "s9"
+   ],
+   "plan": {
+    "s1": {
+     "start": 3,
+     "end": 8,
+     "use": 8,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 3,
+     "use": 8,
+     "during": null
+    },
+    "s3": {
+     "start": 8,
+     "end": 40,
+     "use": 40,
+     "during": null
+    },
+    "s4": {
+     "start": 25,
+     "end": 40,
+     "use": 40,
+     "during": null
+    },
+    "s5": {
+     "start": 24,
+     "end": 25,
+     "use": 40,
+     "during": null
+    },
+    "s6": {
+     "start": 40,
+     "end": 64,
+     "use": 64,
+     "during": null
+    },
+    "s7": {
+     "start": 64,
+     "end": 71,
+     "use": 71,
+     "during": null
+    },
+    "s8": {
+     "start": 29,
+     "end": 34,
+     "use": 50,
+     "during": null
+    },
+    "s9": {
+     "start": 26,
+     "end": 29,
+     "use": 46,
+     "during": null
+    },
+    "s10": {
+     "start": 46,
+     "end": 48,
+     "use": 50,
+     "during": "s6"
+    },
+    "s11": {
+     "start": 50,
+     "end": 71,
+     "use": 71,
+     "during": "s6"
+    },
+    "s12": {
+     "start": 34,
+     "end": 40,
+     "use": 71,
+     "during": null
+    },
+    "s13": {
+     "start": 58,
+     "end": 64,
+     "use": 71,
+     "during": null
+    },
+    "s14": {
+     "start": 71,
+     "end": 76,
+     "use": 76,
+     "during": null
+    }
+   }
+  },
+  "prep": {
+   "T": 76,
+   "A": 44,
+   "cookStart": 40,
+   "serveStart": 71,
+   "order": [
+    "s2",
+    "s1",
+    "s3",
+    "s5",
+    "s9",
+    "s4",
+    "s10",
+    "s8",
+    "s12",
+    "s11",
+    "s6",
+    "s13",
+    "s7",
+    "s14"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     10
+    ],
+    [
+     21,
+     42
+    ],
+    [
+     58,
+     66
+    ],
+    [
+     71,
+     76
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s10",
+    "s11",
+    "s12",
+    "s2",
+    "s3",
+    "s5",
+    "s8",
+    "s9"
+   ],
+   "plan": {
+    "s1": {
+     "start": 3,
+     "end": 8,
+     "use": 8,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 3,
+     "use": 8,
+     "during": null
+    },
+    "s3": {
+     "start": 8,
+     "end": 40,
+     "use": 40,
+     "during": null
+    },
+    "s4": {
+     "start": 25,
+     "end": 40,
+     "use": 40,
+     "during": null
+    },
+    "s5": {
+     "start": 21,
+     "end": 22,
+     "use": 40,
+     "during": null
+    },
+    "s6": {
+     "start": 40,
+     "end": 64,
+     "use": 64,
+     "during": null
+    },
+    "s7": {
+     "start": 64,
+     "end": 71,
+     "use": 71,
+     "during": null
+    },
+    "s8": {
+     "start": 28,
+     "end": 33,
+     "use": 39,
+     "during": null
+    },
+    "s9": {
+     "start": 22,
+     "end": 25,
+     "use": 26,
+     "during": null
+    },
+    "s10": {
+     "start": 26,
+     "end": 28,
+     "use": 39,
+     "during": null
+    },
+    "s11": {
+     "start": 39,
+     "end": 60,
+     "use": 71,
+     "during": null
+    },
+    "s12": {
+     "start": 33,
+     "end": 39,
+     "use": 71,
+     "during": null
+    },
+    "s13": {
+     "start": 58,
+     "end": 64,
+     "use": 71,
+     "during": null
+    },
+    "s14": {
+     "start": 71,
+     "end": 76,
+     "use": 76,
+     "during": null
+    }
+   }
+  },
+  "jit": {
+   "T": 76,
+   "A": 44,
+   "cookStart": 40,
+   "serveStart": 71,
+   "order": [
+    "s2",
+    "s1",
+    "s3",
+    "s4",
+    "s5",
+    "s9",
+    "s6",
+    "s10",
+    "s8",
+    "s11",
+    "s12",
+    "s13",
+    "s7",
+    "s14"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     10
+    ],
+    [
+     25,
+     26
+    ],
+    [
+     36,
+     42
+    ],
+    [
+     43,
+     51
+    ],
+    [
+     52,
+     66
+    ],
+    [
+     71,
+     76
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s10",
+    "s11",
+    "s12",
+    "s2",
+    "s3",
+    "s5",
+    "s8",
+    "s9"
+   ],
+   "plan": {
+    "s1": {
+     "start": 3,
+     "end": 8,
+     "use": 8,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 3,
+     "use": 8,
+     "during": null
+    },
+    "s3": {
+     "start": 8,
+     "end": 40,
+     "use": 40,
+     "during": null
+    },
+    "s4": {
+     "start": 25,
+     "end": 40,
+     "use": 40,
+     "during": null
+    },
+    "s5": {
+     "start": 36,
+     "end": 37,
+     "use": 40,
+     "during": null
+    },
+    "s6": {
+     "start": 40,
+     "end": 64,
+     "use": 64,
+     "during": null
+    },
+    "s7": {
+     "start": 64,
+     "end": 71,
+     "use": 71,
+     "during": null
+    },
+    "s8": {
+     "start": 45,
+     "end": 50,
+     "use": 50,
+     "during": "s6"
+    },
+    "s9": {
+     "start": 37,
+     "end": 40,
+     "use": 43,
+     "during": null
+    },
+    "s10": {
+     "start": 43,
+     "end": 45,
+     "use": 50,
+     "during": "s6"
+    },
+    "s11": {
+     "start": 50,
+     "end": 71,
+     "use": 71,
+     "during": "s6"
+    },
+    "s12": {
+     "start": 52,
+     "end": 58,
+     "use": 71,
+     "during": "s6"
+    },
+    "s13": {
+     "start": 58,
+     "end": 64,
+     "use": 71,
+     "during": null
+    },
+    "s14": {
+     "start": 71,
+     "end": 76,
+     "use": 76,
+     "during": null
+    }
+   }
+  }
+ },
+ "opus-low/db/db-212.json": {
+  "calm": {
+   "T": 30,
+   "A": 25,
+   "cookStart": 16,
+   "serveStart": 27,
+   "order": [
+    "s2",
+    "s3",
+    "s4",
+    "s1",
+    "s5",
+    "s6",
+    "s7",
+    "s8",
+    "s9"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     21
+    ],
+    [
+     24,
+     25
+    ],
+    [
+     27,
+     30
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s2",
+    "s3",
+    "s4",
+    "s5"
+   ],
+   "plan": {
+    "s1": {
+     "start": 9,
+     "end": 14,
+     "use": 27,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 3,
+     "use": 7,
+     "during": null
+    },
+    "s3": {
+     "start": 3,
+     "end": 7,
+     "use": 14,
+     "during": null
+    },
+    "s4": {
+     "start": 7,
+     "end": 9,
+     "use": 27,
+     "during": null
+    },
+    "s5": {
+     "start": 14,
+     "end": 16,
+     "use": 20,
+     "during": null
+    },
+    "s6": {
+     "start": 16,
+     "end": 20,
+     "use": 20,
+     "during": null
+    },
+    "s7": {
+     "start": 20,
+     "end": 24,
+     "use": 24,
+     "during": null
+    },
+    "s8": {
+     "start": 24,
+     "end": 27,
+     "use": 27,
+     "during": null
+    },
+    "s9": {
+     "start": 27,
+     "end": 30,
+     "use": 30,
+     "during": null
+    }
+   }
+  },
+  "prep": {
+   "T": 30,
+   "A": 25,
+   "cookStart": 16,
+   "serveStart": 27,
+   "order": [
+    "s2",
+    "s3",
+    "s4",
+    "s1",
+    "s5",
+    "s6",
+    "s7",
+    "s8",
+    "s9"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     21
+    ],
+    [
+     24,
+     25
+    ],
+    [
+     27,
+     30
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s2",
+    "s3",
+    "s4",
+    "s5"
+   ],
+   "plan": {
+    "s1": {
+     "start": 9,
+     "end": 14,
+     "use": 27,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 3,
+     "use": 7,
+     "during": null
+    },
+    "s3": {
+     "start": 3,
+     "end": 7,
+     "use": 14,
+     "during": null
+    },
+    "s4": {
+     "start": 7,
+     "end": 9,
+     "use": 27,
+     "during": null
+    },
+    "s5": {
+     "start": 14,
+     "end": 16,
+     "use": 20,
+     "during": null
+    },
+    "s6": {
+     "start": 16,
+     "end": 20,
+     "use": 20,
+     "during": null
+    },
+    "s7": {
+     "start": 20,
+     "end": 24,
+     "use": 24,
+     "during": null
+    },
+    "s8": {
+     "start": 24,
+     "end": 27,
+     "use": 27,
+     "during": null
+    },
+    "s9": {
+     "start": 27,
+     "end": 30,
+     "use": 30,
+     "during": null
+    }
+   }
+  },
+  "jit": {
+   "T": 25,
+   "A": 25,
+   "cookStart": 11,
+   "serveStart": 22,
+   "order": [
+    "s3",
+    "s1",
+    "s5",
+    "s6",
+    "s7",
+    "s2",
+    "s8",
+    "s4",
+    "s9"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     25
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s2",
+    "s3",
+    "s4",
+    "s5"
+   ],
+   "plan": {
+    "s1": {
+     "start": 4,
+     "end": 9,
+     "use": 22,
+     "during": null
+    },
+    "s2": {
+     "start": 16,
+     "end": 19,
+     "use": 20,
+     "during": null
+    },
+    "s3": {
+     "start": 0,
+     "end": 4,
+     "use": 9,
+     "during": null
+    },
+    "s4": {
+     "start": 20,
+     "end": 22,
+     "use": 22,
+     "during": null
+    },
+    "s5": {
+     "start": 9,
+     "end": 11,
+     "use": 15,
+     "during": null
+    },
+    "s6": {
+     "start": 11,
+     "end": 15,
+     "use": 15,
+     "during": null
+    },
+    "s7": {
+     "start": 15,
+     "end": 19,
+     "use": 19,
+     "during": null
+    },
+    "s8": {
+     "start": 19,
+     "end": 22,
+     "use": 22,
+     "during": null
+    },
+    "s9": {
+     "start": 22,
+     "end": 25,
+     "use": 25,
+     "during": null
+    }
+   }
+  }
+ },
+ "opus-low/db/db-236.json": {
+  "calm": {
+   "T": 176,
+   "A": 66,
+   "cookStart": 15,
+   "serveStart": 174,
+   "order": [
+    "s2",
+    "s1",
+    "s3",
+    "s4",
+    "s5",
+    "s6",
+    "s7",
+    "s10",
+    "s9",
+    "s8",
+    "s11"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     26
+    ],
+    [
+     29,
+     39
+    ],
+    [
+     139,
+     144
+    ],
+    [
+     146,
+     169
+    ],
+    [
+     174,
+     176
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s10",
+    "s2"
+   ],
+   "plan": {
+    "s1": {
+     "start": 3,
+     "end": 15,
+     "use": 22,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 3,
+     "use": 20,
+     "during": null
+    },
+    "s3": {
+     "start": 15,
+     "end": 20,
+     "use": 20,
+     "during": null
+    },
+    "s4": {
+     "start": 20,
+     "end": 22,
+     "use": 22,
+     "during": null
+    },
+    "s5": {
+     "start": 22,
+     "end": 24,
+     "use": 24,
+     "during": null
+    },
+    "s6": {
+     "start": 24,
+     "end": 29,
+     "use": 29,
+     "during": null
+    },
+    "s7": {
+     "start": 29,
+     "end": 149,
+     "use": 149,
+     "during": null
+    },
+    "s8": {
+     "start": 149,
+     "end": 174,
+     "use": 174,
+     "during": null
+    },
+    "s9": {
+     "start": 146,
+     "end": 166,
+     "use": 174,
+     "during": null
+    },
+    "s10": {
+     "start": 139,
+     "end": 144,
+     "use": 174,
+     "during": "s7"
+    },
+    "s11": {
+     "start": 174,
+     "end": 176,
+     "use": 176,
+     "during": null
+    }
+   }
+  },
+  "prep": {
+   "T": 176,
+   "A": 66,
+   "cookStart": 15,
+   "serveStart": 174,
+   "order": [
+    "s2",
+    "s1",
+    "s3",
+    "s4",
+    "s5",
+    "s6",
+    "s7",
+    "s10",
+    "s9",
+    "s8",
+    "s11"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     26
+    ],
+    [
+     29,
+     39
+    ],
+    [
+     109,
+     114
+    ],
+    [
+     146,
+     169
+    ],
+    [
+     174,
+     176
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s10",
+    "s2"
+   ],
+   "plan": {
+    "s1": {
+     "start": 3,
+     "end": 15,
+     "use": 22,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 3,
+     "use": 20,
+     "during": null
+    },
+    "s3": {
+     "start": 15,
+     "end": 20,
+     "use": 20,
+     "during": null
+    },
+    "s4": {
+     "start": 20,
+     "end": 22,
+     "use": 22,
+     "during": null
+    },
+    "s5": {
+     "start": 22,
+     "end": 24,
+     "use": 24,
+     "during": null
+    },
+    "s6": {
+     "start": 24,
+     "end": 29,
+     "use": 29,
+     "during": null
+    },
+    "s7": {
+     "start": 29,
+     "end": 149,
+     "use": 149,
+     "during": null
+    },
+    "s8": {
+     "start": 149,
+     "end": 174,
+     "use": 174,
+     "during": null
+    },
+    "s9": {
+     "start": 146,
+     "end": 166,
+     "use": 174,
+     "during": null
+    },
+    "s10": {
+     "start": 109,
+     "end": 114,
+     "use": 174,
+     "during": "s7"
+    },
+    "s11": {
+     "start": 174,
+     "end": 176,
+     "use": 176,
+     "during": null
+    }
+   }
+  },
+  "jit": {
+   "T": 176,
+   "A": 66,
+   "cookStart": 15,
+   "serveStart": 174,
+   "order": [
+    "s2",
+    "s1",
+    "s3",
+    "s4",
+    "s5",
+    "s6",
+    "s7",
+    "s9",
+    "s8",
+    "s10",
+    "s11"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     26
+    ],
+    [
+     29,
+     39
+    ],
+    [
+     146,
+     176
+    ]
+   ],
+   "ahead": [
+    "s1",
+    "s10",
+    "s2"
+   ],
+   "plan": {
+    "s1": {
+     "start": 3,
+     "end": 15,
+     "use": 22,
+     "during": null
+    },
+    "s2": {
+     "start": 0,
+     "end": 3,
+     "use": 20,
+     "during": null
+    },
+    "s3": {
+     "start": 15,
+     "end": 20,
+     "use": 20,
+     "during": null
+    },
+    "s4": {
+     "start": 20,
+     "end": 22,
+     "use": 22,
+     "during": null
+    },
+    "s5": {
+     "start": 22,
+     "end": 24,
+     "use": 24,
+     "during": null
+    },
+    "s6": {
+     "start": 24,
+     "end": 29,
+     "use": 29,
+     "during": null
+    },
+    "s7": {
+     "start": 29,
+     "end": 149,
+     "use": 149,
+     "during": null
+    },
+    "s8": {
+     "start": 149,
+     "end": 174,
+     "use": 174,
+     "during": null
+    },
+    "s9": {
+     "start": 146,
+     "end": 166,
+     "use": 174,
+     "during": null
+    },
+    "s10": {
+     "start": 169,
+     "end": 174,
+     "use": 174,
+     "during": null
+    },
+    "s11": {
+     "start": 174,
+     "end": 176,
+     "use": 176,
+     "during": null
+    }
+   }
+  }
+ },
+ "opus-low/db/db-257.json": {
+  "calm": {
+   "T": 45,
+   "A": 16,
+   "cookStart": 13,
+   "serveStart": 43,
+   "order": [
+    "s1",
+    "s2",
+    "s4",
+    "s3",
+    "s5",
+    "s6",
+    "s7"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     1
+    ],
+    [
+     3,
+     16
+    ],
+    [
+     43,
+     45
+    ]
+   ],
+   "ahead": [
+    "s2",
+    "s3",
+    "s4",
+    "s5"
+   ],
+   "plan": {
+    "s1": {
+     "start": 0,
+     "end": 13,
+     "use": 13,
+     "during": null
+    },
+    "s2": {
+     "start": 3,
+     "end": 4,
+     "use": 11,
+     "during": null
+    },
+    "s3": {
+     "start": 6,
+     "end": 11,
+     "use": 11,
+     "during": null
+    },
+    "s4": {
+     "start": 4,
+     "end": 6,
+     "use": 11,
+     "during": null
+    },
+    "s5": {
+     "start": 11,
+     "end": 13,
+     "use": 13,
+     "during": null
+    },
+    "s6": {
+     "start": 13,
+     "end": 43,
+     "use": 43,
+     "during": null
+    },
+    "s7": {
+     "start": 43,
+     "end": 45,
+     "use": 45,
+     "during": null
+    }
+   }
+  },
+  "prep": {
+   "T": 45,
+   "A": 16,
+   "cookStart": 13,
+   "serveStart": 43,
+   "order": [
+    "s1",
+    "s2",
+    "s4",
+    "s3",
+    "s5",
+    "s6",
+    "s7"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     1
+    ],
+    [
+     3,
+     16
+    ],
+    [
+     43,
+     45
+    ]
+   ],
+   "ahead": [
+    "s2",
+    "s3",
+    "s4",
+    "s5"
+   ],
+   "plan": {
+    "s1": {
+     "start": 0,
+     "end": 13,
+     "use": 13,
+     "during": null
+    },
+    "s2": {
+     "start": 3,
+     "end": 4,
+     "use": 11,
+     "during": null
+    },
+    "s3": {
+     "start": 6,
+     "end": 11,
+     "use": 11,
+     "during": null
+    },
+    "s4": {
+     "start": 4,
+     "end": 6,
+     "use": 11,
+     "during": null
+    },
+    "s5": {
+     "start": 11,
+     "end": 13,
+     "use": 13,
+     "during": null
+    },
+    "s6": {
+     "start": 13,
+     "end": 43,
+     "use": 43,
+     "during": null
+    },
+    "s7": {
+     "start": 43,
+     "end": 45,
+     "use": 45,
+     "during": null
+    }
+   }
+  },
+  "jit": {
+   "T": 45,
+   "A": 16,
+   "cookStart": 13,
+   "serveStart": 43,
+   "order": [
+    "s1",
+    "s2",
+    "s4",
+    "s3",
+    "s5",
+    "s6",
+    "s7"
+   ],
+   "over": [],
+   "me": [
+    [
+     0,
+     1
+    ],
+    [
+     3,
+     16
+    ],
+    [
+     43,
+     45
+    ]
+   ],
+   "ahead": [
+    "s2",
+    "s3",
+    "s4",
+    "s5"
+   ],
+   "plan": {
+    "s1": {
+     "start": 0,
+     "end": 13,
+     "use": 13,
+     "during": null
+    },
+    "s2": {
+     "start": 3,
+     "end": 4,
+     "use": 11,
+     "during": null
+    },
+    "s3": {
+     "start": 6,
+     "end": 11,
+     "use": 11,
+     "during": null
+    },
+    "s4": {
+     "start": 4,
+     "end": 6,
+     "use": 11,
+     "during": null
+    },
+    "s5": {
+     "start": 11,
+     "end": 13,
+     "use": 13,
+     "during": null
+    },
+    "s6": {
+     "start": 13,
+     "end": 43,
+     "use": 43,
+     "during": null
+    },
+    "s7": {
+     "start": 43,
+     "end": 45,
+     "use": 45,
+     "during": null
+    }
+   }
+  }
+ }
+}
