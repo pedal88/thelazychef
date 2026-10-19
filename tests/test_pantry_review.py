@@ -91,6 +91,70 @@ class PantryReviewTests(unittest.TestCase):
             self.assertIn(words, page)
         self.assertLess(page.index('cabernet sauvignon'), page.index('thai basil'))  # inactive first, long tail last
 
+    def decisions(self, **changes):
+        items = {str(i['id']): {k: i[k] for k in ('label', 'of', 'base')} for i in SORTED['items'] if i['id'] != 99}
+        items['4']['base'] = ''
+        for rid, change in changes.items():
+            items[rid].update(change)
+        return {'items': items, 'new': [dict(GAPS['new'][0], base='basil')],
+                'aliases': [GAPS['aliases'][0], {'alias': 'scallion', 'of': 'spring onions', 'why': ''}]}
+
+    def test_plan_follows_duplicates_and_refuses_a_loop(self):
+        rows = [dict(r, food_id=f'00000{r["id"]}') for r in ROWS]
+        p = pantry_review.plan(rows, self.decisions())
+        self.assertEqual(p['tiers'], {'000001': 'core', '000002': 'long_tail', '000004': 'core'})
+        self.assertEqual(p['inactive'], ['000003'])
+        self.assertEqual(p['merge'], {'000005': ('000004', True)})
+        self.assertEqual(p['bases'], {'000002': '000001'})
+        self.assertEqual(p['new'], [('fresh ginger', 'Produce', 'Vegetables', '000001')])
+        self.assertEqual(p['aliases'], [('green onions', '000004'), ('scallion', '000004')])
+        loop = self.decisions(**{'4': {'label': 'duplicate', 'of': 'scallion'}})
+        with self.assertRaises(SystemExit):
+            pantry_review.plan(rows, loop)
+
+    def test_the_migration_runs_up_and_down_without_deleting(self):
+        import importlib.util
+
+        from alembic.migration import MigrationContext
+        from alembic.operations import Operations
+        import sqlalchemy as sa
+        from database.models import Ingredient, IngredientAlias, RecipeIngredient, Recipe, db
+
+        rows = [dict(r, food_id=f'00000{r["id"]}') for r in ROWS]
+        decisions = self.decisions(**{'5': {'alias': False}})
+        out = pantry_review.apply(self.run, rows, decisions, 'd232f75eb691', versions=self.run)
+        spec = importlib.util.spec_from_file_location('m', out)
+        m = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(m)
+
+        engine = sa.create_engine('sqlite://')
+        db.metadata.create_all(engine, tables=[t for t in db.metadata.sorted_tables if t.name in (
+            'ingredient', 'ingredient_alias', 'recipe', 'recipe_ingredient', 'recipe_line', 'recipe_step', 'recipe_component')])
+        with engine.begin() as conn:
+            for r in rows:
+                conn.execute(sa.insert(Ingredient).values(id=r['id'], food_id=r['food_id'], name=r['name'], status='active'))
+            conn.execute(sa.insert(Recipe).values(id=1, title='x', cuisine='', difficulty='', status='draft'))
+            conn.execute(sa.insert(RecipeIngredient).values(recipe_id=1, ingredient_id=5, amount=1, unit='pc'))
+
+            def run(step):
+                with Operations.context(MigrationContext.configure(conn)):
+                    step()
+
+            run(m.upgrade)
+            status = dict(conn.execute(sa.select(Ingredient.name, Ingredient.status)).all())
+            self.assertEqual((status['cabernet sauvignon'], status['scallion'], status['fresh ginger']), ('inactive', 'inactive', 'active'))
+            self.assertEqual(conn.execute(sa.select(RecipeIngredient.ingredient_id)).scalar(), 4)
+            aliases = dict(conn.execute(sa.select(IngredientAlias.name, IngredientAlias.ingredient_id)).all())
+            self.assertEqual(aliases, {'green onions': 4, 'scallion': 4})  # from gaps; the merge itself adds none here
+            ginger = conn.execute(sa.select(Ingredient).where(Ingredient.name == 'fresh ginger')).one()
+            self.assertEqual((ginger.food_id, ginger.tier, ginger.base_ingredient_id), ('000006', 'core', 1))
+
+            run(m.downgrade)
+            self.assertEqual(set(conn.execute(sa.select(Ingredient.status)).scalars()), {'active'})
+            self.assertEqual(conn.execute(sa.select(sa.func.count()).select_from(Ingredient)).scalar(), 5)
+            self.assertEqual(conn.execute(sa.select(sa.func.count()).select_from(IngredientAlias)).scalar(), 0)
+            self.assertEqual(set(conn.execute(sa.select(Ingredient.tier)).scalars()), {None})
+
     def test_the_csv_from_the_symbols_export_is_read(self):
         path = self.run / 'ingredients.csv'
         with open(path, 'w', newline='') as f:
