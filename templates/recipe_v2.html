@@ -98,5 +98,6 @@
   {% endif %}
 
   {% if v.chef_note %}<p class="note"><b>From the chef:</b> {{ v.chef_note }}</p>{% endif %}
+  {% if recipe.source_type == 'web' and recipe.source_input %}<p class="hint" style="margin-top:var(--space-4)">Based on <a href="{{ recipe.source_input }}" rel="noopener nofollow" target="_blank">{{ recipe.source_input.split('/')[2] }}</a></p>{% endif %}
 </article>
 {% endblock %}

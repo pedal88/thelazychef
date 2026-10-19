@@ -76,8 +76,18 @@ def run(recipe_id, kind, source, attempt=0):
     recipe = db.session.get(Recipe, recipe_id)
     if recipe is None or recipe.status != 'generating':
         return True  # deleted, or already done by an earlier attempt
+    from services.recipe_v2.sources import SourceError
+
     try:
         create_recipe(kind, source, chef_id=recipe.chef_id, recipe=recipe)
+        return True
+    except SourceError as e:
+        # The link cannot be read (blocked, gone, no recipe). Trying again does not help.
+        db.session.rollback()
+        recipe = db.session.get(Recipe, recipe_id)
+        recipe.status, recipe.is_flagged_for_review = 'draft', True
+        recipe.validation_errors = [{'rule': 'source', 'message': str(e)}]
+        db.session.commit()
         return True
     except Exception as e:
         db.session.rollback()
