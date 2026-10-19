@@ -1,0 +1,17 @@
+{% include 'pantry/definition.jinja2' %}
+
+TASK
+Look at the current pantry below and list the CORE ingredients that are missing: what a home cook needs for common dishes in the cuisines named above, and is not in the list under any name. Think through each cuisine and the everyday basics (stocks, pastes, fresh aromatics, common spices, sauces, grains, dairy, baking).
+- name: the ingredient as it is sold, in lowercase English, singular unless the plural is how it is sold ("fresh ginger", "chicken stock", "thai red curry paste", "kaffir lime leaves").
+- main_category and sub_category: from the CATEGORIES list.
+- base: the exact name of a base ingredient in the pantry, or empty.
+- cuisines: the cuisines that need it.
+- why: one short line.
+Also list ALIASES: names recipes commonly use that should match an existing entry ("vegetable oil" -> "canola oil", "scallions" -> "spring onions"). Only where the meaning is the same.
+List at most {{ max_new }} new ingredients, the most needed first.
+
+CATEGORIES (main category / sub category)
+{{ categories }}
+
+CURRENT PANTRY (name | tier, where sorted)
+{{ pantry }}

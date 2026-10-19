@@ -158,6 +158,22 @@ Fire ting holdes atskilt: ingrediensen, formen, tilstanden og mengden.
 
 **Hvorfor formene flyttes fram:** oppskriftene lages på nytt i steg 8. Hvis formene først kom i fase 3, måtte alle oppskriftene struktureres en gang til for at «2 fedd hvitløk» skulle peke på formen. Mise en place blir værende i fase 3.
 
+### Kjerne og lang hale (vedtatt 19.10.2026)
+
+Pantryet skal dekke det man trenger til de fleste retter, uten å bøye oppskriftene etter det. Den gamle genereringen tvang AI-en til å bruke pantrynavn, og byttet derfor ut ingredienser (rød currypasta ble «chilli paste»). v2 bytter aldri. Ingredienser deles i to nivåer (`ingredient.tier`):
+
+- **Kjerne:** en ingrediens en hjemmekokk kjøper i en vanlig butikk, som brukes i mange retter eller er nødvendig for et vanlig kjøkken (indisk, thai, italiensk, meksikansk, nordisk og så videre). Kjernen kurateres fullt: symbol, næring, tetthet og allergener.
+  - Én oppføring per vare handlelisten må skille: fersk og malt ingefær er to, tre slags cherrytomater er én.
+  - Kutt på det nivået oppskrifter faktisk bruker: «beef sirloin» er kjerne, «reindeer leg roast» er lang hale.
+  - Drikke bare når det lages mat med det: vin, øl og kokosmelk er med, brus er ikke.
+- **Lang hale:** ingredienser som finnes fordi en oppskrift trenger dem. De beholdes og får symbol, men vises ikke som standard i pantry-oversikten og hjelpen til handling.
+
+**Ikke en matlagingsingrediens** (brus, juice til å drikke) settes som inaktiv, ikke slettet. Rødvin og enkelte øltyper kan bli en del av appen senere.
+
+**Nye ingredienser (variant C2):** når en oppskrift trenger noe som ikke finnes, foreslår AI-en en ny ingrediens med kategori, grunnvare (`base_ingredient_id`, «thai basil» → «basil») og næring. Koden sjekker mot navn, alias og nære navn. Er den klart ny, legges den til som lang hale og får symbol. Kan den være et duplikat eller en variant, går den i en godkjenningskø. Admin får jevnlig en kort liste over det som er lagt til, og kan flette eller flytte til kjernen. Grunnvaren gir erstatninger og gruppering senere.
+
+**Første gjennomgang:** alle aktive ingredienser sorteres av Claude mot definisjonen over (kjerne, lang hale, ikke en matlagingsingrediens, duplikat av), og Claude foreslår kjerneingredienser som mangler per kjøkken. Admin går gjennom forslagene i et ark før noe endres (`scripts/pantry_review.py`). Duplikater flettes ved at navnet blir alias for vinneren og taperen blir inaktiv, så alt kan reverseres.
+
 ### Gjenstående pantry-feil
 
 Funnet under gjennomgangen av ingredienssymbolene 18.10.2026. De ryddes i v2-bygget, før nygenereringen, med fletting (linjene flyttes, navnet blir alias) og nye navn:
