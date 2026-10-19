@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{# Shown while Cloud Tasks makes the recipe. Polls the status and moves on to the recipe page when it is done. #}
+{% block title %}Making the recipe - The Lazy Chef{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/recipe_v2.css') }}">
+{% endblock %}
+{% block content %}
+<article class="rv2">
+  <p class="eyebrow">Making the recipe</p>
+  <h1>{{ recipe.title }}</h1>
+  <div class="working" role="status" aria-live="polite">
+    <span class="spinner" aria-hidden="true"></span>
+    <p id="state">Writing the recipe, turning it into steps and matching the pantry. This usually takes under a minute.</p>
+  </div>
+  <p class="hint">You can leave this page. The recipe appears among the drafts when it is done.</p>
+</article>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  var started = Date.now();
+  function check() {
+    fetch("{{ url_for('recipe_v2.status', recipe_id=recipe.id) }}", { headers: { 'Accept': 'application/json' } })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.status !== 'generating') { window.location = d.url; return; }
+        if (Date.now() - started > 120000) {
+          document.getElementById('state').textContent = 'This is taking longer than usual. It keeps going in the background; you can come back later.';
+        }
+        setTimeout(check, 3000);
+      })
+      .catch(function () { setTimeout(check, 5000); });
+  }
+  setTimeout(check, 3000);
+})();
+</script>
+{% endblock %}

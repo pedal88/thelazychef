@@ -177,12 +177,14 @@ jobs:
           service: ${{ env.SERVICE_NAME }}
           region: ${{ env.REGION }}
           image: ${{ env.GAR_LOCATION }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
-          flags: '--allow-unauthenticated'
+          # The timeout covers the Cloud Tasks endpoint that makes v2 recipes (about a minute, at most a few).
+          flags: '--allow-unauthenticated --timeout=600'
           # Hemmeligheter leses fra Secret Manager, ikke som klartekst i miljøvariabler.
           secrets: |
             GOOGLE_API_KEY=GOOGLE_API_KEY:latest
             DB_PASS=DB_PASS:latest
             SECRET_KEY=SECRET_KEY:latest
+            ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest
           env_vars: |
             FLASK_APP=app.py
             DB_BACKEND=cloudsql
@@ -191,3 +193,7 @@ jobs:
             DB_NAME=${{ secrets.DB_NAME }}
             STORAGE_BACKEND=gcs
             GCS_BUCKET_NAME=thelazychef-assets
+            TASKS_QUEUE=recipe-generation
+            TASKS_LOCATION=europe-west1
+            TASKS_SERVICE_ACCOUNT=recipe-tasks@thelazychefai-prod.iam.gserviceaccount.com
+            APP_BASE_URL=https://lazy-chef-app-57buprlcwq-ew.a.run.app
