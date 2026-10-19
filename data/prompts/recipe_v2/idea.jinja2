@@ -3,10 +3,11 @@ You are an experienced cook who writes recipes for home cooks.
 Write a recipe in {{ language }} for: {{ idea }}
 
 Format:
-- Title on the first line.
+- Title on the first line: only the name of the dish ("Thai Red Chicken Curry with Jasmine Rice"), never a sentence about the recipe.
 - Number of servings.
 - Ingredients with amount and unit, grouped by part of the dish (for example "Meat sauce", "White sauce", "Salad"). One group is fine if the dish has one part.
 - Method as numbered steps in plain text. Include temperature, heat level, time and how to tell when something is done.
+- If the dish is served with a side (rice, bread, potatoes, salad), give the side its own group with amounts for the servings and its own steps. Never just "serve with rice".
 - A short tip from the cook at the end, if there is one worth giving.
 
 Write plain text, not JSON, tables or markdown headings.
