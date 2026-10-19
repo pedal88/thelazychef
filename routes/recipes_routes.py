@@ -358,7 +358,13 @@ def recipe_detail(recipe_id):
     if not recipe or (recipe.status != 'approved' and not viewer_is_admin()):
         flash("Recipe not found.", "error")
         return redirect(url_for('discover'))
-    
+
+    # Recipe model v2: the graph has its own page (overview and step list).
+    if recipe.schema_version == 2:
+        from services.recipe_v2.view import build
+        view = build(recipe, servings=request.args.get('servings', type=int), plan=request.args.get('plan', 'calm'))
+        return render_template('recipe_v2.html', recipe=recipe, v=view)
+
     # Group instructions by phase for display
     instructions = Instruction.query.filter_by(recipe_id=recipe_id).order_by(Instruction.component, Instruction.phase, Instruction.step_number).all()
     

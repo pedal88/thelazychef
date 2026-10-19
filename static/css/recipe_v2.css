@@ -1,0 +1,64 @@
+/* Recipe page for recipe model v2: overview and step list, phone first (RECIPE_VISUALIZATIONS.md 9.15).
+   Every colour, font and size comes from tokens.css. */
+.rv2 { max-width: 680px; margin: 0 auto; padding: var(--space-6) var(--space-4) var(--space-8); color: var(--color-ink); font-family: var(--font-sans); }
+.rv2 h1 { font: 600 clamp(28px, 7vw, 40px)/1.1 var(--font-serif); margin: var(--space-2) 0 var(--space-4); text-wrap: balance; }
+.rv2 h2 { font: 600 22px/1.2 var(--font-serif); margin: 0; }
+.rv2 .back { display: inline-flex; min-height: var(--tap); align-items: center; color: var(--color-muted); font-size: 14px; text-decoration: none; }
+.rv2 .back:hover { color: var(--color-accent); }
+.rv2 .eyebrow { font: 500 12px/1.3 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--color-muted); }
+
+.rv2 .notice { border: 1px solid var(--color-warning); color: var(--color-warning); background: var(--color-cook-soft); border-radius: var(--radius-sm); padding: var(--space-3) var(--space-4); font-size: 14px; margin-bottom: var(--space-4); }
+.rv2 .notice ul { margin: var(--space-2) 0 0; padding-left: var(--space-4); }
+
+.rv2 .facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-2); margin-bottom: var(--space-4); }
+.rv2 .fact { background: var(--color-soft); border-radius: var(--radius-sm); padding: var(--space-2) var(--space-3); }
+.rv2 .fact b { display: block; font-size: 18px; font-variant-numeric: tabular-nums; }
+
+.rv2 .settings { border: 1px solid var(--color-line); border-radius: var(--radius); margin-bottom: var(--space-4); }
+.rv2 .settings summary { cursor: pointer; min-height: var(--tap); display: flex; align-items: center; padding: 0 var(--space-4); font-weight: 600; font-size: 15px; }
+.rv2 .settings-body { padding: 0 var(--space-4) var(--space-4); display: grid; gap: var(--space-3); font-size: 15px; }
+.rv2 .row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
+.rv2 .seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--color-line); border-radius: var(--radius-pill); padding: 3px; }
+.rv2 .seg a { border-radius: var(--radius-pill); padding: 6px var(--space-3); min-height: 36px; display: inline-flex; align-items: center; color: inherit; text-decoration: none; font-size: 14px; }
+.rv2 .seg a[aria-current="true"] { background: var(--color-ink); color: var(--color-paper); }
+.rv2 .stepper { display: inline-flex; align-items: center; border: 1px solid var(--color-line); border-radius: var(--radius-pill); }
+.rv2 .stepper a { width: var(--tap); height: 40px; display: grid; place-items: center; color: inherit; text-decoration: none; font-size: 20px; }
+.rv2 .stepper span { min-width: 96px; text-align: center; font-weight: 600; font-variant-numeric: tabular-nums; }
+.rv2 .hint { color: var(--color-muted); font-size: 14px; margin: 0; }
+
+.rv2 .parts { font-size: 15px; margin: 0 0 var(--space-2); }
+.rv2 .parts span { display: inline-block; border: 1px solid var(--color-line); border-radius: var(--radius-pill); padding: 2px 10px; margin: 4px 6px 0 0; }
+.rv2 section { margin-top: var(--space-6); }
+.rv2 .sec-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--space-2); }
+
+.rv2 .shop { list-style: none; margin: 0; padding: 0; }
+.rv2 .shop li { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; border-bottom: 1px solid var(--color-line); }
+.rv2 .shop li:last-child { border-bottom: 0; }
+.rv2 .shop .nm { min-width: 0; }
+.rv2 .shop .nm small { display: block; color: var(--color-muted); font-size: 13px; }
+.rv2 .shop .nm small.missing { color: var(--color-warning); }
+.rv2 .shop .amt { font: 500 15px/1.2 var(--font-mono); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+.rv2 .sym { flex: none; width: var(--s); height: var(--s); border-radius: 28%; display: inline-grid; place-items: center; background: var(--color-soft); border: 1px solid var(--color-line); overflow: hidden; vertical-align: middle; }
+.rv2 .sym img { width: 100%; height: 100%; object-fit: contain; }
+.rv2 .sym-letter { color: var(--color-muted); font: 600 calc(var(--s) * .45)/1 var(--font-sans); }
+
+.rv2 .equip { display: flex; flex-wrap: wrap; gap: 6px; }
+.rv2 .equip span { border: 1px solid var(--color-line); border-radius: var(--radius-pill); padding: 3px 10px; font-size: 14px; }
+
+.rv2 .steps { list-style: none; margin: 0; padding: 0; }
+.rv2 .steps li { display: grid; grid-template-columns: 32px 1fr; gap: var(--space-3); padding: var(--space-4) 0; border-bottom: 1px solid var(--color-line); }
+.rv2 .steps li > div { min-width: 0; }
+.rv2 .steps .n { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font: 600 13px/1 var(--font-sans); background: var(--color-prep-soft); color: var(--color-prep-ink); }
+.rv2 .steps li.cook .n { background: var(--color-cook-soft); color: var(--color-cook-ink); }
+.rv2 .steps li.serve .n { background: var(--color-serve-soft); color: var(--color-serve-ink); }
+.rv2 .steps .meta { font: 500 12px/1.5 var(--font-mono); color: var(--color-muted); text-transform: uppercase; letter-spacing: .03em; }
+.rv2 .steps .short { font-weight: 600; margin: 2px 0; }
+.rv2 .steps .while { display: inline-block; font-size: 13px; font-weight: 600; color: var(--color-cook-ink); background: var(--color-cook-soft); border-radius: var(--radius-pill); padding: 2px 10px; margin: 4px 0; }
+.rv2 .steps .txt { margin: 4px 0 0; font-size: 17px; line-height: 1.6; }
+.rv2 .pill { display: inline-flex; align-items: center; gap: 4px; background: var(--color-soft); border: 1px solid var(--color-line); border-radius: var(--radius-sm); padding: 0 6px 0 2px; font-weight: 600; vertical-align: middle; line-height: 1.5; max-width: 100%; overflow-wrap: anywhere; }
+.rv2 .pill .sym { border-radius: 6px; border: 0; }
+.rv2 .prep { color: var(--color-muted); }
+.rv2 .done { margin: var(--space-2) 0 0; font-size: 14px; color: var(--color-muted); }
+.rv2 .done b { color: var(--color-ink); font-weight: 600; }
+.rv2 .note { margin-top: var(--space-6); padding: var(--space-4); background: var(--color-soft); border-radius: var(--radius); font-size: 15px; }

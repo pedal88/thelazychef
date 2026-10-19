@@ -4,360 +4,420 @@
     {
       "id": "oven",
       "name": "Ovn",
+      "name_en": "Oven",
       "role": "koke",
       "exclusive": true
     },
     {
       "id": "airfryer",
       "name": "Airfryer",
+      "name_en": "Air fryer",
       "role": "koke",
       "exclusive": true
     },
     {
       "id": "microwave",
       "name": "Mikrobølgeovn",
+      "name_en": "Microwave",
       "role": "koke",
       "exclusive": true
     },
     {
       "id": "grill",
       "name": "Grill",
+      "name_en": "Grill",
       "role": "koke",
       "exclusive": true
     },
     {
       "id": "grill_pan",
       "name": "Grillpanne",
+      "name_en": "Grill pan",
       "role": "koke",
       "exclusive": false
     },
     {
       "id": "saucepan",
       "name": "Kjele",
+      "name_en": "Saucepan",
       "role": "koke",
       "exclusive": false
     },
     {
       "id": "large_pot",
       "name": "Stor kjele",
+      "name_en": "Large pot",
       "role": "koke",
       "exclusive": false
     },
     {
       "id": "wide_pot",
       "name": "Vid gryte",
+      "name_en": "Wide pot",
       "role": "koke",
       "exclusive": false
     },
     {
       "id": "dutch_oven",
       "name": "Støpejernsgryte",
+      "name_en": "Dutch oven",
       "role": "koke",
       "exclusive": false
     },
     {
       "id": "frying_pan",
       "name": "Stekepanne",
+      "name_en": "Frying pan",
       "role": "koke",
       "exclusive": false
     },
     {
       "id": "wok",
       "name": "Wok",
+      "name_en": "Wok",
       "role": "koke",
       "exclusive": false
     },
     {
       "id": "steamer",
       "name": "Dampinnsats",
+      "name_en": "Steamer",
       "role": "koke",
       "exclusive": false
     },
     {
       "id": "kettle",
       "name": "Vannkoker",
+      "name_en": "Kettle",
       "role": "koke",
       "exclusive": false
     },
     {
       "id": "deep_fryer",
       "name": "Frityrgryte",
+      "name_en": "Deep fryer",
       "role": "koke",
       "exclusive": true
     },
     {
       "id": "baking_tray",
       "name": "Stekebrett",
+      "name_en": "Baking tray",
       "role": "koke",
       "exclusive": false
     },
     {
       "id": "roasting_pan",
       "name": "Langpanne",
+      "name_en": "Roasting pan",
       "role": "koke",
       "exclusive": false
     },
     {
       "id": "ovenproof_dish",
       "name": "Ildfast form",
+      "name_en": "Ovenproof dish",
       "role": "koke",
       "exclusive": false
     },
     {
       "id": "form_20x20",
       "name": "Form 20 × 20 cm",
+      "name_en": "20 × 20 cm tin",
       "role": "koke",
       "exclusive": false
     },
     {
       "id": "form_20x30",
       "name": "Form 20 × 30 cm",
+      "name_en": "20 × 30 cm dish",
       "role": "koke",
       "exclusive": false
     },
     {
       "id": "springform_24",
       "name": "Springform 24 cm",
+      "name_en": "24 cm springform",
       "role": "koke",
       "exclusive": false
     },
     {
       "id": "loaf_tin",
       "name": "Brødform",
+      "name_en": "Loaf tin",
       "role": "koke",
       "exclusive": false
     },
     {
       "id": "muffin_tin",
       "name": "Muffinsform",
+      "name_en": "Muffin tin",
       "role": "koke",
       "exclusive": false
     },
     {
       "id": "pie_dish",
       "name": "Paiform",
+      "name_en": "Pie dish",
       "role": "koke",
       "exclusive": false
     },
     {
       "id": "skewers",
       "name": "Grillspyd",
+      "name_en": "Skewers",
       "role": "koke",
       "exclusive": false
     },
     {
       "id": "ladle",
       "name": "Øse",
+      "name_en": "Ladle",
       "role": "koke",
       "exclusive": false
     },
     {
       "id": "tongs",
       "name": "Tang",
+      "name_en": "Tongs",
       "role": "koke",
       "exclusive": false
     },
     {
       "id": "turner",
       "name": "Stekespade",
+      "name_en": "Turner",
       "role": "koke",
       "exclusive": false
     },
     {
       "id": "thermometer",
       "name": "Steketermometer",
+      "name_en": "Thermometer",
       "role": "koke",
       "exclusive": false
     },
     {
       "id": "bowl",
       "name": "Bolle",
+      "name_en": "Bowl",
       "role": "forberede",
       "exclusive": false
     },
     {
       "id": "small_bowl",
       "name": "Liten skål",
+      "name_en": "Small bowl",
       "role": "forberede",
       "exclusive": false
     },
     {
       "id": "large_bowl",
       "name": "Stor bolle",
+      "name_en": "Large bowl",
       "role": "forberede",
       "exclusive": false
     },
     {
       "id": "whisk",
       "name": "Visp",
+      "name_en": "Whisk",
       "role": "forberede",
       "exclusive": false
     },
     {
       "id": "spatula",
       "name": "Slikkepott",
+      "name_en": "Spatula",
       "role": "forberede",
       "exclusive": false
     },
     {
       "id": "wooden_spoon",
       "name": "Tresleiv",
+      "name_en": "Wooden spoon",
       "role": "forberede",
       "exclusive": false
     },
     {
       "id": "grater",
       "name": "Rivjern",
+      "name_en": "Grater",
       "role": "forberede",
       "exclusive": false
     },
     {
       "id": "peeler",
       "name": "Skrellekniv",
+      "name_en": "Peeler",
       "role": "forberede",
       "exclusive": false
     },
     {
       "id": "sieve",
       "name": "Sil",
+      "name_en": "Sieve",
       "role": "forberede",
       "exclusive": false
     },
     {
       "id": "colander",
       "name": "Dørslag",
+      "name_en": "Colander",
       "role": "forberede",
       "exclusive": false
     },
     {
       "id": "brush",
       "name": "Pensel",
+      "name_en": "Pastry brush",
       "role": "forberede",
       "exclusive": false
     },
     {
       "id": "rolling_pin",
       "name": "Kjevle",
+      "name_en": "Rolling pin",
       "role": "forberede",
       "exclusive": false
     },
     {
       "id": "mortar",
       "name": "Morter",
+      "name_en": "Mortar and pestle",
       "role": "forberede",
       "exclusive": false
     },
     {
       "id": "blender",
       "name": "Blender",
+      "name_en": "Blender",
       "role": "forberede",
       "exclusive": false
     },
     {
       "id": "stick_blender",
       "name": "Stavmikser",
+      "name_en": "Stick blender",
       "role": "forberede",
       "exclusive": false
     },
     {
       "id": "food_processor",
       "name": "Foodprocessor",
+      "name_en": "Food processor",
       "role": "forberede",
       "exclusive": false
     },
     {
       "id": "stand_mixer",
       "name": "Kjøkkenmaskin",
+      "name_en": "Stand mixer",
       "role": "forberede",
       "exclusive": false
     },
     {
       "id": "hand_mixer",
       "name": "Elektrisk mikser",
+      "name_en": "Hand mixer",
       "role": "forberede",
       "exclusive": false
     },
     {
       "id": "salad_spinner",
       "name": "Salatslynge",
+      "name_en": "Salad spinner",
       "role": "forberede",
       "exclusive": false
     },
     {
       "id": "jar",
       "name": "Glass med lokk",
+      "name_en": "Jar with lid",
       "role": "forberede",
       "exclusive": false
     },
     {
       "id": "measuring_jug",
       "name": "Målebeger",
+      "name_en": "Measuring jug",
       "role": "forberede",
       "exclusive": false
     },
     {
       "id": "kitchen_scale",
       "name": "Kjøkkenvekt",
+      "name_en": "Kitchen scale",
       "role": "forberede",
       "exclusive": false
     },
     {
       "id": "cutting_board",
       "name": "Skjærebrett",
+      "name_en": "Cutting board",
       "role": "forberede",
       "exclusive": false
     },
     {
       "id": "knife",
       "name": "Kniv",
+      "name_en": "Knife",
       "role": "forberede",
       "exclusive": false
     },
     {
       "id": "plastic_wrap",
       "name": "Plastfolie",
+      "name_en": "Plastic wrap",
       "role": "forberede",
       "exclusive": false
     },
     {
       "id": "baking_paper",
       "name": "Bakepapir",
+      "name_en": "Baking paper",
       "role": "forberede",
       "exclusive": false
     },
     {
       "id": "foil",
       "name": "Aluminiumsfolie",
+      "name_en": "Foil",
       "role": "forberede",
       "exclusive": false
     },
     {
       "id": "rack",
       "name": "Rist",
+      "name_en": "Wire rack",
       "role": "avlastning",
       "exclusive": false
     },
     {
       "id": "plate",
       "name": "Tallerken",
+      "name_en": "Plate",
       "role": "avlastning",
       "exclusive": false
     },
     {
       "id": "serving_dish",
       "name": "Serveringsfat",
+      "name_en": "Serving dish",
       "role": "avlastning",
       "exclusive": false
     },
     {
       "id": "lid",
       "name": "Lokk",
+      "name_en": "Lid",
       "role": "avlastning",
       "exclusive": false
     },
     {
       "id": "kitchen_towel",
       "name": "Kjøkkenhåndkle",
+      "name_en": "Kitchen towel",
       "role": "avlastning",
       "exclusive": false
     }
@@ -366,46 +426,55 @@
     {
       "id": "fan",
       "name": "varmluft",
+      "name_en": "fan",
       "applies_to": "oven"
     },
     {
       "id": "top_bottom",
       "name": "over- og undervarme",
+      "name_en": "top and bottom heat",
       "applies_to": "oven"
     },
     {
       "id": "grill_element",
       "name": "grillelement",
+      "name_en": "grill element",
       "applies_to": "oven"
     },
     {
       "id": "low",
       "name": "lav varme",
+      "name_en": "low heat",
       "applies_to": "plate"
     },
     {
       "id": "medium_low",
       "name": "middels lav varme",
+      "name_en": "medium-low heat",
       "applies_to": "plate"
     },
     {
       "id": "medium",
       "name": "middels varme",
+      "name_en": "medium heat",
       "applies_to": "plate"
     },
     {
       "id": "medium_high",
       "name": "middels høy varme",
+      "name_en": "medium-high heat",
       "applies_to": "plate"
     },
     {
       "id": "high",
       "name": "høy varme",
+      "name_en": "high heat",
       "applies_to": "plate"
     },
     {
       "id": "off",
       "name": "av varmen",
+      "name_en": "off the heat",
       "applies_to": "plate"
     }
   ]

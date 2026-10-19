@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{# Recipe page for recipe model v2 (schema_version 2). Overview and step list, phone first.
+   Data comes from services/recipe_v2/view.py. Gjør klart and cooking mode come in step 7c. #}
+
+{% block title %}{{ v.title }} - The Lazy Chef{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/recipe_v2.css') }}">
+{% endblock %}
+
+{% macro link(servings, plan) -%}
+{{ url_for('recipe_detail', recipe_id=recipe.id, servings=servings, plan=plan) }}
+{%- endmacro %}
+
+{% block content %}
+<article class="rv2">
+  <a class="back" href="{{ url_for('discover') }}">← Back to recipes</a>
+
+  {% if recipe.status != 'approved' %}
+  <div class="notice" role="status">
+    <b>Draft.</b> Only admins can see this recipe.
+    {% if v.errors %}It did not pass validation after the retries:
+      <ul>{% for e in v.errors[:5] %}<li>{{ e.message }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% if v.missing %}{{ v.missing }} {{ 'ingredient is' if v.missing == 1 else 'ingredients are' }} not in the pantry.{% endif %}
+  </div>
+  {% endif %}
+
+  <p class="eyebrow">Recipe</p>
+  <h1>{{ v.title }}</h1>
+
+  <div class="facts">
+    <div class="fact"><span class="eyebrow">Total</span><b>{{ v.total }}</b></div>
+    <div class="fact"><span class="eyebrow">Active</span><b>{{ v.active }}</b></div>
+    <div class="fact"><span class="eyebrow">Makes</span><b>{{ v.yield_text if not v.scalable else v.servings ~ ' servings' }}</b></div>
+  </div>
+
+  <details class="settings">
+    <summary>Servings and plan</summary>
+    <div class="settings-body">
+      {% if v.scalable %}
+      <div class="row">
+        <span>Servings</span>
+        <span class="stepper">
+          <a href="{{ link(v.servings - 1, v.plan) }}" aria-label="Fewer servings">−</a>
+          <span>{{ v.servings }} servings</span>
+          <a href="{{ link(v.servings + 1, v.plan) }}" aria-label="More servings">+</a>
+        </span>
+      </div>
+      {% endif %}
+      <div class="row">
+        <span>Plan</span>
+        <span class="seg">{% for key, name in v.plans.items() %}<a href="{{ link(v.servings, key) }}" aria-current="{{ 'true' if key == v.plan else 'false' }}">{{ name }}</a>{% endfor %}</span>
+      </div>
+      <p class="hint">{{ v.plan_hint }}</p>
+    </div>
+  </details>
+
+  {% if v.parts|length > 1 %}
+  <p class="parts">This dish has {{ v.parts|length }} parts: {% for p in v.parts %}<span>{{ p }}</span>{% endfor %}</p>
+  {% endif %}
+
+  <section>
+    <div class="sec-head"><h2>Shopping list</h2><span class="eyebrow">{{ v.shopping|length }} items</span></div>
+    <ul class="shop">
+      {% for item in v.shopping %}
+      <li>{{ item.symbol }}<span class="nm">{{ item.name }}{% if item.note %}<small>{{ item.note }}</small>{% endif %}{% if item.missing and recipe.status != 'approved' %}<small class="missing">Not in the pantry</small>{% endif %}</span><span class="amt">{{ item.amount }}</span></li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  {% if v.equipment %}
+  <section>
+    <div class="sec-head"><h2>Equipment</h2></div>
+    <div class="equip">{% for e in v.equipment %}<span>{{ e }}</span>{% endfor %}</div>
+  </section>
+  {% endif %}
+
+  {% if v.steps %}
+  <section>
+    <div class="sec-head"><h2>Method</h2><span class="eyebrow">{{ v.steps|length }} steps</span></div>
+    <ol class="steps">
+      {% for s in v.steps %}
+      <li class="{{ s.phase }}">
+        <span class="n">{{ s.n }}</span>
+        <div>
+          <div class="meta">{{ s.phase }} · {{ s.component }}{% if s.duration %} · {{ s.duration }}{% endif %}{% if s.equipment %} · {{ s.equipment }}{% endif %}</div>
+          <div class="short">{{ s.short }}</div>
+          {% if s.while %}<span class="while">{{ s.while }}</span>{% endif %}
+          <p class="txt">{{ s.html }}</p>
+          {% if s.done_when %}<p class="done"><b>Done when:</b> {{ s.done_when }}</p>{% endif %}
+        </div>
+      </li>
+      {% endfor %}
+    </ol>
+  </section>
+  {% endif %}
+
+  {% if v.chef_note %}<p class="note"><b>From the chef:</b> {{ v.chef_note }}</p>{% endif %}
+</article>
+{% endblock %}
