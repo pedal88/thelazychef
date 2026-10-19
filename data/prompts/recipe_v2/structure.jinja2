@@ -3,7 +3,7 @@ ROLE: You turn a recipe written as text into a recipe graph (recipe model v2).
 TASK: Read the SOURCE RECIPE at the bottom and return it as JSON in the given schema. Do not invent or drop ingredients, and keep the amounts. Write every human-readable field (component names, ingredient names, prep_style, short, text, done_when, chef_note) in the same language as the source recipe.
 
 THE MODEL
-- components: the parts of the dish that are made separately and that you can point at on the plate ("Kjøttsaus", "Ris", "Pommes frites"). A sauce or filling made on its own is its own component even if it ends up inside the dish: a lasagne is "Kjøttsaus", "Hvit saus", "Lasagne" and "Salat". "Assembly", "Garnish", "Main dish", "Topping" or "Sammensetting" are never components; those steps belong to the component they finish. One component is fine for a simple dish. Do not copy component names from the source without checking them against this rule. Ids c1, c2, ...
+- components: the parts of the dish that are made separately and that you can point at on the plate ("Kjøttsaus", "Ris", "Pommes frites"). A sauce or filling made on its own is its own component even if it ends up inside the dish: a lasagne is "Kjøttsaus", "Hvit saus", "Lasagne" and "Salat". "Assembly", "Garnish", "Main dish", "Topping" or "Sammensetting" are never components; those steps belong to the component they finish. A marinade, an egg mixture, a spice mix or a batter is not a component either: it goes into another part, and its steps belong to that component. A dressing or a burger sauce served on its own is. One component is fine for a simple dish. Do not copy component names from the source without checking them against this rule. Ids c1, c2, ...
 - ingredients: one line per ingredient per moment it is added. Ids i1, i2, ...
 - steps: the method as a graph. Ids s1, s2, ...
 
@@ -11,8 +11,9 @@ RULES FOR INGREDIENT LINES
 1. Every ingredient line is used by exactly one step. If the same ingredient is added at two different moments (garlic in the marinade and in the sauce, pecorino in the egg mix and on top), make two lines with their own amounts that add up to the total.
 2. component_id is the component the line ends up in.
 3. unit must be an id from the UNIT CATALOG. Countable items use "piece". Convert units to the closest catalog id (e.g. "ss" -> "tbsp", "ts" -> "tsp", "stk" -> "piece", "fedd" -> "clove").
-4. amount must be greater than 0. Leave out amount and unit only for lines like "salt og pepper etter smak"; then prep_style must say "etter smak" (or "to taste").
-5. prep_style is the state the ingredient should be in: "finhakket", "i terninger", "romtemperert". Leave it out if there is none.
+4. amount must be greater than 0. Leave out amount and unit only for lines like "salt og pepper etter smak"; then prep_style must say "etter smak" (or "to taste"). When the source gives no amount ("(amount not given)"): for seasoning and garnish, leave the amount out and write "etter smak" / "to taste"; for anything else, estimate a sensible amount and say so in chef_note.
+5. prep_style is the state the ingredient should be in: "finhakket", "i terninger", "romtemperert". Leave it out if there is none. In cook and serve steps the app shows prep_style after the ingredient ({i3} becomes "3 fedd hvitløk (finrevet)"), so do not repeat the state in the step text there. In prep steps the text itself describes the preparation.
+5b. pantry_id: the id from the PANTRY list for the ingredient on this line. Leave it out when the ingredient is not in the list{% if not pantry %} (there is no list here){% endif %}. Never invent an id.
 
 RULES FOR STEPS
 6. One step is one action in one place with one "done when". Start a new step when the food moves to a new container or when there is a waiting time. Example: "Brown the mince, add the onion and fry for 4 minutes" is two steps if the onion needs its own check; "Melt butter, stir in flour" in the same pan with one check is one step.
@@ -32,12 +33,19 @@ RULES FOR STEPS
 20. short: a verb-first name of at most 4 words ("Brun kjøttdeigen").
 21. component_id of a step is the component it builds. A setup step belongs to the component of the first step that uses that equipment.
 
+RULES FOR THE WHOLE RECIPE
+22. servings: as the source says. If the source gives none, estimate from the main ingredient and say so in chef_note.
+23. If the source has an obvious error, such as an impossible unit ("4 g pita"), correct it and say what you changed in chef_note.
+
 CATALOGS
 METHOD CATALOG: {{ methods }}
 EQUIPMENT CATALOG: {{ equipment }}
 UNIT CATALOG: {{ units }}
 
-EXAMPLES OF CORRECT OUTPUT
+{% if pantry %}PANTRY (pantry_id name)
+{{ pantry }}
+
+{% endif %}EXAMPLES OF CORRECT OUTPUT
 {% for ex in examples %}
 Example {{ loop.index }}: {{ ex.title }}
 {{ ex.json }}

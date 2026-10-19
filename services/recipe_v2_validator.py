@@ -20,6 +20,9 @@ ID_PATTERNS = {'component': r'c\d+', 'ingredient': r'i\d+', 'step': r's\d+'}
 PLACEHOLDER = re.compile(r'\{([^{}]*)\}')
 TO_TASTE = re.compile(r'etter smak|to taste|as needed|etter behov', re.IGNORECASE)
 # "spe med melk mens du visper" is technique inside one step and allowed.
+# {iN} is always the total amount, so "{i4} på hver burger" is wrong (warning each_total).
+EACH = re.compile(r'\{i\d+\}[^.{}]{0,40}\b(each|apiece|hver|hvert|på hver|i hver)\b'
+                  r'|\b(each|hver|på hver|i hver)\b[^.{}]{0,20}\{i\d+\}', re.IGNORECASE)
 # Equipment that must be heated before food goes in (warning no_preheat).
 PREHEATED = ('oven', 'airfryer')
 TIME_WORDS = re.compile(r'\bi mellomtiden\b|\bmeanwhile\b|\bin the meantime\b|\bwhile the\b|\bmens (?!du\b)', re.IGNORECASE)
@@ -224,6 +227,9 @@ def validate_recipe_v2(recipe, catalogs=None):
     # Warnings (stored, flagged, not rejected)
     for s in steps:
         sid = s.get('local_id')
+        if EACH.search(s.get('text') or ''):
+            warn('each_total', f'{sid}.text puts "each"/"hver" next to an amount, but {{iN}} is the total. '
+                               f'Write "divide {{i4}} between the burgers" instead.')
         if TIME_WORDS.search(s.get('text') or ''):
             warn('time_words', f'{sid}.text contains time words ("mens", "meanwhile"). Say what to do, not when.')
         if (s.get('active_minutes') or 0) + (s.get('passive_minutes') or 0) <= 0:
