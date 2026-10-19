@@ -24,6 +24,9 @@ GEMINI_IMAGE = "gemini-2.5-flash-image"
 # section 7). Which model does which step is decided in phase 0b.
 CLAUDE_OPUS = "claude-opus-5-5"
 CLAUDE_SONNET = "claude-sonnet-5-5"
+# Chosen in phase 0b (docs/pilot/RECIPE_V2_PILOT_0B.md) for both rounds: text and structuring.
+RECIPE_V2_MODEL = CLAUDE_OPUS
+RECIPE_V2_EFFORT = "low"
 
 _client = None
 _claude = None
