@@ -110,7 +110,7 @@
       "equipment": [
         "form_20x20"
       ],
-      "setup": false
+      "setup": true
     },
     {
       "local_id": "s3",
