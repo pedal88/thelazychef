@@ -18,6 +18,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from dotenv import load_dotenv  # noqa: E402
 
 load_dotenv()
+# ai_engine refuses to import without a Gemini key, though v2 generation does not use Gemini.
+os.environ.setdefault('GOOGLE_API_KEY', 'not-used')
 
 
 def main(argv=None):

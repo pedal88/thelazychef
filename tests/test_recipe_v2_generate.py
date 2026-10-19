@@ -55,7 +55,7 @@ class GenerateTests(unittest.TestCase):
         db.create_all()
         self.run_ = recorded('carbonara')
         for food_id, name in (('000322', 'spaghetti'), ('000217', 'eggs'), ('000190', 'pecorino romano')):
-            db.session.add(Ingredient(food_id=food_id, name=name, status='active', default_unit='g'))
+            db.session.add(Ingredient(food_id=food_id, name=name, status='active', default_unit='g', main_category='pantry'))
         db.session.commit()
 
     def tearDown(self):
@@ -124,6 +124,18 @@ class GenerateTests(unittest.TestCase):
         _, report = generate.create_recipe('idea', 'carbonara', call=fake)
         self.assertTrue(report['valid'])
         self.assertEqual(report['attempts'], 2)
+
+    def test_an_empty_title_falls_back_to_the_round_1_title(self):
+        data = dict(self.run_['recipe'], title='')
+        fake = FakeClaude(message('Spaghetti Carbonara\n\nServes 4\n...'), message(json.dumps(data, ensure_ascii=False)))
+        recipe, _ = generate.create_recipe('idea', 'carbonara for four please', call=fake)
+        self.assertEqual(recipe.title, 'Spaghetti Carbonara')
+
+    def test_the_fuzzy_matcher_gets_the_pantry(self):
+        import ai_engine
+        ai_engine.pantry_map = {}
+        generate.match_pantry({'ingredients': [{'local_id': 'i1', 'name': 'spagetti'}]})
+        self.assertTrue(ai_engine.pantry_map)
 
     def test_recorded_answers_pass_the_validator(self):
         for name in ('carbonara', 'lasagne', 'tikka', 'burger', 'brownies'):
