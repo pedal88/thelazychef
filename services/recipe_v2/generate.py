@@ -112,8 +112,13 @@ def match_pantry(data):
     """Pantry ingredient per line: the model's pantry_id if it exists, otherwise the name matcher.
 
     Returns (ingredient ids by line local_id, names of lines not in the pantry)."""
+    import ai_engine
+    from services.pantry_service import get_slim_pantry_context
     from services.recipe_service import _resolve_ingredient
 
+    # The fuzzy matcher's pantry map is only filled by the old generation; fill it here too.
+    if not ai_engine.pantry_map:
+        ai_engine.set_pantry_memory(get_slim_pantry_context())
     ids, missing = {}, []
     for line in data['ingredients']:
         record = _resolve_ingredient(line)
@@ -133,14 +138,17 @@ def create_recipe(kind, source, chef_id=None, language='English', call=claude.ca
     data, attempts = structure(text, call=call)
     calls = [round1] + attempts
 
-    recipe = Recipe(title=(data or {}).get('title') or source[:120], cuisine='', difficulty='', chef_id=chef_id,
+    # The model's title, else the first line of the round 1 text, which is the title there.
+    first_line = next((line.strip() for line in text.splitlines() if line.strip()), '')
+    title = ((data or {}).get('title') or '').strip() or first_line[:200] or source[:120]
+    recipe = Recipe(title=title, cuisine='', difficulty='', chef_id=chef_id,
                     status='draft', source_type=SOURCE_TYPES[kind], source_input=source[:500], source_text=text,
                     schema_version=2)
     db.session.add(recipe)
     missing = []
     if data:
         ids, missing = match_pantry(data)
-        save_v2(recipe, data, ids)
+        save_v2(recipe, dict(data, title=title), ids)
         recipe.validation_errors = []
     else:
         recipe.validation_errors = attempts[-1]['errors']
