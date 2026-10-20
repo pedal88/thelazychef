@@ -92,3 +92,23 @@ def check(recipe, p):
     if hits:
         notes.append(f"Uses ingredients {p['name']} never uses: {', '.join(hits)}.")
     return notes
+
+
+def badges(p):
+    """The hard rules in a few reader-facing words, for the persona pages."""
+    rules = p.get('constraints') or {}
+    out = []
+    if rules.get('max_total_minutes'):
+        out.append(f"Under {rules['max_total_minutes']} minutes")
+    if rules.get('diet'):
+        out.append(rules['diet'].capitalize())
+    if rules.get('max_carbs_per_serving'):
+        out.append(f"About {rules['max_carbs_per_serving']} g carbs a serving")
+    if rules.get('max_spice') is not None and rules['max_spice'] <= 1:
+        out.append('Mild')
+    if rules.get('max_cleanup') and rules['max_cleanup'] <= 3:
+        out.append('Little washing-up')
+    levels = rules.get('difficulties') or []
+    if 0 < len(levels) < 3:
+        out.append(' or '.join({'Simplistic': 'Easy', 'Moderate': 'Medium', 'Elevated': 'Challenging'}.get(d, d) for d in levels))
+    return out

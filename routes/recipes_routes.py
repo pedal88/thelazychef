@@ -20,8 +20,9 @@ from database.models import (
     db,
 )
 from routes._flat import FlatBlueprint
-from services.recipe_v2.derive import HEAT_LABELS
 from routes._shared import DIFFICULTY_LABELS, get_recipe_image_url, get_storage, load_json_option, viewer_is_admin
+from services.chef_service import get_chefs
+from services.recipe_v2.derive import HEAT_LABELS
 from utils.decorators import admin_required
 
 recipes_bp = FlatBlueprint("recipes", __name__)
@@ -372,7 +373,12 @@ def recipe_detail(recipe_id):
     if recipe.schema_version == 2:
         from services.recipe_v2.view import build
         view = build(recipe, servings=request.args.get('servings', type=int), plan=request.args.get('plan', 'calm'))
-        return render_template('recipe_v2.html', recipe=recipe, v=view)
+        admin = {}
+        if viewer_is_admin():
+            # The dish and all its versions by chef personas, and the chefs that can make one
+            root = recipe.base_recipe or recipe
+            admin = {'family': [root] + sorted(root.versions, key=lambda r: r.id), 'chefs': get_chefs()}
+        return render_template('recipe_v2.html', recipe=recipe, v=view, admin=admin)
 
     # Group instructions by phase for display
     instructions = Instruction.query.filter_by(recipe_id=recipe_id).order_by(Instruction.component, Instruction.phase, Instruction.step_number).all()

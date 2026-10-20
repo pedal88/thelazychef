@@ -79,3 +79,6 @@
 .rv2 .spinner { flex: none; width: 22px; height: 22px; border-radius: 50%; border: 3px solid var(--color-line); border-top-color: var(--color-accent); animation: rv2spin 1s linear infinite; }
 @keyframes rv2spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .rv2 .spinner { animation: none; } }
+.rv2 .versions { margin-top: var(--space-6); padding-top: var(--space-4); border-top: 1px solid var(--color-line); }
+.rv2 .versions ul { list-style: none; padding: 0; margin: 0 0 var(--space-4); display: grid; gap: var(--space-1); }
+.rv2 .versions .hint { display: inline; margin-left: var(--space-1); }

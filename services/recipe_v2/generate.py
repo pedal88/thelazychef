@@ -24,7 +24,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 MAX_RETRIES = 2
 # Hand-made reference recipes shown to the model as examples of correct output.
 EXAMPLES = ('carbonara', 'lasagne')
-SOURCE_TYPES = {'idea': 'description', 'text': 'text', 'web': 'web'}  # recipe.source_type, as the old generation uses it
+SOURCE_TYPES = {'idea': 'description', 'text': 'text', 'web': 'web', 'version': 'version'}  # recipe.source_type, as the old generation uses it
 
 env = Environment(loader=FileSystemLoader(os.path.join(ROOT, 'data', 'prompts')))
 
@@ -75,7 +75,8 @@ def structure_prompt(source):
 def write_text(kind, source, language='English', call=None, chef=None):
     """Round 1. kind 'idea' writes a recipe from a short idea, as the chef persona if there is one; 'text'
     tidies a pasted recipe and keeps its language; 'web' reads the recipe at the link
-    (services/recipe_v2/sources.py) and tidies it. A pasted or linked recipe is kept as it is, whatever the persona."""
+    (services/recipe_v2/sources.py) and tidies it. A pasted or linked recipe is kept as it is, whatever the persona.
+    'version' rewrites a saved recipe, given as text (view.as_text), as the chef persona."""
     if kind == 'web':
         from services.recipe_v2.sources import fetch_recipe_text
 
@@ -84,6 +85,10 @@ def write_text(kind, source, language='English', call=None, chef=None):
     elif kind == 'idea':
         prompt = env.get_template('recipe_v2/idea.jinja2').render(idea=source, language=language,
                                                                   persona=persona.prompt_block(chef))
+    elif kind == 'version':
+        if not chef:
+            raise ValueError('A version needs a chef persona')
+        prompt = env.get_template('recipe_v2/version.jinja2').render(source=source, persona=persona.prompt_block(chef))
     elif kind == 'text':
         prompt = env.get_template('recipe_v2/normalize.jinja2').render(kind='text pasted by the user', source=source)
     else:
@@ -163,7 +168,10 @@ def create_recipe(kind, source, chef_id=None, language='English', call=None, rec
         recipe = Recipe(cuisine='', difficulty='', chef_id=chef_id)
         db.session.add(recipe)
     recipe.title, recipe.status, recipe.source_type = title, 'draft', SOURCE_TYPES[kind]
-    recipe.source_input, recipe.source_text, recipe.schema_version = source[:500], text, 2
+    # A version keeps the note on what it is a version of; the base recipe's text is not an input worth storing
+    if not (kind == 'version' and recipe.source_input):
+        recipe.source_input = source[:500]
+    recipe.source_text, recipe.schema_version = text, 2
     missing = []
     if data:
         ids, missing = match_pantry(data)
@@ -171,7 +179,7 @@ def create_recipe(kind, source, chef_id=None, language='English', call=None, rec
         db.session.flush()
         derive.apply(recipe, to_v2(recipe))
         # The persona's hard rules: noted and flagged, never a reason to throw the recipe away
-        notes = persona.check(recipe, chef) if kind == 'idea' else []
+        notes = persona.check(recipe, chef) if kind in ('idea', 'version') else []
         recipe.validation_errors = [{'rule': 'persona', 'message': n} for n in notes]
     else:
         recipe.validation_errors = attempts[-1]['errors']

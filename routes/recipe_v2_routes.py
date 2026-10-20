@@ -2,13 +2,14 @@
 
 Admin only, next to today's New Recipe until the old generation goes in step 8.
 """
-from flask import Blueprint, abort, jsonify, redirect, render_template, request, url_for
+from flask import Blueprint, abort, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import login_required
 
 from database.models import Recipe, db
 from services.chef_service import get_chefs
 from services.recipe_v2 import tasks
 from services.recipe_v2.sources import is_link, is_video
+from services.recipe_v2.view import as_text
 from utils.ai_errors import friendly_ai_error
 from utils.decorators import admin_required
 
@@ -50,6 +51,30 @@ def new_recipe():
     except Exception as e:
         recipe.status, recipe.is_flagged_for_review = 'draft', True
         recipe.validation_errors = [{'rule': 'error', 'message': friendly_ai_error(e, 'Could not start making the recipe.')}]
+        db.session.commit()
+    return redirect(url_for('recipe_v2.generating', recipe_id=recipe.id))
+
+
+@recipe_v2_bp.route('/new-recipe/v2/version/<int:recipe_id>', methods=['POST'])
+@login_required
+@admin_required
+def new_version(recipe_id):
+    """The same dish made by a chef persona. The version links to the base dish (the root, never another version)."""
+    base = db.session.get(Recipe, recipe_id) or abort(404)
+    chef = next((c for c in get_chefs() if c['id'] == request.form.get('chef_id')), None)
+    if base.schema_version != 2 or not base.steps or chef is None:
+        flash('Choose a chef, and make versions only of finished recipes in the new model.', 'error')
+        return redirect(url_for('recipe_detail', recipe_id=recipe_id))
+    recipe = Recipe(title=base.title[:120], cuisine='', difficulty='', status='generating', schema_version=2,
+                    chef_id=chef['id'], base_recipe_id=base.base_recipe_id or base.id, source_type='version',
+                    source_input=f"Version of recipe {base.id} by {chef['name']}")
+    db.session.add(recipe)
+    db.session.commit()
+    try:
+        tasks.enqueue(recipe.id, 'version', as_text(base))
+    except Exception as e:
+        recipe.status, recipe.is_flagged_for_review = 'draft', True
+        recipe.validation_errors = [{'rule': 'error', 'message': friendly_ai_error(e, 'Could not start making the version.')}]
         db.session.commit()
     return redirect(url_for('recipe_v2.generating', recipe_id=recipe.id))
 

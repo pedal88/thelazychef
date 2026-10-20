@@ -288,6 +288,8 @@ class Recipe(db.Model):
     # New Metadata
     base_servings: Mapped[int] = mapped_column(Integer, default=4, server_default='4')
     chef_id: Mapped[str] = mapped_column(ForeignKey("chef.id"), nullable=True)
+    # A version of another recipe made by a chef persona points at the base dish (always the root, never a version)
+    base_recipe_id: Mapped[Optional[int]] = mapped_column(ForeignKey("recipe.id", ondelete='SET NULL'), nullable=True, index=True)
     is_flagged_for_review: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
     # Publishing State Machine: 'draft' | 'approved' | 'rejected'
     # Every AI-generated recipe starts as 'draft' — invisible to public routes.
@@ -348,6 +350,7 @@ class Recipe(db.Model):
     steps: Mapped[list["RecipeStep"]] = relationship(back_populates="recipe", cascade="all, delete-orphan", order_by="RecipeStep.sort_order")
     lines: Mapped[list["RecipeLine"]] = relationship(back_populates="recipe", cascade="all, delete-orphan", order_by="RecipeLine.sort_order")
     chef: Mapped["Chef"] = relationship(back_populates="recipes")
+    base_recipe: Mapped[Optional["Recipe"]] = relationship(remote_side="Recipe.id", backref="versions")
     meal_types: Mapped[list["RecipeMealType"]] = relationship(cascade="all, delete-orphan")
     diets: Mapped[list["RecipeDiet"]] = relationship(cascade="all, delete-orphan")
     evaluation: Mapped["RecipeEvaluation"] = relationship(back_populates="recipe", uselist=False, cascade="all, delete-orphan")

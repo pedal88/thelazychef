@@ -171,6 +171,9 @@ from routes.recipe_v2_routes import recipe_v2_bp
 app.register_blueprint(pantry_bp)
 app.register_blueprint(recipe_v2_bp)
 
+from routes.chefs_routes import chefs_bp
+app.register_blueprint(chefs_bp)
+
 
 if __name__ == '__main__':
     with app.app_context():
