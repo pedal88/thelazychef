@@ -137,3 +137,12 @@ def test_verb_must_start_like_short():
     r = load('carbonara')
     step(r, 's2')['verb'] = 'rør'  # short is "Pisk eggeblandingen"
     assert 'verb_not_in_short' in {w['code'] for w in validate_recipe_v2(r)['warnings']}
+
+
+def test_a_cutting_prep_step_wants_a_cut_on_its_lines():
+    r = load('lasagne')
+    line = next(i for i in r['ingredients'] if i['local_id'] == 'i2')  # onion, chopped in s2
+    del line['cut']
+    result = validate_recipe_v2(r)
+    assert result['valid']
+    assert any(w['code'] == 'no_cut' and 'i2' in w['message'] for w in result['warnings'])
