@@ -162,7 +162,8 @@
       "name": "poteter",
       "amount": 800,
       "unit": "g",
-      "prep_style": "melne, med skall"
+      "prep_style": "melne, i staver med skall",
+      "cut": "strips"
     },
     {
       "local_id": "i21",

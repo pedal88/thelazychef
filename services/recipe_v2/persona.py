@@ -35,7 +35,8 @@ def prompt_block(p):
     lines = [f"Write it as {p['name']} ({p.get('archetype') or 'chef'}): {p.get('description') or ''}".strip()]
     hard = []
     if rules.get('max_total_minutes'):
-        hard.append(f"the whole recipe takes at most {rules['max_total_minutes']} minutes from start to table")
+        hard.append(f"the whole recipe takes at most {rules['max_total_minutes']} minutes from start to table for one cook"
+                    ", counting all the chopping and preparation; plan the dish so that this holds")
     if rules.get('diet') == 'vegan':
         hard.append('no meat, fish, dairy or eggs')
     elif rules.get('diet') == 'vegetarian':

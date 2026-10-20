@@ -261,6 +261,12 @@ def validate_recipe_v2(recipe, catalogs=None):
             warn('no_verb', f'{sid} has no verb.')
         elif not short.startswith(verb.split()[0]):
             warn('verb_not_in_short', f'{sid}.verb {s.get("verb")!r} is not the first word of short {s.get("short")!r}.')
+    cutting = {'chop', 'slice', 'grate', 'juice', 'crush', 'mash'}
+    for s in steps:
+        if s.get('phase') == 'prep' and s.get('method') in cutting:
+            for u in s.get('uses') or []:
+                if u in ing_by and not ing_by[u].get('cut') and not is_to_taste(ing_by[u]):
+                    warn('no_cut', f"{u} ({ing_by[u].get('name')}) is cut in {s.get('local_id')} but has no cut.")
     for i in ings:
         if i.get('amount') is not None and i.get('gram_weight_estimate') is None:
             warn('no_gram_weight', f"{i.get('local_id')} ({i.get('name')}) has an amount but no gram_weight_estimate.")
