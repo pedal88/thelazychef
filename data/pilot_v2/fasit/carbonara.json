@@ -13,7 +13,8 @@
       "component_id": "c1",
       "name": "spaghetti",
       "amount": 400,
-      "unit": "g"
+      "unit": "g",
+      "gram_weight_estimate": 400
     },
     {
       "local_id": "i2",
@@ -21,6 +22,7 @@
       "name": "guanciale eller pancetta",
       "amount": 150,
       "unit": "g",
+      "gram_weight_estimate": 150,
       "prep_style": "i staver",
       "cut": "strips"
     },
@@ -30,6 +32,7 @@
       "name": "egg",
       "amount": 2,
       "unit": "piece",
+      "gram_weight_estimate": 110,
       "prep_style": "hele"
     },
     {
@@ -37,7 +40,8 @@
       "component_id": "c1",
       "name": "eggeplomme",
       "amount": 4,
-      "unit": "piece"
+      "unit": "piece",
+      "gram_weight_estimate": 70
     },
     {
       "local_id": "i5",
@@ -45,6 +49,7 @@
       "name": "pecorino romano",
       "amount": 60,
       "unit": "g",
+      "gram_weight_estimate": 60,
       "prep_style": "finrevet",
       "cut": "grate"
     },
@@ -54,6 +59,7 @@
       "name": "pecorino romano",
       "amount": 20,
       "unit": "g",
+      "gram_weight_estimate": 20,
       "prep_style": "finrevet",
       "cut": "grate"
     },
@@ -63,6 +69,7 @@
       "name": "sort pepper",
       "amount": 1.5,
       "unit": "tsp",
+      "gram_weight_estimate": 3,
       "prep_style": "grovkvernet"
     },
     {
@@ -71,6 +78,7 @@
       "name": "salt",
       "amount": 1,
       "unit": "tbsp",
+      "gram_weight_estimate": 2,
       "prep_style": "til kokevannet"
     },
     {
@@ -78,7 +86,8 @@
       "component_id": "c1",
       "name": "vann",
       "amount": 3,
-      "unit": "l"
+      "unit": "l",
+      "gram_weight_estimate": 0
     }
   ],
   "steps": [

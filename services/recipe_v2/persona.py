@@ -9,7 +9,7 @@ round 1 prompt. Its hard side, `constraints`, is checked on the saved recipe:
     max_spice           spice_level from the model, 0-3
     difficulties        allowed difficulty values
     diet                "vegetarian" or "vegan": no meat or fish lines (vegan: no dairy or egg either)
-    max_carbs_per_serving   not checked until v2 has nutrition
+    max_carbs_per_serving   carbohydrate per serving, when the recipe has nutrition (services/recipe_v2/nutrition.py)
 
 A broken rule does not stop the recipe; it is noted and the recipe flagged for review.
 """
@@ -79,6 +79,11 @@ def check(recipe, p):
         notes.append(f"Clean-up is {recipe.cleanup_factor} of 5; {p['name']} allows {rules['max_cleanup']}.")
     if rules.get('max_spice') is not None and (recipe.spice_level or 0) > rules['max_spice']:
         notes.append(f"Spice level is {recipe.spice_level}; {p['name']} allows {rules['max_spice']}.")
+    carbs = getattr(recipe, 'total_carbs', None)
+    if rules.get('max_carbs_per_serving') and carbs is not None:
+        per = carbs / (getattr(recipe, 'base_servings', None) or 1)
+        if per > rules['max_carbs_per_serving']:
+            notes.append(f"About {per:.0f} g carbs a serving; {p['name']} allows {rules['max_carbs_per_serving']}.")
     if rules.get('difficulties') and recipe.difficulty and recipe.difficulty not in rules['difficulties']:
         notes.append(f"Difficulty is {recipe.difficulty}; {p['name']} makes {', '.join(rules['difficulties'])}.")
     if rules.get('diet') in ('vegetarian', 'vegan'):

@@ -25,7 +25,8 @@
       "component_id": "c1",
       "name": "kjøttdeig av storfe",
       "amount": 400,
-      "unit": "g"
+      "unit": "g",
+      "gram_weight_estimate": 400
     },
     {
       "local_id": "i2",
@@ -33,6 +34,7 @@
       "name": "løk",
       "amount": 1,
       "unit": "piece",
+      "gram_weight_estimate": 150,
       "prep_style": "finhakket",
       "cut": "chop"
     },
@@ -42,6 +44,7 @@
       "name": "gulrot",
       "amount": 1,
       "unit": "piece",
+      "gram_weight_estimate": 80,
       "prep_style": "finrevet",
       "cut": "grate"
     },
@@ -51,6 +54,7 @@
       "name": "hvitløk",
       "amount": 2,
       "unit": "clove",
+      "gram_weight_estimate": 10,
       "prep_style": "finhakket",
       "cut": "chop"
     },
@@ -59,14 +63,16 @@
       "component_id": "c1",
       "name": "olivenolje",
       "amount": 1,
-      "unit": "tbsp"
+      "unit": "tbsp",
+      "gram_weight_estimate": 13
     },
     {
       "local_id": "i6",
       "component_id": "c1",
       "name": "tomatpuré",
       "amount": 2,
-      "unit": "tbsp"
+      "unit": "tbsp",
+      "gram_weight_estimate": 32
     },
     {
       "local_id": "i7",
@@ -74,6 +80,7 @@
       "name": "hermetiske tomater",
       "amount": 400,
       "unit": "g",
+      "gram_weight_estimate": 400,
       "prep_style": "hakkede"
     },
     {
@@ -81,14 +88,16 @@
       "component_id": "c1",
       "name": "oksebuljong",
       "amount": 2,
-      "unit": "dl"
+      "unit": "dl",
+      "gram_weight_estimate": 200
     },
     {
       "local_id": "i9",
       "component_id": "c1",
       "name": "tørket oregano",
       "amount": 1,
-      "unit": "tsp"
+      "unit": "tsp",
+      "gram_weight_estimate": 1
     },
     {
       "local_id": "i10",
@@ -107,49 +116,56 @@
       "component_id": "c2",
       "name": "smør",
       "amount": 40,
-      "unit": "g"
+      "unit": "g",
+      "gram_weight_estimate": 40
     },
     {
       "local_id": "i12",
       "component_id": "c2",
       "name": "hvetemel",
       "amount": 40,
-      "unit": "g"
+      "unit": "g",
+      "gram_weight_estimate": 40
     },
     {
       "local_id": "i13",
       "component_id": "c2",
       "name": "helmelk",
       "amount": 6,
-      "unit": "dl"
+      "unit": "dl",
+      "gram_weight_estimate": 620
     },
     {
       "local_id": "i14",
       "component_id": "c2",
       "name": "revet muskat",
       "amount": 1,
-      "unit": "pinch"
+      "unit": "pinch",
+      "gram_weight_estimate": 0.5
     },
     {
       "local_id": "i15",
       "component_id": "c2",
       "name": "salt",
       "amount": 0.5,
-      "unit": "tsp"
+      "unit": "tsp",
+      "gram_weight_estimate": 3
     },
     {
       "local_id": "i16",
       "component_id": "c3",
       "name": "lasagneplater",
       "amount": 9,
-      "unit": "piece"
+      "unit": "piece",
+      "gram_weight_estimate": 180
     },
     {
       "local_id": "i17",
       "component_id": "c3",
       "name": "revet ost",
       "amount": 150,
-      "unit": "g"
+      "unit": "g",
+      "gram_weight_estimate": 150
     },
     {
       "local_id": "i18",
@@ -157,6 +173,7 @@
       "name": "parmesan",
       "amount": 30,
       "unit": "g",
+      "gram_weight_estimate": 30,
       "prep_style": "finrevet",
       "cut": "grate"
     },
@@ -166,6 +183,7 @@
       "name": "hjertesalat",
       "amount": 1,
       "unit": "piece",
+      "gram_weight_estimate": 250,
       "prep_style": "revet i biter",
       "cut": "tear"
     },
@@ -175,6 +193,7 @@
       "name": "agurk",
       "amount": 0.5,
       "unit": "piece",
+      "gram_weight_estimate": 175,
       "prep_style": "tynne skiver",
       "cut": "slice"
     },
@@ -184,6 +203,7 @@
       "name": "cherrytomater",
       "amount": 150,
       "unit": "g",
+      "gram_weight_estimate": 150,
       "prep_style": "delt i to",
       "cut": "halve"
     },
@@ -192,28 +212,32 @@
       "component_id": "c4",
       "name": "olivenolje",
       "amount": 3,
-      "unit": "tbsp"
+      "unit": "tbsp",
+      "gram_weight_estimate": 41
     },
     {
       "local_id": "i23",
       "component_id": "c4",
       "name": "rødvinseddik",
       "amount": 1,
-      "unit": "tbsp"
+      "unit": "tbsp",
+      "gram_weight_estimate": 15
     },
     {
       "local_id": "i24",
       "component_id": "c4",
       "name": "dijonsennep",
       "amount": 1,
-      "unit": "tsp"
+      "unit": "tsp",
+      "gram_weight_estimate": 5
     },
     {
       "local_id": "i25",
       "component_id": "c4",
       "name": "honning",
       "amount": 0.5,
-      "unit": "tsp"
+      "unit": "tsp",
+      "gram_weight_estimate": 3.5
     },
     {
       "local_id": "i26",

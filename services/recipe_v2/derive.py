@@ -6,6 +6,7 @@ the same Recipe fields the old recipes use (protein_type, cleanup_factor,
 prep_time_mins), so the list cards and filters work for both.
 """
 from database.models import RecipeMealType
+from services.recipe_v2 import nutrition
 from services.recipe_v2.planner import plan_v2
 
 # Heat source -> equipment ids whose heat counts for it. A step counts by its first equipment (where it happens).
@@ -122,6 +123,7 @@ def apply(recipe, v2):
     tags += [tag for tag, yes in (('One-Pot', one_pot(v2)), ('Freezer Friendly', bool(recipe.freezes)),
                                   ('Slow Cooker', recipe.heat_source == 'slow_cooker')) if yes]
     set_meal_types(recipe, tags)
+    nutrition.apply(recipe)
     return recipe
 
 
