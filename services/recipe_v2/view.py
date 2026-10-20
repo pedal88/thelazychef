@@ -180,7 +180,8 @@ def build(recipe, servings=None, plan='calm'):
         'plan_hint': PLAN_HINTS[plan], 'parts': [c['name'] for c in v2['components']],
         'shopping': shop, 'equipment': [cat['equipment'].get(q, q) for q in first_use], 'steps': steps,
         'chef_note': recipe.chef_note, 'missing': sum(1 for s in shop if s['missing']),
-        'errors': recipe.validation_errors or [],
+        'errors': [e for e in recipe.validation_errors or [] if e.get('rule') != 'persona'],
+        'persona_notes': [e['message'] for e in recipe.validation_errors or [] if e.get('rule') == 'persona'],
         'about': about(recipe),
     }
 

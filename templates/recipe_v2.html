@@ -24,6 +24,9 @@
       <ul>{% for e in v.errors[:5] %}<li>{{ e.message }}</li>{% endfor %}</ul>
     {% endif %}
     {% if v.missing %}{{ v.missing }} {{ 'ingredient is' if v.missing == 1 else 'ingredients are' }} not in the pantry.{% endif %}
+    {% if v.persona_notes %}It breaks a rule of its chef:
+      <ul>{% for n in v.persona_notes %}<li>{{ n }}</li>{% endfor %}</ul>
+    {% endif %}
   </div>
   {% endif %}
 

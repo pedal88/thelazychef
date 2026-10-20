@@ -19,15 +19,23 @@ JSON_FIELDS = {
 }
 TEXT_FIELDS = ('name', 'archetype', 'description')
 
-# The editor's sliders read every range, so chefs created without constraints
-# (e.g. by scripts/fix_missing_chefs.py) get the full range
-DEFAULT_RANGES = {
-    'taste_range': {'min': 1, 'max': 5},
-    'speed_range': {'min': 1, 'max': 5},
-    'complexity_range': {'min': 1, 'max': 3, 'note': '1=Simplistic, 2=Moderate, 3=Elevated'},
-    'richness_range': {'min': 1, 'max': 5},
-    'cleanup_range': {'min': 1, 'max': 5},
-}
+# constraints holds the persona's hard rules (services/recipe_v2/persona.py). None means no limit.
+DIFFICULTIES = ['Simplistic', 'Moderate', 'Elevated']
+DEFAULT_RULES = {'max_total_minutes': None, 'max_cleanup': None, 'max_spice': None, 'difficulties': DIFFICULTIES,
+                 'diet': None, 'max_carbs_per_serving': None}
+
+
+def rules_of(constraints: dict) -> dict:
+    """The hard rules, with defaults. Chefs still in the old shape (1-5 sliders for taste, speed, complexity,
+    richness and clean-up) keep what maps: complexity becomes the allowed difficulties, clean-up its maximum."""
+    rules = {**DEFAULT_RULES, **{k: v for k, v in constraints.items() if k in DEFAULT_RULES}}
+    old = constraints.get('complexity_range')
+    if old and 'difficulties' not in constraints:
+        rules['difficulties'] = DIFFICULTIES[max(1, old.get('min', 1)) - 1:min(3, old.get('max', 3))]
+    old = constraints.get('cleanup_range')
+    if old and 'max_cleanup' not in constraints and old.get('max', 5) < 5:
+        rules['max_cleanup'] = old['max']
+    return rules
 
 
 def _load(value, empty):
@@ -48,7 +56,7 @@ def chef_to_dict(chef: Chef) -> dict:
     }
     for field, empty in JSON_FIELDS.items():
         data[field] = _load(getattr(chef, field), type(empty)())
-    data['constraints'] = {**DEFAULT_RANGES, **data['constraints']}
+    data['constraints'] = rules_of(data['constraints'])
     data['cooking_style'].setdefault('preferred_methods', [])
     data['cooking_style'].setdefault('avoid_methods', [])
     data['ingredient_logic'].setdefault('staples', [])
