@@ -13,6 +13,7 @@ from functools import lru_cache
 from markupsafe import Markup, escape
 
 from database.models import Ingredient, db
+from services.recipe_v2 import nutrition
 from services.recipe_v2.derive import HEAT_LABELS
 from services.recipe_v2.planner import MODES, plan_v2
 from services.recipe_v2.read import shopping_list
@@ -183,6 +184,9 @@ def build(recipe, servings=None, plan='calm'):
         'errors': [e for e in recipe.validation_errors or [] if e.get('rule') != 'persona'],
         'persona_notes': [e['message'] for e in recipe.validation_errors or [] if e.get('rule') == 'persona'],
         'about': about(recipe),
+        'nutrition': nutrition.per_serving(recipe),
+        # Why there is no nutrition, for the admin: lines without grams, and lines without pantry nutrition
+        'nutrition_gap': None if recipe.total_calories is not None else nutrition.compute(recipe.lines),
     }
 
 

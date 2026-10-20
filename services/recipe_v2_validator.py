@@ -261,6 +261,9 @@ def validate_recipe_v2(recipe, catalogs=None):
             warn('no_verb', f'{sid} has no verb.')
         elif not short.startswith(verb.split()[0]):
             warn('verb_not_in_short', f'{sid}.verb {s.get("verb")!r} is not the first word of short {s.get("short")!r}.')
+    for i in ings:
+        if i.get('amount') is not None and i.get('gram_weight_estimate') is None:
+            warn('no_gram_weight', f"{i.get('local_id')} ({i.get('name')}) has an amount but no gram_weight_estimate.")
     for key in ('cuisine', 'difficulty', 'spice_level', 'keeps_days', 'freezes'):
         if recipe.get(key) is None or recipe.get(key) == '':
             warn('no_' + key, f'The recipe has no {key}.')

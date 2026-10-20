@@ -42,6 +42,28 @@
   {% if v.about or recipe.difficulty %}
   <ul class="about">
     {% if recipe.difficulty %}<li><span class="eyebrow">Difficulty</span> {{ recipe.difficulty|difficulty_label }}</li>{% endif %}
+
+  {% if v.nutrition %}
+  <details class="nutrition">
+    <summary>Nutrition per serving <span class="hint">approximate</span></summary>
+    <table>
+      <tr><th>Energy</th><td>{{ v.nutrition.kcal }} kcal</td></tr>
+      <tr><th>Protein</th><td>{{ v.nutrition.protein }} g</td></tr>
+      <tr><th>Carbohydrate</th><td>{{ v.nutrition.carbs }} g</td></tr>
+      <tr class="sub"><th>of which sugars</th><td>{{ v.nutrition.sugar }} g</td></tr>
+      <tr><th>Fat</th><td>{{ v.nutrition.fat }} g</td></tr>
+      <tr class="sub"><th>of which saturated</th><td>{{ v.nutrition.saturated_fat }} g</td></tr>
+      <tr><th>Fibre</th><td>{{ v.nutrition.fiber }} g</td></tr>
+      <tr><th>Salt</th><td>{{ v.nutrition.salt }} g</td></tr>
+    </table>
+    <p class="hint">From the ingredients as measured; salt and seasoning added to taste are not included.</p>
+  </details>
+  {% elif admin and v.nutrition_gap %}
+  <p class="hint">No nutrition yet (admin only):
+    {% if v.nutrition_gap.no_grams %}no weight for {{ v.nutrition_gap.no_grams|join(', ') }}.{% endif %}
+    {% if v.nutrition_gap.no_nutrition %}No pantry nutrition for {{ v.nutrition_gap.no_nutrition|join(', ') }}.{% endif %}
+  </p>
+  {% endif %}
     {% for label, value in v.about %}<li><span class="eyebrow">{{ label }}</span> {{ value }}</li>{% endfor %}
   </ul>
   {% endif %}

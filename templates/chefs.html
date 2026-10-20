@@ -161,7 +161,7 @@
                         </select></label>
                     <label class="block"><span class="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Max carbs per serving (g)</span>
                         <input type="number" min="0" step="5" class="rule-carbs w-full rounded-lg p-2 border border-slate-200" value="{{ r.max_carbs_per_serving if r.max_carbs_per_serving is not none else '' }}">
-                        <span class="block text-xs text-slate-400 mt-1">Used in the prompt; checked once v2 has nutrition.</span></label>
+                        <span class="block text-xs text-slate-400 mt-1">Checked when the recipe has nutrition.</span></label>
                     <fieldset><legend class="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Difficulty</legend>
                         {% for d in ['Simplistic', 'Moderate', 'Elevated'] %}<label class="mr-3 whitespace-nowrap"><input type="checkbox" class="rule-difficulty" value="{{ d }}"{% if d in r.difficulties %} checked{% endif %}> {{ d|difficulty_label }}</label>{% endfor %}
                     </fieldset>
