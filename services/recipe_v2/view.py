@@ -13,6 +13,7 @@ from functools import lru_cache
 from markupsafe import Markup, escape
 
 from database.models import Ingredient, db
+from services.recipe_v2.derive import HEAT_LABELS
 from services.recipe_v2.planner import MODES, plan_v2
 from services.recipe_v2.read import shopping_list
 from services.recipe_v2.store import to_v2
@@ -180,4 +181,22 @@ def build(recipe, servings=None, plan='calm'):
         'shopping': shop, 'equipment': [cat['equipment'].get(q, q) for q in first_use], 'steps': steps,
         'chef_note': recipe.chef_note, 'missing': sum(1 for s in shop if s['missing']),
         'errors': recipe.validation_errors or [],
+        'about': about(recipe),
     }
+
+
+SPICE = ('Mild', 'A little hot', 'Hot', 'Very hot')
+
+
+def about(recipe):
+    """Short facts about the dish for the overview: (label, value), only those that are set. Difficulty is
+    left to the template, which has the reader-facing names."""
+    leftovers = None
+    if recipe.keeps_days is not None:
+        leftovers = 'Eat at once' if recipe.keeps_days == 0 else f'{recipe.keeps_days} day{"s" if recipe.keeps_days > 1 else ""} in the fridge'
+        if recipe.freezes:
+            leftovers += ', freezes'
+    facts = [('Cuisine', recipe.cuisine), ('Cooked in', HEAT_LABELS.get(recipe.heat_source)),
+             ('Spice', SPICE[recipe.spice_level] if recipe.spice_level in range(4) else None),
+             ('Leftovers', leftovers), ('Protein', recipe.protein_type)]
+    return [(k, v) for k, v in facts if v]

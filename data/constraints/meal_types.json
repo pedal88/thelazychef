@@ -1,31 +1,32 @@
 {
-    "meal_classification": {
-        "Standard": [
-            "Breakfast",
-            "Lunch",
-            "Dinner",
-            "Snacks",
-            "Desserts"
-        ],
-        "Courses": [
-            "Main Dish",
-            "Appetizers",
-            "Sides",
-            "Soups",
-            "Salads",
-            "Beverages"
-        ],
-        "Other": [
-            "Meal Prep",
-            "Freezer Friendly",
-            "Slow Cooker",
-            "One-Pot"
-        ],
-        "Holidays": [
-            "Christmas",
-            "Easter",
-            "Thanksgiving",
-            "Halloween"
-        ]
-    }
+    "_doc": "One list of tags for recipes (recipe_meal_type). DERIVED are set by the app from the recipe (services/recipe_v2/derive.py), never by the model.",
+    "meal_types": [
+        "Breakfast",
+        "Lunch",
+        "Dinner",
+        "Snacks",
+        "Desserts",
+        "Main Dish",
+        "Appetizers",
+        "Sides",
+        "Soups",
+        "Salads",
+        "Beverages",
+        "Weeknight",
+        "Weekend",
+        "Guests",
+        "Meal Prep",
+        "Christmas",
+        "Easter",
+        "17th of May",
+        "Summer BBQ",
+        "One-Pot",
+        "Freezer Friendly",
+        "Slow Cooker"
+    ],
+    "derived": [
+        "One-Pot",
+        "Freezer Friendly",
+        "Slow Cooker"
+    ]
 }

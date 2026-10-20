@@ -568,6 +568,10 @@
   "difficulty": "Moderate",
   "meal_types": [
     "Dinner",
-    "Main Dish"
-  ]
+    "Main Dish",
+    "Guests"
+  ],
+  "spice_level": 0,
+  "keeps_days": 3,
+  "freezes": true
 }

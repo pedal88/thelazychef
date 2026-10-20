@@ -13,6 +13,9 @@
 .rv2 .facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-2); margin-bottom: var(--space-4); }
 .rv2 .fact { background: var(--color-soft); border-radius: var(--radius-sm); padding: var(--space-2) var(--space-3); }
 .rv2 .fact b { display: block; font-size: 18px; font-variant-numeric: tabular-nums; }
+.rv2 .about { list-style: none; padding: 0; margin: 0 0 var(--space-4); display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); }
+.rv2 .about li { font-size: 15px; }
+.rv2 .about .eyebrow { margin-right: 4px; }
 
 .rv2 .settings { border: 1px solid var(--color-line); border-radius: var(--radius); margin-bottom: var(--space-4); }
 .rv2 .settings summary { cursor: pointer; min-height: var(--tap); display: flex; align-items: center; padding: 0 var(--space-4); font-weight: 600; font-size: 15px; }

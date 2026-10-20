@@ -34,7 +34,7 @@ def fasit(name):
 
 
 def normalized(data):
-    """Comparable form: after and uses are sets (their order is not stored), and absent optional fields are dropped."""
+    """Comparable form: after, uses and meal types are sets (their order is not stored), and absent optional fields are dropped."""
     out = json.loads(json.dumps(data))
     for s in out['steps']:
         s['after'] = sorted(s.get('after') or [])
@@ -50,6 +50,8 @@ def normalized(data):
             if i[k] is None:
                 del i[k]
     out.pop('chef_note', None)
+    if 'meal_types' in out:
+        out['meal_types'] = sorted(out['meal_types'])  # tags have no order
     return out
 
 

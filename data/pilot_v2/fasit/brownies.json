@@ -295,5 +295,8 @@
   "difficulty": "Simplistic",
   "meal_types": [
     "Desserts"
-  ]
+  ],
+  "spice_level": 0,
+  "keeps_days": 4,
+  "freezes": true
 }

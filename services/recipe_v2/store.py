@@ -58,7 +58,11 @@ def save_v2(recipe: Recipe, data: dict, ingredient_ids: dict | None = None) -> R
     if data.get('difficulty'):
         recipe.difficulty = data['difficulty']
     if 'meal_types' in data:
-        recipe.meal_types = [RecipeMealType(meal_type=m) for m in dict.fromkeys(data['meal_types'] or [])]
+        existing = {m.meal_type: m for m in recipe.meal_types}
+        recipe.meal_types = [existing.get(m) or RecipeMealType(meal_type=m) for m in dict.fromkeys(data['meal_types'] or [])]
+    for key in ('spice_level', 'keeps_days', 'freezes'):
+        if key in data:
+            setattr(recipe, key, data[key])
     recipe.schema_version = 2
     if had_content:
         recipe.revision = (recipe.revision or 1) + 1
@@ -78,6 +82,7 @@ def to_v2(recipe: Recipe) -> dict:
         **({'cuisine': recipe.cuisine} if recipe.cuisine else {}),
         **({'difficulty': recipe.difficulty} if recipe.difficulty else {}),
         **({'meal_types': recipe.meal_types_list} if recipe.meal_types else {}),
+        **{k: getattr(recipe, k) for k in ('spice_level', 'keeps_days', 'freezes') if getattr(recipe, k) is not None},
         'components': [{'local_id': c.local_id, 'name': c.name} for c in recipe.components],
         'ingredients': [drop_none({
             'local_id': i.local_id, 'component_id': i.component.local_id, 'name': i.name, 'amount': i.amount,
