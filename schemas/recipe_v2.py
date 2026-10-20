@@ -20,7 +20,7 @@ def _load(name):
 
 # Closed lists, so structured output can only answer with values the app knows.
 CUTS = tuple(c['id'] for c in _load('cuts.json')['cuts'])
-CUISINES = tuple(_load('graph_metadata.json')['cuisines'])
+CUISINES = tuple(_load('../post_processing/cuisines.json')['cuisines'])  # the list the recipe filters use
 DIFFICULTIES = tuple(_load('difficulty.json')['difficulty'])
 MEAL_TYPES = tuple(m for group in ('Standard', 'Courses') for m in _load('meal_types.json')['meal_classification'][group])
 Cut = typing.Literal[CUTS]

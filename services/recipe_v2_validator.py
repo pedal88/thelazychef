@@ -56,7 +56,7 @@ def load_catalogs():
         'heat_methods': {m['id'] for m in methods if m['heat']},
         'units': {u['id'] for u in units},
         'cuts': {c['id'] for c in _load('cuts.json')['cuts']},
-        'cuisines': set(_load('graph_metadata.json')['cuisines']),
+        'cuisines': set(_load('../post_processing/cuisines.json')['cuisines']),
         'difficulties': set(_load('difficulty.json')['difficulty']),
         'meal_types': {m for group in ('Standard', 'Courses') for m in _load('meal_types.json')['meal_classification'][group]},
     }
