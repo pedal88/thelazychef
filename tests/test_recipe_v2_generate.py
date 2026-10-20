@@ -84,6 +84,27 @@ class GenerateTests(unittest.TestCase):
         self.assertNotIn(self.run_['source_text'][:40], fake.requests[1]['system'])
         self.assertIsNotNone(fake.requests[1]['schema'])
 
+    def test_verb_cut_and_metadata_are_asked_for_and_saved(self):
+        answer = copy.deepcopy(self.run_['recipe'])
+        answer.update(cuisine='Italian', difficulty='Moderate', meal_types=['Dinner', 'Main Dish'])
+        answer['steps'][0]['verb'] = answer['steps'][0]['short'].split()[0].lower()
+        cut_line = next(i for i in answer['ingredients'] if i.get('prep_style'))
+        cut_line['cut'] = 'grate'
+        fake = FakeClaude(message(self.run_['source_text']), message(json.dumps(answer, ensure_ascii=False)))
+        recipe, report = generate.create_recipe('idea', 'Spaghetti carbonara for four', call=fake)
+
+        self.assertTrue(report['valid'])
+        saved = db.session.get(Recipe, recipe.id)
+        self.assertEqual((saved.cuisine, saved.difficulty, saved.meal_types_list), ('Italian', 'Moderate', ['Dinner', 'Main Dish']))
+        self.assertEqual(saved.steps[0].verb, answer['steps'][0]['verb'])
+        self.assertEqual(next(line.cut for line in saved.lines if line.local_id == cut_line['local_id']), 'grate')
+        # The catalogs are in the prompt, and the schema only allows their values
+        system, schema = fake.requests[1]['system'], fake.requests[1]['schema']
+        for text in ('CUT CATALOG: chop', 'CUISINE LIST: Italian', 'DIFFICULTY LIST: Simplistic', 'MEAL TYPE LIST: Breakfast', '20b. verb'):
+            self.assertIn(text, system)
+        self.assertEqual(schema['properties']['difficulty']['enum'], ['Simplistic', 'Moderate', 'Elevated'])
+        self.assertIn('grate', schema['$defs']['IngredientLineV2']['properties']['cut']['enum'])
+
     def test_lines_are_matched_to_the_pantry_and_the_rest_flags_the_recipe(self):
         fake = FakeClaude(message('text'), self._good())
         recipe, report = generate.create_recipe('idea', 'carbonara', call=fake)

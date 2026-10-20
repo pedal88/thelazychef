@@ -18,7 +18,8 @@
       "name": "kyllinglårfilet",
       "amount": 700,
       "unit": "g",
-      "prep_style": "biter à 3 cm"
+      "prep_style": "biter à 3 cm",
+      "cut": "pieces"
     },
     {
       "local_id": "i2",
@@ -33,7 +34,8 @@
       "name": "sitron",
       "amount": 0.5,
       "unit": "piece",
-      "prep_style": "saften"
+      "prep_style": "saften",
+      "cut": "juice"
     },
     {
       "local_id": "i4",
@@ -41,7 +43,8 @@
       "name": "hvitløk",
       "amount": 2,
       "unit": "clove",
-      "prep_style": "finrevet"
+      "prep_style": "finrevet",
+      "cut": "grate"
     },
     {
       "local_id": "i5",
@@ -49,7 +52,8 @@
       "name": "hvitløk",
       "amount": 3,
       "unit": "clove",
-      "prep_style": "finrevet"
+      "prep_style": "finrevet",
+      "cut": "grate"
     },
     {
       "local_id": "i6",
@@ -57,7 +61,8 @@
       "name": "ingefær",
       "amount": 2,
       "unit": "cm",
-      "prep_style": "finrevet"
+      "prep_style": "finrevet",
+      "cut": "grate"
     },
     {
       "local_id": "i7",
@@ -65,7 +70,8 @@
       "name": "ingefær",
       "amount": 2,
       "unit": "cm",
-      "prep_style": "finrevet"
+      "prep_style": "finrevet",
+      "cut": "grate"
     },
     {
       "local_id": "i8",
@@ -136,7 +142,8 @@
       "name": "løk",
       "amount": 1,
       "unit": "piece",
-      "prep_style": "finhakket"
+      "prep_style": "finhakket",
+      "cut": "chop"
     },
     {
       "local_id": "i18",
@@ -187,7 +194,8 @@
       "name": "frisk koriander",
       "amount": 1,
       "unit": "handful",
-      "prep_style": "grovhakket"
+      "prep_style": "grovhakket",
+      "cut": "chop"
     },
     {
       "local_id": "i25",
@@ -217,6 +225,7 @@
       "component_id": "c1",
       "phase": "cook",
       "short": "Forvarm ovnen",
+      "verb": "forvarm",
       "text": "Sett ovnen på 250 °C grillelement, med rist øverst.",
       "uses": [],
       "after": [],
@@ -236,6 +245,7 @@
       "component_id": "c1",
       "phase": "prep",
       "short": "Rør marinaden",
+      "verb": "rør",
       "text": "Rør sammen {i2}, {i4}, {i6}, {i8}, {i10}, {i12}, saften av {i3} og {i15}.",
       "uses": [
         "i2",
@@ -263,6 +273,7 @@
       "component_id": "c1",
       "phase": "prep",
       "short": "Mariner kyllingen",
+      "verb": "mariner",
       "text": "Skjær {i1} i biter på 3 cm og vend dem i marinaden. Sett kaldt.",
       "uses": [
         "i1"
@@ -283,6 +294,7 @@
       "component_id": "c1",
       "phase": "prep",
       "short": "Hakk løken",
+      "verb": "hakk",
       "text": "Finhakk {i17}.",
       "uses": [
         "i17"
@@ -300,6 +312,7 @@
       "component_id": "c1",
       "phase": "prep",
       "short": "Bland krydderet",
+      "verb": "bland",
       "text": "Bland {i9}, {i13}, {i11}, {i14} og {i16} i en liten skål.",
       "uses": [
         "i9",
@@ -323,6 +336,7 @@
       "component_id": "c1",
       "phase": "prep",
       "short": "Hakk korianderen",
+      "verb": "hakk",
       "text": "Grovhakk {i24}.",
       "uses": [
         "i24"
@@ -340,6 +354,7 @@
       "component_id": "c2",
       "phase": "prep",
       "short": "Skyll risen",
+      "verb": "skyll",
       "text": "Skyll {i25} i kaldt vann til vannet er nesten klart.",
       "uses": [
         "i25"
@@ -360,6 +375,7 @@
       "component_id": "c1",
       "phase": "cook",
       "short": "Grill kyllingen",
+      "verb": "grill",
       "text": "Legg kyllingen på en rist over et stekebrett og grill øverst i ovnen i 10–12 minutter. Snu bitene halvveis.",
       "uses": [],
       "after": [
@@ -384,6 +400,7 @@
       "component_id": "c1",
       "phase": "cook",
       "short": "Fres løken",
+      "verb": "fres",
       "text": "Smelt {i18} med {i19} i en vid kjele på middels varme. Fres løken til den er myk.",
       "uses": [
         "i18",
@@ -407,6 +424,7 @@
       "component_id": "c1",
       "phase": "cook",
       "short": "Fres krydderet",
+      "verb": "fres",
       "text": "Tilsett {i5} og {i7} og fres i ett minutt. Rør inn krydderblandingen og {i20} og fres i ett minutt til.",
       "uses": [
         "i5",
@@ -432,6 +450,7 @@
       "component_id": "c1",
       "phase": "cook",
       "short": "Kok sausen",
+      "verb": "kok",
       "text": "Ha i {i21}, {i22} og {i23}. La sausen småkoke uten lokk i 15 minutter, og rør av og til.",
       "uses": [
         "i21",
@@ -456,7 +475,8 @@
       "local_id": "s12",
       "component_id": "c1",
       "phase": "cook",
-      "short": "Kyllingen i sausen",
+      "short": "Vend kyllingen i sausen",
+      "verb": "vend",
       "text": "Vend kyllingen inn i sausen og la det trekke på lav varme i 5 minutter.",
       "uses": [],
       "after": [
@@ -478,6 +498,7 @@
       "component_id": "c2",
       "phase": "cook",
       "short": "Kok risen",
+      "verb": "kok",
       "text": "Kok opp risen med {i26} og {i27} under lokk. Skru ned til laveste varme og la den stå i 12 minutter.",
       "uses": [
         "i26",
@@ -501,6 +522,7 @@
       "component_id": "c2",
       "phase": "cook",
       "short": "La risen dampe",
+      "verb": "la dampe",
       "text": "Ta kjelen av platen og la risen stå under lokk i 10 minutter.",
       "uses": [],
       "after": [
@@ -518,6 +540,7 @@
       "component_id": "c1",
       "phase": "serve",
       "short": "Server",
+      "verb": "server",
       "text": "Luft risen med en gaffel. Server tikka masalaen over risen, toppet med korianderen.",
       "uses": [],
       "after": [
@@ -531,5 +554,11 @@
       "equipment": [],
       "setup": false
     }
+  ],
+  "cuisine": "Indian",
+  "difficulty": "Moderate",
+  "meal_types": [
+    "Dinner",
+    "Main Dish"
   ]
 }

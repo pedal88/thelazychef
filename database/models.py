@@ -447,6 +447,7 @@ class RecipeStep(db.Model):
     sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)  # order in the source, not the plan
     phase: Mapped[str] = mapped_column(String(10), nullable=False)  # prep | cook | serve
     short: Mapped[str] = mapped_column(String(120), nullable=False)
+    verb: Mapped[Optional[str]] = mapped_column(String(60), nullable=True)  # the action in short: "kok opp", "stir in"
     text: Mapped[str] = mapped_column(Text, nullable=False)  # template with {iN}
     active_minutes: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     passive_minutes: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
@@ -490,6 +491,7 @@ class RecipeLine(db.Model):
     amount: Mapped[Optional[float]] = mapped_column(Float, nullable=True)  # null only for "to taste"
     unit: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)  # id in data/constraints/units.json
     prep_style: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
+    cut: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)  # id in data/constraints/cuts.json
     gram_weight: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
 
     recipe: Mapped["Recipe"] = relationship(back_populates="lines")

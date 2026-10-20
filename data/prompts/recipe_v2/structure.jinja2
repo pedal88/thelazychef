@@ -11,13 +11,18 @@ RULES FOR INGREDIENT LINES
 1. Every ingredient line is used by exactly one step. If the same ingredient is added at two different moments (garlic in the marinade and in the sauce, pecorino in the egg mix and on top), make two lines with their own amounts that add up to the total.
 2. component_id is the component the line ends up in.
 2b. name is the ingredient as it is sold, without amounts, pack sizes, alternatives or remarks: "onion", not "medium onions (about 300 g)". Put "optional" (or "valgfritt") in prep_style, and leave alternatives out.
+2c. One ingredient per line. "Fish sauce and sugar to taste" or "salt og pepper etter smak" is two lines, each with its own name.
+2d. Water or stock that something is cooked in (pasta water, water for the rice, stock for poaching) is an ingredient line with an amount, used by the step that cooks in it. So is water added to a sauce or to steam vegetables. If the source gives no amount, estimate one.
 3. unit must be an id from the UNIT CATALOG. When the source gives a pack size ("1 can (400 g) crushed tomatoes"), use the weight or volume as amount and unit (400 g), not the pack. Countable items use "piece". Convert units to the closest catalog id (e.g. "ss" -> "tbsp", "ts" -> "tsp", "stk" -> "piece", "fedd" -> "clove").
 4. amount must be greater than 0. Leave out amount and unit only for lines like "salt og pepper etter smak"; then prep_style must say "etter smak" (or "to taste"). When the source gives no amount ("(amount not given)"): for seasoning and garnish, leave the amount out and write "etter smak" / "to taste"; for anything else, estimate a sensible amount and say so in chef_note.
 5. prep_style is the state the ingredient should be in: "finhakket", "i terninger", "romtemperert". Leave it out if there is none. In cook and serve steps the app shows prep_style after the ingredient ({i3} becomes "3 fedd hvitløk (finrevet)"), so do not repeat the state in the step text there. In prep steps the text itself describes the preparation.
+5a. cut: how the ingredient is cut or prepared before it goes in, as an id from the CUT CATALOG ("finhakket" -> chop, "i skiver" -> slice, "finrevet" -> grate, "saften av" -> juice). Leave it out when the line is not cut, and for products that are sold that way ("hakkede tomater", "crushed tomatoes", "malt spisskummen"). cut and prep_style describe the same thing: prep_style in words for the reader, cut as an id for the app.
 5b. pantry_id: the id from the PANTRY list for the ingredient on this line. Leave it out when the ingredient is not in the list{% if not pantry %} (there is no list here){% endif %}. Never invent an id.
 
 RULES FOR STEPS
 6. One step is one action in one place with one "done when". Start a new step when the food moves to a new container or when there is a waiting time. Example: "Brown the mince, add the onion and fry for 4 minutes" is two steps if the onion needs its own check; "Melt butter, stir in flour" in the same pan with one check is one step.
+6b. When something is added after the food in the pan has had its own cooking time, that is a new step. "Add the garlic and ginger and fry for 1 minute. Stir in the spice mix and tomato paste and fry for 1 minute more" is two steps: "Fres hvitløk og ingefær", then "Fres krydderet". Adding several things at the same moment is one step.
+6c. Split the preparation by where it goes. Cutting is one prep step per cook step that uses the result: the vegetables for the sauce in one step, the garnish in another, the meat in a third. Never one prep step that cuts everything for the whole recipe. Things that go into the pan at the same moment are cut in the same prep step.
 7. text is the instruction with placeholders: write {i3} where ingredient line i3 is added. The renderer replaces {i3} with amount and name ("3 egg"), scaled to the servings. {i3} is always the TOTAL amount of the line, so never put it next to "each", "per", "hver", "på hver" or "i hver": write "fordel {i4} på burgerne" / "divide {i4} between the burgers", not "{i4} på hver burger". Every {iN} in the text must be in the same step's uses, and every line in uses should appear once in the text. Refer to results of earlier steps in plain words ("the sauce", "kjøttsausen"). Never write {s3} or any other placeholder.
 8. No time words in text: do not write "mens", "i mellomtiden", "while the ... ", "meanwhile". The app adds those from its plan. Technique inside one step is fine ("spe med melk mens du visper").
 9. uses: the ingredient lines added in this step.
@@ -32,17 +37,25 @@ RULES FOR STEPS
 18. holds_minutes: how long the result of the step can wait before it is used without getting worse. Set it for things that deteriorate: cut fruit and vegetables, salad with dressing, fried or grilled food, cooked pasta and rice, whipped cream. Leave it out when there is no practical limit.
 19. done_when: a sensory checkpoint ("Golden and crisp at the edges", "No streaks of flour"). Always for cook steps, and for prep steps where it helps.
 20. short: a verb-first name of at most 4 words ("Brun kjøttdeigen").
+20b. verb: the action in short, lower case, with the particle that belongs to it, in the same language: "brun", "kok opp", "rør inn", "ta av", "la dampe" (for "La risen dampe"), "stir in", "bring to a boil". It must start with the first word of short. Never a generic verb on its own when short has more: for "Cook the rice" the verb is "cook", and the app shows short where the verb alone says too little.
 21. component_id of a step is the component it builds. A setup step belongs to the component of the first step that uses that equipment.
 
 RULES FOR THE WHOLE RECIPE
 21b. title: the name of the dish from the source, as a title ("Chicken Tikka Masala with Basmati Rice"), never empty and never a sentence. If the first line of the source is a sentence ("Here is a version of a classic Thai red curry ..."), make a title from the dish it describes.
 22. servings: as the source says. If the source gives none, estimate from the main ingredient and say so in chef_note.
+22b. cuisine: the cuisine of the dish, from the CUISINE LIST. Use "Other" when none fits.
+22c. difficulty: from the DIFFICULTY LIST, for a home cook: Simplistic (few steps, no technique), Moderate (several parts or some technique), Elevated (demanding technique, timing or many parts).
+22d. meal_types: one to three from the MEAL TYPE LIST, the meal and the course ("Dinner", "Main Dish"; "Desserts").
 23. If the source has an obvious error, such as an impossible unit ("4 g pita"), correct it and say what you changed in chef_note.
 
 CATALOGS
 METHOD CATALOG: {{ methods }}
 EQUIPMENT CATALOG: {{ equipment }}
 UNIT CATALOG: {{ units }}
+CUT CATALOG: {{ cuts }}
+CUISINE LIST: {{ cuisines }}
+DIFFICULTY LIST: {{ difficulties }}
+MEAL TYPE LIST: {{ meal_types }}
 
 {% if pantry %}PANTRY (pantry_id name)
 {{ pantry }}

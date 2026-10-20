@@ -14,7 +14,8 @@
       "name": "smør",
       "amount": 150,
       "unit": "g",
-      "prep_style": "i terninger"
+      "prep_style": "i terninger",
+      "cut": "dice"
     },
     {
       "local_id": "i2",
@@ -22,7 +23,8 @@
       "name": "mørk sjokolade",
       "amount": 200,
       "unit": "g",
-      "prep_style": "grovhakket"
+      "prep_style": "grovhakket",
+      "cut": "chop"
     },
     {
       "local_id": "i3",
@@ -72,7 +74,8 @@
       "name": "valnøtter",
       "amount": 75,
       "unit": "g",
-      "prep_style": "grovhakket"
+      "prep_style": "grovhakket",
+      "cut": "chop"
     }
   ],
   "steps": [
@@ -81,6 +84,7 @@
       "component_id": "c1",
       "phase": "cook",
       "short": "Forvarm ovnen",
+      "verb": "forvarm",
       "text": "Sett ovnen på 175 °C over- og undervarme, med rist midt i ovnen.",
       "uses": [],
       "after": [],
@@ -100,6 +104,7 @@
       "component_id": "c1",
       "phase": "prep",
       "short": "Kle formen",
+      "verb": "kle",
       "text": "Kle en form på 20 × 20 cm med bakepapir.",
       "uses": [],
       "after": [],
@@ -117,6 +122,7 @@
       "component_id": "c1",
       "phase": "prep",
       "short": "Sikt det tørre",
+      "verb": "sikt",
       "text": "Sikt sammen {i6}, {i7} og {i8} i en bolle.",
       "uses": [
         "i6",
@@ -139,6 +145,7 @@
       "component_id": "c1",
       "phase": "prep",
       "short": "Hakk nøttene",
+      "verb": "hakk",
       "text": "Grovhakk {i9}.",
       "uses": [
         "i9"
@@ -156,6 +163,7 @@
       "component_id": "c1",
       "phase": "cook",
       "short": "Smelt smør og sjokolade",
+      "verb": "smelt",
       "text": "Smelt {i1} og {i2} i en kjele på lav varme. Rør til blandingen er blank, ta den av varmen og la den kjøle seg i 5 minutter.",
       "uses": [
         "i1",
@@ -178,6 +186,7 @@
       "component_id": "c1",
       "phase": "prep",
       "short": "Pisk inn sukker og egg",
+      "verb": "pisk inn",
       "text": "Pisk {i3} og {i4} inn i sjokoladesmøret. Pisk så inn {i5}, ett om gangen.",
       "uses": [
         "i3",
@@ -202,6 +211,7 @@
       "component_id": "c1",
       "phase": "prep",
       "short": "Vend inn det tørre",
+      "verb": "vend inn",
       "text": "Vend melblandingen og nøttene inn i sjokoladerøren med en slikkepott. Stopp så fort du ikke ser mer mel.",
       "uses": [],
       "after": [
@@ -224,6 +234,7 @@
       "component_id": "c1",
       "phase": "cook",
       "short": "Stek",
+      "verb": "stek",
       "text": "Hell røren i formen og stek midt i ovnen i 25–30 minutter.",
       "uses": [],
       "after": [
@@ -246,6 +257,7 @@
       "component_id": "c1",
       "phase": "cook",
       "short": "Avkjøl",
+      "verb": "avkjøl",
       "text": "La brownien bli helt kald i formen, minst 1 time.",
       "uses": [],
       "after": [
@@ -266,6 +278,7 @@
       "component_id": "c1",
       "phase": "serve",
       "short": "Skjær i biter",
+      "verb": "skjær",
       "text": "Løft brownien ut etter bakepapiret og skjær i 16 biter.",
       "uses": [],
       "after": [
@@ -277,5 +290,10 @@
       "equipment": [],
       "setup": false
     }
+  ],
+  "cuisine": "American",
+  "difficulty": "Simplistic",
+  "meal_types": [
+    "Desserts"
   ]
 }

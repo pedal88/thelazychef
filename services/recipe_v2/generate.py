@@ -14,6 +14,7 @@ import os
 from jinja2 import Environment, FileSystemLoader
 
 from database.models import Ingredient, Recipe, db
+from schemas.recipe_v2 import CUISINES, DIFFICULTIES, MEAL_TYPES
 from services.ai_models import RECIPE_V2_EFFORT, RECIPE_V2_MODEL
 from services.recipe_v2 import claude
 from services.recipe_v2.store import save_v2
@@ -39,6 +40,10 @@ def catalogs():
     eq = _load(*c, 'equipment.json')['equipment']
     units = _load(*c, 'units.json')['units']
     return {
+        'cuts': ', '.join(f"{x['id']} ({x['name']})" for x in _load(*c, 'cuts.json')['cuts']),
+        'cuisines': ', '.join(CUISINES),
+        'difficulties': ', '.join(DIFFICULTIES),
+        'meal_types': ', '.join(MEAL_TYPES),
         'methods': ', '.join(m['id'] + (' [heat]' if m['heat'] else '') for m in methods),
         'equipment': ', '.join(f"{e['id']} ({e['name']})" for e in eq),
         'units': ', '.join(f"{u['id']} ({u['name']})" if u['name'] != u['id'] else u['id'] for u in units),

@@ -34,7 +34,7 @@ RULES = {
     4: 'Hver ingredienslinje brukes av nøyaktig ett steg',
     5: 'Ingen sykler, nøyaktig ett sluttsteg',
     6: 'Steg med varmemetode har phase = cook',
-    7: 'equipment, method og unit finnes i katalogene',
+    7: 'equipment, method, unit, cut, cuisine, difficulty og meal_types finnes i katalogene',
     8: 'amount > 0, eller null med «etter smak»',
 }
 
@@ -55,6 +55,10 @@ def load_catalogs():
         'methods': {m['id'] for m in methods},
         'heat_methods': {m['id'] for m in methods if m['heat']},
         'units': {u['id'] for u in units},
+        'cuts': {c['id'] for c in _load('cuts.json')['cuts']},
+        'cuisines': set(_load('graph_metadata.json')['cuisines']),
+        'difficulties': set(_load('difficulty.json')['difficulty']),
+        'meal_types': {m for group in ('Standard', 'Courses') for m in _load('meal_types.json')['meal_classification'][group]},
     }
 
 
@@ -213,6 +217,14 @@ def validate_recipe_v2(recipe, catalogs=None):
                 err(7, f'{i.get("local_id")}.unit {u!r} is not in the unit catalog.')
         elif u and u not in cat['units']:
             err(7, f'{i.get("local_id")}.unit {u!r} is not in the unit catalog.')
+        if i.get('cut') and i.get('cut') not in cat['cuts']:
+            err(7, f'{i.get("local_id")}.cut {i.get("cut")!r} is not in the cut catalog.')
+    for key, catalog, label in (('cuisine', 'cuisines', 'cuisine'), ('difficulty', 'difficulties', 'difficulty')):
+        if recipe.get(key) and recipe.get(key) not in cat[catalog]:
+            err(7, f'{key} {recipe.get(key)!r} is not in the {label} list.')
+    for m in recipe.get('meal_types') or []:
+        if m not in cat['meal_types']:
+            err(7, f'meal_types contains {m!r}, which is not in the meal type list.')
 
     # Rule 8: amount > 0, or null with "etter smak"
     for i in ings:
@@ -244,6 +256,14 @@ def validate_recipe_v2(recipe, catalogs=None):
             warn('heat_without_equipment', f'{sid} uses heat but has no equipment.')
         if len((s.get('short') or '').split()) > 5:
             warn('long_short', f'{sid}.short has more than 5 words.')
+        verb, short = (s.get('verb') or '').strip().lower(), (s.get('short') or '').strip().lower()
+        if not verb:
+            warn('no_verb', f'{sid} has no verb.')
+        elif not short.startswith(verb.split()[0]):
+            warn('verb_not_in_short', f'{sid}.verb {s.get("verb")!r} is not the first word of short {s.get("short")!r}.')
+    for key in ('cuisine', 'difficulty'):
+        if not recipe.get(key):
+            warn('no_' + key, f'The recipe has no {key}.')
 
     return {
         'valid': not errors,

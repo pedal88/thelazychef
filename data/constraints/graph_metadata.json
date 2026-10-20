@@ -9,6 +9,11 @@
         "Thai": "th",
         "Mediterranean": "gr",
         "Norwegian": "no",
+        "Chinese": "cn",
+        "Korean": "kr",
+        "Vietnamese": "vn",
+        "Greek": "gr",
+        "Spanish": "es",
         "Other": "un"
     },
     "proteins": {

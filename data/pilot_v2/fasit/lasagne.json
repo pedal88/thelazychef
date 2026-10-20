@@ -33,7 +33,8 @@
       "name": "løk",
       "amount": 1,
       "unit": "piece",
-      "prep_style": "finhakket"
+      "prep_style": "finhakket",
+      "cut": "chop"
     },
     {
       "local_id": "i3",
@@ -41,7 +42,8 @@
       "name": "gulrot",
       "amount": 1,
       "unit": "piece",
-      "prep_style": "finrevet"
+      "prep_style": "finrevet",
+      "cut": "grate"
     },
     {
       "local_id": "i4",
@@ -49,7 +51,8 @@
       "name": "hvitløk",
       "amount": 2,
       "unit": "clove",
-      "prep_style": "finhakket"
+      "prep_style": "finhakket",
+      "cut": "chop"
     },
     {
       "local_id": "i5",
@@ -90,7 +93,13 @@
     {
       "local_id": "i10",
       "component_id": "c1",
-      "name": "salt og pepper",
+      "name": "salt",
+      "prep_style": "etter smak"
+    },
+    {
+      "local_id": "i27",
+      "component_id": "c1",
+      "name": "sort pepper",
       "prep_style": "etter smak"
     },
     {
@@ -148,7 +157,8 @@
       "name": "parmesan",
       "amount": 30,
       "unit": "g",
-      "prep_style": "finrevet"
+      "prep_style": "finrevet",
+      "cut": "grate"
     },
     {
       "local_id": "i19",
@@ -156,7 +166,8 @@
       "name": "hjertesalat",
       "amount": 1,
       "unit": "piece",
-      "prep_style": "revet i biter"
+      "prep_style": "revet i biter",
+      "cut": "tear"
     },
     {
       "local_id": "i20",
@@ -164,7 +175,8 @@
       "name": "agurk",
       "amount": 0.5,
       "unit": "piece",
-      "prep_style": "tynne skiver"
+      "prep_style": "tynne skiver",
+      "cut": "slice"
     },
     {
       "local_id": "i21",
@@ -172,7 +184,8 @@
       "name": "cherrytomater",
       "amount": 150,
       "unit": "g",
-      "prep_style": "delt i to"
+      "prep_style": "delt i to",
+      "cut": "halve"
     },
     {
       "local_id": "i22",
@@ -205,7 +218,13 @@
     {
       "local_id": "i26",
       "component_id": "c4",
-      "name": "salt og pepper",
+      "name": "salt",
+      "prep_style": "etter smak"
+    },
+    {
+      "local_id": "i28",
+      "component_id": "c4",
+      "name": "sort pepper",
       "prep_style": "etter smak"
     }
   ],
@@ -215,6 +234,7 @@
       "component_id": "c3",
       "phase": "cook",
       "short": "Forvarm ovnen",
+      "verb": "forvarm",
       "text": "Sett ovnen på 200 °C over- og undervarme, med rist midt i ovnen.",
       "uses": [],
       "after": [],
@@ -234,6 +254,7 @@
       "component_id": "c1",
       "phase": "prep",
       "short": "Kutt grønnsakene",
+      "verb": "kutt",
       "text": "Finhakk {i2} og {i4}, og riv {i3} fint.",
       "uses": [
         "i2",
@@ -255,6 +276,7 @@
       "component_id": "c1",
       "phase": "cook",
       "short": "Brun kjøttdeigen",
+      "verb": "brun",
       "text": "Varm {i5} i en gryte på høy varme og brun {i1} til den er smuldret.",
       "uses": [
         "i5",
@@ -276,6 +298,7 @@
       "component_id": "c1",
       "phase": "cook",
       "short": "Fres grønnsakene",
+      "verb": "fres",
       "text": "Skru ned til middels varme. Rør grønnsakene inn i kjøttdeigen og fres i 4 minutter. Rør inn {i6}.",
       "uses": [
         "i6"
@@ -299,12 +322,14 @@
       "component_id": "c1",
       "phase": "cook",
       "short": "Kok kjøttsausen",
-      "text": "Ha i {i7}, {i8}, {i9} og {i10}. Småkok uten lokk i 30 minutter.",
+      "verb": "kok",
+      "text": "Ha i {i7}, {i8}, {i9}, {i10} og {i27}. Småkok uten lokk i 30 minutter.",
       "uses": [
         "i7",
         "i8",
         "i9",
-        "i10"
+        "i10",
+        "i27"
       ],
       "after": [
         "s4"
@@ -325,6 +350,7 @@
       "component_id": "c2",
       "phase": "cook",
       "short": "Lag smørbolle",
+      "verb": "lag",
       "text": "Smelt {i11} i en kjele på middels varme. Rør inn {i12} og la det frese i ett minutt.",
       "uses": [
         "i11",
@@ -346,6 +372,7 @@
       "component_id": "c2",
       "phase": "cook",
       "short": "Spe med melk",
+      "verb": "spe",
       "text": "Spe smørbollen med {i13}, litt om gangen, mens du visper. La sausen småkoke i 5 minutter, og smak til med {i14} og {i15}.",
       "uses": [
         "i13",
@@ -372,6 +399,7 @@
       "component_id": "c3",
       "phase": "prep",
       "short": "Legg lagvis",
+      "verb": "legg",
       "text": "Smør en form på ca. 20 × 30 cm. Legg tre lag med kjøttsausen, den hvite sausen og {i16}, og avslutt med hvit saus. Strø over {i17} og {i18}.",
       "uses": [
         "i16",
@@ -397,6 +425,7 @@
       "component_id": "c3",
       "phase": "cook",
       "short": "Stek lasagnen",
+      "verb": "stek",
       "text": "Stek lasagnen midt i ovnen i 35–40 minutter.",
       "uses": [],
       "after": [
@@ -418,6 +447,7 @@
       "component_id": "c3",
       "phase": "cook",
       "short": "Hvil",
+      "verb": "hvil",
       "text": "La lasagnen hvile i 10 minutter før du skjærer i den.",
       "uses": [],
       "after": [
@@ -435,6 +465,7 @@
       "component_id": "c4",
       "phase": "prep",
       "short": "Skyll salaten",
+      "verb": "skyll",
       "text": "Skyll {i19}, riv bladene i biter og slyng dem tørre.",
       "uses": [
         "i19"
@@ -454,6 +485,7 @@
       "component_id": "c4",
       "phase": "prep",
       "short": "Kutt agurk og tomat",
+      "verb": "kutt",
       "text": "Skjær {i20} i tynne skiver og del {i21} i to.",
       "uses": [
         "i20",
@@ -472,13 +504,15 @@
       "component_id": "c4",
       "phase": "prep",
       "short": "Rist dressingen",
-      "text": "Rist sammen {i22}, {i23}, {i24}, {i25} og {i26} i et glass med lokk.",
+      "verb": "rist",
+      "text": "Rist sammen {i22}, {i23}, {i24}, {i25}, {i26} og {i28} i et glass med lokk.",
       "uses": [
         "i22",
         "i23",
         "i24",
         "i25",
-        "i26"
+        "i26",
+        "i28"
       ],
       "after": [],
       "active_minutes": 2,
@@ -495,6 +529,7 @@
       "component_id": "c4",
       "phase": "serve",
       "short": "Vend salaten",
+      "verb": "vend",
       "text": "Vend salatbladene og agurk og tomat med dressingen.",
       "uses": [],
       "after": [
@@ -515,6 +550,7 @@
       "component_id": "c3",
       "phase": "serve",
       "short": "Server",
+      "verb": "server",
       "text": "Skjær lasagnen i stykker og server med salaten.",
       "uses": [],
       "after": [
@@ -527,5 +563,11 @@
       "equipment": [],
       "setup": false
     }
+  ],
+  "cuisine": "Italian",
+  "difficulty": "Moderate",
+  "meal_types": [
+    "Dinner",
+    "Main Dish"
   ]
 }

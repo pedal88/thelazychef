@@ -21,7 +21,8 @@
       "name": "guanciale eller pancetta",
       "amount": 150,
       "unit": "g",
-      "prep_style": "i staver"
+      "prep_style": "i staver",
+      "cut": "strips"
     },
     {
       "local_id": "i3",
@@ -44,7 +45,8 @@
       "name": "pecorino romano",
       "amount": 60,
       "unit": "g",
-      "prep_style": "finrevet"
+      "prep_style": "finrevet",
+      "cut": "grate"
     },
     {
       "local_id": "i6",
@@ -52,7 +54,8 @@
       "name": "pecorino romano",
       "amount": 20,
       "unit": "g",
-      "prep_style": "finrevet"
+      "prep_style": "finrevet",
+      "cut": "grate"
     },
     {
       "local_id": "i7",
@@ -69,6 +72,13 @@
       "amount": 1,
       "unit": "tbsp",
       "prep_style": "til kokevannet"
+    },
+    {
+      "local_id": "i9",
+      "component_id": "c1",
+      "name": "vann",
+      "amount": 3,
+      "unit": "l"
     }
   ],
   "steps": [
@@ -77,8 +87,10 @@
       "component_id": "c1",
       "phase": "cook",
       "short": "Kok opp vann",
-      "text": "Kok opp 3 liter vann i en stor kjele og tilsett {i8}.",
+      "verb": "kok opp",
+      "text": "Kok opp {i9} i en stor kjele og tilsett {i8}.",
       "uses": [
+        "i9",
         "i8"
       ],
       "after": [],
@@ -98,6 +110,7 @@
       "component_id": "c1",
       "phase": "prep",
       "short": "Pisk eggeblandingen",
+      "verb": "pisk",
       "text": "Pisk sammen {i3}, {i4}, {i5} og {i7} i en bolle til en tykk krem.",
       "uses": [
         "i3",
@@ -123,6 +136,7 @@
       "component_id": "c1",
       "phase": "prep",
       "short": "Skjær guancialen",
+      "verb": "skjær",
       "text": "Skjær {i2} i staver på ca. 1 cm.",
       "uses": [
         "i2"
@@ -140,6 +154,7 @@
       "component_id": "c1",
       "phase": "cook",
       "short": "Stek guancialen",
+      "verb": "stek",
       "text": "Legg guancialen i en kald, stor stekepanne og stek på middels varme til fettet har smeltet. Ta panna av varmen.",
       "uses": [],
       "after": [
@@ -161,6 +176,7 @@
       "component_id": "c1",
       "phase": "cook",
       "short": "Kok pastaen",
+      "verb": "kok",
       "text": "Kok {i1} i det kokende vannet, ett minutt kortere enn pakken sier.",
       "uses": [
         "i1"
@@ -184,6 +200,7 @@
       "component_id": "c1",
       "phase": "cook",
       "short": "Ta av pastavann",
+      "verb": "ta av",
       "text": "Øs opp 2 dl av vannet pastaen har kokt i, og hell av resten.",
       "uses": [],
       "after": [
@@ -204,6 +221,7 @@
       "component_id": "c1",
       "phase": "cook",
       "short": "Vend pastaen i fettet",
+      "verb": "vend",
       "text": "Ha pastaen rett over i panna med guancialen og fettet. Vend den rundt utenfor varmen i et halvt minutt, så panna kjøler seg litt.",
       "uses": [],
       "after": [
@@ -224,6 +242,7 @@
       "component_id": "c1",
       "phase": "cook",
       "short": "Rør inn eggeblandingen",
+      "verb": "rør inn",
       "text": "Hell eggeblandingen over pastaen og rør raskt. Spe med pastavannet, en skvett om gangen, til sausen er kremet.",
       "uses": [],
       "after": [
@@ -247,6 +266,7 @@
       "component_id": "c1",
       "phase": "serve",
       "short": "Server",
+      "verb": "server",
       "text": "Server carbonaraen med en gang, toppet med {i6} og mer pepper.",
       "uses": [
         "i6"
@@ -260,5 +280,11 @@
       "equipment": [],
       "setup": false
     }
+  ],
+  "cuisine": "Italian",
+  "difficulty": "Moderate",
+  "meal_types": [
+    "Dinner",
+    "Main Dish"
   ]
 }
