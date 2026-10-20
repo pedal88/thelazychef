@@ -138,7 +138,7 @@
                         {{ recipe.prep_time_mins }} min
                     </span>
                     {% endif %}
-                    <span class="text-xs text-white/60">{{ recipe.difficulty }}</span>
+                    <span class="text-xs text-white/60">{{ recipe.difficulty|difficulty_label }}</span>
                 </div>
 
                 {# Title #}
@@ -250,7 +250,7 @@
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5 items-end">
 
                     {# Multi-Select Dropdown Macro #}
-                    {% macro multi_select_dropdown(id, label, options, selected_values) %}
+                    {% macro multi_select_dropdown(id, label, options, selected_values, labels=none) %}
                     <div class="relative group dropdown-container" id="container-{{ id }}">
                         <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">{{ label
                             }}</label>
@@ -310,7 +310,7 @@
                                     </span>
                                     <span
                                         class="ml-6 block truncate font-normal text-gray-900 peer-checked:font-medium peer-checked:text-indigo-900">
-                                        {{ option|title }}
+                                        {{ labels[option] if labels and option in labels else option|title }}
                                     </span>
                                 </label>
                                 {% endfor %}
@@ -323,7 +323,8 @@
                     {{ multi_select_dropdown('diet', 'Diet', diet_options, selected_diets) }}
                     {{ multi_select_dropdown('meal_type', 'Meal Type', meal_type_options, selected_meal_types) }}
                     {{ multi_select_dropdown('protein_type', 'Protein', protein_options, selected_proteins) }}
-                    {{ multi_select_dropdown('difficulty', 'Difficulty', difficulty_options, selected_difficulties) }}
+                    {{ multi_select_dropdown('difficulty', 'Difficulty', difficulty_options, selected_difficulties, difficulty_labels) }}
+                    {{ multi_select_dropdown('heat_source', 'Cooked in', heat_source_options, selected_heat_sources, heat_source_labels) }}
                 </div>
 
                 <div class="mt-6 flex justify-end gap-3 border-t border-gray-200 pt-4">
@@ -482,7 +483,7 @@
                                         <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                                             <span
                                                 class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">{{
-                                                recipe.difficulty }}</span>
+                                                recipe.difficulty|difficulty_label }}</span>
                                         </td>
                                         <td class="px-3 py-4 text-sm text-gray-500 max-w-xs truncate">{{
                                             recipe.diets_list|join(', ') }}</td>

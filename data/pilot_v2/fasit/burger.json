@@ -565,6 +565,10 @@
   "difficulty": "Elevated",
   "meal_types": [
     "Dinner",
-    "Main Dish"
-  ]
+    "Main Dish",
+    "Weekend"
+  ],
+  "spice_level": 0,
+  "keeps_days": 1,
+  "freezes": false
 }

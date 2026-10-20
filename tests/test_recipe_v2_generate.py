@@ -86,7 +86,8 @@ class GenerateTests(unittest.TestCase):
 
     def test_verb_cut_and_metadata_are_asked_for_and_saved(self):
         answer = copy.deepcopy(self.run_['recipe'])
-        answer.update(cuisine='Italian', difficulty='Moderate', meal_types=['Dinner', 'Main Dish'])
+        answer.update(cuisine='Italian', difficulty='Moderate', meal_types=['Dinner', 'Main Dish'],
+                      spice_level=0, keeps_days=1, freezes=True)
         answer['steps'][0]['verb'] = answer['steps'][0]['short'].split()[0].lower()
         cut_line = next(i for i in answer['ingredients'] if i.get('prep_style'))
         cut_line['cut'] = 'grate'
@@ -95,7 +96,15 @@ class GenerateTests(unittest.TestCase):
 
         self.assertTrue(report['valid'])
         saved = db.session.get(Recipe, recipe.id)
-        self.assertEqual((saved.cuisine, saved.difficulty, saved.meal_types_list), ('Italian', 'Moderate', ['Dinner', 'Main Dish']))
+        self.assertEqual((saved.cuisine, saved.difficulty), ('Italian', 'Moderate'))
+        self.assertEqual((saved.spice_level, saved.keeps_days, saved.freezes), (0, 1, True))
+        # Freezer Friendly is set by the app from freezes, never by the model
+        self.assertEqual(sorted(saved.meal_types_list), ['Dinner', 'Freezer Friendly', 'Main Dish'])
+        self.assertNotIn('Freezer Friendly', fake.requests[1]['schema']['properties']['meal_types']['items']['enum'])
+        # Derived after saving: what it is finished in, clean-up and the planned total time
+        self.assertEqual(saved.heat_source, 'pan')
+        self.assertIn(saved.cleanup_factor, range(1, 6))
+        self.assertGreater(saved.prep_time_mins, 0)
         self.assertEqual(saved.steps[0].verb, answer['steps'][0]['verb'])
         self.assertEqual(next(line.cut for line in saved.lines if line.local_id == cut_line['local_id']), 'grate')
         # The catalogs are in the prompt, and the schema only allows their values

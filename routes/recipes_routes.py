@@ -14,12 +14,14 @@ from database.models import (
     RecipeCollection,
     RecipeDiet,
     RecipeIngredient,
+    RecipeLine,
     RecipeMealType,
     UserRecipeInteraction,
     db,
 )
 from routes._flat import FlatBlueprint
-from routes._shared import get_recipe_image_url, get_storage, load_json_option, viewer_is_admin
+from services.recipe_v2.derive import HEAT_LABELS
+from routes._shared import DIFFICULTY_LABELS, get_recipe_image_url, get_storage, load_json_option, viewer_is_admin
 from utils.decorators import admin_required
 
 recipes_bp = FlatBlueprint("recipes", __name__)
@@ -63,14 +65,8 @@ def recipes_list():
             protein_options.extend(p['examples'])
     protein_options = sorted(list(set(protein_options)))
     
-    # Meal Types (Dict of Lists -> Flattened List)
-    mt_data = load_json_option('constraints/meal_types.json', 'meal_classification')
-    meal_type_options = []
-    if isinstance(mt_data, dict):
-        for category_list in mt_data.values():
-            if isinstance(category_list, list):
-                meal_type_options.extend(category_list)
-    meal_type_options = sorted(list(set(meal_type_options)))
+    # Meal types: one list, in the order of the file
+    meal_type_options = list(dict.fromkeys(load_json_option('constraints/meal_types.json', 'meal_types')))
 
     # 2. Handle Query Params (multi-select)
     # Default to ALL options if not specified (First load behavior)
@@ -88,6 +84,9 @@ def recipes_list():
     
     selected_difficulties = request.args.getlist('difficulty')
     selected_proteins = request.args.getlist('protein_type')
+    # What the dish is finished in (v2, services/recipe_v2/derive.py). Only filters when chosen.
+    heat_source_options = list(HEAT_LABELS)
+    selected_heat_sources = request.args.getlist('heat_source')
 
     # 3. Handle View Mode & Base Query
     view_mode = request.args.get('view', 'discover')
@@ -164,8 +163,14 @@ def recipes_list():
             clauses.append(Recipe.ingredients.any(
                 RecipeIngredient.ingredient.has(Ingredient.name.ilike(f'%{p}%'))
             ))
+            # v2 recipes: the derived main protein, or any line with that ingredient
+            clauses.append(Recipe.protein_type == p)
+            clauses.append(Recipe.lines.any(RecipeLine.ingredient.has(Ingredient.name.ilike(f'%{p}%'))))
         if clauses:
              stmt = stmt.where(or_(*clauses))
+
+    if selected_heat_sources and len(selected_heat_sources) < len(heat_source_options):
+        stmt = stmt.where(Recipe.heat_source.in_(selected_heat_sources))
 
     if selected_meal_types and len(selected_meal_types) < len(meal_type_options):
         stmt = stmt.where(Recipe.meal_types.any(RecipeMealType.meal_type.in_(selected_meal_types)))
@@ -203,7 +208,11 @@ def recipes_list():
                          selected_diets=selected_diets,
                          selected_meal_types=selected_meal_types,
                          selected_difficulties=selected_difficulties,
-                         selected_proteins=selected_proteins)
+                         selected_proteins=selected_proteins,
+                         difficulty_labels=DIFFICULTY_LABELS,
+                         heat_source_options=heat_source_options,
+                         heat_source_labels=HEAT_LABELS,
+                         selected_heat_sources=selected_heat_sources)
 
 
 @recipes_bp.route('/api/recipe/<int:recipe_id>', methods=['GET'])

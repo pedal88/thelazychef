@@ -285,6 +285,10 @@
   "difficulty": "Moderate",
   "meal_types": [
     "Dinner",
-    "Main Dish"
-  ]
+    "Main Dish",
+    "Weeknight"
+  ],
+  "spice_level": 0,
+  "keeps_days": 1,
+  "freezes": false
 }

@@ -22,7 +22,8 @@ def _load(name):
 CUTS = tuple(c['id'] for c in _load('cuts.json')['cuts'])
 CUISINES = tuple(_load('graph_metadata.json')['cuisines'])
 DIFFICULTIES = tuple(_load('difficulty.json')['difficulty'])
-MEAL_TYPES = tuple(m for group in ('Standard', 'Courses') for m in _load('meal_types.json')['meal_classification'][group])
+_MEAL = _load('meal_types.json')
+MEAL_TYPES = tuple(m for m in _MEAL['meal_types'] if m not in _MEAL['derived'])  # the derived tags are set by the app
 Cut = typing.Literal[CUTS]
 Cuisine = typing.Literal[CUISINES]
 Difficulty = typing.Literal[DIFFICULTIES]
@@ -77,3 +78,6 @@ class RecipeV2Schema(typing.TypedDict):
     cuisine: typing.NotRequired[Cuisine]
     difficulty: typing.NotRequired[Difficulty]
     meal_types: typing.NotRequired[list[MealType]]
+    spice_level: typing.NotRequired[typing.Literal[0, 1, 2, 3]]  # chili heat: 0 mild, 1 a little hot, 2 hot, 3 very hot
+    keeps_days: typing.NotRequired[int]  # days the leftovers keep in the fridge; 0 = eat at once
+    freezes: typing.NotRequired[bool]  # the finished dish can be frozen and reheated

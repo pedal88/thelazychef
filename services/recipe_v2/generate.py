@@ -16,8 +16,8 @@ from jinja2 import Environment, FileSystemLoader
 from database.models import Ingredient, Recipe, db
 from schemas.recipe_v2 import CUISINES, DIFFICULTIES, MEAL_TYPES
 from services.ai_models import RECIPE_V2_EFFORT, RECIPE_V2_MODEL
-from services.recipe_v2 import claude
-from services.recipe_v2.store import save_v2
+from services.recipe_v2 import claude, derive
+from services.recipe_v2.store import save_v2, to_v2
 from services.recipe_v2_validator import format_errors_for_retry, validate_recipe_v2
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -164,6 +164,8 @@ def create_recipe(kind, source, chef_id=None, language='English', call=None, rec
     if data:
         ids, missing = match_pantry(data)
         save_v2(recipe, dict(data, title=title), ids)
+        db.session.flush()
+        derive.apply(recipe, to_v2(recipe))
         recipe.validation_errors = []
     else:
         recipe.validation_errors = attempts[-1]['errors']

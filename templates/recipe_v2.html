@@ -36,6 +36,13 @@
     <div class="fact"><span class="eyebrow">Makes</span><b>{{ v.yield_text if not v.scalable else v.servings ~ ' servings' }}</b></div>
   </div>
 
+  {% if v.about or recipe.difficulty %}
+  <ul class="about">
+    {% if recipe.difficulty %}<li><span class="eyebrow">Difficulty</span> {{ recipe.difficulty|difficulty_label }}</li>{% endif %}
+    {% for label, value in v.about %}<li><span class="eyebrow">{{ label }}</span> {{ value }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+
   <details class="settings">
     <summary>Servings and plan</summary>
     <div class="settings-body">

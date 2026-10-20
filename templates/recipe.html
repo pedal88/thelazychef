@@ -113,7 +113,7 @@
             <div class="col-span-1 text-xs text-slate-800 space-y-2 mt-1">
                 <p><strong
                         class="font-black uppercase tracking-wider text-[10px] text-slate-500 block mb-0.5">Difficulty</strong>
-                    {{ recipe.difficulty|title }}</p>
+                    {{ recipe.difficulty|difficulty_label }}</p>
                 <p><strong
                         class="font-black uppercase tracking-wider text-[10px] text-slate-500 block mb-0.5">Cuisine</strong>
                     {{ recipe.cuisine|title }}</p>
@@ -240,7 +240,7 @@
             </h1>
 
             <p class="text-xl text-slate-600 font-light leading-relaxed max-w-2xl print:hidden">
-                A {{ recipe.difficulty|lower }} {{ recipe.cuisine }} dish perfect for {{ recipe.diets_list|join(' and ')
+                {% set dl = recipe.difficulty|difficulty_label|lower %}{{ 'An' if dl[:1] in 'aeiou' and dl else 'A' }} {{ dl }} {{ recipe.cuisine }} dish perfect for {{ recipe.diets_list|join(' and ')
                 }}
                 diets.
                 Using fresh ingredients from your pantry, customized by our World Class AI Chef.

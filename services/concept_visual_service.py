@@ -21,11 +21,7 @@ def sync_concept_visuals():
     if meal_types_path.exists():
         with open(meal_types_path) as f:
             data = json.load(f)
-            cls = data.get('meal_classification', {})
-            types = []
-            for group, items in cls.items():
-                types.extend(items)
-            _upsert_concepts('meal_type', list(set(types)))
+            _upsert_concepts('meal_type', list(dict.fromkeys(data.get('meal_types', []))))
 
     # 3. Main Protein
     protein_path = base_dir / "constraints" / "main_protein.json"

@@ -8,6 +8,9 @@ from flask_login import current_user
 from services.storage_service import GoogleCloudStorageProvider
 
 
+# Stored difficulty (data/constraints/difficulty.json) -> what readers see. The stored values stay as they are.
+DIFFICULTY_LABELS = {'Simplistic': 'Easy', 'Moderate': 'Medium', 'Elevated': 'Challenging'}
+
 def viewer_is_admin() -> bool:
     """Public routes show drafts, pending ingredients and unpublished pages only to admins."""
     return bool(current_user.is_authenticated and getattr(current_user, 'is_admin', False))

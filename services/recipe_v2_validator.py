@@ -58,7 +58,7 @@ def load_catalogs():
         'cuts': {c['id'] for c in _load('cuts.json')['cuts']},
         'cuisines': set(_load('graph_metadata.json')['cuisines']),
         'difficulties': set(_load('difficulty.json')['difficulty']),
-        'meal_types': {m for group in ('Standard', 'Courses') for m in _load('meal_types.json')['meal_classification'][group]},
+        'meal_types': set(_load('meal_types.json')['meal_types']),
     }
 
 
@@ -261,9 +261,13 @@ def validate_recipe_v2(recipe, catalogs=None):
             warn('no_verb', f'{sid} has no verb.')
         elif not short.startswith(verb.split()[0]):
             warn('verb_not_in_short', f'{sid}.verb {s.get("verb")!r} is not the first word of short {s.get("short")!r}.')
-    for key in ('cuisine', 'difficulty'):
-        if not recipe.get(key):
+    for key in ('cuisine', 'difficulty', 'spice_level', 'keeps_days', 'freezes'):
+        if recipe.get(key) is None or recipe.get(key) == '':
             warn('no_' + key, f'The recipe has no {key}.')
+    if recipe.get('spice_level') not in (None, 0, 1, 2, 3):
+        err(7, f"spice_level is {recipe.get('spice_level')!r}, must be 0, 1, 2 or 3.")
+    if recipe.get('keeps_days') is not None and not 0 <= recipe['keeps_days'] <= 14:
+        warn('keeps_days', f"keeps_days is {recipe['keeps_days']}; leftovers rarely keep more than a week or two.")
 
     return {
         'valid': not errors,

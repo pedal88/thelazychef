@@ -14,7 +14,7 @@ from database.db_connector import configure_database
 # The models are re-exported here: many scripts do "from app import app, db, Recipe, ..."
 from database.models import db, Ingredient, Recipe, Instruction, RecipeIngredient, RecipeMealType, RecipeDiet, User, Resource, resource_relations, Chef, UserRecipeInteraction, RecipeEvaluation, RecipeCollection, CollectionItem, UserQueue, UserLink, ConceptVisual, VisualStyleGuide
 from services.storage_service import get_storage_provider
-from routes._shared import get_recipe_image_url, get_image_url
+from routes._shared import DIFFICULTY_LABELS, get_recipe_image_url, get_image_url
 
 
 app = Flask(__name__)
@@ -91,6 +91,12 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize Flask-Migrate
 migrate = Migrate(app, db)
+
+@app.template_filter('difficulty_label')
+def difficulty_label(level):
+    """Stored difficulty (data/constraints/difficulty.json) as shown to readers."""
+    return DIFFICULTY_LABELS.get(level, level or '')
+
 
 @app.template_filter('get_protein_category')
 def get_protein_category(protein_name):

@@ -100,6 +100,20 @@
       "exclusive": true
     },
     {
+      "id": "slow_cooker",
+      "name": "Slow cooker",
+      "name_en": "Slow cooker",
+      "role": "koke",
+      "exclusive": true
+    },
+    {
+      "id": "sous_vide",
+      "name": "Sous vide-pinne",
+      "name_en": "Sous vide circulator",
+      "role": "koke",
+      "exclusive": true
+    },
+    {
       "id": "baking_tray",
       "name": "Stekebrett",
       "name_en": "Baking tray",

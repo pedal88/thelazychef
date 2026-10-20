@@ -310,6 +310,11 @@ class Recipe(db.Model):
     validation_errors: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)  # empty or null when valid
     chef_note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     yield_text: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)  # "én form på 24 cm", for recipes not scaled per serving
+    # v2 metadata. heat_source is derived from the steps (services/recipe_v2/derive.py); the rest comes from the model.
+    heat_source: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)  # id in derive.HEAT_SOURCES
+    spice_level: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # 0 mild .. 3 very hot
+    keeps_days: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # leftovers in the fridge; 0 = eat at once
+    freezes: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
 
     # Nutrition Totals (Calculated)
     total_calories: Mapped[float] = mapped_column(Float, nullable=True)

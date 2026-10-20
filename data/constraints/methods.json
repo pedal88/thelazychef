@@ -102,6 +102,16 @@
       "heat": true
     },
     {
+      "id": "slow_cook",
+      "name": "Langtidskoke i slow cooker",
+      "heat": true
+    },
+    {
+      "id": "sous_vide",
+      "name": "Sous vide",
+      "heat": true
+    },
+    {
       "id": "warm",
       "name": "Varme opp",
       "heat": true
