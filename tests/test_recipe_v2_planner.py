@@ -76,8 +76,11 @@ class ShoppingListTests(unittest.TestCase):
     def test_parts_and_to_taste(self):
         items = {e['name']: e for e in shopping_list(v2_of('fasit/lasagne.json'))}
         self.assertEqual(items['olivenolje']['parts'], ['Kjøttsaus', 'Grønn salat'])
-        self.assertTrue(items['salt og pepper']['to_taste'])
-        self.assertEqual(items['salt og pepper']['amounts'], [])
+        # Salt and pepper are separate lines (structure rule 2c): pepper only to taste, salt also measured for the white sauce.
+        self.assertTrue(items['sort pepper']['to_taste'])
+        self.assertEqual(items['sort pepper']['amounts'], [])
+        self.assertTrue(items['salt']['to_taste'])
+        self.assertEqual(items['salt']['amounts'], [{'amount': 0.5, 'unit': 'tsp'}])
 
     def test_scaling(self):
         items = {e['name']: e for e in shopping_list(v2_of('fasit/carbonara.json'), factor=1.5)}

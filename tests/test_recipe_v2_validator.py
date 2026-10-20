@@ -111,3 +111,29 @@ def test_warning_time_words_but_technique_ok():
     assert not [w for w in validate_recipe_v2(r)['warnings'] if w['code'] == 'time_words']  # «mens du visper»
     step(r, 's11')['text'] = 'Skyll {i19} mens lasagnen står i ovnen.'
     assert [w for w in validate_recipe_v2(r)['warnings'] if w['code'] == 'time_words']
+
+
+def test_rule7_cut_and_metadata_come_from_the_catalogs():
+    r = load('carbonara')
+    r['ingredients'][1]['cut'] = 'julienne'
+    assert rules(r) == [7]
+    for key, value in (('cuisine', 'Martian'), ('difficulty', 'Hard'), ('meal_types', ['Brunch'])):
+        r = load('carbonara')
+        r[key] = value
+        assert rules(r) == [7], key
+
+
+def test_missing_verb_and_metadata_are_warnings_only():
+    r = load('carbonara')
+    del step(r, 's2')['verb']
+    del r['cuisine']
+    result = validate_recipe_v2(r)
+    assert result['valid']
+    codes = {w['code'] for w in result['warnings']}
+    assert {'no_verb', 'no_cuisine'} <= codes
+
+
+def test_verb_must_start_like_short():
+    r = load('carbonara')
+    step(r, 's2')['verb'] = 'rør'  # short is "Pisk eggeblandingen"
+    assert 'verb_not_in_short' in {w['code'] for w in validate_recipe_v2(r)['warnings']}

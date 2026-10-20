@@ -109,7 +109,8 @@
       "name": "tomat",
       "amount": 1,
       "unit": "piece",
-      "prep_style": "skiver"
+      "prep_style": "skiver",
+      "cut": "slice"
     },
     {
       "local_id": "i14",
@@ -117,7 +118,8 @@
       "name": "rødløk",
       "amount": 0.5,
       "unit": "piece",
-      "prep_style": "tynne ringer"
+      "prep_style": "tynne ringer",
+      "cut": "rings"
     },
     {
       "local_id": "i15",
@@ -183,6 +185,7 @@
       "component_id": "c1",
       "phase": "cook",
       "short": "Forvarm ovnen",
+      "verb": "forvarm",
       "text": "Sett ovnen på 220 °C varmluft, med rist midt i ovnen.",
       "uses": [],
       "after": [],
@@ -202,6 +205,7 @@
       "component_id": "c1",
       "phase": "prep",
       "short": "Elt deigen",
+      "verb": "elt",
       "text": "Bland {i1}, {i2}, {i3} og {i4} i en bolle. Tilsett {i5} og {i6}, og elt i 8 minutter.",
       "uses": [
         "i1",
@@ -226,6 +230,7 @@
       "component_id": "c1",
       "phase": "prep",
       "short": "Hev",
+      "verb": "hev",
       "text": "Dekk til deigen og la den heve til dobbel størrelse.",
       "uses": [],
       "after": [
@@ -244,6 +249,7 @@
       "component_id": "c1",
       "phase": "prep",
       "short": "Form brødene",
+      "verb": "form",
       "text": "Del deigen i like store emner, ett per burger. Trill runde boller og trykk dem litt flate på et brett med bakepapir.",
       "uses": [],
       "after": [
@@ -262,6 +268,7 @@
       "component_id": "c1",
       "phase": "prep",
       "short": "Etterhev",
+      "verb": "etterhev",
       "text": "La brødene etterheve under et klede.",
       "uses": [],
       "after": [
@@ -280,6 +287,7 @@
       "component_id": "c1",
       "phase": "prep",
       "short": "Pensle",
+      "verb": "pensle",
       "text": "Pensle brødene med {i7} og strø over {i8}.",
       "uses": [
         "i7",
@@ -302,6 +310,7 @@
       "component_id": "c1",
       "phase": "cook",
       "short": "Stek brødene",
+      "verb": "stek",
       "text": "Stek brødene midt i ovnen i 12–14 minutter.",
       "uses": [],
       "after": [
@@ -323,6 +332,7 @@
       "component_id": "c1",
       "phase": "cook",
       "short": "Avkjøl",
+      "verb": "avkjøl",
       "text": "La brødene avkjøles på rist.",
       "uses": [],
       "after": [
@@ -342,6 +352,7 @@
       "component_id": "c3",
       "phase": "prep",
       "short": "Skjær potetene",
+      "verb": "skjær",
       "text": "Skjær {i20} i staver på 1 cm, med skallet på. Legg dem i kaldt vann.",
       "uses": [
         "i20"
@@ -359,6 +370,7 @@
       "component_id": "c3",
       "phase": "prep",
       "short": "Tørk og olje",
+      "verb": "tørk",
       "text": "Tørk potetstavene godt. Vend dem i {i21} og {i22} på et stekebrett, og legg dem i ett lag.",
       "uses": [
         "i21",
@@ -381,6 +393,7 @@
       "component_id": "c3",
       "phase": "cook",
       "short": "Stek pommes frites",
+      "verb": "stek",
       "text": "Stek potetene i ovnen i 30–35 minutter. Vend dem etter 20 minutter.",
       "uses": [],
       "after": [
@@ -403,6 +416,7 @@
       "component_id": "c2",
       "phase": "prep",
       "short": "Form burgerne",
+      "verb": "form",
       "text": "Del {i9} i like store deler, én per person. Form flate kaker som er litt bredere enn brødene, og trykk en grop i midten.",
       "uses": [
         "i9"
@@ -420,6 +434,7 @@
       "component_id": "c2",
       "phase": "prep",
       "short": "Skjær toppingen",
+      "verb": "skjær",
       "text": "Skjær {i13} i skiver og {i14} i tynne ringer. Skyll {i15}.",
       "uses": [
         "i13",
@@ -439,6 +454,7 @@
       "component_id": "c2",
       "phase": "prep",
       "short": "Rør dressingen",
+      "verb": "rør",
       "text": "Rør sammen {i17}, {i18} og {i19}.",
       "uses": [
         "i17",
@@ -460,6 +476,7 @@
       "component_id": "c2",
       "phase": "cook",
       "short": "Stek burgerne",
+      "verb": "stek",
       "text": "Varm {i11} i en stekepanne på høy varme. Krydre burgerne med {i10} og stek dem i 3 minutter på hver side.",
       "uses": [
         "i11",
@@ -484,6 +501,7 @@
       "component_id": "c2",
       "phase": "cook",
       "short": "Smelt osten",
+      "verb": "smelt",
       "text": "Legg {i12} på burgerne, skru av varmen og legg på lokk i ett minutt.",
       "uses": [
         "i12"
@@ -507,6 +525,7 @@
       "component_id": "c2",
       "phase": "serve",
       "short": "Del brødene",
+      "verb": "del",
       "text": "Del brødene i to.",
       "uses": [],
       "after": [
@@ -523,6 +542,7 @@
       "component_id": "c2",
       "phase": "serve",
       "short": "Bygg burgerne",
+      "verb": "bygg",
       "text": "Smør dressingen på brødene. Bygg med toppingen, cheeseburgerne og {i16}, og server med pommes fritesen.",
       "uses": [
         "i16"
@@ -540,5 +560,11 @@
       "equipment": [],
       "setup": false
     }
+  ],
+  "cuisine": "American",
+  "difficulty": "Elevated",
+  "meal_types": [
+    "Dinner",
+    "Main Dish"
   ]
 }

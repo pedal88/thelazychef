@@ -6,11 +6,11 @@ lines as {i3}.
 """
 import datetime
 
-from database.models import Recipe, RecipeComponent, RecipeLine, RecipeStep, db
+from database.models import Recipe, RecipeComponent, RecipeLine, RecipeMealType, RecipeStep, db
 
-STEP_FIELDS = ('phase', 'short', 'text', 'active_minutes', 'passive_minutes', 'holds_minutes', 'method',
+STEP_FIELDS = ('phase', 'short', 'verb', 'text', 'active_minutes', 'passive_minutes', 'holds_minutes', 'method',
                'temp_c', 'mode', 'done_when')
-LINE_FIELDS = ('name', 'amount', 'unit', 'prep_style')
+LINE_FIELDS = ('name', 'amount', 'unit', 'prep_style', 'cut')
 
 
 def save_v2(recipe: Recipe, data: dict, ingredient_ids: dict | None = None) -> Recipe:
@@ -52,6 +52,13 @@ def save_v2(recipe: Recipe, data: dict, ingredient_ids: dict | None = None) -> R
     recipe.title = data.get('title') or recipe.title
     recipe.base_servings = data.get('servings') or recipe.base_servings
     recipe.chef_note = data.get('chef_note')
+    # Cuisine, difficulty and meal types fill the same fields as the old recipes, so lists and filters work for both.
+    if data.get('cuisine'):
+        recipe.cuisine = data['cuisine']
+    if data.get('difficulty'):
+        recipe.difficulty = data['difficulty']
+    if 'meal_types' in data:
+        recipe.meal_types = [RecipeMealType(meal_type=m) for m in dict.fromkeys(data['meal_types'] or [])]
     recipe.schema_version = 2
     if had_content:
         recipe.revision = (recipe.revision or 1) + 1
@@ -68,10 +75,13 @@ def to_v2(recipe: Recipe) -> dict:
         'title': recipe.title,
         'servings': recipe.base_servings,
         **({'chef_note': recipe.chef_note} if recipe.chef_note else {}),
+        **({'cuisine': recipe.cuisine} if recipe.cuisine else {}),
+        **({'difficulty': recipe.difficulty} if recipe.difficulty else {}),
+        **({'meal_types': recipe.meal_types_list} if recipe.meal_types else {}),
         'components': [{'local_id': c.local_id, 'name': c.name} for c in recipe.components],
         'ingredients': [drop_none({
             'local_id': i.local_id, 'component_id': i.component.local_id, 'name': i.name, 'amount': i.amount,
-            'unit': i.unit, 'prep_style': i.prep_style, 'gram_weight_estimate': i.gram_weight,
+            'unit': i.unit, 'prep_style': i.prep_style, 'cut': i.cut, 'gram_weight_estimate': i.gram_weight,
             'pantry_id': i.ingredient.food_id if i.ingredient else None,
         }) for i in recipe.lines],
         'steps': [drop_none({

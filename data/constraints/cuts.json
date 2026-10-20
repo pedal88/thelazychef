@@ -1,0 +1,19 @@
+{
+    "_doc": "How an ingredient is cut or prepared before it goes in (recipe_line.cut). Drives the small cut sign on the ingredient symbol. Leave cut out when the line is not cut.",
+    "cuts": [
+        {"id": "chop", "name": "chop, coarse or fine (hakk, finhakk, grovhakk)"},
+        {"id": "slice", "name": "slices (skiver)"},
+        {"id": "dice", "name": "small cubes (terninger)"},
+        {"id": "pieces", "name": "bite-size pieces or chunks (biter)"},
+        {"id": "strips", "name": "strips or sticks (strimler, staver)"},
+        {"id": "wedges", "name": "wedges (båter)"},
+        {"id": "rings", "name": "rings (ringer)"},
+        {"id": "halve", "name": "halved (delt i to)"},
+        {"id": "grate", "name": "grated (revet, finrevet)"},
+        {"id": "zest", "name": "zest only (skallet revet)"},
+        {"id": "juice", "name": "juiced (saften, presset)"},
+        {"id": "crush", "name": "crushed (knust)"},
+        {"id": "mash", "name": "mashed (most)"},
+        {"id": "tear", "name": "torn by hand (revet i biter)"}
+    ]
+}

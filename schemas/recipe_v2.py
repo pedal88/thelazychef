@@ -5,7 +5,28 @@ Same style as RecipeSchema in ai_engine.py: TypedDicts passed as
 steps as a graph. Not included: mise elements (phase 3), `waits` (derived from
 setup steps on the same cookware), `{sN}` references and `output_label`.
 """
+import json
+import os
+
 import typing_extensions as typing
+
+_CONSTRAINTS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'constraints')
+
+
+def _load(name):
+    with open(os.path.join(_CONSTRAINTS, name), encoding='utf-8') as f:
+        return json.load(f)
+
+
+# Closed lists, so structured output can only answer with values the app knows.
+CUTS = tuple(c['id'] for c in _load('cuts.json')['cuts'])
+CUISINES = tuple(_load('graph_metadata.json')['cuisines'])
+DIFFICULTIES = tuple(_load('difficulty.json')['difficulty'])
+MEAL_TYPES = tuple(m for group in ('Standard', 'Courses') for m in _load('meal_types.json')['meal_classification'][group])
+Cut = typing.Literal[CUTS]
+Cuisine = typing.Literal[CUISINES]
+Difficulty = typing.Literal[DIFFICULTIES]
+MealType = typing.Literal[MEAL_TYPES]
 
 
 class ComponentV2(typing.TypedDict):
@@ -21,6 +42,7 @@ class IngredientLineV2(typing.TypedDict):
     amount: typing.NotRequired[float]
     unit: typing.NotRequired[str]  # id from data/constraints/units.json
     prep_style: typing.NotRequired[str]  # "finhakket", "i terninger", "etter smak"
+    cut: typing.NotRequired[Cut]  # id from data/constraints/cuts.json; omitted when the line is not cut
     gram_weight_estimate: typing.NotRequired[float]
     pantry_id: typing.NotRequired[str]
 
@@ -30,6 +52,7 @@ class StepV2(typing.TypedDict):
     component_id: str
     phase: str  # "prep" | "cook" | "serve"
     short: str  # max ~4 words, used in metro map, table and cards
+    verb: typing.NotRequired[str]  # the action in short, with its particle: "kok opp", "stir in", "la dampe"
     text: str  # template text with {iN} for ingredient lines, no time words like "mens"
     uses: list[str]  # ingredient local_ids added in this step
     after: list[str]  # step local_ids whose result goes into this step
@@ -51,3 +74,6 @@ class RecipeV2Schema(typing.TypedDict):
     ingredients: list[IngredientLineV2]
     steps: list[StepV2]
     chef_note: typing.NotRequired[str]
+    cuisine: typing.NotRequired[Cuisine]
+    difficulty: typing.NotRequired[Difficulty]
+    meal_types: typing.NotRequired[list[MealType]]
