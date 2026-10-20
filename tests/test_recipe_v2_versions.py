@@ -86,6 +86,34 @@ class VersionTests(unittest.TestCase):
         self.assertEqual(res.headers['Location'], f'/recipe/{base.id}')
         self.assertEqual(last.id, base.id)  # nothing new was made
 
+    def test_recalculate_applies_changed_rules_without_claude(self):
+        add_chef('speezy_gonzales')
+        self.login()
+        with mock.patch.object(claude, 'call', route_tests.fake_claude()):
+            self.client.post('/new-recipe/v2', data={'source': 'Spaghetti carbonara for four', 'chef_id': 'speezy_gonzales'})
+        recipe = db.session.execute(db.select(Recipe)).scalar_one()
+        self.assertTrue(any(e['rule'] == 'persona' for e in recipe.validation_errors))
+        page = self.client.get(f'/recipe/{recipe.id}').get_data(as_text=True)
+        self.assertIn('Recalculate', page)
+        # Loosen Speezy's rules in the editor, then recalculate: the notes go, and Claude is not asked
+        chef = db.session.get(Chef, 'speezy_gonzales')
+        chef.constraints = json.dumps({'max_total_minutes': None, 'max_cleanup': None, 'difficulties': []})
+        db.session.commit()
+        with mock.patch.object(claude, 'call', side_effect=AssertionError('Claude was called')):
+            res = self.client.post(f'/new-recipe/v2/recalculate/{recipe.id}')
+        self.assertEqual(res.headers['Location'], f'/recipe/{recipe.id}')
+        db.session.refresh(recipe)
+        self.assertEqual([e for e in recipe.validation_errors if e['rule'] == 'persona'], [])
+        self.assertIsNotNone(recipe.prep_time_mins)
+
+    def test_recalculate_is_for_admins_and_v2_recipes(self):
+        old = Recipe(title='Old', cuisine='', difficulty='', schema_version=1)
+        db.session.add(old)
+        db.session.commit()
+        self.assertEqual(self.client.post(f'/new-recipe/v2/recalculate/{old.id}').status_code, 302)  # to login
+        self.login()
+        self.assertEqual(self.client.post(f'/new-recipe/v2/recalculate/{old.id}').status_code, 400)
+
     def test_the_persona_pages_show_the_chefs_and_their_published_recipes(self):
         add_chef('the_green_chef')
         db.session.add(Chef(id='bare', name='Bare', archetype='', description='', image_filename=''))

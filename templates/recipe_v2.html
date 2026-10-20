@@ -133,6 +133,12 @@
   {% if recipe.source_type == 'web' and recipe.source_input %}<p class="hint" style="margin-top:var(--space-4)">Based on <a href="{{ recipe.source_input }}" rel="noopener nofollow" target="_blank">{{ recipe.source_input.split('/')[2] }}</a></p>{% endif %}
   {% if admin %}
   <section class="versions" aria-labelledby="versions-h">
+    {% if recipe.steps %}
+    <form method="post" action="{{ url_for('recipe_v2.recalculate', recipe_id=recipe.id) }}" class="recalc">
+      <button type="submit">Recalculate</button>
+      <span class="hint">Metadata, nutrition and the chef's rules from the saved recipe, after the pantry or the rules changed. No AI.</span>
+    </form>
+    {% endif %}
     <div class="sec-head"><h2 id="versions-h">Versions</h2><span class="eyebrow">Admin only</span></div>
     <ul>
       {% for r in admin.family %}

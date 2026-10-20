@@ -148,6 +148,33 @@ def match_pantry(data):
     return ids, missing
 
 
+PERSONA_KINDS = ('description', 'version')  # recipe.source_type of recipes the chef persona wrote
+
+
+def refresh(recipe, chef=None):
+    """Derive the metadata and nutrition again and check the persona's hard rules, without asking Claude.
+
+    Run after saving, and again when the pantry or the rules have changed (the Recalculate button). Only the
+    persona notes in validation_errors are replaced. The caller commits."""
+    derive.apply(recipe, to_v2(recipe))
+    # The persona's hard rules: noted and flagged, never a reason to throw the recipe away
+    notes = persona.check(recipe, chef) if chef else []
+    kept = [e for e in recipe.validation_errors or [] if e.get('rule') != 'persona']
+    recipe.validation_errors = kept + [{'rule': 'persona', 'message': n} for n in notes]
+    return notes
+
+
+def recalculate(recipe):
+    """Refresh a saved v2 recipe in place (services/recipe_v2/derive.py, nutrition.py, persona.py)."""
+    chef = None
+    if recipe.chef_id and recipe.source_type in PERSONA_KINDS:
+        chef = persona.spec(db.session.get(Chef, recipe.chef_id))
+    refresh(recipe, chef)
+    missing = any(line.ingredient_id is None for line in recipe.lines)
+    recipe.is_flagged_for_review = bool(recipe.validation_errors) or missing
+    return recipe
+
+
 def create_recipe(kind, source, chef_id=None, language='English', call=None, recipe=None):
     """Run both rounds and save the result as a draft. Returns (recipe, report).
 
@@ -177,10 +204,8 @@ def create_recipe(kind, source, chef_id=None, language='English', call=None, rec
         ids, missing = match_pantry(data)
         save_v2(recipe, dict(data, title=title), ids)
         db.session.flush()
-        derive.apply(recipe, to_v2(recipe))
-        # The persona's hard rules: noted and flagged, never a reason to throw the recipe away
-        notes = persona.check(recipe, chef) if kind in ('idea', 'version') else []
-        recipe.validation_errors = [{'rule': 'persona', 'message': n} for n in notes]
+        recipe.validation_errors = []
+        refresh(recipe, chef if kind in ('idea', 'version') else None)
     else:
         recipe.validation_errors = attempts[-1]['errors']
     recipe.is_flagged_for_review = not data or bool(missing) or bool(data and recipe.validation_errors)

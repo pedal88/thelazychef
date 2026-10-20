@@ -7,7 +7,7 @@ from flask_login import login_required
 
 from database.models import Recipe, db
 from services.chef_service import get_chefs
-from services.recipe_v2 import tasks
+from services.recipe_v2 import generate, tasks
 from services.recipe_v2.sources import is_link, is_video
 from services.recipe_v2.view import as_text
 from utils.ai_errors import friendly_ai_error
@@ -77,6 +77,20 @@ def new_version(recipe_id):
         recipe.validation_errors = [{'rule': 'error', 'message': friendly_ai_error(e, 'Could not start making the version.')}]
         db.session.commit()
     return redirect(url_for('recipe_v2.generating', recipe_id=recipe.id))
+
+
+@recipe_v2_bp.route('/new-recipe/v2/recalculate/<int:recipe_id>', methods=['POST'])
+@login_required
+@admin_required
+def recalculate(recipe_id):
+    """Metadata, nutrition and the chef's rules again from the saved recipe, after the pantry or the rules changed."""
+    recipe = db.session.get(Recipe, recipe_id) or abort(404)
+    if recipe.schema_version != 2 or not recipe.steps:
+        abort(400)
+    generate.recalculate(recipe)
+    db.session.commit()
+    flash('Recalculated: metadata, nutrition and the chef\'s rules.', 'success')
+    return redirect(url_for('recipe_detail', recipe_id=recipe_id))
 
 
 @recipe_v2_bp.route('/new-recipe/v2/<int:recipe_id>')
