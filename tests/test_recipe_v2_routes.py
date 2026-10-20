@@ -24,7 +24,7 @@ for key in ('TASKS_QUEUE', 'TASKS_SERVICE_ACCOUNT', 'APP_BASE_URL'):
     os.environ.pop(key, None)
 
 from app import app  # noqa: E402
-from database.models import Recipe, User, db  # noqa: E402
+from database.models import Chef, Recipe, User, db  # noqa: E402
 from routes.recipe_v2_routes import kind_of  # noqa: E402
 from services.recipe_v2 import claude, tasks  # noqa: E402
 
@@ -86,6 +86,34 @@ class RecipeV2RouteTests(unittest.TestCase):
         # Done, so the status page moves on to the recipe
         self.assertEqual(self.client.get(f'/new-recipe/v2/{recipe.id}').headers['Location'], f'/recipe/{recipe.id}')
         self.assertEqual(self.client.get(f'/recipe/{recipe.id}').status_code, 200)
+
+    def test_a_chef_writes_the_idea_and_broken_rules_flag_the_draft(self):
+        with open(os.path.join(ROOT, 'data', 'agents', 'chefs.json'), encoding='utf-8') as f:
+            c = next(c for c in json.load(f)['chefs'] if c['id'] == 'speezy_gonzales')
+        db.session.add(Chef(id=c['id'], name=c['name'], archetype=c['archetype'], description=c['description'],
+                            image_filename='', **{k: json.dumps(c[k]) for k in ('constraints', 'diet_preferences',
+                            'cooking_style', 'ingredient_logic', 'instruction_style')}))
+        db.session.commit()
+        self.login()
+        self.assertIn(b'Speezy Gonzales', self.client.get('/new-recipe/v2').data)
+        asked = []
+        call = fake_claude()
+        with mock.patch.object(claude, 'call', lambda *a, **kw: asked.append(a[2]) or call(*a, **kw)):
+            self.client.post('/new-recipe/v2', data={'source': 'Spaghetti carbonara for four', 'chef_id': 'speezy_gonzales'})
+        recipe = db.session.execute(db.select(Recipe)).scalar_one()
+        self.assertEqual(recipe.chef_id, 'speezy_gonzales')
+        self.assertIn('THE COOK\nWrite it as Speezy Gonzales', asked[0][0]['content'])
+        # The recorded carbonara takes longer and needs more washing up than Speezy allows
+        notes = [e['message'] for e in recipe.validation_errors if e['rule'] == 'persona']
+        self.assertTrue(any(n.startswith('Takes ') for n in notes), notes)
+        self.assertTrue(recipe.is_flagged_for_review)
+        self.assertIn(b'It breaks a rule of its chef', self.client.get(f'/recipe/{recipe.id}').data)
+
+    def test_an_unknown_chef_is_ignored(self):
+        self.login()
+        with mock.patch.object(claude, 'call', fake_claude()):
+            self.client.post('/new-recipe/v2', data={'source': 'Spaghetti carbonara for four', 'chef_id': 'nobody'})
+        self.assertIsNone(db.session.execute(db.select(Recipe)).scalar_one().chef_id)
 
     def test_empty_input_is_refused(self):
         self.login()

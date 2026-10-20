@@ -14,6 +14,12 @@
   <form method="post" class="newform">
     <label for="source" class="eyebrow">Idea, recipe or link</label>
     <textarea id="source" name="source" rows="6" required placeholder="Lasagne with a green salad, for four">{{ source }}</textarea>
+    <label for="chef_id" class="eyebrow">Chef</label>
+    <select id="chef_id" name="chef_id">
+      <option value="">No chef</option>
+      {% for c in chefs %}<option value="{{ c.id }}"{% if c.id == chef_id %} selected{% endif %}>{{ c.name }}: {{ c.archetype }}</option>{% endfor %}
+    </select>
+    <p class="hint">The chef writes an idea in their style and rules. A pasted recipe or a link is kept as it is.</p>
     {% if error %}<p class="formerror" role="alert">{{ error }}</p>{% endif %}
     <button type="submit" class="go">Make the recipe</button>
   </form>

@@ -13,10 +13,10 @@ import os
 
 from jinja2 import Environment, FileSystemLoader
 
-from database.models import Ingredient, Recipe, db
+from database.models import Chef, Ingredient, Recipe, db
 from schemas.recipe_v2 import CUISINES, DIFFICULTIES, MEAL_TYPES
 from services.ai_models import RECIPE_V2_EFFORT, RECIPE_V2_MODEL
-from services.recipe_v2 import claude, derive
+from services.recipe_v2 import claude, derive, persona
 from services.recipe_v2.store import save_v2, to_v2
 from services.recipe_v2_validator import format_errors_for_retry, validate_recipe_v2
 
@@ -72,16 +72,18 @@ def structure_prompt(source):
     return head, 'SOURCE RECIPE\n' + tail
 
 
-def write_text(kind, source, language='English', call=None):
-    """Round 1. kind 'idea' writes a recipe from a short idea; 'text' tidies a pasted recipe and keeps its
-    language; 'web' reads the recipe at the link (services/recipe_v2/sources.py) and tidies it."""
+def write_text(kind, source, language='English', call=None, chef=None):
+    """Round 1. kind 'idea' writes a recipe from a short idea, as the chef persona if there is one; 'text'
+    tidies a pasted recipe and keeps its language; 'web' reads the recipe at the link
+    (services/recipe_v2/sources.py) and tidies it. A pasted or linked recipe is kept as it is, whatever the persona."""
     if kind == 'web':
         from services.recipe_v2.sources import fetch_recipe_text
 
         page, _ = fetch_recipe_text(source)
         prompt = env.get_template('recipe_v2/normalize.jinja2').render(kind='a web page', source=page)
     elif kind == 'idea':
-        prompt = env.get_template('recipe_v2/idea.jinja2').render(idea=source, language=language)
+        prompt = env.get_template('recipe_v2/idea.jinja2').render(idea=source, language=language,
+                                                                  persona=persona.prompt_block(chef))
     elif kind == 'text':
         prompt = env.get_template('recipe_v2/normalize.jinja2').render(kind='text pasted by the user', source=source)
     else:
@@ -147,8 +149,10 @@ def create_recipe(kind, source, chef_id=None, language='English', call=None, rec
     recipe is the placeholder made when the job was queued; without it a new recipe is made.
 
     The recipe is flagged for review when it is still invalid after the retries,
-    or when some lines are not in the pantry."""
-    text, round1 = write_text(kind, source, language, call=call)
+    when some lines are not in the pantry, or when it breaks a hard rule of its chef persona."""
+    chef_id = recipe.chef_id if recipe is not None else chef_id
+    chef = persona.spec(db.session.get(Chef, chef_id)) if chef_id else None
+    text, round1 = write_text(kind, source, language, call=call, chef=chef)
     data, attempts = structure(text, call=call)
     calls = [round1] + attempts
 
@@ -166,14 +170,17 @@ def create_recipe(kind, source, chef_id=None, language='English', call=None, rec
         save_v2(recipe, dict(data, title=title), ids)
         db.session.flush()
         derive.apply(recipe, to_v2(recipe))
-        recipe.validation_errors = []
+        # The persona's hard rules: noted and flagged, never a reason to throw the recipe away
+        notes = persona.check(recipe, chef) if kind == 'idea' else []
+        recipe.validation_errors = [{'rule': 'persona', 'message': n} for n in notes]
     else:
         recipe.validation_errors = attempts[-1]['errors']
-    recipe.is_flagged_for_review = not data or bool(missing)
+    recipe.is_flagged_for_review = not data or bool(missing) or bool(data and recipe.validation_errors)
     db.session.commit()
 
     report = {
         'recipe_id': recipe.id, 'valid': bool(data), 'attempts': len(attempts), 'missing_in_pantry': missing,
+        'persona_notes': [e['message'] for e in recipe.validation_errors if e.get('rule') == 'persona'],
         'warnings': attempts[-1]['warnings'], 'cost_usd': round(sum(c['cost_usd'] for c in calls), 4),
         'seconds': round(sum(c['seconds'] for c in calls), 1),
     }

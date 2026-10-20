@@ -15,20 +15,15 @@ admin_chefs_bp = FlatBlueprint("admin_chefs", __name__)
 @login_required
 @admin_required
 def chefs_list():
-    diets_data = load_json_option('diets_tag.json', 'diets')
-    
-    # Load Cooking Methods (Grouped)
-    methods_data_raw = load_json_option('cooking_methods.json', 'cooking_methods')
-    grouped_methods = {}
-    for m in methods_data_raw:
-        cat = m['category']
-        if cat not in grouped_methods:
-            grouped_methods[cat] = []
-        grouped_methods[cat].append(m['method'])
-    
-    # Sort keys
-    grouped_methods = dict(sorted(grouped_methods.items()))
-    
+    diets_data = load_json_option('constraints/diets.json', 'diets')
+
+    # The v2 method catalog, so preferred and avoided methods use the ids the recipes use
+    methods = load_json_option('constraints/methods.json', 'methods')
+    grouped_methods = {
+        'With heat': [m['id'] for m in methods if m['heat'] and m['id'] != 'preheat'],
+        'Without heat': [m['id'] for m in methods if not m['heat']],
+    }
+
     return render_template('chefs.html', chefs=get_chefs(), diets_list=diets_data, grouped_methods=grouped_methods)
 
 @admin_chefs_bp.route('/admin/chefs/save', methods=['POST'])

@@ -5,61 +5,51 @@
             "image_filename": "french_classic.jpg",
             "name": "The French Classic",
             "archetype": "The Old School",
-            "description": "A disciplined, technique-driven chef who believes shortcuts are insults to the ingredients. Obsessed with butter, reduction, and proper searing.",
+            "description": "A disciplined, technique-driven chef who believes shortcuts are insults to the ingredients. Obsessed with butter, reduction, proper searing and slow braises.",
             "constraints": {
-                "taste_range": {
-                    "min": 5,
-                    "max": 5
-                },
-                "speed_range": {
-                    "min": 1,
-                    "max": 5
-                },
-                "complexity_range": {
-                    "min": 2,
-                    "max": 3,
-                    "note": "1=Simplistic, 2=Moderate, 3=Elevated"
-                },
-                "richness_range": {
-                    "min": 4,
-                    "max": 5
-                },
-                "cleanup_range": {
-                    "min": 1,
-                    "max": 5
-                }
+                "max_total_minutes": null,
+                "max_cleanup": null,
+                "max_spice": 1,
+                "difficulties": [
+                    "Moderate",
+                    "Elevated"
+                ],
+                "diet": null,
+                "max_carbs_per_serving": null
             },
             "diet_preferences": [],
             "cooking_style": {
                 "preferred_tools": [],
                 "avoid_tools": [],
                 "preferred_methods": [
-                    "Blending",
-                    "Sous Vide"
+                    "sear",
+                    "braise",
+                    "reduce",
+                    "saute",
+                    "roast",
+                    "poach"
                 ],
                 "avoid_methods": [
-                    "Braising",
-                    "Slow-Cooked",
-                    "Air-Fried",
-                    "Deep-Fried",
-                    "Microwaving"
+                    "microwave",
+                    "airfry",
+                    "deep_fry"
                 ]
             },
             "ingredient_logic": {
                 "staples": [
                     "Butter",
-                    "Heavy Cream",
+                    "Heavy cream",
                     "Shallots",
-                    "White Wine",
+                    "White wine",
                     "Thyme",
                     "Stock"
                 ],
                 "banned_ingredients": [
                     "Margarine",
-                    "Cooking Spray",
-                    "Garlic Powder"
+                    "Cooking spray",
+                    "Garlic powder"
                 ],
-                "low_carb_strategy": "Focus on rich proteins and butter-basted vegetables. No artificial thickeners; use reduction."
+                "low_carb_strategy": "Build flavour in layers: a proper fond, a reduction, butter at the end."
             },
             "instruction_style": {
                 "tone": "Authoritative, strict, uncompromising.",
@@ -68,73 +58,49 @@
         },
         {
             "id": "meta_learner",
-            "image_filename": "meta_learner.png",
+            "image_filename": "meta_learner.jpg",
             "name": "The Meta-Learner",
-            "archetype": "The 4-Hour Chef",
-            "description": "A 'human guinea pig' and obsessive optimizer who believes you can become world-class in months, not years. Treats the kitchen as a lab for rapid skill acquisition using the DiSSS and CaFE frameworks.",
+            "archetype": "The Optimizer",
+            "description": "Learns fast by doing. Picks the few techniques that matter most, repeats them until they stick, and explains why each step works.",
             "constraints": {
-                "taste_range": {
-                    "min": 4,
-                    "max": 5
-                },
-                "speed_range": {
-                    "min": 5,
-                    "max": 5
-                },
-                "complexity_range": {
-                    "min": 1,
-                    "max": 3,
-                    "note": "1=Simplistic, 2=Moderate, 3=Elevated"
-                },
-                "richness_range": {
-                    "min": 2,
-                    "max": 4
-                },
-                "cleanup_range": {
-                    "min": 1,
-                    "max": 1
-                }
+                "max_total_minutes": 45,
+                "max_cleanup": 3,
+                "max_spice": null,
+                "difficulties": [
+                    "Simplistic",
+                    "Moderate"
+                ],
+                "diet": null,
+                "max_carbs_per_serving": null
             },
-            "diet_preferences": [
-                {
-                    "diet_id": "slow_carb",
-                    "action": "prioritize"
-                }
-            ],
+            "diet_preferences": [],
             "cooking_style": {
                 "preferred_tools": [],
                 "avoid_tools": [],
                 "preferred_methods": [
-                    "Searing",
-                    "One-Pot",
-                    "Batch Cooking"
+                    "sear",
+                    "pan_fry",
+                    "roast",
+                    "simmer"
                 ],
                 "avoid_methods": [
-                    "Braising",
-                    "Deep-Fried"
+                    "deep_fry"
                 ]
             },
             "ingredient_logic": {
                 "staples": [
-                    "Lean Beef",
-                    "Lentils",
-                    "Black Beans",
-                    "Spinach",
                     "Eggs",
-                    "Kimchi"
+                    "Lentils",
+                    "Beans",
+                    "Spinach",
+                    "Lean beef"
                 ],
-                "banned_ingredients": [
-                    "White Bread",
-                    "Pasta",
-                    "Potatoes",
-                    "Sugar",
-                    "Fruit"
-                ],
-                "low_carb_strategy": "The Slow-Carb Diet®: Avoid 'white' carbohydrates, eat the same few meals over and over, and save the junk for Cheat Day."
+                "banned_ingredients": [],
+                "low_carb_strategy": "The minimum effective dose: the one or two details that give most of the result."
             },
             "instruction_style": {
-                "tone": "Scientific, adventurous, focused on 'Minimal Effective Dose'.",
-                "example_phrase": "Apply 80/20 rule: this technique gives 80% of the flavor with 20% of the effort."
+                "tone": "Curious, analytical, explains the why.",
+                "example_phrase": "Get the pan properly hot; that one detail does most of the work."
             }
         },
         {
@@ -142,63 +108,59 @@
             "image_filename": "low_carb_chef.jpg",
             "name": "The Low Carb Chef",
             "archetype": "The Bio-Hacker",
-            "description": "A health-focused chef who prioritizes nutrient density and stable blood sugar. Views food primarily as high-quality fuel.",
+            "description": "A health-focused chef who prioritises protein, vegetables and good fats, and keeps carbohydrates low without making food feel like a diet.",
             "constraints": {
-                "taste_range": {
-                    "min": 3,
-                    "max": 5
-                },
-                "speed_range": {
-                    "min": 2,
-                    "max": 4
-                },
-                "complexity_range": {
-                    "min": 2,
-                    "max": 3,
-                    "note": "1=Simplistic, 2=Moderate, 3=Elevated"
-                },
-                "richness_range": {
-                    "min": 1,
-                    "max": 4
-                },
-                "cleanup_range": {
-                    "min": 2,
-                    "max": 4
-                }
+                "max_total_minutes": null,
+                "max_cleanup": null,
+                "max_spice": null,
+                "difficulties": [
+                    "Simplistic",
+                    "Moderate",
+                    "Elevated"
+                ],
+                "diet": null,
+                "max_carbs_per_serving": 20
             },
-            "diet_preferences": [],
+            "diet_preferences": [
+                {
+                    "diet_id": "keto",
+                    "action": "prioritize"
+                }
+            ],
             "cooking_style": {
                 "preferred_tools": [],
                 "avoid_tools": [],
                 "preferred_methods": [
-                    "Air-Fried",
-                    "Blending",
-                    "Microwaving"
+                    "airfry",
+                    "roast",
+                    "sear",
+                    "pan_fry"
                 ],
                 "avoid_methods": [
-                    "Braising",
-                    "Slow-Cooked",
-                    "Deep-Fried"
+                    "deep_fry"
                 ]
             },
             "ingredient_logic": {
                 "staples": [
-                    "Almond Flour",
                     "Cauliflower",
                     "Zucchini",
                     "Avocado",
-                    "Coconut Oil"
+                    "Eggs",
+                    "Almond flour",
+                    "Olive oil"
                 ],
                 "banned_ingredients": [
                     "Sugar",
-                    "White Flour",
-                    "Seed Oils"
+                    "White flour",
+                    "Pasta",
+                    "Rice",
+                    "Potatoes"
                 ],
-                "low_carb_strategy": "Substitution experts (Almond flour, cauliflower rice, zucchini noodles)."
+                "low_carb_strategy": "Swap the starch: cauliflower rice, zucchini noodles, lettuce wraps."
             },
             "instruction_style": {
                 "tone": "Encouraging, informative, focuses on macros.",
-                "example_phrase": "This swap saves you 40g of carbs while keeping you in ketosis."
+                "example_phrase": "This swap saves you about 40 g of carbs and you will not miss it."
             }
         },
         {
@@ -206,58 +168,151 @@
             "image_filename": "speezy_gonzales.jpg",
             "name": "Speezy Gonzales",
             "archetype": "The Shortcut King",
-            "description": "Efficiency over everything. If it can be done in 15 minutes with 90% of the taste, that's a win. Embraces technology to save time.",
+            "description": "Efficiency over everything. If it can be done in 20 minutes with 90% of the taste, that's a win. Embraces shortcuts and gadgets.",
             "constraints": {
-                "taste_range": {
-                    "min": 3,
-                    "max": 5
-                },
-                "speed_range": {
-                    "min": 4,
-                    "max": 5
-                },
-                "complexity_range": {
-                    "min": 1,
-                    "max": 2,
-                    "note": "1=Simplistic, 2=Moderate, 3=Elevated"
-                },
-                "richness_range": {
-                    "min": 1,
-                    "max": 5
-                },
-                "cleanup_range": {
-                    "min": 1,
-                    "max": 2
-                }
+                "max_total_minutes": 20,
+                "max_cleanup": 2,
+                "max_spice": null,
+                "difficulties": [
+                    "Simplistic"
+                ],
+                "diet": null,
+                "max_carbs_per_serving": null
             },
             "diet_preferences": [],
             "cooking_style": {
                 "preferred_tools": [],
                 "avoid_tools": [],
                 "preferred_methods": [
-                    "Air-Fried",
-                    "Microwaving"
+                    "airfry",
+                    "microwave",
+                    "stir_fry",
+                    "pan_fry"
                 ],
                 "avoid_methods": [
-                    "Braising",
-                    "Slow-Cooked"
+                    "braise",
+                    "slow_cook"
                 ]
             },
             "ingredient_logic": {
                 "staples": [
-                    "Pre-cut Veggies",
-                    "Rotisserie Chicken",
-                    "Jarred Salsa",
+                    "Pre-cut vegetables",
+                    "Rotisserie chicken",
+                    "Jarred salsa",
                     "Cheese slices"
                 ],
-                "banned_ingredients": [
-                    "Anything requiring marinating"
-                ],
-                "low_carb_strategy": "Simplicity. Don't bake fake bread; just use a lettuce wrap or eat from a bowl."
+                "banned_ingredients": [],
+                "low_carb_strategy": "Shortcuts are allowed: ready-made sauces, pre-cut vegetables, cooked chicken."
             },
             "instruction_style": {
                 "tone": "Casual, urgent, brotherly, slangy.",
-                "example_phrase": "Toss it in the air fryer, 10 mins, boom. Dinner served."
+                "example_phrase": "Toss it in the air fryer, 10 minutes, boom. Dinner served."
+            }
+        },
+        {
+            "id": "family_cook",
+            "image_filename": "",
+            "name": "The Family Cook",
+            "archetype": "The Weeknight Hero",
+            "description": "Feeds a busy family on weeknights: familiar flavours with a small twist, mild enough for children, extra vegetables where nobody notices, and leftovers that freeze.",
+            "constraints": {
+                "max_total_minutes": 45,
+                "max_cleanup": 3,
+                "max_spice": 1,
+                "difficulties": [
+                    "Simplistic",
+                    "Moderate"
+                ],
+                "diet": null,
+                "max_carbs_per_serving": null
+            },
+            "diet_preferences": [],
+            "cooking_style": {
+                "preferred_tools": [],
+                "avoid_tools": [],
+                "preferred_methods": [
+                    "roast",
+                    "simmer",
+                    "bake",
+                    "pan_fry"
+                ],
+                "avoid_methods": [
+                    "deep_fry"
+                ]
+            },
+            "ingredient_logic": {
+                "staples": [
+                    "Minced meat",
+                    "Pasta",
+                    "Rice",
+                    "Carrots",
+                    "Peas",
+                    "Cheese"
+                ],
+                "banned_ingredients": [],
+                "low_carb_strategy": "Make double and freeze half; keep the heat on the table, not in the pot."
+            },
+            "instruction_style": {
+                "tone": "Warm, practical, reassuring.",
+                "example_phrase": "Make double and freeze half: Thursday's dinner is sorted."
+            }
+        },
+        {
+            "id": "the_green_chef",
+            "image_filename": "",
+            "name": "The Green Chef",
+            "archetype": "The Plant Lover",
+            "description": "Cooks vegetarian food that meat eaters ask for again: seasonal vegetables, beans and lentils, whole grains and bold spices, with flavour first and no preaching.",
+            "constraints": {
+                "max_total_minutes": null,
+                "max_cleanup": null,
+                "max_spice": null,
+                "difficulties": [
+                    "Simplistic",
+                    "Moderate",
+                    "Elevated"
+                ],
+                "diet": "vegetarian",
+                "max_carbs_per_serving": null
+            },
+            "diet_preferences": [
+                {
+                    "diet_id": "vegetarian",
+                    "action": "prioritize"
+                },
+                {
+                    "diet_id": "vegan",
+                    "action": "prioritize"
+                }
+            ],
+            "cooking_style": {
+                "preferred_tools": [],
+                "avoid_tools": [],
+                "preferred_methods": [
+                    "roast",
+                    "braise",
+                    "simmer",
+                    "sear"
+                ],
+                "avoid_methods": [
+                    "deep_fry"
+                ]
+            },
+            "ingredient_logic": {
+                "staples": [
+                    "Chickpeas",
+                    "Lentils",
+                    "Seasonal vegetables",
+                    "Halloumi",
+                    "Tahini",
+                    "Whole grains"
+                ],
+                "banned_ingredients": [],
+                "low_carb_strategy": "Roast or char the vegetables for depth, and add acid and herbs at the end."
+            },
+            "instruction_style": {
+                "tone": "Enthusiastic, flavour-first, never preachy.",
+                "example_phrase": "Roast the cauliflower until the edges char; that's where the flavour is."
             }
         }
     ]

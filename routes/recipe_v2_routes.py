@@ -6,6 +6,7 @@ from flask import Blueprint, abort, jsonify, redirect, render_template, request,
 from flask_login import login_required
 
 from database.models import Recipe, db
+from services.chef_service import get_chefs
 from services.recipe_v2 import tasks
 from services.recipe_v2.sources import is_link, is_video
 from utils.ai_errors import friendly_ai_error
@@ -26,16 +27,21 @@ def kind_of(source):
 @login_required
 @admin_required
 def new_recipe():
+    chefs = get_chefs()
     if request.method == 'GET':
-        return render_template('recipe_v2_new.html', error=None, source='')
+        return render_template('recipe_v2_new.html', error=None, source='', chefs=chefs, chef_id='')
     source = (request.form.get('source') or '').strip()
+    chef_id = request.form.get('chef_id') or None
+    if chef_id not in {c['id'] for c in chefs}:
+        chef_id = None
     if not source:
-        return render_template('recipe_v2_new.html', error='Write an idea or paste a recipe.', source=source), 400
+        return render_template('recipe_v2_new.html', error='Write an idea or paste a recipe.', source=source,
+                               chefs=chefs, chef_id=chef_id or ''), 400
     kind = kind_of(source)
     if kind == 'web' and is_video(source):
-        return render_template('recipe_v2_new.html', source=source,
+        return render_template('recipe_v2_new.html', source=source, chefs=chefs, chef_id=chef_id or '',
                                error='Video links are not supported here yet. Use the old importer, or paste the recipe text.'), 400
-    recipe = Recipe(title=source.splitlines()[0][:120], cuisine='', difficulty='', status='generating', schema_version=2,
+    recipe = Recipe(title=source.splitlines()[0][:120], cuisine='', difficulty='', status='generating', schema_version=2, chef_id=chef_id,
                     source_type={'idea': 'description', 'text': 'text', 'web': 'web'}[kind], source_input=source[:500])
     db.session.add(recipe)
     db.session.commit()

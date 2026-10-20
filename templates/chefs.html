@@ -3,53 +3,7 @@
 {% block title %}Manage Chefs - The Lazy Chef{% endblock %}
 
 {% block head %}
-<!-- noUiSlider -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.js"></script>
 <style>
-    /* Custom Slider Styles */
-    .noUi-target {
-        background: #e2e8f0;
-        /* Default track color */
-        border: none;
-        box-shadow: none;
-    }
-
-    .noUi-connect {
-        background: #15803d;
-        /* Green match Prio text */
-    }
-
-    .noUi-horizontal {
-        height: 4px;
-        /* Narrow track */
-    }
-
-    .noUi-handle {
-        height: 24px;
-        width: 24px;
-        top: -10px;
-        /* Center vertically on 4px track */
-        right: -12px;
-        border-radius: 50%;
-        background: #ffffff;
-        border: 1px solid #cbd5e1;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        /* Slight shadow */
-        cursor: grab;
-    }
-
-    .noUi-handle:active {
-        cursor: grabbing;
-    }
-
-    .noUi-handle:before,
-    .noUi-handle:after {
-        display: none;
-    }
-
-    /* Tri-State Toggle */
-    /* Tri-State Toggle */
     .tri-state-btn {
         padding: 0.25rem 0.75rem;
         font-size: 0.75rem;
@@ -119,22 +73,6 @@
 
 {% block content %}
 <!-- Macros -->
-{% macro slider_control(chef_id, label, key, min_val, max_val, range_min, range_max, labels=None) %}
-<div class="slider-group" data-key="{{ key }}" data-min="{{ min_val }}" data-max="{{ max_val }}"
-    data-range-min="{{ range_min }}" data-range-max="{{ range_max }}">
-    <div class="flex justify-between mb-2">
-        <label class="text-xs font-bold text-slate-500 uppercase">{{ label }}</label>
-        <span class="text-xs font-mono text-slate-500" id="{{ chef_id }}_{{ key }}_display">
-            {% if labels %}
-            {{ labels[min_val-1] }} - {{ labels[max_val-1] }}
-            {% else %}
-            {{ min_val }} - {{ max_val }}
-            {% endif %}
-        </span>
-    </div>
-    <div id="{{ chef_id }}_{{ key }}_slider" class="mb-4"></div>
-</div>
-{% endmacro %}
 
 {% macro tag_input(chef_id, key, tags) %}
 <div class="tag-container" onclick="this.querySelector('input').focus()">
@@ -201,23 +139,32 @@
                     class="chef-description w-full text-slate-600 text-sm bg-slate-50 rounded-lg p-3 border border-slate-100 focus:border-slate-300 focus:outline-none resize-none h-20">{{ chef.description }}</textarea>
             </div>
 
-            <!-- Constraints (Sliders) -->
-            <div class="mb-8 p-6 bg-slate-50 rounded-xl border border-slate-100">
-                <h3 class="text-sm font-bold text-slate-900 mb-6 flex items-center gap-2">
-                    <span>🧠</span> Cognitive Constraints
-                </h3>
-
-                <div class="space-y-6">
-                    {{ slider_control(chef.id, 'Taste Priority', 'taste_range', chef.constraints.taste_range.min,
-                    chef.constraints.taste_range.max, 1, 5) }}
-                    {{ slider_control(chef.id, 'Speed Priority', 'speed_range', chef.constraints.speed_range.min,
-                    chef.constraints.speed_range.max, 1, 5) }}
-                    {{ slider_control(chef.id, 'Complexity', 'complexity_range', chef.constraints.complexity_range.min,
-                    chef.constraints.complexity_range.max, 1, 3, ['Simplistic', 'Moderate', 'Elevated']) }}
-                    {{ slider_control(chef.id, 'Richness', 'richness_range', chef.constraints.richness_range.min,
-                    chef.constraints.richness_range.max, 1, 5) }}
-                    {{ slider_control(chef.id, 'Cleanup Limit', 'cleanup_range', chef.constraints.cleanup_range.min,
-                    chef.constraints.cleanup_range.max, 1, 5) }}
+            <!-- Hard rules: checked on every recipe the chef makes (services/recipe_v2/persona.py). Empty = no limit. -->
+            {% set r = chef.constraints %}
+            <div class="chef-rules mb-8 p-6 bg-slate-50 rounded-xl border border-slate-100">
+                <h3 class="text-sm font-bold text-slate-900 mb-1 flex items-center gap-2"><span>📏</span> Rules</h3>
+                <p class="text-xs text-slate-500 mb-5">Checked on every recipe this chef makes. A recipe that breaks one is flagged for review. Leave a field empty for no limit.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5 text-sm">
+                    <label class="block"><span class="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Max total minutes</span>
+                        <input type="number" min="5" step="5" class="rule-minutes w-full rounded-lg p-2 border border-slate-200" value="{{ r.max_total_minutes or '' }}"></label>
+                    <label class="block"><span class="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Max clean-up (1–5)</span>
+                        <select class="rule-cleanup w-full rounded-lg p-2 border border-slate-200">
+                            <option value="">No limit</option>{% for n in range(1, 6) %}<option value="{{ n }}"{% if r.max_cleanup == n %} selected{% endif %}>{{ n }}</option>{% endfor %}
+                        </select></label>
+                    <label class="block"><span class="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Max spice</span>
+                        <select class="rule-spice w-full rounded-lg p-2 border border-slate-200">
+                            <option value="">No limit</option>{% for n, name in [(0, 'Mild'), (1, 'A little hot'), (2, 'Hot')] %}<option value="{{ n }}"{% if r.max_spice == n %} selected{% endif %}>{{ name }}</option>{% endfor %}
+                        </select></label>
+                    <label class="block"><span class="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Diet</span>
+                        <select class="rule-diet w-full rounded-lg p-2 border border-slate-200">
+                            {% for d, name in [('', 'Any'), ('vegetarian', 'Vegetarian'), ('vegan', 'Vegan')] %}<option value="{{ d }}"{% if (r.diet or '') == d %} selected{% endif %}>{{ name }}</option>{% endfor %}
+                        </select></label>
+                    <label class="block"><span class="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Max carbs per serving (g)</span>
+                        <input type="number" min="0" step="5" class="rule-carbs w-full rounded-lg p-2 border border-slate-200" value="{{ r.max_carbs_per_serving if r.max_carbs_per_serving is not none else '' }}">
+                        <span class="block text-xs text-slate-400 mt-1">Used in the prompt; checked once v2 has nutrition.</span></label>
+                    <fieldset><legend class="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Difficulty</legend>
+                        {% for d in ['Simplistic', 'Moderate', 'Elevated'] %}<label class="mr-3 whitespace-nowrap"><input type="checkbox" class="rule-difficulty" value="{{ d }}"{% if d in r.difficulties %} checked{% endif %}> {{ d|difficulty_label }}</label>{% endfor %}
+                    </fieldset>
                 </div>
             </div>
 
@@ -237,7 +184,7 @@
                 <div class="grid grid-cols-2 gap-3">
                     {% for diet in diets_list %}
                     <div class="diet-pill cursor-pointer select-none px-3 py-2 rounded-lg border text-sm font-bold text-center transition-all duration-200 border-slate-200 bg-slate-50 text-slate-500"
-                        onclick="toggleDiet(this)" data-diet-id="{{ diet }}" data-state="include">
+                        onclick="toggleDiet(this)" data-id="{{ diet }}" data-state="include">
                         {{ diet|title }}
                     </div>
                     {% endfor %}
@@ -323,8 +270,7 @@
 
                 <!-- Logic / Style -->
                 <div class="mb-6">
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Low Carb
-                        Strategy</label>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Approach</label>
                     <input type="text"
                         class="chef-strategy w-full text-sm bg-slate-50 rounded-lg p-3 border border-slate-100 focus:border-slate-300 outline-none"
                         value="{{ chef.ingredient_logic.low_carb_strategy }}">
@@ -363,42 +309,6 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         // Initialize Sliders
-        document.querySelectorAll('.slider-group').forEach(group => {
-            const slider = group.querySelector('[id$="_slider"]');
-            const display = group.querySelector('[id$="_display"]');
-            const min = parseInt(group.dataset.min);
-            const max = parseInt(group.dataset.max);
-            const rangeMin = parseInt(group.dataset.rangeMin);
-            const rangeMax = parseInt(group.dataset.rangeMax);
-            const key = group.dataset.key;
-
-            noUiSlider.create(slider, {
-                start: [min, max],
-                connect: true,
-                step: 1,
-                range: { 'min': rangeMin, 'max': rangeMax },
-                margin: 0
-            });
-
-            slider.noUiSlider.on('update', (values) => {
-                const v1 = Math.round(values[0]);
-                const v2 = Math.round(values[1]);
-
-                if (key === 'complexity_range') {
-                    display.innerText = `${labelsMap[key][v1 - 1]} - ${labelsMap[key][v2 - 1]}`;
-                } else {
-                    display.innerText = `${v1} - ${v2}`;
-                }
-
-                // Update dataset for saving
-                group.dataset.currentMin = v1;
-                group.dataset.currentMax = v2;
-            });
-
-            // Set initial dataset
-            group.dataset.currentMin = min;
-            group.dataset.currentMax = max;
-        });
 
         // Initialize Diet and Method Pills
         document.querySelectorAll('.chef-card').forEach(card => {
@@ -520,15 +430,16 @@
                 return Array.from(container.querySelectorAll('.tag-chip')).map(c => c.innerText.replace(' ×', '').trim());
             };
 
-            // Collect Sliders
-            const getRange = (key) => {
-                const el = card.querySelector(`.slider-group[data-key="${key}"]`);
-                return {
-                    min: parseInt(el.dataset.currentMin),
-                    max: parseInt(el.dataset.currentMax)
-                };
+            // Collect the rules; empty means no limit
+            const num = (sel) => { const v = card.querySelector(sel).value; return v === '' ? null : parseInt(v, 10); };
+            const rules = {
+                max_total_minutes: num('.rule-minutes'),
+                max_cleanup: num('.rule-cleanup'),
+                max_spice: num('.rule-spice'),
+                max_carbs_per_serving: num('.rule-carbs'),
+                diet: card.querySelector('.rule-diet').value || null,
+                difficulties: Array.from(card.querySelectorAll('.rule-difficulty:checked')).map(c => c.value)
             };
-            if (getRange('complexity_range')) getRange('complexity_range').note = "1=Simplistic, 2=Moderate, 3=Elevated";
 
             const dietPreferences = [];
             card.querySelectorAll('.diet-pill').forEach(pill => {
@@ -556,13 +467,7 @@
                 name: card.querySelector('.chef-name').value,
                 archetype: card.querySelector('.chef-archetype').value,
                 description: card.querySelector('.chef-description').value,
-                constraints: {
-                    taste_range: getRange('taste_range'),
-                    speed_range: getRange('speed_range'),
-                    complexity_range: { ...getRange('complexity_range'), note: "1=Simplistic, 2=Moderate, 3=Elevated" },
-                    richness_range: getRange('richness_range'),
-                    cleanup_range: getRange('cleanup_range')
-                },
+                constraints: rules,
                 diet_preferences: dietPreferences,
                 cooking_style: {
                     preferred_tools: [], // Legacy removal or keep empty? User said remove tools, let's keep empty.
