@@ -58,7 +58,7 @@
         },
         {
             "id": "meta_learner",
-            "image_filename": "meta_learner.jpg",
+            "image_filename": "meta_learner.png",
             "name": "The Meta-Learner",
             "archetype": "The Optimizer",
             "description": "Learns fast by doing. Picks the few techniques that matter most, repeats them until they stick, and explains why each step works.",

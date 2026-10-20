@@ -201,3 +201,31 @@ def about(recipe):
              ('Spice', SPICE[recipe.spice_level] if recipe.spice_level in range(4) else None),
              ('Leftovers', leftovers), ('Protein', recipe.protein_type)]
     return [(k, v) for k, v in facts if v]
+
+
+def as_text(recipe):
+    """The saved recipe as plain text, in the shape round 1 writes: title, servings, ingredients per part and
+    numbered steps in the planned order. Used to make a version of it (services/recipe_v2/generate.py)."""
+    v2 = to_v2(recipe)
+    lines = {i['local_id']: i for i in v2['ingredients']}
+
+    def line_text(i, prep=True):
+        amount = fmt_amount(i.get('amount'), i.get('unit'))
+        text = ' '.join(x for x in (amount, i['name']) if x)
+        return text + (f", {i['prep_style']}" if prep and i.get('prep_style') else '')
+
+    out = [v2['title'], '', f"Servings: {recipe.yield_text or v2['servings']}", '', 'Ingredients']
+    for c in v2['components']:
+        part = [i for i in v2['ingredients'] if i['component_id'] == c['local_id']]
+        if part:
+            out += ([c['name']] if len(v2['components']) > 1 else []) + [f'- {line_text(i)}' for i in part]
+    out += ['', 'Method']
+    order = plan_v2(v2)['order']
+    by = {s['local_id']: s for s in v2['steps']}
+    for n, sid in enumerate(order, 1):
+        text = PLACEHOLDER.sub(lambda m: line_text(lines[m.group(1)], prep=False) if m.group(1) in lines else m.group(0),
+                               by[sid]['text'])
+        out.append(f'{n}. {text}')
+    if recipe.chef_note:
+        out += ['', f'Tip: {recipe.chef_note}']
+    return '\n'.join(out)

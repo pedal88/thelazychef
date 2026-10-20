@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{ chef.name }} — The Lazy Chef{% endblock %}
+
+{% block content %}
+{% from "components/cards.html" import recipe_preview_card with context %}
+
+<section class="bg-slate-900">
+    <div class="max-w-screen-lg mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+        <div class="h-24 w-24 mx-auto mb-6 rounded-full bg-orange-50 overflow-hidden flex items-center justify-center ring-4 ring-white/10">
+            {% if chef.image_filename %}
+            <img src="{{ url_for('static', filename='chefs/' + chef.image_filename) }}" alt="" class="h-full w-full object-cover">
+            {% else %}<span class="text-5xl" aria-hidden="true">👩‍🍳</span>{% endif %}
+        </div>
+        <span class="inline-block text-xs font-bold uppercase tracking-widest text-orange-400 mb-3">{{ chef.archetype }}</span>
+        <h1 class="font-serif text-5xl md:text-6xl font-bold text-white mb-6">{{ chef.name }}</h1>
+        <p class="text-lg text-slate-300 max-w-2xl mx-auto">{{ chef.description }}</p>
+        {% if chef.instruction_style.example_phrase %}
+        <p class="mt-6 font-serif text-xl italic text-orange-200">“{{ chef.instruction_style.example_phrase }}”</p>
+        {% endif %}
+        {% if chef.badges %}
+        <ul class="mt-8 flex flex-wrap justify-center gap-2">
+            {% for b in chef.badges %}<li class="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white">{{ b }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+</section>
+
+<section class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    {% if recipes %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {% for recipe in recipes %}<div>{{ recipe_preview_card(recipe, recipe.id) }}</div>{% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-24 text-slate-400">
+        <div class="text-6xl mb-4" aria-hidden="true">🍳</div>
+        <p class="text-lg font-medium">No recipes from {{ chef.name }} yet.</p>
+    </div>
+    {% endif %}
+</section>
+
+<div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+    <a href="{{ url_for('chefs.index') }}" class="text-sm text-slate-500 hover:text-orange-600 transition-colors">← All chefs</a>
+</div>
+{% endblock %}
