@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {# Recipe page for recipe model v2 (schema_version 2). Overview and step list, phone first.
    Data comes from services/recipe_v2/view.py; the river delta from templates/components/delta.html.
-   Gjør klart and cooking mode come in step 7c. #}
+   Prep (Gjør klart) and Cook are pages of their own. #}
 
 {% block title %}{{ v.title }} - The Lazy Chef{% endblock %}
 
@@ -120,7 +120,7 @@
 
 
   {% if v.ready %}
-  <p class="next"><a class="go" href="{{ url_for('recipe_get_ready', recipe_id=recipe.id, servings=v.servings, plan=v.plan) }}">Get ready →</a>
+  <p class="next"><a class="go" href="{{ url_for('recipe_prep', recipe_id=recipe.id, servings=v.servings, plan=v.plan) }}">Prep →</a>
     <span class="hint">{% set n = v.ready.bowls|length %}{{ n }} bowl{{ 's' if n != 1 }} to fill, then
       <a href="{{ url_for('recipe_cook', recipe_id=recipe.id, servings=v.servings, plan=v.plan) }}">the cooking</a></span></p>
   {% endif %}

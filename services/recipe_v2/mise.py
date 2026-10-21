@@ -1,4 +1,4 @@
-"""Get ready (Gjør klart): what to set out before the cooking starts, derived from the graph.
+"""Prep (Gjør klart): what to set out before the cooking starts, derived from the graph.
 
 The rules are in RECIPE_VISUALIZATIONS.md 9.10 and 9.15; the AI does not make mise elements.
 
@@ -53,7 +53,7 @@ def joined(names, language):
 
 
 def build(v2, sch, language=None):
-    """The Get ready page for a planned v2 recipe: bowls, things to take out, the counter and later bowls.
+    """The Prep page for a planned v2 recipe: bowls, things to take out, the counter and later bowls.
 
     sch is plan_v2(v2, plan). Steps are referred to by their number in the method list (the planned order)."""
     by = {s['local_id']: s for s in v2.get('steps') or []}
@@ -75,7 +75,7 @@ def build(v2, sch, language=None):
             return exit_of(nxt[0])
         return sid
 
-    def in_get_ready(sid):  # prep done ahead that is not a step on the clock of its own
+    def in_prep(sid):  # prep done ahead that is not a step on the clock of its own
         return sid in ahead and (by[sid].get('passive_minutes') or 0) < STANDS
 
     # Group the lines into elements, keyed by the step whose result (or which) they stand ready for
@@ -84,10 +84,10 @@ def build(v2, sch, language=None):
         s = by[sid]
         if not s.get('uses'):
             continue
-        key = exit_of(sid) if in_get_ready(sid) else sid
+        key = exit_of(sid) if in_prep(sid) else sid
         e = elements.setdefault(key, {'key': key, 'lines': [], 'prep': []})
         e['lines'] += [lines[u] for u in s['uses'] if u in lines]
-        if in_get_ready(sid):
+        if in_prep(sid):
             e['prep'].append(sid)
 
     out = {'bowls': [], 'fetch': [], 'bench': [], 'later': []}

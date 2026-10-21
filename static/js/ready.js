@@ -1,4 +1,4 @@
-/* Get ready (templates/recipe_v2_ready.html): one tap marks a bowl, a tile, a task or a piece of equipment as ready.
+/* Prep (templates/recipe_v2_ready.html): one tap marks a bowl, a tile, a task or a piece of equipment as ready.
    The ticks are kept on this device, per recipe. Only the bowls count towards the meter: they are what you make. */
 (function () {
   'use strict';

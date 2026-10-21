@@ -1,7 +1,7 @@
 /* Cooking mode (templates/recipe_v2_cook.html), ported from the phone prototype (RECIPE_VISUALIZATIONS.md 9.15).
    One card at a time. A step with waiting time is started and put under "running" with a countdown, so you can go
    on; when the time is up it turns red, beeps and vibrates. The place, the timers and the choice to skip what
-   Get ready has done are kept on this device, per recipe. The screen is kept awake while the page is open. */
+   Prep has done are kept on this device, per recipe. The screen is kept awake while the page is open. */
 (function () {
   'use strict';
   const page = document.querySelector('.cook[data-recipe]');
@@ -53,7 +53,7 @@
       const wait = (card.dataset.after || '').split(' ').map(runOf).filter(r => r && Date.now() < r.end);
       const box = card.querySelector('[data-wait]');
       box.hidden = !wait.length;
-      box.textContent = wait.length ? `Waiting for ${wait.map(r => `“${r.label.toLowerCase()}”, about ${leftMin(r)} min`).join(' and ')}. Get ready what you can.` : '';
+      box.textContent = wait.length ? `Waiting for ${wait.map(r => `“${r.label.toLowerCase()}”, about ${leftMin(r)} min`).join(' and ')}. Prep what you can.` : '';
       const pass = card.querySelector('[data-passbox]');
       if (pass) pass.hidden = last;
     }
