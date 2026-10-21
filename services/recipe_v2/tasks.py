@@ -29,7 +29,9 @@ def configured():
 
 
 def enqueue(recipe_id, kind, source, language=None):
-    """Queue the job, or run it now when no queue is configured. language None: as the idea or source is written."""
+    """Queue the job, or run it now when no queue is configured.
+
+    language is a code (services/recipe_v2/language.py); None: as the idea or source is written."""
     if not configured():
         run(recipe_id, kind, source, attempt=MAX_ATTEMPTS - 1, language=language)
         return

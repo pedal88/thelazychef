@@ -290,6 +290,8 @@ class Recipe(db.Model):
     chef_id: Mapped[str] = mapped_column(ForeignKey("chef.id"), nullable=True)
     # A version of another recipe made by a chef persona points at the base dish (always the root, never a version)
     base_recipe_id: Mapped[Optional[int]] = mapped_column(ForeignKey("recipe.id", ondelete='SET NULL'), nullable=True, index=True)
+    # The language the recipe's text is written in, ISO 639-1 ('en', 'nb'); None when not known (services/recipe_v2/language.py)
+    language: Mapped[Optional[str]] = mapped_column(String(8), nullable=True)
     is_flagged_for_review: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
     # Publishing State Machine: 'draft' | 'approved' | 'rejected'
     # Every AI-generated recipe starts as 'draft' — invisible to public routes.

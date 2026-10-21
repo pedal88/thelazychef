@@ -17,6 +17,7 @@ from database.models import Chef, Ingredient, Recipe, db
 from schemas.recipe_v2 import CUISINES, DIFFICULTIES, MEAL_TYPES
 from services.ai_models import RECIPE_V2_EFFORT, RECIPE_V2_MODEL
 from services.recipe_v2 import claude, derive, persona
+from services.recipe_v2.language import prompt_name
 from services.recipe_v2.store import save_v2, to_v2
 from services.recipe_v2_validator import format_errors_for_retry, validate_recipe_v2
 
@@ -77,7 +78,9 @@ def write_text(kind, source, language=None, call=None, chef=None):
     tidies a pasted recipe; 'web' reads the recipe at the link
     (services/recipe_v2/sources.py) and tidies it. A pasted or linked recipe is kept as it is, whatever the persona.
     'version' rewrites a saved recipe, given as text (view.as_text), as the chef persona.
-    language None writes in the language of the idea or the source; a version keeps the base recipe's language."""
+    language is a code from services/recipe_v2/language.py. None writes in the language of the idea or the source;
+    a version keeps the base recipe's language."""
+    language = prompt_name(language)
     if kind == 'web':
         from services.recipe_v2.sources import fetch_recipe_text
 
@@ -201,6 +204,8 @@ def create_recipe(kind, source, chef_id=None, language=None, call=None, recipe=N
     if not (kind == 'version' and recipe.source_input):
         recipe.source_input = source[:500]
     recipe.source_text, recipe.schema_version = text, 2
+    if language:  # a version has its base recipe's language from when it was queued
+        recipe.language = language
     missing = []
     if data:
         ids, missing = match_pantry(data)
