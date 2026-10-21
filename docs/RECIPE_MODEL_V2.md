@@ -302,6 +302,9 @@ Nevnt så de ikke glemmes, men ikke del av planen over:
 - **Edamam-nøklene:** to Edamam-apper har hatt nøklene sine hardkodet i det offentlige repoet siden februar 2026 (fjernet fra koden i PR #38). Abonnementet er avsluttet, men appene må slettes eller nøklene byttes i Edamam-dashbordet. Det må også bestemmes hvor næringstall skal hentes fra framover (avsnitt 9).
 - **Innholds-API for sosiale medier:** lese-API med token for publisert innhold med `updated_since`, bilder med stabile URL-er i faste formater (original, 1:1, 4:5, 9:16) med alt-tekst og AI-merking, og varsel ved publisering (webhook eller JSON-feed).
 - **Ressurser, samlinger og kokker som filer** i repoet som synkes til databasen, redigert i Claude Code.
+- **Raskere sider, om det trengs igjen** (målt 21.10.2026). Etter at sidene fikk få spørringer og mellomlager (PR #103) svarer `/recipes` på ca. 0,6 s og en oppskrift på ca. 1,2 s, mot 6 og 3–4,6 s før. Det som står igjen er mest databasen i en annen region. To tiltak, i denne rekkefølgen hvis det føles tregt igjen:
+  1. **Varm instans:** `min-instances=1` på Cloud Run, eventuelt databasen opp fra db-f1-micro til db-g1-small. Fjerner kaldstart etter at appen har stått ubrukt. Ca. 10–15 USD/mnd (begge: 20–35). En konfigurasjonsendring.
+  2. **Samme region for app og database:** Cloud Run står i europe-west1 (Belgia), Cloud SQL i europe-north2 (Stockholm), så hver spørring krysser landegrensen. Å flytte appen krever trolig lastbalanserer (domenekoblingen støttes ikke i europe-north2, ca. 18 USD/mnd); å flytte databasen (replika som forfremmes) gir litt nedetid. Må undersøkes før valg.
 - **Norsk** for vanlige brukere: oversatt tekstlag per oppskrift (avsnitt 3, Språk), norske navn i pantryet til handlelista, og grensesnittet (Flask-Babel).
 - Erstatninger (`RECIPE_VISUALIZATIONS.md` 9.5), økter og forkant ved lang ventetid (9.11), tilsyn i passiv tid, historikk for revisjoner og underoppskrifter.
 
