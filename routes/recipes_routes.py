@@ -526,6 +526,22 @@ def recipe_detail(recipe_id):
                             user_interaction=user_interaction,
                             linked_ingredient=linked_ingredient)
 
+@recipes_bp.route('/recipe/<int:recipe_id>/get-ready')
+def recipe_get_ready(recipe_id):
+    """Get ready (Gjør klart): the bowls to fill, what to take out and the equipment, before the cooking starts."""
+    recipe = db.session.get(Recipe, recipe_id)
+    if not recipe or (recipe.status != 'approved' and not viewer_is_admin()):
+        flash("Recipe not found.", "error")
+        return redirect(url_for('discover'))
+    if recipe.schema_version != 2:
+        return redirect(url_for('recipe_detail', recipe_id=recipe_id))
+    from services.recipe_v2.view import build
+    view = build(recipe, servings=request.args.get('servings', type=int), plan=request.args.get('plan', 'calm'))
+    if not view['ready']:
+        return redirect(url_for('recipe_detail', recipe_id=recipe_id))
+    return render_template('recipe_v2_ready.html', recipe=recipe, v=view)
+
+
 @recipes_bp.route('/recipe/<int:recipe_id>/print')
 def recipe_print(recipe_id):
     """The river delta on one A4 sheet, portrait or landscape. Opens the print dialog unless ?auto=0."""

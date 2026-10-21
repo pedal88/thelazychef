@@ -78,6 +78,11 @@
   <div class="delta-breakout">{{ delta(v.delta, recipe.id, servings=v.servings) }}</div>
   {% endif %}
 
+  {% if v.ready %}
+  <p class="next"><a class="go" href="{{ url_for('recipe_get_ready', recipe_id=recipe.id, servings=v.servings, plan=v.plan) }}">Get ready →</a>
+    <span class="hint">{% set n = v.ready.bowls|length %}{{ n }} bowl{{ 's' if n != 1 }} to fill, then the cooking</span></p>
+  {% endif %}
+
   <details class="settings">
     <summary>Servings and plan</summary>
     <div class="settings-body">
@@ -120,7 +125,7 @@
   {% endif %}
 
   {% if v.steps %}
-  <section>
+  <section id="method">
     <div class="sec-head"><h2>Method</h2><span class="eyebrow">{{ v.steps|length }} steps</span></div>
     <ol class="steps">
       {% for s in v.steps %}
