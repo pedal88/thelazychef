@@ -1,0 +1,85 @@
+/* Style trial (temporary, October 2026): the four directions from the style sheet, to try on real recipes before
+   one of them goes into tokens.css. A look is chosen in the admin menu or with ?look=c|d|e|f (?look=today goes
+   back); base.html sets data-look on <html> and loads that look's fonts. Visitors who have not chosen one see
+   today's look. When the choice is made, its values move into tokens.css and this file and the switch go.
+   The scales are made from each direction's colours: tints towards white, shades towards black. */
+
+:root[data-look="c"] {  /* C Hvit benk */
+  --font-sans: 'Schibsted Grotesk', system-ui, sans-serif;
+  --font-serif: 'Schibsted Grotesk', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+  --paper: 255 255 255;
+  --neutral-50: 244 245 243; --neutral-100: 236 238 235; --neutral-200: 228 231 227; --neutral-300: 185 189 185; --neutral-400: 143 148 143; --neutral-500: 106 112 107; --neutral-600: 80 85 81; --neutral-700: 58 62 59; --neutral-800: 36 39 37; --neutral-900: 18 21 19; --neutral-950: 12 14 12;
+  --accent-50: 240 245 242; --accent-100: 224 235 230; --accent-200: 194 215 204; --accent-300: 156 191 174; --accent-400: 113 162 137; --accent-500: 69 133 101; --accent-600: 36 112 74; --accent-700: 31 95 63; --accent-800: 25 78 52; --accent-900: 21 65 43; --accent-950: 14 45 30;
+  --prep-50: 240 245 242; --prep-100: 224 235 230; --prep-200: 194 215 204; --prep-300: 156 191 174; --prep-400: 113 162 137; --prep-500: 69 133 101; --prep-600: 36 112 74; --prep-700: 31 95 63; --prep-800: 25 78 52; --prep-900: 21 65 43; --prep-950: 14 45 30;
+  --serve-50: 240 244 247; --serve-100: 226 232 239; --serve-200: 197 210 222; --serve-300: 161 182 202; --serve-400: 120 150 179; --serve-500: 78 117 156; --serve-600: 47 93 138; --serve-700: 40 79 117; --serve-800: 33 65 97; --serve-900: 27 54 80; --serve-950: 19 37 55;
+  --color-cook: rgb(196 80 31); --color-cook-soft: rgb(251 243 239); --color-cook-ink: rgb(137 56 22);
+  --icon-stroke: 1.75; --radius: 10px; --radius-sm: 6px;
+}
+
+:root[data-look="d"] {  /* D Safran */
+  --font-sans: 'Figtree', system-ui, sans-serif;
+  --font-serif: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+  --paper: 255 255 255;
+  --neutral-50: 244 243 239; --neutral-100: 236 234 228; --neutral-200: 227 224 216; --neutral-300: 186 182 174; --neutral-400: 144 140 132; --neutral-500: 109 104 96; --neutral-600: 85 81 74; --neutral-700: 64 61 56; --neutral-800: 44 42 38; --neutral-900: 28 26 23; --neutral-950: 18 17 15;
+  --accent-50: 248 245 238; --accent-100: 241 234 222; --accent-200: 228 213 189; --accent-300: 211 188 148; --accent-400: 192 158 101; --accent-500: 173 128 54; --accent-600: 158 106 18; --accent-700: 134 90 15; --accent-800: 111 74 13; --accent-900: 92 61 10; --accent-950: 63 42 7;
+  --prep-50: 243 246 241; --prep-100: 230 237 227; --prep-200: 206 219 200; --prep-300: 176 196 166; --prep-400: 141 170 127; --prep-500: 105 144 88; --prep-600: 79 125 58; --prep-700: 67 106 49; --prep-800: 55 88 41; --prep-900: 46 72 34; --prep-950: 32 50 23;
+  --serve-50: 241 245 247; --serve-100: 228 234 239; --serve-200: 201 214 224; --serve-300: 168 189 205; --serve-400: 130 159 182; --serve-500: 91 130 160; --serve-600: 62 108 143; --serve-700: 53 92 122; --serve-800: 43 76 100; --serve-900: 36 63 83; --serve-950: 25 43 57;
+  --color-cook: rgb(217 130 43); --color-cook-soft: rgb(252 246 240); --color-cook-ink: rgb(152 91 30);
+  --icon-stroke: 2.25; --radius: 22px; --radius-sm: 14px;
+}
+
+:root[data-look="e"] {  /* E Porselen */
+  --font-sans: 'Archivo', system-ui, sans-serif;
+  --font-serif: 'Archivo', 'Arial Narrow', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+  --paper: 255 255 255;
+  --neutral-50: 246 247 252; --neutral-100: 223 228 245; --neutral-200: 200 209 238; --neutral-300: 160 171 209; --neutral-400: 120 133 179; --neutral-500: 86 100 154; --neutral-600: 68 84 144; --neutral-700: 54 70 135; --neutral-800: 39 57 127; --neutral-900: 27 46 120; --neutral-950: 18 30 78;
+  --accent-50: 239 240 246; --accent-100: 223 226 236; --accent-200: 191 196 217; --accent-300: 152 161 194; --accent-400: 107 119 167; --accent-500: 61 77 140; --accent-600: 27 46 120; --accent-700: 23 39 102; --accent-800: 19 32 84; --accent-900: 16 27 70; --accent-950: 11 18 48;
+  --prep-50: 244 245 251; --prep-100: 232 236 247; --prep-200: 210 216 238; --prep-300: 182 192 228; --prep-400: 150 165 217; --prep-500: 117 137 205; --prep-600: 93 116 196; --prep-700: 79 99 167; --prep-800: 65 81 137; --prep-900: 54 67 114; --prep-950: 37 46 78;
+  --serve-50: 241 243 250; --serve-100: 227 231 245; --serve-200: 200 207 234; --serve-300: 166 178 222; --serve-400: 127 144 207; --serve-500: 88 110 192; --serve-600: 58 85 181; --serve-700: 49 72 154; --serve-800: 41 60 127; --serve-900: 34 49 105; --serve-950: 23 34 72;
+  --color-cook: rgb(27 46 120); --color-cook-soft: rgb(239 240 246); --color-cook-ink: rgb(19 32 84);
+  --icon-stroke: 1.5; --radius: 16px; --radius-sm: 10px;
+}
+
+:root[data-look="f"] {  /* F Washi */
+  --font-sans: 'Zen Kaku Gothic New', system-ui, sans-serif;
+  --font-serif: 'Shippori Mincho', 'Hiragino Mincho ProN', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+  --paper: 246 245 241;
+  --neutral-50: 234 232 227; --neutral-100: 222 220 212; --neutral-200: 211 207 197; --neutral-300: 178 174 165; --neutral-400: 145 142 133; --neutral-500: 117 114 106; --neutral-600: 93 91 84; --neutral-700: 74 72 66; --neutral-800: 54 52 48; --neutral-900: 38 37 34; --neutral-950: 25 24 22;
+  --accent-50: 240 240 240; --accent-100: 225 224 224; --accent-200: 194 194 193; --accent-300: 157 157 156; --accent-400: 114 113 111; --accent-500: 71 70 67; --accent-600: 38 37 34; --accent-700: 32 31 29; --accent-800: 27 26 24; --accent-900: 22 21 20; --accent-950: 15 15 14;
+  --prep-50: 245 246 242; --prep-100: 234 236 229; --prep-200: 214 218 204; --prep-300: 188 195 173; --prep-400: 159 169 136; --prep-500: 129 142 99; --prep-600: 107 122 72; --prep-700: 91 104 61; --prep-800: 75 85 50; --prep-900: 62 71 42; --prep-950: 43 49 29;
+  --serve-50: 241 242 245; --serve-100: 227 230 234; --serve-200: 200 204 214; --serve-300: 166 174 188; --serve-400: 127 137 159; --serve-500: 88 101 129; --serve-600: 58 74 107; --serve-700: 49 63 91; --serve-800: 41 52 75; --serve-900: 34 43 62; --serve-950: 23 30 43;
+  --color-cook: rgb(138 91 60); --color-cook-soft: rgb(247 244 241); --color-cook-ink: rgb(97 64 42);
+  --icon-stroke: 1.25; --radius: 4px; --radius-sm: 2px;
+}
+
+/* ---- What makes each look more than its colours, on the recipe pages ---- */
+
+/* C Hvit benk: tight, heavy headings */
+:root[data-look="c"] .rv2 h1, :root[data-look="c"] .rv2 h2, :root[data-look="c"] .rv2.cook .card h2 { font-weight: 800; letter-spacing: -0.025em; }
+
+/* D Safran: the main button in bright saffron with dark text; rounder */
+:root[data-look="d"] .rv2 h1, :root[data-look="d"] .rv2.cook .card h2 { font-weight: 800; letter-spacing: -0.02em; }
+:root[data-look="d"] .rv2 .btn.primary, :root[data-look="d"] .rv2 .go { background: #F2B630; border-color: #F2B630; color: #1C1A17; }
+
+/* E Porselen: everything in cobalt, plate rims, condensed capitals, the step you are on as a blue plate */
+:root[data-look="e"] .rv2 h1, :root[data-look="e"] .rv2.cook .card h2, :root[data-look="e"] .rv2 h2 { font-weight: 800; font-stretch: 72%; text-transform: uppercase; letter-spacing: 0.01em; }
+:root[data-look="e"] .rv2 .fact, :root[data-look="e"] .rv2.ready .bowl, :root[data-look="e"] .rv2 .settings, :root[data-look="e"] .rv2 .nutrition, :root[data-look="e"] .rv2.ready .ftile {
+  border: 1.5px solid var(--color-ink); box-shadow: inset 0 0 0 4px var(--color-paper), inset 0 0 0 5px rgb(var(--neutral-200)); }
+:root[data-look="e"] .rv2 .hero img { border-radius: 999px / 46%; border: 1.5px solid var(--color-ink); }
+:root[data-look="e"] .rv2.cook .card.cook { background: var(--color-ink); color: rgb(var(--paper)); border-radius: 28px; box-shadow: inset 0 0 0 6px var(--color-ink), inset 0 0 0 7px rgb(255 255 255 / .35); }
+:root[data-look="e"] .rv2.cook .card.cook h2, :root[data-look="e"] .rv2.cook .card.cook .txt, :root[data-look="e"] .rv2.cook .card.cook .donebox, :root[data-look="e"] .rv2.cook .card.cook .passbox { color: rgb(var(--paper)); }
+:root[data-look="e"] .rv2.cook .card.cook .donebox b { color: rgb(var(--neutral-200)); }
+:root[data-look="e"] .rv2.cook .card.cook .txt .pill, :root[data-look="e"] .rv2.cook .card.cook .needs { color: var(--color-ink); }
+
+/* F Washi: thin lines instead of boxes, a quiet mincho, tabs as a line under the word */
+:root[data-look="f"] .rv2 h1, :root[data-look="f"] .rv2.cook .card h2 { font-weight: 500; letter-spacing: 0.01em; }
+:root[data-look="f"] .rv2 .flowbar { border: 0; background: none; padding: 0; gap: 18px; border-bottom: 1px solid var(--color-line); border-radius: 0; }
+:root[data-look="f"] .rv2 .flowbar a { border-radius: 0; padding-inline: 2px; }
+:root[data-look="f"] .rv2 .flowbar a[aria-current="page"] { background: none; color: var(--color-ink); box-shadow: inset 0 -2px 0 var(--color-ink); }
+:root[data-look="f"] .rv2 .fact { background: none; border-radius: 0; border-top: 1px solid var(--color-ink); padding-inline: 0; }
+:root[data-look="f"] .rv2.ready .bowl { border: 0; border-top: 1px solid var(--color-ink); border-radius: 0; background: none; }
+:root[data-look="f"] .rv2.cook .card { border-radius: 0; background: rgb(var(--paper)); border-left: 2px solid var(--color-cook); }
