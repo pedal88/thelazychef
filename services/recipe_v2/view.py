@@ -8,11 +8,13 @@ language; unit, equipment and mode names come from data/constraints.
 import json
 import os
 import re
+import time
+from collections import OrderedDict
 from functools import lru_cache
 
 from markupsafe import Markup, escape
 
-from database.models import Ingredient, db
+from database.models import Ingredient, Recipe, RecipeLine, RecipeStep, db
 from services.recipe_v2 import delta, mise, nutrition, whole
 from services.recipe_v2.derive import HEAT_LABELS
 from services.recipe_v2.planner import MODES, plan_v2
@@ -121,6 +123,46 @@ def step_html(s, lines, ingredients, factor):
 
     text = str(escape(s.get('text') or ''))
     return Markup(PLACEHOLDER.sub(lambda m: str(pill(m)), text))
+
+
+# The pages of a recipe (Overview, Prep, Cook, print) show the same built recipe: build it once and keep it
+# for a while. The key holds every column of the recipe row (revision, status, images, nutrition, notes, …), so a
+# change to the recipe makes a new entry; changes elsewhere (a new pantry symbol) show within CACHE_SECONDS.
+CACHE_SIZE, CACHE_SECONDS = 128, 600
+_cache = OrderedDict()
+
+
+def clear_cache():
+    _cache.clear()
+
+
+def page(recipe, servings=None, plan='calm'):
+    """build() for the recipe pages, from the cache when the recipe has not changed."""
+    key = (recipe.id, repr(tuple(getattr(recipe, c.key) for c in Recipe.__table__.columns)), servings, plan)
+    hit = _cache.get(key)
+    if hit and time.monotonic() - hit[0] < CACHE_SECONDS:
+        _cache.move_to_end(key)
+        return hit[1]
+    load_graph(recipe)
+    view = build(recipe, servings=servings, plan=plan)
+    _cache[key] = (time.monotonic(), view)
+    while len(_cache) > CACHE_SIZE:
+        _cache.popitem(last=False)
+    return view
+
+
+def load_graph(recipe):
+    """Load the recipe's components, lines (with their pantry ingredient) and steps (with their lines and inputs)
+    in a few queries, instead of one per step and per line when build() walks them."""
+    from sqlalchemy.orm import selectinload
+
+    db.session.execute(db.select(Recipe).where(Recipe.id == recipe.id).options(
+        selectinload(Recipe.components),
+        selectinload(Recipe.lines).selectinload(RecipeLine.ingredient),
+        selectinload(Recipe.steps).selectinload(RecipeStep.lines),
+        selectinload(Recipe.steps).selectinload(RecipeStep.after),
+        selectinload(Recipe.meal_types),
+    )).scalars().all()
 
 
 def build(recipe, servings=None, plan='calm'):

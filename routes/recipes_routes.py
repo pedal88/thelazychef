@@ -5,7 +5,7 @@ import os
 from flask import abort, current_app, flash, jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import or_
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 
 from database.models import (
     Ingredient,
@@ -176,8 +176,8 @@ def recipes_list():
     if selected_meal_types and len(selected_meal_types) < len(meal_type_options):
         stmt = stmt.where(Recipe.meal_types.any(RecipeMealType.meal_type.in_(selected_meal_types)))
 
-    # Fetch results
-    results = db.session.execute(stmt).all()
+    # Fetch results, with each card's diets and meal types in one query each rather than one per card
+    results = db.session.execute(stmt.options(selectinload(Recipe.diets), selectinload(Recipe.meal_types))).all()
     
     recipes = []
     if view_mode in ['saved', 'made', 'next']:
@@ -371,14 +371,18 @@ def recipe_detail(recipe_id):
 
     # Recipe model v2: the graph has its own page (overview and step list).
     if recipe.schema_version == 2:
-        from services.recipe_v2.view import build
-        view = build(recipe, servings=request.args.get('servings', type=int), plan=request.args.get('plan', 'calm'))
+        from services.recipe_v2.view import page
+        view = page(recipe, servings=request.args.get('servings', type=int), plan=request.args.get('plan', 'calm'))
         admin = {}
         if viewer_is_admin():
             # The dish and all its versions by chef personas, and the chefs that can make one
             root = recipe.base_recipe or recipe
             admin = {'family': [root] + sorted(root.versions, key=lambda r: r.id), 'chefs': get_chefs()}
         return render_template('recipe_v2.html', recipe=recipe, v=view, admin=admin)
+
+    # The ingredients with their pantry rows in two queries, not one per ingredient
+    db.session.execute(db.select(Recipe).where(Recipe.id == recipe_id).options(
+        selectinload(Recipe.ingredients).selectinload(RecipeIngredient.ingredient))).scalars().all()
 
     # Group instructions by phase for display
     instructions = Instruction.query.filter_by(recipe_id=recipe_id).order_by(Instruction.component, Instruction.phase, Instruction.step_number).all()
@@ -475,22 +479,23 @@ def recipe_detail(recipe_id):
     # ------------------------------------------------------------------ #
     substitutes: dict[int, dict] = {}  # keyed by RecipeIngredient.id
 
+    # All candidates in one query, grouped by sub-category here (it was one query per ingredient)
+    sub_categories = {ri.ingredient.sub_category for ri in recipe.ingredients if ri.ingredient and ri.ingredient.sub_category}
+    by_sub_category: dict[str, list] = {}
+    if sub_categories:
+        for cand in db.session.execute(
+            db.select(Ingredient)
+            .where(Ingredient.sub_category.in_(sub_categories), Ingredient.status == 'active')
+            .order_by(Ingredient.is_staple.desc(), Ingredient.name.asc())
+        ).scalars():
+            by_sub_category.setdefault(cand.sub_category, []).append(cand)
+
     for ri in recipe.ingredients:
         ing = ri.ingredient
         if not ing or not ing.sub_category:
             continue
 
-        alts = db.session.execute(
-            db.select(Ingredient)
-            .where(
-                Ingredient.sub_category == ing.sub_category,
-                Ingredient.id != ing.id,
-                Ingredient.status == 'active',
-            )
-            .order_by(Ingredient.is_staple.desc(), Ingredient.name.asc())
-            .limit(3)
-        ).scalars().all()
-
+        alts = [c for c in by_sub_category.get(ing.sub_category, []) if c.id != ing.id][:3]
         if not alts:
             continue
 
@@ -536,8 +541,8 @@ def recipe_prep(recipe_id):
         return redirect(url_for('discover'))
     if recipe.schema_version != 2:
         return redirect(url_for('recipe_detail', recipe_id=recipe_id))
-    from services.recipe_v2.view import build
-    view = build(recipe, servings=request.args.get('servings', type=int), plan=request.args.get('plan', 'calm'))
+    from services.recipe_v2.view import page
+    view = page(recipe, servings=request.args.get('servings', type=int), plan=request.args.get('plan', 'calm'))
     if not view['ready']:
         return redirect(url_for('recipe_detail', recipe_id=recipe_id))
     return render_template('recipe_v2_ready.html', recipe=recipe, v=view)
@@ -552,8 +557,8 @@ def recipe_cook(recipe_id):
         return redirect(url_for('discover'))
     if recipe.schema_version != 2:
         return redirect(url_for('recipe_detail', recipe_id=recipe_id))
-    from services.recipe_v2.view import build
-    view = build(recipe, servings=request.args.get('servings', type=int), plan=request.args.get('plan', 'calm'))
+    from services.recipe_v2.view import page
+    view = page(recipe, servings=request.args.get('servings', type=int), plan=request.args.get('plan', 'calm'))
     if not view['ready']:
         return redirect(url_for('recipe_detail', recipe_id=recipe_id))
     return render_template('recipe_v2_cook.html', recipe=recipe, v=view)
@@ -568,8 +573,8 @@ def recipe_print(recipe_id):
         return redirect(url_for('discover'))
     if recipe.schema_version != 2:
         return redirect(url_for('recipe_detail', recipe_id=recipe_id))
-    from services.recipe_v2.view import build
-    view = build(recipe, servings=request.args.get('servings', type=int))
+    from services.recipe_v2.view import page
+    view = page(recipe, servings=request.args.get('servings', type=int))
     if not view['delta']:
         return redirect(url_for('recipe_detail', recipe_id=recipe_id))
     orient = 'landscape' if request.args.get('orient') == 'landscape' else 'portrait'
