@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {# Cooking mode (Lag mat) for a v2 recipe: one step at a time, timers for the waiting, the steps that stand,
-   and what each step needs from Get ready. RECIPE_VISUALIZATIONS.md 9.15. The server renders every step;
+   and what each step needs from Prep. RECIPE_VISUALIZATIONS.md 9.15. The server renders every step;
    static/js/cook.js shows one at a time and keeps the place, the timers and the choices on the device.
    On a large screen the river delta stands beside the card with the step you are on marked. #}
 {% from "components/delta.html" import delta, MARKS with context %}
@@ -67,7 +67,7 @@
       </section>
 
       <section class="steplist-wrap" data-list hidden>
-        <label class="skiprow"><input type="checkbox" data-skip checked> Skip what Get ready has done</label>
+        <label class="skiprow"><input type="checkbox" data-skip checked> Skip what you did in Prep</label>
         <ol class="steplist">
           {% for s in v.steps if not s.task %}
           <li class="{{ s.phase }}" data-row="{{ s.id }}"{% if s.ahead %} data-ahead{% endif %}><button type="button" data-jump="{{ s.id }}"><span class="n">{{ s.n }}</span><span><span class="m">{{ s.short }}{% if s.duration %} · {{ s.duration }}{% endif %}</span><p lang="{{ lang }}">{{ s.html }}</p></span></button></li>

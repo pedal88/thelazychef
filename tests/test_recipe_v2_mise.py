@@ -1,4 +1,4 @@
-"""Get ready: mise elements derived from the graph (services/recipe_v2/mise.py) and the page that shows them."""
+"""Prep (Gjør klart): mise elements derived from the graph (services/recipe_v2/mise.py) and the page that shows them."""
 import os
 import sys
 import unittest
@@ -65,7 +65,7 @@ class MiseModelTests(unittest.TestCase):
         self.assertEqual(mise.joined(['løk', 'gulrot'], 'nb'), 'Løk og gulrot')
         self.assertEqual(mise.joined(['a', 'b', 'c', 'd', 'e'], None), 'A, b and 3 more')
 
-    def test_no_steps_nothing_to_get_ready(self):
+    def test_no_steps_nothing_to_prep(self):
         self.assertIsNone(mise.build({'steps': [], 'ingredients': []}, {'order': [], 'plan': {}}))
 
 
@@ -74,21 +74,26 @@ class GetReadyPageTests(unittest.TestCase):
                              view_tests.RecipeV2ViewTests.page)
 
     def get(self, name, **args):
-        res = self.client.get(f'/recipe/{self.ids[name]}/get-ready', query_string=args)
+        res = self.client.get(f'/recipe/{self.ids[name]}/prep', query_string=args)
         return res.status_code, res.get_data(as_text=True)
 
-    def test_the_overview_links_to_get_ready(self):
+    def test_the_overview_links_to_prep(self):
         _, html = self.page('carbonara', servings=6)
-        self.assertIn(f'/recipe/{self.ids["carbonara"]}/get-ready?servings=6&amp;plan=calm', html)
+        self.assertIn(f'/recipe/{self.ids["carbonara"]}/prep?servings=6&amp;plan=calm', html)
         self.assertIn('3 bowls to fill', html)
 
     def test_the_page_shows_bowls_tiles_and_equipment(self):
         status, html = self.get('carbonara', servings=6)
         self.assertEqual(status, 200)
-        for text in ('Get ready', 'Pisk eggeblandingen', 'Take out', 'On the counter', 'Equipment', 'data-tick="b:',
+        for text in ('Prep', 'Pisk eggeblandingen', 'Take out', 'On the counter', 'Equipment', 'data-tick="b:',
                      '600 g', 'js/ready.js', '0 of 3 bowls ready'):
             self.assertIn(text, html)
         self.assertIn('https://example.com/spaghetti.webp', html)
+
+    def test_the_first_address_still_works(self):
+        res = self.client.get(f'/recipe/{self.ids["carbonara"]}/get-ready')
+        self.assertEqual(res.status_code, 200)
+        self.assertIn('aria-current="page">Prep', res.get_data(as_text=True))
 
     def test_drafts_only_for_admins(self):
         self.assertEqual(self.get('lasagne')[0], 302)

@@ -2,7 +2,7 @@
    Changing the style of the whole app means changing the values here and nothing else:
    - Tailwind's colour names in the templates (slate, orange, indigo, green, …) are pointed at the scales below
      in base.html, so a class like bg-orange-600 means "the accent", and text-slate-700 means "a dark neutral".
-   - The v2 pages (recipe, Get ready, Cook, the delta) use the semantic names further down.
+   - The v2 pages (recipe, Prep, Cook, the delta) use the semantic names further down.
    The values are today's look: the Tailwind palette with Inter and Playfair Display. One deliberate change:
    indigo and purple buttons now use the accent, so the app has one action colour.
    Scales are RGB triplets so Tailwind can add opacity (bg-orange-600/80). */

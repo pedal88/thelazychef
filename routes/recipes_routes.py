@@ -526,9 +526,10 @@ def recipe_detail(recipe_id):
                             user_interaction=user_interaction,
                             linked_ingredient=linked_ingredient)
 
-@recipes_bp.route('/recipe/<int:recipe_id>/get-ready')
-def recipe_get_ready(recipe_id):
-    """Get ready (Gjør klart): the bowls to fill, what to take out and the equipment, before the cooking starts."""
+@recipes_bp.route('/recipe/<int:recipe_id>/get-ready')  # the first address, kept for links already shared
+@recipes_bp.route('/recipe/<int:recipe_id>/prep')
+def recipe_prep(recipe_id):
+    """Prep (Gjør klart): the bowls to fill, what to take out and the equipment, before the cooking starts."""
     recipe = db.session.get(Recipe, recipe_id)
     if not recipe or (recipe.status != 'approved' and not viewer_is_admin()):
         flash("Recipe not found.", "error")

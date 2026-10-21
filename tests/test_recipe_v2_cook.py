@@ -28,7 +28,7 @@ class CookTests(unittest.TestCase):
         # The boiling water is a result for the pasta, from the setup step that used it
         self.assertEqual([r['no'] for r in s['Kok pastaen']['results']], [1])
 
-    def test_prep_done_in_get_ready_is_marked_and_not_a_result(self):
+    def test_prep_done_in_prep_is_marked_and_not_a_result(self):
         s = self.steps('carbonara')
         self.assertTrue(s['Pisk eggeblandingen']['ahead'])
         self.assertTrue(s['Skjær guancialen']['ahead'])
@@ -51,8 +51,8 @@ class CookTests(unittest.TestCase):
                      'class="cook-side"', 'data-passive="9"'):
             self.assertIn(text, html)
 
-    def test_get_ready_leads_to_cooking(self):
-        html = self.client.get(f'/recipe/{self.ids["carbonara"]}/get-ready').get_data(as_text=True)
+    def test_prep_leads_to_cooking(self):
+        html = self.client.get(f'/recipe/{self.ids["carbonara"]}/prep').get_data(as_text=True)
         self.assertIn(f'/recipe/{self.ids["carbonara"]}/cook?servings=4&amp;plan=calm', html)
         _, overview = self.page('carbonara')
         self.assertIn(f'/recipe/{self.ids["carbonara"]}/cook?', overview)

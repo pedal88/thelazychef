@@ -1,4 +1,4 @@
-{# The top of the three pages of a v2 recipe: the title and Overview · Get ready · Cook. The same on all three,
+{# The top of the three pages of a v2 recipe: the title and Overview · Prep · Cook. The same on all three,
    centred, so it stays put while the page changes under it (a view transition in recipe_v2.css). #}
 {% macro recipe_head(recipe, v, current) %}
 {% set args = {'recipe_id': recipe.id, 'servings': v.servings, 'plan': v.plan} %}
@@ -7,7 +7,7 @@
   <h1>{{ v.title }}</h1>
   {% if v.ready %}
   <nav class="flowbar" aria-label="Making the dish">
-    {%- for key, label, endpoint in [('overview', 'Overview', 'recipe_detail'), ('ready', 'Get ready', 'recipe_get_ready'), ('cook', 'Cook', 'recipe_cook')] -%}
+    {%- for key, label, endpoint in [('overview', 'Overview', 'recipe_detail'), ('ready', 'Prep', 'recipe_prep'), ('cook', 'Cook', 'recipe_cook')] -%}
     <a href="{{ url_for(endpoint, **args) }}"{% if key == current %} aria-current="page"{% endif %}>{{ label }}</a>
     {%- endfor -%}
   </nav>

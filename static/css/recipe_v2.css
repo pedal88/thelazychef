@@ -96,7 +96,7 @@
 .rv2 .next { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-4); margin: 0 0 var(--space-4); }
 .rv2 .next .go { display: inline-flex; align-items: center; text-decoration: none; }
 
-/* Overview, Get ready, Cook: the same centred top on all three pages (components/recipe_head.html).
+/* Overview, Prep, Cook: the same centred top on all three pages (components/recipe_head.html).
    Between them the browser keeps the top in place and fades the page under it. */
 @view-transition { navigation: auto; }
 @media (prefers-reduced-motion: reduce) { @view-transition { navigation: none; } }

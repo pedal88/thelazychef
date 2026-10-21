@@ -175,7 +175,7 @@ def build(recipe, servings=None, plan='calm'):
                       'amount': fmt_amount(i['amount'] * factor, i.get('unit')) if i.get('amount') is not None else '',
                       'prep': i.get('prep_style') or '', 'cut': i.get('cut')} for lid, i in lines.items()}
 
-    # Get ready: the lines in bowls, to take out and on the counter, drawn like in the delta
+    # Prep: the lines in bowls, to take out and on the counter, drawn like in the delta
     for i in v2['ingredients']:
         if ingredients.get(i['local_id']) is not None:
             i['pantry_name'] = ingredients[i['local_id']].name
@@ -217,8 +217,8 @@ def build(recipe, servings=None, plan='calm'):
 
 
 def cook_needs(steps, steps_by, ready, sch, tiles):
-    """What cooking mode needs per step: the bowls and lines from Get ready that go in here, the results of
-    earlier steps, the step standing while this one is done, and whether Get ready already did it."""
+    """What cooking mode needs per step: the bowls and lines from Prep that go in here, the results of
+    earlier steps, the step standing while this one is done, and whether Prep already did it."""
     plan, number = sch['plan'], {s['id']: s['n'] for s in steps}
     done_here = set(ready['done_here'])
     bowls = ready['bowls'] + [b for g in ready['later'] for b in g['bowls']]
@@ -227,7 +227,7 @@ def cook_needs(steps, steps_by, ready, sch, tiles):
         raw = steps_by[s['id']]
         here_bowls = [b for b in bowls if b['used']['id'] == s['id']]
         here_tiles = [f['line'] for f in loose if f['used']['id'] == s['id']]
-        # A prep step that is part of a bowl, cooked here instead of in Get ready: its own lines
+        # A prep step that is part of a bowl, cooked here instead of in Prep: its own lines
         if s['id'] in done_here:
             here_tiles += [tiles[u] for u in raw.get('uses') or [] if u in tiles]
         after = [a for a in raw.get('after') or [] if a in steps_by]
@@ -241,7 +241,7 @@ def cook_needs(steps, steps_by, ready, sch, tiles):
             'bowls': here_bowls, 'tiles': here_tiles, 'results': [r for r in results if not r['ready']],
             'after': after, 'ahead': s['id'] in done_here, 'standing': standing[0] if standing else None,
             'active_min': raw.get('active_minutes') or 0, 'passive_min': raw.get('passive_minutes') or 0,
-            # Jobs Get ready lists first ("take the butter out") are not cooking steps
+            # Jobs Prep lists first ("take the butter out") are not cooking steps
             'task': not raw.get('uses') and not raw.get('after') and not raw.get('equipment'),
         })
 

@@ -14,7 +14,7 @@ from database.db_connector import configure_database
 # The models are re-exported here: many scripts do "from app import app, db, Recipe, ..."
 from database.models import db, Ingredient, Recipe, Instruction, RecipeIngredient, RecipeMealType, RecipeDiet, User, Resource, resource_relations, Chef, UserRecipeInteraction, RecipeEvaluation, RecipeCollection, CollectionItem, UserQueue, UserLink, ConceptVisual, VisualStyleGuide
 from services.storage_service import get_storage_provider
-from routes._shared import DIFFICULTY_LABELS, get_recipe_image_url, get_image_url
+from routes._shared import DIFFICULTY_LABELS, get_recipe_image_url, get_image_url, icon
 
 
 app = Flask(__name__)
@@ -120,6 +120,7 @@ def utility_processor():
 # Also imported from app by services/evaluation_service.py
 app.add_template_global(get_recipe_image_url)
 app.add_template_global(get_image_url)
+app.add_template_global(icon)
 
 db.init_app(app)
 

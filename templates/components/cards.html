@@ -86,7 +86,7 @@ Expects a RecipeIngredient object (ri) which has .ingredient relation and .amoun
         {% else %}
         <!-- Contextual Placeholder -->
         <div class="absolute inset-0 bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center">
-            <span class="text-4xl">🍳</span>
+            <span class="text-4xl text-orange-300">{{ icon('utensils') }}</span>
         </div>
         {% endif %}
 
@@ -192,7 +192,7 @@ Expects a RecipeIngredient object (ri) which has .ingredient relation and .amoun
             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
         {% else %}
         <div class="absolute inset-0 bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
-            <span class="text-4xl">📚</span>
+            <span class="text-4xl text-orange-300">{{ icon('book') }}</span>
         </div>
         {% endif %}
     </div>
