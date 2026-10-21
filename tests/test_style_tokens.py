@@ -1,0 +1,37 @@
+"""The app's look lives in static/css/tokens.css; base.html points Tailwind's colour names at it.
+
+Guards the one-file promise: every scale base.html uses must exist in tokens.css with all its steps,
+and the pages must not bring back colours of their own."""
+import os
+import re
+import unittest
+
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+STEPS = (50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950)
+
+
+def read(*path):
+    with open(os.path.join(ROOT, *path), encoding='utf-8') as f:
+        return f.read()
+
+
+class StyleTokenTests(unittest.TestCase):
+    def test_every_scale_tailwind_uses_is_in_the_tokens(self):
+        base, tokens = read('templates', 'base.html'), read('static', 'css', 'tokens.css')
+        scales = set(re.findall(r"scale\('(\w+)'\)", base))
+        self.assertEqual(scales, {'neutral', 'accent', 'prep', 'serve', 'danger', 'warning'})
+        for name in scales:
+            for step in STEPS:
+                self.assertRegex(tokens, rf'--{name}-{step}:\s*\d+ \d+ \d+;', f'{name}-{step}')
+        for var in ('--paper', '--font-sans', '--font-serif', '--font-mono', '--icon-stroke'):
+            self.assertIn(var + ':', tokens)
+
+    def test_the_v2_pages_and_their_styles_use_tokens_only(self):
+        for path in (('static', 'css', f) for f in ('recipe_v2.css', 'ready.css', 'cook.css', 'delta.css')):
+            self.assertEqual(re.findall(r'#[0-9a-fA-F]{3,6}\b', read(*path)), [], os.path.join(*path))
+        for name in ('recipe_v2.html', 'recipe_v2_ready.html', 'recipe_v2_cook.html', 'chefs.html'):
+            self.assertEqual(re.findall(r'#[0-9a-fA-F]{6}\b', read('templates', name)), [], name)
+
+
+if __name__ == '__main__':
+    unittest.main()

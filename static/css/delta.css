@@ -1,9 +1,9 @@
 /* The river delta (templates/components/delta.html, static/js/delta.js), ported from docs/prototypes/stor-skjerm.html.
    Pencil and handwriting for the drawing; every other colour and font comes from tokens.css. */
 .delta {
-  --pencil: #4b4f49;
+  --pencil: var(--color-pencil);
   --hand: 'Caveat', 'Bradley Hand', 'Segoe Print', cursive;
-  --line-strong: #b9bfb2;
+  --line-strong: var(--color-line-strong);
   color: var(--color-ink);
 }
 .delta .hand { font-family: var(--hand); font-weight: 700; letter-spacing: .01em; }
@@ -77,5 +77,5 @@
 @media print {
   .delta-head, .dl-scale { display: none !important; }
   .dl-wrap { overflow: hidden !important; }
-  .fx-no { border-color: #999; }
+  .fx-no { border-color: var(--color-muted); }
 }
