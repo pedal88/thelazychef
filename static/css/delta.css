@@ -1,0 +1,81 @@
+/* The river delta (templates/components/delta.html, static/js/delta.js), ported from docs/prototypes/stor-skjerm.html.
+   Pencil and handwriting for the drawing; every other colour and font comes from tokens.css. */
+.delta {
+  --pencil: #4b4f49;
+  --hand: 'Caveat', 'Bradley Hand', 'Segoe Print', cursive;
+  --line-strong: #b9bfb2;
+  color: var(--color-ink);
+}
+.delta .hand { font-family: var(--hand); font-weight: 700; letter-spacing: .01em; }
+
+.delta-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-4); margin-bottom: var(--space-3); font-size: 14px; }
+.delta-head .seg { display: inline-flex; border: 1px solid var(--color-line); border-radius: var(--radius-pill); padding: 3px; }
+.delta-head .seg button { all: unset; cursor: pointer; border-radius: var(--radius-pill); padding: 4px var(--space-3); min-height: 30px; display: inline-flex; align-items: center; font-size: 14px; }
+.delta-head .seg button[aria-pressed="true"] { background: var(--color-ink); color: var(--color-paper); }
+.delta-head .seg button:focus-visible { outline: 2px solid var(--color-serve); outline-offset: 2px; }
+.delta-head .hint { color: var(--color-muted); }
+.delta-print { margin-left: auto; color: var(--color-muted); }
+.delta-print a { color: var(--color-ink); }
+
+.dl-wrap { position: relative; overflow: hidden; overflow-x: auto; padding: 4px 0; }
+/* On the recipe page the drawing gets the width of the screen, not the reading column */
+.delta-breakout { width: min(1240px, calc(100vw - 32px)); margin-left: calc(50% - min(620px, 50vw - 16px)); }
+.dl-scale { position: absolute; right: 0; top: -2px; font-size: 15px; color: var(--color-muted); }
+
+.skv { position: relative; display: grid; }
+.skv.horiz { column-gap: 44px; row-gap: 16px; width: max-content; align-items: center; justify-items: center; padding: 4px; }
+.skv.vert { column-gap: 14px; row-gap: 40px; align-items: end; padding: 4px 2px 8px; }
+.sk-arrows { position: absolute; inset: 0; pointer-events: none; overflow: visible; z-index: 2; }
+.sk-arrows .pa { fill: none; stroke: var(--pencil); stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.sk-arrows .pa2 { stroke-width: 1.1; opacity: .35; }
+
+.g2-cell { display: flex; justify-content: center; min-width: 0; }
+.g2-node { position: relative; z-index: 1; display: grid; justify-items: center; text-align: center; gap: 2px; padding: 4px 6px; transition: opacity .2s; }
+.g2-node.done { opacity: .38; }
+.g2-note { font-size: 14px; color: var(--color-muted); }
+.fx-also { color: var(--color-ink); }
+.fx-ref { display: inline-grid; place-items: center; min-width: 15px; height: 15px; border-radius: 50%; border: 1.2px solid var(--line-strong); font: 600 9px/1 var(--font-mono); color: var(--color-muted); vertical-align: 1px; }
+
+.mn-head { display: flex; align-items: baseline; flex-wrap: wrap; justify-content: center; column-gap: 10px; row-gap: 0; }
+.skv.horiz .mn-head { max-width: 200px; min-width: min-content; }
+.fx-seg { display: inline-flex; flex-shrink: 0; align-items: baseline; gap: 6px; transition: opacity .2s; }
+.fx-arrow { font-family: var(--hand); color: var(--color-muted); font-size: 18px; margin-right: 2px; }
+.mn-v { font-size: 22px; line-height: 1; color: var(--color-ink); white-space: nowrap; }
+.g2-node.main .mn-v { font-size: 24px; }
+.fx-seg.done .mn-v { text-decoration: line-through; text-decoration-color: var(--line-strong); color: var(--color-muted); }
+
+.fx-no { all: unset; position: relative; cursor: pointer; box-sizing: border-box; display: inline-grid; place-items: center; align-self: center; min-width: 17px; height: 17px; padding: 0 2px; border-radius: 50%; border: 1.2px solid var(--line-strong); font: 600 10px/1 var(--font-mono); color: var(--color-muted); }
+.fx-no::before { content: ""; position: absolute; inset: -12px; } /* a finger-sized target around the small number */
+.fx-no:hover { border-color: var(--pencil); color: var(--color-ink); }
+.fx-no:focus-visible { outline: 2px solid var(--color-serve); outline-offset: 2px; }
+.fx-no.ok { background: var(--pencil); border-color: var(--pencil); color: var(--color-paper); }
+
+.mn-heat { display: inline-flex; align-self: center; margin-left: 2px; }
+.ic-heat { width: 22px; height: 17px; fill: none; stroke-linecap: round; stroke-width: 2; }
+.ic-heat .on { stroke: var(--color-cook); }
+.ic-heat .off { stroke: var(--line-strong); opacity: .6; }
+.ic-heat .pl-ring { stroke: var(--pencil); }
+.ic-glass { width: 11px; height: 14px; fill: none; stroke: var(--pencil); stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; vertical-align: -2px; }
+.mn-wait { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
+.mn-wait .hand, .mn-temp { font: 700 16px var(--hand); color: var(--pencil); white-space: nowrap; }
+.mn-rem { display: inline-flex; align-items: center; gap: 5px; color: var(--pencil); font-size: 15px; }
+
+.g2-pics { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 8px; max-width: 190px; margin-top: 4px; }
+.skv.horiz .g2-pics { max-width: 170px; }
+.skv.horiz .g2-pics:has(.fx-bowl) { max-width: 220px; }
+.fx-bowl { position: relative; display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 2px 5px; margin: 0 2px 4px; max-width: 262px; padding: 6px 10px 5px; border-radius: 14px; background: color-mix(in srgb, var(--pencil) 8%, transparent); }
+.fx-bowl img { mix-blend-mode: multiply; }
+.fx-bowl .mn-ing small { font-size: 10px; }
+.mn-ing { display: grid; justify-items: center; gap: 1px; }
+.mn-ing small { font: 500 10.5px var(--font-mono); color: var(--color-muted); white-space: nowrap; }
+.mn-ing .ing-img { position: relative; flex: none; width: var(--s); height: var(--s); display: inline-grid; place-items: center; }
+.mn-ing .ing-img img { width: 100%; height: 100%; object-fit: contain; }
+.ing-letter { width: 100%; height: 100%; display: grid; place-items: center; border-radius: 28%; background: var(--color-soft); border: 1px solid var(--color-line); color: var(--color-muted); font: 600 calc(var(--s) * .42)/1 var(--font-sans); }
+.ing-img .mark { position: absolute; right: -4px; bottom: -4px; width: 16px; height: 16px; border-radius: 50%; background: var(--color-paper); border: 1px solid var(--line-strong); display: grid; place-items: center; color: var(--color-ink); }
+.ing-img .mark svg { width: 10px; height: 10px; }
+
+@media print {
+  .delta-head, .dl-scale { display: none !important; }
+  .dl-wrap { overflow: hidden !important; }
+  .fx-no { border-color: #999; }
+}

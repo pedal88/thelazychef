@@ -1,0 +1,64 @@
+{# The river delta (services/recipe_v2/delta.py). The cells carry their depth and span; static/js/delta.js lays them
+   out portrait or landscape, scales the drawing to fit and draws the arrows. #}
+
+{% set GLASS %}<svg class="ic-glass" viewBox="0 0 12 16" aria-hidden="true"><path d="M2 1.5h8M2 14.5h8M3 2c0 4 6 4 6 6s-6 2-6 6M9 2c0 4-6 4-6 6s6 2 6 6"/></svg>{% endset %}
+{% set CLOCK %}<svg class="ic-glass" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7.5" r="5.2"/><path d="M7 4.5V7.6l2 1.2M3 1.6l-1.4 1.3M11 1.6l1.4 1.3"/></svg>{% endset %}
+{% set MARKS = {
+  'cut': '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 10 L9 3 L10.5 4.5 L4 10 Z" fill="currentColor"/><rect x="1" y="9.2" width="3" height="1.6" rx=".6" fill="currentColor"/></svg>',
+  'grate': '<svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2.5" y="1.5" width="7" height="9" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="5" cy="4.5" r=".7" fill="currentColor"/><circle cx="7" cy="6" r=".7" fill="currentColor"/><circle cx="5" cy="7.5" r=".7" fill="currentColor"/></svg>',
+  'juice': '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1.5 C6 1.5 2.8 5.6 2.8 7.6 a3.2 3.2 0 0 0 6.4 0 C9.2 5.6 6 1.5 6 1.5 Z" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>',
+  'crush': '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M1.5 6.5 H10.5 C10.5 9 8.5 10.5 6 10.5 S1.5 9 1.5 6.5 Z M7 6.5 L10 1.5" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>'} %}
+
+{% macro heat(n) -%}
+<span class="mn-heat"><svg class="ic-heat" viewBox="0 0 24 18" aria-hidden="true"><path class="pl-ring" d="M2.5 16 H21.5"/>{% for k in range(3) %}<path class="{{ 'on' if k < n else 'off' }}" d="M{{ 6 + k * 6 }} 13 C{{ 4 + k * 6 }} 10 {{ 8 + k * 6 }} 8 {{ 6 + k * 6 }} 3"/>{% endfor %}</svg></span>
+{%- endmacro %}
+
+{% macro pic(p, size) -%}
+<span class="mn-ing" title="{{ p.name }}{{ ', ' ~ p.prep if p.prep }}">
+  <span class="ing-img" style="--s:{{ size }}px">{% if p.img %}<img src="{{ p.img }}" alt="" width="{{ size }}" height="{{ size }}" loading="lazy">{% else %}<span class="ing-letter" aria-hidden="true">{{ p.name[:1]|upper }}</span>{% endif %}{% if p.mark %}<i class="mark">{{ MARKS[p.mark]|safe }}</i>{% endif %}</span>
+  <small>{{ p.amount }}</small>
+</span>
+{%- endmacro %}
+
+{% macro delta(d, recipe_id, print_links=True, servings=None) %}
+<section class="delta" data-recipe="{{ recipe_id }}" aria-label="The whole recipe as a drawing">
+  {% if print_links %}
+  <div class="delta-head">
+    <div class="seg" role="group" aria-label="Direction of the drawing">
+      <button type="button" data-orient="portrait" aria-pressed="false">Portrait</button>
+      <button type="button" data-orient="landscape" aria-pressed="false">Landscape</button>
+    </div>
+    <span class="hint">Tap a number when the step is done.</span>
+    <span class="delta-print">Print A4:
+      <a href="{{ url_for('recipe_print', recipe_id=recipe_id, orient='portrait', servings=servings) }}" target="_blank" rel="noopener">portrait</a> ·
+      <a href="{{ url_for('recipe_print', recipe_id=recipe_id, orient='landscape', servings=servings) }}" target="_blank" rel="noopener">landscape</a></span>
+  </div>
+  {% endif %}
+  <div class="dl-wrap">
+    <span class="dl-scale hand" aria-hidden="true"></span>
+    <div class="skv fx" data-max-depth="{{ d.max_depth }}" data-leaves="{{ d.leaves }}" data-edges="{{ d.edges|tojson|forceescape }}">
+      <svg class="sk-arrows" aria-hidden="true"></svg>
+      {% for n in d.nodes %}
+      <div class="g2-cell" data-depth="{{ n.depth }}" data-from="{{ n.span[0] }}" data-to="{{ n.span[1] }}">
+        <div class="g2-node ph-{{ n.phase }}{{ ' main' if n.main }}" data-n="{{ n.id }}">
+          {% if n.early %}<span class="mn-rem">{{ CLOCK|safe }}<span class="hand">start first</span></span>{% endif %}
+          {% for note in n.notes %}<span class="g2-note hand">{{ note }}</span>{% endfor %}
+          {% for a in n.also %}<span class="g2-note hand fx-also" title="{{ a.short }}">+ from <b class="fx-ref">{{ a.no }}</b></span>{% endfor %}
+          <div class="mn-head fx-head">
+            {%- for s in n.chain -%}
+            <span class="fx-seg" data-step="{{ s.id }}">{% if not loop.first %}<span class="fx-arrow" aria-hidden="true">→</span>{% endif %}<button type="button" class="fx-no" data-tick="{{ s.id }}" aria-pressed="false" aria-label="Step {{ s.no }}: {{ s.short }}. Tap when done">{{ s.no }}</button><span class="hand mn-v">{{ s.label }}</span>{% if s.heat %}{{ heat(s.heat) }}{% endif %}{% if s.temp %}<span class="mn-temp">{{ s.temp }}°</span>{% endif %}{% if s.wait %}<span class="mn-wait" title="stands {{ s.wait }} min">{{ GLASS|safe }}<span class="hand">{{ s.wait }}</span></span>{% endif %}</span>
+            {%- endfor -%}
+          </div>
+          {% if n.bowls or n.pics %}
+          <div class="g2-pics">
+            {% for b in n.bowls %}<span class="fx-bowl">{% for p in b %}{{ pic(p, 28) }}{% endfor %}</span>{% endfor %}
+            {% for p in n.pics %}{{ pic(p, 36) }}{% endfor %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endmacro %}

@@ -13,7 +13,7 @@ from functools import lru_cache
 from markupsafe import Markup, escape
 
 from database.models import Ingredient, db
-from services.recipe_v2 import nutrition
+from services.recipe_v2 import delta, nutrition
 from services.recipe_v2.derive import HEAT_LABELS
 from services.recipe_v2.planner import MODES, plan_v2
 from services.recipe_v2.read import shopping_list
@@ -170,6 +170,11 @@ def build(recipe, servings=None, plan='calm'):
             'html': step_html(s, lines, ingredients, factor), 'done_when': s.get('done_when'),
         })
 
+    # The river delta: every line as the drawing shows it, with the amount for these servings
+    pictured = {lid: {'name': i['name'], 'img': (ingredients.get(lid).image_url if ingredients.get(lid) is not None else None),
+                      'amount': fmt_amount(i['amount'] * factor, i.get('unit')) if i.get('amount') is not None else '',
+                      'prep': i.get('prep_style') or '', 'cut': i.get('cut')} for lid, i in lines.items()}
+
     first_use = {}
     for sid in sch['order']:
         for q in steps_by[sid].get('equipment') or []:
@@ -184,6 +189,7 @@ def build(recipe, servings=None, plan='calm'):
         'errors': [e for e in recipe.validation_errors or [] if e.get('rule') != 'persona'],
         'persona_notes': [e['message'] for e in recipe.validation_errors or [] if e.get('rule') == 'persona'],
         'about': about(recipe),
+        'delta': delta.build(v2, sch['order'], pictured),
         'nutrition': nutrition.per_serving(recipe),
         # Why there is no nutrition, for the admin: lines without grams, and lines without pantry nutrition
         'nutrition_gap': None if recipe.total_calories is not None else nutrition.compute(recipe.lines),
