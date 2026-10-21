@@ -134,6 +134,38 @@ class ImageTests(unittest.TestCase):
         self.assertIn('class="part-images"', html)
         self.assertIn('Make the images again', html)
 
+    def test_a_trial_style_is_kept_apart_from_the_recipes_own_images(self):
+        r, fakes, storage = self.recipe('lasagne'), Fakes(), Storage()
+        images.make_images(r, storage, draw=fakes.draw, call=fakes.call)
+        own, parts = r.image_filename, {c.local_id: c.image_filename for c in r.components}
+        report = images.make_images(r, storage, draw=fakes.draw, call=fakes.call, style='editorial')
+        self.assertTrue(report['trial'])
+        self.assertIn('An editorial food photograph', fakes.drawn[-3]['prompt'])  # the dish, then two parts
+        self.assertEqual((r.image_filename, {c.local_id: c.image_filename for c in r.components}), (own, parts))
+        variant = r.image_variants['editorial']
+        self.assertIn('_editorial_', variant['dish'])
+        self.assertEqual(len(variant['parts']), 2)
+        db.session.commit()
+        url = f'/recipe/{self.ids["lasagne"]}'
+        self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
+        self.assertIn(own, self.client.get(url).get_data(as_text=True))
+        self.client.set_cookie('dish_images', 'editorial')
+        html = self.client.get(url).get_data(as_text=True)
+        self.assertIn(variant['dish'], html)  # the admin sees the trial style
+        self.assertIn('data-img="editorial" aria-pressed="true"', html)
+        self.client.set_cookie('dish_images', 'overhead')
+        html = self.client.get(url + '/prep').get_data(as_text=True)
+        self.assertIn('Make “From above” images', html)  # none in that style yet
+        self.client.get('/logout')
+        self.client.set_cookie('dish_images', 'editorial')
+        html = self.client.get(f'/recipe/{self.ids["carbonara"]}').get_data(as_text=True)
+        self.assertNotIn('trialbar', html)  # visitors see neither the switch nor trial images
+
+    def test_make_images_takes_only_known_styles(self):
+        self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
+        res = self.client.post(f'/new-recipe/v2/images/{self.ids["lasagne"]}', data={'style': 'sketchy'})
+        self.assertEqual(res.status_code, 400)
+
 
 if __name__ == '__main__':
     unittest.main()

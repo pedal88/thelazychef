@@ -41,6 +41,12 @@
                 });
             });
             document.addEventListener('click', function (e) {
+                var img = e.target.closest && e.target.closest('[data-img-switch] [data-img]');
+                if (img) {  // the image trial: a cookie, so the page comes back with that style's images
+                    document.cookie = 'dish_images=' + img.getAttribute('data-img') + '; path=/; max-age=31536000; samesite=lax';
+                    location.reload();
+                    return;
+                }
                 var b = e.target.closest && e.target.closest('[data-look-switch] [data-look]');
                 if (!b) return;
                 var key = b.getAttribute('data-look');

@@ -246,8 +246,6 @@ def build(recipe, servings=None, plan='calm'):
         'chef_note': recipe.chef_note, 'missing': sum(1 for s in shop if s['missing']),
         'errors': [e for e in recipe.validation_errors or [] if e.get('rule') not in ('persona', 'image')],
         'image_notes': [e['message'] for e in recipe.validation_errors or [] if e.get('rule') == 'image'],
-        # The parts with their images, when the dish has images (services/recipe_v2/images.py)
-        'part_images': [{'name': c.name, 'image': c.image_filename} for c in recipe.components if c.image_filename],
         'persona_notes': [e['message'] for e in recipe.validation_errors or [] if e.get('rule') == 'persona'],
         'about': about(recipe),
         'delta': delta.build(v2, sch['order'], pictured),

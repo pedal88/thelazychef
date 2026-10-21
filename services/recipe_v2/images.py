@@ -56,14 +56,24 @@ def visible_parts(recipe):
     return [c for c in recipe.components if c.appearance]
 
 
-def dish_prompt(recipe):
-    """(prompt, style) for the dish image, as the lab task's [final] variants build it."""
+STYLES = ('cutout', 'editorial', 'overhead', 'illustrated')  # the lab task's styles
+
+
+def final_style():
+    from promptlab.compose import load_task
+
+    return load_task(TASK).final.get('style')
+
+
+def dish_prompt(recipe, style=None):
+    """(prompt, style) for the dish image, as the lab task's [final] variants build it; style picks another style."""
     from promptlab.compose import load_task
 
     task = load_task(TASK)
+    choice = dict(task.final, **({'style': style} if style else {}))
     sample = {'title': recipe.title, 'plating': recipe.plating or '',
               'components': [{'name': c.name, 'appearance': c.appearance} for c in visible_parts(recipe)]}
-    return task.compose(task.final, sample), task.final.get('style')
+    return task.compose(choice, sample), choice.get('style')
 
 
 def part_prompt(recipe, component):
@@ -107,26 +117,30 @@ def _draw_checked(prompt, subject, expected, aspect, reference=None, draw=None, 
     return png, tried, verdict['missing'], cost
 
 
-def make_images(recipe, storage, draw=None, call=None):
+def make_images(recipe, storage, draw=None, call=None, style=None):
     """Make the dish image and the part images, and save them. Returns a report; the caller commits.
 
+    The final style (or no style) makes the recipe's own images, which everyone sees. Another style is the image
+    trial: those images are kept in recipe.image_variants and shown only to admins who switch to that style.
     draw and call stand in for the image model and Claude in tests."""
+    trial = bool(style) and style != final_style()
     cost = ensure_appearance(recipe, call=call)
     notes = []
-    prompt, style = dish_prompt(recipe)
+    prompt, style = dish_prompt(recipe, style)
     parts = visible_parts(recipe)
     expected = recipe.plating + ''.join(f'\n- {c.name}: {c.appearance}' for c in parts)
     png, used, missing, spent = _draw_checked(prompt, f'one serving of {recipe.title}', expected, '4:3', draw=draw, call=call)
     cost += spent
     if missing:
         notes.append(f"Dish image: {', '.join(missing)}")
-    name = f'dish_{recipe.id}_{uuid.uuid4().hex[:8]}.webp'
+    name = f'dish_{recipe.id}_{style}_{uuid.uuid4().hex[:8]}.webp'
     storage.save(web_image(png, DISH_SIZE), name, FOLDER)
-    recipe.image_filename, recipe.hero_image_prompt, recipe.image_style = name, used, style
+    if not trial:
+        recipe.image_filename, recipe.hero_image_prompt, recipe.image_style = name, used, style
+        for c in recipe.components:
+            c.image_filename = c.image_from = None
 
-    made = 0
-    for c in recipe.components:
-        c.image_filename = c.image_from = None
+    made, part_files = 0, {}
     if len(recipe.components) > 1:
         for c in parts:
             part, _, missing, spent = _draw_checked(part_prompt(recipe, c), f'only {c.name} from this dish', c.appearance,
@@ -134,11 +148,16 @@ def make_images(recipe, storage, draw=None, call=None):
             cost += spent
             if missing:
                 notes.append(f"{c.name}: {', '.join(missing)}")
-            c.image_filename = f'part_{recipe.id}_{c.local_id}_{uuid.uuid4().hex[:8]}.webp'
-            c.image_from = name
-            storage.save(web_image(part, PART_SIZE), c.image_filename, FOLDER)
+            filename = f'part_{recipe.id}_{c.local_id}_{style}_{uuid.uuid4().hex[:8]}.webp'
+            storage.save(web_image(part, PART_SIZE), filename, FOLDER)
+            part_files[c.local_id] = filename
+            if not trial:
+                c.image_filename, c.image_from = filename, name
             made += 1
 
-    kept = [e for e in recipe.validation_errors or [] if e.get('rule') != 'image']
-    recipe.validation_errors = kept + [{'rule': 'image', 'message': n} for n in notes]
-    return {'dish': name, 'parts': made, 'notes': notes, 'cost_usd': round(cost, 3)}
+    if trial:
+        recipe.image_variants = dict(recipe.image_variants or {}, **{style: {'dish': name, 'parts': part_files, 'notes': notes}})
+    else:
+        kept = [e for e in recipe.validation_errors or [] if e.get('rule') != 'image']
+        recipe.validation_errors = kept + [{'rule': 'image', 'message': n} for n in notes]
+    return {'dish': name, 'parts': made, 'notes': notes, 'style': style, 'trial': trial, 'cost_usd': round(cost, 3)}

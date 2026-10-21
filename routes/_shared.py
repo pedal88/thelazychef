@@ -2,7 +2,7 @@
 import json
 import os
 
-from flask import current_app, url_for
+from flask import current_app, request, url_for
 from markupsafe import Markup
 from flask_login import current_user
 
@@ -72,3 +72,30 @@ def load_json_option(filename, key):
             return json.load(f).get(key, [])
     except:
         return []
+
+
+# Image trial (temporary): the style of the dish and part images an admin has switched to (a cookie set by the
+# switch on the recipe pages). Visitors and the recipe cards always get the recipe's own images.
+IMAGE_STYLES = {'cutout': 'White', 'editorial': 'Angled', 'overhead': 'From above', 'illustrated': 'Illustrated'}
+
+
+def chosen_image_style():
+    """The admin's chosen image style, or None: everyone else gets the recipe's own images."""
+    style = request.cookies.get('dish_images')
+    admin = current_user.is_authenticated and getattr(current_user, 'is_admin', False)
+    return style if admin and style in IMAGE_STYLES else None
+
+
+def dish_images(recipe):
+    """The dish and part images in the chosen style: a trial variant when there is one, else the recipe's own.
+    have is False when the chosen style has no images for this recipe yet."""
+    own_style = recipe.image_style or 'cutout'
+    style = chosen_image_style() or own_style
+    variant = (recipe.image_variants or {}).get(style) if style != own_style else None
+    if variant:
+        files = variant.get('parts') or {}
+        parts = [{'name': c.name, 'url': get_image_url(files[c.local_id])} for c in recipe.components if c.local_id in files]
+        return {'style': style, 'dish': get_image_url(variant['dish']), 'parts': parts, 'have': True}
+    parts = [{'name': c.name, 'url': get_image_url(c.image_filename)} for c in recipe.components if c.image_filename]
+    return {'style': style, 'dish': get_recipe_image_url(recipe), 'parts': parts,
+            'have': style == own_style and bool(recipe.image_filename)}

@@ -297,6 +297,9 @@ class Recipe(db.Model):
     plating: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     hero_image_prompt: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     image_style: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)
+    # Image trial (temporary): images in other styles, made on request and shown only to admins who switch to
+    # them: {style: {"dish": filename, "parts": {component local_id: filename}, "notes": [...]}}
+    image_variants: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     is_flagged_for_review: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
     # Publishing State Machine: 'draft' | 'approved' | 'rejected'
     # Every AI-generated recipe starts as 'draft' — invisible to public routes.
