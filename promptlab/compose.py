@@ -31,6 +31,7 @@ class Task:
     joiner: str = ' '
     sample_sets: dict = field(default_factory=dict)
     final: dict = field(default_factory=dict)   # the variants the app uses
+    aspect: str = '1:1'                          # image tasks: the aspect ratio asked for
 
     def variants(self, layer: str) -> list[str]:
         files = sorted((self.path / layer).glob('*'))
@@ -77,7 +78,7 @@ def load_task(name: str, lab_dir: Path = LAB_DIR) -> Task:
         name=name, path=path, kind=config['kind'], model=config['model'],
         layers=config['layers'], joiner=config.get('join', ' '),
         sample_sets={k: v for k, v in samples.items() if isinstance(v, list)},
-        final=config.get('final', {}),
+        final=config.get('final', {}), aspect=config.get('aspect', '1:1'),
     )
 
 

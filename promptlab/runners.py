@@ -5,10 +5,10 @@ whatever the API reports (tokens, finish reason) for the run log.
 """
 
 
-def run_image(model: str, prompt: str) -> tuple[bytes, dict]:
+def run_image(model: str, prompt: str, aspect_ratio: str = '1:1') -> tuple[bytes, dict]:
     from services.image_generation import generate_image
 
-    return generate_image(prompt, model=model, attempts=1)
+    return generate_image(prompt, model=model, attempts=1, aspect_ratio=aspect_ratio)
 
 
 def run_text(model: str, prompt: str) -> tuple[str, dict]:

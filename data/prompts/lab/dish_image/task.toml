@@ -1,0 +1,12 @@
+# Dish images: the picture of the whole dish, made first; the component images
+# use it as their reference (RECIPE_VISUALIZATIONS.md 9.7). Layers: rules for
+# every dish image, the style, and the dish as services/recipe_v2/appearance.py
+# describes it. Samples come from scripts/dish_image_samples.py.
+kind = "image"
+model = "GEMINI_IMAGE"          # constant in services/ai_models.py
+layers = ["brief", "style", "dish"]
+join = " "
+aspect = "4:3"                  # the recipe cards and the top of the recipe page
+
+# The variants the app uses: chosen after the first lab round (step 9a).
+[final]

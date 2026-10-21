@@ -75,3 +75,14 @@ python scripts/ingredient_symbols.py promote --run <run>               # upload 
 `promote` refuses while anything is unreviewed. It uploads the approved images as 512 px WebP to `gs://thelazychef-assets/pantry/symbols/<run>/` and writes one data migration with the new `image_url`, `image_prompt` and `image_notes`, plus the review notes for rejected ones. Downgrade restores the old URLs and notes. The migration goes through a PR like any other.
 
 `generate` is resumable (run it again with `--run` to do what is missing or failed), and `--dry-run` shows the count, the cost and a few prompts. Each image costs about USD 0.04.
+
+### Dish images (step 9a)
+
+The task `dish_image` decides the style of the picture of a whole dish, which the component images later use as their reference (`RECIPE_VISUALIZATIONS.md` 9.7). The prompt is built from how the dish looks, not from the recipe text: `services/recipe_v2/appearance.py` asks Claude for the plating and each part as it looks on the plate, in English. The samples are the fasit recipes described that way:
+
+```bash
+python -m scripts.dish_image_samples                                    # writes samples.toml, about USD 0.05
+python -m promptlab run dish_image --vary style=editorial,overhead,cutout,illustrated   # 20 images, about USD 0.80
+```
+
+The four styles are an angled editorial photograph, a photograph from straight above, the dish alone on white, and an illustration in the ingredient symbols' style. The images are 4:3 (`aspect` in `task.toml`). Score the sheet, then set `[final]` in `task.toml`; the app's image flow (step 9b) builds the same prompt.
