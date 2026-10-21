@@ -63,7 +63,8 @@
 
 /* D Safran: the main button in bright saffron with dark text; rounder */
 :root[data-look="d"] .rv2 h1, :root[data-look="d"] .rv2.cook .card h2 { font-weight: 800; letter-spacing: -0.02em; }
-:root[data-look="d"] .rv2 .btn.primary, :root[data-look="d"] .rv2 .go { background: #F2B630; border-color: #F2B630; color: #1C1A17; }
+:root[data-look="d"] .rv2 .go { background: #F2B630; border-color: #F2B630; color: #1C1A17; }
+:root[data-look="d"] .rv2 .btn.primary { background: #FCF0CF; border-color: #F2B630; color: #1C1A17; }
 
 /* E Porselen: everything in cobalt, plate rims, condensed capitals, the step you are on as a blue plate */
 :root[data-look="e"] .rv2 h1, :root[data-look="e"] .rv2.cook .card h2, :root[data-look="e"] .rv2 h2 { font-weight: 800; font-stretch: 72%; text-transform: uppercase; letter-spacing: 0.01em; }
