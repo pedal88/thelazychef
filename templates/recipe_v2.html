@@ -1,13 +1,19 @@
 {% extends "base.html" %}
 {# Recipe page for recipe model v2 (schema_version 2). Overview and step list, phone first.
-   Data comes from services/recipe_v2/view.py. Gjør klart and cooking mode come in step 7c. #}
+   Data comes from services/recipe_v2/view.py; the river delta from templates/components/delta.html.
+   Gjør klart and cooking mode come in step 7c. #}
 
 {% block title %}{{ v.title }} - The Lazy Chef{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/recipe_v2.css') }}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&display=swap">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/delta.css') }}">
+<script src="{{ url_for('static', filename='js/delta.js') }}" defer></script>
 {% endblock %}
+
+{% from "components/delta.html" import delta with context %}
 
 {% macro link(servings, plan) -%}
 {{ url_for('recipe_detail', recipe_id=recipe.id, servings=servings, plan=plan) }}
@@ -42,6 +48,9 @@
   {% if v.about or recipe.difficulty %}
   <ul class="about">
     {% if recipe.difficulty %}<li><span class="eyebrow">Difficulty</span> {{ recipe.difficulty|difficulty_label }}</li>{% endif %}
+    {% for label, value in v.about %}<li><span class="eyebrow">{{ label }}</span> {{ value }}</li>{% endfor %}
+  </ul>
+  {% endif %}
 
   {% if v.nutrition %}
   <details class="nutrition">
@@ -64,8 +73,9 @@
     {% if v.nutrition_gap.no_nutrition %}No pantry nutrition for {{ v.nutrition_gap.no_nutrition|join(', ') }}.{% endif %}
   </p>
   {% endif %}
-    {% for label, value in v.about %}<li><span class="eyebrow">{{ label }}</span> {{ value }}</li>{% endfor %}
-  </ul>
+
+  {% if v.delta %}
+  <div class="delta-breakout">{{ delta(v.delta, recipe.id, servings=v.servings) }}</div>
   {% endif %}
 
   <details class="settings">

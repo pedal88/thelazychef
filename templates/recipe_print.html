@@ -1,0 +1,49 @@
+<!doctype html>
+{# The river delta on one A4 sheet (routes/recipes_routes.py, recipe_print). Stands alone, without the site around it,
+   so the browser prints exactly the sheet. static/js/delta.js scales the drawing to the page and opens the print dialog. #}
+{% from "components/delta.html" import delta with context %}
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ v.title }} - The Lazy Chef</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600&family=Caveat:wght@500;700&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/delta.css') }}">
+  <style>
+    @page { size: A4 {{ orient }}; margin: 10mm; }
+    body { margin: 0; background: #e9e7e2; color: var(--color-ink); font-family: var(--font-sans); }
+    .sheet { box-sizing: content-box; width: {{ '1047px' if orient == 'landscape' else '718px' }}; min-height: {{ '718px' if orient == 'landscape' else '1047px' }};
+             margin: 16px auto; padding: 10mm; background: #fff; box-shadow: 0 1px 6px rgba(0, 0, 0, .12); }
+    .sheet header { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+    .sheet h1 { font: 600 28px/1.1 var(--font-serif); margin: 0; }
+    .sheet .meta { color: var(--color-muted); font-size: 13px; }
+    .bar { display: flex; justify-content: center; gap: 12px; align-items: center; padding: 10px 16px; font-size: 14px; }
+    .bar button { font: inherit; border: 1px solid var(--color-line); background: #fff; border-radius: var(--radius-pill); padding: 6px 14px; cursor: pointer; }
+    .bar a { color: inherit; }
+    .dl-wrap { overflow: visible; }
+    @media print {
+      body { background: #fff; }
+      .bar { display: none; }
+      .sheet { width: auto; min-height: 0; margin: 0; padding: 0; box-shadow: none; }
+    }
+  </style>
+</head>
+<body data-print="{{ orient }}"{% if autoprint %} data-autoprint="1"{% endif %}>
+  <div class="bar">
+    <button type="button" onclick="print()">Print</button>
+    <a href="{{ url_for('recipe_print', recipe_id=recipe.id, orient='landscape' if orient == 'portrait' else 'portrait', servings=v.servings, auto=0) }}">{{ 'Landscape' if orient == 'portrait' else 'Portrait' }} instead</a>
+    <a href="{{ url_for('recipe_detail', recipe_id=recipe.id) }}">Back to the recipe</a>
+  </div>
+  <main class="sheet">
+    <header>
+      <h1>{{ v.title }}</h1>
+      <span class="meta">{{ v.servings ~ ' servings' if v.scalable else v.yield_text }} · {{ v.total }} in all, {{ v.active }} active · thelazychef.app</span>
+    </header>
+    {{ delta(v.delta, recipe.id, print_links=False) }}
+  </main>
+  <script src="{{ url_for('static', filename='js/delta.js') }}"></script>
+</body>
+</html>
