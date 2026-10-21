@@ -8,12 +8,9 @@
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/recipe_v2.css') }}">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&display=swap">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/delta.css') }}">
-<script src="{{ url_for('static', filename='js/delta.js') }}" defer></script>
 {% endblock %}
 
-{% from "components/delta.html" import delta with context %}
+{% from "components/recipe_head.html" import recipe_head with context %}
 
 {% macro link(servings, plan) -%}
 {{ url_for('recipe_detail', recipe_id=recipe.id, servings=servings, plan=plan) }}
@@ -21,7 +18,7 @@
 
 {% block content %}
 <article class="rv2">
-  <a class="back" href="{{ url_for('discover') }}">← Back to recipes</a>
+  {{ recipe_head(recipe, v, 'overview') }}
 
   {% if recipe.status != 'approved' %}
   <div class="notice" role="status">
@@ -36,8 +33,6 @@
   </div>
   {% endif %}
 
-  <p class="eyebrow">Recipe</p>
-  <h1>{{ v.title }}</h1>
   {% if recipe.image_filename %}
   <figure class="hero"><img src="{{ get_recipe_image_url(recipe) }}" alt="{{ v.title }}" width="1200" height="900"></figure>
   {% endif %}
@@ -77,15 +72,7 @@
   </p>
   {% endif %}
 
-  {% if v.delta %}
-  <div class="delta-breakout">{{ delta(v.delta, recipe.id, servings=v.servings) }}</div>
-  {% endif %}
 
-  {% if v.ready %}
-  <p class="next"><a class="go" href="{{ url_for('recipe_get_ready', recipe_id=recipe.id, servings=v.servings, plan=v.plan) }}">Get ready →</a>
-    <span class="hint">{% set n = v.ready.bowls|length %}{{ n }} bowl{{ 's' if n != 1 }} to fill, then
-      <a href="{{ url_for('recipe_cook', recipe_id=recipe.id, servings=v.servings, plan=v.plan) }}">the cooking</a></span></p>
-  {% endif %}
 
   <details class="settings">
     <summary>Servings and plan</summary>
@@ -132,24 +119,16 @@
   </section>
   {% endif %}
 
-  {% if v.steps %}
-  <section id="method">
-    <div class="sec-head"><h2>Method</h2><span class="eyebrow">{{ v.steps|length }} steps</span></div>
-    <ol class="steps">
-      {% for s in v.steps %}
-      <li class="{{ s.phase }}">
-        <span class="n">{{ s.n }}</span>
-        <div>
-          <div class="meta">{{ s.phase }} · {{ s.component }}{% if s.duration %} · {{ s.duration }}{% endif %}{% if s.equipment %} · {{ s.equipment }}{% endif %}</div>
-          <div class="short">{{ s.short }}</div>
-          {% if s.while %}<span class="while">{{ s.while }}</span>{% endif %}
-          <p class="txt">{{ s.html }}</p>
-          {% if s.done_when %}<p class="done"><b>Done when:</b> {{ s.done_when }}</p>{% endif %}
-        </div>
-      </li>
-      {% endfor %}
-    </ol>
-  </section>
+
+  {% if v.ready %}
+  <p class="next"><a class="go" href="{{ url_for('recipe_get_ready', recipe_id=recipe.id, servings=v.servings, plan=v.plan) }}">Get ready →</a>
+    <span class="hint">{% set n = v.ready.bowls|length %}{{ n }} bowl{{ 's' if n != 1 }} to fill, then
+      <a href="{{ url_for('recipe_cook', recipe_id=recipe.id, servings=v.servings, plan=v.plan) }}">the cooking</a></span></p>
+  {% endif %}
+  {% if v.delta %}
+  <p class="hint printline">The whole dish as one drawing on A4:
+    <a href="{{ url_for('recipe_print', recipe_id=recipe.id, orient='portrait', servings=v.servings) }}" target="_blank" rel="noopener">portrait</a> ·
+    <a href="{{ url_for('recipe_print', recipe_id=recipe.id, orient='landscape', servings=v.servings) }}" target="_blank" rel="noopener">landscape</a></p>
   {% endif %}
 
   {% if v.chef_note %}<p class="note"><b>From the chef:</b> {{ v.chef_note }}</p>{% endif %}

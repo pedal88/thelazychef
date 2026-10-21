@@ -2,6 +2,7 @@
 {# Get ready (Gjør klart) for a v2 recipe: bowls to fill, things to take out, the counter and the equipment.
    Derived from the graph by services/recipe_v2/mise.py; ticks are kept on the device by static/js/ready.js. #}
 {% from "components/delta.html" import MARKS %}
+{% from "components/recipe_head.html" import recipe_head with context %}
 
 {% block title %}Get ready: {{ v.title }} - The Lazy Chef{% endblock %}
 
@@ -42,12 +43,7 @@
 {% set back = url_for('recipe_detail', recipe_id=recipe.id, servings=v.servings, plan=v.plan) %}
 {% set cook = url_for('recipe_cook', recipe_id=recipe.id, servings=v.servings, plan=v.plan) %}
 <article class="rv2 ready" data-recipe="{{ recipe.id }}">
-  <a class="back" href="{{ back }}">← {{ v.title }}</a>
-  <nav class="flow" aria-label="Steps in making the dish">
-    <a href="{{ back }}">Overview</a><a aria-current="step">Get ready</a><a href="{{ cook }}">Cook</a>
-  </nav>
-
-  <h1>Get ready</h1>
+  {{ recipe_head(recipe, v, 'ready') }}
   <p class="hint">{{ v.servings ~ ' servings' if v.scalable else v.yield_text }} · plan: {{ v.plans[v.plan] }}</p>
   {% if r.bowls %}
   <div class="meter" aria-hidden="true"><span></span></div>

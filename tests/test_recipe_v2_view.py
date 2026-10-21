@@ -55,29 +55,37 @@ class RecipeV2ViewTests(unittest.TestCase):
         db.drop_all()
         self.ctx.pop()
 
-    def page(self, name, **args):
-        res = self.client.get(f'/recipe/{self.ids[name]}', query_string=args)
+    def page(self, name, part='', **args):
+        res = self.client.get(f'/recipe/{self.ids[name]}{part}', query_string=args)
         return res.status_code, res.get_data(as_text=True)
 
-    def test_page_shows_overview_shopping_list_and_steps(self):
+    def test_page_shows_overview_and_shopping_list(self):
         status, html = self.page('carbonara')
         self.assertEqual(status, 200)
-        for text in ('Spaghetti carbonara', 'Shopping list', 'Method', 'Done when:', '26 min'):
+        for text in ('Spaghetti carbonara', 'Shopping list', '26 min', 'class="flowbar"', 'aria-current="page">Overview'):
             self.assertIn(text, html)
         self.assertIn('https://example.com/spaghetti.webp', html)  # the pantry symbol
-        self.assertIn('400 g spaghetti', html)
+        # The steps are in cooking mode, not on the overview
+        self.assertNotIn('Method', html)
+        self.assertNotIn('class="delta"', html)
+        _, cook = self.page('carbonara', '/cook')
+        self.assertIn('400 g spaghetti', cook)
+        self.assertIn('Done when', cook)
         # Steps come in planned order: boil the water first, serve last
-        self.assertLess(html.index('Kok opp vann'), html.index('Server'))
+        self.assertLess(cook.index('Kok opp vann'), cook.index('>Server<'))
 
     def test_servings_scale_the_amounts(self):
         _, html = self.page('carbonara', servings=6)
-        self.assertIn('600 g spaghetti', html)
         self.assertIn('6 servings', html)
+        self.assertIn('/cook?servings=6', html)
+        _, cook = self.page('carbonara', '/cook', servings=6)
+        self.assertIn('600 g spaghetti', cook)
 
     def test_prep_style_follows_the_ingredient_in_cook_steps(self):
-        _, html = self.page('tikka')
+        _, html = self.page('tikka', '/cook')
         self.assertIn('3 cloves hvitløk</span> <span class="prep">(finrevet)</span>', html)
-        self.assertIn('used 2 times', html)  # garlic in the marinade and in the sauce
+        _, overview = self.page('tikka')
+        self.assertIn('used 2 times', overview)  # garlic in the marinade and in the sauce
 
     def test_the_plan_can_be_changed(self):
         _, calm = self.page('carbonara', plan='calm')
