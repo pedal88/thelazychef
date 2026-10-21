@@ -1,0 +1,13 @@
+{# Style trial (temporary): switch between today's look and the four directions from the style sheet.
+   Admins only; the choice is kept on the device (static/css/themes.css, the script in base.html). #}
+{% macro look_switch(pad='px-4') %}
+<div class="border-t border-slate-100 mt-1 pt-2 pb-1 {{ pad }}">
+  <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Look (trial)</p>
+  <div class="flex flex-wrap gap-1" data-look-switch>
+    {%- for key, label, name in [('today', 'Today', "Today's look"), ('c', 'C', 'C Hvit benk'), ('d', 'D', 'D Safran'), ('e', 'E', 'E Porselen'), ('f', 'F', 'F Washi')] %}
+    <button type="button" data-look="{{ key }}" title="{{ name }}" aria-pressed="false"
+      class="rounded-full border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-600 hover:border-slate-400 aria-pressed:bg-slate-900 aria-pressed:text-white aria-pressed:border-slate-900">{{ label }}</button>
+    {%- endfor %}
+  </div>
+</div>
+{% endmacro %}

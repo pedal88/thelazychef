@@ -33,6 +33,23 @@ class StyleTokenTests(unittest.TestCase):
             self.assertEqual(re.findall(r'#[0-9a-fA-F]{6}\b', read('templates', name)), [], name)
 
 
+class LookTrialTests(unittest.TestCase):
+    """The style trial (static/css/themes.css): every look sets every step of the scales it changes."""
+
+    def test_each_look_has_whole_scales_and_fonts(self):
+        themes = read('static', 'css', 'themes.css')
+        for look in 'cdef':
+            block = re.search(r':root\[data-look="%s"\] \{(.*?)\n\}' % look, themes, re.S).group(1)
+            for name in ('neutral', 'accent', 'prep', 'serve'):
+                for step in STEPS:
+                    self.assertRegex(block, rf'--{name}-{step}: \d+ \d+ \d+;', f'{look} {name}-{step}')
+            for var in ('--font-sans', '--font-serif', '--paper', '--icon-stroke', '--color-cook'):
+                self.assertIn(var + ':', block, look)
+        base = read('templates', 'base.html')
+        for look in 'cdef':
+            self.assertIn(f"{look}: 'family=", base)  # its fonts are loaded
+
+
 class IconTests(unittest.TestCase):
     def test_the_sprite_is_valid_and_has_every_icon_the_templates_use(self):
         import glob

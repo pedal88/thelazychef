@@ -1,3 +1,4 @@
+{% from "components/look_switch.html" import look_switch -%}
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-slate-50 antialiased">
 
@@ -10,6 +11,44 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+    <!-- Style trial (temporary): a look chosen in the admin menu or with ?look=c|d|e|f, kept on this device.
+         Visitors who have not chosen one see today's look. See static/css/themes.css. -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/themes.css') }}">
+    <script>
+        (function () {
+            var FONTS = {
+                c: 'family=IBM+Plex+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400;500;600;700;800',
+                d: 'family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500',
+                e: 'family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500',
+                f: 'family=IBM+Plex+Mono:wght@400;500&family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700'
+            };
+            var look = null;
+            try {
+                var asked = new URLSearchParams(location.search).get('look');
+                if (asked !== null) { if (FONTS[asked]) localStorage.setItem('look', asked); else localStorage.removeItem('look'); }
+                look = localStorage.getItem('look');
+            } catch (e) { /* no storage: today's look */ }
+            if (FONTS[look]) {
+                document.documentElement.setAttribute('data-look', look);
+                var link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = 'https://fonts.googleapis.com/css2?' + FONTS[look] + '&display=swap';
+                document.head.appendChild(link);
+            }
+            document.addEventListener('DOMContentLoaded', function () {
+                document.querySelectorAll('[data-look-switch] [data-look]').forEach(function (b) {
+                    b.setAttribute('aria-pressed', String(b.getAttribute('data-look') === (FONTS[look] ? look : 'today')));
+                });
+            });
+            document.addEventListener('click', function (e) {
+                var b = e.target.closest && e.target.closest('[data-look-switch] [data-look]');
+                if (!b) return;
+                var key = b.getAttribute('data-look');
+                try { if (FONTS[key]) localStorage.setItem('look', key); else localStorage.removeItem('look'); } catch (err) { return; }
+                location.reload();
+            });
+        })();
+    </script>
 
     <!-- Font Awesome (for EasyMDE icons) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -230,6 +269,7 @@
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
                                 {{ icon('clipboard', cls='menu-icon') }}Recipes Management
                             </a>
+                            {{ look_switch() }}
                         </div>
                     </div>
                 </div>
@@ -299,6 +339,7 @@
                     <a href="{{ url_for('admin_resources_list') }}"
                         class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">{{ icon('library', cls='menu-icon') }}Manage
                         Resources</a>
+                    {{ look_switch('px-3') }}
                 </div>
                 {% endif %}
                 <div class="border-t border-slate-100 pt-2 mt-2 flex items-center justify-between px-3">
@@ -471,6 +512,7 @@
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
                                 {{ icon('clipboard', cls='menu-icon') }}Recipes Management
                             </a>
+                            {{ look_switch() }}
                         </div>
                     </div>
                 </div>
@@ -550,6 +592,7 @@
             <a href="{{ url_for('admin_resources_list') }}"
                 class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">{{ icon('library', cls='menu-icon') }}Manage
                 Resources</a>
+            {{ look_switch('px-3') }}
             {% endif %}
             <div class="border-t border-slate-100 my-2"></div>
             <div class="flex items-center justify-between px-3">
