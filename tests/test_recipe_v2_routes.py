@@ -115,6 +115,25 @@ class RecipeV2RouteTests(unittest.TestCase):
             self.client.post('/new-recipe/v2', data={'source': 'Spaghetti carbonara for four', 'chef_id': 'nobody'})
         self.assertIsNone(db.session.execute(db.select(Recipe)).scalar_one().chef_id)
 
+    def test_the_language_follows_the_idea_unless_one_is_chosen(self):
+        self.login()
+        for language, expected in (('', 'Write it in the language the idea is written in.'),
+                                   ('nb', 'Write a recipe in Norwegian (bokmål) for: Kyllinggryte'),
+                                   ('xx', 'Write it in the language the idea is written in.')):
+            asked = []
+            call = fake_claude()
+            with mock.patch.object(claude, 'call', lambda *a, **kw: asked.append(a[2]) or call(*a, **kw)):
+                self.client.post('/new-recipe/v2', data={'source': 'Kyllinggryte med ris, for fire', 'language': language})
+            self.assertIn(expected, asked[0][0]['content'], language)
+
+    def test_the_front_page_sends_ideas_links_and_text_to_v2(self):
+        self.login()
+        page = self.client.get('/new-recipe').get_data(as_text=True)
+        self.assertEqual(page.count('action="/new-recipe/v2"'), 3)
+        self.assertIn('action="/generate/video"', page)  # video stays on the old importer
+        self.assertIn('id="chef-none"', page)
+        self.assertIn('Norwegian (bokmål)', page)
+
     def test_empty_input_is_refused(self):
         self.login()
         self.assertEqual(self.client.post('/new-recipe/v2', data={'source': '  '}).status_code, 400)
@@ -133,14 +152,15 @@ class RecipeV2RouteTests(unittest.TestCase):
 
         with mock.patch.dict(os.environ, QUEUE_ENV), mock.patch('google.auth.default', return_value=(None, 'p')), \
                 mock.patch('google.auth.transport.requests.AuthorizedSession', Session):
-            self.client.post('/new-recipe/v2', data={'source': 'Lasagne'})
+            self.client.post('/new-recipe/v2', data={'source': 'Lasagne', 'language': 'nb'})
         recipe = db.session.execute(db.select(Recipe)).scalar_one()
         self.assertEqual(recipe.status, 'generating')
         self.assertTrue(posted['url'].endswith('/locations/europe-west1/queues/recipe-generation/tasks'))
         request = posted['task']['task']['httpRequest']
         self.assertEqual(request['url'], f'https://app.example/internal/tasks/recipe-v2/{recipe.id}')
         self.assertEqual(request['oidcToken'], {'serviceAccountEmail': QUEUE_ENV['TASKS_SERVICE_ACCOUNT'], 'audience': 'https://app.example'})
-        self.assertEqual(json.loads(base64.b64decode(request['body'])), {'kind': 'idea', 'source': 'Lasagne'})
+        self.assertEqual(json.loads(base64.b64decode(request['body'])),
+                         {'kind': 'idea', 'source': 'Lasagne', 'language': 'Norwegian (bokmål)'})
         self.assertEqual(self.client.get(f'/new-recipe/v2/{recipe.id}/status').get_json()['status'], 'generating')
 
     def test_the_task_endpoint_needs_the_queue_token(self):
