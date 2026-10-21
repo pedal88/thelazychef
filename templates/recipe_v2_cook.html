@@ -86,6 +86,7 @@
           {%- if v.metro %}<button type="button" role="tab" id="whole-metro" data-whole="metro" aria-selected="false" aria-controls="panel-metro">Metro map</button>{% endif -%}
           {%- if v.delta %}<button type="button" role="tab" id="whole-delta" data-whole="delta" aria-selected="false" aria-controls="panel-delta">River delta</button>{% endif -%}
         </div>
+        <button type="button" class="whole-full" data-whole-full aria-pressed="false" aria-label="Show the view full screen" title="Full screen">{{ icon('expand') }}</button>
         <button type="button" class="whole-close" data-whole-close aria-label="Close the whole dish">{{ icon('close') }}</button>
       </div>
       <section class="wpanel" id="panel-timeline" role="tabpanel" aria-labelledby="whole-timeline" data-panel="timeline">{{ timeline(v.timeline) }}</section>

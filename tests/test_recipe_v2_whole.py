@@ -55,7 +55,7 @@ class WholeDishPageTests(unittest.TestCase):
     def test_cooking_mode_has_the_three_views(self):
         _, html = self.page('carbonara', '/cook')
         for text in ('data-whole="timeline"', 'data-whole="metro"', 'data-whole="delta"', 'class="tl"', 'class="mv-svg"',
-                     'class="delta"', 'data-whole-open', 'Whole dish', 'data-tl-status'):
+                     'class="delta"', 'data-whole-open', 'Whole dish', 'data-tl-status', 'data-whole-full', '#i-expand'):
             self.assertIn(text, html)
         self.assertEqual(html.count('class="tl-row ph-'), 9)
 

@@ -131,6 +131,17 @@
     if (on) { dispatchEvent(new Event('resize')); side.querySelector('[data-whole-close]').focus(); }
     else { const b = $('[data-whole-open]'); if (b) b.focus(); }
   }
+  /* Blow the chosen view up to the whole window (large screen); × or Esc goes back beside the card */
+  function fullWhole(on) {
+    if (!side) return;
+    side.classList.toggle('full', on);
+    document.documentElement.classList.toggle('whole-fullscreen', on);
+    const b = $('[data-whole-full]');
+    if (b) b.setAttribute('aria-pressed', String(on));
+    dispatchEvent(new Event('resize'));
+    revealDelta();
+    (on ? side.querySelector('[data-whole-close]') : b)?.focus();
+  }
   try { showView(localStorage.getItem(WHOLE)); } catch (e) { showView(null); }
 
   let actx = null;
@@ -206,7 +217,8 @@
     else if (t.matches('[data-restart]')) { st = { at: null, skip: st.skip, runs: [], list: false, finished: false }; render(); }
     else if (t.matches('[data-whole]')) showView(t.dataset.whole);
     else if (t.matches('[data-whole-open]')) openWhole(true);
-    else if (t.matches('[data-whole-close]')) openWhole(false);
+    else if (t.matches('[data-whole-full]')) fullWhole(true);
+    else if (t.matches('[data-whole-close]')) { if (side.classList.contains('full')) fullWhole(false); else openWhole(false); }
   });
   let sx = 0, sy = 0;
   page.addEventListener('touchstart', e => { if (!e.target.closest('.card')) return; sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
@@ -216,6 +228,7 @@
     if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) { if (dx < 0) advance(); else go(-1); }
   });
   document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && side && side.classList.contains('full')) { fullWhole(false); return; }
     if (e.key === 'Escape' && side && side.classList.contains('open')) { openWhole(false); return; }
     if (st.list || e.target.closest('input, select, textarea')) return;
     if (e.key === 'ArrowRight') advance();
