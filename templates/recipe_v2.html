@@ -80,7 +80,8 @@
 
   {% if v.ready %}
   <p class="next"><a class="go" href="{{ url_for('recipe_get_ready', recipe_id=recipe.id, servings=v.servings, plan=v.plan) }}">Get ready →</a>
-    <span class="hint">{% set n = v.ready.bowls|length %}{{ n }} bowl{{ 's' if n != 1 }} to fill, then the cooking</span></p>
+    <span class="hint">{% set n = v.ready.bowls|length %}{{ n }} bowl{{ 's' if n != 1 }} to fill, then
+      <a href="{{ url_for('recipe_cook', recipe_id=recipe.id, servings=v.servings, plan=v.plan) }}">the cooking</a></span></p>
   {% endif %}
 
   <details class="settings">

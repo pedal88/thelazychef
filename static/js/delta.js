@@ -76,7 +76,7 @@
   function horizontal(section, wrap) {
     const print = document.body.dataset.print;
     if (print) return print === 'landscape';
-    const chosen = store.get('delta-orient');
+    const chosen = section.querySelector('[data-orient]') && store.get('delta-orient');  // a side view has no choice
     if (chosen) return chosen === 'landscape';
     const availH = Math.max(320, innerHeight - 120);
     return wrap.clientWidth >= 700 && wrap.clientWidth / availH > 1.15;

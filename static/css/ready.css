@@ -1,10 +1,6 @@
 /* Get ready (templates/recipe_v2_ready.html), from the phone and large-screen prototypes (RECIPE_VISUALIZATIONS.md 9.15).
    Colours, fonts and sizes from tokens.css. */
 .rv2.ready { max-width: 1180px; }
-.ready .flow { display: flex; gap: 4px; margin: 0 0 var(--space-2); font-size: 14px; }
-.ready .flow a { padding: 6px var(--space-3); border-radius: var(--radius-pill); color: var(--color-muted); text-decoration: none; border: 1px solid var(--color-line); }
-.ready .flow a[aria-current="step"] { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-paper); }
-.ready .flow a[href]:hover { color: var(--color-ink); }
 
 .ready .meter { height: 6px; border-radius: var(--radius-pill); background: var(--color-line); overflow: hidden; margin: var(--space-3) 0 var(--space-1); }
 .ready .meter span { display: block; height: 100%; width: 0; background: var(--color-prep); transition: width .25s; }

@@ -108,7 +108,7 @@ def build(v2, sch, language=None):
             kind = 'bench'
         else:
             kind = 'bowl' if reasons else 'fetch'
-        target = {'no': number[used], 'short': st['short'], 'phase': st['phase'], 'start': plan[used]['start']}
+        target = {'id': used, 'no': number[used], 'short': st['short'], 'phase': st['phase'], 'start': plan[used]['start']}
         # The counter: staples on their own, and everything to taste
         for i in e['lines'] if kind == 'bench' else [i for i in e['lines'] if i.get('amount') is None]:
             k = (i['name'].lower(), i.get('amount'), used)
