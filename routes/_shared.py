@@ -3,6 +3,7 @@ import json
 import os
 
 from flask import current_app, url_for
+from markupsafe import Markup
 from flask_login import current_user
 
 from services.storage_service import GoogleCloudStorageProvider
@@ -42,6 +43,13 @@ def get_recipe_image_url(recipe):
     else:
         # Local Flask Static
         return url_for('static', filename='recipes/' + recipe.image_filename)
+
+
+def icon(name, label=None, cls=''):
+    """A line icon from static/icons/icons.svg. Without a label it is decoration and hidden from screen readers."""
+    src = url_for('static', filename='icons/icons.svg')
+    who = Markup('role="img" aria-label="{}"').format(label) if label else Markup('aria-hidden="true"')
+    return Markup('<svg class="icon {}" {} focusable="false"><use href="{}#i-{}"/></svg>').format(cls, who, src, name)
 
 
 def get_image_url(filename):

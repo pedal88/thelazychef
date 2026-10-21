@@ -47,6 +47,12 @@
         }
     </script>
 
+    <style>
+        /* Line icons (icon() in routes/_shared.py, static/icons/icons.svg); the stroke comes from tokens.css */
+        .icon { width: 1.25em; height: 1.25em; display: inline-block; flex: none; vertical-align: -0.25em; fill: none;
+                stroke: currentColor; stroke-width: var(--icon-stroke); stroke-linecap: round; stroke-linejoin: round; }
+        .menu-icon { margin-right: .5em; opacity: .75; }
+    </style>
     <style type="text/tailwindcss">
         @layer utilities {
             .hide-scrollbar::-webkit-scrollbar {
@@ -133,13 +139,13 @@
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">Saved
                                 Recipes</a>
                             <a href="{{ url_for('recipes_list', view='made') }}"
-                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">✅
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">{{ icon('heart', cls='menu-icon') }}
                                 Made</a>
                             <a href="{{ url_for('queue.next_recipes_view') }}"
-                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">🍳
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">{{ icon('pot', cls='menu-icon') }}
                                 Cook Next</a>
                             <a href="/mirror"
-                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">🪞
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">{{ icon('mirror', cls='menu-icon') }}
                                 Recipe Mirror</a>
                             {% endif %}
                             <a href="/recipes"
@@ -165,11 +171,11 @@
                         class="absolute left-0 mt-0 w-48 bg-white border border-slate-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[110] transform origin-top-left">
                         <div class="py-1">
                             <a href="/ingredients"
-                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">🥦
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">{{ icon('carrot', cls='menu-icon') }}
                                 All
                                 Ingredients</a>
                             <a href="/explore/ingredient-galaxy"
-                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">🌌
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">{{ icon('galaxy', cls='menu-icon') }}
                                 Galaxy</a>
                         </div>
                     </div>
@@ -192,37 +198,37 @@
                         <div class="py-1">
                             <a href="/new-recipe"
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
-                                🍳 New Recipe
+                                {{ icon('pot', cls='menu-icon') }}New Recipe
                             </a>
                             <a href="/new-ingredient"
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
-                                🥦 New Ingredient
+                                {{ icon('carrot', cls='menu-icon') }}New Ingredient
                             </a>
                             <a href="{{ url_for('admin_resource_new') }}"
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
-                                📝 New Resource
+                                {{ icon('file-plus', cls='menu-icon') }}New Resource
                             </a>
                             <div class="border-t border-slate-100 my-1"></div>
                             <a href="{{ url_for('admin_resources_list') }}"
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
-                                📚 Manage Resources
+                                {{ icon('library', cls='menu-icon') }}Manage Resources
                             </a>
                             <a href="{{ url_for('collections.collections_list') }}"
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
-                                🗂️ Collections
+                                {{ icon('folders', cls='menu-icon') }}Collections
                             </a>
                             <div class="border-t border-slate-100 my-1"></div>
                             <a href="/admin/chefs"
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
-                                👨‍🍳 Manage Chefs
+                                {{ icon('chef', cls='menu-icon') }}Manage Chefs
                             </a>
                             <a href="{{ url_for('ingredients_mgmt.dashboard') }}"
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
-                                🧂 Ingredients Management
+                                {{ icon('package', cls='menu-icon') }}Ingredients Management
                             </a>
                             <a href="/admin/recipes-management"
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
-                                📋 Recipes Management
+                                {{ icon('clipboard', cls='menu-icon') }}Recipes Management
                             </a>
                         </div>
                     </div>
@@ -269,29 +275,29 @@
                     class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">Collections</a>
                 {% if current_user.is_authenticated %}
                 <a href="{{ url_for('saved_recipes_view') }}"
-                    class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">💚 Saved Recipes</a>
+                    class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">{{ icon('heart', cls='menu-icon') }}Saved Recipes</a>
                 <a href="{{ url_for('queue.next_recipes_view') }}"
-                    class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">🍳 Cook Next</a>
-                <a href="/mirror" class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">🪞 Recipe
+                    class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">{{ icon('pot', cls='menu-icon') }}Cook Next</a>
+                <a href="/mirror" class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">{{ icon('mirror', cls='menu-icon') }}Recipe
                     Mirror</a>
                 {% endif %}
                 <a href="/become-a-chef"
                     class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">Become a Chef</a>
-                <a href="/ingredients" class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">🥦
+                <a href="/ingredients" class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">{{ icon('carrot', cls='menu-icon') }}
                     All Ingredients</a>
                 <a href="/explore/ingredient-galaxy"
-                    class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">🌌 Ingredient Galaxy</a>
+                    class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">{{ icon('galaxy', cls='menu-icon') }}Ingredient Galaxy</a>
                 {% if current_user.is_authenticated %}
                 {% if current_user.is_admin %}
                 <div class="border-t border-slate-100 pt-2 mt-2">
                     <p class="px-3 py-1 text-xs font-semibold text-slate-400 uppercase tracking-wider">Admin</p>
-                    <a href="/new-recipe" class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">🍳
+                    <a href="/new-recipe" class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">{{ icon('pot', cls='menu-icon') }}
                         New Recipe</a>
                     <a href="/admin/recipes-management"
-                        class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">📋 Recipes
+                        class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">{{ icon('clipboard', cls='menu-icon') }}Recipes
                         Management</a>
                     <a href="{{ url_for('admin_resources_list') }}"
-                        class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">📚 Manage
+                        class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">{{ icon('library', cls='menu-icon') }}Manage
                         Resources</a>
                 </div>
                 {% endif %}
@@ -406,11 +412,11 @@
                         class="absolute left-0 mt-0 w-48 bg-white border border-slate-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[110] transform origin-top-left">
                         <div class="py-1">
                             <a href="/ingredients"
-                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">🥦
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">{{ icon('carrot', cls='menu-icon') }}
                                 All
                                 Ingredients</a>
                             <a href="/explore/ingredient-galaxy"
-                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">🌌
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">{{ icon('galaxy', cls='menu-icon') }}
                                 Galaxy</a>
                         </div>
                     </div>
@@ -433,37 +439,37 @@
                         <div class="py-1">
                             <a href="/new-recipe"
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
-                                🍳 New Recipe
+                                {{ icon('pot', cls='menu-icon') }}New Recipe
                             </a>
                             <a href="/new-ingredient"
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
-                                🥦 New Ingredient
+                                {{ icon('carrot', cls='menu-icon') }}New Ingredient
                             </a>
                             <a href="{{ url_for('admin_resource_new') }}"
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
-                                📝 New Resource
+                                {{ icon('file-plus', cls='menu-icon') }}New Resource
                             </a>
                             <div class="border-t border-slate-100 my-1"></div>
                             <a href="{{ url_for('admin_resources_list') }}"
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
-                                📚 Manage Resources
+                                {{ icon('library', cls='menu-icon') }}Manage Resources
                             </a>
                             <a href="{{ url_for('collections.collections_list') }}"
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
-                                🗂️ Collections
+                                {{ icon('folders', cls='menu-icon') }}Collections
                             </a>
                             <div class="border-t border-slate-100 my-1"></div>
                             <a href="/admin/chefs"
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
-                                👨‍🍳 Manage Chefs
+                                {{ icon('chef', cls='menu-icon') }}Manage Chefs
                             </a>
                             <a href="{{ url_for('ingredients_mgmt.dashboard') }}"
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
-                                🧂 Ingredients Management
+                                {{ icon('package', cls='menu-icon') }}Ingredients Management
                             </a>
                             <a href="/admin/recipes-management"
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
-                                📋 Recipes Management
+                                {{ icon('clipboard', cls='menu-icon') }}Recipes Management
                             </a>
                         </div>
                     </div>
@@ -508,41 +514,41 @@
             </button>
         </div>
         <nav class="px-4 py-4 space-y-1 text-sm font-medium text-slate-700 overflow-y-auto">
-            <a href="/" class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">🔍 Discover
+            <a href="/" class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">{{ icon('search', cls='menu-icon') }}Discover
                 Recipes</a>
-            <a href="/explore/galaxy" class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">🌌
+            <a href="/explore/galaxy" class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">{{ icon('galaxy', cls='menu-icon') }}
                 Galaxy Map</a>
-            <a href="/recipes" class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">📖 All
+            <a href="/recipes" class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">{{ icon('book', cls='menu-icon') }}All
                 Recipes</a>
             <a href="{{ url_for('collections_index') }}"
-                class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">🗂️ Collections</a>
+                class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">{{ icon('folders', cls='menu-icon') }}Collections</a>
             {% if current_user.is_authenticated %}
             <div class="border-t border-slate-100 my-2"></div>
             <a href="{{ url_for('saved_recipes_view') }}"
-                class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">💚 Saved Recipes</a>
+                class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">{{ icon('heart', cls='menu-icon') }}Saved Recipes</a>
             <a href="{{ url_for('queue.next_recipes_view') }}"
-                class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">🍳 Cook Next</a>
-            <a href="/mirror" class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">🪞 Recipe
+                class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">{{ icon('pot', cls='menu-icon') }}Cook Next</a>
+            <a href="/mirror" class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">{{ icon('mirror', cls='menu-icon') }}Recipe
                 Mirror</a>
             {% endif %}
-            <a href="/become-a-chef" class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">👨‍🍳
+            <a href="/become-a-chef" class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">{{ icon('chef', cls='menu-icon') }}
                 Become a Chef</a>
-            <a href="/ingredients" class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">🥦
+            <a href="/ingredients" class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">{{ icon('carrot', cls='menu-icon') }}
                 All Ingredients</a>
             <a href="/explore/ingredient-galaxy"
-                class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">🌌
+                class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">{{ icon('galaxy', cls='menu-icon') }}
                 Ingredient Galaxy</a>
             {% if current_user.is_authenticated %}
             {% if current_user.is_admin %}
             <div class="border-t border-slate-100 my-2"></div>
             <p class="px-3 py-1 text-xs font-semibold text-slate-400 uppercase tracking-wider">Admin</p>
-            <a href="/new-recipe" class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">🍳
+            <a href="/new-recipe" class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">{{ icon('pot', cls='menu-icon') }}
                 New Recipe</a>
             <a href="/admin/recipes-management"
-                class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">📋 Recipes
+                class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">{{ icon('clipboard', cls='menu-icon') }}Recipes
                 Management</a>
             <a href="{{ url_for('admin_resources_list') }}"
-                class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">📚 Manage
+                class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">{{ icon('library', cls='menu-icon') }}Manage
                 Resources</a>
             {% endif %}
             <div class="border-t border-slate-100 my-2"></div>

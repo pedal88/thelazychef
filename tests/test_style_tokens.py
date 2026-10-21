@@ -33,5 +33,19 @@ class StyleTokenTests(unittest.TestCase):
             self.assertEqual(re.findall(r'#[0-9a-fA-F]{6}\b', read('templates', name)), [], name)
 
 
+class IconTests(unittest.TestCase):
+    def test_the_sprite_is_valid_and_has_every_icon_the_templates_use(self):
+        import glob
+        import xml.dom.minidom
+
+        sprite = xml.dom.minidom.parse(os.path.join(ROOT, 'static', 'icons', 'icons.svg'))  # one bad comment breaks every icon
+        have = {s.getAttribute('id')[2:] for s in sprite.getElementsByTagName('symbol')}
+        used = set()
+        for path in glob.glob(os.path.join(ROOT, 'templates', '**', '*.html'), recursive=True):
+            used |= set(re.findall(r"icon\('([\w-]+)'", read(path)))
+        self.assertTrue(used)
+        self.assertEqual(used - have, set())
+
+
 if __name__ == '__main__':
     unittest.main()
