@@ -1,31 +1,77 @@
-/* Design tokens: colours, fonts and spacing in one place (RECIPE_MODEL_V2.md, section 13).
-   The values are today's look, taken from base.html (Tailwind palette, Inter and Playfair Display).
-   The overall look (step 7d) changes these values, not the components that use them.
-   Phase colours follow the meaning the palette already has: green for fresh ingredients (prep),
-   orange for heat (cook), blue for serving. */
+/* The app's look in one file: fonts, colours, icon stroke and spacing (RECIPE_MODEL_V2.md, section 13).
+   Changing the style of the whole app means changing the values here and nothing else:
+   - Tailwind's colour names in the templates (slate, orange, indigo, green, …) are pointed at the scales below
+     in base.html, so a class like bg-orange-600 means "the accent", and text-slate-700 means "a dark neutral".
+   - The v2 pages (recipe, Get ready, Cook, the delta) use the semantic names further down.
+   The values are today's look: the Tailwind palette with Inter and Playfair Display. One deliberate change:
+   indigo and purple buttons now use the accent, so the app has one action colour.
+   Scales are RGB triplets so Tailwind can add opacity (bg-orange-600/80). */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+
 :root {
-  --color-ink: #0f172a;          /* slate-900 */
-  --color-muted: #64748b;        /* slate-500 */
-  --color-line: #e2e8f0;         /* slate-200 */
-  --color-soft: #f8fafc;         /* slate-50 */
-  --color-paper: #ffffff;
-  --color-accent: #ea580c;       /* orange-600 */
-  --color-warning: #b45309;      /* amber-700 */
-
-  --color-prep: #16a34a;         /* green-600 */
-  --color-prep-soft: #f0fdf4;
-  --color-prep-ink: #166534;
-  --color-cook: #ea580c;         /* orange-600 */
-  --color-cook-soft: #fff7ed;
-  --color-cook-ink: #9a3412;
-  --color-serve: #2563eb;        /* blue-600 */
-  --color-serve-soft: #eff6ff;
-  --color-serve-ink: #1e40af;
-
+  /* Fonts */
   --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-serif: 'Playfair Display', Georgia, serif;
   --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
 
+  /* Surfaces: cards, sheets and inputs (Tailwind's "white") */
+  --paper: 255 255 255;
+
+  /* Neutrals: text, lines and backgrounds (Tailwind's slate, gray, zinc, stone, neutral) */
+  --neutral-50: 248 250 252;  --neutral-100: 241 245 249; --neutral-200: 226 232 240; --neutral-300: 203 213 225;
+  --neutral-400: 148 163 184; --neutral-500: 100 116 139; --neutral-600: 71 85 105;   --neutral-700: 51 65 85;
+  --neutral-800: 30 41 59;    --neutral-900: 15 23 42;    --neutral-950: 2 6 23;
+
+  /* Accent: the one action colour, and heat (Tailwind's orange, indigo, purple, violet) */
+  --accent-50: 255 247 237;   --accent-100: 255 237 213;  --accent-200: 254 215 170;  --accent-300: 253 186 116;
+  --accent-400: 251 146 60;   --accent-500: 249 115 22;   --accent-600: 234 88 12;    --accent-700: 194 65 12;
+  --accent-800: 154 52 18;    --accent-900: 124 45 18;    --accent-950: 67 20 7;
+
+  /* Prep: fresh ingredients, done, success (Tailwind's green, emerald) */
+  --prep-50: 240 253 244;     --prep-100: 220 252 231;    --prep-200: 187 247 208;    --prep-300: 134 239 172;
+  --prep-400: 74 222 128;     --prep-500: 34 197 94;      --prep-600: 22 163 74;      --prep-700: 21 128 61;
+  --prep-800: 22 101 52;      --prep-900: 20 83 45;       --prep-950: 5 46 22;
+
+  /* Serve: serving, information (Tailwind's blue, sky) */
+  --serve-50: 239 246 255;    --serve-100: 219 234 254;   --serve-200: 191 219 254;   --serve-300: 147 197 253;
+  --serve-400: 96 165 250;    --serve-500: 59 130 246;    --serve-600: 37 99 235;     --serve-700: 29 78 216;
+  --serve-800: 30 64 175;     --serve-900: 30 58 138;     --serve-950: 23 37 84;
+
+  /* Danger: errors, a timer that has run out (Tailwind's red, rose) */
+  --danger-50: 254 242 242;   --danger-100: 254 226 226;  --danger-200: 254 202 202;  --danger-300: 252 165 165;
+  --danger-400: 248 113 113;  --danger-500: 239 68 68;    --danger-600: 220 38 38;    --danger-700: 185 28 28;
+  --danger-800: 153 27 27;    --danger-900: 127 29 29;    --danger-950: 69 10 10;
+
+  /* Warning: drafts, things to check (Tailwind's amber, yellow) */
+  --warning-50: 255 251 235;  --warning-100: 254 243 199; --warning-200: 253 230 138; --warning-300: 252 211 77;
+  --warning-400: 251 191 36;  --warning-500: 245 158 11;  --warning-600: 217 119 6;   --warning-700: 180 83 9;
+  --warning-800: 146 64 14;   --warning-900: 120 53 15;   --warning-950: 69 26 3;
+
+  /* Semantic names for the v2 pages, from the scales above */
+  --color-ink: rgb(var(--neutral-900));
+  --color-muted: rgb(var(--neutral-500));
+  --color-line: rgb(var(--neutral-200));
+  --color-line-strong: rgb(var(--neutral-300));
+  --color-soft: rgb(var(--neutral-50));
+  --color-paper: rgb(var(--paper));
+  --color-accent: rgb(var(--accent-600));
+  --color-warning: rgb(var(--warning-700));
+  --color-danger: rgb(var(--danger-700));
+  --color-prep: rgb(var(--prep-600));
+  --color-prep-soft: rgb(var(--prep-50));
+  --color-prep-ink: rgb(var(--prep-800));
+  --color-cook: rgb(var(--accent-600));
+  --color-cook-soft: rgb(var(--accent-50));
+  --color-cook-ink: rgb(var(--accent-800));
+  --color-serve: rgb(var(--serve-600));
+  --color-serve-soft: rgb(var(--serve-50));
+  --color-serve-ink: rgb(var(--serve-800));
+  --color-pencil: #4b4f49;       /* the hand-drawn river delta */
+
+  /* Icons: the stroke of the line icons (the icon set to come) */
+  --icon-stroke: 2;
+
+  /* Spacing and shape */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
