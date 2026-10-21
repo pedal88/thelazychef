@@ -28,10 +28,10 @@ def configured():
     return bool(os.getenv('TASKS_QUEUE'))
 
 
-def enqueue(recipe_id, kind, source):
-    """Queue the job, or run it now when no queue is configured."""
+def enqueue(recipe_id, kind, source, language=None):
+    """Queue the job, or run it now when no queue is configured. language None: as the idea or source is written."""
     if not configured():
-        run(recipe_id, kind, source, attempt=MAX_ATTEMPTS - 1)
+        run(recipe_id, kind, source, attempt=MAX_ATTEMPTS - 1, language=language)
         return
     import google.auth
     from google.auth.transport.requests import AuthorizedSession
@@ -39,7 +39,7 @@ def enqueue(recipe_id, kind, source):
     base = os.environ['APP_BASE_URL'].rstrip('/')
     url = base + TASK_PATH.format(id=recipe_id)
     queue = f"projects/{PROJECT}/locations/{os.getenv('TASKS_LOCATION', 'europe-west1')}/queues/{os.environ['TASKS_QUEUE']}"
-    body = base64.b64encode(json.dumps({'kind': kind, 'source': source}).encode()).decode()
+    body = base64.b64encode(json.dumps({'kind': kind, 'source': source, 'language': language}).encode()).decode()
     task = {'task': {
         'dispatchDeadline': '600s',
         'httpRequest': {
@@ -66,7 +66,7 @@ def verified(auth_header):
     return claims.get('email') == os.environ.get('TASKS_SERVICE_ACCOUNT') and claims.get('email_verified', False)
 
 
-def run(recipe_id, kind, source, attempt=0):
+def run(recipe_id, kind, source, attempt=0, language=None):
     """Make the recipe into the placeholder. Returns True when done (also when the recipe ends up flagged).
 
     Errors raise, so Cloud Tasks tries again, except on the last attempt: then the
@@ -79,7 +79,7 @@ def run(recipe_id, kind, source, attempt=0):
     from services.recipe_v2.sources import SourceError
 
     try:
-        create_recipe(kind, source, chef_id=recipe.chef_id, recipe=recipe)
+        create_recipe(kind, source, chef_id=recipe.chef_id, recipe=recipe, language=language)
         return True
     except SourceError as e:
         # The link cannot be read (blocked, gone, no recipe). Trying again does not help.

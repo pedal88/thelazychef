@@ -72,16 +72,17 @@ def structure_prompt(source):
     return head, 'SOURCE RECIPE\n' + tail
 
 
-def write_text(kind, source, language='English', call=None, chef=None):
+def write_text(kind, source, language=None, call=None, chef=None):
     """Round 1. kind 'idea' writes a recipe from a short idea, as the chef persona if there is one; 'text'
-    tidies a pasted recipe and keeps its language; 'web' reads the recipe at the link
+    tidies a pasted recipe; 'web' reads the recipe at the link
     (services/recipe_v2/sources.py) and tidies it. A pasted or linked recipe is kept as it is, whatever the persona.
-    'version' rewrites a saved recipe, given as text (view.as_text), as the chef persona."""
+    'version' rewrites a saved recipe, given as text (view.as_text), as the chef persona.
+    language None writes in the language of the idea or the source; a version keeps the base recipe's language."""
     if kind == 'web':
         from services.recipe_v2.sources import fetch_recipe_text
 
         page, _ = fetch_recipe_text(source)
-        prompt = env.get_template('recipe_v2/normalize.jinja2').render(kind='a web page', source=page)
+        prompt = env.get_template('recipe_v2/normalize.jinja2').render(kind='a web page', source=page, language=language)
     elif kind == 'idea':
         prompt = env.get_template('recipe_v2/idea.jinja2').render(idea=source, language=language,
                                                                   persona=persona.prompt_block(chef))
@@ -90,7 +91,8 @@ def write_text(kind, source, language='English', call=None, chef=None):
             raise ValueError('A version needs a chef persona')
         prompt = env.get_template('recipe_v2/version.jinja2').render(source=source, persona=persona.prompt_block(chef))
     elif kind == 'text':
-        prompt = env.get_template('recipe_v2/normalize.jinja2').render(kind='text pasted by the user', source=source)
+        prompt = env.get_template('recipe_v2/normalize.jinja2').render(kind='text pasted by the user', source=source,
+                                                                       language=language)
     else:
         raise ValueError(f'Unknown source kind {kind!r}')
     msg, usage = (call or claude.call)(RECIPE_V2_MODEL, RECIPE_V2_EFFORT, [{'role': 'user', 'content': prompt}])
@@ -175,7 +177,7 @@ def recalculate(recipe):
     return recipe
 
 
-def create_recipe(kind, source, chef_id=None, language='English', call=None, recipe=None):
+def create_recipe(kind, source, chef_id=None, language=None, call=None, recipe=None):
     """Run both rounds and save the result as a draft. Returns (recipe, report).
 
     recipe is the placeholder made when the job was queued; without it a new recipe is made.

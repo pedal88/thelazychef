@@ -1,6 +1,6 @@
 You are an experienced cook who writes recipes for home cooks.
 
-Below is a recipe taken from {{ kind }}. It may contain ads, stories, comments, navigation text or spoken filler. Rewrite it as a clean recipe in the same language as the source.
+Below is a recipe taken from {{ kind }}. It may contain ads, stories, comments, navigation text or spoken filler. Rewrite it as a clean recipe {% if language %}in {{ language }}, translated if the source is in another language{% else %}in the same language as the source{% endif %}.
 
 Format:
 - Title on the first line: only the name of the dish, never a sentence about the recipe.

@@ -17,6 +17,9 @@ recipe_v2_bp = Blueprint('recipe_v2', __name__)
 
 IDEA_MAX = 200  # longer input, or input over several lines, is a pasted recipe
 
+# Form value -> what the prompt says. Empty: the language the idea or the source is written in.
+LANGUAGES = {'en': 'English', 'nb': 'Norwegian (bokmål)'}
+
 
 def kind_of(source):
     if is_link(source):
@@ -30,24 +33,27 @@ def kind_of(source):
 def new_recipe():
     chefs = get_chefs()
     if request.method == 'GET':
-        return render_template('recipe_v2_new.html', error=None, source='', chefs=chefs, chef_id='')
+        return render_template('recipe_v2_new.html', error=None, source='', chefs=chefs, chef_id='', languages=LANGUAGES,
+                               language='')
     source = (request.form.get('source') or '').strip()
     chef_id = request.form.get('chef_id') or None
     if chef_id not in {c['id'] for c in chefs}:
         chef_id = None
+    language = request.form.get('language') if request.form.get('language') in LANGUAGES else ''
     if not source:
         return render_template('recipe_v2_new.html', error='Write an idea or paste a recipe.', source=source,
-                               chefs=chefs, chef_id=chef_id or ''), 400
+                               chefs=chefs, chef_id=chef_id or '', languages=LANGUAGES, language=language), 400
     kind = kind_of(source)
     if kind == 'web' and is_video(source):
-        return render_template('recipe_v2_new.html', source=source, chefs=chefs, chef_id=chef_id or '',
+        return render_template('recipe_v2_new.html', source=source, chefs=chefs, chef_id=chef_id or '', languages=LANGUAGES,
+                               language=language,
                                error='Video links are not supported here yet. Use the old importer, or paste the recipe text.'), 400
     recipe = Recipe(title=source.splitlines()[0][:120], cuisine='', difficulty='', status='generating', schema_version=2, chef_id=chef_id,
                     source_type={'idea': 'description', 'text': 'text', 'web': 'web'}[kind], source_input=source[:500])
     db.session.add(recipe)
     db.session.commit()
     try:
-        tasks.enqueue(recipe.id, kind, source)
+        tasks.enqueue(recipe.id, kind, source, LANGUAGES.get(language))
     except Exception as e:
         recipe.status, recipe.is_flagged_for_review = 'draft', True
         recipe.validation_errors = [{'rule': 'error', 'message': friendly_ai_error(e, 'Could not start making the recipe.')}]
@@ -122,5 +128,5 @@ def run_task(recipe_id):
     if data.get('kind') not in ('idea', 'text', 'web') or not data.get('source'):
         return jsonify({'error': 'bad task'}), 400
     attempt = request.headers.get('X-CloudTasks-TaskRetryCount', type=int) or 0
-    tasks.run(recipe_id, data['kind'], data['source'], attempt=attempt)
+    tasks.run(recipe_id, data['kind'], data['source'], attempt=attempt, language=data.get('language'))
     return jsonify({'done': True})

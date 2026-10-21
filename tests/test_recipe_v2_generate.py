@@ -77,8 +77,9 @@ class GenerateTests(unittest.TestCase):
         self.assertEqual(saved.source_text, self.run_['source_text'])
         self.assertEqual(saved.validation_errors, [])
         self.assertEqual(len(saved.steps), len(self.run_['recipe']['steps']))
-        # Round 1 asks for English; round 2 gets the round 1 text, with rules and pantry in the cached system prompt
-        self.assertIn('Write a recipe in English for: Spaghetti carbonara for four', fake.requests[0]['messages'][0]['content'])
+        # Round 1 writes in the language of the idea; round 2 gets its text, with rules and pantry in the cached system prompt
+        self.assertIn('Write a recipe for: Spaghetti carbonara for four\nWrite it in the language the idea is written in.',
+                      fake.requests[0]['messages'][0]['content'])
         self.assertIn(self.run_['source_text'][:40], fake.requests[1]['messages'][0]['content'])
         self.assertIn('000322 spaghetti', fake.requests[1]['system'])
         self.assertNotIn(self.run_['source_text'][:40], fake.requests[1]['system'])

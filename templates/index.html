@@ -22,10 +22,17 @@
         <div class="max-w-xl mx-auto mb-12 relative group/describe">
 
             <!-- Chef Selector (Associated with Describe) -->
-            <div class="mb-6 flex justify-center gap-2">
-                {% for chef in chefs %}
+            <div class="mb-6 flex flex-wrap justify-center gap-2">
+                <div onclick="selectChef('')" id="chef-none"
+                    class="cursor-pointer group relative flex flex-col items-center gap-1 rounded-lg border border-slate-700 bg-slate-800 ring-1 ring-slate-500 px-3 py-2 w-24 hover:bg-slate-800 hover:border-slate-500 transition-all duration-200">
+                    <div class="h-14 w-14 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden ring-2 ring-slate-600 mb-1">
+                        <span class="text-xl" aria-hidden="true">🍳</span>
+                    </div>
+                    <div class="text-center"><p class="text-[10px] font-bold text-white leading-tight">No chef</p></div>
+                </div>
+                {% for chef in chefs if chef.description %}
                 <div onclick="selectChef('{{ chef.id }}')" id="chef-{{ chef.id }}"
-                    class="cursor-pointer group relative flex flex-col items-center gap-1 rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-2 w-24 hover:bg-slate-800 hover:border-slate-500 transition-all duration-300 {% if loop.first %}ring-1 ring-slate-500 bg-slate-800{% endif %}">
+                    class="cursor-pointer group relative flex flex-col items-center gap-1 rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-2 w-24 hover:bg-slate-800 hover:border-slate-500 transition-all duration-300">
                     <div
                         class="h-14 w-14 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden ring-2 ring-slate-600 mb-1">
                         {% if chef.image_filename %}
@@ -46,11 +53,10 @@
             </div>
 
             <!-- Describe Form -->
-            <form action="{{ url_for('new_recipe') }}" method="POST" class="relative z-10"
-                onsubmit="return handleSmartGeneration(event, this, 'Generating Recipe (Step 1 of 2)', 'The AI is interpreting your idea...', 'Evaluating Quality (Step 2 of 2)', 'Scoring your newly generated recipe...')">
-                <input type="hidden" name="chef_id" id="chefInput" value="gourmet">
+            <form action="{{ url_for('recipe_v2.new_recipe') }}" method="POST" class="relative z-10" id="ideaForm">
+                <input type="hidden" name="chef_id" id="chefInput" value="">
                 <div class="relative flex bg-white rounded-lg p-1 shadow-lg shadow-slate-900/50">
-                    <input type="text" name="query"
+                    <input type="text" name="source"
                         placeholder="Describe your idea... e.g. 'Spicy pasta carbonara with bacon'..."
                         class="block w-full rounded-md border-0 py-4 pl-6 pr-4 text-slate-900 ring-0 placeholder:text-slate-400 focus:ring-0 text-base sm:leading-6 focus:outline-none"
                         autofocus>
@@ -68,10 +74,15 @@
                     <button type="button" onclick="setInput('Spaghetti Carbonara')"
                         class="hover:text-slate-200 underline decoration-slate-600 underline-offset-2">Carbonara</button>
                 </div>
-                <!-- Recipe model v2 (step 7b): the new generation, next to this one until step 8 -->
-                <p class="mt-3 text-center text-xs text-slate-400">
-                    <a href="{{ url_for('recipe_v2.new_recipe') }}" class="hover:text-slate-200 underline decoration-slate-600 underline-offset-2">Try the new recipe model (v2)</a>
-                </p>
+                <!-- Language for every form on this page (ideas, links, pasted text); empty keeps the source's language -->
+                <div class="mt-4 flex justify-center items-center gap-2 text-xs text-slate-400">
+                    <label for="languageSelect">Language</label>
+                    <select id="languageSelect" name="language" class="rounded-md border-0 bg-slate-800 py-1 pl-2 pr-7 text-xs text-slate-200 ring-1 ring-slate-600 focus:ring-slate-400">
+                        <option value="">As the idea or recipe is written</option>
+                        <option value="en">English</option>
+                        <option value="nb">Norwegian (bokmål)</option>
+                    </select>
+                </div>
             </form>
         </div>
 
@@ -130,8 +141,8 @@
 
             <!-- 2. Web Link -->
             <div x-show="tab === 'web'" style="display: none;" class="transition-all duration-300">
-                <form action="/generate/web" method="POST" class="relative group" id="webForm"
-                    onsubmit="return handleSmartGeneration(event, this, 'Reading Website (Step 1 of 2)', 'The AI is reading the blog post and re-imagining the dish...', 'Evaluating Quality (Step 2 of 2)', 'Scoring the generated recipe...')">
+                <form action="{{ url_for('recipe_v2.new_recipe') }}" method="POST" class="relative group" id="webForm">
+                    <input type="hidden" name="language" class="language-copy" value="">
                     <div class="relative flex bg-slate-800 rounded-lg p-1 shadow-lg border border-slate-700">
                         <div class="flex items-center pl-3 text-slate-400">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,7 +151,7 @@
                                 </path>
                             </svg>
                         </div>
-                        <input type="url" name="blog_url" placeholder="Paste Recipe Blog URL..."
+                        <input type="url" name="source" placeholder="Paste Recipe Blog URL..."
                             class="block w-full bg-transparent rounded-md border-0 py-3 pl-3 pr-4 text-white placeholder:text-slate-500 focus:ring-0 sm:text-sm focus:outline-none">
                         <button type="submit"
                             class="flex-none rounded-md bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20 transition-colors">
@@ -153,8 +164,8 @@
 
             <!-- 3. Free Text -->
             <div x-show="tab === 'text'" style="display: none;" class="transition-all duration-300">
-                <form action="/generate/text" method="POST" class="relative group" id="textForm"
-                    onsubmit="return handleSmartGeneration(event, this, 'Reading Text (Step 1 of 2)', 'The AI is extracting the recipe from your text...', 'Evaluating Quality (Step 2 of 2)', 'Scoring the text-based recipe...')">
+                <form action="{{ url_for('recipe_v2.new_recipe') }}" method="POST" class="relative group" id="textForm">
+                    <input type="hidden" name="language" class="language-copy" value="">
                     <div class="relative bg-slate-800 rounded-lg p-1 shadow-lg border border-slate-700">
                         <div class="flex items-center px-3 pt-2 text-slate-400 gap-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -164,7 +175,7 @@
                             </svg>
                             <span class="text-xs font-medium">Paste recipe text below</span>
                         </div>
-                        <textarea name="raw_text" rows="5"
+                        <textarea name="source" rows="5"
                             placeholder="Paste any recipe text here — from a message, notes app, screenshot text, or anywhere else..."
                             class="block w-full bg-transparent rounded-md border-0 py-2 px-3 text-white placeholder:text-slate-500 focus:ring-0 sm:text-sm focus:outline-none resize-none"></textarea>
                         <div class="flex justify-end p-1">
@@ -195,7 +206,7 @@
 {% block scripts %}
 <script>
     function setInput(text) {
-        const input = document.querySelector('input[name="query"]');
+        const input = document.querySelector('#ideaForm input[name="source"]');
         input.value = text;
         // Switch to describe tab if needed (Alpine logic handles view, we just need to target input)
         // Ideally we update Alpine state but this simple interaction works if visible
@@ -208,10 +219,14 @@
             el.classList.remove('ring-1', 'ring-slate-500', 'bg-slate-800');
             el.classList.add('bg-slate-800/50');
         });
-        const active = document.getElementById('chef-' + id);
+        const active = document.getElementById(id ? 'chef-' + id : 'chef-none');
         active.classList.remove('bg-slate-800/50');
         active.classList.add('ring-1', 'ring-slate-500', 'bg-slate-800');
     }
+
+    document.getElementById('languageSelect').addEventListener('change', e => {
+        document.querySelectorAll('.language-copy').forEach(el => { el.value = e.target.value; });
+    });
 
     const urlParams = new URLSearchParams(window.location.search);
     const chefParam = urlParams.get('chef');
