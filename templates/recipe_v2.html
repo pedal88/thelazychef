@@ -32,8 +32,9 @@
   </div>
   {% endif %}
 
-  {% if recipe.image_filename %}
-  <figure class="hero"><img src="{{ get_recipe_image_url(recipe) }}" alt="{{ v.title }}" width="1200" height="900"></figure>
+  {% set imgs = dish_images(recipe) %}
+  {% if imgs.dish %}
+  <figure class="hero"><img src="{{ imgs.dish }}" alt="{{ v.title }}" width="1200" height="900"></figure>
   {% endif %}
 
   <div class="facts">
@@ -94,9 +95,9 @@
     </div>
   </details>
 
-  {% if v.part_images %}
+  {% if imgs.parts %}
   <div class="part-images" aria-label="The parts of the dish">
-    {% for p in v.part_images %}<figure><img src="{{ get_image_url(p.image) }}" alt="" width="600" height="600" loading="lazy"><figcaption>{{ p.name }}</figcaption></figure>{% endfor %}
+    {% for p in imgs.parts %}<figure><img src="{{ p.url }}" alt="" width="600" height="600" loading="lazy"><figcaption>{{ p.name }}</figcaption></figure>{% endfor %}
   </div>
   {% elif v.parts|length > 1 %}
   <p class="parts">This dish has {{ v.parts|length }} parts: {% for p in v.parts %}<span>{{ p }}</span>{% endfor %}</p>

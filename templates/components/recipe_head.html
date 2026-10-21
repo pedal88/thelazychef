@@ -12,5 +12,29 @@
     {%- endfor -%}
   </nav>
   {% endif %}
+  {% if current_user.is_authenticated and current_user.is_admin %}{{ trial_bar(recipe) }}{% endif %}
 </header>
+{% endmacro %}
+
+{# Style and image trial (temporary, admins only): switch the look and the image style while tuning these pages.
+   The look is kept on the device (static/css/themes.css); the image style in a cookie (dish_images in routes/_shared.py).
+   A style this recipe has no images in yet can be made from here. #}
+{% macro trial_bar(recipe) %}
+{% set imgs = dish_images(recipe) %}
+<div class="trialbar" aria-label="Style trial (admin)">
+  <div class="tgroup" data-look-switch><span class="tlabel">Look</span>
+    {%- for key, label in [('today', 'Today'), ('c', 'C'), ('d', 'D'), ('e', 'E'), ('f', 'F')] %}<button type="button" data-look="{{ key }}" aria-pressed="false">{{ label }}</button>{% endfor -%}
+  </div>
+  <div class="tgroup" data-img-switch><span class="tlabel">Images</span>
+    {%- for key, label in IMAGE_STYLES.items() %}<button type="button" data-img="{{ key }}" aria-pressed="{{ 'true' if key == imgs.style else 'false' }}">{{ label }}</button>{% endfor -%}
+  </div>
+  {% if not imgs.have and recipe.steps %}
+  <form method="post" action="{{ url_for('recipe_v2.make_images', recipe_id=recipe.id) }}" class="tmake">
+    <input type="hidden" name="style" value="{{ imgs.style }}">
+    <input type="hidden" name="next" value="{{ request.full_path }}">
+    <button type="submit">Make “{{ IMAGE_STYLES[imgs.style] }}” images</button>
+    <span>about a minute, up to {{ '%.2f'|format(0.1 + 0.1 * recipe.components|length) }} USD{% if imgs.dish %}; until then you see the recipe's own{% endif %}</span>
+  </form>
+  {% endif %}
+</div>
 {% endmacro %}

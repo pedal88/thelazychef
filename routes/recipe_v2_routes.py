@@ -109,8 +109,11 @@ def make_images(recipe_id):
     recipe = db.session.get(Recipe, recipe_id) or abort(404)
     if recipe.schema_version != 2 or not recipe.steps:
         abort(400)
+    style = request.form.get('style')
+    if style is not None and style not in images.STYLES:
+        abort(400)
     try:
-        report = images.make_images(recipe, get_storage())
+        report = images.make_images(recipe, get_storage(), style=style)
     except Exception as e:
         db.session.rollback()
         flash(friendly_ai_error(e, 'Could not make the images.'), 'error')
@@ -118,8 +121,12 @@ def make_images(recipe_id):
     db.session.commit()
     parts = f" and {report['parts']} part{'s' if report['parts'] != 1 else ''}" if report['parts'] else ''
     checked = ' The check found something to look at, see below.' if report['notes'] else ''
-    flash(f"Made the dish image{parts} (about {report['cost_usd']:.2f} USD).{checked}", 'success')
-    return redirect(url_for('recipe_detail', recipe_id=recipe_id))
+    kind = f" in the style {report['style']} (trial)" if report['trial'] else ''
+    flash(f"Made the dish image{parts}{kind} (about {report['cost_usd']:.2f} USD).{checked}", 'success')
+    back = request.form.get('next') or ''
+    if not back.startswith('/') or back.startswith('//'):  # only back to a page of this site
+        back = url_for('recipe_detail', recipe_id=recipe_id)
+    return redirect(back)
 
 
 @recipe_v2_bp.route('/new-recipe/v2/<int:recipe_id>')
