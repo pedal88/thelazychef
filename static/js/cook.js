@@ -1,0 +1,175 @@
+/* Cooking mode (templates/recipe_v2_cook.html), ported from the phone prototype (RECIPE_VISUALIZATIONS.md 9.15).
+   One card at a time. A step with waiting time is started and put under "running" with a countdown, so you can go
+   on; when the time is up it turns red, beeps and vibrates. The place, the timers and the choice to skip what
+   Get ready has done are kept on this device, per recipe. The screen is kept awake while the page is open. */
+(function () {
+  'use strict';
+  const page = document.querySelector('.cook[data-recipe]');
+  if (!page) return;
+  const KEY = `cook:${page.dataset.recipe}`;
+  const $ = s => page.querySelector(s), $$ = s => [...page.querySelectorAll(s)];
+  const cards = $$('.card[data-step]');
+  const byId = Object.fromEntries(cards.map(c => [c.dataset.step, c]));
+
+  let st = { at: null, skip: true, runs: [], list: false, finished: false };
+  try { Object.assign(st, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { /* start afresh */ }
+  st.runs = (st.runs || []).filter(r => byId[r.step] && r.end > Date.now() - 3 * 3600e3);
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) { /* kept for this visit only */ } };
+
+  const steps = () => cards.filter(c => !(st.skip && c.hasAttribute('data-ahead')));
+  const index = () => { const list = steps(), k = list.findIndex(c => c.dataset.step === st.at); return k < 0 ? 0 : k; };
+  const runOf = id => st.runs.find(r => r.step === id);
+  const leftMin = r => Math.max(0, Math.ceil((r.end - Date.now()) / 60e3));
+  const fmtLeft = r => {
+    const s = Math.max(0, Math.round((r.end - Date.now()) / 1000));
+    return s ? `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}` : 'check';
+  };
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  function render() {
+    const list = steps(), k = index(), card = list[k];
+    st.at = card ? card.dataset.step : null;
+    cards.forEach(c => { c.hidden = st.list || st.finished || c !== card; });
+    $('[data-finished]').hidden = !st.finished;
+    $('[data-list]').hidden = !st.list;
+    $('[data-skip]').checked = st.skip;
+    $('[data-toggle-list]').setAttribute('aria-pressed', String(st.list));
+    $('[data-toggle-list]').textContent = st.list ? 'Card' : 'Steps';
+    $$('[data-row]').forEach(li => {
+      li.hidden = st.skip && li.hasAttribute('data-ahead');
+      const at = list.indexOf(byId[li.dataset.row]);
+      li.classList.toggle('cur', li.dataset.row === st.at);
+      li.classList.toggle('past', at >= 0 && at < k);
+    });
+    $('.prog').innerHTML = list.map((c, j) => `<i class="${c.classList.contains('cook') ? 'cook' : c.classList.contains('serve') ? 'serve' : 'prep'}${j <= k ? ' on' : ''}${j === k ? ' cur' : ''}"></i>`).join('');
+    $('[data-where]').textContent = st.finished ? 'Done' : `${k + 1} of ${list.length}`;
+    $('[data-prev]').disabled = k === 0 && !st.finished;
+    const last = k === list.length - 1, passive = card ? +card.dataset.passive : 0;
+    const btn = $('[data-advance]');
+    btn.hidden = st.finished;
+    btn.textContent = last ? 'Done' : passive ? (runOf(st.at) ? 'Next →' : 'Start, then next →') : 'Done, next →';
+    btn.className = `btn primary ${card ? (card.classList.contains('cook') ? 'cook' : card.classList.contains('serve') ? 'serve' : 'prep') : ''}`;
+    if (card) {
+      const wait = (card.dataset.after || '').split(' ').map(runOf).filter(r => r && Date.now() < r.end);
+      const box = card.querySelector('[data-wait]');
+      box.hidden = !wait.length;
+      box.textContent = wait.length ? `Waiting for ${wait.map(r => `“${r.label.toLowerCase()}”, about ${leftMin(r)} min`).join(' and ')}. Get ready what you can.` : '';
+      const pass = card.querySelector('[data-passbox]');
+      if (pass) pass.hidden = last;
+    }
+    marks();
+    runs();
+    save();
+  }
+
+  /* The running timers, and the step standing beside the card */
+  function runs() {
+    $('[data-runs]').innerHTML = st.runs.length
+      ? st.runs.map(r => `<button type="button" class="tm${Date.now() >= r.end ? ' fin' : ''}" data-run="${esc(r.step)}" aria-expanded="${st.open === r.step}">${esc(r.label)} <span>${fmtLeft(r)}</span></button>`).join('')
+      : '<span class="muted">Nothing is standing.</span>';
+    const open = runOf(st.open), box = $('[data-runbox]');
+    box.hidden = !open;
+    if (open) {
+      $('[data-run-label]').textContent = open.label;
+      $('[data-run-done]').textContent = open.done ? `Done when: ${open.done}` : '';
+    }
+    $$('[data-standing]').forEach(w => {
+      const r = runOf(w.dataset.standing);
+      w.querySelector('[data-left]').textContent = r && Date.now() < r.end ? ` · ${leftMin(r)} min left` : '';
+    });
+  }
+
+  /* The step you are on, marked in the delta beside the card */
+  function marks() {
+    $$('.cook-side .cur').forEach(e => e.classList.remove('cur'));
+    const seg = st.at && $(`.cook-side .fx-seg[data-step="${st.at}"]`);
+    if (seg) { seg.classList.add('cur'); seg.closest('.g2-node').classList.add('cur'); }
+  }
+
+  let actx = null;
+  function beep(prime) {
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      if (prime) return;
+      [0, 0.35, 0.7].forEach(d => {
+        const o = actx.createOscillator(), g = actx.createGain();
+        o.frequency.value = 880; o.connect(g); g.connect(actx.destination);
+        g.gain.setValueAtTime(0.2, actx.currentTime + d);
+        g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + d + 0.3);
+        o.start(actx.currentTime + d); o.stop(actx.currentTime + d + 0.3);
+      });
+    } catch (e) { /* sound is optional */ }
+  }
+  setInterval(() => {
+    let rang = false;
+    st.runs.forEach(r => {
+      if (!r.rang && Date.now() >= r.end) {
+        r.rang = rang = true;
+        beep(false);
+        try { if (navigator.vibrate) navigator.vibrate([300, 150, 300]); } catch (e) { /* not supported */ }
+      }
+    });
+    if (rang) render(); else runs();
+  }, 1000);
+
+  let lock = null;
+  async function wake() {
+    try {
+      if (!lock && navigator.wakeLock && document.visibilityState === 'visible') {
+        lock = await navigator.wakeLock.request('screen');
+        lock.addEventListener('release', () => { lock = null; });
+      }
+    } catch (e) { lock = null; /* the page works without it */ }
+  }
+  document.addEventListener('visibilitychange', wake);
+
+  function go(d) {
+    const list = steps(), k = index();
+    if (st.finished) { if (d < 0) st.finished = false; }
+    else if (d > 0 && k >= list.length - 1) st.finished = true;
+    else st.at = list[Math.max(0, Math.min(list.length - 1, k + d))].dataset.step;
+    st.open = null; st.list = false;
+    render();
+    $('#status').scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  }
+  /* The main button: a step with waiting time is started under "running" before you go on */
+  function advance() {
+    const list = steps(), card = list[index()];
+    // A step that used what was standing ends its timer: the water has boiled once the pasta is in
+    const used = (card && card.dataset.after || '').split(' ');
+    st.runs = st.runs.filter(r => !used.includes(r.step));
+    if (card && +card.dataset.passive && index() < list.length - 1 && !runOf(card.dataset.step)) {
+      st.runs.push({ step: card.dataset.step, label: card.dataset.label, done: card.dataset.done,
+                     end: Date.now() + card.dataset.passive * 60e3, rang: false });
+    }
+    go(1);
+  }
+
+  page.addEventListener('click', e => {
+    beep(true); wake();
+    const t = e.target.closest('button, input');
+    if (!t) return;
+    if (t.matches('[data-advance]')) advance();
+    else if (t.matches('[data-prev]')) go(-1);
+    else if (t.matches('[data-toggle-list]')) { st.list = !st.list; render(); }
+    else if (t.matches('[data-jump]')) { st.at = t.dataset.jump; st.list = false; st.finished = false; render(); }
+    else if (t.matches('[data-run]')) { st.open = st.open === t.dataset.run ? null : t.dataset.run; runs(); save(); }
+    else if (t.matches('[data-run-remove]')) { st.runs = st.runs.filter(r => r.step !== st.open); st.open = null; render(); }
+    else if (t.matches('[data-skip]')) { st.skip = t.checked; render(); }
+    else if (t.matches('[data-restart]')) { st = { at: null, skip: st.skip, runs: [], list: false, finished: false }; render(); }
+  });
+  let sx = 0, sy = 0;
+  page.addEventListener('touchstart', e => { if (!e.target.closest('.card')) return; sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+  page.addEventListener('touchend', e => {
+    if (!e.target.closest('.card')) return;
+    const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) { if (dx < 0) advance(); else go(-1); }
+  });
+  document.addEventListener('keydown', e => {
+    if (st.list || e.target.closest('input, select, textarea')) return;
+    if (e.key === 'ArrowRight') advance();
+    if (e.key === 'ArrowLeft') go(-1);
+  });
+  wake();
+  render();
+})();

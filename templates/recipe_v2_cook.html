@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{# Cooking mode (Lag mat) for a v2 recipe: one step at a time, timers for the waiting, the steps that stand,
+   and what each step needs from Get ready. RECIPE_VISUALIZATIONS.md 9.15. The server renders every step;
+   static/js/cook.js shows one at a time and keeps the place, the timers and the choices on the device.
+   On a large screen the river delta stands beside the card with the step you are on marked. #}
+{% from "components/delta.html" import delta, MARKS with context %}
+
+{% block title %}Cook: {{ v.title }} - The Lazy Chef{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/recipe_v2.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/ready.css') }}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&display=swap">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/delta.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cook.css') }}">
+<script src="{{ url_for('static', filename='js/cook.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/delta.js') }}" defer></script>
+{% endblock %}
+
+{% set lang = recipe.language or 'en' %}
+{% set PHASES = {'prep': 'Prep', 'cook': 'Cook', 'serve': 'Serve'} %}
+
+{% macro sym(p, size) -%}
+<span class="sym" style="--s:{{ size }}px">{% if p.img %}<img src="{{ p.img }}" alt="" width="{{ size }}" height="{{ size }}" loading="lazy">{% else %}<span class="sym-letter" aria-hidden="true">{{ p.name[:1]|upper }}</span>{% endif %}{% if p.mark %}<i class="mark">{{ MARKS[p.mark]|safe }}</i>{% endif %}</span>
+{%- endmacro %}
+
+{% block content %}
+{% set args = {'recipe_id': recipe.id, 'servings': v.servings, 'plan': v.plan} %}
+<article class="rv2 cook" data-recipe="{{ recipe.id }}">
+  <a class="back" href="{{ url_for('recipe_detail', **args) }}">← {{ v.title }}</a>
+  <nav class="flow" aria-label="Steps in making the dish">
+    <a href="{{ url_for('recipe_detail', **args) }}">Overview</a><a href="{{ url_for('recipe_get_ready', **args) }}">Get ready</a><a aria-current="step">Cook</a>
+  </nav>
+
+  <div class="cook-cols">
+    <div class="cook-main">
+      <div class="status" id="status">
+        <div class="prog" aria-hidden="true"></div>
+        <div class="now"><span class="lbl" data-where></span><span class="runs" data-runs></span></div>
+        <div class="runbox" data-runbox hidden><b data-run-label></b><span data-run-done></span><button type="button" class="btn" data-run-remove>Done, remove</button></div>
+      </div>
+
+      {% for s in v.steps if not s.task %}
+      <article class="card {{ s.phase }}" data-step="{{ s.id }}" data-no="{{ s.n }}" data-label="{{ s.short }}" data-done="{{ s.done_when or '' }}"
+               data-passive="{{ s.passive_min }}" data-after="{{ s.after|join(' ') }}"{% if s.ahead %} data-ahead{% endif %} hidden>
+        <div class="meta">Step {{ s.n }} · {{ PHASES[s.phase] }}{% if s.component %} · {{ s.component }}{% endif %} · {{ s.duration or 'short' }}</div>
+        {% if s.standing %}<span class="while" data-standing="{{ s.standing.id }}">While: {{ s.standing.short|lower }}<span data-left></span></span>{% endif %}
+        <div class="waitbox" data-wait hidden></div>
+        <h2 lang="{{ lang }}">{{ s.short }}</h2>
+        {% if s.equipment %}<div class="eqline">{{ s.equipment }}</div>{% endif %}
+        <p class="txt" lang="{{ lang }}">{{ s.html }}</p>
+        {% if s.bowls or s.tiles or s.results %}
+        <div class="needs"><span class="eyebrow">You need</span>
+          {% for b in s.bowls %}<span class="needbowl"><span class="bno">{{ b.no }}</span><span><b lang="{{ lang }}">{{ b.name }}</b><span class="mini">{% for p in b.lines %}{{ sym(p, 26) }}{% endfor %}</span><em>{% for p in b.lines %}{{ (p.amount ~ ' ' ~ p.name)|trim }}{{ ', ' if not loop.last }}{% endfor %}</em></span></span>{% endfor %}
+          {% for p in s.tiles %}<span class="tile">{{ sym(p, 40) }}<span class="ta">{{ p.amount or 'to taste' }}</span><span class="tn" lang="{{ lang }}">{{ p.name }}{% if p.prep %}<em>{{ p.prep }}</em>{% endif %}</span></span>{% endfor %}
+          {% for r in s.results %}<span class="needres"><span class="arrow" aria-hidden="true">↳</span><span><b lang="{{ lang }}">{{ r.short }}</b><em>from step {{ r.no }}</em></span></span>{% endfor %}
+        </div>
+        {% endif %}
+        {% if s.done_when %}<div class="donebox"><b>Done when</b><span lang="{{ lang }}">{{ s.done_when }}</span></div>{% endif %}
+        {% if s.passive_min %}<div class="passbox" data-passbox>{% if s.active_min %}Your part takes {{ s.active_min }} min. {% endif %}Then it stands for {{ s.passive_min }} min on its own. Tap “Start, then next” and the app keeps the time while you go on.</div>{% endif %}
+      </article>
+      {% endfor %}
+
+      <section class="finished" data-finished hidden>
+        <p class="eyebrow">{{ v.title }}</p>
+        <h2>The food is ready</h2>
+        <p class="hint">The plan was {{ v.total }}, with {{ v.active }} of work.</p>
+        <p><a class="go" href="{{ url_for('recipe_detail', **args) }}">Back to the recipe</a> <button type="button" class="reset" data-restart>Start again</button></p>
+      </section>
+
+      <section class="steplist-wrap" data-list hidden>
+        <label class="skiprow"><input type="checkbox" data-skip checked> Skip what Get ready has done</label>
+        <ol class="steplist">
+          {% for s in v.steps if not s.task %}
+          <li class="{{ s.phase }}" data-row="{{ s.id }}"{% if s.ahead %} data-ahead{% endif %}><button type="button" data-jump="{{ s.id }}"><span class="n">{{ s.n }}</span><span><span class="m">{{ s.short }}{% if s.duration %} · {{ s.duration }}{% endif %}</span><p lang="{{ lang }}">{{ s.html }}</p></span></button></li>
+          {% endfor %}
+        </ol>
+      </section>
+      <p class="swipehint">Swipe or use the arrow keys for the next and previous step.</p>
+    </div>
+
+    {% if v.delta %}
+    <aside class="cook-side" aria-label="The whole recipe">
+      <p class="hint">The whole dish. The step you are on is marked.</p>
+      {{ delta(v.delta, recipe.id, print_links=False) }}
+    </aside>
+    {% endif %}
+  </div>
+
+  <div class="bar"><div class="bar-in">
+    <button type="button" class="btn sq" data-prev aria-label="Previous step">←</button>
+    <button type="button" class="btn sq txt" data-toggle-list aria-pressed="false">Steps</button>
+    <button type="button" class="btn primary" data-advance>Start</button>
+  </div></div>
+</article>
+{% endblock %}

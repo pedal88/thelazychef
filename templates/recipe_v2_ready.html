@@ -40,10 +40,11 @@
 
 {% block content %}
 {% set back = url_for('recipe_detail', recipe_id=recipe.id, servings=v.servings, plan=v.plan) %}
+{% set cook = url_for('recipe_cook', recipe_id=recipe.id, servings=v.servings, plan=v.plan) %}
 <article class="rv2 ready" data-recipe="{{ recipe.id }}">
   <a class="back" href="{{ back }}">← {{ v.title }}</a>
   <nav class="flow" aria-label="Steps in making the dish">
-    <a href="{{ back }}">Overview</a><a aria-current="step">Get ready</a><a href="{{ back }}#method">Cook</a>
+    <a href="{{ back }}">Overview</a><a aria-current="step">Get ready</a><a href="{{ cook }}">Cook</a>
   </nav>
 
   <h1>Get ready</h1>
@@ -98,6 +99,6 @@
     </div>
   </div>
 
-  <div class="ready-go"><a class="go" href="{{ back }}#method">Start cooking →</a><button type="button" class="reset" data-reset>Clear the ticks</button></div>
+  <div class="ready-go"><a class="go" href="{{ cook }}">Start cooking →</a><button type="button" class="reset" data-reset>Clear the ticks</button></div>
 </article>
 {% endblock %}
