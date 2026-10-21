@@ -99,3 +99,11 @@
 .rv2 .flow a { padding: 6px var(--space-3); border-radius: var(--radius-pill); color: var(--color-muted); text-decoration: none; border: 1px solid var(--color-line); }
 .rv2 .flow a[aria-current="step"] { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-paper); }
 .rv2 .flow a[href]:hover { color: var(--color-ink); }
+
+/* The dish image and the parts (services/recipe_v2/images.py) */
+.rv2 .hero { margin: 0 0 var(--space-4); }
+.rv2 .hero img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius); background: var(--color-soft); }
+.rv2 .part-images { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: var(--space-3); margin: 0 0 var(--space-4); }
+.rv2 .part-images figure { margin: 0; text-align: center; }
+.rv2 .part-images img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-sm); background: var(--color-soft); }
+.rv2 .part-images figcaption { font-size: 14px; margin-top: var(--space-1); }
