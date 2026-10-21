@@ -74,12 +74,11 @@
                     <button type="button" onclick="setInput('Spaghetti Carbonara')"
                         class="hover:text-slate-200 underline decoration-slate-600 underline-offset-2">Carbonara</button>
                 </div>
-                <!-- Language for every form on this page (ideas, links, pasted text); empty keeps the source's language -->
+                <!-- Language for every form on this page (ideas, links, pasted text); a recipe in another language is translated -->
                 <div class="mt-4 flex justify-center items-center gap-2 text-xs text-slate-400">
                     <label for="languageSelect">Language</label>
                     <select id="languageSelect" name="language" class="rounded-md border-0 bg-slate-800 py-1 pl-2 pr-7 text-xs text-slate-200 ring-1 ring-slate-600 focus:ring-slate-400">
-                        <option value="">As the idea or recipe is written</option>
-                        <option value="en">English</option>
+                        <option value="en" selected>English</option>
                         <option value="nb">Norwegian (bokmål)</option>
                     </select>
                 </div>
@@ -142,7 +141,7 @@
             <!-- 2. Web Link -->
             <div x-show="tab === 'web'" style="display: none;" class="transition-all duration-300">
                 <form action="{{ url_for('recipe_v2.new_recipe') }}" method="POST" class="relative group" id="webForm">
-                    <input type="hidden" name="language" class="language-copy" value="">
+                    <input type="hidden" name="language" class="language-copy" value="en">
                     <div class="relative flex bg-slate-800 rounded-lg p-1 shadow-lg border border-slate-700">
                         <div class="flex items-center pl-3 text-slate-400">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,7 +164,7 @@
             <!-- 3. Free Text -->
             <div x-show="tab === 'text'" style="display: none;" class="transition-all duration-300">
                 <form action="{{ url_for('recipe_v2.new_recipe') }}" method="POST" class="relative group" id="textForm">
-                    <input type="hidden" name="language" class="language-copy" value="">
+                    <input type="hidden" name="language" class="language-copy" value="en">
                     <div class="relative bg-slate-800 rounded-lg p-1 shadow-lg border border-slate-700">
                         <div class="flex items-center px-3 pt-2 text-slate-400 gap-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -224,9 +223,11 @@
         active.classList.add('ring-1', 'ring-slate-500', 'bg-slate-800');
     }
 
-    document.getElementById('languageSelect').addEventListener('change', e => {
-        document.querySelectorAll('.language-copy').forEach(el => { el.value = e.target.value; });
-    });
+    // The browser may keep the chosen language when going back to the page, so copy it on load too
+    const languageSelect = document.getElementById('languageSelect');
+    const copyLanguage = () => document.querySelectorAll('.language-copy').forEach(el => { el.value = languageSelect.value; });
+    languageSelect.addEventListener('change', copyLanguage);
+    copyLanguage();
 
     const urlParams = new URLSearchParams(window.location.search);
     const chefParam = urlParams.get('chef');

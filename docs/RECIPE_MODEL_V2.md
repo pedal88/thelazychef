@@ -35,6 +35,7 @@ Vi går fra dagens listemodell (ingredienser og steg som fritekst) til en grafmo
 | Forbedring 2 | Ingrediensformer og enheter (avsnitt 5) |
 | Versjon | `schema_version` og `revision` på oppskriften. Ingen historikk foreløpig |
 | Tabeller | `recipe` beholdes, slik at ID-er og URL-er overlever. Barnetabellene byttes ut (avsnitt 5) |
+| Språk (21.10.2026) | Én oppskrift er samme oppskrift på alle språk. Graf, mengder, tider og metadata deles; bare teksten (tittel, komponent- og linjenavn, stegene, kokkens notat) har språk. `recipe.language` er språket teksten ble laget på, engelsk som standard, og en versjon arver grunnrettens. Andre språk kommer senere som oversatt tekstlag per språk, nøklet på `local_id`, med originalen som reserve. Ikke egne oppskrifter per språk |
 | Ikke vedtatt | Standardverdier for `holds` per handling og tilsyn i passiv tid |
 
 ## 4. Avklaringer
@@ -301,7 +302,7 @@ Nevnt så de ikke glemmes, men ikke del av planen over:
 - **Edamam-nøklene:** to Edamam-apper har hatt nøklene sine hardkodet i det offentlige repoet siden februar 2026 (fjernet fra koden i PR #38). Abonnementet er avsluttet, men appene må slettes eller nøklene byttes i Edamam-dashbordet. Det må også bestemmes hvor næringstall skal hentes fra framover (avsnitt 9).
 - **Innholds-API for sosiale medier:** lese-API med token for publisert innhold med `updated_since`, bilder med stabile URL-er i faste formater (original, 1:1, 4:5, 9:16) med alt-tekst og AI-merking, og varsel ved publisering (webhook eller JSON-feed).
 - **Ressurser, samlinger og kokker som filer** i repoet som synkes til databasen, redigert i Claude Code.
-- **Norsk** for vanlige brukere.
+- **Norsk** for vanlige brukere: oversatt tekstlag per oppskrift (avsnitt 3, Språk), norske navn i pantryet til handlelista, og grensesnittet (Flask-Babel).
 - Erstatninger (`RECIPE_VISUALIZATIONS.md` 9.5), økter og forkant ved lang ventetid (9.11), tilsyn i passiv tid, historikk for revisjoner og underoppskrifter.
 
 ## 13. Utseende: struktur tidlig, stil sent

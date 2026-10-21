@@ -57,7 +57,10 @@ class VersionTests(unittest.TestCase):
     def test_a_version_is_made_by_the_chef_from_the_base_recipe(self):
         add_chef('family_cook')
         base = self._base()
+        base.language = 'nb'
+        db.session.commit()
         res, version, asked = self._version(base, 'family_cook')
+        self.assertEqual(version.language, 'nb')  # a version is written in the language of its base recipe
         self.assertEqual(res.headers['Location'], f'/new-recipe/v2/{version.id}')
         self.assertEqual((version.chef_id, version.base_recipe_id, version.source_type, version.status),
                          ('family_cook', base.id, 'version', 'draft'))

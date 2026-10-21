@@ -8,6 +8,7 @@ from flask_login import login_required
 from database.models import Recipe, db
 from services.chef_service import get_chefs
 from services.recipe_v2 import generate, tasks
+from services.recipe_v2.language import DEFAULT as DEFAULT_LANGUAGE, LANGUAGES, code_of
 from services.recipe_v2.sources import is_link, is_video
 from services.recipe_v2.view import as_text
 from utils.ai_errors import friendly_ai_error
@@ -16,9 +17,6 @@ from utils.decorators import admin_required
 recipe_v2_bp = Blueprint('recipe_v2', __name__)
 
 IDEA_MAX = 200  # longer input, or input over several lines, is a pasted recipe
-
-# Form value -> what the prompt says. Empty: the language the idea or the source is written in.
-LANGUAGES = {'en': 'English', 'nb': 'Norwegian (bokmål)'}
 
 
 def kind_of(source):
@@ -34,12 +32,12 @@ def new_recipe():
     chefs = get_chefs()
     if request.method == 'GET':
         return render_template('recipe_v2_new.html', error=None, source='', chefs=chefs, chef_id='', languages=LANGUAGES,
-                               language='')
+                               language=DEFAULT_LANGUAGE)
     source = (request.form.get('source') or '').strip()
     chef_id = request.form.get('chef_id') or None
     if chef_id not in {c['id'] for c in chefs}:
         chef_id = None
-    language = request.form.get('language') if request.form.get('language') in LANGUAGES else ''
+    language = code_of(request.form.get('language')) or DEFAULT_LANGUAGE
     if not source:
         return render_template('recipe_v2_new.html', error='Write an idea or paste a recipe.', source=source,
                                chefs=chefs, chef_id=chef_id or '', languages=LANGUAGES, language=language), 400
@@ -48,12 +46,12 @@ def new_recipe():
         return render_template('recipe_v2_new.html', source=source, chefs=chefs, chef_id=chef_id or '', languages=LANGUAGES,
                                language=language,
                                error='Video links are not supported here yet. Use the old importer, or paste the recipe text.'), 400
-    recipe = Recipe(title=source.splitlines()[0][:120], cuisine='', difficulty='', status='generating', schema_version=2, chef_id=chef_id,
+    recipe = Recipe(title=source.splitlines()[0][:120], cuisine='', difficulty='', status='generating', schema_version=2, chef_id=chef_id, language=language,
                     source_type={'idea': 'description', 'text': 'text', 'web': 'web'}[kind], source_input=source[:500])
     db.session.add(recipe)
     db.session.commit()
     try:
-        tasks.enqueue(recipe.id, kind, source, LANGUAGES.get(language))
+        tasks.enqueue(recipe.id, kind, source, language)
     except Exception as e:
         recipe.status, recipe.is_flagged_for_review = 'draft', True
         recipe.validation_errors = [{'rule': 'error', 'message': friendly_ai_error(e, 'Could not start making the recipe.')}]
@@ -72,7 +70,7 @@ def new_version(recipe_id):
         flash('Choose a chef, and make versions only of finished recipes in the new model.', 'error')
         return redirect(url_for('recipe_detail', recipe_id=recipe_id))
     recipe = Recipe(title=base.title[:120], cuisine='', difficulty='', status='generating', schema_version=2,
-                    chef_id=chef['id'], base_recipe_id=base.base_recipe_id or base.id, source_type='version',
+                    chef_id=chef['id'], base_recipe_id=base.base_recipe_id or base.id, source_type='version', language=base.language,
                     source_input=f"Version of recipe {base.id} by {chef['name']}")
     db.session.add(recipe)
     db.session.commit()
@@ -125,8 +123,8 @@ def run_task(recipe_id):
     if not tasks.verified(request.headers.get('Authorization')):
         return jsonify({'error': 'unauthorized'}), 401
     data = request.get_json(silent=True) or {}
-    if data.get('kind') not in ('idea', 'text', 'web') or not data.get('source'):
+    if data.get('kind') not in generate.SOURCE_TYPES or not data.get('source'):
         return jsonify({'error': 'bad task'}), 400
     attempt = request.headers.get('X-CloudTasks-TaskRetryCount', type=int) or 0
-    tasks.run(recipe_id, data['kind'], data['source'], attempt=attempt, language=data.get('language'))
+    tasks.run(recipe_id, data['kind'], data['source'], attempt=attempt, language=code_of(data.get('language')))
     return jsonify({'done': True})
