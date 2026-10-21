@@ -1,0 +1,11 @@
+{# How a finished dish looks, for the dish and component images (RECIPE_VISUALIZATIONS.md 9.7, step 2). services/recipe_v2/appearance.py #}
+TASK: Describe how the dish below looks when it is served, for an image model that will draw it. Use only what the recipe makes: its ingredients, how they are cut, how they are cooked and how they are served. Write in English, whatever the language of the recipe.
+
+Return JSON with:
+- plating: one or two sentences on how one serving is presented: the vessel (plate, shallow bowl, board, baking dish), what sits where, any garnish. If the recipe is served from a shared dish (a lasagne, a tray bake), describe one portion served from it.
+- components: one entry per part of the dish, using each part's name exactly as written under Ingredients (one entry with the title when the recipe has no parts). For each: how that part looks in the served dish: cut and size, colour and surface after cooking, sauce or texture, and roughly how much of it is in one serving. A part that is cooked into another and not seen on its own (a marinade, a stock) says so in a few words.
+
+Use plain, concrete words for shapes, sizes, colours and textures. No praise ("delicious", "perfect"), no smells, no people, no text.
+
+RECIPE
+{{ recipe }}

@@ -263,7 +263,11 @@ def about(recipe):
 def as_text(recipe):
     """The saved recipe as plain text, in the shape round 1 writes: title, servings, ingredients per part and
     numbered steps in the planned order. Used to make a version of it (services/recipe_v2/generate.py)."""
-    v2 = to_v2(recipe)
+    return v2_text(to_v2(recipe), recipe.yield_text, recipe.chef_note)
+
+
+def v2_text(v2, yield_text=None, chef_note=None):
+    """as_text for a recipe in v2 JSON that is not saved, such as the fasit recipes."""
     lines = {i['local_id']: i for i in v2['ingredients']}
 
     def line_text(i, prep=True):
@@ -271,7 +275,7 @@ def as_text(recipe):
         text = ' '.join(x for x in (amount, i['name']) if x)
         return text + (f", {i['prep_style']}" if prep and i.get('prep_style') else '')
 
-    out = [v2['title'], '', f"Servings: {recipe.yield_text or v2['servings']}", '', 'Ingredients']
+    out = [v2['title'], '', f"Servings: {yield_text or v2['servings']}", '', 'Ingredients']
     for c in v2['components']:
         part = [i for i in v2['ingredients'] if i['component_id'] == c['local_id']]
         if part:
@@ -283,6 +287,7 @@ def as_text(recipe):
         text = PLACEHOLDER.sub(lambda m: line_text(lines[m.group(1)], prep=False) if m.group(1) in lines else m.group(0),
                                by[sid]['text'])
         out.append(f'{n}. {text}')
-    if recipe.chef_note:
-        out += ['', f'Tip: {recipe.chef_note}']
+    chef_note = chef_note or v2.get('chef_note')
+    if chef_note:
+        out += ['', f'Tip: {chef_note}']
     return '\n'.join(out)

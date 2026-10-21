@@ -72,8 +72,10 @@ def run(task: Task, vary: dict[str, list[str]], sample_set: str = 'default', lim
     }
 
     if runner is None and not dry_run:
+        from functools import partial
+
         from promptlab.runners import RUNNERS
-        runner = RUNNERS[task.kind]
+        runner = partial(RUNNERS['image'], aspect_ratio=task.aspect) if task.kind == 'image' else RUNNERS[task.kind]
 
     for i, cell in enumerate(record['cells']):
         cell['id'] = f'c{i}'
