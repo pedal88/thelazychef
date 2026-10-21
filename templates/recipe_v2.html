@@ -38,6 +38,9 @@
 
   <p class="eyebrow">Recipe</p>
   <h1>{{ v.title }}</h1>
+  {% if recipe.image_filename %}
+  <figure class="hero"><img src="{{ get_recipe_image_url(recipe) }}" alt="{{ v.title }}" width="1200" height="900"></figure>
+  {% endif %}
 
   <div class="facts">
     <div class="fact"><span class="eyebrow">Total</span><b>{{ v.total }}</b></div>
@@ -105,7 +108,11 @@
     </div>
   </details>
 
-  {% if v.parts|length > 1 %}
+  {% if v.part_images %}
+  <div class="part-images" aria-label="The parts of the dish">
+    {% for p in v.part_images %}<figure><img src="{{ get_image_url(p.image) }}" alt="" width="600" height="600" loading="lazy"><figcaption>{{ p.name }}</figcaption></figure>{% endfor %}
+  </div>
+  {% elif v.parts|length > 1 %}
   <p class="parts">This dish has {{ v.parts|length }} parts: {% for p in v.parts %}<span>{{ p }}</span>{% endfor %}</p>
   {% endif %}
 
@@ -154,6 +161,11 @@
       <button type="submit">Recalculate</button>
       <span class="hint">Metadata, nutrition and the chef's rules from the saved recipe, after the pantry or the rules changed. No AI.</span>
     </form>
+    <form method="post" action="{{ url_for('recipe_v2.make_images', recipe_id=recipe.id) }}" class="recalc">
+      <button type="submit">{{ 'Make the images again' if recipe.image_filename else 'Make images' }}</button>
+      <span class="hint">The dish and each part, checked by a vision model. About a minute; up to about {{ '%.2f'|format(0.1 + 0.1 * v.parts|length) }} USD.{% if recipe.image_style %} Style: {{ recipe.image_style }}.{% endif %}</span>
+    </form>
+    {% if v.image_notes %}<p class="hint">The image check found: {{ v.image_notes|join('; ') }}</p>{% endif %}
     {% endif %}
     <div class="sec-head"><h2 id="versions-h">Versions</h2><span class="eyebrow">Admin only</span></div>
     <ul>

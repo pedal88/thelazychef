@@ -97,6 +97,31 @@ def recalculate(recipe_id):
     return redirect(url_for('recipe_detail', recipe_id=recipe_id))
 
 
+@recipe_v2_bp.route('/new-recipe/v2/images/<int:recipe_id>', methods=['POST'])
+@login_required
+@admin_required
+def make_images(recipe_id):
+    """The dish image and the part images, each checked by a vision model (services/recipe_v2/images.py).
+    Takes a minute or two; admin only for now."""
+    from routes._shared import get_storage
+    from services.recipe_v2 import images
+
+    recipe = db.session.get(Recipe, recipe_id) or abort(404)
+    if recipe.schema_version != 2 or not recipe.steps:
+        abort(400)
+    try:
+        report = images.make_images(recipe, get_storage())
+    except Exception as e:
+        db.session.rollback()
+        flash(friendly_ai_error(e, 'Could not make the images.'), 'error')
+        return redirect(url_for('recipe_detail', recipe_id=recipe_id))
+    db.session.commit()
+    parts = f" and {report['parts']} part{'s' if report['parts'] != 1 else ''}" if report['parts'] else ''
+    checked = ' The check found something to look at, see below.' if report['notes'] else ''
+    flash(f"Made the dish image{parts} (about {report['cost_usd']:.2f} USD).{checked}", 'success')
+    return redirect(url_for('recipe_detail', recipe_id=recipe_id))
+
+
 @recipe_v2_bp.route('/new-recipe/v2/<int:recipe_id>')
 @login_required
 @admin_required

@@ -3,7 +3,7 @@ TASK: Describe how the dish below looks when it is served, for an image model th
 
 Return JSON with:
 - plating: one or two sentences on how one serving is presented: the vessel (plate, shallow bowl, board, baking dish), what sits where, any garnish. If the recipe is served from a shared dish (a lasagne, a tray bake), describe one portion served from it.
-- components: one entry per part of the dish, using each part's name exactly as written under Ingredients (one entry with the title when the recipe has no parts). For each: how that part looks in the served dish: cut and size, colour and surface after cooking, sauce or texture, and roughly how much of it is in one serving. A part that is cooked into another and not seen on its own (a marinade, a stock) says so in a few words.
+- components: one entry per part of the dish. The parts are the headings under Ingredients; use each heading exactly as written. Ingredient lines are not parts. When the ingredients have no headings, the dish has one part: give exactly one entry, named as the title. For each: how that part looks in the served dish: cut and size, colour and surface after cooking, sauce or texture, and roughly how much of it is in one serving. visible is false for a part that is cooked into another and not seen on its own in the served dish (a marinade, a stock); its appearance then says so in a few words.
 
 Use plain, concrete words for shapes, sizes, colours and textures. No praise ("delicious", "perfect"), no smells, no people, no text.
 

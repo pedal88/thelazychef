@@ -1,0 +1,5 @@
+{# A vision check of a dish or component image against what it should show (RECIPE_VISUALIZATIONS.md 9.7, steps 5 and 7). services/recipe_v2/images.py #}
+Look at the {% if reference %}last image. The first image is the whole dish it was made from{% else %}image{% endif %}. It should show {{ subject }}:
+{{ expected }}
+
+Return JSON: ok is true when everything listed is clearly there and nothing is wrong enough that a cook would be misled (wrong food, a part missing, the wrong cut, text or people in the image). missing lists what is absent or wrong, in a few words each. Small differences in arrangement, garnish or plate do not matter.

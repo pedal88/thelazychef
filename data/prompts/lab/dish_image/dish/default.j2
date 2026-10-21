@@ -1,2 +1,2 @@
 {# The dish from its appearance description: the plating, then each part as it looks on the plate. #}
-The dish is {{ title }}. {{ plating }}{% for c in components %} {{ c.name }}: {{ c.appearance }}{% endfor %}
+The dish is {{ title }}. {{ plating }}{% for c in components if c.visible is not defined or c.visible %} {{ c.name }}: {{ c.appearance }}{% endfor %}

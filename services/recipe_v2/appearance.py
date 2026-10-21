@@ -21,14 +21,14 @@ SCHEMA = {
     'properties': {
         'plating': {'type': 'string'},
         'components': {'type': 'array', 'items': {
-            'type': 'object', 'additionalProperties': False, 'required': ['name', 'appearance'],
-            'properties': {'name': {'type': 'string'}, 'appearance': {'type': 'string'}}}},
+            'type': 'object', 'additionalProperties': False, 'required': ['name', 'visible', 'appearance'],
+            'properties': {'name': {'type': 'string'}, 'visible': {'type': 'boolean'}, 'appearance': {'type': 'string'}}}},
     },
 }
 
 
 def describe(v2, yield_text=None, chef_note=None, call=None):
-    """Returns ({'plating', 'components': [{'local_id', 'name', 'appearance'}]}, usage) for a recipe in v2 JSON.
+    """Returns ({'plating', 'components': [{'local_id', 'name', 'visible', 'appearance'}]}, usage) for a recipe in v2 JSON.
 
     Parts are matched to the recipe's components by name; a part with another name gets the first component
     left over."""
@@ -44,5 +44,5 @@ def describe(v2, yield_text=None, chef_note=None, call=None):
     for part in data['components']:
         comp = by_name.get(part['name'].strip().lower()) or (left.pop(0) if left else None)
         out.append({'local_id': comp['local_id'] if comp else None, 'name': comp['name'] if comp else part['name'],
-                    'appearance': part['appearance'].strip()})
+                    'visible': part.get('visible', True), 'appearance': part['appearance'].strip()})
     return {'plating': data['plating'].strip(), 'components': out}, usage

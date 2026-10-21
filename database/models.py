@@ -292,6 +292,11 @@ class Recipe(db.Model):
     base_recipe_id: Mapped[Optional[int]] = mapped_column(ForeignKey("recipe.id", ondelete='SET NULL'), nullable=True, index=True)
     # The language the recipe's text is written in, ISO 639-1 ('en', 'nb'); None when not known (services/recipe_v2/language.py)
     language: Mapped[Optional[str]] = mapped_column(String(8), nullable=True)
+    # The dish image (image_filename): how one serving is presented, the prompt it was made from and the style
+    # (services/recipe_v2/images.py, RECIPE_VISUALIZATIONS.md 9.7)
+    plating: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    hero_image_prompt: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    image_style: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)
     is_flagged_for_review: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
     # Publishing State Machine: 'draft' | 'approved' | 'rejected'
     # Every AI-generated recipe starts as 'draft' — invisible to public routes.
@@ -442,6 +447,11 @@ class RecipeComponent(db.Model):
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     image_filename: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    # How this part looks in the served dish (services/recipe_v2/appearance.py): '' when it is not seen on its own,
+    # None until it has been described
+    appearance: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    # The dish image this part's image was made from; a new dish image makes it out of date
+    image_from: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     recipe: Mapped["Recipe"] = relationship(back_populates="components")
 

@@ -18,9 +18,9 @@ from scripts.dish_image_samples import to_toml  # noqa: E402
 from services.recipe_v2.appearance import describe  # noqa: E402
 
 LOOK = {'plating': 'A square portion on a white plate, with salad beside it.',
-        'components': [{'name': 'Lasagne', 'appearance': 'Layers of pasta, meat sauce and white sauce under a golden crust.'},
-                       {'name': 'grønn salat', 'appearance': 'Torn romaine, cucumber half-moons and halved cherry tomatoes.'},
-                       {'name': 'Something else', 'appearance': 'Not visible.'}]}
+        'components': [{'name': 'Lasagne', 'visible': True, 'appearance': 'Layers of pasta, meat sauce and white sauce under a golden crust.'},
+                       {'name': 'grønn salat', 'visible': True, 'appearance': 'Torn romaine, cucumber half-moons and halved cherry tomatoes.'},
+                       {'name': 'Something else', 'visible': False, 'appearance': 'Not seen on its own.'}]}
 
 
 def fasit(name):
@@ -42,11 +42,13 @@ class AppearanceTests(unittest.TestCase):
         self.assertIn('Write in English, whatever the language of the recipe', prompt)
         self.assertIn('RECIPE\nLasagne\n\nServings: 4', prompt)
         self.assertEqual(schema['required'], ['plating', 'components'])
+        self.assertIn('visible', schema['properties']['components']['items']['required'])
         comps = {c['name']: c['local_id'] for c in v2['components']}
         # By name, ignoring case; a part with another name gets the first component left over
         self.assertEqual(look['components'][0]['local_id'], comps['Lasagne'])
-        self.assertEqual(look['components'][1], {'local_id': comps['Grønn salat'], 'name': 'Grønn salat',
+        self.assertEqual(look['components'][1], {'local_id': comps['Grønn salat'], 'name': 'Grønn salat', 'visible': True,
                                                  'appearance': LOOK['components'][1]['appearance']})
+        self.assertFalse(look['components'][2]['visible'])
         self.assertEqual(look['components'][2]['local_id'], comps['Kjøttsaus'])
         self.assertEqual(usage['cost_usd'], 0.01)
 

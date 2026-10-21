@@ -17,6 +17,10 @@ class StorageProvider(ABC):
         """Saves bytes to storage and returns a public/accessible URL."""
         pass
 
+    def read(self, filename: str, folder: str) -> bytes:
+        """The file's bytes. Raises FileNotFoundError when it is not there."""
+        raise NotImplementedError
+
     @abstractmethod
     def delete(self, filename: str, folder: str) -> bool:
         """Deletes a file from storage."""
@@ -66,6 +70,10 @@ class LocalStorageProvider(StorageProvider):
             f.write(file_bytes)
             
         return f"{self.static_url_prefix}/{folder}/{filename}"
+
+    def read(self, filename: str, folder: str) -> bytes:
+        with open(self._get_full_path(folder, filename), 'rb') as f:
+            return f.read()
 
     def delete(self, filename: str, folder: str) -> bool:
         full_path = self._get_full_path(folder, filename)
@@ -125,6 +133,12 @@ class GoogleCloudStorageProvider(StorageProvider):
         blob.patch()
 
         return blob.public_url
+
+    def read(self, filename: str, folder: str) -> bytes:
+        blob = self.bucket.blob(f"{folder}/{filename}")
+        if not blob.exists():
+            raise FileNotFoundError(f"{folder}/{filename}")
+        return blob.download_as_bytes()
 
     def delete(self, filename: str, folder: str) -> bool:
         blob_path = f"{folder}/{filename}"

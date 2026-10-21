@@ -8,5 +8,10 @@ layers = ["brief", "style", "dish"]
 join = " "
 aspect = "4:3"                  # the recipe cards and the top of the recipe page
 
-# The variants the app uses: chosen after the first lab round (step 9a).
+# The variants the app uses (services/recipe_v2/images.py). The style is provisional
+# (21.10.2026) until it is chosen with the recipe page in front of us; changing it
+# means making the images again.
 [final]
+brief = "default"
+style = "cutout"
+dish = "default"
