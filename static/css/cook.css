@@ -75,13 +75,87 @@
 .btn.primary.cook { background: var(--color-cook); border-color: var(--color-cook); }
 .btn.primary.serve { background: var(--color-serve); border-color: var(--color-serve); }
 
-/* The delta beside the card, on a large screen in landscape */
+/* The whole dish: timeline, metro map and river delta. Beside the card on a large screen in landscape;
+   on a phone a sheet over the page, opened from "Whole dish" in the status bar. */
 .cook-side { display: none; }
+.cook-side.open { display: block; position: fixed; inset: 0; z-index: 150; /* above the site header (100) */ overflow: auto; overscroll-behavior: contain; background: var(--color-paper);
+  padding-block: calc(12px + env(safe-area-inset-top, 0px)) calc(24px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+html.whole-open { overflow: hidden; }
+.whole-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); margin-bottom: var(--space-3); }
+.wtabs { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 3px; border: 1px solid var(--color-line); border-radius: var(--radius-pill); background: var(--color-paper); }
+.wtabs button { border: 0; background: none; border-radius: var(--radius-pill); padding: 6px var(--space-3); min-height: 36px; font-size: 14px; font-weight: 600; color: var(--color-muted); }
+.wtabs button[aria-selected="true"] { background: var(--color-ink); color: var(--color-paper); }
+.whole-close { width: var(--tap); height: var(--tap); display: grid; place-items: center; border: 1px solid var(--color-line); border-radius: 50%; background: var(--color-paper); }
+.whole-open { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; border: 1px solid var(--color-line); border-radius: var(--radius-pill); background: var(--color-paper); padding: 4px 12px; min-height: 32px; font-size: 14px; font-weight: 600; }
+.wpanel .hint { margin: 0 0 var(--space-2); }
+
+/* Timeline (whole.timeline): one row per step; solid is your work, hatched stands on its own, dotted waits to be used */
+.tl-row.ph-prep, .m-st.ph-prep { --ph: var(--color-prep); }
+.tl-row.ph-cook, .m-st.ph-cook { --ph: var(--color-cook); }
+.tl-row.ph-serve, .m-st.ph-serve { --ph: var(--color-serve); }
+.tl-scroll { overflow-x: auto; }
+.tl { --lw: 150px; position: relative; padding-top: 12px; min-width: 360px; }
+.tl-row { display: grid; grid-template-columns: var(--lw) 1fr; align-items: center; min-height: 26px; border-bottom: 1px solid var(--color-soft); }
+.tl-row.cur { background: var(--color-soft); box-shadow: inset 3px 0 0 var(--ph); }
+.tl-row.cur .tl-l span { font-weight: 700; }
+.tl-l { display: grid; font-size: 13px; line-height: 1.25; padding: 0 10px 0 6px; min-width: 0; }
+.tl-l span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tl-no { font: 500 11px var(--font-mono); color: var(--color-muted); }
+.tl-t { position: relative; height: 14px; }
+.tb { position: absolute; top: 0; height: 14px; border-radius: 3px; display: block; }
+.tb.a { background: var(--ph); }
+.tb.p { background: repeating-linear-gradient(135deg, var(--ph) 0 2px, transparent 2px 6px); border: 1px solid var(--ph); }
+.tb.h { border: 1.5px dotted var(--ph); border-left: 0; border-radius: 0 3px 3px 0; opacity: .7; }
+.tb.h.over { border-color: var(--color-danger); opacity: 1; }
+.tl-me { --ph: var(--color-ink); }
+.tl-me .tl-l span { font-weight: 700; }
+.tb.me { background: var(--color-ink); }
+.tb.free { background: var(--color-soft); border: 1px dashed var(--color-line-strong); display: grid; place-items: center; overflow: hidden; }
+.tb.free b { font: 500 10px var(--font-mono); color: var(--color-muted); white-space: nowrap; }
+.tl-axis { display: grid; grid-template-columns: var(--lw) 1fr; height: 22px; }
+.tl-axis div { position: relative; font: 11px var(--font-mono); color: var(--color-muted); }
+.tl-axis span { position: absolute; top: 4px; transform: translateX(-50%); }
+.nowline { position: absolute; top: 0; bottom: 22px; width: 2px; background: var(--color-danger); left: calc(var(--lw) + (100% - var(--lw)) * var(--x)); pointer-events: none; transition: left .3s; }
+.phline { position: absolute; top: 0; bottom: 22px; border-left: 1px dashed var(--color-line-strong); left: calc(var(--lw) + (100% - var(--lw)) * var(--x)); pointer-events: none; }
+.phline span { position: absolute; top: 0; left: 4px; font: 500 9.5px var(--font-mono); color: var(--color-muted); text-transform: uppercase; letter-spacing: .08em; background: var(--color-paper); padding: 0 2px; }
+.phline.r span { left: auto; right: 4px; }
+.tl-status { font-size: 15px; margin: var(--space-3) 0 0; min-height: 3em; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--color-muted); margin: var(--space-2) 0 0; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.lg { width: 18px; height: 10px; border-radius: 2px; --ph: var(--color-cook); }
+.lg.a { background: var(--ph); }
+.lg.p { background: repeating-linear-gradient(135deg, var(--ph) 0 2px, transparent 2px 6px); border: 1px solid var(--ph); }
+.lg.h { border: 1.5px dotted var(--ph); }
+@media (prefers-reduced-motion: reduce) { .nowline { transition: none; } }
+
+/* Metro map (whole.metro): each part of the dish is a line; open rings are prep, filled are cooking */
+.mv-key { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--color-muted); margin-bottom: var(--space-2); }
+.mv-key span { display: inline-flex; align-items: center; gap: 6px; }
+.mv-key i { width: 18px; height: 5px; border-radius: 3px; }
+.mv-svg { width: 100%; height: auto; display: block; font-family: var(--font-sans); }
+.mv-row rect { fill: transparent; }
+.mv-row.cur rect { fill: var(--color-soft); stroke: var(--color-line-strong); }
+.mv-row.cur .mv-lbl { font-weight: 700; }
+.mv-min { font: 11px var(--font-mono); fill: var(--color-muted); }
+.mv-lbl { font-size: 13px; fill: var(--color-ink); }
+.mv-no { font: 500 11px var(--font-mono); fill: var(--color-muted); }
+.m-line { fill: none; stroke-width: 5; stroke-linecap: round; }
+.lane-0 { --lane: rgb(var(--serve-600)); } .lane-1 { --lane: rgb(var(--accent-600)); } .lane-2 { --lane: rgb(var(--prep-600)); } .lane-3 { --lane: rgb(var(--warning-600)); }
+.m-line.lane-0, .m-line.lane-1, .m-line.lane-2, .m-line.lane-3 { stroke: var(--lane); }
+.mv-key i.lane-0, .mv-key i.lane-1, .mv-key i.lane-2, .mv-key i.lane-3 { background: var(--lane); }
+.m-st { fill: var(--color-paper); stroke: var(--ph); stroke-width: 3; }
+.m-st.ph-cook { fill: var(--ph); }
+.m-st.ph-serve { fill: var(--color-ink); stroke: var(--color-ink); }
+.m-st.cur { stroke: var(--color-danger); stroke-width: 4; }
+
+/* The large screen in landscape: the whole dish beside the card */
 @media (min-width: 1024px) and (orientation: landscape) {
   .rv2.cook { max-width: 1320px; }
   .cook-cols { display: grid; grid-template-columns: minmax(0, 620px) minmax(0, 1fr); gap: var(--space-8); align-items: start; }
-  .cook-side { display: block; position: sticky; top: 80px; max-height: calc(100vh - 180px); overflow: auto; overscroll-behavior: contain; }
-  .cook-side .hint { margin: 0 0 var(--space-2); }
+  .cook-side, .cook-side.open { display: block; position: sticky; top: 80px; inset: auto; z-index: auto; padding: 0; max-height: calc(100vh - 180px); overflow: auto; overscroll-behavior: contain; background: none; }
+  .whole-open, .whole-close { display: none; }
+  html.whole-open { overflow: auto; }
   .bar-in { max-width: 1288px; }
 }
 .cook-side .g2-node.cur { background: color-mix(in srgb, var(--color-serve) 8%, transparent); border-radius: 16px; box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-serve) 8%, transparent); }

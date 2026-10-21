@@ -5,6 +5,7 @@
    On a large screen the river delta stands beside the card with the step you are on marked. #}
 {% from "components/delta.html" import delta, MARKS with context %}
 {% from "components/recipe_head.html" import recipe_head with context %}
+{% from "components/whole_dish.html" import timeline, metro %}
 
 {% block title %}Cook: {{ v.title }} - The Lazy Chef{% endblock %}
 
@@ -34,7 +35,7 @@
     <div class="cook-main">
       <div class="status" id="status">
         <div class="prog" aria-hidden="true"></div>
-        <div class="now"><span class="lbl" data-where></span><span class="runs" data-runs></span></div>
+        <div class="now"><span class="lbl" data-where></span><span class="runs" data-runs></span>{% if v.timeline %}<button type="button" class="whole-open" data-whole-open aria-controls="whole">{{ icon('galaxy') }} Whole dish</button>{% endif %}</div>
         <div class="runbox" data-runbox hidden><b data-run-label></b><span data-run-done></span><button type="button" class="btn" data-run-remove>Done, remove</button></div>
       </div>
 
@@ -77,10 +78,22 @@
       <p class="swipehint">Swipe or use the arrow keys for the next and previous step.</p>
     </div>
 
-    {% if v.delta %}
-    <aside class="cook-side" aria-label="The whole recipe">
-      <p class="hint">The whole dish. The step you are on is marked.</p>
-      {{ delta(v.delta, recipe.id, print_links=False) }}
+    {% if v.timeline %}
+    <aside class="cook-side" id="whole" aria-label="The whole dish">
+      <div class="whole-head">
+        <div class="wtabs" role="tablist" aria-label="View">
+          <button type="button" role="tab" id="whole-timeline" data-whole="timeline" aria-selected="true" aria-controls="panel-timeline">Timeline</button>
+          {%- if v.metro %}<button type="button" role="tab" id="whole-metro" data-whole="metro" aria-selected="false" aria-controls="panel-metro">Metro map</button>{% endif -%}
+          {%- if v.delta %}<button type="button" role="tab" id="whole-delta" data-whole="delta" aria-selected="false" aria-controls="panel-delta">River delta</button>{% endif -%}
+        </div>
+        <button type="button" class="whole-close" data-whole-close aria-label="Close the whole dish">{{ icon('close') }}</button>
+      </div>
+      <section class="wpanel" id="panel-timeline" role="tabpanel" aria-labelledby="whole-timeline" data-panel="timeline">{{ timeline(v.timeline) }}</section>
+      {% if v.metro %}<section class="wpanel" id="panel-metro" role="tabpanel" aria-labelledby="whole-metro" data-panel="metro" hidden>{{ metro(v.metro) }}</section>{% endif %}
+      {% if v.delta %}<section class="wpanel" id="panel-delta" role="tabpanel" aria-labelledby="whole-delta" data-panel="delta" hidden>
+        <p class="hint">Tap a number to tick a step off in the drawing.</p>
+        {{ delta(v.delta, recipe.id, print_links=False) }}
+      </section>{% endif %}
     </aside>
     {% endif %}
   </div>
