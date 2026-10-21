@@ -1,0 +1,44 @@
+{# The whole dish beside cooking mode: the timeline and the metro map (services/recipe_v2/whole.py), drawn from
+   the plan. static/js/cook.js marks the step you are on and moves the red line to its minute. #}
+
+{% macro timeline(t) %}
+<div class="tl-scroll">
+  <div class="tl" data-total="{{ t.total }}">
+    <div class="tl-row tl-me"><div class="tl-l"><span>You</span></div><div class="tl-t">
+      {%- for b in t.busy %}<i class="tb me" style="left:{{ b.left }}%;width:{{ b.width }}%"></i>{% endfor -%}
+      {%- for f in t.free %}<i class="tb free" style="left:{{ f.left }}%;width:{{ f.width }}%">{% if f.label %}<b>free {{ f.minutes }} min</b>{% endif %}</i>{% endfor -%}
+    </div></div>
+    {% for r in t.rows %}
+    <div class="tl-row ph-{{ r.phase }}" data-step="{{ r.id }}" data-start="{{ r.start }}" data-aend="{{ r.a_end }}" data-end="{{ r.end }}" data-short="{{ r.short }}">
+      <div class="tl-l"><span><b class="tl-no">{{ r.no }}</b> {{ r.short }}</span></div>
+      <div class="tl-t">
+        {%- if r.active %}<i class="tb a" style="left:{{ r.active.left }}%;width:{{ r.active.width }}%"></i>{% endif -%}
+        {%- if r.standing %}<i class="tb p" style="left:{{ r.standing.left }}%;width:{{ r.standing.width }}%"></i>{% endif -%}
+        {%- if r.waits %}<i class="tb h{{ ' over' if r.waits.over }}" style="left:{{ r.waits.left }}%;width:{{ r.waits.width }}%"></i>{% endif -%}
+      </div>
+    </div>
+    {% endfor %}
+    <div class="tl-axis"><div></div><div>{% for k in t.ticks %}<span style="left:{{ k.left }}%">{{ k.label }}</span>{% endfor %}</div></div>
+    {% for ph in t.phases %}<div class="phline{{ ' r' if ph.right }}" style="--x:{{ ph.x }}"><span>{{ ph.label }}</span></div>{% endfor %}
+    <div class="nowline" style="--x:0"></div>
+  </div>
+</div>
+<p class="tl-status" data-tl-status aria-live="polite"></p>
+<p class="legend"><span><i class="lg a"></i>your work</span><span><i class="lg p"></i>stands on its own</span><span><i class="lg h"></i>waits to be used</span></p>
+{% endmacro %}
+
+{% macro metro(m) %}
+<div class="mv-key">{% for l in m.lanes %}<span><i class="lane-{{ l.n }}"></i>{{ l.name }}</span>{% endfor %}</div>
+<svg class="mv-svg" viewBox="0 0 {{ m.width }} {{ m.height }}" role="img" aria-label="Metro map: each part of the dish is a line, the stations in the order you start them">
+  {% for s in m.stations %}
+  <g class="mv-row" data-step="{{ s.id }}">
+    <rect x="0" y="{{ s.y - m.row_h / 2 }}" width="{{ m.width }}" height="{{ m.row_h }}" rx="8"></rect>
+    <text class="mv-min" x="{{ m.min_x }}" y="{{ s.y + 4 }}" text-anchor="end">{{ s.start }}</text>
+    <text class="mv-lbl" x="{{ m.text_x }}" y="{{ s.y + 4 }}"><tspan class="mv-no">{{ s.no }}</tspan>  {{ s.short }}</text>
+  </g>
+  {% endfor %}
+  {% for p in m.paths %}<path class="m-line lane-{{ m.lanes[p.lane].n }}" d="{{ p.d }}"></path>{% endfor %}
+  {% for s in m.stations %}<circle class="m-st ph-{{ s.phase }}" data-station="{{ s.id }}" cx="{{ s.x }}" cy="{{ s.y }}" r="{{ 9 if s.final else 6.5 }}"></circle>{% endfor %}
+</svg>
+<p class="hint">The number on the left is the minute the step starts, and the number before the name is the step in the list. Open rings are prep, filled are cooking.</p>
+{% endmacro %}

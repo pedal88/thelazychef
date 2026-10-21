@@ -82,9 +82,56 @@
   /* The step you are on, marked in the delta beside the card */
   function marks() {
     $$('.cook-side .cur').forEach(e => e.classList.remove('cur'));
-    const seg = st.at && $(`.cook-side .fx-seg[data-step="${st.at}"]`);
-    if (seg) { seg.classList.add('cur'); seg.closest('.g2-node').classList.add('cur'); }
+    if (st.at) {
+      $$(`.cook-side [data-step="${st.at}"], .cook-side [data-station="${st.at}"]`).forEach(e => e.classList.add('cur'));
+      const seg = $(`.cook-side .fx-seg[data-step="${st.at}"]`);
+      if (seg) seg.closest('.g2-node').classList.add('cur');
+    }
+    timelineAt();
+    revealDelta();
   }
+
+  /* The delta can be wider than the panel: bring the step you are on into view once it has been laid out */
+  function revealDelta() {
+    const node = $('.cook-side .g2-node.cur'), panel = node && node.closest('[data-panel]');
+    if (node && panel && !panel.hidden) setTimeout(() => node.scrollIntoView({ block: 'nearest', inline: 'center' }), 250);
+  }
+
+  /* The red line in the timeline at the minute the plan starts the step you are on, and what happens then */
+  function timelineAt() {
+    const tl = $('.tl'), status = $('[data-tl-status]');
+    if (!tl) return;
+    const total = +tl.dataset.total, rows = $$('.tl-row[data-step]'), here = rows.find(r => r.dataset.step === st.at);
+    const m = st.finished ? total : here ? +here.dataset.start : 0;
+    $('.nowline').style.setProperty('--x', (m / total).toFixed(4));
+    const doing = rows.filter(r => +r.dataset.start <= m && m < +r.dataset.aend).map(r => r.dataset.short);
+    const standing = rows.filter(r => +r.dataset.aend <= m && m < +r.dataset.end).map(r => r.dataset.short.toLowerCase());
+    const next = rows.find(r => +r.dataset.start > m);
+    status.innerHTML = `<b>Minute ${m} of ${total} in the plan.</b> `
+      + (doing.length ? `You are doing: ${esc(doing.join(', '))}. ` : 'Nothing to do right now. ')
+      + (standing.length ? `Standing: ${esc(standing.join(', '))}. ` : '')
+      + (next ? `Next: ${esc(next.dataset.short.toLowerCase())} in ${+next.dataset.start - m} min.` : 'The food is ready.');
+  }
+
+  /* The whole dish: timeline, metro map or river delta. Beside the card on a large screen, a sheet on a phone */
+  const WHOLE = 'whole-dish-view', side = $('#whole');
+  function showView(v) {
+    const tabs = $$('[data-whole]');
+    if (!tabs.length) return;
+    if (!tabs.some(b => b.dataset.whole === v)) v = tabs[0].dataset.whole;
+    tabs.forEach(b => b.setAttribute('aria-selected', String(b.dataset.whole === v)));
+    $$('[data-panel]').forEach(p => { p.hidden = p.dataset.panel !== v; });
+    try { localStorage.setItem(WHOLE, v); } catch (e) { /* remembered for this visit only */ }
+    if (v === 'delta') { dispatchEvent(new Event('resize')); revealDelta(); } // the delta lays itself out once it can be seen
+  }
+  function openWhole(on) {
+    if (!side) return;
+    side.classList.toggle('open', on);
+    document.documentElement.classList.toggle('whole-open', on);
+    if (on) { dispatchEvent(new Event('resize')); side.querySelector('[data-whole-close]').focus(); }
+    else { const b = $('[data-whole-open]'); if (b) b.focus(); }
+  }
+  try { showView(localStorage.getItem(WHOLE)); } catch (e) { showView(null); }
 
   let actx = null;
   function beep(prime) {
@@ -157,6 +204,9 @@
     else if (t.matches('[data-run-remove]')) { st.runs = st.runs.filter(r => r.step !== st.open); st.open = null; render(); }
     else if (t.matches('[data-skip]')) { st.skip = t.checked; render(); }
     else if (t.matches('[data-restart]')) { st = { at: null, skip: st.skip, runs: [], list: false, finished: false }; render(); }
+    else if (t.matches('[data-whole]')) showView(t.dataset.whole);
+    else if (t.matches('[data-whole-open]')) openWhole(true);
+    else if (t.matches('[data-whole-close]')) openWhole(false);
   });
   let sx = 0, sy = 0;
   page.addEventListener('touchstart', e => { if (!e.target.closest('.card')) return; sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
@@ -166,6 +216,7 @@
     if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) { if (dx < 0) advance(); else go(-1); }
   });
   document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && side && side.classList.contains('open')) { openWhole(false); return; }
     if (st.list || e.target.closest('input, select, textarea')) return;
     if (e.key === 'ArrowRight') advance();
     if (e.key === 'ArrowLeft') go(-1);

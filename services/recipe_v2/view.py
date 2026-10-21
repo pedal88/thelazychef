@@ -13,7 +13,7 @@ from functools import lru_cache
 from markupsafe import Markup, escape
 
 from database.models import Ingredient, db
-from services.recipe_v2 import delta, mise, nutrition
+from services.recipe_v2 import delta, mise, nutrition, whole
 from services.recipe_v2.derive import HEAT_LABELS
 from services.recipe_v2.planner import MODES, plan_v2
 from services.recipe_v2.read import shopping_list
@@ -209,6 +209,9 @@ def build(recipe, servings=None, plan='calm'):
         'persona_notes': [e['message'] for e in recipe.validation_errors or [] if e.get('rule') == 'persona'],
         'about': about(recipe),
         'delta': delta.build(v2, sch['order'], pictured),
+        # The whole dish beside cooking mode (services/recipe_v2/whole.py)
+        'timeline': whole.timeline(v2, sch, comps) if v2['steps'] else None,
+        'metro': whole.metro(v2, sch, comps) if v2['steps'] else None,
         'ready': ready,
         'nutrition': nutrition.per_serving(recipe),
         # Why there is no nutrition, for the admin: lines without grams, and lines without pantry nutrition
