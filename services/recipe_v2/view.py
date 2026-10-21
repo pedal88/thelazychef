@@ -13,7 +13,7 @@ from functools import lru_cache
 from markupsafe import Markup, escape
 
 from database.models import Ingredient, db
-from services.recipe_v2 import delta, nutrition
+from services.recipe_v2 import delta, mise, nutrition
 from services.recipe_v2.derive import HEAT_LABELS
 from services.recipe_v2.planner import MODES, plan_v2
 from services.recipe_v2.read import shopping_list
@@ -175,6 +175,19 @@ def build(recipe, servings=None, plan='calm'):
                       'amount': fmt_amount(i['amount'] * factor, i.get('unit')) if i.get('amount') is not None else '',
                       'prep': i.get('prep_style') or '', 'cut': i.get('cut')} for lid, i in lines.items()}
 
+    # Get ready: the lines in bowls, to take out and on the counter, drawn like in the delta
+    for i in v2['ingredients']:
+        if ingredients.get(i['local_id']) is not None:
+            i['pantry_name'] = ingredients[i['local_id']].name
+    ready = mise.build(v2, sch, recipe.language) if v2['steps'] else None
+    if ready:
+        def tile(i):
+            return {**pictured[i['local_id']], 'mark': delta.MARKS.get(i.get('cut'))}
+        for b in ready['bowls'] + [b for g in ready['later'] for b in g['bowls']]:
+            b['lines'] = [tile(i) for i in b['lines']]
+        for f in ready['fetch'] + ready['bench'] + [f for g in ready['later'] for f in g['fetch']]:
+            f['line'] = tile(f['line'])
+
     first_use = {}
     for sid in sch['order']:
         for q in steps_by[sid].get('equipment') or []:
@@ -190,6 +203,7 @@ def build(recipe, servings=None, plan='calm'):
         'persona_notes': [e['message'] for e in recipe.validation_errors or [] if e.get('rule') == 'persona'],
         'about': about(recipe),
         'delta': delta.build(v2, sch['order'], pictured),
+        'ready': ready,
         'nutrition': nutrition.per_serving(recipe),
         # Why there is no nutrition, for the admin: lines without grams, and lines without pantry nutrition
         'nutrition_gap': None if recipe.total_calories is not None else nutrition.compute(recipe.lines),
