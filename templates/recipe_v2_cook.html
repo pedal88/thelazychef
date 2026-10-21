@@ -4,6 +4,7 @@
    static/js/cook.js shows one at a time and keeps the place, the timers and the choices on the device.
    On a large screen the river delta stands beside the card with the step you are on marked. #}
 {% from "components/delta.html" import delta, MARKS with context %}
+{% from "components/recipe_head.html" import recipe_head with context %}
 
 {% block title %}Cook: {{ v.title }} - The Lazy Chef{% endblock %}
 
@@ -28,10 +29,7 @@
 {% block content %}
 {% set args = {'recipe_id': recipe.id, 'servings': v.servings, 'plan': v.plan} %}
 <article class="rv2 cook" data-recipe="{{ recipe.id }}">
-  <a class="back" href="{{ url_for('recipe_detail', **args) }}">← {{ v.title }}</a>
-  <nav class="flow" aria-label="Steps in making the dish">
-    <a href="{{ url_for('recipe_detail', **args) }}">Overview</a><a href="{{ url_for('recipe_get_ready', **args) }}">Get ready</a><a aria-current="step">Cook</a>
-  </nav>
+  {{ recipe_head(recipe, v, 'cook') }}
 
   <div class="cook-cols">
     <div class="cook-main">

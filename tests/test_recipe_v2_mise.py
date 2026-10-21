@@ -81,7 +81,6 @@ class GetReadyPageTests(unittest.TestCase):
         _, html = self.page('carbonara', servings=6)
         self.assertIn(f'/recipe/{self.ids["carbonara"]}/get-ready?servings=6&amp;plan=calm', html)
         self.assertIn('3 bowls to fill', html)
-        self.assertIn('id="method"', html)
 
     def test_the_page_shows_bowls_tiles_and_equipment(self):
         status, html = self.get('carbonara', servings=6)

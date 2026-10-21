@@ -80,13 +80,14 @@ class DeltaPageTests(unittest.TestCase):
     setUp, tearDown, page = (view_tests.RecipeV2ViewTests.setUp, view_tests.RecipeV2ViewTests.tearDown,
                              view_tests.RecipeV2ViewTests.page)
 
-    def test_the_recipe_page_shows_the_delta(self):
-        status, html = self.page('carbonara')
+    def test_cooking_mode_shows_the_delta_and_the_overview_prints_it(self):
+        _, overview = self.page('carbonara')
+        self.assertIn(f'/recipe/{self.ids["carbonara"]}/print?orient=landscape', overview)
+        status, html = self.page('carbonara', '/cook')
         self.assertEqual(status, 200)
         self.assertIn('class="delta"', html)
         self.assertIn('data-tick="s8"', html)
         self.assertIn('js/delta.js', html)
-        self.assertIn(f'/recipe/{self.ids["carbonara"]}/print?orient=landscape', html)
         # the edges the browser draws
         self.assertIn('data-edges="[[', html)
 

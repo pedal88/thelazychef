@@ -82,9 +82,11 @@
 .rv2 .versions { margin-top: var(--space-6); padding-top: var(--space-4); border-top: 1px solid var(--color-line); }
 .rv2 .versions ul { list-style: none; padding: 0; margin: 0 0 var(--space-4); display: grid; gap: var(--space-1); }
 .rv2 .versions .hint { display: inline; margin-left: var(--space-1); }
-.rv2 .nutrition { margin: 0 0 var(--space-4); }
-.rv2 .nutrition summary { cursor: pointer; font-weight: 600; }
-.rv2 .nutrition table { border-collapse: collapse; margin: var(--space-2) 0; min-width: 260px; font-variant-numeric: tabular-nums; }
+/* Nutrition is a box like "Servings and plan", so the column has one width */
+.rv2 .nutrition { margin: 0 0 var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius); }
+.rv2 .nutrition summary { cursor: pointer; font-weight: 600; font-size: 15px; min-height: var(--tap); display: flex; align-items: center; gap: var(--space-2); padding: 0 var(--space-4); }
+.rv2 .nutrition > :not(summary) { margin-inline: var(--space-4); }
+.rv2 .nutrition table { border-collapse: collapse; margin: var(--space-2) var(--space-4); width: calc(100% - 2 * var(--space-4)); font-variant-numeric: tabular-nums; }
 .rv2 .nutrition th { text-align: left; font-weight: 500; padding: 4px var(--space-4) 4px 0; border-bottom: 1px solid var(--color-line); }
 .rv2 .nutrition td { text-align: right; padding: 4px 0; border-bottom: 1px solid var(--color-line); }
 .rv2 .nutrition tr.sub th { font-weight: 400; padding-left: var(--space-3); color: var(--color-muted); }
@@ -94,11 +96,18 @@
 .rv2 .next { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-4); margin: 0 0 var(--space-4); }
 .rv2 .next .go { display: inline-flex; align-items: center; text-decoration: none; }
 
-/* Overview, Get ready, Cook: the three steps of making the dish */
-.rv2 .flow { display: flex; gap: 4px; margin: 0 0 var(--space-2); font-size: 14px; }
-.rv2 .flow a { padding: 6px var(--space-3); border-radius: var(--radius-pill); color: var(--color-muted); text-decoration: none; border: 1px solid var(--color-line); }
-.rv2 .flow a[aria-current="step"] { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-paper); }
-.rv2 .flow a[href]:hover { color: var(--color-ink); }
+/* Overview, Get ready, Cook: the same centred top on all three pages (components/recipe_head.html).
+   Between them the browser keeps the top in place and fades the page under it. */
+@view-transition { navigation: auto; }
+@media (prefers-reduced-motion: reduce) { @view-transition { navigation: none; } }
+.rv2 .rhead { text-align: center; margin: 0 0 var(--space-6); view-transition-name: recipe-head; }
+.rv2 .rhead .back { justify-content: center; }
+.rv2 .rhead h1 { margin: 0 0 var(--space-4); }
+.rv2 .flowbar { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--color-line); border-radius: var(--radius-pill); background: var(--color-paper); }
+.rv2 .flowbar a { display: inline-flex; align-items: center; min-height: 40px; padding: 0 var(--space-4); border-radius: var(--radius-pill); color: var(--color-muted); font-weight: 600; font-size: 15px; text-decoration: none; }
+.rv2 .flowbar a:hover { color: var(--color-ink); }
+.rv2 .flowbar a[aria-current="page"] { background: var(--color-ink); color: var(--color-paper); }
+.rv2 .flowbar a:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 
 /* The dish image and the parts (services/recipe_v2/images.py) */
 .rv2 .hero { margin: 0 0 var(--space-4); }
@@ -107,3 +116,4 @@
 .rv2 .part-images figure { margin: 0; text-align: center; }
 .rv2 .part-images img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-sm); background: var(--color-soft); }
 .rv2 .part-images figcaption { font-size: 14px; margin-top: var(--space-1); }
+.rv2 .printline { margin: var(--space-4) 0 0; }
