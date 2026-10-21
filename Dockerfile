@@ -6,7 +6,9 @@ ENV PYTHONUNBUFFERED=1
 
 # Install system dependencies
 # gcc and python3-dev might be needed for some python packages
-RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
+# APT_REFRESH (the week, from CI) makes the cached layer refresh weekly, so OS security fixes still arrive
+ARG APT_REFRESH=none
+RUN echo "OS packages as of ${APT_REFRESH}" && apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     gcc \
     python3-dev \
     ffmpeg \
