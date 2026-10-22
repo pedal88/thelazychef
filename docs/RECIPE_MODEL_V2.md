@@ -189,6 +189,16 @@ Gjennomført 19.10.2026 (kjøring `pantry-20261019-1349`, migrering `0d4f84fc82e
   - **«+N ekstra»** (varer utenfor grunnlageret og basisvarene) vises per oppskrift som et tall, ikke som en grense.
   - Bygget slik at det kan bli brukerens eget skap senere: grunnlageret er da et forslag brukeren krysser av i.
 
+**Grunnlager v0 (22.10.2026, migrering `c6e1a4d8b2f7`): 100 varer.** Dagens oppskrifter er ikke representative, så listen bygger på et utvalg: 272 retter som norske hjemmekokker lager, i 13 kjøkkener vektet etter hvor mye de lages her (Nordic 40, Italian 35, Mexican & Tex-Mex 30, American 25, Indian, Thai, Chinese og Middle Eastern 20, Japanese og French 15, Greek, Korean og Eastern European 10). `scripts/foundation_sample.py` lager utvalget og rangerer ingrediensene; valget ble gjort på avkrysningssiden «Grunnlager v0». Basisvarene alene dekker 21 % av ingredienslinjene, med topp 60 74 % og med topp 100 84 %; kurven flater ut rundt 60–80.
+
+- 66 valgt på avkrysningssiden: topp 60 etter bruk, nøkkelsmakene (fiskesaus, garam masala, ghee, gochujang, gochugaru, kimchi, mirin, kokosmelk, sesamfrø, tortilla, mais), kidneybønner og chili.
+- 34 til for å komme til 100, rangert etter bruk vektet med holdbarhet (dager 0,6, uker 1, måneder 1,4, år 2): det som holder, er billig å ha selv om det brukes av og til. Utelatt: andre former av det som allerede er med (hel spisskummen, fersk gjær, flytende oksekraft), en vare til av samme slag (svarte bønner, pita, potetmel) og det få retter trenger (nori, sushiris, rødvin). Fordeling i grunnlaget: 48 holder i år, 25 i måneder, 19 i uker og 8 i dager.
+- Standardvalg: kyllingfilet (lår finnes også), jasminris (vanlig hvit ris er utelatt), rømme framfor crème fraîche, revet hvitost i stedet for cheddar. Løk og rødløk er begge med.
+- Lagt til i pantryet fordi de manglet: kjøttdeig (`ground beef`), tacokrydder, revet hvitost, gochugaru og tortillachips. Utvalget fant 61 andre varer som mangler, blant dem tacoskjell, lomper, brunost, fiskekaker, tyttebærsyltetøy og rødkål. De legges inn som kjerne eller lang hale i en egen runde.
+
+**Holdbarhet (`ingredient.keeps`, migrering `b8d2e5f1a9c3`):** hvor lenge varen holder slik den vanligvis oppbevares hjemme: `days` (ferske urter, salat, kjøtt og fisk i kjøleskapet), `weeks` (de fleste grønnsaker, meieri, egg), `months` (rotgrønnsaker, løk, hard ost, sauser) eller `years` (tørrvarer, hermetikk, krydder, oljer). Satt fra underkategori, så hovedkategori, med unntak per navn (løk og hvitløk holder i måneder, soyasaus og hermetisk kokosmelk i år). Brukes nå til grunnlaget; senere til handlelisten, rester og ukemenyer.
+- Listen kan endres når som helst med en ny migrering; ny versjon når nygenereringen viser hvor mange «+N ekstra» oppskriftene får.
+
 ### Gjenstående pantry-feil
 
 Funnet under gjennomgangen av ingredienssymbolene 18.10.2026. De ryddes i v2-bygget, før nygenereringen, med fletting (linjene flyttes, navnet blir alias) og nye navn:

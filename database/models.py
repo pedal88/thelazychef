@@ -135,6 +135,9 @@ class Ingredient(db.Model):
     # dishes need and is curated in full; 'long_tail' is kept because a recipe needs it. Null = not reviewed yet.
     tier: Mapped[Optional[str]] = mapped_column(String(12), nullable=True, index=True)
     # The base ingredient a variant belongs to ("thai basil" -> "basil"): substitutions and grouping later.
+    # How long it keeps the way it is normally stored at home: 'days', 'weeks', 'months' or 'years'.
+    # Weighs in when choosing the foundation pantry (RECIPE_MODEL_V2.md, "Basisvarer og grunnlager").
+    keeps: Mapped[Optional[str]] = mapped_column(String(8), nullable=True)
     base_ingredient_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ingredient.id", ondelete='SET NULL'), nullable=True)
 
     # Payload (Flattened)
