@@ -13,7 +13,7 @@ measured when they are used:
 1. prep: a prep step works on it, or a line is cut or brought to a state (softened, melted, juiced);
 2. mix: three or more small amounts (tsp, tbsp, pinch, at most 30 g) go in together, like a spice mix;
 3. rush: two or more lines go into a step on medium heat or more with at most 2 active minutes.
-Staples alone (salt, pepper, oil, water) stand on the counter. Only bowls are numbered, in the
+Staples alone (the pantry tier "staple": salt, pepper, oil, water, sugar, flour) stand on the counter. Only bowls are numbered, in the
 order they are used. Prep that the plan puts in a waiting time comes later, "while the lasagne stands".
 """
 import re
@@ -32,6 +32,9 @@ STANDS = 10  # minutes on the clock that make a prep step a step of its own
 
 
 def staple(line):
+    """Salt, pepper, oil and the like. The pantry decides (tier 'staple'); a line not in the pantry goes by its name."""
+    if 'pantry_tier' in line:
+        return line['pantry_tier'] == 'staple'
     return (line.get('name') or '').strip().lower() in STAPLES or (line.get('pantry_name') or '').lower() in STAPLES
 
 

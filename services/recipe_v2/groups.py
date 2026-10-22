@@ -2,7 +2,8 @@
 
 The pantry's 15 main categories are too fine and sometimes wrong for a shop or a kitchen: fresh basil is a
 herb like dried oregano, and canned tomatoes stand on their own. They are folded into a few groups in the
-order you walk a shop. Staples (salt, pepper, oil, water) are their own group last: you probably have them.
+order you walk a shop. Staples (pantry tier 'staple': salt, pepper, oil, water, sugar, flour) are their own
+group last: you probably have them.
 Lines that are not in the pantry go under Other.
 """
 GROUPS = (
