@@ -105,11 +105,14 @@
 
   <section>
     <div class="sec-head"><h2>Shopping list</h2><span class="eyebrow">{{ v.shopping|length }} items</span></div>
-    <ul class="shop">
-      {% for item in v.shopping %}
+    {% for g in v.shop_groups %}
+    <h3 class="shop-group">{{ g.label }}</h3>
+    <ul class="shop{{ ' shop-staples' if g.key == 'staples' }}">
+      {% for item in g['items'] %}
       <li>{{ item.symbol }}<span class="nm">{{ item.name }}{% if item.note %}<small>{{ item.note }}</small>{% endif %}{% if item.missing and recipe.status != 'approved' %}<small class="missing">Not in the pantry</small>{% endif %}</span><span class="amt">{{ item.amount }}</span></li>
       {% endfor %}
     </ul>
+    {% endfor %}
   </section>
 
   {% if v.equipment %}

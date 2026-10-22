@@ -50,8 +50,8 @@
         <p class="txt" lang="{{ lang }}">{{ s.html }}</p>
         {% if s.bowls or s.tiles or s.results %}
         <div class="needs"><span class="eyebrow">You need</span>
-          {% for b in s.bowls %}<span class="needbowl"><span class="bno">{{ b.no }}</span><span><b lang="{{ lang }}">{{ b.name }}</b><span class="mini">{% for p in b.lines %}{{ sym(p, 26) }}{% endfor %}</span><em>{% for p in b.lines %}{{ (p.amount ~ ' ' ~ p.name)|trim }}{{ ', ' if not loop.last }}{% endfor %}</em></span></span>{% endfor %}
-          {% for p in s.tiles %}<span class="tile">{{ sym(p, 40) }}<span class="ta">{{ p.amount or 'to taste' }}</span><span class="tn" lang="{{ lang }}">{{ p.name }}{% if p.prep %}<em>{{ p.prep }}</em>{% endif %}</span></span>{% endfor %}
+          {% for b in s.bowls %}<span class="needbowl"><span class="bno">{{ b.no }}</span><span><b lang="{{ lang }}">{{ b.name }}</b><span class="mini">{% for p in b.lines %}{{ sym(p, 36) }}{% endfor %}</span><em>{% for p in b.lines %}{{ (p.amount ~ ' ' ~ p.name)|trim }}{{ ', ' if not loop.last }}{% endfor %}</em></span></span>{% endfor %}
+          {% for p in s.tiles %}<span class="tile">{{ sym(p, 64) }}<span class="ta">{{ p.amount or 'to taste' }}</span><span class="tn" lang="{{ lang }}">{{ p.name }}{% if p.prep %}<em>{{ p.prep }}</em>{% endif %}</span></span>{% endfor %}
           {% for r in s.results %}<span class="needres"><span class="arrow" aria-hidden="true">↳</span><span><b lang="{{ lang }}">{{ r.short }}</b><em>from step {{ r.no }}</em></span></span>{% endfor %}
         </div>
         {% endif %}

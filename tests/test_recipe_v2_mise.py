@@ -9,6 +9,8 @@ sys.path.append(ROOT)
 from tests import test_recipe_v2_view as view_tests  # noqa: E402  (sets the test environment)
 from services.recipe_v2 import mise  # noqa: E402
 from services.recipe_v2.planner import plan_v2  # noqa: E402
+from services.recipe_v2.view import build  # noqa: E402
+from database.models import Recipe, db  # noqa: E402
 
 
 def ready(name, plan='calm'):
@@ -85,10 +87,19 @@ class GetReadyPageTests(unittest.TestCase):
     def test_the_page_shows_bowls_tiles_and_equipment(self):
         status, html = self.get('carbonara', servings=6)
         self.assertEqual(status, 200)
-        for text in ('Prep', 'Pisk eggeblandingen', 'Take out', 'On the counter', 'Equipment', 'data-tick="b:',
+        for text in ('Prep', 'Pisk eggeblandingen', 'Take out', 'You probably have', 'Equipment', 'data-tick="b:',
                      '600 g', 'js/ready.js', '0 of 3 bowls ready'):
             self.assertIn(text, html)
         self.assertIn('https://example.com/spaghetti.webp', html)
+
+    def test_take_out_is_one_list_in_kitchen_groups(self):
+        takeout = build(db.session.get(Recipe, self.ids['lasagne']))['ready']['takeout']
+        self.assertEqual(takeout[-1]['key'], 'staples')
+        staples = [t['line']['name'] for t in takeout[-1]['items']]
+        self.assertEqual(staples.count('salt'), 1)  # once, though it is taken out for three steps
+        salt = next(t for t in takeout[-1]['items'] if t['line']['name'] == 'salt')
+        self.assertGreater(len(salt['steps']), 1)
+        self.assertIn('to taste', salt['amount'])
 
     def test_the_first_address_still_works(self):
         res = self.client.get(f'/recipe/{self.ids["carbonara"]}/get-ready')

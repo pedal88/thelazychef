@@ -920,6 +920,23 @@ I tillegg: listen over alle steg (ingredienser i steget) med symbolet inne i men
 
 **Ikke testet ennå:** matlaging med prototypen på telefonen. Det er siste del av 7a.
 
+
+---
+
+### 9.16 Ingrediensbildene bærer sidene, og ingrediensene grupperes (oktober 2026)
+
+**Bildene.** Ingrediensbildene er det som skiller appen fra andre, så de er gjort større på alle tre sidene. Bildene er 512 px med hvit bakgrunn, og maten fyller bare 65–77 % av dem. Før lå de i tillegg i en grå boks med kant, så på en 36 px plass ble ingrediensen rundt 24 px.
+
+- Rammen er borte. Bildet skaleres 1,25 ganger forbi den hvite kanten, og `mix-blend-mode: multiply` gjør det hvite usynlig mot papiret.
+- Større plass: handlelisten 36 → 56 px (basisvarer 36), piller i stegteksten 20 → 24, Prep-fliser 44 → 64, Cook: skålbilder 26 → 36 og fliser 40 → 64, elvedeltaet 28/36 → 36/48.
+- Forbokstaven (ingrediens uten bilde) beholder boksen.
+- Et blekt (avkrysset) element må ha bakgrunn eller tegnes over. `opacity` på en boks uten bakgrunn rundt bildet gjør at det hvite vises igjen.
+- Senere: tett beskårne kopier laget av et skript gir lik luft rundt alle bilder. Det skriver til GCS i prod og må godkjennes.
+
+**Grupper.** Ingrediensene grupperes etter kategorien i spiskammeret (`main_category`, `sub_category`), slått sammen til grupper i den rekkefølgen man går i butikken: frukt og grønt (med ferske urter), kjøtt og fisk, meieri og egg, brød, «pantry» (pasta, korn, mel, sukker, nøtter og hermetikk), krydder, sauser, olje og fett, drikke, annet, og til slutt «You probably have» (basisvarene i `mise.STAPLES`). Reglene står i `services/recipe_v2/groups.py`. Handlelisten på Overview vises i disse gruppene.
+
+**Prep er forenklet.** «Take out» og «On the counter» (9.13) er slått sammen til én «Take out» i de samme gruppene, med gruppene side om side. En ingrediens som brukes i flere steg, er én flis med mengdene og stegene («½ tsp + to taste», «step 3, 6»), så salt vises én gang i stedet for tre. Basisvarene er én rad med navn: du har dem, og stegene gir mengdene. Skillet mellom «mål opp når du bruker den» og «står fremme» står ikke lenger på Prep. Cook viser fortsatt per steg hva som skal inn.
+
 ---
 
 ## Vedlegg: parkerte visninger
@@ -933,6 +950,7 @@ Disse ble vurdert, men er ikke med i første omgang. Flere av dem blir billige n
 | 9 | Sansebaserte sjekkpunkter | «Ferdig når: gyllen kant, lysere frestelyd» i stedet for bare tid | `done_when` (endring 3). Inngår i kortmodus |
 | 10 | To kokker | Oppgavene fordelt på to svømmebaner med felles møtepunkt | Samme som tidslinjen, med to ressurser i planleggingsalgoritmen |
 | 12 | Vekt-modus | Én bolle på tarert vekt, appen viser løpende sum («hell i sukker til 315 g») | `gram_weight` finnes. Trenger `uses` for bollegruppering og et flagg for hva som veies |
+| – | Ingrediensrutenett på Overview | Handlelisten som et rutenett av store bilder (rundt 80 px) gruppert etter kategori, som et «flat lay» av alt du trenger. Tydeligst kjennetegn for appen, men dårligere å handle etter: mengdene står ikke på linje og lange navn brekker | Gruppene fra 9.16 finnes. Bare mal og CSS |
 | 13 | Klokkeskiven | Hele økta som urskive, prep i ytre ring og cook i indre | `phase` + tid finnes. Mulig i dag, sekvensielt |
 | 14 | Zoom-nivåer | Samme oppskrift i flere detaljnivåer, fra én linje til full forklaring | `text_short` (endring 3) og eventuelt `text_detailed`/`why` |
 | 15 | Ratio-kortet | Oppskriften som forholdstall, med glidebryter for ønsket resultat | Visningen kan regnes ut fra `gram_weight` i dag. Glidebryteren krever kunnskap om retten |
