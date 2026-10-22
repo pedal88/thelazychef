@@ -5,6 +5,7 @@ user segment. Its soft side (description, methods, staples, tone) goes into the
 round 1 prompt. Its hard side, `constraints`, is checked on the saved recipe:
 
     max_total_minutes   planned total time (recipe.prep_time_mins)
+    max_active_minutes  planned hands-on time (the planner's A)
     max_cleanup         derived clean-up, 1-5
     max_spice           spice_level from the model, 0-3
     difficulties        allowed difficulty values
@@ -104,7 +105,10 @@ def prompt_block(p):
     hard = []
     if rules.get('max_total_minutes'):
         hard.append(f"the whole recipe takes at most {rules['max_total_minutes']} minutes from start to table for one cook"
-                    ", counting all the chopping and preparation; plan the dish so that this holds")
+                    ", counting all the chopping and preparation, preheating the oven and bringing water to the boil; "
+                    "plan the dish so that this holds")
+    if rules.get('max_active_minutes'):
+        hard.append(f"at most {rules['max_active_minutes']} minutes of hands-on work; the rest is time the food cooks by itself")
     if rules.get('diet') == 'vegan':
         hard.append('no meat, fish, dairy or eggs')
     elif rules.get('diet') == 'vegetarian':
@@ -164,6 +168,10 @@ def check(recipe, p):
         if rules.get('max_extra') is not None and len(extra) > rules['max_extra']:
             notes.append(f"Needs {len(extra)} ingredients outside the foundation pantry ({', '.join(extra)}); "
                          f"{who} allows {rules['max_extra']}.")
+    if rules.get('max_active_minutes'):
+        active = active_minutes(recipe)
+        if active is not None and active > rules['max_active_minutes']:
+            notes.append(f"Takes {active} minutes of hands-on work; {who} allows {rules['max_active_minutes']}.")
     if rules.get('max_total_minutes') and (recipe.prep_time_mins or 0) > rules['max_total_minutes']:
         notes.append(f"Takes {recipe.prep_time_mins} minutes; {p['name']} allows {rules['max_total_minutes']}.")
     if rules.get('max_cleanup') and (recipe.cleanup_factor or 0) > rules['max_cleanup']:
@@ -188,6 +196,19 @@ def check(recipe, p):
     if hits:
         notes.append(f"Uses ingredients {p['name']} never uses: {', '.join(hits)}.")
     return notes
+
+
+def active_minutes(recipe):
+    """Planned hands-on minutes: given on the recipe (tests), or from the planner. None when it cannot be planned."""
+    if getattr(recipe, 'active_mins', None) is not None:
+        return recipe.active_mins
+    try:
+        from services.recipe_v2.planner import plan_v2
+        from services.recipe_v2.store import to_v2
+
+        return plan_v2(to_v2(recipe))['A']
+    except Exception:
+        return None
 
 
 def ingredients_of(recipe):

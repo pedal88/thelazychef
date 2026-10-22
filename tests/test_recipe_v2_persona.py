@@ -72,7 +72,7 @@ def test_settings_go_on_top_of_any_chef():
     p = persona.with_settings(seed('the_smart_cook'), ['low_carb', 'kid_friendly', 'vegetarian', 'unknown'])
     rules = p['constraints']
     assert (rules['max_carbs_per_serving'], rules['max_spice'], rules['diet']) == (20, 1, 'vegetarian')
-    assert rules['max_total_minutes'] == 45  # the chef's own rules stay
+    assert rules['max_total_minutes'] == 60  # the chef's own rules stay
     assert p['settings'] == ['low_carb', 'kid_friendly', 'vegetarian']
     text = persona.prompt_block(p)
     assert 'The Smart Cook' in text and 'Low carb:' in text and 'For children:' in text and 'Vegetarian:' in text
@@ -121,3 +121,12 @@ def test_old_slider_chefs_keep_what_maps():
     assert rules['max_cleanup'] == 2
     assert rules['max_total_minutes'] is None
     assert 'taste_range' not in rules
+
+
+def test_the_minimalist_limits_hands_on_time():
+    p = seed('the_minimalist')
+    assert (p['constraints']['max_total_minutes'], p['constraints']['max_active_minutes']) == (35, 15)
+    assert 'at most 15 minutes of hands-on work' in persona.prompt_block(p)
+    notes = persona.check(recipe(prep_time_mins=30, active_mins=22), p)
+    assert notes == ['Takes 22 minutes of hands-on work; The Minimalist allows 15.']
+    assert persona.check(recipe(prep_time_mins=30, active_mins=12), p) == []
