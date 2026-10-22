@@ -1,0 +1,11 @@
+# Equipment symbols: one image per item in data/constraints/equipment.json, in the style of the ingredient
+# symbols (data/prompts/lab/ingredient_image, chosen 18.10.2026), so tools and food look like one family.
+kind = "image"
+model = "GEMINI_IMAGE"          # constant in services/ai_models.py
+layers = ["brief", "style", "item"]
+join = " "
+
+[final]
+brief = "default"
+style = "vector_textured"
+item = "default"

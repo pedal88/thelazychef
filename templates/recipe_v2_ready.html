@@ -95,7 +95,7 @@
       {% if v.equipment %}
       <section>
         <div class="sec-head"><h2>Equipment</h2><span class="eyebrow">in the order you use it</span></div>
-        <div class="eqtiles">{% for e in v.equipment %}<button type="button" class="eq" data-tick="e:{{ e }}" aria-pressed="false">{{ e }}</button>{% endfor %}</div>
+        <div class="eqtiles">{% for e in v.equipment %}<button type="button" class="eq{{ ' has-img' if e.image }}{{ ' special' if e.special }}" data-tick="e:{{ e.id }}" aria-pressed="false">{% if e.image %}<span class="sym" style="--s:56px"><img src="{{ e.image }}" alt="" width="56" height="56" loading="lazy"></span>{% endif %}<span>{{ e.name }}</span></button>{% endfor %}</div>
       </section>
       {% endif %}
     </div>

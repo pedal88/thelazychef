@@ -678,6 +678,15 @@ Fire felter per steg, alle fra faste lister i `data/constraints/`:
 
 Utstyrslisten for hele oppskriften utledes fra stegene. Utelatt med vilje: rillehøyde, lokk, egen utstyrstabell og varianter per utstyr (ovn eller airfryer).
 
+**Utstyrsbanken (22.10.2026).** Hovedformålet er å vise med symboler hva man trenger av utstyr til retten. Katalogen er `data/constraints/equipment.json`, uten noe mer avansert enn den hadde:
+
+- **To nivåer:** `standard` (det de fleste kjøkken har, grunnutstyr og vanlig utstyr slått sammen) og `special` (sous vide, frityrgryte, wok, kjøkkenmaskin, vaffeljern …). Spesialutstyr vises med stiplet kant.
+- **Forbruksvarer** (`kind: supply`: plastfolie, bakepapir, folie, kjøkkenhåndkle, tallerken, serveringsfat, lokk) brukes i planen, men vises ikke som utstyr.
+- **Duplikater** slås sammen med `same_as`: stor bolle vises som bolle, støpejernsgryte som vid gryte, form 20 × 30 som ildfast form. Id-ene beholdes, så lagrede oppskrifter virker som før.
+- **Nytt:** hullsleiv, potetstapper, måleskjeer, kjøkkensaks, vaffeljern, riskoker og trykkoker. 69 oppføringer, 59 symboler.
+- **Symboler** i samme stil som ingrediensene (labboppgaven `equipment_image`, «vector_textured»): tomt redskap, fast vinkel skrått ovenfra, ingen merkenavn, fyller 80 %. `scripts/equipment_symbols.py` lager dem (først åtte som prøve, sjekket i 48 og 32 px), laster dem opp og setter `image` i katalogen.
+- **Vises** på Gjør klart som fliser med symbol, i den rekkefølgen utstyret brukes. Ikke på Overview.
+
 ### 9.7 Bilder som harmonerer
 
 I dag lages komponentbildene uavhengig av bildet av retten. `generate_component_images` i `app.py` sender bare komponentnavnet til bildemodellen («just {comp} alone … on white background»). Bildene kan derfor ikke stemme med hverandre annet enn ved flaks.

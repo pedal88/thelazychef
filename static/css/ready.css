@@ -64,6 +64,10 @@
 .eqtiles { display: flex; flex-wrap: wrap; gap: 6px; }
 .eq { min-height: 36px; padding: 0 var(--space-3); background: var(--color-paper); border: 1px solid var(--color-line); border-radius: var(--radius-pill); font-size: 14px; }
 .eq[aria-pressed="true"] { text-decoration: line-through; }
+/* With a symbol (data/constraints/equipment.json "image"): a tile like the ingredients */
+.eq.has-img { display: inline-grid; justify-items: center; gap: 2px; width: 92px; min-height: 0; padding: var(--space-1) 4px var(--space-2);
+  border-radius: var(--radius-sm); font-size: 13px; line-height: 1.2; text-align: center; }
+.eq.special { border-style: dashed; }
 
 .later { margin-top: var(--space-6); border: 1px dashed var(--color-line); border-radius: var(--radius); padding: var(--space-2) var(--space-4); }
 .later summary { cursor: pointer; font-weight: 600; min-height: var(--tap); display: flex; flex-direction: column; justify-content: center; }
