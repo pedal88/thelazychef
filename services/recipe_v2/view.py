@@ -46,6 +46,7 @@ def _catalogs():
     return {
         'units': {u['id']: u for u in load('units.json')['units']},
         'equipment': {e['id']: e.get('name_en') or e['name'] for e in eq['equipment']},
+        'equipment_items': {e['id']: e for e in eq['equipment']},
         'modes': {m['id']: m.get('name_en') or m['name'] for m in eq['modes']},
     }
 
@@ -86,6 +87,21 @@ def step_duration(s):
     if s.get('passive_minutes'):
         parts.append(('+ ' if parts else '') + f"{duration(s['passive_minutes'])} standing")
     return ' '.join(parts)
+
+
+def equipment_list(ids, cat=None):
+    """The equipment the dish needs, in the order it is first used, as {id, name, image, special}: supplies
+    (foil, plates) left out, and an item shown as another (same_as) listed once, as that one."""
+    items = (cat or _catalogs())['equipment_items']
+    out = {}
+    for q in ids:
+        e = items.get(q) or {'id': q, 'name': q}
+        if e.get('kind') == 'supply':
+            continue
+        e = items.get(e.get('same_as')) or e
+        out.setdefault(e['id'], {'id': e['id'], 'name': e.get('name_en') or e['name'], 'image': e.get('image'),
+                                 'special': e.get('level') == 'special'})
+    return list(out.values())
 
 
 def equipment_text(s):
@@ -248,7 +264,7 @@ def build(recipe, servings=None, plan='calm'):
         'title': recipe.title, 'servings': servings, 'scalable': scalable, 'yield_text': recipe.yield_text,
         'total': duration(sch['T']), 'active': duration(sch['A']), 'plan': plan, 'plans': PLAN_NAMES,
         'plan_hint': PLAN_HINTS[plan], 'parts': [c['name'] for c in v2['components']],
-        'shopping': shop, 'shop_groups': groups.grouped(shop), 'equipment': [cat['equipment'].get(q, q) for q in first_use], 'steps': steps,
+        'shopping': shop, 'shop_groups': groups.grouped(shop), 'equipment': equipment_list(first_use, cat), 'steps': steps,
         'chef_note': recipe.chef_note, 'missing': sum(1 for s in shop if s['missing']),
         'errors': [e for e in recipe.validation_errors or [] if e.get('rule') not in ('persona', 'image')],
         'image_notes': [e['message'] for e in recipe.validation_errors or [] if e.get('rule') == 'image'],

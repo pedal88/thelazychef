@@ -1,0 +1,11 @@
+# The pilot: eight items of different materials and shapes, to see whether the style holds at 32 and 48 px.
+default = [
+  { name = "oven", notes = "A built-in kitchen oven seen from the front, door closed, with a window." },
+  { name = "frying pan", notes = "A round non-stick frying pan with a long handle." },
+  { name = "saucepan", notes = "A medium stainless steel saucepan with one long handle." },
+  { name = "whisk", notes = "A balloon whisk." },
+  { name = "grater", notes = "A four-sided box grater." },
+  { name = "stick blender", notes = "A hand-held immersion blender." },
+  { name = "ovenproof dish", notes = "A rectangular white ceramic oven dish." },
+  { name = "colander", notes = "A metal colander with holes and two handles." },
+]

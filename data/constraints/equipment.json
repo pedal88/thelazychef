@@ -1,4 +1,5 @@
 {
+  "_about": "The equipment bank (RECIPE_VISUALIZATIONS.md 9.6): level \"standard\" is what most kitchens have, \"special\" the rest. kind \"supply\" (foil, plates) is planned with but not shown as equipment. same_as shows an item as another one (one symbol, listed once). image is the symbol, image_notes what it should show.",
   "_doc": "Fast utstyrskatalog for oppskriftsmodell v2 (RECIPE_MODEL_V2.md). equipment[0] på et steg er kokekaret. role: koke | forberede | avlastning. exclusive: kan bare brukes til én ting om gangen (planleggeren legger slike steg etter hverandre). modes gjelder kokekaret: oven-moduser for ovn/airfryer, plate-moduser for plate og grill.",
   "equipment": [
     {
@@ -6,434 +7,584 @@
       "name": "Ovn",
       "name_en": "Oven",
       "role": "koke",
-      "exclusive": true
+      "exclusive": true,
+      "level": "standard",
+      "image_notes": "A built-in kitchen oven seen from the front, door closed, with a window."
     },
     {
       "id": "airfryer",
       "name": "Airfryer",
       "name_en": "Air fryer",
       "role": "koke",
-      "exclusive": true
+      "exclusive": true,
+      "level": "standard"
     },
     {
       "id": "microwave",
       "name": "Mikrobølgeovn",
       "name_en": "Microwave",
       "role": "koke",
-      "exclusive": true
+      "exclusive": true,
+      "level": "standard"
     },
     {
       "id": "grill",
       "name": "Grill",
       "name_en": "Grill",
       "role": "koke",
-      "exclusive": true
+      "exclusive": true,
+      "level": "special",
+      "image_notes": "A round kettle barbecue grill with a lid."
     },
     {
       "id": "grill_pan",
       "name": "Grillpanne",
       "name_en": "Grill pan",
       "role": "koke",
-      "exclusive": false
+      "exclusive": false,
+      "level": "special"
     },
     {
       "id": "saucepan",
       "name": "Kjele",
       "name_en": "Saucepan",
       "role": "koke",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard",
+      "image_notes": "A medium stainless steel saucepan with one long handle."
     },
     {
       "id": "large_pot",
       "name": "Stor kjele",
       "name_en": "Large pot",
       "role": "koke",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard",
+      "image_notes": "A tall stainless steel stockpot with two handles."
     },
     {
       "id": "wide_pot",
       "name": "Vid gryte",
       "name_en": "Wide pot",
       "role": "koke",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard",
+      "image_notes": "A wide, low cooking pot with two side handles."
     },
     {
       "id": "dutch_oven",
       "name": "Støpejernsgryte",
       "name_en": "Dutch oven",
       "role": "koke",
-      "exclusive": false
+      "exclusive": false,
+      "level": "special",
+      "same_as": "wide_pot"
     },
     {
       "id": "frying_pan",
       "name": "Stekepanne",
       "name_en": "Frying pan",
       "role": "koke",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard",
+      "image_notes": "A round non-stick frying pan with a long handle."
     },
     {
       "id": "wok",
       "name": "Wok",
       "name_en": "Wok",
       "role": "koke",
-      "exclusive": false
+      "exclusive": false,
+      "level": "special"
     },
     {
       "id": "steamer",
       "name": "Dampinnsats",
       "name_en": "Steamer",
       "role": "koke",
-      "exclusive": false
+      "exclusive": false,
+      "level": "special"
     },
     {
       "id": "kettle",
       "name": "Vannkoker",
       "name_en": "Kettle",
       "role": "koke",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard",
+      "image_notes": "An electric kettle."
     },
     {
       "id": "deep_fryer",
       "name": "Frityrgryte",
       "name_en": "Deep fryer",
       "role": "koke",
-      "exclusive": true
+      "exclusive": true,
+      "level": "special"
     },
     {
       "id": "slow_cooker",
       "name": "Slow cooker",
       "name_en": "Slow cooker",
       "role": "koke",
-      "exclusive": true
+      "exclusive": true,
+      "level": "special"
     },
     {
       "id": "sous_vide",
       "name": "Sous vide-pinne",
       "name_en": "Sous vide circulator",
       "role": "koke",
-      "exclusive": true
+      "exclusive": true,
+      "level": "special"
     },
     {
       "id": "baking_tray",
       "name": "Stekebrett",
       "name_en": "Baking tray",
       "role": "koke",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard",
+      "image_notes": "A flat rectangular metal baking sheet."
     },
     {
       "id": "roasting_pan",
       "name": "Langpanne",
       "name_en": "Roasting pan",
       "role": "koke",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard",
+      "image_notes": "A deep rectangular metal oven tray with raised sides."
     },
     {
       "id": "ovenproof_dish",
       "name": "Ildfast form",
       "name_en": "Ovenproof dish",
       "role": "koke",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard",
+      "image_notes": "A rectangular white ceramic oven dish."
     },
     {
       "id": "form_20x20",
       "name": "Form 20 × 20 cm",
       "name_en": "20 × 20 cm tin",
       "role": "koke",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard",
+      "image_notes": "A square metal baking tin."
     },
     {
       "id": "form_20x30",
       "name": "Form 20 × 30 cm",
       "name_en": "20 × 30 cm dish",
       "role": "koke",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard",
+      "same_as": "ovenproof_dish"
     },
     {
       "id": "springform_24",
       "name": "Springform 24 cm",
       "name_en": "24 cm springform",
       "role": "koke",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard",
+      "image_notes": "A round springform cake tin with its clasp."
     },
     {
       "id": "loaf_tin",
       "name": "Brødform",
       "name_en": "Loaf tin",
       "role": "koke",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard"
     },
     {
       "id": "muffin_tin",
       "name": "Muffinsform",
       "name_en": "Muffin tin",
       "role": "koke",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard"
     },
     {
       "id": "pie_dish",
       "name": "Paiform",
       "name_en": "Pie dish",
       "role": "koke",
-      "exclusive": false
+      "exclusive": false,
+      "level": "special"
     },
     {
       "id": "skewers",
       "name": "Grillspyd",
       "name_en": "Skewers",
       "role": "koke",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard",
+      "image_notes": "Three wooden skewers."
     },
     {
       "id": "ladle",
       "name": "Øse",
       "name_en": "Ladle",
       "role": "koke",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard"
     },
     {
       "id": "tongs",
       "name": "Tang",
       "name_en": "Tongs",
       "role": "koke",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard"
     },
     {
       "id": "turner",
       "name": "Stekespade",
       "name_en": "Turner",
       "role": "koke",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard"
     },
     {
       "id": "thermometer",
       "name": "Steketermometer",
       "name_en": "Thermometer",
       "role": "koke",
-      "exclusive": false
+      "exclusive": false,
+      "level": "special"
     },
     {
       "id": "bowl",
       "name": "Bolle",
       "name_en": "Bowl",
       "role": "forberede",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard"
     },
     {
       "id": "small_bowl",
       "name": "Liten skål",
       "name_en": "Small bowl",
       "role": "forberede",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard"
     },
     {
       "id": "large_bowl",
       "name": "Stor bolle",
       "name_en": "Large bowl",
       "role": "forberede",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard",
+      "same_as": "bowl"
     },
     {
       "id": "whisk",
       "name": "Visp",
       "name_en": "Whisk",
       "role": "forberede",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard",
+      "image_notes": "A balloon whisk."
     },
     {
       "id": "spatula",
       "name": "Slikkepott",
       "name_en": "Spatula",
       "role": "forberede",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard",
+      "image_notes": "A flexible silicone spatula."
     },
     {
       "id": "wooden_spoon",
       "name": "Tresleiv",
       "name_en": "Wooden spoon",
       "role": "forberede",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard"
     },
     {
       "id": "grater",
       "name": "Rivjern",
       "name_en": "Grater",
       "role": "forberede",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard",
+      "image_notes": "A four-sided box grater."
     },
     {
       "id": "peeler",
       "name": "Skrellekniv",
       "name_en": "Peeler",
       "role": "forberede",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard",
+      "image_notes": "A swivel vegetable peeler."
     },
     {
       "id": "sieve",
       "name": "Sil",
       "name_en": "Sieve",
       "role": "forberede",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard",
+      "image_notes": "A fine mesh sieve with a handle."
     },
     {
       "id": "colander",
       "name": "Dørslag",
       "name_en": "Colander",
       "role": "forberede",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard",
+      "image_notes": "A metal colander with holes and two handles."
     },
     {
       "id": "brush",
       "name": "Pensel",
       "name_en": "Pastry brush",
       "role": "forberede",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard"
     },
     {
       "id": "rolling_pin",
       "name": "Kjevle",
       "name_en": "Rolling pin",
       "role": "forberede",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard"
     },
     {
       "id": "mortar",
       "name": "Morter",
       "name_en": "Mortar and pestle",
       "role": "forberede",
-      "exclusive": false
+      "exclusive": false,
+      "level": "special",
+      "image_notes": "A stone mortar with its pestle."
     },
     {
       "id": "blender",
       "name": "Blender",
       "name_en": "Blender",
       "role": "forberede",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard"
     },
     {
       "id": "stick_blender",
       "name": "Stavmikser",
       "name_en": "Stick blender",
       "role": "forberede",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard",
+      "image_notes": "A hand-held immersion blender."
     },
     {
       "id": "food_processor",
       "name": "Foodprocessor",
       "name_en": "Food processor",
       "role": "forberede",
-      "exclusive": false
+      "exclusive": false,
+      "level": "special"
     },
     {
       "id": "stand_mixer",
       "name": "Kjøkkenmaskin",
       "name_en": "Stand mixer",
       "role": "forberede",
-      "exclusive": false
+      "exclusive": false,
+      "level": "special"
     },
     {
       "id": "hand_mixer",
       "name": "Elektrisk mikser",
       "name_en": "Hand mixer",
       "role": "forberede",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard",
+      "image_notes": "An electric hand mixer with two beaters."
     },
     {
       "id": "salad_spinner",
       "name": "Salatslynge",
       "name_en": "Salad spinner",
       "role": "forberede",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard"
     },
     {
       "id": "jar",
       "name": "Glass med lokk",
       "name_en": "Jar with lid",
       "role": "forberede",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard",
+      "image_notes": "An empty glass jar with a screw lid."
     },
     {
       "id": "measuring_jug",
       "name": "Målebeger",
       "name_en": "Measuring jug",
       "role": "forberede",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard",
+      "image_notes": "A clear measuring jug with a scale on the side."
     },
     {
       "id": "kitchen_scale",
       "name": "Kjøkkenvekt",
       "name_en": "Kitchen scale",
       "role": "forberede",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard",
+      "image_notes": "A flat digital kitchen scale."
     },
     {
       "id": "cutting_board",
       "name": "Skjærebrett",
       "name_en": "Cutting board",
       "role": "forberede",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard"
     },
     {
       "id": "knife",
       "name": "Kniv",
       "name_en": "Knife",
       "role": "forberede",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard",
+      "image_notes": "A chef's knife."
     },
     {
       "id": "plastic_wrap",
       "name": "Plastfolie",
       "name_en": "Plastic wrap",
       "role": "forberede",
-      "exclusive": false
+      "exclusive": false,
+      "kind": "supply"
     },
     {
       "id": "baking_paper",
       "name": "Bakepapir",
       "name_en": "Baking paper",
       "role": "forberede",
-      "exclusive": false
+      "exclusive": false,
+      "kind": "supply"
     },
     {
       "id": "foil",
       "name": "Aluminiumsfolie",
       "name_en": "Foil",
       "role": "forberede",
-      "exclusive": false
+      "exclusive": false,
+      "kind": "supply"
     },
     {
       "id": "rack",
       "name": "Rist",
       "name_en": "Wire rack",
       "role": "avlastning",
-      "exclusive": false
+      "exclusive": false,
+      "level": "standard",
+      "image_notes": "A metal wire cooling rack."
     },
     {
       "id": "plate",
       "name": "Tallerken",
       "name_en": "Plate",
       "role": "avlastning",
-      "exclusive": false
+      "exclusive": false,
+      "kind": "supply"
     },
     {
       "id": "serving_dish",
       "name": "Serveringsfat",
       "name_en": "Serving dish",
       "role": "avlastning",
-      "exclusive": false
+      "exclusive": false,
+      "kind": "supply"
     },
     {
       "id": "lid",
       "name": "Lokk",
       "name_en": "Lid",
       "role": "avlastning",
-      "exclusive": false
+      "exclusive": false,
+      "kind": "supply"
     },
     {
       "id": "kitchen_towel",
       "name": "Kjøkkenhåndkle",
       "name_en": "Kitchen towel",
       "role": "avlastning",
-      "exclusive": false
+      "exclusive": false,
+      "kind": "supply"
+    },
+    {
+      "id": "slotted_spoon",
+      "name": "Hullsleiv",
+      "name_en": "Slotted spoon",
+      "role": "koke",
+      "exclusive": false,
+      "level": "standard"
+    },
+    {
+      "id": "potato_masher",
+      "name": "Potetstapper",
+      "name_en": "Potato masher",
+      "role": "forberede",
+      "exclusive": false,
+      "level": "standard"
+    },
+    {
+      "id": "measuring_spoons",
+      "name": "Måleskjeer",
+      "name_en": "Measuring spoons",
+      "role": "forberede",
+      "exclusive": false,
+      "level": "standard",
+      "image_notes": "A small set of measuring spoons on a ring."
+    },
+    {
+      "id": "kitchen_scissors",
+      "name": "Kjøkkensaks",
+      "name_en": "Kitchen scissors",
+      "role": "forberede",
+      "exclusive": false,
+      "level": "standard"
+    },
+    {
+      "id": "waffle_iron",
+      "name": "Vaffeljern",
+      "name_en": "Waffle iron",
+      "role": "koke",
+      "exclusive": true,
+      "level": "special",
+      "image_notes": "A Scandinavian heart-shaped waffle iron, open, empty."
+    },
+    {
+      "id": "rice_cooker",
+      "name": "Riskoker",
+      "name_en": "Rice cooker",
+      "role": "koke",
+      "exclusive": true,
+      "level": "special"
+    },
+    {
+      "id": "pressure_cooker",
+      "name": "Trykkoker",
+      "name_en": "Pressure cooker",
+      "role": "koke",
+      "exclusive": true,
+      "level": "special"
     }
   ],
   "modes": [

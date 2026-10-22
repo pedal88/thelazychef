@@ -118,5 +118,14 @@ class RecipeV2ViewTests(unittest.TestCase):
         self.assertEqual(fmt_amount(437, 'g'), '440 g')
 
 
+class EquipmentListTests(unittest.TestCase):
+    def test_supplies_are_left_out_and_merged_items_listed_once(self):
+        from services.recipe_v2.view import equipment_list
+        items = equipment_list(['wide_pot', 'foil', 'dutch_oven', 'large_bowl', 'bowl', 'sous_vide', 'unknown_thing'])
+        self.assertEqual([e['id'] for e in items], ['wide_pot', 'bowl', 'sous_vide', 'unknown_thing'])
+        self.assertTrue(next(e for e in items if e['id'] == 'sous_vide')['special'])
+        self.assertEqual(items[0]['name'], 'Wide pot')
+
+
 if __name__ == '__main__':
     unittest.main()
