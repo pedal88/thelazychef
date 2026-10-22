@@ -1,22 +1,26 @@
-"""pantry: the foundation pantry, v0
+"""pantry: the foundation pantry, v0 (100 ingredients)
 
 Level 2 of the pantry (RECIPE_MODEL_V2.md, "Basisvarer og grunnlager"): the default choices recipes reuse.
 Chosen 22.10.2026 from a sample of 272 dishes Norwegian home cooks make in 13 cuisines
-(scripts/foundation_sample.py, run foundation-v0, and the review page "Grunnlager v0"): the top 60 by use, the
-cuisine keys, canned kidney beans and chili peppers. Decisions on the way: jasmine rice is the rice (white rice
-is left out), onion and red onion both stay, sour cream over crème fraîche, and grated white cheese (Norvegia
-and the like) instead of cheddar.
+(scripts/foundation_sample.py, run foundation-v0, and the review page "Grunnlager v0"):
+- 66 picked on the review page: the top 60 by use, the cuisine keys, canned kidney beans and chili peppers.
+  Decisions on the way: jasmine rice is the rice (white rice is left out), onion and red onion both stay, sour
+  cream over crème fraîche, and grated white cheese (Norvegia and the like) instead of cheddar.
+- 34 more to reach 100, ranked by use weighted by how long they keep (ingredient.keeps, b8d2e5f1a9c3: days 0.6,
+  weeks 1, months 1.4, years 2), so what keeps is cheap to have even if used now and then. Left out were other
+  forms of what is already there (cumin seeds, fresh yeast, beef stock), a second of the same kind (black beans,
+  pita, potato flour) and what few dishes need (nori, sushi rice, red wine).
 
-Four of them are not in the pantry and are added like 938d10ac6005 (active, the next free food_id), with
-aliases that are free: ground beef, taco seasoning, grated white cheese and gochugaru. Nutrition and symbols
-follow in a later migration (scripts/ingredient_nutrition.py and scripts/ingredient_symbols.py).
+Five are not in the pantry and are added like 938d10ac6005 (active, the next free food_id), with aliases that are
+free: ground beef, taco seasoning, grated white cheese, gochugaru and tortilla chips. Nutrition and symbols follow
+in a later migration (scripts/ingredient_nutrition.py and scripts/ingredient_symbols.py).
 
 Only the tier of the others changes, core to foundation, matched by name.
 
-Downgrade sets them back to core and removes the four again (one a recipe already uses is set inactive).
+Downgrade sets them back to core and removes the five again (one a recipe already uses is set inactive).
 
 Revision ID: c6e1a4d8b2f7
-Revises: a3d7f2c9e1b6
+Revises: b8d2e5f1a9c3
 Create Date: 2026-10-22
 
 """
@@ -27,7 +31,7 @@ import sqlalchemy as sa
 
 
 revision = 'c6e1a4d8b2f7'
-down_revision = 'a3d7f2c9e1b6'
+down_revision = 'b8d2e5f1a9c3'
 branch_labels = None
 depends_on = None
 
@@ -43,13 +47,20 @@ FOUNDATION = (
     'oyster sauce', 'parmesan', 'parsley', 'plain yogurt', 'potatoes', 'red onion', 'rice vinegar', 'salsa',
     'sesame oil', 'sesame seeds', 'sour cream', 'soy sauce', 'spaghetti', 'spring onions', 'tomato paste',
     'tomatoes', 'tortilla', 'whole milk',
+    # the 34 added for keeping well
+    'active dry yeast', 'baking soda', 'bay leaf', 'beef stock cube', 'broccoli', 'canned chickpeas', 'chili flakes',
+    'cloves', 'cocoa powder', 'cream cheese', 'curry powder', 'dark chocolate', 'egg noodles', 'feta', 'garlic powder',
+    'green peas', 'ground cardamom', 'ground coriander', 'honey', 'lime juice', 'mayonnaise', 'mustard', 'oats',
+    'peanuts', 'penne', 'pickled jalapeños', 'powdered sugar', 'red lentils', 'rice noodles', 'smoked paprika',
+    'tahini', 'thai red curry paste', 'vanilla sugar',
 )
-# name, main category, sub category, aliases
+# name, main category, sub category, keeps, aliases
 NEW = [
-    ('ground beef', 'meat', 'beef', ('minced beef', 'beef mince', 'kjøttdeig', 'kjøttdeig av storfe')),
-    ('taco seasoning', 'spices and herbs', 'ground spices', ('taco spice mix', 'taco spice', 'tacokrydder')),
-    ('grated white cheese', 'dairy and egg', 'cheese', ('grated cheese', 'revet ost', 'revet hvitost', 'norvegia')),
-    ('gochugaru', 'spices and herbs', 'ground spices', ('korean chili flakes', 'korean red pepper flakes')),
+    ('ground beef', 'meat', 'beef', 'days', ('minced beef', 'beef mince', 'kjøttdeig', 'kjøttdeig av storfe')),
+    ('taco seasoning', 'spices and herbs', 'ground spices', 'years', ('taco spice mix', 'taco spice', 'tacokrydder')),
+    ('grated white cheese', 'dairy and egg', 'cheese', 'weeks', ('grated cheese', 'revet ost', 'revet hvitost', 'norvegia')),
+    ('gochugaru', 'spices and herbs', 'ground spices', 'years', ('korean chili flakes', 'korean red pepper flakes')),
+    ('tortilla chips', 'bakery and bread', 'flatbreads', 'years', ('nacho chips', 'nachos', 'tortillachips')),
 ]
 
 
@@ -62,13 +73,13 @@ def upgrade():
     conn = op.get_bind()
     number = max((int(f) for (f,) in _q(conn, 'SELECT food_id FROM ingredient').all() if f and f.isdigit()), default=0)
     today = datetime.date.today()
-    for name, main, sub, aliases in NEW:
+    for name, main, sub, keeps, aliases in NEW:
         if not _q(conn, 'SELECT 1 FROM ingredient WHERE lower(name) = :n', n=name).first():
             number += 1
             _q(conn, "INSERT INTO ingredient (food_id, name, main_category, sub_category, default_unit, is_staple, "
-                     "has_transparent_image, status, tier, data_source, created_at) "
-                     "VALUES (:f, :n, :m, :s, 'g', :no, :no, 'active', 'foundation', :src, :t)",
-               f=f'{number:06d}', n=name, m=main, s=sub, no=False, src=SOURCE, t=today.isoformat())
+                     "has_transparent_image, status, tier, keeps, data_source, created_at) "
+                     "VALUES (:f, :n, :m, :s, 'g', :no, :no, 'active', 'foundation', :k, :src, :t)",
+               f=f'{number:06d}', n=name, m=main, s=sub, no=False, k=keeps, src=SOURCE, t=today.isoformat())
         (iid,) = _q(conn, 'SELECT id FROM ingredient WHERE lower(name) = :n', n=name).first()
         for alias in aliases:
             taken = _q(conn, 'SELECT 1 FROM ingredient WHERE lower(name) = :a UNION ALL '
