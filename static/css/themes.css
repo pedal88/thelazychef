@@ -114,3 +114,18 @@ html.whole-fullscreen .trialbar { display: none; }
 .trialbar .tmake button { justify-self: start; background: #a78bfa; color: #18181b; font-weight: 600; }
 .trialbar .tmake button:hover { background: #c4b5fd; color: #18181b; }
 .trialbar .tmake span { color: #8b8b94; font-size: 11px; }
+
+/* Admin tools in the chip (Overview): the draft notes, recalculate, images, versions */
+.trialbar[open] .tpanel { max-height: calc(100vh - 140px); overflow: auto; }
+.trialbar .tsec { display: grid; gap: 6px; padding-top: 8px; border-top: 1px solid rgba(255, 255, 255, .08); }
+.trialbar .tsec .tlabel { width: auto; }
+.trialbar .tsec p, .trialbar .tsec ul { margin: 0; color: #c9c9cf; font-size: 12px; }
+.trialbar .tsec ul { padding-left: 16px; display: grid; gap: 2px; }
+.trialbar .tsec li span { color: #8b8b94; }
+.trialbar .tsec a { color: #c4b5fd; }
+.trialbar .tsec form { display: grid; gap: 4px; }
+.trialbar .tsec form span { color: #8b8b94; font-size: 11px; }
+.trialbar .tsec form button { justify-self: start; background: rgba(255, 255, 255, .1); color: #f4f4f5; }
+.trialbar .tsec form button:hover { background: rgba(255, 255, 255, .18); }
+.trialbar .tsec select { font: 500 12px/1.3 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; color: #f4f4f5;
+  background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .15); border-radius: 7px; padding: 4px 6px; max-width: 100%; }

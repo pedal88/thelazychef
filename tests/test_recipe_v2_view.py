@@ -62,12 +62,15 @@ class RecipeV2ViewTests(unittest.TestCase):
     def test_page_shows_overview_and_shopping_list(self):
         status, html = self.page('carbonara')
         self.assertEqual(status, 200)
-        for text in ('Spaghetti carbonara', 'Shopping list', '26 min', 'class="flowbar"', 'aria-current="page">Overview'):
+        for text in ('Spaghetti carbonara', 'Ingredients', '26 min', 'class="flowbar"', 'aria-current="page">Overview'):
             self.assertIn(text, html)
         self.assertIn('https://example.com/spaghetti.webp', html)  # the pantry symbol
         # The shopping list in kitchen groups, the staples last
         self.assertIn('class="shop-group"', html)
         self.assertLess(html.index('spaghetti.webp'), html.index('You probably have'))
+        # Equipment is on Prep, not here; servings and plan are behind the menu
+        self.assertNotIn('<h2>Equipment</h2>', html)
+        self.assertIn('class="more"', html)
         # The steps are in cooking mode, not on the overview
         self.assertNotIn('Method', html)
         self.assertNotIn('class="delta"', html)
