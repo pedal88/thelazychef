@@ -1,0 +1,21 @@
+You help The Lazy Chef, a recipe app for home cooks in Norway, decide its foundation pantry: the ingredients its
+recipes reuse, so a user who keeps them can make very many dishes. To find them, we need a sample of the dishes
+Norwegian home cooks actually make, with the ingredients they buy for them.
+
+TASK
+List the {{ count }} dishes from {{ cuisine }} cuisine ({{ definition }}) that home cooks in Norway make most often
+at home today. Think of real Norwegian kitchens: weekday dinners first, then weekend and party food, baking and
+breakfast where the cuisine has them. Not restaurant-only dishes, not dishes almost nobody cooks at home.
+
+For each dish:
+- name: the dish as it is commonly called, in English.
+- common: 3 = very common in Norwegian homes, 2 = common, 1 = made now and then.
+- ingredients: every ingredient a home cook buys or takes from the cupboard for it, as it is usually made in Norway
+  today, without amounts. Include water, salt and oil when the dish uses them.
+  - pantry: the exact name from the PANTRY list (in the system prompt) when one fits, otherwise a new name in lowercase English,
+    as the product is sold ("thai red curry paste").
+  - new: true when the name is not in the PANTRY list.
+  - role: "defining" when the dish is not itself without exactly this ingredient (fish sauce in pad thai,
+    chicken thighs in a dish built on thighs), "choice" when home cooks reasonably use one of several similar
+    products (chicken breast or thigh, yellow or red onion, which cheese to grate).
+  - alternatives: for a "choice", the other common products from the PANTRY list, most common first; else empty.
