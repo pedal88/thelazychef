@@ -23,6 +23,12 @@ def names(items):
 
 
 class MiseModelTests(unittest.TestCase):
+    def test_the_pantry_decides_what_is_a_staple(self):
+        self.assertTrue(mise.staple({'name': 'hvetemel', 'pantry_tier': 'staple'}))
+        self.assertFalse(mise.staple({'name': 'salt', 'pantry_tier': 'core'}))  # the pantry wins over the name
+        self.assertTrue(mise.staple({'name': 'salt'}))  # not in the pantry: by name
+        self.assertFalse(mise.staple({'name': 'smør'}))
+
     def test_carbonara(self):
         r = ready('carbonara')
         self.assertEqual([b['name'] for b in r['bowls']], ['Skjær guancialen', 'Pisk eggeblandingen', 'Pecorino romano'])

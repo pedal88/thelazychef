@@ -177,6 +177,18 @@ Pantryet skal dekke det man trenger til de fleste retter, uten å bøye oppskrif
 
 Gjennomført 19.10.2026 (kjøring `pantry-20261019-1349`, migrering `0d4f84fc82e7`): 278 kjerne og 313 lang hale, 40 inaktive som ikke er matlaging, 23 duplikater flettet, 41 nye kjerneingredienser og 28 aliaser. Fire rettelser i Claudes forslag: «almond butter» og «nut butters (e.g. almond)» pekte på hverandre (almond butter beholdes), «paprika» (grønnsaken) gir ikke alias til paprika, fordi «paprika» i engelske oppskrifter er krydderet (aliaset peker på ground paprika), «filet» gir ikke alias til laksefilet, og «cumin» blir alias for ground cumin i stedet for en ny ingrediens. De nye fikk næringsdata (`scripts/ingredient_nutrition.py`, migrering `9482c2b9d672`, USDA der den finnes, ellers estimat fra produktetiketter) og symboler (kjøring `symbols-20261019-1411`, migrering `edb2c0f81d8a`) samme dag.
 
+### Basisvarer og grunnlager (vedtatt 22.10.2026)
+
+`tier` er en stige med fire trinn, der hvert trinn er en delmengde av det neste: **staple** ⊂ **foundation** ⊂ **core** ⊂ **long_tail**.
+
+- **Nivå 1, basisvarer (`staple`):** det vi antar at alle brukere alltid har: vann, salt, sort pepper, nøytral olje, olivenolje, sukker og hvetemel (migrering `a3d7f2c9e1b6`). Oppskriftssidene viser dem under «You probably have», ikke på handlelisten, og Gjør klart viser dem som én rad med navn. `is_staple` er den gamle markeringen som v1-genereringen leser; v2 bruker `tier`.
+- **Nivå 2, grunnlager (`foundation`):** et grunnlag på tvers av kategorier som gjør det mulig å lage svært mange retter, og som oppskriftene gjenbruker. Størrelsen er ikke bestemt (40–120 varer). Prinsippene:
+  - **Standardvalg, ikke regel.** Der retten gir et reelt valg (hvilken del av kyllingen, hvilken løk, hvilken ost), bruker genereringen varen i grunnlageret: kyllingfilet er standard for kylling. Ingrediensen som gjør retten til det den er, byttes aldri (lårfilet i en langtidskokt gryte, fiskesaus i pad thai). Avvik fra standarden får en kort begrunnelse som admin ser. Dette holder vedtaket over om at pantryet ikke skal bøye oppskriftene.
+  - **Standardvarianten** er den av variantene til en grunnvare (`base_ingredient_id`) som ligger i grunnlageret. Det trengs ikke noe eget felt.
+  - **Nøkkelsmaker for de største kjøkkenene** hører hjemme i grunnlageret (for eksempel garam masala, fiskesaus, soyasaus), selv om de ikke brukes på tvers.
+  - **«+N ekstra»** (varer utenfor grunnlageret og basisvarene) vises per oppskrift som et tall, ikke som en grense.
+  - Bygget slik at det kan bli brukerens eget skap senere: grunnlageret er da et forslag brukeren krysser av i.
+
 ### Gjenstående pantry-feil
 
 Funnet under gjennomgangen av ingredienssymbolene 18.10.2026. De ryddes i v2-bygget, før nygenereringen, med fletting (linjene flyttes, navnet blir alias) og nye navn:

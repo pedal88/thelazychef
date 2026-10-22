@@ -197,7 +197,7 @@ def build(recipe, servings=None, plan='calm'):
         if e['to_taste'] and not e['amounts']:
             notes.append('to taste')
         found = pantry.get(e.get('pantry_id'))
-        group = groups.group_of(found, mise.staple({'name': e['name'], 'pantry_name': found.name if found else ''}))
+        group = groups.group_of(found, mise.staple({'name': e['name'], **({'pantry_tier': found.tier} if found else {})}))
         shop.append({'name': e['name'], 'amount': ' + '.join(fmt_amount(a['amount'], a['unit']) for a in e['amounts']),
                      'note': ' · '.join(notes), 'symbol': symbol(found, e['name'], 36 if group == 'staples' else 56),
                      'missing': not e.get('pantry_id') or e['pantry_id'] not in pantry, 'group': group})
@@ -217,6 +217,7 @@ def build(recipe, servings=None, plan='calm'):
     for i in v2['ingredients']:
         if ingredients.get(i['local_id']) is not None:
             i['pantry_name'] = ingredients[i['local_id']].name
+            i['pantry_tier'] = ingredients[i['local_id']].tier
     # The river delta: every line as the drawing shows it, with the amount for these servings
     pictured = {lid: {'name': i['name'], 'img': (ingredients.get(lid).image_url if ingredients.get(lid) is not None else None),
                       'amount': fmt_amount(i['amount'] * factor, i.get('unit')) if i.get('amount') is not None else '',
