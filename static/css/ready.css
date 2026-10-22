@@ -32,22 +32,31 @@
 .bowl[aria-pressed="true"] { background: var(--color-soft); }
 .bowl[aria-pressed="true"] .bno { background: var(--color-prep); color: var(--color-paper); }
 .bowl[aria-pressed="true"] .state { color: var(--color-prep-ink); font-weight: 600; }
-.bowl[aria-pressed="true"] .tiles { opacity: .5; }
+.bowl .tiles { position: relative; }
+.bowl[aria-pressed="true"] .tiles::after { content: ""; position: absolute; inset: -4px; background: var(--color-soft); opacity: .55; }
 
 /* A tile: symbol, amount and name */
-.tile { display: grid; justify-items: center; align-content: start; gap: 2px; width: 72px; text-align: center; }
+.tile { display: grid; justify-items: center; align-content: start; gap: 2px; width: 84px; text-align: center; }
 .tile .sym { position: relative; overflow: visible; }
-.tile .sym img { border-radius: inherit; }
 .tile .mark { position: absolute; right: -4px; bottom: -4px; width: 16px; height: 16px; border-radius: 50%; background: var(--color-paper); border: 1px solid var(--color-line); display: grid; place-items: center; }
 .tile .mark svg { width: 10px; height: 10px; }
 .tile .ta { font: 500 12px/1.2 var(--font-mono); white-space: nowrap; }
 .tile .tn { font-size: 13px; line-height: 1.2; overflow-wrap: break-word; hyphens: auto; max-width: 100%; }
 .tile .tn em { display: block; font-style: normal; font-size: 12px; color: var(--color-muted); }
 
-.fetchgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: var(--space-2); }
-.ftile { width: auto; padding: var(--space-2) var(--space-1); background: var(--color-paper); border: 1px solid var(--color-line); border-radius: var(--radius-sm); }
-.btile { border-style: dashed; background: var(--color-soft); }
-.ftile[aria-pressed="true"], .eq[aria-pressed="true"], .task[aria-pressed="true"] { opacity: .45; }
+.fetchgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: var(--space-2); }
+.ftile { width: auto; padding: var(--space-1) 4px var(--space-2); background: var(--color-paper); border: 1px solid var(--color-line); border-radius: var(--radius-sm); }
+/* Take out, in kitchen groups; the staples are one row of names */
+/* The groups flow side by side, since most have one or two things; the staples take a row of their own */
+.tgroups { display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-4); }
+.tg-basics { flex-basis: 100%; }
+.tgtiles { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.tgtiles .ftile { width: 92px; }
+.tgroup-h { font: 500 11px/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--color-muted); margin: 0 0 var(--space-1); }
+.basics { display: flex; flex-wrap: wrap; gap: 6px; }
+.basic { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 12px 0 4px; background: var(--color-paper); border: 1px dashed var(--color-line-strong); border-radius: var(--radius-pill); font-size: 14px; }
+.basic[aria-pressed="true"] span { text-decoration: line-through; }
+.ftile[aria-pressed="true"], .eq[aria-pressed="true"], .task[aria-pressed="true"], .basic[aria-pressed="true"] { opacity: .45; }
 .ftile[aria-pressed="true"] .tn { text-decoration: line-through; }
 
 .task { display: grid; gap: 2px; width: 100%; text-align: left; padding: var(--space-3) var(--space-4); margin-bottom: var(--space-2); background: var(--color-paper); border: 1px solid var(--color-line); border-radius: var(--radius); }

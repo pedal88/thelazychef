@@ -65,6 +65,9 @@ class RecipeV2ViewTests(unittest.TestCase):
         for text in ('Spaghetti carbonara', 'Shopping list', '26 min', 'class="flowbar"', 'aria-current="page">Overview'):
             self.assertIn(text, html)
         self.assertIn('https://example.com/spaghetti.webp', html)  # the pantry symbol
+        # The shopping list in kitchen groups, the staples last
+        self.assertIn('class="shop-group"', html)
+        self.assertLess(html.index('spaghetti.webp'), html.index('You probably have'))
         # The steps are in cooking mode, not on the overview
         self.assertNotIn('Method', html)
         self.assertNotIn('class="delta"', html)

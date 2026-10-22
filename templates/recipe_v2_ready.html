@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{# Prep (Gjør klart) for a v2 recipe: bowls to fill, things to take out, the counter and the equipment.
+{# Prep (Gjør klart) for a v2 recipe: bowls to fill, the rest to take out in kitchen groups, and the equipment.
    Derived from the graph by services/recipe_v2/mise.py; ticks are kept on the device by static/js/ready.js. #}
 {% from "components/delta.html" import MARKS %}
 {% from "components/recipe_head.html" import recipe_head with context %}
@@ -21,7 +21,7 @@
 {%- endmacro %}
 
 {% macro tile(p) -%}
-<span class="tile">{{ sym(p, 44) }}<span class="ta">{{ p.amount or 'to taste' }}</span><span class="tn" lang="{{ lang }}">{{ p.name }}{% if p.prep %}<em>{{ p.prep }}</em>{% endif %}</span></span>
+<span class="tile">{{ sym(p, 64) }}<span class="ta">{{ p.amount or 'to taste' }}</span><span class="tn" lang="{{ lang }}">{{ p.name }}{% if p.prep %}<em>{{ p.prep }}</em>{% endif %}</span></span>
 {%- endmacro %}
 
 {% macro bowl(b) -%}
@@ -32,9 +32,9 @@
 </button>
 {%- endmacro %}
 
-{% macro loose(items, counter=False) -%}
+{% macro loose(items) -%}
 <div class="fetchgrid">{% for f in items %}
-  <button type="button" class="tile ftile{{ ' btile' if counter }}" data-tick="{{ f.key }}" aria-pressed="false">{{ sym(f.line, 44) }}<span class="ta">{{ f.line.amount or 'to taste' }}</span><span class="tn" lang="{{ lang }}">{{ f.line.name }}<em>step {{ f.used.no }}</em></span></button>
+  <button type="button" class="tile ftile" data-tick="{{ f.key }}" aria-pressed="false">{{ sym(f.line, 64) }}<span class="ta">{{ f.line.amount or 'to taste' }}</span><span class="tn" lang="{{ lang }}">{{ f.line.name }}<em>step {{ f.used.no }}</em></span></button>
 {% endfor %}</div>
 {%- endmacro %}
 
@@ -73,16 +73,23 @@
     </div>
 
     <div class="ready-side">
-      {% if r.fetch %}
+      {% if r.takeout %}
       <section>
         <div class="sec-head"><h2>Take out</h2><span class="eyebrow">measure when you use them</span></div>
-        {{ loose(r.fetch) }}
-      </section>
-      {% endif %}
-      {% if r.bench %}
-      <section>
-        <div class="sec-head"><h2>On the counter</h2><span class="eyebrow">stays out</span></div>
-        {{ loose(r.bench, counter=True) }}
+        <div class="tgroups">
+        {% for g in r.takeout %}
+        <div class="tg{{ ' tg-basics' if g.key == 'staples' }}">
+        <h3 class="tgroup-h">{{ g.label }}</h3>
+        {% if g.key == 'staples' %}
+        <div class="basics">{% for t in g['items'] %}<button type="button" class="basic" data-tick="{{ t.key }}" aria-pressed="false">{{ sym(t.line, 32) }}<span lang="{{ lang }}">{{ t.line.name }}</span></button>{% endfor %}</div>
+        {% else %}
+        <div class="tgtiles">{% for t in g['items'] %}
+          <button type="button" class="tile ftile" data-tick="{{ t.key }}" aria-pressed="false">{{ sym(t.line, 64) }}<span class="ta">{{ t.amount }}</span><span class="tn" lang="{{ lang }}">{{ t.line.name }}<em>step {{ t.steps|join(', ') }}</em></span></button>
+        {% endfor %}</div>
+        {% endif %}
+        </div>
+        {% endfor %}
+        </div>
       </section>
       {% endif %}
       {% if v.equipment %}

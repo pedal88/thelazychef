@@ -15,7 +15,7 @@ from functools import lru_cache
 from markupsafe import Markup, escape
 
 from database.models import Ingredient, Recipe, RecipeLine, RecipeStep, db
-from services.recipe_v2 import delta, mise, nutrition, whole
+from services.recipe_v2 import delta, groups, mise, nutrition, whole
 from services.recipe_v2.derive import HEAT_LABELS
 from services.recipe_v2.planner import MODES, plan_v2
 from services.recipe_v2.read import shopping_list
@@ -116,7 +116,7 @@ def step_html(s, lines, ingredients, factor):
             return escape(m.group(0))
         amount = fmt_amount(line['amount'] * factor if line.get('amount') is not None else None, line.get('unit'))
         label = f"{amount} {line['name']}".strip()
-        out = Markup('<span class="pill">{sym}{label}</span>').format(sym=symbol(ingredients.get(m.group(1)), line['name'], 20), label=label)
+        out = Markup('<span class="pill">{sym}{label}</span>').format(sym=symbol(ingredients.get(m.group(1)), line['name'], 24), label=label)
         if s['phase'] != 'prep' and line.get('prep_style'):
             out += Markup(' <span class="prep">({})</span>').format(line['prep_style'])
         return out
@@ -196,9 +196,11 @@ def build(recipe, servings=None, plan='calm'):
             notes.append(f"used {e['uses']} times")
         if e['to_taste'] and not e['amounts']:
             notes.append('to taste')
+        found = pantry.get(e.get('pantry_id'))
+        group = groups.group_of(found, mise.staple({'name': e['name'], 'pantry_name': found.name if found else ''}))
         shop.append({'name': e['name'], 'amount': ' + '.join(fmt_amount(a['amount'], a['unit']) for a in e['amounts']),
-                     'note': ' · '.join(notes), 'symbol': symbol(pantry.get(e.get('pantry_id')), e['name'], 36),
-                     'missing': not e.get('pantry_id') or e['pantry_id'] not in pantry})
+                     'note': ' · '.join(notes), 'symbol': symbol(found, e['name'], 36 if group == 'staples' else 56),
+                     'missing': not e.get('pantry_id') or e['pantry_id'] not in pantry, 'group': group})
 
     steps = []
     for n, sid in enumerate(sch['order'], 1):
@@ -212,15 +214,16 @@ def build(recipe, servings=None, plan='calm'):
             'html': step_html(s, lines, ingredients, factor), 'done_when': s.get('done_when'),
         })
 
-    # The river delta: every line as the drawing shows it, with the amount for these servings
-    pictured = {lid: {'name': i['name'], 'img': (ingredients.get(lid).image_url if ingredients.get(lid) is not None else None),
-                      'amount': fmt_amount(i['amount'] * factor, i.get('unit')) if i.get('amount') is not None else '',
-                      'prep': i.get('prep_style') or '', 'cut': i.get('cut')} for lid, i in lines.items()}
-
-    # Prep: the lines in bowls, to take out and on the counter, drawn like in the delta
     for i in v2['ingredients']:
         if ingredients.get(i['local_id']) is not None:
             i['pantry_name'] = ingredients[i['local_id']].name
+    # The river delta: every line as the drawing shows it, with the amount for these servings
+    pictured = {lid: {'name': i['name'], 'img': (ingredients.get(lid).image_url if ingredients.get(lid) is not None else None),
+                      'amount': fmt_amount(i['amount'] * factor, i.get('unit')) if i.get('amount') is not None else '',
+                      'prep': i.get('prep_style') or '', 'cut': i.get('cut'),
+                      'group': groups.group_of(ingredients.get(lid), mise.staple(i))} for lid, i in lines.items()}
+
+    # Prep: the lines in bowls, and the rest to take out, drawn like in the delta
     ready = mise.build(v2, sch, recipe.language) if v2['steps'] else None
     if ready:
         def tile(i):
@@ -229,6 +232,7 @@ def build(recipe, servings=None, plan='calm'):
             b['lines'] = [tile(i) for i in b['lines']]
         for f in ready['fetch'] + ready['bench'] + [f for g in ready['later'] for f in g['fetch']]:
             f['line'] = tile(f['line'])
+        ready['takeout'] = take_out(ready['fetch'] + ready['bench'])
 
     if ready:
         cook_needs(steps, steps_by, ready, sch, {lid: tile(i) for lid, i in lines.items()})
@@ -242,7 +246,7 @@ def build(recipe, servings=None, plan='calm'):
         'title': recipe.title, 'servings': servings, 'scalable': scalable, 'yield_text': recipe.yield_text,
         'total': duration(sch['T']), 'active': duration(sch['A']), 'plan': plan, 'plans': PLAN_NAMES,
         'plan_hint': PLAN_HINTS[plan], 'parts': [c['name'] for c in v2['components']],
-        'shopping': shop, 'equipment': [cat['equipment'].get(q, q) for q in first_use], 'steps': steps,
+        'shopping': shop, 'shop_groups': groups.grouped(shop), 'equipment': [cat['equipment'].get(q, q) for q in first_use], 'steps': steps,
         'chef_note': recipe.chef_note, 'missing': sum(1 for s in shop if s['missing']),
         'errors': [e for e in recipe.validation_errors or [] if e.get('rule') not in ('persona', 'image')],
         'image_notes': [e['message'] for e in recipe.validation_errors or [] if e.get('rule') == 'image'],
@@ -257,6 +261,27 @@ def build(recipe, servings=None, plan='calm'):
         # Why there is no nutrition, for the admin: lines without grams, and lines without pantry nutrition
         'nutrition_gap': None if recipe.total_calories is not None else nutrition.compute(recipe.lines),
     }
+
+
+def take_out(loose):
+    """Prep's one list of what is not in a bowl: what to take out and what stays on the counter, in kitchen groups.
+
+    An ingredient used in several steps is one tile, with its amounts and steps; the staples are one row
+    of names, since you have them and the steps give the amounts (RECIPE_VISUALIZATIONS.md 9.16)."""
+    items = {}
+    for f in loose:
+        line = f['line']
+        item = items.setdefault(line['name'].strip().lower(), {'key': f['key'], 'line': line, 'group': line['group'],
+                                                               'amounts': [], 'steps': []})
+        amount = line['amount'] or 'to taste'
+        if amount not in item['amounts']:
+            item['amounts'].append(amount)
+        if f['used']['no'] not in item['steps']:
+            item['steps'].append(f['used']['no'])
+    for item in items.values():
+        item['amount'] = ' + '.join(item['amounts'])
+        item['steps'].sort()
+    return groups.grouped(items.values())
 
 
 def cook_needs(steps, steps_by, ready, sch, tiles):

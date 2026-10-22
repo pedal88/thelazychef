@@ -31,7 +31,7 @@
 
 .g2-cell { display: flex; justify-content: center; min-width: 0; }
 .g2-node { position: relative; z-index: 1; display: grid; justify-items: center; text-align: center; gap: 2px; padding: 4px 6px; transition: opacity .2s; }
-.g2-node.done { opacity: .38; }
+.g2-node.done { opacity: .38; background: var(--color-paper); border-radius: 10px; }  /* the paper keeps the images' white hidden */
 .g2-note { font-size: 14px; color: var(--color-muted); }
 .fx-also { color: var(--color-ink); }
 .fx-ref { display: inline-grid; place-items: center; min-width: 15px; height: 15px; border-radius: 50%; border: 1.2px solid var(--line-strong); font: 600 9px/1 var(--font-mono); color: var(--color-muted); vertical-align: 1px; }
@@ -62,14 +62,13 @@
 
 .g2-pics { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 8px; max-width: 190px; margin-top: 4px; }
 .skv.horiz .g2-pics { max-width: 170px; }
-.skv.horiz .g2-pics:has(.fx-bowl) { max-width: 220px; }
-.fx-bowl { position: relative; display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 2px 5px; margin: 0 2px 4px; max-width: 262px; padding: 6px 10px 5px; border-radius: 14px; background: color-mix(in srgb, var(--pencil) 8%, transparent); }
-.fx-bowl img { mix-blend-mode: multiply; }
+.skv.horiz .g2-pics:has(.fx-bowl) { max-width: 280px; }
+.fx-bowl { position: relative; display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 2px 5px; margin: 0 2px 4px; max-width: 300px; padding: 6px 10px 5px; border-radius: 14px; background: color-mix(in srgb, var(--pencil) 8%, transparent); }
 .fx-bowl .mn-ing small { font-size: 10px; }
 .mn-ing { display: grid; justify-items: center; gap: 1px; }
 .mn-ing small { font: 500 10.5px var(--font-mono); color: var(--color-muted); white-space: nowrap; }
 .mn-ing .ing-img { position: relative; flex: none; width: var(--s); height: var(--s); display: inline-grid; place-items: center; }
-.mn-ing .ing-img img { width: 100%; height: 100%; object-fit: contain; }
+.mn-ing .ing-img img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; transform: scale(1.25); }  /* as .sym in recipe_v2.css */
 .ing-letter { width: 100%; height: 100%; display: grid; place-items: center; border-radius: 28%; background: var(--color-soft); border: 1px solid var(--color-line); color: var(--color-muted); font: 600 calc(var(--s) * .42)/1 var(--font-sans); }
 .ing-img .mark { position: absolute; right: -4px; bottom: -4px; width: 16px; height: 16px; border-radius: 50%; background: var(--color-paper); border: 1px solid var(--line-strong); display: grid; place-items: center; color: var(--color-ink); }
 .ing-img .mark svg { width: 10px; height: 10px; }
