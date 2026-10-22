@@ -39,6 +39,13 @@
                 document.querySelectorAll('[data-look-switch] [data-look]').forEach(function (b) {
                     b.setAttribute('aria-pressed', String(b.getAttribute('data-look') === (FONTS[look] ? look : 'today')));
                 });
+                var bar = document.querySelector('[data-trial]');  // the trial chip stays open across the reloads
+                if (bar) {
+                    try { bar.open = localStorage.getItem('trial-chip') === 'open'; } catch (e) { /* closed */ }
+                    bar.addEventListener('toggle', function () {
+                        try { localStorage.setItem('trial-chip', bar.open ? 'open' : 'closed'); } catch (e) { /* not kept */ }
+                    });
+                }
             });
             document.addEventListener('click', function (e) {
                 var img = e.target.closest && e.target.closest('[data-img-switch] [data-img]');
