@@ -24,7 +24,7 @@ def chefs_list():
         'Without heat': [m['id'] for m in methods if not m['heat']],
     }
 
-    return render_template('chefs.html', chefs=get_chefs(), diets_list=diets_data, grouped_methods=grouped_methods)
+    return render_template('chefs.html', chefs=get_chefs(include_retired=True), diets_list=diets_data, grouped_methods=grouped_methods)
 
 @admin_chefs_bp.route('/admin/chefs/save', methods=['POST'])
 @login_required

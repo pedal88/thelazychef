@@ -25,7 +25,7 @@ def index():
     for r in _published():
         counts[r.chef_id] = counts.get(r.chef_id, 0) + 1
     # Only chefs with a description are personas; bare rows made by old scripts are left out
-    chefs = [chef_to_dict(c) for c in db.session.execute(db.select(Chef).order_by(Chef.name)).scalars() if c.description]
+    chefs = [chef_to_dict(c) for c in db.session.execute(db.select(Chef).where(Chef.active.is_(True)).order_by(Chef.name)).scalars() if c.description]
     return render_template('chef_personas.html', chefs=[dict(c, badges=badges(c)) for c in chefs], counts=counts)
 
 

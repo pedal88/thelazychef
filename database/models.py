@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, validates
-from sqlalchemy import String, Integer, Boolean, Text, Float, ForeignKey, DateTime, JSON, UniqueConstraint
+from sqlalchemy import String, Integer, Boolean, Text, Float, ForeignKey, DateTime, JSON, UniqueConstraint, true as sa_true
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
@@ -259,6 +259,8 @@ class Chef(db.Model):
     cooking_style: Mapped[str] = mapped_column(Text, default='{}')
     ingredient_logic: Mapped[str] = mapped_column(Text, default='{}')
     instruction_style: Mapped[str] = mapped_column(Text, default='{}')
+    # Retired chefs keep their recipes but are no longer offered (the three philosophies replaced them, 22.10.2026)
+    active: Mapped[bool] = mapped_column(Boolean, default=True, server_default=sa_true(), nullable=False)
 
     recipes: Mapped[list["Recipe"]] = relationship(back_populates="chef")
 
@@ -296,6 +298,9 @@ class Recipe(db.Model):
     base_recipe_id: Mapped[Optional[int]] = mapped_column(ForeignKey("recipe.id", ondelete='SET NULL'), nullable=True, index=True)
     # The language the recipe's text is written in, ISO 639-1 ('en', 'nb'); None when not known (services/recipe_v2/language.py)
     language: Mapped[Optional[str]] = mapped_column(String(8), nullable=True)
+    # Settings the recipe was written with, on top of the chef: 'vegetarian', 'kid_friendly', 'low_carb'
+    # (services/recipe_v2/persona.py SETTINGS)
+    settings: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
     # The dish image (image_filename): how one serving is presented, the prompt it was made from and the style
     # (services/recipe_v2/images.py, RECIPE_VISUALIZATIONS.md 9.7)
     plating: Mapped[Optional[str]] = mapped_column(Text, nullable=True)

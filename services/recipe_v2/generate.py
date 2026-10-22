@@ -171,24 +171,23 @@ def refresh(recipe, chef=None):
 
 def recalculate(recipe):
     """Refresh a saved v2 recipe in place (services/recipe_v2/derive.py, nutrition.py, persona.py)."""
-    chef = None
-    if recipe.chef_id and recipe.source_type in PERSONA_KINDS:
-        chef = persona.spec(db.session.get(Chef, recipe.chef_id))
-    refresh(recipe, chef)
+    refresh(recipe, persona.spec_for(recipe))
     missing = any(line.ingredient_id is None for line in recipe.lines)
     recipe.is_flagged_for_review = bool(recipe.validation_errors) or missing
     return recipe
 
 
-def create_recipe(kind, source, chef_id=None, language=None, call=None, recipe=None):
+def create_recipe(kind, source, chef_id=None, language=None, call=None, recipe=None, settings=None):
     """Run both rounds and save the result as a draft. Returns (recipe, report).
 
-    recipe is the placeholder made when the job was queued; without it a new recipe is made.
+    recipe is the placeholder made when the job was queued; without it a new recipe is made. settings
+    (persona.SETTINGS) come from the placeholder, or are given for a new recipe.
 
     The recipe is flagged for review when it is still invalid after the retries,
     when some lines are not in the pantry, or when it breaks a hard rule of its chef persona."""
     chef_id = recipe.chef_id if recipe is not None else chef_id
-    chef = persona.spec(db.session.get(Chef, chef_id)) if chef_id else None
+    settings = recipe.settings if recipe is not None else settings
+    chef = persona.spec(db.session.get(Chef, chef_id) if chef_id else None, settings)
     text, round1 = write_text(kind, source, language, call=call, chef=chef)
     data, attempts = structure(text, call=call)
     calls = [round1] + attempts
@@ -197,7 +196,7 @@ def create_recipe(kind, source, chef_id=None, language=None, call=None, recipe=N
     first_line = next((line.strip() for line in text.splitlines() if line.strip()), '')
     title = ((data or {}).get('title') or '').strip() or first_line[:200] or source[:120]
     if recipe is None:
-        recipe = Recipe(cuisine='', difficulty='', chef_id=chef_id)
+        recipe = Recipe(cuisine='', difficulty='', chef_id=chef_id, settings=settings or None)
         db.session.add(recipe)
     recipe.title, recipe.status, recipe.source_type = title, 'draft', SOURCE_TYPES[kind]
     # A version keeps the note on what it is a version of; the base recipe's text is not an input worth storing

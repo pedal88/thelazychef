@@ -199,6 +199,23 @@ Gjennomført 19.10.2026 (kjøring `pantry-20261019-1349`, migrering `0d4f84fc82e
 **Holdbarhet (`ingredient.keeps`, migrering `b8d2e5f1a9c3`):** hvor lenge varen holder slik den vanligvis oppbevares hjemme: `days` (ferske urter, salat, kjøtt og fisk i kjøleskapet), `weeks` (de fleste grønnsaker, meieri, egg), `months` (rotgrønnsaker, løk, hard ost, sauser) eller `years` (tørrvarer, hermetikk, krydder, oljer). Satt fra underkategori, så hovedkategori, med unntak per navn (løk og hvitløk holder i måneder, soyasaus og hermetisk kokosmelk i år). Brukes nå til grunnlaget; senere til handlelisten, rester og ukemenyer.
 - Listen kan endres når som helst med en ny migrering; ny versjon når nygenereringen viser hvor mange «+N ekstra» oppskriftene får.
 
+### Kokker og innstillinger (vedtatt 22.10.2026)
+
+De seks første kokkene blandet tre ting: en filosofi (klassisk, snarveier), en målgruppe (barnefamilien) og et kosthold (lavkarbo, vegetar). Det ga hull (en rask lavkarbo-middag) og overlapp. Nå er **en kokk en filosofi**, en regel for hvordan den velger når kvalitet, tid og innsats trekker hver sin vei, og **kosthold og målgruppe er innstillinger** som legges på hvilken som helst kokk (migrering `d7f3a1c9e5b2`, `data/agents/chefs.json`, `services/recipe_v2/persona.py`).
+
+| Kokk | Regel | Tid | Ingredienser utenom basisvarer | Utenfor grunnlaget | Form | Ferdigvarer |
+|---|---|---|---|---|---|---|
+| The Classicist | Lag originalen, i alle kjøkken; bytt aldri det som definerer retten | – | – | – | fersk | – |
+| The Smart Cook | Snarvei bare når forskjellen knapt merkes på tallerkenen | 45 min | 10 | 3 | blandet | når de er like gode |
+| The Minimalist | Færrest mulig ting, raskt; et litt svakere resultat er greit | 25 min | 6 | 1 | snarvei | gjerne |
+
+- **Innstillinger** (`recipe.settings`): `vegetarian` (ikke kjøtt eller fisk), `kid_friendly` (mild, kjente smaker, maks styrke 1) og `low_carb` (rundt 20 g karbohydrat per porsjon). De strammer kokkens regler (det strengeste vinner) og legger en linje til i prompten. De gjelder en idé og versjoner av den; en limt inn eller lenket oppskrift beholdes som den er.
+- **Nye regler som sjekkes** etter lagring: antall ingredienser utenom basisvarene, og antall utenfor grunnlageret og basisvarene (linjer som ikke finnes i pantryet teller som utenfor). Brudd noteres og flagger oppskriften, som før.
+- **Bare prompt:** form på urter, hvitløk og ingefær (fersk, blandet, snarvei; fersk der den spises rå eller som pynt) og ferdigvarer.
+- **De seks gamle** beholdes med oppskriftene sine, men tilbys ikke lenger (`chef.active`). Lavkarbo, barnevennlig og vegetar er nå innstillinger; The Family Cook og The Green Chef er dekket av The Smart Cook med innstilling.
+- **Kjent begrensning:** vegetar-sjekken ser bare linjer som finnes i pantryet. Kjøtt som ikke er der (guanciale), slipper gjennom sjekken, men ikke prompten.
+- **Testen:** `scripts/chef_trial.py` lager de samme rettene med hver kokk. Kan man ikke se hvilken kokk som laget hvilken uten navnet, er filosofiene for vage.
+
 ### Gjenstående pantry-feil
 
 Funnet under gjennomgangen av ingredienssymbolene 18.10.2026. De ryddes i v2-bygget, før nygenereringen, med fletting (linjene flyttes, navnet blir alias) og nye navn:

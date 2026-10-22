@@ -19,6 +19,11 @@
       {% for c in chefs %}<option value="{{ c.id }}"{% if c.id == chef_id %} selected{% endif %}>{{ c.name }}: {{ c.archetype }}</option>{% endfor %}
     </select>
     <p class="hint">The chef writes an idea in their style and rules. A pasted recipe or a link is kept as it is.</p>
+    <fieldset class="settings">
+      <legend class="eyebrow">Settings</legend>
+      {% for key, s in settings.items() %}<label><input type="checkbox" name="settings" value="{{ key }}"{% if key in chosen %} checked{% endif %}> {{ s[0] }}</label>{% endfor %}
+      <p class="hint">On top of any chef, for an idea.</p>
+    </fieldset>
     <label for="language" class="eyebrow">Language</label>
     <select id="language" name="language">
       {% for code, name in languages.items() %}<option value="{{ code }}"{% if code == language %} selected{% endif %}>{{ name }}</option>{% endfor %}

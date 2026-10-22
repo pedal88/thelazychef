@@ -109,6 +109,37 @@ class RecipeV2RouteTests(unittest.TestCase):
         self.assertTrue(recipe.is_flagged_for_review)
         self.assertIn(b'It breaks a rule of its chef', self.client.get(f'/recipe/{recipe.id}').data)
 
+    def test_settings_go_on_top_of_the_chef_and_retired_chefs_are_not_offered(self):
+        with open(os.path.join(ROOT, 'data', 'agents', 'chefs.json'), encoding='utf-8') as f:
+            seeds = {c['id']: c for c in json.load(f)['chefs']}
+        for cid, active in (('the_minimalist', True), ('family_cook', False)):
+            c = seeds[cid]
+            db.session.add(Chef(id=cid, name=c['name'], archetype=c['archetype'], description=c['description'],
+                                image_filename='', active=active, **{k: json.dumps(c[k]) for k in ('constraints', 'diet_preferences',
+                                'cooking_style', 'ingredient_logic', 'instruction_style')}))
+        db.session.commit()
+        self.login()
+        page = self.client.get('/new-recipe/v2').data
+        self.assertIn(b'The Minimalist', page)
+        self.assertNotIn(b'The Family Cook', page)
+        self.assertIn(b'value="kid_friendly"', page)
+        asked = []
+        call = fake_claude()
+        with mock.patch.object(claude, 'call', lambda *a, **kw: asked.append(a[2]) or call(*a, **kw)):
+            self.client.post('/new-recipe/v2', data={'source': 'Spaghetti carbonara for four', 'chef_id': 'the_minimalist',
+                                                     'settings': ['vegetarian', 'low_carb', 'nonsense']})
+        recipe = db.session.execute(db.select(Recipe)).scalar_one()
+        self.assertEqual((recipe.chef_id, recipe.settings), ('the_minimalist', ['vegetarian', 'low_carb']))
+        prompt = asked[0][0]['content']
+        for part in ('Write it as The Minimalist', 'Vegetarian:', 'Low carb:', 'at most 6 ingredients'):
+            self.assertIn(part, prompt)
+        notes = [e['message'] for e in recipe.validation_errors if e['rule'] == 'persona']
+        self.assertTrue(any('outside the foundation pantry' in n and 'allows 1' in n for n in notes), notes)
+        self.assertIn('Vegetarian · Low carb', self.client.get(f'/recipe/{recipe.id}').get_data(as_text=True))
+        with mock.patch.object(claude, 'call', fake_claude()):
+            self.client.post('/new-recipe/v2', data={'source': 'Fish pie', 'chef_id': 'family_cook'})
+        self.assertIsNone(db.session.execute(db.select(Recipe).order_by(Recipe.id.desc())).scalars().first().chef_id)
+
     def test_an_unknown_chef_is_ignored(self):
         self.login()
         with mock.patch.object(claude, 'call', fake_claude()):
