@@ -110,7 +110,7 @@ class GenerateTests(unittest.TestCase):
         self.assertEqual(next(line.cut for line in saved.lines if line.local_id == cut_line['local_id']), 'grate')
         # The catalogs are in the prompt, and the schema only allows their values
         system, schema = fake.requests[1]['system'], fake.requests[1]['schema']
-        for text in ('CUT CATALOG: chop', 'CUISINE LIST: Italian', 'DIFFICULTY LIST: Simplistic', 'MEAL TYPE LIST: Breakfast', '20b. verb'):
+        for text in ('CUT CATALOG: chop', 'CUISINE LIST: Nordic (Norwegian first', 'DIFFICULTY LIST: Simplistic', 'MEAL TYPE LIST: Breakfast', '20b. verb'):
             self.assertIn(text, system)
         self.assertEqual(schema['properties']['difficulty']['enum'], ['Simplistic', 'Moderate', 'Elevated'])
         self.assertIn('grate', schema['$defs']['IngredientLineV2']['properties']['cut']['enum'])

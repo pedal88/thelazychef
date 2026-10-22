@@ -216,6 +216,14 @@ De seks første kokkene blandet tre ting: en filosofi (klassisk, snarveier), en 
 - **Kjent begrensning:** vegetar-sjekken ser bare linjer som finnes i pantryet. Kjøtt som ikke er der (guanciale), slipper gjennom sjekken, men ikke prompten.
 - **Testen:** `scripts/chef_trial.py` lager de samme rettene med hver kokk. Kan man ikke se hvilken kokk som laget hvilken uten navnet, er filosofiene for vage.
 
+### Kjøkkenlisten (vedtatt 22.10.2026)
+
+13 kjøkken pluss Other, valgt etter at hvert kjøkken skal ha egne ingredienser, være noe brukeren kjenner igjen og filtrerer på, ikke overlappe andre og ha omtrent samme detaljnivå (`data/constraints/graph_metadata.json`): Nordic, Italian, Mexican, American, Indian, Thai, Chinese, Middle Eastern, Japanese, French, Greek, Korean og Eastern European. `cuisine_notes` sier hva et kjøkken dekker, i prompten: Nordic er norsk først og de svenske og danske rettene som er vanlige i Norge, Mexican tar med Tex-Mex (fredagstaco), Middle Eastern er levantinsk, tyrkisk og persisk, Eastern European er polsk først.
+
+- Nytt: Middle Eastern og Eastern European. Norwegian heter Nordic (oppskriftene får nytt navn, migrering `f4a8c2e6b9d1`).
+- Ikke lenger tilbudt: Mediterranean (overlappet Italian, Greek og Spanish), Spanish og Vietnamese (lite laget i norske hjem, ingrediensene dekkes av andre). Eldre oppskrifter beholder dem og vises med flagget sitt (`retired_cuisines`).
+- Utvalget til grunnlageret brukte de samme 13 kjøkkenene (`scripts/foundation_sample.py`).
+
 ### Gjenstående pantry-feil
 
 Funnet under gjennomgangen av ingredienssymbolene 18.10.2026. De ryddes i v2-bygget, før nygenereringen, med fletting (linjene flyttes, navnet blir alias) og nye navn:

@@ -21,7 +21,8 @@ except Exception as e:
 
 def get_node_image(group_type, name):
     if group_type == 'cuisine':
-        code = GRAPH_METADATA.get('cuisines', {}).get(name) or GRAPH_METADATA.get('cuisines', {}).get('Other', 'un')
+        code = (GRAPH_METADATA.get('cuisines', {}).get(name) or GRAPH_METADATA.get('retired_cuisines', {}).get(name)
+                or GRAPH_METADATA.get('cuisines', {}).get('Other', 'un'))
         return f"https://flagcdn.com/w80/{code}.png"
     elif group_type == 'protein':
         return GRAPH_METADATA.get('proteins', {}).get(name) or GRAPH_METADATA.get('proteins', {}).get('Other')
