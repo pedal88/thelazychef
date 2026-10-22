@@ -206,14 +206,15 @@ De seks første kokkene blandet tre ting: en filosofi (klassisk, snarveier), en 
 | Kokk | Regel | Tid | Ingredienser utenom basisvarer | Utenfor grunnlaget | Form | Ferdigvarer |
 |---|---|---|---|---|---|---|
 | The Classicist | Lag originalen, i alle kjøkken; bytt aldri det som definerer retten | – | – | – | fersk | – |
-| The Smart Cook | Snarvei bare når forskjellen knapt merkes på tallerkenen | 45 min | 10 | 3 | blandet | når de er like gode |
-| The Minimalist | Færrest mulig ting, raskt; et litt svakere resultat er greit | 25 min | 6 | 1 | snarvei | gjerne |
+| The Smart Cook | Snarvei bare når forskjellen knapt merkes på tallerkenen | 60 min | 10 | 3 | blandet | når de er like gode |
+| The Minimalist | Færrest mulig ting, raskt; et litt svakere resultat er greit | 35 min, maks 15 aktivt | 6 | 1 | snarvei | gjerne |
 
 - **Innstillinger** (`recipe.settings`): `vegetarian` (ikke kjøtt eller fisk), `kid_friendly` (mild, kjente smaker, maks styrke 1) og `low_carb` (rundt 20 g karbohydrat per porsjon). De strammer kokkens regler (det strengeste vinner) og legger en linje til i prompten. De gjelder en idé og versjoner av den; en limt inn eller lenket oppskrift beholdes som den er.
 - **Nye regler som sjekkes** etter lagring: antall ingredienser utenom basisvarene, og antall utenfor grunnlageret og basisvarene (linjer som ikke finnes i pantryet teller som utenfor). Brudd noteres og flagger oppskriften, som før.
 - **Bare prompt:** form på urter, hvitløk og ingefær (fersk, blandet, snarvei; fersk der den spises rå eller som pynt) og ferdigvarer.
 - **De seks gamle** beholdes med oppskriftene sine, men tilbys ikke lenger (`chef.active`). Lavkarbo, barnevennlig og vegetar er nå innstillinger; The Family Cook og The Green Chef er dekket av The Smart Cook med innstilling.
 - **Kjent begrensning:** vegetar-sjekken ser bare linjer som finnes i pantryet. Kjøtt som ikke er der (guanciale), slipper gjennom sjekken, men ikke prompten.
+- **Testen 22.10.2026** (lasagne, tikka masala og laks med hver kokk, pluss to med innstillinger): filosofiene skilte seg tydelig (lasagnen ble 22, 12 og 6 ingredienser), men tidsgrensene ble brutt i alle åtte oppskriftene som hadde en, med 6–20 minutter, fordi modellen planlegger optimistisk og planleggeren også teller forvarming og oppkok. Grensene ble derfor 60 minutter for The Smart Cook og 35 minutter, maks 15 aktivt, for The Minimalist (migrering `a9c3e7f1b5d2`).
 - **Testen:** `scripts/chef_trial.py` lager de samme rettene med hver kokk. Kan man ikke se hvilken kokk som laget hvilken uten navnet, er filosofiene for vage.
 
 ### Kjøkkenlisten (vedtatt 22.10.2026)

@@ -21,7 +21,7 @@ TEXT_FIELDS = ('name', 'archetype', 'description')
 
 # constraints holds the persona's hard rules (services/recipe_v2/persona.py). None means no limit.
 DIFFICULTIES = ['Simplistic', 'Moderate', 'Elevated']
-DEFAULT_RULES = {'max_total_minutes': None, 'max_cleanup': None, 'max_spice': None, 'difficulties': DIFFICULTIES,
+DEFAULT_RULES = {'max_total_minutes': None, 'max_active_minutes': None, 'max_cleanup': None, 'max_spice': None, 'difficulties': DIFFICULTIES,
                  'diet': None, 'max_carbs_per_serving': None,
                  # the philosophy in numbers (22.10.2026): ingredients besides the staples, ingredients outside the
                  # foundation pantry, which form of herbs, garlic and ginger ('fresh', 'balanced', 'shortcut') and
