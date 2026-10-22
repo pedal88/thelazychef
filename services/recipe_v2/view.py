@@ -17,6 +17,7 @@ from markupsafe import Markup, escape
 from database.models import Ingredient, Recipe, RecipeLine, RecipeStep, db
 from services.recipe_v2 import delta, groups, mise, nutrition, whole
 from services.recipe_v2.derive import HEAT_LABELS
+from services.recipe_v2.persona import SETTINGS
 from services.recipe_v2.planner import MODES, plan_v2
 from services.recipe_v2.read import shopping_list
 from services.recipe_v2.store import to_v2
@@ -328,7 +329,8 @@ def about(recipe):
             leftovers += ', freezes'
     facts = [('Cuisine', recipe.cuisine), ('Cooked in', HEAT_LABELS.get(recipe.heat_source)),
              ('Spice', SPICE[recipe.spice_level] if recipe.spice_level in range(4) else None),
-             ('Leftovers', leftovers), ('Protein', recipe.protein_type)]
+             ('Leftovers', leftovers), ('Protein', recipe.protein_type),
+             ('Made as', ' · '.join(SETTINGS[k][0] for k in recipe.settings or [] if k in SETTINGS))]
     return [(k, v) for k, v in facts if v]
 
 

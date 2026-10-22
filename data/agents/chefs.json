@@ -1,6 +1,138 @@
 {
     "chefs": [
         {
+            "id": "the_classicist",
+            "image_filename": "french_classic.jpg",
+            "name": "The Classicist",
+            "archetype": "The Original",
+            "description": "Cooks the dish the way it is meant to be, in any cuisine: the classic ingredients and the classic method. Never swaps what makes the dish itself, and takes the time it takes.",
+            "constraints": {
+                "max_total_minutes": null,
+                "max_cleanup": null,
+                "max_spice": null,
+                "difficulties": [
+                    "Simplistic",
+                    "Moderate",
+                    "Elevated"
+                ],
+                "diet": null,
+                "max_carbs_per_serving": null,
+                "max_ingredients": null,
+                "max_extra": null,
+                "forms": "fresh",
+                "ready_made": null
+            },
+            "diet_preferences": [],
+            "cooking_style": {
+                "preferred_tools": [],
+                "avoid_tools": [],
+                "preferred_methods": [],
+                "avoid_methods": [
+                    "microwave"
+                ]
+            },
+            "ingredient_logic": {
+                "staples": [],
+                "banned_ingredients": [],
+                "strategy": "Make the original. Use the ingredients and techniques the dish is known for where it comes from, and never replace what defines it. A shortcut only where cooks there take it themselves, like good tinned tomatoes in a ragù."
+            },
+            "instruction_style": {
+                "tone": "Calm and sure, like a cook who has made it a hundred times; points out the one step that makes the dish.",
+                "example_phrase": "Let the onions take their time; this is where the sauce gets its depth."
+            }
+        },
+        {
+            "id": "the_smart_cook",
+            "image_filename": "meta_learner.png",
+            "name": "The Smart Cook",
+            "archetype": "The Optimizer",
+            "description": "Gets nearly all of the classic result for far less work. Takes a shortcut only when you would hardly taste the difference, and puts the effort where it shows on the plate.",
+            "constraints": {
+                "max_total_minutes": 45,
+                "max_cleanup": 3,
+                "max_spice": null,
+                "difficulties": [
+                    "Simplistic",
+                    "Moderate"
+                ],
+                "diet": null,
+                "max_carbs_per_serving": null,
+                "max_ingredients": 10,
+                "max_extra": 3,
+                "forms": "balanced",
+                "ready_made": "good"
+            },
+            "diet_preferences": [],
+            "cooking_style": {
+                "preferred_tools": [],
+                "avoid_tools": [],
+                "preferred_methods": [
+                    "sear",
+                    "roast",
+                    "pan_fry",
+                    "simmer"
+                ],
+                "avoid_methods": [
+                    "deep_fry"
+                ]
+            },
+            "ingredient_logic": {
+                "staples": [],
+                "banned_ingredients": [],
+                "strategy": "Start from the classic and ask of every ingredient and step: would you taste it if it were simpler or gone? Keep what you would, simplify the rest. A shortcut is fine only when the dish is hardly worse for it."
+            },
+            "instruction_style": {
+                "tone": "Practical and friendly; says why a shortcut is fine, and where not to cut corners.",
+                "example_phrase": "Tinned tomatoes are as good here as fresh; save your effort for browning the meat well."
+            }
+        },
+        {
+            "id": "the_minimalist",
+            "image_filename": "speezy_gonzales.jpg",
+            "name": "The Minimalist",
+            "archetype": "The Essentialist",
+            "description": "As few ingredients, steps and pots as possible, and done fast. Happy to trade a little of the result for a lot less work.",
+            "constraints": {
+                "max_total_minutes": 25,
+                "max_cleanup": 2,
+                "max_spice": null,
+                "difficulties": [
+                    "Simplistic"
+                ],
+                "diet": null,
+                "max_carbs_per_serving": null,
+                "max_ingredients": 6,
+                "max_extra": 1,
+                "forms": "shortcut",
+                "ready_made": "welcome"
+            },
+            "diet_preferences": [],
+            "cooking_style": {
+                "preferred_tools": [],
+                "avoid_tools": [],
+                "preferred_methods": [
+                    "pan_fry",
+                    "stir_fry",
+                    "roast",
+                    "airfry"
+                ],
+                "avoid_methods": [
+                    "braise",
+                    "slow_cook",
+                    "deep_fry"
+                ]
+            },
+            "ingredient_logic": {
+                "staples": [],
+                "banned_ingredients": [],
+                "strategy": "Strip the dish to what carries it: one main ingredient, one flavour base, one pot or one tray. Fewer steps beat a slightly better result."
+            },
+            "instruction_style": {
+                "tone": "Short and relaxed; no step that is not needed.",
+                "example_phrase": "Everything on one tray, into the oven, done."
+            }
+        },
+        {
             "id": "french_classic",
             "image_filename": "french_classic.jpg",
             "name": "The French Classic",
@@ -54,7 +186,8 @@
             "instruction_style": {
                 "tone": "Authoritative, strict, uncompromising.",
                 "example_phrase": "Do not rush the fond. Respect the process."
-            }
+            },
+            "active": false
         },
         {
             "id": "meta_learner",
@@ -101,7 +234,8 @@
             "instruction_style": {
                 "tone": "Curious, analytical, explains the why.",
                 "example_phrase": "Get the pan properly hot; that one detail does most of the work."
-            }
+            },
+            "active": false
         },
         {
             "id": "low_carb_chef",
@@ -161,7 +295,8 @@
             "instruction_style": {
                 "tone": "Encouraging, informative, focuses on macros.",
                 "example_phrase": "This swap saves you about 40 g of carbs and you will not miss it."
-            }
+            },
+            "active": false
         },
         {
             "id": "speezy_gonzales",
@@ -207,7 +342,8 @@
             "instruction_style": {
                 "tone": "Casual, urgent, brotherly, slangy.",
                 "example_phrase": "Toss it in the air fryer, 10 minutes, boom. Dinner served."
-            }
+            },
+            "active": false
         },
         {
             "id": "family_cook",
@@ -255,7 +391,8 @@
             "instruction_style": {
                 "tone": "Warm, practical, reassuring.",
                 "example_phrase": "Make double and freeze half: Thursday's dinner is sorted."
-            }
+            },
+            "active": false
         },
         {
             "id": "the_green_chef",
@@ -313,7 +450,8 @@
             "instruction_style": {
                 "tone": "Enthusiastic, flavour-first, never preachy.",
                 "example_phrase": "Roast the cauliflower until the edges char; that's where the flavour is."
-            }
+            },
+            "active": false
         }
     ]
 }

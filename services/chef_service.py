@@ -22,7 +22,11 @@ TEXT_FIELDS = ('name', 'archetype', 'description')
 # constraints holds the persona's hard rules (services/recipe_v2/persona.py). None means no limit.
 DIFFICULTIES = ['Simplistic', 'Moderate', 'Elevated']
 DEFAULT_RULES = {'max_total_minutes': None, 'max_cleanup': None, 'max_spice': None, 'difficulties': DIFFICULTIES,
-                 'diet': None, 'max_carbs_per_serving': None}
+                 'diet': None, 'max_carbs_per_serving': None,
+                 # the philosophy in numbers (22.10.2026): ingredients besides the staples, ingredients outside the
+                 # foundation pantry, which form of herbs, garlic and ginger ('fresh', 'balanced', 'shortcut') and
+                 # ready-made products ('good': when as good as homemade, 'welcome')
+                 'max_ingredients': None, 'max_extra': None, 'forms': None, 'ready_made': None}
 
 
 def rules_of(constraints: dict) -> dict:
@@ -53,6 +57,7 @@ def chef_to_dict(chef: Chef) -> dict:
         'archetype': chef.archetype or '',
         'description': chef.description or '',
         'image_filename': chef.image_filename,
+        'active': chef.active is not False,
     }
     for field, empty in JSON_FIELDS.items():
         data[field] = _load(getattr(chef, field), type(empty)())
@@ -61,13 +66,20 @@ def chef_to_dict(chef: Chef) -> dict:
     data['cooking_style'].setdefault('avoid_methods', [])
     data['ingredient_logic'].setdefault('staples', [])
     data['ingredient_logic'].setdefault('banned_ingredients', [])
+    # 'strategy' was called 'low_carb_strategy' in the first personas, for every chef
+    logic = data['ingredient_logic']
+    if 'strategy' not in logic and logic.get('low_carb_strategy'):
+        logic['strategy'] = logic['low_carb_strategy']
     return data
 
 
-def get_chefs() -> list[dict]:
-    """All chefs as dicts, sorted by name."""
-    chefs = db.session.execute(db.select(Chef).order_by(Chef.name)).scalars().all()
-    return [chef_to_dict(c) for c in chefs]
+def get_chefs(include_retired=False) -> list[dict]:
+    """The chefs offered when making a recipe, as dicts, sorted by name. include_retired adds the retired ones,
+    for the chef editor and the old generator."""
+    query = db.select(Chef).order_by(Chef.name)
+    if not include_retired:
+        query = query.where(Chef.active.is_(True))
+    return [chef_to_dict(c) for c in db.session.execute(query).scalars().all()]
 
 
 def update_chefs(chefs: list[dict]) -> list[str]:

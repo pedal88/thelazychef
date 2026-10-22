@@ -28,7 +28,7 @@ def new_recipe():
     
     # Get recent recipes (approved only for public display)
     recent_recipes = db.session.execute(db.select(Recipe).where(Recipe.status == 'approved').order_by(Recipe.id.desc()).limit(10)).scalars().all()
-    return render_template('index.html', recipes=recent_recipes, chefs=get_chefs())
+    return render_template('index.html', recipes=recent_recipes, chefs=get_chefs(include_retired=True))
 
 
 # ---------------------------------------------------------------------------
