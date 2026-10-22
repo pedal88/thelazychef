@@ -189,6 +189,13 @@ Gjennomført 19.10.2026 (kjøring `pantry-20261019-1349`, migrering `0d4f84fc82e
   - **«+N ekstra»** (varer utenfor grunnlageret og basisvarene) vises per oppskrift som et tall, ikke som en grense.
   - Bygget slik at det kan bli brukerens eget skap senere: grunnlageret er da et forslag brukeren krysser av i.
 
+**Grunnlager v0 (22.10.2026, migrering `c6e1a4d8b2f7`): 66 varer.** Dagens oppskrifter er ikke representative, så listen bygger på et utvalg: 272 retter som norske hjemmekokker lager, i 13 kjøkkener vektet etter hvor mye de lages her (Nordic 40, Italian 35, Mexican & Tex-Mex 30, American 25, Indian, Thai, Chinese og Middle Eastern 20, Japanese og French 15, Greek, Korean og Eastern European 10). `scripts/foundation_sample.py` lager utvalget og rangerer ingrediensene; valget ble gjort på avkrysningssiden «Grunnlager v0». Basisvarene alene dekker 21 % av ingredienslinjene, med topp 60 74 % og med topp 100 84 %; kurven flater ut rundt 60–80.
+
+- Valgt: topp 60 etter bruk, nøkkelsmakene (fiskesaus, garam masala, ghee, gochujang, gochugaru, kimchi, mirin, kokosmelk, sesamfrø, tortilla, mais), kidneybønner og chili.
+- Standardvalg: kyllingfilet (lår finnes også), jasminris (vanlig hvit ris er utelatt), rømme framfor crème fraîche, revet hvitost i stedet for cheddar. Løk og rødløk er begge med.
+- Lagt til i pantryet fordi de manglet: kjøttdeig (`ground beef`), tacokrydder, revet hvitost og gochugaru. Utvalget fant 62 andre varer som mangler, blant dem tortillachips, tacoskjell, lomper, brunost, fiskekaker, tyttebærsyltetøy og rødkål. De legges inn som kjerne eller lang hale i en egen runde.
+- Listen kan endres når som helst med en ny migrering; ny versjon når nygenereringen viser hvor mange «+N ekstra» oppskriftene får.
+
 ### Gjenstående pantry-feil
 
 Funnet under gjennomgangen av ingredienssymbolene 18.10.2026. De ryddes i v2-bygget, før nygenereringen, med fletting (linjene flyttes, navnet blir alias) og nye navn:
