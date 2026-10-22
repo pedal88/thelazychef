@@ -15,96 +15,132 @@
 {{ url_for('recipe_detail', recipe_id=recipe.id, servings=servings, plan=plan) }}
 {%- endmacro %}
 
-{% block content %}
-<article class="rv2">
-  {{ recipe_head(recipe, v, 'overview') }}
 
-  {% if recipe.status != 'approved' %}
-  <div class="notice" role="status">
-    <b>Draft.</b> Only admins can see this recipe.
-    {% if v.errors %}It did not pass validation after the retries:
-      <ul>{% for e in v.errors[:5] %}<li>{{ e.message }}</li>{% endfor %}</ul>
-    {% endif %}
-    {% if v.missing %}{{ v.missing }} {{ 'ingredient is' if v.missing == 1 else 'ingredients are' }} not in the pantry.{% endif %}
-    {% if v.persona_notes %}It breaks a rule of its chef:
-      <ul>{% for n in v.persona_notes %}<li>{{ n }}</li>{% endfor %}</ul>
-    {% endif %}
-  </div>
-  {% endif %}
-
-  {% set imgs = dish_images(recipe) %}
-  {% if imgs.dish %}
-  <figure class="hero"><img src="{{ imgs.dish }}" alt="{{ v.title }}" width="1200" height="900"></figure>
-  {% endif %}
-
-  <div class="facts">
-    <div class="fact"><span class="eyebrow">Total</span><b>{{ v.total }}</b></div>
-    <div class="fact"><span class="eyebrow">Active</span><b>{{ v.active }}</b></div>
-    <div class="fact"><span class="eyebrow">Makes</span><b>{{ v.yield_text if not v.scalable else v.servings ~ ' servings' }}</b></div>
-  </div>
-
-  {% if v.about or recipe.difficulty %}
-  <ul class="about">
-    {% if recipe.difficulty %}<li><span class="eyebrow">Difficulty</span> {{ recipe.difficulty|difficulty_label }}</li>{% endif %}
-    {% for label, value in v.about %}<li><span class="eyebrow">{{ label }}</span> {{ value }}</li>{% endfor %}
+{# Admin only, shown in the floating admin chip: the draft notes, recalculate, images and versions. #}
+{% macro admin_tools() %}
+{% if recipe.status != 'approved' %}
+<div class="tsec"><span class="tlabel">Draft</span>
+  <p>Only admins can see this recipe.{% if v.missing %} {{ v.missing }} {{ 'ingredient is' if v.missing == 1 else 'ingredients are' }} not in the pantry.{% endif %}</p>
+  {% if v.errors %}<p>It did not pass validation after the retries:</p><ul>{% for e in v.errors[:5] %}<li>{{ e.message }}</li>{% endfor %}</ul>{% endif %}
+  {% if v.persona_notes %}<p>It breaks a rule of its chef:</p><ul>{% for n in v.persona_notes %}<li>{{ n }}</li>{% endfor %}</ul>{% endif %}
+</div>
+{% endif %}
+{% if v.nutrition_gap and not v.nutrition %}
+<div class="tsec"><span class="tlabel">Nutrition</span>
+  <p>None yet.{% if v.nutrition_gap.no_grams %} No weight for {{ v.nutrition_gap.no_grams|join(', ') }}.{% endif %}{% if v.nutrition_gap.no_nutrition %} No pantry nutrition for {{ v.nutrition_gap.no_nutrition|join(', ') }}.{% endif %}</p>
+</div>
+{% endif %}
+{% if admin %}
+{% if recipe.steps %}
+<div class="tsec"><span class="tlabel">Recipe</span>
+  <form method="post" action="{{ url_for('recipe_v2.recalculate', recipe_id=recipe.id) }}"><button type="submit">Recalculate</button>
+    <span>Metadata, nutrition and the chef's rules again, after the pantry or the rules changed. No AI.</span></form>
+  <form method="post" action="{{ url_for('recipe_v2.make_images', recipe_id=recipe.id) }}"><button type="submit">{{ 'Make the images again' if recipe.image_filename else 'Make images' }}</button>
+    <span>About a minute, up to {{ '%.2f'|format(0.1 + 0.1 * v.parts|length) }} USD.{% if recipe.image_style %} Style: {{ recipe.image_style }}.{% endif %}</span></form>
+  {% if v.image_notes %}<p>The image check found: {{ v.image_notes|join('; ') }}</p>{% endif %}
+</div>
+{% endif %}
+<div class="tsec"><span class="tlabel" id="versions-h">Versions</span>
+  <ul>
+    {% for r in admin.family %}
+    <li>{% if r.id == recipe.id %}<b>{{ r.title }}</b>{% else %}<a href="{{ url_for('recipe_detail', recipe_id=r.id) }}">{{ r.title }}</a>{% endif %}
+      <span>{{ 'Version' if r.base_recipe_id else 'Base recipe' }}{{ ' by ' ~ r.chef.name if r.chef }} · {{ r.status }}{{ ' · ' ~ r.language|upper if r.language }}</span></li>
+    {% endfor %}
   </ul>
+  {% if recipe.steps %}
+  <form method="post" action="{{ url_for('recipe_v2.new_version', recipe_id=recipe.id) }}">
+    <select id="version-chef" name="chef_id" required aria-label="Make a version by">
+      {% for c in admin.chefs %}<option value="{{ c.id }}">{{ c.name }}: {{ c.archetype }}</option>{% endfor %}
+    </select>
+    <button type="submit">Make the version</button>
+  </form>
   {% endif %}
+</div>
+{% endif %}
+{% endmacro %}
 
-  {% if v.nutrition %}
-  <details class="nutrition">
-    <summary>Nutrition per serving <span class="hint">approximate</span></summary>
-    <table>
-      <tr><th>Energy</th><td>{{ v.nutrition.kcal }} kcal</td></tr>
-      <tr><th>Protein</th><td>{{ v.nutrition.protein }} g</td></tr>
-      <tr><th>Carbohydrate</th><td>{{ v.nutrition.carbs }} g</td></tr>
-      <tr class="sub"><th>of which sugars</th><td>{{ v.nutrition.sugar }} g</td></tr>
-      <tr><th>Fat</th><td>{{ v.nutrition.fat }} g</td></tr>
-      <tr class="sub"><th>of which saturated</th><td>{{ v.nutrition.saturated_fat }} g</td></tr>
-      <tr><th>Fibre</th><td>{{ v.nutrition.fiber }} g</td></tr>
-      <tr><th>Salt</th><td>{{ v.nutrition.salt }} g</td></tr>
-    </table>
-    <p class="hint">From the ingredients as measured; salt and seasoning added to taste are not included.</p>
-  </details>
-  {% elif admin and v.nutrition_gap %}
-  <p class="hint">No nutrition yet (admin only):
-    {% if v.nutrition_gap.no_grams %}no weight for {{ v.nutrition_gap.no_grams|join(', ') }}.{% endif %}
-    {% if v.nutrition_gap.no_nutrition %}No pantry nutrition for {{ v.nutrition_gap.no_nutrition|join(', ') }}.{% endif %}
-  </p>
-  {% endif %}
+{% block content %}
+{# Wide screens: the ingredients in a column of their own on the left, the dish in the main column. Phone: one
+   column, the ingredients after the dish. Servings, plan, the facts about the dish and nutrition are behind a
+   quiet menu; admin tools are in the floating admin chip (components/recipe_head.html). #}
+<article class="rv2 ov">
+  {% call recipe_head(recipe, v, 'overview') %}{{ admin_tools() }}{% endcall %}
+  <div class="ov-grid">
+  <div class="ov-top">
+    {% set imgs = dish_images(recipe) %}
+    {% if imgs.dish %}
+    <figure class="hero"><img src="{{ imgs.dish }}" alt="{{ v.title }}" width="1200" height="900"></figure>
+    {% endif %}
 
-
-
-  <details class="settings">
-    <summary>Servings and plan</summary>
-    <div class="settings-body">
-      {% if v.scalable %}
-      <div class="row">
-        <span>Servings</span>
-        <span class="stepper">
-          <a href="{{ link(v.servings - 1, v.plan) }}" aria-label="Fewer servings">−</a>
-          <span>{{ v.servings }} servings</span>
-          <a href="{{ link(v.servings + 1, v.plan) }}" aria-label="More servings">+</a>
-        </span>
+    <div class="factbar">
+      <div class="facts">
+        <div class="fact"><span class="eyebrow">Total</span><b>{{ v.total }}</b></div>
+        <div class="fact"><span class="eyebrow">Active</span><b>{{ v.active }}</b></div>
+        <div class="fact"><span class="eyebrow">Makes</span><b>{{ v.yield_text if not v.scalable else v.servings ~ ' servings' }}</b></div>
       </div>
-      {% endif %}
-      <div class="row">
-        <span>Plan</span>
-        <span class="seg">{% for key, name in v.plans.items() %}<a href="{{ link(v.servings, key) }}" aria-current="{{ 'true' if key == v.plan else 'false' }}">{{ name }}</a>{% endfor %}</span>
-      </div>
-      <p class="hint">{{ v.plan_hint }}</p>
+      <details class="more">
+        <summary aria-label="Servings, plan and more about the dish">{{ icon('menu') }}</summary>
+        <div class="more-panel">
+          {% if v.scalable %}
+          <div class="row">
+            <span>Servings</span>
+            <span class="stepper">
+              <a href="{{ link(v.servings - 1, v.plan) }}" aria-label="Fewer servings">−</a>
+              <span>{{ v.servings }}</span>
+              <a href="{{ link(v.servings + 1, v.plan) }}" aria-label="More servings">+</a>
+            </span>
+          </div>
+          {% endif %}
+          <div class="row">
+            <span>Plan</span>
+            <span class="seg">{% for key, name in v.plans.items() %}<a href="{{ link(v.servings, key) }}" aria-current="{{ 'true' if key == v.plan else 'false' }}">{{ name }}</a>{% endfor %}</span>
+          </div>
+          <p class="hint">{{ v.plan_hint }}</p>
+
+          {% if v.about or recipe.difficulty %}
+          <ul class="about">
+            {% if recipe.difficulty %}<li><span class="eyebrow">Difficulty</span> {{ recipe.difficulty|difficulty_label }}</li>{% endif %}
+            {% for label, value in v.about %}<li><span class="eyebrow">{{ label }}</span> {{ value }}</li>{% endfor %}
+          </ul>
+          {% endif %}
+
+          {% if v.nutrition %}
+          <div class="nutrition">
+            <p class="eyebrow">Nutrition per serving, approximate</p>
+            <table>
+              <tr><th>Energy</th><td>{{ v.nutrition.kcal }} kcal</td></tr>
+              <tr><th>Protein</th><td>{{ v.nutrition.protein }} g</td></tr>
+              <tr><th>Carbohydrate</th><td>{{ v.nutrition.carbs }} g</td></tr>
+              <tr class="sub"><th>of which sugars</th><td>{{ v.nutrition.sugar }} g</td></tr>
+              <tr><th>Fat</th><td>{{ v.nutrition.fat }} g</td></tr>
+              <tr class="sub"><th>of which saturated</th><td>{{ v.nutrition.saturated_fat }} g</td></tr>
+              <tr><th>Fibre</th><td>{{ v.nutrition.fiber }} g</td></tr>
+              <tr><th>Salt</th><td>{{ v.nutrition.salt }} g</td></tr>
+            </table>
+            <p class="hint">From the ingredients as measured; salt and seasoning added to taste are not included.</p>
+          </div>
+          {% endif %}
+
+          {% if v.delta %}
+          <p class="hint">The whole dish as one drawing on A4:
+            <a href="{{ url_for('recipe_print', recipe_id=recipe.id, orient='portrait', servings=v.servings) }}" target="_blank" rel="noopener">portrait</a> ·
+            <a href="{{ url_for('recipe_print', recipe_id=recipe.id, orient='landscape', servings=v.servings) }}" target="_blank" rel="noopener">landscape</a></p>
+          {% endif %}
+        </div>
+      </details>
     </div>
-  </details>
 
-  {% if imgs.parts %}
-  <div class="part-images" aria-label="The parts of the dish">
-    {% for p in imgs.parts %}<figure><img src="{{ p.url }}" alt="" width="600" height="600" loading="lazy"><figcaption>{{ p.name }}</figcaption></figure>{% endfor %}
+    {% if imgs.parts %}
+    <div class="part-images" aria-label="The parts of the dish">
+      {% for p in imgs.parts %}<figure><img src="{{ p.url }}" alt="" width="600" height="600" loading="lazy"><figcaption>{{ p.name }}</figcaption></figure>{% endfor %}
+    </div>
+    {% elif v.parts|length > 1 %}
+    <p class="parts">This dish has {{ v.parts|length }} parts: {% for p in v.parts %}<span>{{ p }}</span>{% endfor %}</p>
+    {% endif %}
   </div>
-  {% elif v.parts|length > 1 %}
-  <p class="parts">This dish has {{ v.parts|length }} parts: {% for p in v.parts %}<span>{{ p }}</span>{% endfor %}</p>
-  {% endif %}
 
-  <section>
-    <div class="sec-head"><h2>Shopping list</h2><span class="eyebrow">{{ v.shopping|length }} items</span></div>
+  <aside class="ov-ings" aria-labelledby="ings-h">
+    <div class="sec-head"><h2 id="ings-h">Ingredients</h2><span class="eyebrow">{{ v.shopping|length }} items</span></div>
     {% for g in v.shop_groups %}
     <h3 class="shop-group">{{ g.label }}</h3>
     <ul class="shop{{ ' shop-staples' if g.key == 'staples' }}">
@@ -113,59 +149,26 @@
       {% endfor %}
     </ul>
     {% endfor %}
-  </section>
+  </aside>
 
-  {% if v.equipment %}
-  <section>
-    <div class="sec-head"><h2>Equipment</h2></div>
-    <div class="equip">{% for e in v.equipment %}<span>{{ e }}</span>{% endfor %}</div>
-  </section>
-  {% endif %}
-
-
-  {% if v.ready %}
-  <p class="next"><a class="go" href="{{ url_for('recipe_prep', recipe_id=recipe.id, servings=v.servings, plan=v.plan) }}">Prep →</a>
-    <span class="hint">{% set n = v.ready.bowls|length %}{{ n }} bowl{{ 's' if n != 1 }} to fill, then
-      <a href="{{ url_for('recipe_cook', recipe_id=recipe.id, servings=v.servings, plan=v.plan) }}">the cooking</a></span></p>
-  {% endif %}
-  {% if v.delta %}
-  <p class="hint printline">The whole dish as one drawing on A4:
-    <a href="{{ url_for('recipe_print', recipe_id=recipe.id, orient='portrait', servings=v.servings) }}" target="_blank" rel="noopener">portrait</a> ·
-    <a href="{{ url_for('recipe_print', recipe_id=recipe.id, orient='landscape', servings=v.servings) }}" target="_blank" rel="noopener">landscape</a></p>
-  {% endif %}
-
-  {% if v.chef_note %}<p class="note"><b>From the chef:</b> {{ v.chef_note }}</p>{% endif %}
-  {% if recipe.source_type == 'web' and recipe.source_input %}<p class="hint" style="margin-top:var(--space-4)">Based on <a href="{{ recipe.source_input }}" rel="noopener nofollow" target="_blank">{{ recipe.source_input.split('/')[2] }}</a></p>{% endif %}
-  {% if admin %}
-  <section class="versions" aria-labelledby="versions-h">
-    {% if recipe.steps %}
-    <form method="post" action="{{ url_for('recipe_v2.recalculate', recipe_id=recipe.id) }}" class="recalc">
-      <button type="submit">Recalculate</button>
-      <span class="hint">Metadata, nutrition and the chef's rules from the saved recipe, after the pantry or the rules changed. No AI.</span>
-    </form>
-    <form method="post" action="{{ url_for('recipe_v2.make_images', recipe_id=recipe.id) }}" class="recalc">
-      <button type="submit">{{ 'Make the images again' if recipe.image_filename else 'Make images' }}</button>
-      <span class="hint">The dish and each part, checked by a vision model. About a minute; up to about {{ '%.2f'|format(0.1 + 0.1 * v.parts|length) }} USD.{% if recipe.image_style %} Style: {{ recipe.image_style }}.{% endif %}</span>
-    </form>
-    {% if v.image_notes %}<p class="hint">The image check found: {{ v.image_notes|join('; ') }}</p>{% endif %}
+  <div class="ov-bottom">
+    {% if v.ready %}
+    <p class="next"><a class="go" href="{{ url_for('recipe_prep', recipe_id=recipe.id, servings=v.servings, plan=v.plan) }}">Prep →</a>
+      <span class="hint">{% set n = v.ready.bowls|length %}{{ n }} bowl{{ 's' if n != 1 }} to fill, then
+        <a href="{{ url_for('recipe_cook', recipe_id=recipe.id, servings=v.servings, plan=v.plan) }}">the cooking</a></span></p>
     {% endif %}
-    <div class="sec-head"><h2 id="versions-h">Versions</h2><span class="eyebrow">Admin only</span></div>
-    <ul>
-      {% for r in admin.family %}
-      <li>{% if r.id == recipe.id %}<b>{{ r.title }}</b>{% else %}<a href="{{ url_for('recipe_detail', recipe_id=r.id) }}">{{ r.title }}</a>{% endif %}
-        <span class="hint">{{ 'Version' if r.base_recipe_id else 'Base recipe' }}{{ ' by ' ~ r.chef.name if r.chef }} · {{ r.status }}{{ ' · ' ~ r.language|upper if r.language }}</span></li>
-      {% endfor %}
-    </ul>
-    {% if recipe.steps %}
-    <form method="post" action="{{ url_for('recipe_v2.new_version', recipe_id=recipe.id) }}" class="newform">
-      <label for="version-chef" class="eyebrow">Make a version by</label>
-      <select id="version-chef" name="chef_id" required>
-        {% for c in admin.chefs %}<option value="{{ c.id }}">{{ c.name }}: {{ c.archetype }}</option>{% endfor %}
-      </select>
-      <button type="submit" class="go">Make the version</button>
-    </form>
-    {% endif %}
-  </section>
-  {% endif %}
+    {% if v.chef_note %}<p class="note"><b>From the chef:</b> {{ v.chef_note }}</p>{% endif %}
+    {% if recipe.source_type == 'web' and recipe.source_input %}<p class="hint source">Based on <a href="{{ recipe.source_input }}" rel="noopener nofollow" target="_blank">{{ recipe.source_input.split('/')[2] }}</a></p>{% endif %}
+  </div>
+  </div>
 </article>
+<script>
+  // The menu closes on a click outside it or on Esc
+  document.addEventListener('click', function (e) {
+    document.querySelectorAll('details.more[open]').forEach(function (d) { if (!d.contains(e.target)) d.open = false; });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') document.querySelectorAll('details.more[open]').forEach(function (d) { d.open = false; });
+  });
+</script>
 {% endblock %}

@@ -13,17 +13,17 @@
   </nav>
   {% endif %}
 </header>
-{% if current_user.is_authenticated and current_user.is_admin %}{{ trial_bar(recipe) }}{% endif %}
+{% if current_user.is_authenticated and current_user.is_admin %}{{ trial_bar(recipe, caller() if caller is defined else '') }}{% endif %}
 {% endmacro %}
 
 {# Style and image trial (temporary, admins only): switch the look and the image style while tuning these pages.
    The look is kept on the device (static/css/themes.css); the image style in a cookie (dish_images in routes/_shared.py).
    A style this recipe has no images in yet can be made from here. A tool, not part of the app: it floats in a corner
    in its own colours and font, closed to a small chip that shows what is chosen; base.html keeps it open or closed. #}
-{% macro trial_bar(recipe) %}
+{% macro trial_bar(recipe, extra='') %}
 {% set imgs = dish_images(recipe) %}
 <details class="trialbar" data-trial>
-  <summary aria-label="Style trial (admin)"><span class="tdot"></span>Trial <span class="tstate"><span class="tlook"></span> · {{ IMAGE_STYLES[imgs.style] }}</span></summary>
+  <summary aria-label="Admin tools and style trial"><span class="tdot"></span>Admin <span class="tstate"><span class="tlook"></span> · {{ IMAGE_STYLES[imgs.style] }}</span></summary>
   <div class="tpanel">
   <div class="tgroup" data-look-switch><span class="tlabel">Look</span>
     {%- for key, label in [('today', 'Today'), ('c', 'C'), ('d', 'D'), ('e', 'E'), ('f', 'F')] %}<button type="button" data-look="{{ key }}" aria-pressed="false">{{ label }}</button>{% endfor -%}
@@ -39,6 +39,7 @@
     <span>about a minute, up to {{ '%.2f'|format(0.1 + 0.1 * recipe.components|length) }} USD{% if imgs.dish %}; until then you see the recipe's own{% endif %}</span>
   </form>
   {% endif %}
+  {{ extra }}
   </div>
 </details>
 {% endmacro %}
