@@ -21,6 +21,8 @@ def _load(name):
 # Closed lists, so structured output can only answer with values the app knows.
 CUTS = tuple(c['id'] for c in _load('cuts.json')['cuts'])
 CUISINES = tuple(_load('graph_metadata.json')['cuisines'])
+# What a cuisine covers, for the prompt ("Mexican" includes Tex-Mex); the value stays the plain name
+CUISINE_NOTES = _load('graph_metadata.json').get('cuisine_notes', {})
 DIFFICULTIES = tuple(_load('difficulty.json')['difficulty'])
 _MEAL = _load('meal_types.json')
 MEAL_TYPES = tuple(m for m in _MEAL['meal_types'] if m not in _MEAL['derived'])  # the derived tags are set by the app

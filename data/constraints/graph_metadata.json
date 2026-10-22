@@ -1,20 +1,31 @@
 {
     "cuisines": {
+        "Nordic": "no",
         "Italian": "it",
         "Mexican": "mx",
-        "Japanese": "jp",
         "American": "us",
         "Indian": "in",
-        "French": "fr",
         "Thai": "th",
-        "Mediterranean": "gr",
-        "Norwegian": "no",
         "Chinese": "cn",
-        "Korean": "kr",
-        "Vietnamese": "vn",
+        "Middle Eastern": "lb",
+        "Japanese": "jp",
+        "French": "fr",
         "Greek": "gr",
-        "Spanish": "es",
+        "Korean": "kr",
+        "Eastern European": "pl",
         "Other": "un"
+    },
+    "cuisine_notes": {
+        "Nordic": "Norwegian first, and the Swedish and Danish dishes common in Norway",
+        "Mexican": "including Tex-Mex, such as Norwegian Friday tacos",
+        "Middle Eastern": "Levantine, Turkish and Persian",
+        "Eastern European": "Polish first"
+    },
+    "retired_cuisines": {
+        "Norwegian": "no",
+        "Mediterranean": "gr",
+        "Spanish": "es",
+        "Vietnamese": "vn"
     },
     "proteins": {
         "Chicken": "https://img.icons8.com/color/96/chicken.png",

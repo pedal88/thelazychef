@@ -1,14 +1,18 @@
 {
     "cuisines": [
+        "Nordic",
         "Italian",
         "Mexican",
-        "Japanese",
         "American",
         "Indian",
-        "French",
         "Thai",
-        "Mediterranean",
-        "Norwegian",
+        "Chinese",
+        "Middle Eastern",
+        "Japanese",
+        "French",
+        "Greek",
+        "Korean",
+        "Eastern European",
         "Other"
     ]
 }
