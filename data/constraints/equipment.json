@@ -163,7 +163,7 @@
       "role": "koke",
       "exclusive": false,
       "level": "standard",
-      "image_notes": "A rectangular white ceramic oven dish."
+      "image_notes": "A rectangular white ceramic oven dish, seen from slightly above so the inside shows."
     },
     {
       "id": "form_20x20",
@@ -289,7 +289,7 @@
       "role": "forberede",
       "exclusive": false,
       "level": "standard",
-      "image_notes": "A balloon whisk."
+      "image_notes": "A balloon whisk lying diagonally."
     },
     {
       "id": "spatula",
@@ -384,7 +384,7 @@
       "role": "forberede",
       "exclusive": false,
       "level": "standard",
-      "image_notes": "A hand-held immersion blender."
+      "image_notes": "A hand-held immersion blender on its own, standing upright, no beaker or jug."
     },
     {
       "id": "food_processor",
