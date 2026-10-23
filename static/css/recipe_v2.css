@@ -156,5 +156,8 @@
   box-shadow: 0 12px 32px rgb(0 0 0 / .12); font-size: 15px; }
 .more-panel .row { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
 .more-panel .about { margin: 0; }
-.more-panel .nutrition table { width: 100%; }
+.more-panel .nutrition { border: 0; border-radius: 0; margin: 0; }
+.more-panel .nutrition > :not(summary) { margin-inline: 0; }
+.more-panel .nutrition table { width: 100%; margin: var(--space-2) 0; }
+.more-panel .nutrition th { padding-right: var(--space-3); }
 .more-panel p { margin: 0; }

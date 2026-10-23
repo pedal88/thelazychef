@@ -77,3 +77,6 @@
 .ready-go { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; margin-top: var(--space-8); }
 .ready-go .go { display: inline-flex; align-items: center; text-decoration: none; }
 .ready-go .reset { min-height: var(--tap); padding: 0 var(--space-4); background: none; border: 0; color: var(--color-muted); text-decoration: underline; }
+
+/* Equipment below the ingredients, full width (it may move to the top later) */
+.ready .equipment { margin-top: var(--space-8); padding-top: var(--space-4); border-top: 1px solid var(--color-line); }

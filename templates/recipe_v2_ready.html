@@ -1,5 +1,6 @@
 {% extends "base.html" %}
-{# Prep (Gjør klart) for a v2 recipe: bowls to fill, the rest to take out in kitchen groups, and the equipment.
+{# Prep (Gjør klart) for a v2 recipe: bowls to fill and the rest to take out in kitchen groups, then the equipment
+   in a section of its own below, so ingredients and equipment are clearly apart.
    Derived from the graph by services/recipe_v2/mise.py; ticks are kept on the device by static/js/ready.js. #}
 {% from "components/delta.html" import MARKS %}
 {% from "components/recipe_head.html" import recipe_head with context %}
@@ -92,14 +93,16 @@
         </div>
       </section>
       {% endif %}
-      {% if v.equipment %}
-      <section>
-        <div class="sec-head"><h2>Equipment</h2><span class="eyebrow">in the order you use it</span></div>
-        <div class="eqtiles">{% for e in v.equipment %}<button type="button" class="eq{{ ' has-img' if e.image }}{{ ' special' if e.special }}" data-tick="e:{{ e.id }}" aria-pressed="false">{% if e.image %}<span class="sym" style="--s:56px"><img src="{{ e.image }}" alt="" width="56" height="56" loading="lazy"></span>{% endif %}<span>{{ e.name }}</span></button>{% endfor %}</div>
-      </section>
-      {% endif %}
+
     </div>
   </div>
+
+  {% if v.equipment %}
+  <section class="equipment">
+    <div class="sec-head"><h2>Equipment</h2><span class="eyebrow">in the order you use it</span></div>
+    <div class="eqtiles">{% for e in v.equipment %}<button type="button" class="eq{{ ' has-img' if e.image }}{{ ' special' if e.special }}" data-tick="e:{{ e.id }}" aria-pressed="false">{% if e.image %}<span class="sym" style="--s:56px"><img src="{{ e.image }}" alt="" width="56" height="56" loading="lazy"></span>{% endif %}<span>{{ e.name }}</span></button>{% endfor %}</div>
+  </section>
+  {% endif %}
 
   <div class="ready-go"><a class="go" href="{{ cook }}">Start cooking →</a><button type="button" class="reset" data-reset>Clear the ticks</button></div>
 </article>
