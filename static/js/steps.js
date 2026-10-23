@@ -140,16 +140,40 @@
     if (rang) render(); else if (st.runs.length) runs();
   }, 1000);
 
-  /* The bowls sheet closes when dragged down from its top, as well as on × , Esc or a tap beside it */
-  const sheet = document.getElementById('sheet-bowls');
+  /* The bowls over the whole screen, scaled down until everything fits without scrolling. Below MIN the text
+     gets too small to read in a kitchen, so it stops there and scrolls. Again when a bowl is opened or closed,
+     and when the window changes. Closes on ×, Esc or a drag down. */
+  const sheet = document.getElementById('sheet-bowls'), MIN = 0.55;
+  function fit() {
+    const box = sheet && sheet.querySelector('[data-fit]'), inner = box && box.firstElementChild;
+    if (!inner || !sheet.open) return;
+    const fits = z => { inner.style.zoom = z; return inner.getBoundingClientRect().height <= box.clientHeight + 1; };
+    box.classList.remove('scrolls');
+    if (!fits(1)) {
+      // The largest size that fits: a smaller board gets more columns, so the height does not follow the size
+      let lo = MIN, hi = 1;
+      if (fits(MIN)) {
+        for (let k = 0; k < 7; k++) { const mid = (lo + hi) / 2; if (fits(mid)) lo = mid; else hi = mid; }
+      }
+      inner.style.zoom = lo;
+    }
+    box.classList.toggle('scrolls', inner.getBoundingClientRect().height > box.clientHeight + 1);
+  }
   if (sheet) {
     let y0 = null;
-    sheet.addEventListener('touchstart', e => { y0 = sheet.scrollTop <= 0 ? e.touches[0].clientY : null; }, { passive: true });
+    sheet.addEventListener('touchstart', e => {
+      const box = sheet.querySelector('[data-fit]');
+      y0 = !box.classList.contains('scrolls') || box.scrollTop <= 0 ? e.touches[0].clientY : null;
+    }, { passive: true });
     sheet.addEventListener('touchend', e => {
       if (y0 !== null && e.changedTouches[0].clientY - y0 > 90) sheet.close();
       y0 = null;
     });
+    sheet.addEventListener('toggle', () => requestAnimationFrame(fit), true);  // a bowl opened or closed
     sheet.addEventListener('close', bowls);
+    document.addEventListener('click', e => { if (e.target.closest('[data-sheet="sheet-bowls"]')) requestAnimationFrame(fit); });
+    let t;
+    addEventListener('resize', () => { clearTimeout(t); t = setTimeout(fit, 120); });
   }
 
   try { view(localStorage.getItem(VIEW)); } catch (e) { view('steps'); }
