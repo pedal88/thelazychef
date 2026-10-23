@@ -75,14 +75,14 @@
     <div class="board">
       {% for b in r.bowls %}{{ bowl(b) }}{% endfor %}
       {% if loose %}
-      <div class="card takeout">
-        <div class="card-h"><b>Take out</b><span class="hint">measure it when its step comes</span></div>
+      <div class="bcard takeout">
+        <div class="bcard-h"><b>Take out</b><span class="hint">measure it when its step comes</span></div>
         <span class="tiles">{% for g in loose %}{% for t in g['items'] %}<button type="button" class="tile ftile" data-tick="{{ t.key }}" aria-pressed="false">{{ sym(t.line, 64) }}<span class="ta">{{ t.amount }}</span><span class="tn" lang="{{ lang }}">{{ t.line.name }}{% if t.line.state %}<em>{{ t.line.state }}</em>{% endif %}</span><span class="tstep">step {{ t.steps|join(', ') }}</span></button>{% endfor %}{% endfor %}</span>
       </div>
       {% endif %}
       {% if basics %}
-      <div class="card basics">
-        <div class="card-h"><b>You probably have</b><span class="hint">the steps give the amounts</span></div>
+      <div class="bcard basics">
+        <div class="bcard-h"><b>You probably have</b><span class="hint">the steps give the amounts</span></div>
         <span class="tiles">{% for t in basics[0]['items'] %}<button type="button" class="tile btile" data-tick="{{ t.key }}" aria-pressed="false">{{ sym(t.line, 40) }}<span class="tn" lang="{{ lang }}">{{ t.line.name }}</span></button>{% endfor %}</span>
       </div>
       {% endif %}

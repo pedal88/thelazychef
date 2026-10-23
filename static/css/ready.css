@@ -80,15 +80,15 @@
 /* The ingredient board: bowls, take out and what you probably have side by side, the same tiles in each */
 .rv2.ready { max-width: 1180px; }
 .board { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); align-items: start; }
-.card { padding: var(--space-3) var(--space-4) var(--space-3); border-radius: var(--radius); border: 1px solid var(--color-line); background: var(--color-paper); display: grid; gap: var(--space-2); }
-.card-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px var(--space-2); }
-.card-h b { font-size: 17px; }
-.card .tiles { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-.card.takeout { border-style: dashed; border-width: 1.5px; }
-.card.takeout .ftile { border: 0; background: none; padding: 0; width: 84px; }
+.bcard { padding: var(--space-3) var(--space-4) var(--space-3); border-radius: var(--radius); border: 1px solid var(--color-line); background: var(--color-paper); display: grid; gap: var(--space-2); }
+.bcard-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px var(--space-2); }
+.bcard-h b { font-size: 17px; }
+.bcard .tiles { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.bcard.takeout { border-style: dashed; border-width: 1.5px; }
+.bcard.takeout .ftile { border: 0; background: none; padding: 0; width: 84px; }
 .ftile .tstep { font: 500 11px var(--font-mono); color: var(--color-muted); }
-.card.basics { background: var(--color-soft); border-color: transparent; }
-.card.basics .btile { width: 64px; border: 0; background: none; padding: 0; font-size: 12px; color: var(--color-muted); }
-.card.basics .btile .sym img { filter: grayscale(.35); opacity: .85; }
+.bcard.basics { background: var(--color-soft); border-color: transparent; }
+.bcard.basics .btile { width: 64px; border: 0; background: none; padding: 0; font-size: 12px; color: var(--color-muted); }
+.bcard.basics .btile .sym img { filter: grayscale(.35); opacity: .85; }
 .btile[aria-pressed="true"] .tn { text-decoration: line-through; }
-.card .ta { white-space: normal; overflow-wrap: anywhere; }
+.bcard .ta { white-space: normal; overflow-wrap: anywhere; }
