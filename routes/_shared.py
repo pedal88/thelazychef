@@ -17,6 +17,21 @@ def viewer_is_admin() -> bool:
     return bool(current_user.is_authenticated and getattr(current_user, 'is_admin', False))
 
 
+def public_url(endpoint, **values):
+    """An absolute address, for text copied out of the app. Behind Cloud Run's proxy the app sees http, so https
+    unless it runs on this machine."""
+    url = url_for(endpoint, _external=True, **values)
+    local = request.host.split(':')[0] in ('localhost', '127.0.0.1')
+    return url if local else url.replace('http://', 'https://', 1)
+
+
+def notes_text(recipe, notes=None):
+    """A recipe's open admin notes (or the notes given) as text to paste elsewhere (services/recipe_notes.py)."""
+    from services.recipe_notes import as_text
+    notes = [n for n in recipe.notes if not n.done] if notes is None else notes
+    return as_text(recipe, notes, public_url('recipe_detail', recipe_id=recipe.id))
+
+
 def get_storage():
     """The storage provider app.py creates at startup (local disk or GCS)."""
     return current_app.extensions['storage_provider']

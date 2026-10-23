@@ -1,0 +1,31 @@
+{# Admin notes on the recipe, in the floating admin chip on every recipe page (components/recipe_head.html):
+   write what should change while trying the recipe, and copy the open notes as text to paste elsewhere.
+   static/js/recipe_notes.js saves without leaving the page and adds where on the page a note was written
+   (Cook: the step on screen). routes/recipe_notes_routes.py keeps them; /admin/notes lists all. #}
+{% macro notes_part(recipe, page) %}
+{% set open = recipe.notes|rejectattr('done')|list %}
+<div class="tsec tnotes" data-notes data-recipe-id="{{ recipe.id }}" data-page="{{ page }}">
+  <span class="tlabel">Notes{% if open %} · {{ open|length }} open{% endif %}</span>
+  <form method="post" action="{{ url_for('notes.add', recipe_id=recipe.id) }}" data-note-form>
+    <input type="hidden" name="page" value="{{ page }}">
+    <input type="hidden" name="place" value="{{ page }}">
+    <input type="hidden" name="next" value="{{ request.full_path }}">
+    <textarea name="text" rows="3" maxlength="4000" placeholder="What should change? Kept with the recipe." aria-label="Note on the recipe"></textarea>
+    <div class="trow"><button type="submit" class="tsave">Save</button><span class="twhere" data-note-where></span></div>
+  </form>
+  {% if open %}
+  <ul class="tnote-list">
+    {% for n in open|reverse %}
+    <li><span>{% if n.place %}<b>{{ n.place }}</b> {% endif %}{{ n.text }}</span>
+      <form method="post" action="{{ url_for('notes.done', note_id=n.id) }}" data-note-done>
+        <input type="hidden" name="page" value="{{ page }}"><input type="hidden" name="next" value="{{ request.full_path }}">
+        <button type="submit" title="Done" aria-label="Mark as done">✓</button></form></li>
+    {% endfor %}
+  </ul>
+  <div class="trow"><button type="button" class="tcopy" data-note-copy>Copy for Claude</button><a href="{{ url_for('notes.overview') }}">All notes</a></div>
+  <textarea class="tcopy-text" hidden data-note-text>{{ notes_text(recipe, open) }}</textarea>
+  {% else %}
+  <div class="trow"><a href="{{ url_for('notes.overview') }}">All notes</a></div>
+  {% endif %}
+</div>
+{% endmacro %}

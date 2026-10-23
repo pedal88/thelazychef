@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{# All admin notes on recipes (routes/recipe_notes_routes.py), to copy out in one go: to Claude, an issue, a chat.
+   Written in the admin chip on the recipe pages (components/recipe_notes.html). #}
+{% block title %}Notes on recipes - The Lazy Chef{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 py-8" data-notes-page>
+  <div class="flex flex-wrap items-center gap-3 mb-6">
+    <h1 class="font-serif text-2xl font-bold text-slate-900">Notes on recipes</h1>
+    <div class="ml-auto flex items-center gap-2 text-sm">
+      <a href="{{ url_for('notes.overview') }}" class="px-3 py-1.5 rounded-full {{ 'bg-slate-900 text-white' if not show_all else 'text-slate-600 hover:bg-slate-100' }}">Open</a>
+      <a href="{{ url_for('notes.overview', all=1) }}" class="px-3 py-1.5 rounded-full {{ 'bg-slate-900 text-white' if show_all else 'text-slate-600 hover:bg-slate-100' }}">All</a>
+      {% if rows %}<button type="button" data-copy-target="all-notes" class="px-3 py-1.5 rounded-full bg-orange-600 text-white font-semibold hover:bg-orange-700">Copy all</button>{% endif %}
+    </div>
+  </div>
+
+  {% if not rows %}
+  <p class="text-slate-500">No {{ 'open ' if not show_all }}notes. Write them in the Admin chip on a recipe page.</p>
+  {% endif %}
+
+  {% for recipe, notes in rows %}
+  <section class="mb-6 rounded-xl border border-slate-200 bg-white p-4">
+    <div class="flex flex-wrap items-baseline gap-2">
+      <h2 class="font-semibold text-slate-900"><a href="{{ url_for('recipe_detail', recipe_id=recipe.id) }}" class="hover:text-orange-600">{{ recipe.id }} · {{ recipe.title }}</a></h2>
+      <span class="text-xs text-slate-500">{{ recipe.chef.name if recipe.chef }}{{ ' · ' ~ recipe.status if recipe.status != 'approved' }}</span>
+      <button type="button" data-copy-target="notes-{{ recipe.id }}" class="ml-auto text-xs px-2.5 py-1 rounded-full border border-slate-300 hover:bg-slate-50">Copy</button>
+    </div>
+    <ul class="mt-3 divide-y divide-slate-100">
+      {% for n in notes %}
+      <li class="py-2 flex items-start gap-3 {{ 'opacity-50' if n.done }}">
+        <div class="flex-1 text-sm">
+          <div class="text-xs text-slate-500">{{ n.place or '' }}{{ ' · ' if n.place }}{{ note_time(n) }}</div>
+          <div class="whitespace-pre-line text-slate-800 {{ 'line-through' if n.done }}">{{ n.text }}</div>
+        </div>
+        <form method="post" action="{{ url_for('notes.done', note_id=n.id) }}">
+          <input type="hidden" name="next" value="{{ request.full_path }}">
+          <button type="submit" class="text-xs px-2.5 py-1 rounded-full border border-slate-300 hover:bg-slate-50">{{ 'Open again' if n.done else 'Done' }}</button>
+        </form>
+      </li>
+      {% endfor %}
+    </ul>
+    <textarea id="notes-{{ recipe.id }}" hidden>{{ notes_text(recipe, notes) }}</textarea>
+  </section>
+  {% endfor %}
+  {% if rows %}<textarea id="all-notes" hidden>{% for recipe, notes in rows %}{{ notes_text(recipe, notes) }}{{ '\n\n' if not loop.last }}{% endfor %}</textarea>{% endif %}
+</div>
+<script>
+  document.addEventListener('click', async function (e) {
+    var b = e.target.closest('[data-copy-target]');
+    if (!b) return;
+    var text = document.getElementById(b.dataset.copyTarget).value, label = b.textContent;
+    try { await navigator.clipboard.writeText(text); b.textContent = 'Copied'; }
+    catch (err) { window.prompt('Copy the notes:', text); }
+    setTimeout(function () { b.textContent = label; }, 2000);
+  });
+</script>
+{% endblock %}

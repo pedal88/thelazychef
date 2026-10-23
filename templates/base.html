@@ -294,6 +294,10 @@
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
                                 {{ icon('clipboard', cls='menu-icon') }}Recipes Management
                             </a>
+                            <a href="{{ url_for('notes.overview') }}"
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
+                                {{ icon('file-plus', cls='menu-icon') }}Notes on Recipes
+                            </a>
                             {{ look_switch() }}
                         </div>
                     </div>
@@ -361,6 +365,8 @@
                     <a href="/admin/recipes-management"
                         class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">{{ icon('clipboard', cls='menu-icon') }}Recipes
                         Management</a>
+                    <a href="{{ url_for('notes.overview') }}"
+                        class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">{{ icon('file-plus', cls='menu-icon') }}Notes on Recipes</a>
                     <a href="{{ url_for('admin_resources_list') }}"
                         class="block px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-600">{{ icon('library', cls='menu-icon') }}Manage
                         Resources</a>
@@ -537,6 +543,10 @@
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
                                 {{ icon('clipboard', cls='menu-icon') }}Recipes Management
                             </a>
+                            <a href="{{ url_for('notes.overview') }}"
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
+                                {{ icon('file-plus', cls='menu-icon') }}Notes on Recipes
+                            </a>
                             {{ look_switch() }}
                         </div>
                     </div>
@@ -614,6 +624,8 @@
             <a href="/admin/recipes-management"
                 class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">{{ icon('clipboard', cls='menu-icon') }}Recipes
                 Management</a>
+            <a href="{{ url_for('notes.overview') }}"
+                class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">{{ icon('file-plus', cls='menu-icon') }}Notes on Recipes</a>
             <a href="{{ url_for('admin_resources_list') }}"
                 class="block px-3 py-2.5 rounded-lg hover:bg-orange-50 hover:text-orange-600">{{ icon('library', cls='menu-icon') }}Manage
                 Resources</a>

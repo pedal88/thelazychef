@@ -1,5 +1,6 @@
 {# The top of the three pages of a v2 recipe: the title and Overview · Prep · Cook. The same on all three,
    centred, so it stays put while the page changes under it (a view transition in recipe_v2.css). #}
+{% from "components/recipe_notes.html" import notes_part with context %}
 {% macro recipe_head(recipe, v, current) %}
 {% set args = {'recipe_id': recipe.id, 'servings': v.servings, 'plan': v.plan} %}
 <header class="rhead">
@@ -15,14 +16,15 @@
   </nav>
   {% endif %}
 </header>
-{% if current_user.is_authenticated and current_user.is_admin %}{{ trial_bar(recipe, caller() if caller is defined else '') }}{% endif %}
+{% if current_user.is_authenticated and current_user.is_admin %}{{ trial_bar(recipe, caller() if caller is defined else '', {'ready': 'prep'}.get(current, current)) }}{% endif %}
 {% endmacro %}
 
 {# Style and image trial (temporary, admins only): switch the look and the image style while tuning these pages.
    The look is kept on the device (static/css/themes.css); the image style in a cookie (dish_images in routes/_shared.py).
    A style this recipe has no images in yet can be made from here. A tool, not part of the app: it floats in a corner
-   in its own colours and font, closed to a small chip that shows what is chosen; base.html keeps it open or closed. #}
-{% macro trial_bar(recipe, extra='') %}
+   in its own colours and font, closed to a small chip that shows what is chosen; base.html keeps it open or closed.
+   The notes on the recipe are here too (components/recipe_notes.html). #}
+{% macro trial_bar(recipe, extra='', page='') %}
 {% set imgs = dish_images(recipe) %}
 <details class="trialbar" data-trial>
   <summary aria-label="Admin tools and style trial"><span class="tdot"></span>Admin <span class="tstate"><span class="tlook"></span> · {{ IMAGE_STYLES[imgs.style] }}</span></summary>
@@ -39,6 +41,7 @@
   <div class="tgroup" data-eq-switch><span class="tlabel">Tools</span>
     {%- for key, label in EQUIPMENT_STYLES.items() %}<button type="button" data-eq="{{ key }}" aria-pressed="{{ 'true' if key == chosen_equipment_style() else 'false' }}">{{ label }}</button>{% endfor -%}
   </div>
+  {{ notes_part(recipe, page) }}
   {% if not imgs.have and recipe.steps %}
   <form method="post" action="{{ url_for('recipe_v2.make_images', recipe_id=recipe.id) }}" class="tmake">
     <input type="hidden" name="style" value="{{ imgs.style }}">
@@ -50,4 +53,5 @@
   {{ extra }}
   </div>
 </details>
+<script src="{{ url_for('static', filename='js/recipe_notes.js') }}" defer></script>
 {% endmacro %}
