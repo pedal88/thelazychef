@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, validates
-from sqlalchemy import String, Integer, Boolean, Text, Float, ForeignKey, DateTime, JSON, UniqueConstraint, true as sa_true
+from sqlalchemy import String, Integer, Boolean, Text, Float, ForeignKey, DateTime, JSON, UniqueConstraint, false as sa_false, true as sa_true
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
@@ -390,6 +390,22 @@ class Recipe(db.Model):
     interactions: Mapped[list["UserRecipeInteraction"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
     collections: Mapped[list["CollectionItem"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
     queue_items: Mapped[list["UserQueue"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
+    notes: Mapped[list["RecipeNote"]] = relationship(back_populates="recipe", cascade="all, delete-orphan", order_by="RecipeNote.id")
+
+class RecipeNote(db.Model):
+    """An admin's note on a recipe, written while trying it (routes/recipe_notes_routes.py): feedback to act on later,
+    copied out as text. Not shown to users. place is where on the recipe it was written ('make · step 5')."""
+    __tablename__ = 'recipe_note'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id", ondelete='CASCADE'), nullable=False, index=True)
+    user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("user.id", ondelete='SET NULL'), nullable=True)
+    place: Mapped[Optional[str]] = mapped_column(String(80), nullable=True)
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+    done: Mapped[bool] = mapped_column(Boolean, default=False, server_default=sa_false(), nullable=False)
+
+    recipe: Mapped["Recipe"] = relationship(back_populates="notes")
+
 
 class Instruction(db.Model):
     __tablename__ = 'instruction'
