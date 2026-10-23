@@ -28,7 +28,17 @@ def new_recipe():
     
     # Get recent recipes (approved only for public display)
     recent_recipes = db.session.execute(db.select(Recipe).where(Recipe.status == 'approved').order_by(Recipe.id.desc()).limit(10)).scalars().all()
-    return render_template('index.html', recipes=recent_recipes, chefs=get_chefs(include_retired=True))
+    # The idea form makes a v2 recipe, which only takes the chefs that are offered now
+    return render_template('index.html', recipes=recent_recipes, chefs=get_chefs(), idea_helper=_idea_helper())
+
+
+def _idea_helper():
+    """The prompt behind "Copy a prompt for your AI": it turns a dish, an idea or a recipe into the best one-line idea."""
+    import os
+
+    path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'prompts', 'recipe_v2', 'idea_helper.txt')
+    with open(path, encoding='utf-8') as f:
+        return f.read().rstrip() + '\n'
 
 
 # ---------------------------------------------------------------------------

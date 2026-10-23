@@ -173,6 +173,23 @@ class RecipeV2RouteTests(unittest.TestCase):
         self.assertIn('id="chef-none"', page)
         self.assertIn('<option value="en" selected>English</option>', page)
         self.assertEqual(page.count('class="language-copy" value="en"'), 2)
+        # A prompt to copy for an AI that writes the one-line idea
+        self.assertIn('Copy a prompt for your AI', page)
+        self.assertIn('one line of at most 200 characters', page)
+
+    def test_the_front_page_offers_only_the_chefs_of_now(self):
+        with open(os.path.join(ROOT, 'data', 'agents', 'chefs.json'), encoding='utf-8') as f:
+            seeds = {c['id']: c for c in json.load(f)['chefs']}
+        for cid, active in (('the_minimalist', True), ('speezy_gonzales', False)):
+            c = seeds[cid]
+            db.session.add(Chef(id=cid, name=c['name'], archetype=c['archetype'], description=c['description'],
+                                image_filename='', active=active, **{k: json.dumps(c[k]) for k in ('constraints', 'diet_preferences',
+                                'cooking_style', 'ingredient_logic', 'instruction_style')}))
+        db.session.commit()
+        self.login()
+        page = self.client.get('/new-recipe').get_data(as_text=True)
+        self.assertIn('The Minimalist', page)
+        self.assertNotIn('Speezy Gonzales', page)
 
     def test_empty_input_is_refused(self):
         self.login()
