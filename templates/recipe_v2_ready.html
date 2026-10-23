@@ -22,7 +22,7 @@
 {%- endmacro %}
 
 {% macro tile(p) -%}
-<span class="tile">{{ sym(p, 64) }}<span class="ta">{{ p.amount or 'to taste' }}</span><span class="tn" lang="{{ lang }}">{{ p.name }}{% if p.prep %}<em>{{ p.prep }}</em>{% endif %}</span></span>
+<span class="tile">{{ sym(p, 64) }}<span class="ta">{{ p.amount or 'to taste' }}</span><span class="tn" lang="{{ lang }}">{{ p.name }}{% if p.state %}<em>{{ p.state }}</em>{% endif %}</span></span>
 {%- endmacro %}
 
 {# A bowl: always its number, a short name, and what goes in it with amount and state. Tap it for the rest: the
@@ -37,7 +37,7 @@
     <p><span class="eyebrow">For step {{ b.used.no }}</span> <span lang="{{ lang }}">{{ b.used.short }}</span></p>
     {% if b.prep %}<p><span class="eyebrow">Prep</span> <span lang="{{ lang }}">{{ b.prep|join(', ') }}</span></p>
     {% elif not b.named_by_step %}<p><span class="eyebrow">Why a bowl</span> {{ WHY[b.why] }}</p>{% endif %}
-    {% for p in b.lines if p.prep %}{% if loop.first %}<ul>{% endif %}<li lang="{{ lang }}">{{ (p.amount ~ ' ' ~ p.name)|trim }}: {{ p.prep }}</li>{% if loop.last %}</ul>{% endif %}{% endfor %}
+    {% for p in b.lines if p.state %}{% if loop.first %}<ul>{% endif %}<li lang="{{ lang }}">{{ (p.amount ~ ' ' ~ p.name)|trim }}: {{ p.state }}</li>{% if loop.last %}</ul>{% endif %}{% endfor %}
   </div>
 </details>
 {%- endmacro %}

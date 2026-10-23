@@ -89,6 +89,19 @@ def step_duration(s):
     return ' '.join(parts)
 
 
+# A prep step's method that says how its lines are cut (data/constraints/methods.json -> cuts.json)
+CUT_BY_METHOD = {'chop': 'chop', 'slice': 'slice', 'grate': 'grate', 'mash': 'mash', 'juice': 'juice', 'crush': 'crush'}
+# The state a cut leaves an ingredient in, in a few words, for a line with a cut and no prep_style of its own
+STATE_WORDS = {
+    'en': {'chop': 'chopped', 'slice': 'sliced', 'dice': 'diced', 'pieces': 'in pieces', 'strips': 'in strips',
+           'wedges': 'in wedges', 'rings': 'in rings', 'halve': 'halved', 'grate': 'grated', 'zest': 'zested',
+           'juice': 'juiced', 'crush': 'crushed', 'mash': 'mashed', 'tear': 'torn'},
+    'nb': {'chop': 'hakket', 'slice': 'i skiver', 'dice': 'i terninger', 'pieces': 'i biter', 'strips': 'i strimler',
+           'wedges': 'i båter', 'rings': 'i ringer', 'halve': 'delt i to', 'grate': 'revet', 'zest': 'skall revet',
+           'juice': 'presset', 'crush': 'knust', 'mash': 'most', 'tear': 'revet i biter'},
+}
+
+
 def count_of(line, factor=1.0):
     """How many, for a line counted in pieces or cloves (3 cloves of garlic): a whole number from 1 to 12, else None.
     Prep shows it on the image, so the amount reads at a glance."""
@@ -245,17 +258,26 @@ def build(recipe, servings=None, plan='calm'):
         if ingredients.get(i['local_id']) is not None:
             i['pantry_name'] = ingredients[i['local_id']].name
             i['pantry_tier'] = ingredients[i['local_id']].tier
+    # How a line is cut, from its prep step when the model left the line's own cut out ("Cut the ham" with method
+    # slice): the state then shows on Prep, in Cook and in the delta all the same
+    cut_from_step = {}
+    for st in v2['steps']:
+        if st.get('phase') == 'prep' and st.get('method') in CUT_BY_METHOD:
+            for u in st.get('uses') or []:
+                cut_from_step.setdefault(u, CUT_BY_METHOD[st['method']])
+    words = STATE_WORDS.get(recipe.language) or STATE_WORDS['en']
     # The river delta: every line as the drawing shows it, with the amount for these servings
     pictured = {lid: {'name': i['name'], 'img': (ingredients.get(lid).image_url if ingredients.get(lid) is not None else None),
                       'amount': fmt_amount(i['amount'] * factor, i.get('unit')) if i.get('amount') is not None else '',
-                      'prep': i.get('prep_style') or '', 'cut': i.get('cut'), 'count': count_of(i, factor),
+                      'prep': i.get('prep_style') or '', 'cut': i.get('cut') or cut_from_step.get(lid), 'count': count_of(i, factor),
+                      'state': i.get('prep_style') or words.get(i.get('cut') or cut_from_step.get(lid), ''),
                       'group': groups.group_of(ingredients.get(lid), mise.staple(i))} for lid, i in lines.items()}
 
     # Prep: the lines in bowls, and the rest to take out, drawn like in the delta
     ready = mise.build(v2, sch, recipe.language) if v2['steps'] else None
     if ready:
         def tile(i):
-            return {**pictured[i['local_id']], 'mark': delta.MARKS.get(i.get('cut'))}
+            return {**pictured[i['local_id']], 'mark': delta.MARKS.get(pictured[i['local_id']]['cut'])}
         for b in ready['bowls'] + [b for g in ready['later'] for b in g['bowls']]:
             b['lines'] = [tile(i) for i in b['lines']]
         for f in ready['fetch'] + ready['bench'] + [f for g in ready['later'] for f in g['fetch']]:

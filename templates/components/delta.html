@@ -14,7 +14,7 @@
 {%- endmacro %}
 
 {% macro pic(p, size) -%}
-<span class="mn-ing" title="{{ p.name }}{{ ', ' ~ p.prep if p.prep }}">
+<span class="mn-ing" title="{{ p.name }}{{ ', ' ~ p.state if p.state }}">
   <span class="ing-img" style="--s:{{ size }}px">{% if p.img %}<img src="{{ p.img }}" alt="" width="{{ size }}" height="{{ size }}" loading="lazy">{% else %}<span class="ing-letter" aria-hidden="true">{{ p.name[:1]|upper }}</span>{% endif %}{% if p.mark %}<i class="mark">{{ MARKS[p.mark]|safe }}</i>{% endif %}</span>
   <small>{{ p.amount }}</small>
 </span>

@@ -45,8 +45,8 @@
 /* A tile: symbol, amount and name */
 .tile { display: grid; justify-items: center; align-content: start; gap: 2px; width: 84px; text-align: center; }
 .tile .sym { position: relative; overflow: visible; }
-.tile .mark { position: absolute; right: -4px; bottom: -4px; width: 16px; height: 16px; border-radius: 50%; background: var(--color-paper); border: 1px solid var(--color-line); display: grid; place-items: center; }
-.tile .mark svg { width: 10px; height: 10px; }
+.tile .mark { position: absolute; right: -4px; bottom: -4px; width: 22px; height: 22px; border-radius: 50%; background: var(--color-prep-soft); border: 1px solid var(--color-paper); color: var(--color-prep-ink); display: grid; place-items: center; }
+.tile .mark svg { width: 13px; height: 13px; }
 .tile .ta { font: 500 12px/1.2 var(--font-mono); white-space: nowrap; }
 .tile .tn { font-size: 13px; line-height: 1.2; overflow-wrap: break-word; hyphens: auto; max-width: 100%; }
 .tile .tn em { display: block; font-style: normal; font-size: 12px; color: var(--color-muted); }
