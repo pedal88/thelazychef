@@ -335,9 +335,11 @@
                                         {% endif %}
                                     </td>
                                     <td class="px-3 py-4 text-sm font-medium text-gray-900 max-w-xs">
-                                        <div class="line-clamp-2 whitespace-normal" title="{{ recipe.title }}">
+                                        <a href="{{ url_for('recipe_detail', recipe_id=recipe.id) }}"
+                                            class="line-clamp-2 whitespace-normal hover:text-orange-600 hover:underline"
+                                            title="Open {{ recipe.title }}">
                                             {{ recipe.title }}
-                                        </div>
+                                        </a>
                                     </td>
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 space-x-2">
                                         <!-- Inspect -->
