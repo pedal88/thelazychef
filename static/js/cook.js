@@ -19,12 +19,7 @@
   const steps = () => cards.filter(c => !(st.skip && c.hasAttribute('data-ahead')));
   const index = () => { const list = steps(), k = list.findIndex(c => c.dataset.step === st.at); return k < 0 ? 0 : k; };
   const runOf = id => st.runs.find(r => r.step === id);
-  const leftMin = r => Math.max(0, Math.ceil((r.end - Date.now()) / 60e3));
-  const fmtLeft = r => {
-    const s = Math.max(0, Math.round((r.end - Date.now()) / 1000));
-    return s ? `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}` : 'check';
-  };
-  const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const { beep, ring, wake, leftMin, fmtLeft, esc } = window.Kitchen;  // static/js/kitchen.js
 
   function render() {
     const list = steps(), k = index(), card = list[k];
@@ -144,42 +139,16 @@
   }
   try { showView(localStorage.getItem(WHOLE)); } catch (e) { showView(null); }
 
-  let actx = null;
-  function beep(prime) {
-    try {
-      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
-      if (prime) return;
-      [0, 0.35, 0.7].forEach(d => {
-        const o = actx.createOscillator(), g = actx.createGain();
-        o.frequency.value = 880; o.connect(g); g.connect(actx.destination);
-        g.gain.setValueAtTime(0.2, actx.currentTime + d);
-        g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + d + 0.3);
-        o.start(actx.currentTime + d); o.stop(actx.currentTime + d + 0.3);
-      });
-    } catch (e) { /* sound is optional */ }
-  }
   setInterval(() => {
     let rang = false;
     st.runs.forEach(r => {
       if (!r.rang && Date.now() >= r.end) {
         r.rang = rang = true;
-        beep(false);
-        try { if (navigator.vibrate) navigator.vibrate([300, 150, 300]); } catch (e) { /* not supported */ }
+        ring();
       }
     });
     if (rang) render(); else runs();
   }, 1000);
-
-  let lock = null;
-  async function wake() {
-    try {
-      if (!lock && navigator.wakeLock && document.visibilityState === 'visible') {
-        lock = await navigator.wakeLock.request('screen');
-        lock.addEventListener('release', () => { lock = null; });
-      }
-    } catch (e) { lock = null; /* the page works without it */ }
-  }
-  document.addEventListener('visibilitychange', wake);
 
   function go(d) {
     const list = steps(), k = index();

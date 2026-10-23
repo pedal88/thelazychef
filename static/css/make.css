@@ -1,40 +1,99 @@
-/* The whole recipe on one page (templates/recipe_v2_make.html): the dish as on Overview, then two stages in the phase
-   colours with a milestone between. The ingredient list is beside the dish and the getting ready on wide screens,
-   and in a sheet while cooking. */
+/* The whole recipe on one page (templates/recipe_v2_make.html): the dish as on Overview, then the steps as a list
+   (templates/components/step_list.html), with the ingredients beside them on wide screens as in a cookbook.
+   The bowls are in a sheet: from the bottom on a phone, from the right on a wide screen. */
 .rv2.make { max-width: 680px; }
-.make .ov-bottom .stage-prep { margin-top: var(--space-6); }
 .make .to-start { margin-top: var(--space-4); }
-.make .stage-h .tool { margin-left: auto; min-height: 40px; font-size: 14px; }
+.make .one-steps { margin-top: var(--space-6); scroll-margin-top: 76px; /* below the site's sticky top bar */ }
 @media (min-width: 1000px) {
   .rv2.make { max-width: 1180px; }
   .make .ov-grid { grid-template-columns: 340px minmax(0, 1fr); }
-  .make .ov-bottom .stage-prep { margin-top: var(--space-4); }
-  .make .to-start { display: none; }  /* Get ready is right below */
+  .make .one-steps { margin-top: var(--space-4); }
+  .make .to-start { display: none; }  /* the steps are right below */
 }
-.make .tool { display: inline-flex; align-items: center; gap: 6px; min-height: var(--tap); padding: 0 var(--space-4); border: 1px solid var(--color-line);
-  border-radius: var(--radius-pill); background: var(--color-paper); font-size: 15px; }
-.make .tool:hover { border-color: var(--color-line-strong); }
 
-.stage { margin-top: var(--space-6); padding-top: var(--space-3); border-top: 3px solid var(--stage, var(--color-line)); }
-.stage-prep { --stage: var(--color-prep); }
-.stage-cook { --stage: var(--color-cook); }
-.stage { scroll-margin-top: 76px; }  /* below the site's sticky top bar when a link jumps here */
-.stage-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px var(--space-3); }
-.stage-h h2 { font-size: 24px; margin: 0; }
-.stage-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--stage); align-self: center; }
-.stage .cook-cols { margin-top: var(--space-3); }
+/* The tabs and the Bowls button, kept in reach while scrolling through the steps */
+.steps-head { position: sticky; top: 64px; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2);
+  margin-inline: calc(-1 * var(--space-2)); padding: var(--space-2); background: var(--color-paper); border-bottom: 1px solid var(--color-line); }
+.vtabs { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--color-line); border-radius: var(--radius-pill); }
+.vtabs button { min-height: 34px; padding: 0 12px; border: 0; border-radius: var(--radius-pill); background: none; color: var(--color-muted); font: 600 14px/1 var(--font-sans); cursor: pointer; }
+.vtabs button[aria-selected="true"] { background: var(--color-ink); color: var(--color-paper); }
+.vtabs button:focus-visible, .bowls-open:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.bowls-open { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border: 1px solid var(--color-prep);
+  border-radius: var(--radius-pill); background: var(--color-prep-soft); color: var(--color-prep-ink); font: 600 14px/1 var(--font-sans); cursor: pointer; }
+.bowls-open [data-bowl-count] { font: 500 12px var(--font-mono); opacity: .8; }
+@media (max-width: 480px) {  /* the tabs and the button on one line on a phone */
+  .vtabs button { padding: 0 9px; font-size: 13px; }
+  .bowls-open { padding: 0 11px; }
+  .bowls-open .bl { display: none; }
+}
 
-.milestone { margin-top: var(--space-6); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3);
-  padding: var(--space-4); border-radius: var(--radius); background: var(--color-cook-soft); color: var(--color-cook-ink); font-size: 16px; }
-.milestone .go { text-decoration: none; }
+/* The running timers: a line under the tabs, so they stay in sight over the list and the views */
+.runs-line { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px; }
+.runs-line[hidden] { display: none; }
+.runs-line .tm { padding: 0 0 0 10px; }
+.runs-line .tm button { border: 0; background: none; color: inherit; font: inherit; min-height: 34px; padding: 0 4px; cursor: pointer; }
+.runs-line .tm b { font-variant-numeric: tabular-nums; }
+.runs-line .tm-x { padding: 0 10px 0 6px !important; opacity: .7; }
 
-/* The cooking bar at the bottom only once the cooking is on screen */
-.make:not(.cooking) .bar { display: none; }
+/* The list */
+.slist { list-style: none; margin: var(--space-3) 0 0; padding: 0; }
+.seg-h { margin: var(--space-4) 0 var(--space-2); font: 600 12px var(--font-mono); letter-spacing: .1em; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+.seg-h::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--seg); }
+.seg-h.prep { --seg: var(--color-prep); color: var(--color-prep-ink); }
+.seg-h.cook { --seg: var(--color-cook); color: var(--color-cook-ink); }
+.seg-h:first-child { margin-top: 0; }
+.heat-line { display: flex; align-items: center; gap: var(--space-3); margin: var(--space-6) 0 var(--space-2); color: var(--color-cook-ink); font-size: 14px; font-weight: 600; }
+.heat-line::before, .heat-line::after { content: ""; flex: 1; border-top: 2px dashed var(--color-cook); }
 
-.sheet { width: min(560px, calc(100vw - 32px)); max-height: min(85vh, 900px); border: 0; border-radius: var(--radius); padding: var(--space-4) var(--space-4) var(--space-6);
-  background: var(--color-paper); color: var(--color-ink); box-shadow: 0 20px 60px rgb(0 0 0 / .25); }
+.st { --ph: var(--color-prep); --ph-soft: var(--color-prep-soft); display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: var(--space-3);
+  padding: var(--space-3) var(--space-2); border-radius: var(--radius); cursor: pointer; transition: background .15s; }
+.st.cook { --ph: var(--color-cook); --ph-soft: var(--color-cook-soft); }
+.st.serve { --ph: var(--color-serve); --ph-soft: var(--color-soft); }
+.st + .st { border-top: 1px solid var(--color-line); }
+.st-tick { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--ph); background: var(--color-paper); color: var(--color-ink);
+  display: grid; place-items: center; font: 600 14px var(--font-mono); cursor: pointer; padding: 0; margin-top: 2px; }
+.st-body h3 { margin: 0; font-size: 17px; line-height: 1.3; }
+.st-meta { margin-left: 8px; font: 400 12px var(--font-mono); color: var(--color-muted); }
+.st-body p { margin: 6px 0 0; }
+.st-body .txt { font-size: 16px; line-height: 1.55; }
+.st-while { font-size: 13px; color: var(--color-prep-ink); font-weight: 600; }
+.st-eq { font-size: 13px; color: var(--color-muted); }
+.st-donewhen { font-size: 14px; }
+.st-donewhen b { font: 600 11px var(--font-mono); text-transform: uppercase; letter-spacing: .08em; margin-right: 4px; color: var(--color-muted); }
+.st-timer { margin-top: var(--space-2); display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 14px; border: 1px solid var(--ph);
+  border-radius: var(--radius-pill); background: var(--color-paper); color: var(--color-ink); font: 600 14px/1 var(--font-sans); cursor: pointer; }
+.st-timer.running { background: var(--ph-soft); font-variant-numeric: tabular-nums; }
+.st.setup .st-body h3 { font-weight: 600; color: var(--color-muted); }
+/* The next step and the ones done */
+.st.is-next { background: var(--ph-soft); }
+.st.is-next .st-tick { background: var(--ph); color: var(--color-paper); }
+.st.is-done .st-body { opacity: .45; }
+.st.is-done .st-body h3 { text-decoration: line-through; text-decoration-thickness: 1px; }
+.st.is-done .st-tick { background: var(--ph); border-color: var(--ph); color: var(--color-paper); }
+.st-reset { margin: var(--space-4) 0 0; text-align: right; }
+.st-reset button { border: 0; background: none; color: var(--color-muted); font-size: 13px; text-decoration: underline; cursor: pointer; }
+
+/* The views the tabs show instead of the list; the next step is marked */
+.vpanel { margin-top: var(--space-3); }
+.vpanel .g2-node.cur { background: color-mix(in srgb, var(--color-serve) 8%, transparent); border-radius: 16px; box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-serve) 8%, transparent); }
+.vpanel .fx-seg.cur .mn-v { text-decoration: underline; text-decoration-color: var(--color-serve); text-decoration-thickness: 3px; text-underline-offset: 4px; }
+
+/* Sheets: the bowls slide up from the bottom on a phone, in from the right on a wide screen */
+.sheet { border: 0; padding: var(--space-3) var(--space-4) var(--space-6); background: var(--color-paper); color: var(--color-ink);
+  width: 100%; max-width: 100%; max-height: 88vh; margin: auto 0 0; border-radius: 20px 20px 0 0; box-shadow: 0 -10px 40px rgb(0 0 0 / .2);
+  overscroll-behavior: contain; }
+.sheet[open] { animation: sheet-up .22s ease-out; }
+@keyframes sheet-up { from { transform: translateY(40px); opacity: .6; } }
 .sheet::backdrop { background: rgb(0 0 0 / .35); }
+.sheet-grip { width: 44px; height: 5px; border-radius: 3px; background: var(--color-line-strong); margin: 0 auto var(--space-2); }
 .sheet-h { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-2); }
 .sheet-h h2 { margin: 0; font-size: 20px; }
-.sheet-x { width: var(--tap); height: var(--tap); border: 0; background: none; display: grid; place-items: center; color: var(--color-muted); }
-.more-panel.in-sheet { position: static; width: auto; box-shadow: none; border: 0; padding: 0; }
+.sheet-x { width: var(--tap); height: var(--tap); border: 0; background: none; display: grid; place-items: center; color: var(--color-muted); cursor: pointer; }
+.sheet .meter { margin-bottom: var(--space-3); }
+@media (min-width: 1000px) {
+  .sheet { width: min(620px, 50vw); height: 100vh; max-height: 100vh; margin: 0 0 0 auto; border-radius: 20px 0 0 20px; box-shadow: -10px 0 40px rgb(0 0 0 / .2); }
+  .sheet[open] { animation: sheet-in .22s ease-out; }
+  @keyframes sheet-in { from { transform: translateX(40px); opacity: .6; } }
+  .sheet-grip { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .sheet[open] { animation: none; } }
