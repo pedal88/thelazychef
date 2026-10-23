@@ -145,32 +145,15 @@
 
   <aside class="ov-ings" aria-labelledby="ings-h">
     <div class="sec-head"><h2 id="ings-h">Ingredients</h2><span class="eyebrow">{{ v.shopping|length }} items</span></div>
-    {% set ls = chosen_list_style() %}
+    {# One line each, the amount first, as a shopping list (chosen 23.10.2026 from four variants). What the
+       line is used for, and whether it is missing from the pantry, on a quiet second line. #}
     {% for g in v.shop_groups %}
     <h3 class="shop-group">{{ g.label }}</h3>
-    {% if ls == 'now' %}
-    <ul class="shop{{ ' shop-staples' if g.key == 'staples' }}">
+    <ul class="ilist">
       {% for item in g['items'] %}
-      <li>{{ item.symbol }}<span class="nm">{{ item.name }}{% if item.note %}<small>{{ item.note }}</small>{% endif %}{% if item.missing and recipe.status != 'approved' %}<small class="missing">Not in the pantry</small>{% endif %}</span><span class="amt">{{ item.amount }}</span></li>
+      <li>{{ ing_pic(item, 36) }}<span class="line"><b class="amt">{{ item.amount }}</b> {{ item.name }}{% if item.note %}<small>{{ item.note }}</small>{% endif %}{% if item.missing and recipe.status != 'approved' %}<small class="missing">Not in the pantry</small>{% endif %}</span></li>
       {% endfor %}
     </ul>
-    {% elif ls in ('a', 'd') %}
-    {# A: the rows, smaller and tighter. D: one line each, the amount first, as a shopping list. #}
-    <ul class="ilist ilist-{{ ls }}{{ ' ilist-staples' if g.key == 'staples' }}">
-      {% for item in g['items'] %}
-      <li>{{ ing_pic(item, 40 if ls == 'a' else 32) }}
-        {% if ls == 'a' %}<span class="nm">{{ item.name }}{% if item.note %}<small>{{ item.note }}</small>{% endif %}</span><span class="amt">{{ item.amount }}</span>
-        {% else %}<span class="line"><b class="amt">{{ item.amount }}</b> {{ item.name }}{% if item.note %} <small>· {{ item.note }}</small>{% endif %}</span>{% endif %}</li>
-      {% endfor %}
-    </ul>
-    {% else %}
-    {# B: tiles with the name and amount on a band over the image. C: small tiles with the text under the image. #}
-    <ul class="itiles itiles-{{ ls }}">
-      {% for item in g['items'] %}
-      <li title="{{ item.note }}">{{ ing_pic(item, 88 if ls == 'b' else 48) }}<span class="cap"><b>{{ item.amount or 'to taste' }}</b> {{ item.name }}</span></li>
-      {% endfor %}
-    </ul>
-    {% endif %}
     {% endfor %}
   </aside>
 
