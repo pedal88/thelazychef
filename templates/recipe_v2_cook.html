@@ -3,9 +3,8 @@
    and what each step needs from Prep. RECIPE_VISUALIZATIONS.md 9.15. The server renders every step;
    static/js/cook.js shows one at a time and keeps the place, the timers and the choices on the device.
    On a large screen the river delta stands beside the card with the step you are on marked. #}
-{% from "components/delta.html" import delta, MARKS with context %}
+{% from "components/cook_flow.html" import cook_body with context %}
 {% from "components/recipe_head.html" import recipe_head with context %}
-{% from "components/whole_dish.html" import timeline, metro %}
 
 {% block title %}Cook: {{ v.title }} - The Lazy Chef{% endblock %}
 
@@ -20,89 +19,13 @@
 {% endblock %}
 
 {% set lang = recipe.language or 'en' %}
-{% set PHASES = {'prep': 'Prep', 'cook': 'Cook', 'serve': 'Serve'} %}
 
-{% macro sym(p, size) -%}
-<span class="sym" style="--s:{{ size }}px">{% if p.img %}<img src="{{ p.img }}" alt="" width="{{ size }}" height="{{ size }}" loading="lazy">{% else %}<span class="sym-letter" aria-hidden="true">{{ p.name[:1]|upper }}</span>{% endif %}{% if p.mark %}<i class="mark">{{ MARKS[p.mark]|safe }}</i>{% endif %}</span>
-{%- endmacro %}
 
 {% block content %}
 {% set args = {'recipe_id': recipe.id, 'servings': v.servings, 'plan': v.plan} %}
 <article class="rv2 cook" data-recipe="{{ recipe.id }}">
   {{ recipe_head(recipe, v, 'cook') }}
 
-  <div class="cook-cols">
-    <div class="cook-main">
-      <div class="status" id="status">
-        <div class="prog" aria-hidden="true"></div>
-        <div class="now"><span class="lbl" data-where></span><span class="runs" data-runs></span>{% if v.timeline %}<button type="button" class="whole-open" data-whole-open aria-controls="whole">{{ icon('galaxy') }} Whole dish</button>{% endif %}</div>
-        <div class="runbox" data-runbox hidden><b data-run-label></b><span data-run-done></span><button type="button" class="btn" data-run-remove>Done, remove</button></div>
-      </div>
-
-      {% for s in v.steps if not s.task %}
-      <article class="card {{ s.phase }}" data-step="{{ s.id }}" data-no="{{ s.n }}" data-label="{{ s.short }}" data-done="{{ s.done_when or '' }}"
-               data-passive="{{ s.passive_min }}" data-after="{{ s.after|join(' ') }}"{% if s.ahead %} data-ahead{% endif %} hidden>
-        <div class="meta">Step {{ s.n }} · {{ PHASES[s.phase] }}{% if s.component %} · {{ s.component }}{% endif %} · {{ s.duration or 'short' }}</div>
-        {% if s.standing %}<span class="while" data-standing="{{ s.standing.id }}">While: {{ s.standing.short|lower }}<span data-left></span></span>{% endif %}
-        <div class="waitbox" data-wait hidden></div>
-        <h2 lang="{{ lang }}">{{ s.short }}</h2>
-        {% if s.equipment %}<div class="eqline">{{ s.equipment }}</div>{% endif %}
-        <p class="txt" lang="{{ lang }}">{{ s.html }}</p>
-        {% if s.bowls or s.tiles or s.results %}
-        <div class="needs"><span class="eyebrow">You need</span>
-          {% for b in s.bowls %}<span class="needbowl"><span class="bno">{{ b.no }}</span><span><b lang="{{ lang }}">{{ b.name }}</b><span class="mini">{% for p in b.lines %}{{ sym(p, 36) }}{% endfor %}</span><em>{% for p in b.lines %}{{ (p.amount ~ ' ' ~ p.name)|trim }}{{ ', ' if not loop.last }}{% endfor %}</em></span></span>{% endfor %}
-          {% for p in s.tiles %}<span class="tile">{{ sym(p, 64) }}<span class="ta">{{ p.amount or 'to taste' }}</span><span class="tn" lang="{{ lang }}">{{ p.name }}{% if p.state %}<em>{{ p.state }}</em>{% endif %}</span></span>{% endfor %}
-          {% for r in s.results %}<span class="needres"><span class="arrow" aria-hidden="true">↳</span><span><b lang="{{ lang }}">{{ r.short }}</b><em>from step {{ r.no }}</em></span></span>{% endfor %}
-        </div>
-        {% endif %}
-        {% if s.done_when %}<div class="donebox"><b>Done when</b><span lang="{{ lang }}">{{ s.done_when }}</span></div>{% endif %}
-        {% if s.passive_min %}<div class="passbox" data-passbox>{% if s.active_min %}Your part takes {{ s.active_min }} min. {% endif %}Then it stands for {{ s.passive_min }} min on its own. Tap “Start, then next” and the app keeps the time while you go on.</div>{% endif %}
-      </article>
-      {% endfor %}
-
-      <section class="finished" data-finished hidden>
-        <p class="eyebrow">{{ v.title }}</p>
-        <h2>The food is ready</h2>
-        <p class="hint">The plan was {{ v.total }}, with {{ v.active }} of work.</p>
-        <p><a class="go" href="{{ url_for('recipe_detail', **args) }}">Back to the recipe</a> <button type="button" class="reset" data-restart>Start again</button></p>
-      </section>
-
-      <section class="steplist-wrap" data-list hidden>
-        <label class="skiprow"><input type="checkbox" data-skip checked> Skip what you did in Prep</label>
-        <ol class="steplist">
-          {% for s in v.steps if not s.task %}
-          <li class="{{ s.phase }}" data-row="{{ s.id }}"{% if s.ahead %} data-ahead{% endif %}><button type="button" data-jump="{{ s.id }}"><span class="n">{{ s.n }}</span><span><span class="m">{{ s.short }}{% if s.duration %} · {{ s.duration }}{% endif %}</span><p lang="{{ lang }}">{{ s.html }}</p></span></button></li>
-          {% endfor %}
-        </ol>
-      </section>
-      <p class="swipehint">Swipe or use the arrow keys for the next and previous step.</p>
-    </div>
-
-    {% if v.timeline %}
-    <aside class="cook-side" id="whole" aria-label="The whole dish">
-      <div class="whole-head">
-        <div class="wtabs" role="tablist" aria-label="View">
-          <button type="button" role="tab" id="whole-timeline" data-whole="timeline" aria-selected="true" aria-controls="panel-timeline">Timeline</button>
-          {%- if v.metro %}<button type="button" role="tab" id="whole-metro" data-whole="metro" aria-selected="false" aria-controls="panel-metro">Metro map</button>{% endif -%}
-          {%- if v.delta %}<button type="button" role="tab" id="whole-delta" data-whole="delta" aria-selected="false" aria-controls="panel-delta">River delta</button>{% endif -%}
-        </div>
-        <button type="button" class="whole-full" data-whole-full aria-pressed="false" aria-label="Show the view full screen" title="Full screen">{{ icon('expand') }}</button>
-        <button type="button" class="whole-close" data-whole-close aria-label="Close the whole dish">{{ icon('close') }}</button>
-      </div>
-      <section class="wpanel" id="panel-timeline" role="tabpanel" aria-labelledby="whole-timeline" data-panel="timeline">{{ timeline(v.timeline) }}</section>
-      {% if v.metro %}<section class="wpanel" id="panel-metro" role="tabpanel" aria-labelledby="whole-metro" data-panel="metro" hidden>{{ metro(v.metro) }}</section>{% endif %}
-      {% if v.delta %}<section class="wpanel" id="panel-delta" role="tabpanel" aria-labelledby="whole-delta" data-panel="delta" hidden>
-        <p class="hint">Tap a number to tick a step off in the drawing.</p>
-        {{ delta(v.delta, recipe.id, print_links=False) }}
-      </section>{% endif %}
-    </aside>
-    {% endif %}
-  </div>
-
-  <div class="bar"><div class="bar-in">
-    <button type="button" class="btn sq" data-prev aria-label="Previous step">←</button>
-    <button type="button" class="btn sq txt" data-toggle-list aria-pressed="false">Steps</button>
-    <button type="button" class="btn primary" data-advance>Start</button>
-  </div></div>
+  {{ cook_body() }}
 </article>
 {% endblock %}

@@ -1,0 +1,30 @@
+/* Prep and cooking on one page (templates/recipe_v2_make.html): two stages in the phase colours, with a milestone
+   between, and the ingredients and facts in sheets. */
+.rv2.make { max-width: 1180px; }
+.make-tools { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-2); margin: var(--space-2) 0 var(--space-4); }
+.make .tool { display: inline-flex; align-items: center; gap: 6px; min-height: var(--tap); padding: 0 var(--space-4); border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill); background: var(--color-paper); font-size: 15px; }
+.make .tool:hover { border-color: var(--color-line-strong); }
+
+.stage { margin-top: var(--space-6); padding-top: var(--space-3); border-top: 3px solid var(--stage, var(--color-line)); }
+.stage-prep { --stage: var(--color-prep); }
+.stage-cook { --stage: var(--color-cook); scroll-margin-top: var(--space-4); }
+.stage-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px var(--space-3); }
+.stage-h h2 { font-size: 24px; margin: 0; }
+.stage-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--stage); align-self: center; }
+.stage .cook-cols { margin-top: var(--space-3); }
+
+.milestone { margin-top: var(--space-6); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3);
+  padding: var(--space-4); border-radius: var(--radius); background: var(--color-cook-soft); color: var(--color-cook-ink); font-size: 16px; }
+.milestone .go { text-decoration: none; }
+
+/* The cooking bar at the bottom only once the cooking is on screen */
+.make:not(.cooking) .bar { display: none; }
+
+.sheet { width: min(560px, calc(100vw - 32px)); max-height: min(85vh, 900px); border: 0; border-radius: var(--radius); padding: var(--space-4) var(--space-4) var(--space-6);
+  background: var(--color-paper); color: var(--color-ink); box-shadow: 0 20px 60px rgb(0 0 0 / .25); }
+.sheet::backdrop { background: rgb(0 0 0 / .35); }
+.sheet-h { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-2); }
+.sheet-h h2 { margin: 0; font-size: 20px; }
+.sheet-x { width: var(--tap); height: var(--tap); border: 0; background: none; display: grid; place-items: center; color: var(--color-muted); }
+.more-panel.in-sheet { position: static; width: auto; box-shadow: none; border: 0; padding: 0; }

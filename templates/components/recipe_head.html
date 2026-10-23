@@ -7,7 +7,9 @@
   <h1>{{ v.title }}</h1>
   {% if v.ready %}
   <nav class="flowbar" aria-label="Making the dish">
-    {%- for key, label, endpoint in [('overview', 'Overview', 'recipe_detail'), ('ready', 'Prep', 'recipe_prep'), ('cook', 'Cook', 'recipe_cook')] -%}
+    {%- set tabs = [('overview', 'Overview', 'recipe_detail'), ('make', 'Make', 'recipe_make')] if chosen_flow() == 'one'
+                   else [('overview', 'Overview', 'recipe_detail'), ('ready', 'Prep', 'recipe_prep'), ('cook', 'Cook', 'recipe_cook')] -%}
+    {%- for key, label, endpoint in tabs -%}
     <a href="{{ url_for(endpoint, **args) }}"{% if key == current %} aria-current="page"{% endif %}>{{ label }}</a>
     {%- endfor -%}
   </nav>
@@ -30,6 +32,9 @@
   </div>
   <div class="tgroup" data-img-switch><span class="tlabel">Images</span>
     {%- for key, label in IMAGE_STYLES.items() %}<button type="button" data-img="{{ key }}" aria-pressed="{{ 'true' if key == imgs.style else 'false' }}">{{ label }}</button>{% endfor -%}
+  </div>
+  <div class="tgroup" data-flow-switch><span class="tlabel">Flow</span>
+    {%- for key, label in FLOWS.items() %}<button type="button" data-flow="{{ key }}" aria-pressed="{{ 'true' if key == chosen_flow() else 'false' }}">{{ label }}</button>{% endfor -%}
   </div>
   <div class="tgroup" data-eq-switch><span class="tlabel">Tools</span>
     {%- for key, label in EQUIPMENT_STYLES.items() %}<button type="button" data-eq="{{ key }}" aria-pressed="{{ 'true' if key == chosen_equipment_style() else 'false' }}">{{ label }}</button>{% endfor -%}

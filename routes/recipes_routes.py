@@ -564,6 +564,21 @@ def recipe_cook(recipe_id):
     return render_template('recipe_v2_cook.html', recipe=recipe, v=view)
 
 
+@recipes_bp.route('/recipe/<int:recipe_id>/make')
+def recipe_make(recipe_id):
+    """Prep and cooking on one page (a trial for admins): the ingredient board, then the steps one at a time."""
+    recipe = db.session.get(Recipe, recipe_id)
+    if not recipe or not viewer_is_admin():
+        return redirect(url_for('recipe_prep', recipe_id=recipe_id, **request.args))
+    if recipe.schema_version != 2:
+        return redirect(url_for('recipe_detail', recipe_id=recipe_id))
+    from services.recipe_v2.view import page
+    view = page(recipe, servings=request.args.get('servings', type=int), plan=request.args.get('plan', 'calm'))
+    if not view['ready']:
+        return redirect(url_for('recipe_detail', recipe_id=recipe_id))
+    return render_template('recipe_v2_make.html', recipe=recipe, v=view)
+
+
 @recipes_bp.route('/recipe/<int:recipe_id>/print')
 def recipe_print(recipe_id):
     """The river delta on one A4 sheet, portrait or landscape. Opens the print dialog unless ?auto=0."""

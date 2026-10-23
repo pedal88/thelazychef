@@ -1,0 +1,70 @@
+{# The ingredients and the facts about the dish, shared by Overview and the one-page flow (recipe_v2_make.html).
+   Import with context. #}
+{% macro ing_pic(item, size) -%}
+<span class="sym" style="--s:{{ size }}px">{% if item.img %}<img src="{{ item.img }}" alt="" width="{{ size }}" height="{{ size }}" loading="lazy">{% else %}<span class="sym-letter" aria-hidden="true">{{ item.name[:1]|upper }}</span>{% endif %}</span>
+{%- endmacro %}
+
+{# One line each, the amount first, in kitchen groups. #}
+{% macro ingredient_list() -%}
+    {# One line each, the amount first, as a shopping list (chosen 23.10.2026 from four variants). What the
+       line is used for, and whether it is missing from the pantry, on a quiet second line. #}
+    {% for g in v.shop_groups %}
+    <h3 class="shop-group">{{ g.label }}</h3>
+    <ul class="ilist">
+      {% for item in g['items'] %}
+      <li>{{ ing_pic(item, 36) }}<span class="line"><b class="amt">{{ item.amount }}</b> {{ item.name }}{% if item.note %}<small>{{ item.note }}</small>{% endif %}{% if item.missing and recipe.status != 'approved' %}<small class="missing">Not in the pantry</small>{% endif %}</span></li>
+      {% endfor %}
+    </ul>
+    {% endfor %}
+{%- endmacro %}
+
+{# Servings, plan, the facts about the dish, nutrition and the print links. endpoint is the page the servings and
+   plan links go to. #}
+{% macro dish_facts(endpoint) -%}
+{% macro link(servings, plan) %}{{ url_for(endpoint, recipe_id=recipe.id, servings=servings, plan=plan) }}{% endmacro %}
+          {% if v.scalable %}
+          <div class="row">
+            <span>Servings</span>
+            <span class="stepper">
+              <a href="{{ link(v.servings - 1, v.plan) }}" aria-label="Fewer servings">−</a>
+              <span>{{ v.servings }}</span>
+              <a href="{{ link(v.servings + 1, v.plan) }}" aria-label="More servings">+</a>
+            </span>
+          </div>
+          {% endif %}
+          <div class="row">
+            <span>Plan</span>
+            <span class="seg">{% for key, name in v.plans.items() %}<a href="{{ link(v.servings, key) }}" aria-current="{{ 'true' if key == v.plan else 'false' }}">{{ name }}</a>{% endfor %}</span>
+          </div>
+          <p class="hint">{{ v.plan_hint }}</p>
+
+          {% if v.about or recipe.difficulty %}
+          <ul class="about">
+            {% if recipe.difficulty %}<li><span class="eyebrow">Difficulty</span> {{ recipe.difficulty|difficulty_label }}</li>{% endif %}
+            {% for label, value in v.about %}<li><span class="eyebrow">{{ label }}</span> {{ value }}</li>{% endfor %}
+          </ul>
+          {% endif %}
+
+          {% if v.nutrition %}
+          <div class="nutrition">
+            <p class="eyebrow">Nutrition per serving, approximate</p>
+            <table>
+              <tr><th>Energy</th><td>{{ v.nutrition.kcal }} kcal</td></tr>
+              <tr><th>Protein</th><td>{{ v.nutrition.protein }} g</td></tr>
+              <tr><th>Carbohydrate</th><td>{{ v.nutrition.carbs }} g</td></tr>
+              <tr class="sub"><th>of which sugars</th><td>{{ v.nutrition.sugar }} g</td></tr>
+              <tr><th>Fat</th><td>{{ v.nutrition.fat }} g</td></tr>
+              <tr class="sub"><th>of which saturated</th><td>{{ v.nutrition.saturated_fat }} g</td></tr>
+              <tr><th>Fibre</th><td>{{ v.nutrition.fiber }} g</td></tr>
+              <tr><th>Salt</th><td>{{ v.nutrition.salt }} g</td></tr>
+            </table>
+            <p class="hint">From the ingredients as measured; salt and seasoning added to taste are not included.</p>
+          </div>
+          {% endif %}
+
+          {% if v.delta %}
+          <p class="hint">The whole dish as one drawing on A4:
+            <a href="{{ url_for('recipe_print', recipe_id=recipe.id, orient='portrait', servings=v.servings) }}" target="_blank" rel="noopener">portrait</a> ·
+            <a href="{{ url_for('recipe_print', recipe_id=recipe.id, orient='landscape', servings=v.servings) }}" target="_blank" rel="noopener">landscape</a></p>
+          {% endif %}
+{%- endmacro %}
