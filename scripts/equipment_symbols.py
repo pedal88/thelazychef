@@ -133,7 +133,7 @@ def main():
     p.add_argument('--pilot', action='store_true')
     p.add_argument('--only', help='comma separated ids to make (again)')
     p.add_argument('--notes', type=Path, help='JSON {id: what to change}')
-    p.add_argument('--style', help='another style layer from the lab task (painted, line_tint, risograph)')
+    p.add_argument('--style', help='another style layer from the lab task (illustrated, painted, line_tint, risograph)')
     args = p.parse_args()
     if args.command == 'promote':
         if not args.run:
