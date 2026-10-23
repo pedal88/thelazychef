@@ -1,15 +1,14 @@
 {# The top of the three pages of a v2 recipe: the title and Overview · Prep · Cook. The same on all three,
-   centred, so it stays put while the page changes under it (a view transition in recipe_v2.css). #}
+   centred, so it stays put while the page changes under it (a view transition in recipe_v2.css). The one-page
+   flow (an admin trial) has no tabs. #}
 {% macro recipe_head(recipe, v, current) %}
 {% set args = {'recipe_id': recipe.id, 'servings': v.servings, 'plan': v.plan} %}
 <header class="rhead">
   <a class="back" href="{{ url_for('recipes_list') }}">← All recipes</a>
   <h1>{{ v.title }}</h1>
-  {% if v.ready %}
+  {% if v.ready and chosen_flow() != 'one' %}
   <nav class="flowbar" aria-label="Making the dish">
-    {%- set tabs = [('overview', 'Overview', 'recipe_detail'), ('make', 'Make', 'recipe_make')] if chosen_flow() == 'one'
-                   else [('overview', 'Overview', 'recipe_detail'), ('ready', 'Prep', 'recipe_prep'), ('cook', 'Cook', 'recipe_cook')] -%}
-    {%- for key, label, endpoint in tabs -%}
+    {%- for key, label, endpoint in [('overview', 'Overview', 'recipe_detail'), ('ready', 'Prep', 'recipe_prep'), ('cook', 'Cook', 'recipe_cook')] -%}
     <a href="{{ url_for(endpoint, **args) }}"{% if key == current %} aria-current="page"{% endif %}>{{ label }}</a>
     {%- endfor -%}
   </nav>

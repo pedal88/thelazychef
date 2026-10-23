@@ -20,7 +20,7 @@ from database.models import (
     db,
 )
 from routes._flat import FlatBlueprint
-from routes._shared import DIFFICULTY_LABELS, get_recipe_image_url, get_storage, load_json_option, viewer_is_admin
+from routes._shared import DIFFICULTY_LABELS, chosen_flow, get_recipe_image_url, get_storage, load_json_option, viewer_is_admin
 from services.chef_service import get_chefs
 from services.recipe_v2.derive import HEAT_LABELS
 from utils.decorators import admin_required
@@ -378,7 +378,9 @@ def recipe_detail(recipe_id):
             # The dish and all its versions by chef personas, and the chefs that can make one
             root = recipe.base_recipe or recipe
             admin = {'family': [root] + sorted(root.versions, key=lambda r: r.id), 'chefs': get_chefs()}
-        return render_template('recipe_v2.html', recipe=recipe, v=view, admin=admin)
+        # The one-page flow (an admin trial): Overview, Prep and Cook as one page
+        template = 'recipe_v2_make.html' if view['ready'] and chosen_flow() == 'one' else 'recipe_v2.html'
+        return render_template(template, recipe=recipe, v=view, admin=admin)
 
     # The ingredients with their pantry rows in two queries, not one per ingredient
     db.session.execute(db.select(Recipe).where(Recipe.id == recipe_id).options(
@@ -539,6 +541,8 @@ def recipe_prep(recipe_id):
     if not recipe or (recipe.status != 'approved' and not viewer_is_admin()):
         flash("Recipe not found.", "error")
         return redirect(url_for('discover'))
+    if chosen_flow() == 'one':
+        return redirect(url_for('recipe_detail', recipe_id=recipe_id, **request.args) + '#prep')
     if recipe.schema_version != 2:
         return redirect(url_for('recipe_detail', recipe_id=recipe_id))
     from services.recipe_v2.view import page
@@ -555,6 +559,8 @@ def recipe_cook(recipe_id):
     if not recipe or (recipe.status != 'approved' and not viewer_is_admin()):
         flash("Recipe not found.", "error")
         return redirect(url_for('discover'))
+    if chosen_flow() == 'one':
+        return redirect(url_for('recipe_detail', recipe_id=recipe_id, **request.args) + '#cook')
     if recipe.schema_version != 2:
         return redirect(url_for('recipe_detail', recipe_id=recipe_id))
     from services.recipe_v2.view import page
@@ -566,17 +572,8 @@ def recipe_cook(recipe_id):
 
 @recipes_bp.route('/recipe/<int:recipe_id>/make')
 def recipe_make(recipe_id):
-    """Prep and cooking on one page (a trial for admins): the ingredient board, then the steps one at a time."""
-    recipe = db.session.get(Recipe, recipe_id)
-    if not recipe or not viewer_is_admin():
-        return redirect(url_for('recipe_prep', recipe_id=recipe_id, **request.args))
-    if recipe.schema_version != 2:
-        return redirect(url_for('recipe_detail', recipe_id=recipe_id))
-    from services.recipe_v2.view import page
-    view = page(recipe, servings=request.args.get('servings', type=int), plan=request.args.get('plan', 'calm'))
-    if not view['ready']:
-        return redirect(url_for('recipe_detail', recipe_id=recipe_id))
-    return render_template('recipe_v2_make.html', recipe=recipe, v=view)
+    """The first address of the one-page flow (an admin trial), which is now the recipe's own page."""
+    return redirect(url_for('recipe_detail', recipe_id=recipe_id, **request.args))
 
 
 @recipes_bp.route('/recipe/<int:recipe_id>/print')

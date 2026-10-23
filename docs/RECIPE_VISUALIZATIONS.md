@@ -970,6 +970,8 @@ Pål lener mot å samle prep og koking i én fane, med ingrediensene og fakta om
 
 Delene deles med Gjør klart og Lag mat (`components/prep_board.html`, `components/cook_flow.html`, `components/dish_info.html`), så de tre sidene ikke glir fra hverandre mens prøven pågår.
 
+**Med Overview (23.10.2026, Pål):** Overview er nå også på samme side, så hele oppskriften er én side på `/recipe/<id>` og fanene er borte. Øverst det Overview viser (bilde, tid, porsjoner, ☰-menyen, kokkens notat), så Get ready og Cook. Stor skjerm: ingredienslisten i egen kolonne til venstre ved siden av retten og Get ready; kokingen under i full bredde. Telefon: én kolonne, med «Start ↓» forbi ingredienslisten. Ingredienslisten er også et ark fra Cook. Porsjoner byttes i ☰-menyen og laster siden på nytt (ikke umiddelbart som på Overview, fordi bordet og stegene også har mengder). `/prep`, `/cook` og `/make` leder hit (`#prep`, `#cook`). Valgt framfor faser som bytter på plass (fanene i forkledning) og en topp som krymper og blir stående (kan legges på senere om bildet er i veien under kokingen).
+
 **Visningene underveis:** stegene er hovedsaken; tilleggene kommer når de trengs, ikke ved å veksle. Midt i et steg: stegkortet. Mellom steg eller mens noe står: nå/neste med tidtakere (statuslinjen). Når man har mistet tråden: hele retten i et ark, med tidslinje, T-banekart og elvedelta som faner. Stor skjerm: ved siden av.
 
 ---
