@@ -22,7 +22,11 @@
     <fieldset class="settings">
       <legend class="eyebrow">Settings</legend>
       {% for key, s in settings.items() %}<label><input type="checkbox" name="settings" value="{{ key }}"{% if key in chosen %} checked{% endif %}> {{ s[0] }}</label>{% endfor %}
-      <p class="hint">On top of any chef, for an idea.</p>
+      <label class="age">Baby from
+        <select name="age_from_months" aria-label="The baby's age">
+          {% for st in stages %}<option value="{{ st.from_months }}"{% if st.from_months == age %} selected{% endif %}>{{ st.label }}: {{ st.texture }}</option>{% endfor %}
+        </select></label>
+      <p class="hint">On top of any chef, for an idea. Baby follows the Norwegian advice for infant food for that age: no salt or honey under 12 months, the right texture, no whole nuts.</p>
     </fieldset>
     <label for="language" class="eyebrow">Language</label>
     <select id="language" name="language">

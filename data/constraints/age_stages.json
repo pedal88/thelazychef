@@ -1,0 +1,46 @@
+{
+  "_doc": "Age stages for the Baby setting (services/recipe_v2/persona.py). A recipe made with the setting stores the stage's from_months in recipe.age_from_months: it suits a child of that age or older, so a filter for a child of n months shows from_months <= n. writing goes into the prompt; avoid and no_salt are checked on the saved recipe (a match is noted and the recipe flagged for review). An avoid entry matches when one of its words is part of the line's name or its pantry name (so Norwegian compounds like kyllingbuljong match too), unless one of its except words is there as well. The rules follow the Norwegian Directorate of Health's advice for infant food (sources); a new stage is a new entry here.",
+  "sources": [
+    "https://www.helsedirektoratet.no/retningslinjer/spedbarnsernaering/anbefalinger-for-morsmelk-morsmelkerstatning-og-introduksjon-av-mat/rad-om-introduksjon-av-annen-mat-og-drikke-enn-morsmelkmorsmelkerstatning",
+    "https://www.helsenorge.no/en/barn/infant-food-and-breastfeeding/alt-om-spedbarnsmat/solid-food/starte-med-fast-fode/"
+  ],
+  "common": {
+    "writing": "For a baby: no chili, mild flavours, little sugar. No small, hard or round pieces a baby can choke on (grapes, nuts, raw carrot or apple in pieces): cook vegetables soft, grate or mash what is hard. Iron-rich food is good: meat, fish, eggs, beans, lentils, iron-fortified porridge. Eggs, fish, wheat and dairy can be in the food (allergens are introduced in the first year, not delayed); nuts only ground or as nut butter. Give the amount as a few small portions, not adult servings."
+  },
+  "stages": [
+    {
+      "id": "6m",
+      "from_months": 6,
+      "label": "6 months+",
+      "texture": "smooth purée, almost liquid at first",
+      "writing": "From 6 months, the first solid food: blend it smooth and almost liquid at first, thinned with breast milk, formula or the cooking water; no lumps. Good first foods: thin porridge, potato, carrot, cauliflower, broccoli, swede; meat, fish, beans or lentils blended in once the baby is used to purée. No salt or stock, no honey, no cow's milk or yoghurt.",
+      "no_salt": true,
+      "avoid": ["honey", "milk", "nitrate_veg", "whole_nuts"]
+    },
+    {
+      "id": "8m",
+      "from_months": 8,
+      "label": "8 months+",
+      "texture": "coarser mash, and soft finger food",
+      "writing": "From 8 months: a coarser mash with soft lumps, and soft finger food the baby can hold and eat alone while being spoon-fed: soft-cooked vegetable sticks, soft fruit, small pieces of bread; meat and fish minced or in fine, soft pieces. No salt or stock, no honey, no cow's milk or yoghurt yet.",
+      "no_salt": true,
+      "avoid": ["honey", "milk", "nitrate_veg", "whole_nuts"]
+    },
+    {
+      "id": "12m",
+      "from_months": 12,
+      "label": "12 months+",
+      "texture": "family food, in small pieces or lightly mashed",
+      "writing": "From 12 months: the family's food, cut into small pieces or lightly mashed. Little salt: where the grown-ups' food gets salt, stock, chili or strong spices, say in that step to take the child's portion out first. Honey and cow's milk are fine now. Still no whole nuts.",
+      "no_salt": false,
+      "avoid": ["whole_nuts"]
+    }
+  ],
+  "avoid": {
+    "honey": {"words": ["honey", "honning"], "why": "no honey before 12 months (botulism)"},
+    "milk": {"words": ["milk", "melk", "yoghurt", "yogurt", "kefir", "kulturmelk"], "except": ["coconut", "kokos", "oat", "havre", "almond", "mandel", "soy", "soya", "rice", "breast", "formula", "morsmelk"], "why": "cow's milk and yoghurt from about 10 months, in small amounts"},
+    "nitrate_veg": {"words": ["spinach", "spinat", "beetroot", "beet", "rødbete", "rødbeter", "celery", "stangselleri", "chard", "mangold", "nettle", "nettles", "brennesle"], "except": ["celeriac", "sellerirot", "knollselleri"], "why": "spinach, beetroot, celery and chard only in small amounts before 12 months (nitrate)"},
+    "whole_nuts": {"words": ["nuts", "nut", "nøtter", "nøtt", "almond", "almonds", "mandel", "mandler", "peanut", "peanuts", "peanøtter", "cashew", "cashews", "cashewnøtter", "walnut", "walnuts", "valnøtter", "hazelnut", "hazelnuts", "hasselnøtter", "pecan", "pecans", "pistachio", "pistachios", "pistasj"], "except": ["butter", "smør", "ground", "malt", "malte", "flour", "mel", "milk", "melk", "paste", "nutmeg", "muskat", "coconut"], "why": "no whole nuts before 3 years (choking); ground or as nut butter is fine"}
+  },
+  "salty": {"words": ["salt", "stock", "broth", "bouillon", "buljong", "kraft", "fond", "soy sauce", "soyasaus", "fish sauce", "fiskesaus", "miso"], "except": ["unsalted", "usaltet"], "why": "no salt or stock before 12 months (the kidneys)"}
+}

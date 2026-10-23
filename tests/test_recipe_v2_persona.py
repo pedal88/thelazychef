@@ -130,3 +130,39 @@ def test_the_minimalist_limits_hands_on_time():
     notes = persona.check(recipe(prep_time_mins=30, active_mins=22), p)
     assert notes == ['Takes 22 minutes of hands-on work; The Minimalist allows 15.']
     assert persona.check(recipe(prep_time_mins=30, active_mins=12), p) == []
+
+
+def test_baby_takes_its_age_stage_the_oldest_that_fits_and_the_youngest_without_an_age():
+    assert [s['from_months'] for s in persona.age_stages()['stages']] == [6, 8, 12]
+    assert persona.stage_for(None)['id'] == '6m'
+    assert persona.stage_for(8)['id'] == '8m'
+    assert persona.stage_for(10)['id'] == '8m'
+    assert persona.stage_for(30)['id'] == '12m'
+    p = persona.with_settings(seed('the_smart_cook'), ['baby', 'kid_friendly'], 8)
+    assert p['baby']['id'] == '8m' and p['constraints']['max_spice'] == 0
+    text = persona.prompt_block(p)
+    for part in ('no chili heat', 'From 8 months: a coarser mash', 'No small, hard or round pieces'):
+        assert part in text, part
+    assert 'From 6 months' not in text
+
+
+def test_baby_notes_what_a_baby_of_that_age_should_not_get():
+    lines = [line('honning', 'sweeteners', 'honey'), line('table salt', 'spices'), line('kyllingbuljong', 'pantry', 'chicken stock'),
+             line('helmelk', 'dairy and egg', 'whole milk'), line('kokosmelk', 'pantry', 'coconut milk'),
+             line('spinach'), line('cashewnøtter', 'nuts', 'cashews'), line('peanut butter', 'nuts'),
+             line('unsalted butter', 'dairy and egg'), line('carrot')]
+    six = persona.check(recipe(lines=lines), persona.with_settings(None, ['baby'], 6))
+    text = ' '.join(six)
+    for hit in ('honning', 'table salt', 'kyllingbuljong', 'helmelk', 'spinach', 'cashewnøtter'):
+        assert hit in text, hit
+    for fine in ('kokosmelk', 'peanut butter', 'unsalted butter', 'carrot'):
+        assert fine not in text, fine
+    assert all(n.startswith('For a baby 6 months+') for n in six)
+    # From 12 months: honey, milk, salt and spinach are fine; whole nuts still are not
+    twelve = persona.check(recipe(lines=lines), persona.with_settings(None, ['baby'], 12))
+    assert len(twelve) == 1 and 'cashewnøtter' in twelve[0] and '3 years' in twelve[0]
+
+
+def test_the_baby_label_names_the_stage():
+    assert persona.age_label(SimpleNamespace(settings=['baby'], age_from_months=8)) == 'Baby, 8 months+'
+    assert persona.age_label(SimpleNamespace(settings=['vegetarian'], age_from_months=None)) is None
