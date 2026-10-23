@@ -54,6 +54,12 @@
                     location.reload();
                     return;
                 }
+                var fl = e.target.closest && e.target.closest('[data-flow-switch] [data-flow]');
+                if (fl) {  // the flow trial: tabs, or prep and cooking on one page
+                    document.cookie = 'flow=' + fl.getAttribute('data-flow') + '; path=/; max-age=31536000; samesite=lax';
+                    location.reload();
+                    return;
+                }
                 var eq = e.target.closest && e.target.closest('[data-eq-switch] [data-eq]');
                 if (eq) {  // the equipment symbol trial, the same way
                     document.cookie = 'equipment_images=' + eq.getAttribute('data-eq') + '; path=/; max-age=31536000; samesite=lax';

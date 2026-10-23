@@ -950,7 +950,27 @@ I tillegg: listen over alle steg (ingredienser i steget) med symbolet inne i men
 
 **Skålene på Gjør klart (23.10.2026).** En skål viser alltid bare nøkkelinfo: nummeret, et kort navn og ingrediensene med mengde og tilstand. Antall står som et merke på bildet når linjen telles i stykker eller fedd (3× på tre fedd), og tilstanden («finhakket») som en etikett under. Et trykk på skålen åpner resten: hvilket steg den er til, hvorfor den er en skål og forarbeidet per ingrediens. Avkryssingen er nummeret, en egen knapp på 44 px.
 
+**Ingrediensbordet på Gjør klart (23.10.2026).** Alle ingrediensene står i ett rutenett med de samme flisene, og rammen sier hva slags de er: skålene (hel ramme i fasefargen, nummer og avkrysning), «Take out» (stiplet ramme, «step 4» på hver flis, sortert etter kategori uten overskrifter) og «You probably have» (små, grå fliser; mengden står i stegene). Høyrespalten er borte; utstyret står under. Tilstanden kommer fra forarbeidssteget når linjen selv mangler kutt.
+
 **Tilstand og mengde i bilder, trinnvis.** Prep skal vise hvilke ingredienser, hvilke som hører sammen, hvor mye og tilstanden etter forarbeid. Første trinn er det enkle som er gjort: skålen samler, merket viser antall, etiketten og kuttmerket viser tilstanden. Neste trinn, bare hvis det trengs: enhetsbilder for varer der det man kjøper og det man bruker er forskjellig (hvitløk og fedd, urter og kvist), gjentatt for små antall; deretter bilder av tilstanden (ingrediens og kutt, slått sammen til rundt seks synlige tilstander), laget ved behov, med kuttmerket som reserve. Datamodellen har allerede det som trengs (`cut`, `amount`, `unit`).
+
+
+---
+
+### 9.17 Prep og koking på én side (prøve, 23.10.2026)
+
+Pål lener mot å samle prep og koking i én fane, med ingrediensene og fakta om retten bak knapper, men med et tydelig skille mellom prep og cook. Strukturelt er det enkelt: prep- og cook-steg er samme slags rad (`recipe_step`), og bare `phase` (prep, cook, serve) og planen skiller dem; Gjør klart er utledet fra prep-stegene og ingrediensene.
+
+`/recipe/<id>/make`, bare for admin, med «Flow: Tabs / One page» i admin-brikken (besøkende får fanene). Faner: Overview og Make. Siden:
+
+1. **Get ready** (grønn): ingrediensbordet fra Gjør klart, med måler.
+2. **Milepæl:** «All ready? Then the heat can go on.»
+3. **Cook** (oransje): kokemodus slik den er, ett steg om gangen med tidtakere, stegliste og hele retten. Prep-steg som planen legger i en ventetid, kommer der de hører hjemme, i grønt. Bunnlinjen vises først når kokingen er på skjermen.
+4. **Knapper:** «Ingredients» (listen fra Overview) og «Servings and facts» (porsjoner, plan, fakta, næring) som ark.
+
+Delene deles med Gjør klart og Lag mat (`components/prep_board.html`, `components/cook_flow.html`, `components/dish_info.html`), så de tre sidene ikke glir fra hverandre mens prøven pågår.
+
+**Visningene underveis:** stegene er hovedsaken; tilleggene kommer når de trengs, ikke ved å veksle. Midt i et steg: stegkortet. Mellom steg eller mens noe står: nå/neste med tidtakere (statuslinjen). Når man har mistet tråden: hele retten i et ark, med tidslinje, T-banekart og elvedelta som faner. Stor skjerm: ved siden av.
 
 ---
 

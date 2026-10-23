@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{# Prep and cooking on one page (a trial for admins, 23.10.2026; RECIPE_VISUALIZATIONS.md 9.17). First "Get ready":
+   the ingredient board from Prep. Then a milestone, and "Cook": the steps one at a time from cooking mode, with the
+   timers, the step list and the whole dish. The ingredients and the facts about the dish are behind two buttons.
+   The parts are shared with the Prep and Cook pages (components/prep_board.html, components/cook_flow.html). #}
+{% from "components/recipe_head.html" import recipe_head with context %}
+{% from "components/prep_board.html" import prep_body with context %}
+{% from "components/cook_flow.html" import cook_body with context %}
+{% from "components/dish_info.html" import ingredient_list, dish_facts with context %}
+
+{% block title %}Make: {{ v.title }} - The Lazy Chef{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/recipe_v2.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/ready.css') }}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&display=swap">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/delta.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cook.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/make.css') }}">
+<script src="{{ url_for('static', filename='js/ready.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/cook.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/delta.js') }}" defer></script>
+{% endblock %}
+
+{% set r = v.ready %}
+
+{% block content %}
+<article class="rv2 ready cook make" data-recipe="{{ recipe.id }}">
+  {{ recipe_head(recipe, v, 'make') }}
+
+  <div class="make-tools">
+    <button type="button" class="tool" data-sheet="sheet-ings">{{ icon('list') }} Ingredients</button>
+    <button type="button" class="tool" data-sheet="sheet-facts">{{ icon('menu') }} Servings and facts</button>
+  </div>
+  <dialog class="sheet" id="sheet-ings" aria-labelledby="sheet-ings-h">
+    <div class="sheet-h"><h2 id="sheet-ings-h">Ingredients</h2><button type="button" class="sheet-x" data-sheet-close aria-label="Close">{{ icon('close') }}</button></div>
+    {{ ingredient_list() }}
+  </dialog>
+  <dialog class="sheet" id="sheet-facts" aria-labelledby="sheet-facts-h">
+    <div class="sheet-h"><h2 id="sheet-facts-h">Servings and facts</h2><button type="button" class="sheet-x" data-sheet-close aria-label="Close">{{ icon('close') }}</button></div>
+    <div class="more-panel in-sheet">{{ dish_facts('recipe_make') }}</div>
+  </dialog>
+
+  <section class="stage stage-prep" aria-labelledby="stage-prep-h">
+    <div class="stage-h"><span class="stage-dot" aria-hidden="true"></span><h2 id="stage-prep-h">Get ready</h2>
+      {% if r.bowls %}<span class="hint" data-count aria-live="polite">0 of {{ r.bowls|length }} bowls ready</span>{% endif %}</div>
+    {% if r.bowls %}<div class="meter" aria-hidden="true"><span></span></div>{% endif %}
+    {{ prep_body() }}
+  </section>
+
+  <div class="milestone">
+    <span><b>All ready?</b> Then the heat can go on.</span>
+    <a class="go" href="#cook" data-to-cook>Start cooking ↓</a>
+  </div>
+
+  <section class="stage stage-cook" id="cook" aria-labelledby="stage-cook-h">
+    <div class="stage-h"><span class="stage-dot" aria-hidden="true"></span><h2 id="stage-cook-h">Cook</h2>
+      <span class="hint">{{ v.total }} in all, {{ v.active }} of it your work</span></div>
+    {{ cook_body() }}
+  </section>
+</article>
+<script>
+  (function () {
+    // The two sheets: the ingredients, and servings with the facts
+    document.addEventListener('click', function (e) {
+      var open = e.target.closest('[data-sheet]');
+      if (open) { var d = document.getElementById(open.dataset.sheet); if (d && d.showModal) d.showModal(); return; }
+      if (e.target.closest('[data-sheet-close]')) { var dlg = e.target.closest('dialog'); if (dlg) dlg.close(); return; }
+      if (e.target.tagName === 'DIALOG') e.target.close();  // a tap on the backdrop
+    });
+    // The cooking bar shows once the cooking is on screen
+    var page = document.querySelector('.make'), cook = document.getElementById('cook');
+    if (page && cook && 'IntersectionObserver' in window) {
+      new IntersectionObserver(function (es) { page.classList.toggle('cooking', es[0].isIntersecting); }, { rootMargin: '0px 0px -40% 0px' }).observe(cook);
+    }
+  })();
+</script>
+{% endblock %}

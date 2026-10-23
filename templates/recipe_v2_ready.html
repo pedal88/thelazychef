@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{# Prep (Gjør klart) for a v2 recipe: bowls to fill and the rest to take out in kitchen groups, then the equipment
-   in a section of its own below, so ingredients and equipment are clearly apart.
+{# Prep (Gjør klart) for a v2 recipe: one board with every ingredient (bowls, take out, what you probably have), then
+   the equipment in a section of its own below, so ingredients and equipment are clearly apart.
    Derived from the graph by services/recipe_v2/mise.py; ticks are kept on the device by static/js/ready.js. #}
-{% from "components/delta.html" import MARKS %}
+{% from "components/prep_board.html" import prep_body with context %}
 {% from "components/recipe_head.html" import recipe_head with context %}
 
 {% block title %}Prep: {{ v.title }} - The Lazy Chef{% endblock %}
@@ -15,38 +15,6 @@
 
 {% set r = v.ready %}
 {% set lang = recipe.language or 'en' %}
-{% set WHY = {'mix': 'mix ahead', 'rush': 'goes in fast at the heat', 'prep': 'cut or prepared'} %}
-
-{% macro sym(p, size) -%}
-<span class="sym" style="--s:{{ size }}px">{% if p.img %}<img src="{{ p.img }}" alt="" width="{{ size }}" height="{{ size }}" loading="lazy">{% else %}<span class="sym-letter" aria-hidden="true">{{ p.name[:1]|upper }}</span>{% endif %}{% if p.mark %}<i class="mark">{{ MARKS[p.mark]|safe }}</i>{% endif %}{% if p.count and p.count > 1 %}<i class="cnt">{{ p.count }}×</i>{% endif %}</span>
-{%- endmacro %}
-
-{% macro tile(p) -%}
-<span class="tile">{{ sym(p, 64) }}<span class="ta">{{ p.amount or 'to taste' }}</span><span class="tn" lang="{{ lang }}">{{ p.name }}{% if p.state %}<em>{{ p.state }}</em>{% endif %}</span></span>
-{%- endmacro %}
-
-{# A bowl: always its number, a short name, and what goes in it with amount and state. Tap it for the rest: the
-   step it is for, why it is a bowl, and the prep. The number is the tick (static/js/ready.js). #}
-{% macro bowl(b) -%}
-<details class="bowl ph-{{ b.used.phase }}" data-bowl data-key="{{ b.key }}">
-  <summary>
-    <span class="bowl-h"><button type="button" class="bcheck" data-tick="{{ b.key }}" aria-pressed="false" aria-label="Bowl {{ b.no }} ready"><span class="bno" data-no="{{ b.no }}">{{ b.no }}</span></button><b lang="{{ lang }}">{{ b.name }}</b><span class="more-ic" aria-hidden="true">{{ icon('chevron-down') }}</span></span>
-    <span class="tiles">{% for p in b.lines %}{{ tile(p) }}{% endfor %}</span>
-  </summary>
-  <div class="bowl-more">
-    <p><span class="eyebrow">For step {{ b.used.no }}</span> <span lang="{{ lang }}">{{ b.used.short }}</span></p>
-    {% if b.prep %}<p><span class="eyebrow">Prep</span> <span lang="{{ lang }}">{{ b.prep|join(', ') }}</span></p>
-    {% elif not b.named_by_step %}<p><span class="eyebrow">Why a bowl</span> {{ WHY[b.why] }}</p>{% endif %}
-    {% for p in b.lines if p.state %}{% if loop.first %}<ul>{% endif %}<li lang="{{ lang }}">{{ (p.amount ~ ' ' ~ p.name)|trim }}: {{ p.state }}</li>{% if loop.last %}</ul>{% endif %}{% endfor %}
-  </div>
-</details>
-{%- endmacro %}
-
-{% macro loose(items) -%}
-<div class="fetchgrid">{% for f in items %}
-  <button type="button" class="tile ftile" data-tick="{{ f.key }}" aria-pressed="false">{{ sym(f.line, 64) }}<span class="ta">{{ f.line.amount or 'to taste' }}</span><span class="tn" lang="{{ lang }}">{{ f.line.name }}<em>step {{ f.used.no }}</em></span></button>
-{% endfor %}</div>
-{%- endmacro %}
 
 {% block content %}
 {% set back = url_for('recipe_detail', recipe_id=recipe.id, servings=v.servings, plan=v.plan) %}
@@ -59,59 +27,7 @@
   <p class="hint" data-count aria-live="polite">0 of {{ r.bowls|length }} bowls ready</p>
   {% endif %}
 
-  <div class="ready-grid">
-    <div class="ready-main">
-      {% if r.tasks %}
-      <section>
-        <div class="sec-head"><h2>First</h2></div>
-        {% for t in r.tasks %}<button type="button" class="task" data-tick="{{ t.key }}" aria-pressed="false"><b>{{ t.short }}</b><span>{{ t.text }}</span></button>{% endfor %}
-      </section>
-      {% endif %}
-      {% if r.bowls %}
-      <section>
-        <div class="sec-head"><h2>Bowls</h2><span class="eyebrow">{{ r.bowls|length }} · in the order you use them</span></div>
-        <div class="bowlgrid">{% for b in r.bowls %}{{ bowl(b) }}{% endfor %}</div>
-      </section>
-      {% endif %}
-      {% for g in r.later %}
-      <details class="later">
-        <summary>Later, while: {{ g.while|lower }}<small>The plan "{{ v.plans[v.plan] }}" puts these in the waiting time.</small></summary>
-        <div class="bowlgrid">{% for b in g.bowls %}{{ bowl(b) }}{% endfor %}</div>
-        {% if g.fetch %}{{ loose(g.fetch) }}{% endif %}
-      </details>
-      {% endfor %}
-    </div>
-
-    <div class="ready-side">
-      {% if r.takeout %}
-      <section>
-        <div class="sec-head"><h2>Take out</h2><span class="eyebrow">measure when you use them</span></div>
-        <div class="tgroups">
-        {% for g in r.takeout %}
-        <div class="tg{{ ' tg-basics' if g.key == 'staples' }}">
-        <h3 class="tgroup-h">{{ g.label }}</h3>
-        {% if g.key == 'staples' %}
-        <div class="basics">{% for t in g['items'] %}<button type="button" class="basic" data-tick="{{ t.key }}" aria-pressed="false">{{ sym(t.line, 32) }}<span lang="{{ lang }}">{{ t.line.name }}</span></button>{% endfor %}</div>
-        {% else %}
-        <div class="tgtiles">{% for t in g['items'] %}
-          <button type="button" class="tile ftile" data-tick="{{ t.key }}" aria-pressed="false">{{ sym(t.line, 64) }}<span class="ta">{{ t.amount }}</span><span class="tn" lang="{{ lang }}">{{ t.line.name }}<em>step {{ t.steps|join(', ') }}</em></span></button>
-        {% endfor %}</div>
-        {% endif %}
-        </div>
-        {% endfor %}
-        </div>
-      </section>
-      {% endif %}
-
-    </div>
-  </div>
-
-  {% if v.equipment %}
-  <section class="equipment">
-    <div class="sec-head"><h2>Equipment</h2><span class="eyebrow">in the order you use it</span></div>
-    <div class="eqtiles">{% for e in v.equipment %}{% set src = equipment_image(e) %}<button type="button" class="eq{{ ' has-img' if src }}{{ ' special' if e.special }}" data-tick="e:{{ e.id }}" aria-pressed="false">{% if src %}<span class="sym" style="--s:56px"><img src="{{ src }}" alt="" width="56" height="56" loading="lazy"></span>{% endif %}<span>{{ e.name }}</span></button>{% endfor %}</div>
-  </section>
-  {% endif %}
+  {{ prep_body() }}
 
   <div class="ready-go"><a class="go" href="{{ cook }}">Start cooking →</a><button type="button" class="reset" data-reset>Clear the ticks</button></div>
 </article>

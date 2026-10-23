@@ -57,6 +57,21 @@ class CookTests(unittest.TestCase):
         _, overview = self.page('carbonara')
         self.assertIn(f'/recipe/{self.ids["carbonara"]}/cook?', overview)
 
+    def test_one_page_flow_is_for_admins_and_has_both_stages(self):
+        url = f'/recipe/{self.ids["carbonara"]}/make'
+        self.assertIn('/prep', self.client.get(url).headers['Location'])  # visitors get the tabs
+        self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
+        html = self.client.get(url).get_data(as_text=True)
+        for text in ('Get ready', 'Start cooking ↓', 'data-bowl', '<article class="card ', 'id="sheet-ings"', 'js/ready.js', 'js/cook.js'):
+            self.assertIn(text, html)
+        # The tabs stay until an admin picks the one page; then the flowbar is Overview and Make
+        overview = self.client.get(f'/recipe/{self.ids["carbonara"]}').get_data(as_text=True)
+        self.assertIn('>Prep</a>', overview)
+        self.client.set_cookie('flow', 'one')
+        overview = self.client.get(f'/recipe/{self.ids["carbonara"]}').get_data(as_text=True)
+        self.assertIn('>Make</a>', overview)
+        self.assertNotIn('>Prep</a>', overview)
+
     def test_drafts_only_for_admins(self):
         url = f'/recipe/{self.ids["lasagne"]}/cook'
         self.assertEqual(self.client.get(url).status_code, 302)

@@ -86,6 +86,17 @@ def chosen_image_style():
     return style if admin and style in IMAGE_STYLES else None
 
 
+# Flow trial (temporary, 23.10.2026): the recipe as three tabs (Overview, Prep, Cook) or as Overview and one page
+# with prep and cooking together (/recipe/<id>/make). Cookie flow, admins only; everyone else gets the tabs.
+FLOWS = {'tabs': 'Tabs', 'one': 'One page'}
+
+
+def chosen_flow():
+    style = request.cookies.get('flow')
+    admin = current_user.is_authenticated and getattr(current_user, 'is_admin', False)
+    return style if admin and style in FLOWS else 'tabs'
+
+
 # Equipment symbol trial (temporary): the same, for the equipment symbols (data/constraints/equipment.json "image" is
 # the realistic set, "image_variants" the others). Cookie equipment_images, admins only; everyone else gets the default.
 EQUIPMENT_STYLES = {'realistic': 'Realistic', 'painted': 'Painted', 'line_tint': 'Line'}
