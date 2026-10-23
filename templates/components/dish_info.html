@@ -12,7 +12,7 @@
     <h3 class="shop-group">{{ g.label }}</h3>
     <ul class="ilist">
       {% for item in g['items'] %}
-      <li>{{ ing_pic(item, 36) }}<span class="line"><b class="amt">{{ item.amount }}</b> {{ item.name }}{% if item.note %}<small>{{ item.note }}</small>{% endif %}{% if item.missing and recipe.status != 'approved' %}<small class="missing">Not in the pantry</small>{% endif %}</span></li>
+      <li>{{ ing_pic(item, 36) }}<span class="line"><b class="amt" data-amounts='{{ item.raw|tojson }}'>{{ item.amount }}</b> {{ item.name }}{% if item.note %}<small>{{ item.note }}</small>{% endif %}{% if item.missing and recipe.status != 'approved' %}<small class="missing">Not in the pantry</small>{% endif %}</span></li>
       {% endfor %}
     </ul>
     {% endfor %}
@@ -25,11 +25,14 @@
           {% if v.scalable %}
           <div class="row">
             <span>Servings</span>
-            <span class="stepper">
-              <a href="{{ link(v.servings - 1, v.plan) }}" aria-label="Fewer servings">−</a>
-              <span>{{ v.servings }}</span>
-              <a href="{{ link(v.servings + 1, v.plan) }}" aria-label="More servings">+</a>
-            </span>
+            {# A number to type, or − and +. On Overview the amounts change at once (static/js/servings.js);
+               elsewhere, and without JavaScript, the form loads the page for that many servings. #}
+            <form class="stepper" method="get" action="{{ url_for(endpoint, recipe_id=recipe.id) }}" data-servings-form>
+              <input type="hidden" name="plan" value="{{ v.plan }}">
+              <button type="button" data-step="-1" aria-label="Fewer servings">−</button>
+              <input type="number" name="servings" value="{{ v.servings }}" min="1" max="24" inputmode="numeric" aria-label="Servings" data-servings-input>
+              <button type="button" data-step="1" aria-label="More servings">+</button>
+            </form>
           </div>
           {% endif %}
           <div class="row">

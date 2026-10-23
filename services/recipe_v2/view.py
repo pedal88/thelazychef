@@ -76,6 +76,15 @@ def fmt_amount(amount, unit):
     return f'{n} {UNIT_PLURALS.get(unit, name) if amount > 1 else name}'
 
 
+def unit_names():
+    """{unit: [one, more]} as fmt_amount writes them, for static/js/servings.js."""
+    names = {}
+    for unit, u in _catalogs()['units'].items():
+        one = u.get('name_en') or unit
+        names[unit] = [one, UNIT_PLURALS.get(unit, one)]
+    return names
+
+
 def duration(minutes):
     return f'{minutes / 60:.1f} h'.replace('.0 h', ' h') if minutes >= 120 else f'{minutes} min'
 
@@ -238,6 +247,8 @@ def build(recipe, servings=None, plan='calm'):
         found = pantry.get(e.get('pantry_id'))
         group = groups.group_of(found, mise.staple({'name': e['name'], **({'pantry_tier': found.tier} if found else {})}))
         shop.append({'name': e['name'], 'amount': ' + '.join(fmt_amount(a['amount'], a['unit']) for a in e['amounts']),
+                     # the amounts for these servings, so the page can scale them at once (static/js/servings.js)
+                     'raw': [[round(a['amount'], 4), a['unit']] for a in e['amounts']],
                      'note': ' · '.join(notes), 'symbol': symbol(found, e['name'], 36 if group == 'staples' else 56),
                      'missing': not e.get('pantry_id') or e['pantry_id'] not in pantry, 'group': group,
                      'img': found.image_url if found is not None else None})
@@ -294,6 +305,7 @@ def build(recipe, servings=None, plan='calm'):
     cat = _catalogs()
     return {
         'title': recipe.title, 'servings': servings, 'scalable': scalable, 'yield_text': recipe.yield_text,
+        'unit_names': unit_names(),
         'total': duration(sch['T']), 'active': duration(sch['A']), 'plan': plan, 'plans': PLAN_NAMES,
         'plan_hint': PLAN_HINTS[plan], 'parts': [c['name'] for c in v2['components']],
         'shopping': shop, 'shop_groups': groups.grouped(shop), 'equipment': equipment_list(first_use, cat), 'steps': steps,

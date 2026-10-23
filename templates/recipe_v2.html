@@ -7,6 +7,7 @@
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/recipe_v2.css') }}">
+<script src="{{ url_for('static', filename='js/servings.js') }}" defer></script>
 {% endblock %}
 
 {% from "components/recipe_head.html" import recipe_head with context %}
@@ -65,7 +66,7 @@
 {# Wide screens: the ingredients in a column of their own on the left, the dish in the main column. Phone: one
    column, the ingredients after the dish. Servings, plan, the facts about the dish and nutrition are behind a
    quiet menu; admin tools are in the floating admin chip (components/recipe_head.html). #}
-<article class="rv2 ov">
+<article class="rv2 ov" data-instant-servings="{{ v.servings }}" data-units='{{ v.unit_names|tojson }}'>
   {% call recipe_head(recipe, v, 'overview') %}{{ admin_tools() }}{% endcall %}
   <div class="ov-grid">
   <div class="ov-top">
@@ -78,7 +79,7 @@
       <div class="facts">
         <div class="fact"><span class="eyebrow">Total</span><b>{{ v.total }}</b></div>
         <div class="fact"><span class="eyebrow">Active</span><b>{{ v.active }}</b></div>
-        <div class="fact"><span class="eyebrow">Makes</span><b>{{ v.yield_text if not v.scalable else v.servings ~ ' servings' }}</b></div>
+        <div class="fact"><span class="eyebrow">Makes</span><b>{% if v.scalable %}<span data-servings-label>{{ v.servings }}</span> servings{% else %}{{ v.yield_text }}{% endif %}</b></div>
       </div>
       <details class="more">
         <summary aria-label="Servings, plan and more about the dish">{{ icon('menu') }}</summary>
