@@ -44,7 +44,7 @@ class PageSpeedTests(unittest.TestCase):
         recipe.chef_note = 'Use the pasta water.'
         db.session.commit()
         self.assertIn('Use the pasta water.', self.page('carbonara')[1])
-        self.assertIn('6 servings', self.page('carbonara', servings=6)[1])  # servings are part of the key
+        self.assertIn('data-servings-label>6</span> servings', self.page('carbonara', servings=6)[1])  # servings are part of the key
 
     def test_the_recipe_list_does_not_query_per_card(self):
         def list_queries():

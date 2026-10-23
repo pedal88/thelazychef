@@ -82,8 +82,12 @@ class RecipeV2ViewTests(unittest.TestCase):
 
     def test_servings_scale_the_amounts(self):
         _, html = self.page('carbonara', servings=6)
-        self.assertIn('6 servings', html)
+        self.assertIn('data-servings-label>6</span> servings', html)
         self.assertIn('/cook?servings=6', html)
+        # The page can scale the amounts itself: the amounts for 6, a number field, and the unit names
+        self.assertIn('data-amounts=\'[[600.0, "g"]]\'', html)
+        self.assertIn('name="servings" value="6"', html)
+        self.assertIn('data-units=', html)
         _, cook = self.page('carbonara', '/cook', servings=6)
         self.assertIn('600 g spaghetti', cook)
 
