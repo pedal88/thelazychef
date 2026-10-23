@@ -686,6 +686,7 @@ Utstyrslisten for hele oppskriften utledes fra stegene. Utelatt med vilje: rille
 - **Nytt:** hullsleiv, potetstapper, måleskjeer, kjøkkensaks, vaffeljern, riskoker og trykkoker. 69 oppføringer, 59 symboler.
 - **Symboler** i samme stil som ingrediensene (labboppgaven `equipment_image`, «vector_textured»): tomt redskap, fast vinkel skrått ovenfra, ingen merkenavn, fyller 80 %. `scripts/equipment_symbols.py` lager dem (først åtte som prøve, sjekket i 48 og 32 px), laster dem opp og setter `image` i katalogen.
 - **Vises** på Gjør klart som fliser med symbol, i den rekkefølgen utstyret brukes. Ikke på Overview.
+- **Tre sett til prøving (23.10.2026):** realistisk (`image`), malt og strek med én farge (`image_variants`), 59 i hvert. Admin bytter med «Tools» i admin-brikken; besøkende ser det realistiske. Erfaring fra kjøringene: bildemodellen tegner det som nevnes i prompten, også det den blir bedt om å la være («no spoon» ga en skje), og la en skje i nesten alle tomme boller og gryter uansett. Det som virket, var å redigere bildet: det eksisterende bildet og «Remove the spoon», resten beholdes (`scripts/equipment_symbols.py edit`).
 
 ### 9.7 Bilder som harmonerer
 

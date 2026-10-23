@@ -97,6 +97,23 @@ def chosen_list_style():
     return style if admin and style in LIST_STYLES else 'now'
 
 
+# Equipment symbol trial (temporary): the same, for the equipment symbols (data/constraints/equipment.json "image" is
+# the realistic set, "image_variants" the others). Cookie equipment_images, admins only.
+EQUIPMENT_STYLES = {'realistic': 'Realistic', 'painted': 'Painted', 'line_tint': 'Line'}
+
+
+def chosen_equipment_style():
+    """The admin's chosen equipment style; 'realistic' for everyone else."""
+    style = request.cookies.get('equipment_images')
+    admin = current_user.is_authenticated and getattr(current_user, 'is_admin', False)
+    return style if admin and style in EQUIPMENT_STYLES else 'realistic'
+
+
+def equipment_image(item):
+    """The symbol of an equipment item (from view.equipment_list) in the chosen style, else the realistic one."""
+    return (item.get('images') or {}).get(chosen_equipment_style()) or item.get('image')
+
+
 def dish_images(recipe):
     """The dish and part images in the chosen style: a trial variant when there is one, else the recipe's own.
     have is False when the chosen style has no images for this recipe yet."""

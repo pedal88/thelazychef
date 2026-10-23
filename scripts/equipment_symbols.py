@@ -3,7 +3,9 @@
     python scripts/equipment_symbols.py generate --pilot            # eight items, to check the style at small sizes
     python scripts/equipment_symbols.py generate                    # every item that gets a symbol
     python scripts/equipment_symbols.py generate --run <dir> --only whisk,grater --notes <json>   # again, with notes
-    python scripts/equipment_symbols.py promote --run <dir>         # upload and write the URLs into equipment.json
+    python scripts/equipment_symbols.py generate --pilot --style painted --run <dir>   # the pilot in another style
+    python scripts/equipment_symbols.py edit --run <dir> --edits <json>   # fix images in place: {id: "Remove the spoon."}
+    python scripts/equipment_symbols.py promote --run <dir> [--style painted]   # upload and set image (or image_variants[style])
 
 generate writes the images and sheet.png (each symbol large, at 48 px and at 32 px) to
 ~/promptlab-runs/equipment-<time>; it is resumable and does what is missing. --notes is a JSON file
@@ -42,15 +44,17 @@ def items():
     return [e for e in json.loads(CATALOG.read_text())['equipment'] if e.get('kind') != 'supply' and not e.get('same_as')]
 
 
-def prompt_for(e, extra=''):
+def prompt_for(e, extra='', style=None):
+    """The prompt from the lab task's [final] variants; style picks another style layer (a file in style/)."""
     from promptlab.compose import load_task
 
     task = load_task('equipment_image')
     notes = ' '.join(x for x in (e.get('image_notes'), extra) if x)
-    return task.compose(task.final, {'name': (e.get('name_en') or e['name']).lower(), 'notes': notes})
+    choice = dict(task.final, style=style) if style else task.final
+    return task.compose(choice, {'name': (e.get('name_en') or e['name']).lower(), 'notes': notes})
 
 
-def generate(run, only=None, pilot=False, notes=None, workers=4):
+def generate(run, only=None, pilot=False, notes=None, workers=4, style=None):
     from services.image_generation import generate_image
 
     manifest_path = run / 'manifest.json'
@@ -61,7 +65,7 @@ def generate(run, only=None, pilot=False, notes=None, workers=4):
     (run / 'images').mkdir(parents=True, exist_ok=True)
 
     def work(e):
-        prompt = prompt_for(e, (notes or {}).get(e['id'], ''))
+        prompt = prompt_for(e, (notes or {}).get(e['id'], ''), style)
         png, _ = generate_image(prompt)
         version = manifest.get(e['id'], {}).get('version', 0) + 1
         path = run / 'images' / f"{e['id']}-v{version}.png"
@@ -70,6 +74,33 @@ def generate(run, only=None, pilot=False, notes=None, workers=4):
 
     with ThreadPoolExecutor(max_workers=workers) as pool:
         for key, entry in pool.map(work, todo):
+            manifest[key] = entry
+            manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False))
+            print(f'  {key}', flush=True)
+    sheet(run, manifest)
+
+
+def edit(run, edits, workers=4):
+    """Fix an image in place of making it again: the current image and an instruction ("Remove the wooden spoon.")
+    go to the image model, which keeps the rest. For what the model keeps adding however it is asked (a spoon in a
+    bowl). edits is {id: instruction}; each result is a new version."""
+    from services.image_generation import generate_image
+
+    manifest_path = run / 'manifest.json'
+    manifest = json.loads(manifest_path.read_text())
+    keep = (' Keep everything else exactly the same: the same object, angle, style, colours and the plain white '
+            'background. No text.')
+
+    def work(key):
+        entry = manifest[key]
+        png, _ = generate_image(edits[key].strip() + keep, references=[(run / entry['image']).read_bytes()])
+        version = entry['version'] + 1
+        path = run / 'images' / f'{key}-v{version}.png'
+        path.write_bytes(png)
+        return key, dict(entry, version=version, image=str(path.relative_to(run)), edit=edits[key])
+
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        for key, entry in pool.map(work, [k for k in edits if k in manifest]):
             manifest[key] = entry
             manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False))
             print(f'  {key}', flush=True)
@@ -99,7 +130,8 @@ def sheet(run, manifest):
     print(f"Sheet: {run / 'sheet.png'}")
 
 
-def promote(run):
+def promote(run, style=None):
+    """style None (or realistic) sets "image"; another style sets "image_variants"[style]."""
     from services.ingredient_symbols import web_image
 
     manifest = json.loads((run / 'manifest.json').read_text())
@@ -118,28 +150,38 @@ def promote(run):
     catalog = json.loads(CATALOG.read_text())
     for e in catalog['equipment']:
         if e['id'] in urls:
-            e['image'] = urls[e['id']]
+            if style and style != 'realistic':
+                e.setdefault('image_variants', {})[style] = urls[e['id']]
+            else:
+                e['image'] = urls[e['id']]
     CATALOG.write_text(json.dumps(catalog, indent=2, ensure_ascii=False) + '\n')
     print(f'{len(urls)} symbols uploaded and set in {CATALOG.relative_to(ROOT)}; {len(rejected)} rejected left out.')
 
 
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument('command', choices=('generate', 'promote'))
+    p.add_argument('command', choices=('generate', 'edit', 'promote'))
+    p.add_argument('--edits', type=Path, help='JSON {id: instruction} for edit')
     p.add_argument('--run', type=Path)
     p.add_argument('--pilot', action='store_true')
     p.add_argument('--only', help='comma separated ids to make (again)')
     p.add_argument('--notes', type=Path, help='JSON {id: what to change}')
+    p.add_argument('--style', help='another style layer from the lab task (illustrated, painted, line_tint, risograph)')
     args = p.parse_args()
+    if args.command == 'edit':
+        if not (args.run and args.edits):
+            raise SystemExit('Give --run and --edits')
+        edit(args.run, json.loads(args.edits.read_text()))
+        return
     if args.command == 'promote':
         if not args.run:
             raise SystemExit('Give --run')
-        promote(args.run)
+        promote(args.run, args.style)
         return
     run = args.run or RUNS_DIR / f"equipment-{datetime.datetime.now():%Y%m%d-%H%M}"
     print(f'Run: {run}')
     notes = json.loads(args.notes.read_text()) if args.notes else None
-    generate(run, only=set(args.only.split(',')) if args.only else None, pilot=args.pilot, notes=notes)
+    generate(run, only=set(args.only.split(',')) if args.only else None, pilot=args.pilot, notes=notes, style=args.style)
 
 
 if __name__ == '__main__':

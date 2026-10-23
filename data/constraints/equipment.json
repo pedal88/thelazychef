@@ -9,7 +9,12 @@
       "role": "koke",
       "exclusive": true,
       "level": "standard",
-      "image_notes": "A built-in kitchen oven seen from the front, door closed, with a window."
+      "image_notes": "A built-in kitchen oven seen from the front, door closed, with a window.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/oven-v2.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/oven-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/oven-v1.webp"
+      }
     },
     {
       "id": "airfryer",
@@ -17,7 +22,12 @@
       "name_en": "Air fryer",
       "role": "koke",
       "exclusive": true,
-      "level": "standard"
+      "level": "standard",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/airfryer-v2.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/airfryer-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/airfryer-v1.webp"
+      }
     },
     {
       "id": "microwave",
@@ -25,7 +35,12 @@
       "name_en": "Microwave",
       "role": "koke",
       "exclusive": true,
-      "level": "standard"
+      "level": "standard",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/microwave-v2.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/microwave-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/microwave-v1.webp"
+      }
     },
     {
       "id": "grill",
@@ -34,7 +49,12 @@
       "role": "koke",
       "exclusive": true,
       "level": "special",
-      "image_notes": "A round kettle barbecue grill with a lid."
+      "image_notes": "A round kettle barbecue grill with a lid.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/grill-v2.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/grill-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/grill-v1.webp"
+      }
     },
     {
       "id": "grill_pan",
@@ -42,7 +62,12 @@
       "name_en": "Grill pan",
       "role": "koke",
       "exclusive": false,
-      "level": "special"
+      "level": "special",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/grill_pan-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/grill_pan-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/grill_pan-v1.webp"
+      }
     },
     {
       "id": "saucepan",
@@ -51,7 +76,12 @@
       "role": "koke",
       "exclusive": false,
       "level": "standard",
-      "image_notes": "A medium stainless steel saucepan with one long handle."
+      "image_notes": "A medium stainless steel saucepan with one long handle.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/saucepan-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/saucepan-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/saucepan-v2.webp"
+      }
     },
     {
       "id": "large_pot",
@@ -60,7 +90,12 @@
       "role": "koke",
       "exclusive": false,
       "level": "standard",
-      "image_notes": "A tall stainless steel stockpot with two handles."
+      "image_notes": "A tall stainless steel stockpot with two handles.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/large_pot-v4.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/large_pot-v3.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/large_pot-v3.webp"
+      }
     },
     {
       "id": "wide_pot",
@@ -69,7 +104,12 @@
       "role": "koke",
       "exclusive": false,
       "level": "standard",
-      "image_notes": "A wide, low cooking pot with two side handles."
+      "image_notes": "A wide, low cooking pot with two side handles.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/wide_pot-v3.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/wide_pot-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/wide_pot-v3.webp"
+      }
     },
     {
       "id": "dutch_oven",
@@ -87,7 +127,12 @@
       "role": "koke",
       "exclusive": false,
       "level": "standard",
-      "image_notes": "A round non-stick frying pan with a long handle."
+      "image_notes": "A round non-stick frying pan with a long handle.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/frying_pan-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/frying_pan-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/frying_pan-v1.webp"
+      }
     },
     {
       "id": "wok",
@@ -95,7 +140,12 @@
       "name_en": "Wok",
       "role": "koke",
       "exclusive": false,
-      "level": "special"
+      "level": "special",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/wok-v2.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/wok-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/wok-v1.webp"
+      }
     },
     {
       "id": "steamer",
@@ -103,7 +153,12 @@
       "name_en": "Steamer",
       "role": "koke",
       "exclusive": false,
-      "level": "special"
+      "level": "special",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/steamer-v2.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/steamer-v2.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/steamer-v2.webp"
+      }
     },
     {
       "id": "kettle",
@@ -112,7 +167,12 @@
       "role": "koke",
       "exclusive": false,
       "level": "standard",
-      "image_notes": "An electric kettle."
+      "image_notes": "An electric kettle.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/kettle-v2.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/kettle-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/kettle-v1.webp"
+      }
     },
     {
       "id": "deep_fryer",
@@ -120,7 +180,12 @@
       "name_en": "Deep fryer",
       "role": "koke",
       "exclusive": true,
-      "level": "special"
+      "level": "special",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/deep_fryer-v2.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/deep_fryer-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/deep_fryer-v1.webp"
+      }
     },
     {
       "id": "slow_cooker",
@@ -128,7 +193,12 @@
       "name_en": "Slow cooker",
       "role": "koke",
       "exclusive": true,
-      "level": "special"
+      "level": "special",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/slow_cooker-v2.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/slow_cooker-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/slow_cooker-v1.webp"
+      }
     },
     {
       "id": "sous_vide",
@@ -136,7 +206,12 @@
       "name_en": "Sous vide circulator",
       "role": "koke",
       "exclusive": true,
-      "level": "special"
+      "level": "special",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/sous_vide-v2.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/sous_vide-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/sous_vide-v2.webp"
+      }
     },
     {
       "id": "baking_tray",
@@ -145,7 +220,12 @@
       "role": "koke",
       "exclusive": false,
       "level": "standard",
-      "image_notes": "A flat rectangular metal baking sheet."
+      "image_notes": "A flat rectangular metal baking sheet.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/baking_tray-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/baking_tray-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/baking_tray-v1.webp"
+      }
     },
     {
       "id": "roasting_pan",
@@ -154,7 +234,12 @@
       "role": "koke",
       "exclusive": false,
       "level": "standard",
-      "image_notes": "A deep rectangular metal oven tray with raised sides."
+      "image_notes": "A deep rectangular metal oven tray with raised sides.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/roasting_pan-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/roasting_pan-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/roasting_pan-v1.webp"
+      }
     },
     {
       "id": "ovenproof_dish",
@@ -163,7 +248,12 @@
       "role": "koke",
       "exclusive": false,
       "level": "standard",
-      "image_notes": "A rectangular white ceramic oven dish."
+      "image_notes": "A rectangular white ceramic oven dish, seen from slightly above so the inside shows.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/ovenproof_dish-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/ovenproof_dish-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/ovenproof_dish-v1.webp"
+      }
     },
     {
       "id": "form_20x20",
@@ -172,7 +262,12 @@
       "role": "koke",
       "exclusive": false,
       "level": "standard",
-      "image_notes": "A square metal baking tin."
+      "image_notes": "A square metal baking tin.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/form_20x20-v3.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/form_20x20-v3.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/form_20x20-v1.webp"
+      }
     },
     {
       "id": "form_20x30",
@@ -190,7 +285,12 @@
       "role": "koke",
       "exclusive": false,
       "level": "standard",
-      "image_notes": "A round springform cake tin with its clasp."
+      "image_notes": "A round springform cake tin with its clasp.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/springform_24-v4.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/springform_24-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/springform_24-v1.webp"
+      }
     },
     {
       "id": "loaf_tin",
@@ -198,7 +298,12 @@
       "name_en": "Loaf tin",
       "role": "koke",
       "exclusive": false,
-      "level": "standard"
+      "level": "standard",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/loaf_tin-v2.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/loaf_tin-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/loaf_tin-v1.webp"
+      }
     },
     {
       "id": "muffin_tin",
@@ -206,7 +311,12 @@
       "name_en": "Muffin tin",
       "role": "koke",
       "exclusive": false,
-      "level": "standard"
+      "level": "standard",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/muffin_tin-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/muffin_tin-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/muffin_tin-v1.webp"
+      }
     },
     {
       "id": "pie_dish",
@@ -214,7 +324,12 @@
       "name_en": "Pie dish",
       "role": "koke",
       "exclusive": false,
-      "level": "special"
+      "level": "special",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/pie_dish-v2.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/pie_dish-v3.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/pie_dish-v1.webp"
+      }
     },
     {
       "id": "skewers",
@@ -223,7 +338,12 @@
       "role": "koke",
       "exclusive": false,
       "level": "standard",
-      "image_notes": "Three wooden skewers."
+      "image_notes": "Three wooden skewers.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/skewers-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/skewers-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/skewers-v1.webp"
+      }
     },
     {
       "id": "ladle",
@@ -231,7 +351,12 @@
       "name_en": "Ladle",
       "role": "koke",
       "exclusive": false,
-      "level": "standard"
+      "level": "standard",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/ladle-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/ladle-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/ladle-v1.webp"
+      }
     },
     {
       "id": "tongs",
@@ -239,7 +364,12 @@
       "name_en": "Tongs",
       "role": "koke",
       "exclusive": false,
-      "level": "standard"
+      "level": "standard",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/tongs-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/tongs-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/tongs-v1.webp"
+      }
     },
     {
       "id": "turner",
@@ -247,7 +377,12 @@
       "name_en": "Turner",
       "role": "koke",
       "exclusive": false,
-      "level": "standard"
+      "level": "standard",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/turner-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/turner-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/turner-v1.webp"
+      }
     },
     {
       "id": "thermometer",
@@ -255,7 +390,13 @@
       "name_en": "Thermometer",
       "role": "koke",
       "exclusive": false,
-      "level": "special"
+      "level": "special",
+      "image_notes": "A digital meat thermometer: a small display with a long thin metal probe.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/thermometer-v2.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/thermometer-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/thermometer-v1.webp"
+      }
     },
     {
       "id": "bowl",
@@ -263,7 +404,12 @@
       "name_en": "Bowl",
       "role": "forberede",
       "exclusive": false,
-      "level": "standard"
+      "level": "standard",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/bowl-v5.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/bowl-v3.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/bowl-v3.webp"
+      }
     },
     {
       "id": "small_bowl",
@@ -271,7 +417,12 @@
       "name_en": "Small bowl",
       "role": "forberede",
       "exclusive": false,
-      "level": "standard"
+      "level": "standard",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/small_bowl-v5.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/small_bowl-v3.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/small_bowl-v3.webp"
+      }
     },
     {
       "id": "large_bowl",
@@ -289,7 +440,12 @@
       "role": "forberede",
       "exclusive": false,
       "level": "standard",
-      "image_notes": "A balloon whisk."
+      "image_notes": "A balloon whisk lying diagonally.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/whisk-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/whisk-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/whisk-v1.webp"
+      }
     },
     {
       "id": "spatula",
@@ -298,7 +454,12 @@
       "role": "forberede",
       "exclusive": false,
       "level": "standard",
-      "image_notes": "A flexible silicone spatula."
+      "image_notes": "A flexible silicone spatula.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/spatula-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/spatula-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/spatula-v1.webp"
+      }
     },
     {
       "id": "wooden_spoon",
@@ -306,7 +467,12 @@
       "name_en": "Wooden spoon",
       "role": "forberede",
       "exclusive": false,
-      "level": "standard"
+      "level": "standard",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/wooden_spoon-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/wooden_spoon-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/wooden_spoon-v1.webp"
+      }
     },
     {
       "id": "grater",
@@ -315,7 +481,12 @@
       "role": "forberede",
       "exclusive": false,
       "level": "standard",
-      "image_notes": "A four-sided box grater."
+      "image_notes": "A four-sided box grater.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/grater-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/grater-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/grater-v1.webp"
+      }
     },
     {
       "id": "peeler",
@@ -324,7 +495,12 @@
       "role": "forberede",
       "exclusive": false,
       "level": "standard",
-      "image_notes": "A swivel vegetable peeler."
+      "image_notes": "A swivel vegetable peeler.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/peeler-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/peeler-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/peeler-v1.webp"
+      }
     },
     {
       "id": "sieve",
@@ -333,7 +509,12 @@
       "role": "forberede",
       "exclusive": false,
       "level": "standard",
-      "image_notes": "A fine mesh sieve with a handle."
+      "image_notes": "A fine mesh sieve with a handle.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/sieve-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/sieve-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/sieve-v1.webp"
+      }
     },
     {
       "id": "colander",
@@ -342,7 +523,12 @@
       "role": "forberede",
       "exclusive": false,
       "level": "standard",
-      "image_notes": "A metal colander with holes and two handles."
+      "image_notes": "A metal colander with holes and two handles.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/colander-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/colander-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/colander-v1.webp"
+      }
     },
     {
       "id": "brush",
@@ -350,7 +536,12 @@
       "name_en": "Pastry brush",
       "role": "forberede",
       "exclusive": false,
-      "level": "standard"
+      "level": "standard",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/brush-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/brush-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/brush-v1.webp"
+      }
     },
     {
       "id": "rolling_pin",
@@ -358,7 +549,12 @@
       "name_en": "Rolling pin",
       "role": "forberede",
       "exclusive": false,
-      "level": "standard"
+      "level": "standard",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/rolling_pin-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/rolling_pin-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/rolling_pin-v1.webp"
+      }
     },
     {
       "id": "mortar",
@@ -367,7 +563,12 @@
       "role": "forberede",
       "exclusive": false,
       "level": "special",
-      "image_notes": "A stone mortar with its pestle."
+      "image_notes": "A stone mortar with its pestle.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/mortar-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/mortar-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/mortar-v1.webp"
+      }
     },
     {
       "id": "blender",
@@ -375,7 +576,12 @@
       "name_en": "Blender",
       "role": "forberede",
       "exclusive": false,
-      "level": "standard"
+      "level": "standard",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/blender-v2.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/blender-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/blender-v1.webp"
+      }
     },
     {
       "id": "stick_blender",
@@ -384,7 +590,12 @@
       "role": "forberede",
       "exclusive": false,
       "level": "standard",
-      "image_notes": "A hand-held immersion blender."
+      "image_notes": "A hand-held immersion blender on its own, standing upright, no beaker or jug.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/stick_blender-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/stick_blender-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/stick_blender-v1.webp"
+      }
     },
     {
       "id": "food_processor",
@@ -392,7 +603,12 @@
       "name_en": "Food processor",
       "role": "forberede",
       "exclusive": false,
-      "level": "special"
+      "level": "special",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/food_processor-v2.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/food_processor-v3.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/food_processor-v3.webp"
+      }
     },
     {
       "id": "stand_mixer",
@@ -400,7 +616,12 @@
       "name_en": "Stand mixer",
       "role": "forberede",
       "exclusive": false,
-      "level": "special"
+      "level": "special",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/stand_mixer-v4.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/stand_mixer-v3.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/stand_mixer-v3.webp"
+      }
     },
     {
       "id": "hand_mixer",
@@ -409,7 +630,12 @@
       "role": "forberede",
       "exclusive": false,
       "level": "standard",
-      "image_notes": "An electric hand mixer with two beaters."
+      "image_notes": "An electric hand mixer with two beaters.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/hand_mixer-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/hand_mixer-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/hand_mixer-v1.webp"
+      }
     },
     {
       "id": "salad_spinner",
@@ -417,7 +643,12 @@
       "name_en": "Salad spinner",
       "role": "forberede",
       "exclusive": false,
-      "level": "standard"
+      "level": "standard",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/salad_spinner-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/salad_spinner-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/salad_spinner-v1.webp"
+      }
     },
     {
       "id": "jar",
@@ -426,7 +657,12 @@
       "role": "forberede",
       "exclusive": false,
       "level": "standard",
-      "image_notes": "An empty glass jar with a screw lid."
+      "image_notes": "An empty glass jar with a screw lid.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/jar-v5.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/jar-v3.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/jar-v1.webp"
+      }
     },
     {
       "id": "measuring_jug",
@@ -435,7 +671,12 @@
       "role": "forberede",
       "exclusive": false,
       "level": "standard",
-      "image_notes": "A clear measuring jug with a scale on the side."
+      "image_notes": "A clear measuring jug with a scale on the side.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/measuring_jug-v2.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/measuring_jug-v2.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/measuring_jug-v1.webp"
+      }
     },
     {
       "id": "kitchen_scale",
@@ -444,7 +685,12 @@
       "role": "forberede",
       "exclusive": false,
       "level": "standard",
-      "image_notes": "A flat digital kitchen scale."
+      "image_notes": "A flat digital kitchen scale.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/kitchen_scale-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/kitchen_scale-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/kitchen_scale-v1.webp"
+      }
     },
     {
       "id": "cutting_board",
@@ -452,7 +698,12 @@
       "name_en": "Cutting board",
       "role": "forberede",
       "exclusive": false,
-      "level": "standard"
+      "level": "standard",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/cutting_board-v2.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/cutting_board-v3.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/cutting_board-v1.webp"
+      }
     },
     {
       "id": "knife",
@@ -461,7 +712,12 @@
       "role": "forberede",
       "exclusive": false,
       "level": "standard",
-      "image_notes": "A chef's knife."
+      "image_notes": "A chef's knife.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/knife-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/knife-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/knife-v1.webp"
+      }
     },
     {
       "id": "plastic_wrap",
@@ -494,7 +750,12 @@
       "role": "avlastning",
       "exclusive": false,
       "level": "standard",
-      "image_notes": "A metal wire cooling rack."
+      "image_notes": "A metal wire cooling rack.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/rack-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/rack-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/rack-v1.webp"
+      }
     },
     {
       "id": "plate",
@@ -534,7 +795,12 @@
       "name_en": "Slotted spoon",
       "role": "koke",
       "exclusive": false,
-      "level": "standard"
+      "level": "standard",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/slotted_spoon-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/slotted_spoon-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/slotted_spoon-v1.webp"
+      }
     },
     {
       "id": "potato_masher",
@@ -542,7 +808,12 @@
       "name_en": "Potato masher",
       "role": "forberede",
       "exclusive": false,
-      "level": "standard"
+      "level": "standard",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/potato_masher-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/potato_masher-v2.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/potato_masher-v1.webp"
+      }
     },
     {
       "id": "measuring_spoons",
@@ -551,7 +822,12 @@
       "role": "forberede",
       "exclusive": false,
       "level": "standard",
-      "image_notes": "A small set of measuring spoons on a ring."
+      "image_notes": "A small set of measuring spoons on a ring.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/measuring_spoons-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/measuring_spoons-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/measuring_spoons-v1.webp"
+      }
     },
     {
       "id": "kitchen_scissors",
@@ -559,7 +835,12 @@
       "name_en": "Kitchen scissors",
       "role": "forberede",
       "exclusive": false,
-      "level": "standard"
+      "level": "standard",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/kitchen_scissors-v1.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/kitchen_scissors-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/kitchen_scissors-v1.webp"
+      }
     },
     {
       "id": "waffle_iron",
@@ -568,7 +849,12 @@
       "role": "koke",
       "exclusive": true,
       "level": "special",
-      "image_notes": "A Scandinavian heart-shaped waffle iron, open, empty."
+      "image_notes": "A Scandinavian heart-shaped waffle iron, open, empty.",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/waffle_iron-v2.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/waffle_iron-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/waffle_iron-v1.webp"
+      }
     },
     {
       "id": "rice_cooker",
@@ -576,7 +862,12 @@
       "name_en": "Rice cooker",
       "role": "koke",
       "exclusive": true,
-      "level": "special"
+      "level": "special",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/rice_cooker-v3.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/rice_cooker-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/rice_cooker-v2.webp"
+      }
     },
     {
       "id": "pressure_cooker",
@@ -584,7 +875,12 @@
       "name_en": "Pressure cooker",
       "role": "koke",
       "exclusive": true,
-      "level": "special"
+      "level": "special",
+      "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/pressure_cooker-v2.webp",
+      "image_variants": {
+        "painted": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-painted/pressure_cooker-v1.webp",
+        "line_tint": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-line_tint/pressure_cooker-v1.webp"
+      }
     }
   ],
   "modes": [
