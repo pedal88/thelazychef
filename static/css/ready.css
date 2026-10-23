@@ -6,13 +6,6 @@
 .ready .meter span { display: block; height: 100%; width: 0; background: var(--color-prep); transition: width .25s; }
 .ready section { margin-top: var(--space-6); }
 
-.ready-grid { display: grid; gap: 0 var(--space-8); }
-@media (min-width: 900px) {
-  .ready-grid { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); align-items: start; }
-  .ready-side { position: sticky; top: var(--space-4); }
-}
-.bowlgrid { display: grid; gap: var(--space-3); }
-@media (min-width: 640px) { .bowlgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
 /* A bowl: tap once when it is filled */
 .ready button { font: inherit; color: inherit; cursor: pointer; }
@@ -54,16 +47,7 @@
 .fetchgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: var(--space-2); }
 .ftile { width: auto; padding: var(--space-1) 4px var(--space-2); background: var(--color-paper); border: 1px solid var(--color-line); border-radius: var(--radius-sm); }
 /* Take out, in kitchen groups; the staples are one row of names */
-/* The groups flow side by side, since most have one or two things; the staples take a row of their own */
-.tgroups { display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-4); }
-.tg-basics { flex-basis: 100%; }
-.tgtiles { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-.tgtiles .ftile { width: 92px; }
-.tgroup-h { font: 500 11px/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--color-muted); margin: 0 0 var(--space-1); }
-.basics { display: flex; flex-wrap: wrap; gap: 6px; }
-.basic { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 12px 0 4px; background: var(--color-paper); border: 1px dashed var(--color-line-strong); border-radius: var(--radius-pill); font-size: 14px; }
-.basic[aria-pressed="true"] span { text-decoration: line-through; }
-.ftile[aria-pressed="true"], .eq[aria-pressed="true"], .task[aria-pressed="true"], .basic[aria-pressed="true"] { opacity: .45; }
+.ftile[aria-pressed="true"], .btile[aria-pressed="true"], .eq[aria-pressed="true"], .task[aria-pressed="true"] { opacity: .45; }
 .ftile[aria-pressed="true"] .tn { text-decoration: line-through; }
 
 .task { display: grid; gap: 2px; width: 100%; text-align: left; padding: var(--space-3) var(--space-4); margin-bottom: var(--space-2); background: var(--color-paper); border: 1px solid var(--color-line); border-radius: var(--radius); }
@@ -79,7 +63,7 @@
 .later { margin-top: var(--space-6); border: 1px dashed var(--color-line); border-radius: var(--radius); padding: var(--space-2) var(--space-4); }
 .later summary { cursor: pointer; font-weight: 600; min-height: var(--tap); display: flex; flex-direction: column; justify-content: center; }
 .later summary small { font-weight: 400; color: var(--color-muted); font-size: 13px; }
-.later .bowlgrid, .later .fetchgrid { margin: var(--space-2) 0 var(--space-3); }
+.later .board, .later .fetchgrid { margin: var(--space-2) 0 var(--space-3); }
 
 .ready-go { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; margin-top: var(--space-8); }
 .ready-go .go { display: inline-flex; align-items: center; text-decoration: none; }
@@ -92,3 +76,19 @@
 .sym .cnt { position: absolute; left: -4px; top: -4px; min-width: 20px; height: 20px; padding: 0 4px; border-radius: 10px; background: var(--color-ink);
   color: var(--color-paper); font: 600 11px/20px var(--font-mono); font-style: normal; text-align: center; }
 .tile .tn em { display: inline-block; margin-top: 2px; padding: 0 6px; border-radius: var(--radius-pill); background: var(--color-prep-soft); color: var(--color-prep-ink); font-size: 11px; }
+
+/* The ingredient board: bowls, take out and what you probably have side by side, the same tiles in each */
+.rv2.ready { max-width: 1180px; }
+.board { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); align-items: start; }
+.card { padding: var(--space-3) var(--space-4) var(--space-3); border-radius: var(--radius); border: 1px solid var(--color-line); background: var(--color-paper); display: grid; gap: var(--space-2); }
+.card-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px var(--space-2); }
+.card-h b { font-size: 17px; }
+.card .tiles { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.card.takeout { border-style: dashed; border-width: 1.5px; }
+.card.takeout .ftile { border: 0; background: none; padding: 0; width: 84px; }
+.ftile .tstep { font: 500 11px var(--font-mono); color: var(--color-muted); }
+.card.basics { background: var(--color-soft); border-color: transparent; }
+.card.basics .btile { width: 64px; border: 0; background: none; padding: 0; font-size: 12px; color: var(--color-muted); }
+.card.basics .btile .sym img { filter: grayscale(.35); opacity: .85; }
+.btile[aria-pressed="true"] .tn { text-decoration: line-through; }
+.card .ta { white-space: normal; overflow-wrap: anywhere; }

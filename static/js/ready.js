@@ -20,7 +20,7 @@
       if (bowl) bowl.classList.toggle('is-ready', on);
     });
     // The bowls for now, not the ones for later
-    const bowls = [...page.querySelectorAll('.ready-main > section [data-bowl]')];
+    const bowls = [...page.querySelectorAll('section > .board > [data-bowl]')];
     const n = bowls.filter(b => done.has(b.dataset.key)).length;
     const bar = page.querySelector('.meter span'), count = page.querySelector('[data-count]');
     if (bar) bar.style.width = `${(n / Math.max(1, bowls.length)) * 100}%`;

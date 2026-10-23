@@ -950,6 +950,8 @@ I tillegg: listen over alle steg (ingredienser i steget) med symbolet inne i men
 
 **Skålene på Gjør klart (23.10.2026).** En skål viser alltid bare nøkkelinfo: nummeret, et kort navn og ingrediensene med mengde og tilstand. Antall står som et merke på bildet når linjen telles i stykker eller fedd (3× på tre fedd), og tilstanden («finhakket») som en etikett under. Et trykk på skålen åpner resten: hvilket steg den er til, hvorfor den er en skål og forarbeidet per ingrediens. Avkryssingen er nummeret, en egen knapp på 44 px.
 
+**Ingrediensbordet på Gjør klart (23.10.2026).** Alle ingrediensene står i ett rutenett med de samme flisene, og rammen sier hva slags de er: skålene (hel ramme i fasefargen, nummer og avkrysning), «Take out» (stiplet ramme, «step 4» på hver flis, sortert etter kategori uten overskrifter) og «You probably have» (små, grå fliser; mengden står i stegene). Høyrespalten er borte; utstyret står under. Tilstanden kommer fra forarbeidssteget når linjen selv mangler kutt.
+
 **Tilstand og mengde i bilder, trinnvis.** Prep skal vise hvilke ingredienser, hvilke som hører sammen, hvor mye og tilstanden etter forarbeid. Første trinn er det enkle som er gjort: skålen samler, merket viser antall, etiketten og kuttmerket viser tilstanden. Neste trinn, bare hvis det trengs: enhetsbilder for varer der det man kjøper og det man bruker er forskjellig (hvitløk og fedd, urter og kvist), gjentatt for små antall; deretter bilder av tilstanden (ingrediens og kutt, slått sammen til rundt seks synlige tilstander), laget ved behov, med kuttmerket som reserve. Datamodellen har allerede det som trengs (`cut`, `amount`, `unit`).
 
 ---

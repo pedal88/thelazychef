@@ -1,6 +1,6 @@
 {% extends "base.html" %}
-{# Prep (Gjør klart) for a v2 recipe: bowls to fill and the rest to take out in kitchen groups, then the equipment
-   in a section of its own below, so ingredients and equipment are clearly apart.
+{# Prep (Gjør klart) for a v2 recipe: one board with every ingredient (bowls, take out, what you probably have), then
+   the equipment in a section of its own below, so ingredients and equipment are clearly apart.
    Derived from the graph by services/recipe_v2/mise.py; ticks are kept on the device by static/js/ready.js. #}
 {% from "components/delta.html" import MARKS %}
 {% from "components/recipe_head.html" import recipe_head with context %}
@@ -59,52 +59,43 @@
   <p class="hint" data-count aria-live="polite">0 of {{ r.bowls|length }} bowls ready</p>
   {% endif %}
 
-  <div class="ready-grid">
-    <div class="ready-main">
-      {% if r.tasks %}
-      <section>
-        <div class="sec-head"><h2>First</h2></div>
-        {% for t in r.tasks %}<button type="button" class="task" data-tick="{{ t.key }}" aria-pressed="false"><b>{{ t.short }}</b><span>{{ t.text }}</span></button>{% endfor %}
-      </section>
-      {% endif %}
-      {% if r.bowls %}
-      <section>
-        <div class="sec-head"><h2>Bowls</h2><span class="eyebrow">{{ r.bowls|length }} · in the order you use them</span></div>
-        <div class="bowlgrid">{% for b in r.bowls %}{{ bowl(b) }}{% endfor %}</div>
-      </section>
-      {% endif %}
-      {% for g in r.later %}
-      <details class="later">
-        <summary>Later, while: {{ g.while|lower }}<small>The plan "{{ v.plans[v.plan] }}" puts these in the waiting time.</small></summary>
-        <div class="bowlgrid">{% for b in g.bowls %}{{ bowl(b) }}{% endfor %}</div>
-        {% if g.fetch %}{{ loose(g.fetch) }}{% endif %}
-      </details>
-      {% endfor %}
-    </div>
+  {% if r.tasks %}
+  <section>
+    <div class="sec-head"><h2>First</h2></div>
+    {% for t in r.tasks %}<button type="button" class="task" data-tick="{{ t.key }}" aria-pressed="false"><b>{{ t.short }}</b><span>{{ t.text }}</span></button>{% endfor %}
+  </section>
+  {% endif %}
 
-    <div class="ready-side">
-      {% if r.takeout %}
-      <section>
-        <div class="sec-head"><h2>Take out</h2><span class="eyebrow">measure when you use them</span></div>
-        <div class="tgroups">
-        {% for g in r.takeout %}
-        <div class="tg{{ ' tg-basics' if g.key == 'staples' }}">
-        <h3 class="tgroup-h">{{ g.label }}</h3>
-        {% if g.key == 'staples' %}
-        <div class="basics">{% for t in g['items'] %}<button type="button" class="basic" data-tick="{{ t.key }}" aria-pressed="false">{{ sym(t.line, 32) }}<span lang="{{ lang }}">{{ t.line.name }}</span></button>{% endfor %}</div>
-        {% else %}
-        <div class="tgtiles">{% for t in g['items'] %}
-          <button type="button" class="tile ftile" data-tick="{{ t.key }}" aria-pressed="false">{{ sym(t.line, 64) }}<span class="ta">{{ t.amount }}</span><span class="tn" lang="{{ lang }}">{{ t.line.name }}<em>step {{ t.steps|join(', ') }}</em></span></button>
-        {% endfor %}</div>
-        {% endif %}
-        </div>
-        {% endfor %}
-        </div>
-      </section>
+  {# One board for every ingredient, the same tiles everywhere: the bowls to fill (numbered, the tick on the number),
+     what to take out when its step comes (dashed), and what you probably have (small and grey). #}
+  {% set loose = r.takeout|rejectattr('key', 'equalto', 'staples')|list %}
+  {% set basics = r.takeout|selectattr('key', 'equalto', 'staples')|list %}
+  <section>
+    <div class="sec-head"><h2>Ingredients</h2><span class="eyebrow">bowls in the order you use them</span></div>
+    <div class="board">
+      {% for b in r.bowls %}{{ bowl(b) }}{% endfor %}
+      {% if loose %}
+      <div class="card takeout">
+        <div class="card-h"><b>Take out</b><span class="hint">measure it when its step comes</span></div>
+        <span class="tiles">{% for g in loose %}{% for t in g['items'] %}<button type="button" class="tile ftile" data-tick="{{ t.key }}" aria-pressed="false">{{ sym(t.line, 64) }}<span class="ta">{{ t.amount }}</span><span class="tn" lang="{{ lang }}">{{ t.line.name }}{% if t.line.state %}<em>{{ t.line.state }}</em>{% endif %}</span><span class="tstep">step {{ t.steps|join(', ') }}</span></button>{% endfor %}{% endfor %}</span>
+      </div>
       {% endif %}
-
+      {% if basics %}
+      <div class="card basics">
+        <div class="card-h"><b>You probably have</b><span class="hint">the steps give the amounts</span></div>
+        <span class="tiles">{% for t in basics[0]['items'] %}<button type="button" class="tile btile" data-tick="{{ t.key }}" aria-pressed="false">{{ sym(t.line, 40) }}<span class="tn" lang="{{ lang }}">{{ t.line.name }}</span></button>{% endfor %}</span>
+      </div>
+      {% endif %}
     </div>
-  </div>
+  </section>
+
+  {% for g in r.later %}
+  <details class="later">
+    <summary>Later, while: {{ g.while|lower }}<small>The plan "{{ v.plans[v.plan] }}" puts these in the waiting time.</small></summary>
+    <div class="board">{% for b in g.bowls %}{{ bowl(b) }}{% endfor %}</div>
+    {% if g.fetch %}{{ loose(g.fetch) }}{% endif %}
+  </details>
+  {% endfor %}
 
   {% if v.equipment %}
   <section class="equipment">
