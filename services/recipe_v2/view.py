@@ -109,7 +109,7 @@ def equipment_list(ids, cat=None):
             continue
         e = items.get(e.get('same_as')) or e
         out.setdefault(e['id'], {'id': e['id'], 'name': e.get('name_en') or e['name'], 'image': e.get('image'),
-                                 'special': e.get('level') == 'special'})
+                                 'images': e.get('image_variants') or {}, 'special': e.get('level') == 'special'})
     return list(out.values())
 
 

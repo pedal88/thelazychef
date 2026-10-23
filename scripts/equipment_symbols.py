@@ -4,7 +4,7 @@
     python scripts/equipment_symbols.py generate                    # every item that gets a symbol
     python scripts/equipment_symbols.py generate --run <dir> --only whisk,grater --notes <json>   # again, with notes
     python scripts/equipment_symbols.py generate --pilot --style painted --run <dir>   # the pilot in another style
-    python scripts/equipment_symbols.py promote --run <dir>         # upload and write the URLs into equipment.json
+    python scripts/equipment_symbols.py promote --run <dir> [--style painted]   # upload and set image (or image_variants[style])
 
 generate writes the images and sheet.png (each symbol large, at 48 px and at 32 px) to
 ~/promptlab-runs/equipment-<time>; it is resumable and does what is missing. --notes is a JSON file
@@ -102,7 +102,8 @@ def sheet(run, manifest):
     print(f"Sheet: {run / 'sheet.png'}")
 
 
-def promote(run):
+def promote(run, style=None):
+    """style None (or realistic) sets "image"; another style sets "image_variants"[style]."""
     from services.ingredient_symbols import web_image
 
     manifest = json.loads((run / 'manifest.json').read_text())
@@ -121,7 +122,10 @@ def promote(run):
     catalog = json.loads(CATALOG.read_text())
     for e in catalog['equipment']:
         if e['id'] in urls:
-            e['image'] = urls[e['id']]
+            if style and style != 'realistic':
+                e.setdefault('image_variants', {})[style] = urls[e['id']]
+            else:
+                e['image'] = urls[e['id']]
     CATALOG.write_text(json.dumps(catalog, indent=2, ensure_ascii=False) + '\n')
     print(f'{len(urls)} symbols uploaded and set in {CATALOG.relative_to(ROOT)}; {len(rejected)} rejected left out.')
 
@@ -138,7 +142,7 @@ def main():
     if args.command == 'promote':
         if not args.run:
             raise SystemExit('Give --run')
-        promote(args.run)
+        promote(args.run, args.style)
         return
     run = args.run or RUNS_DIR / f"equipment-{datetime.datetime.now():%Y%m%d-%H%M}"
     print(f'Run: {run}')
