@@ -34,15 +34,7 @@
 .rv2 section { margin-top: var(--space-6); }
 .rv2 .sec-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--space-2); }
 
-.rv2 .shop { list-style: none; margin: 0; padding: 0; }
 .rv2 .shop-group { font: 500 12px/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--color-muted); margin: var(--space-4) 0 0; }
-.rv2 .shop li { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: var(--space-3); padding: 4px 0; border-bottom: 1px solid var(--color-line); }
-.rv2 .shop-staples li { padding: 2px 0; }
-.rv2 .shop li:last-child { border-bottom: 0; }
-.rv2 .shop .nm { min-width: 0; }
-.rv2 .shop .nm small { display: block; color: var(--color-muted); font-size: 13px; }
-.rv2 .shop .nm small.missing { color: var(--color-warning); }
-.rv2 .shop .amt { font: 500 15px/1.2 var(--font-mono); white-space: nowrap; font-variant-numeric: tabular-nums; }
 
 /* Ingredient images carry the pages (RECIPE_VISUALIZATIONS.md 9.16): no frame, and zoomed past the white
    margin the images have (the food fills 65-77 % of them). Multiply drops the white against the paper; a faded
@@ -162,22 +154,9 @@
 .more-panel .nutrition th { padding-right: var(--space-3); }
 .more-panel p { margin: 0; }
 
-/* Ingredient list trial on Overview (chosen_list_style in routes/_shared.py) */
+/* The ingredient list on Overview: one line each, the amount first */
 .ilist { list-style: none; margin: 0; padding: 0; }
-.ilist li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--space-2); }
-.ilist-a li { padding: 2px 0; border-bottom: 1px solid var(--color-line); }
-.ilist-a li:last-child { border-bottom: 0; }
-.ilist-a .nm small { display: block; color: var(--color-muted); font-size: 12px; }
-.ilist-a .amt { font: 500 14px/1.2 var(--font-mono); white-space: nowrap; }
-.ilist-d li { grid-template-columns: auto minmax(0, 1fr); padding: 1px 0; font-size: 15px; line-height: 1.3; }
-.ilist-d .amt { font: 600 14px var(--font-mono); white-space: nowrap; }
-.ilist-d small { color: var(--color-muted); font-size: 12px; }
-.itiles { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
-.itiles-b { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); }
-.itiles-c { grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); }
-.itiles li { min-width: 0; display: grid; justify-items: center; text-align: center; font-size: 12px; line-height: 1.2; }
-.itiles-b li { position: relative; border: 1px solid var(--color-line); border-radius: var(--radius-sm); overflow: hidden; padding: 6px 0 0; background: var(--color-paper); }
-.itiles-b .cap { align-self: end; width: 100%; padding: 4px 6px 5px; margin-top: -14px; position: relative;
-  background: color-mix(in srgb, var(--color-paper) 85%, transparent); backdrop-filter: blur(4px); overflow-wrap: anywhere; }
-.itiles-c .cap { margin-top: 2px; overflow-wrap: anywhere; }
-.itiles .cap b { display: block; font: 600 12px var(--font-mono); }
+.ilist li { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: var(--space-2); padding: 1px 0; font-size: 15px; line-height: 1.3; }
+.ilist .amt { font: 600 14px var(--font-mono); white-space: nowrap; }
+.ilist small { display: block; color: var(--color-muted); font-size: 12px; }
+.ilist small.missing { color: var(--color-warning); }

@@ -86,17 +86,6 @@ def chosen_image_style():
     return style if admin and style in IMAGE_STYLES else None
 
 
-# Ingredient list trial (temporary): four ways to show the ingredients on Overview, for admins (cookie ing_list).
-# Everyone else sees the list as it is ('now').
-LIST_STYLES = {'now': 'Now', 'a': 'A', 'b': 'B', 'c': 'C', 'd': 'D'}
-
-
-def chosen_list_style():
-    style = request.cookies.get('ing_list')
-    admin = current_user.is_authenticated and getattr(current_user, 'is_admin', False)
-    return style if admin and style in LIST_STYLES else 'now'
-
-
 # Equipment symbol trial (temporary): the same, for the equipment symbols (data/constraints/equipment.json "image" is
 # the realistic set, "image_variants" the others). Cookie equipment_images, admins only.
 EQUIPMENT_STYLES = {'realistic': 'Realistic', 'painted': 'Painted', 'line_tint': 'Line'}
