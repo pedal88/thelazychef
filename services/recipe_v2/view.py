@@ -89,6 +89,15 @@ def step_duration(s):
     return ' '.join(parts)
 
 
+def count_of(line, factor=1.0):
+    """How many, for a line counted in pieces or cloves (3 cloves of garlic): a whole number from 1 to 12, else None.
+    Prep shows it on the image, so the amount reads at a glance."""
+    if line.get('unit') not in ('piece', 'clove') or line.get('amount') is None:
+        return None
+    n = line['amount'] * factor
+    return int(round(n)) if abs(n - round(n)) < 0.01 and 1 <= round(n) <= 12 else None
+
+
 def equipment_list(ids, cat=None):
     """The equipment the dish needs, in the order it is first used, as {id, name, image, special}: supplies
     (foil, plates) left out, and an item shown as another (same_as) listed once, as that one."""
@@ -217,7 +226,8 @@ def build(recipe, servings=None, plan='calm'):
         group = groups.group_of(found, mise.staple({'name': e['name'], **({'pantry_tier': found.tier} if found else {})}))
         shop.append({'name': e['name'], 'amount': ' + '.join(fmt_amount(a['amount'], a['unit']) for a in e['amounts']),
                      'note': ' · '.join(notes), 'symbol': symbol(found, e['name'], 36 if group == 'staples' else 56),
-                     'missing': not e.get('pantry_id') or e['pantry_id'] not in pantry, 'group': group})
+                     'missing': not e.get('pantry_id') or e['pantry_id'] not in pantry, 'group': group,
+                     'img': found.image_url if found is not None else None})
 
     steps = []
     for n, sid in enumerate(sch['order'], 1):
@@ -238,7 +248,7 @@ def build(recipe, servings=None, plan='calm'):
     # The river delta: every line as the drawing shows it, with the amount for these servings
     pictured = {lid: {'name': i['name'], 'img': (ingredients.get(lid).image_url if ingredients.get(lid) is not None else None),
                       'amount': fmt_amount(i['amount'] * factor, i.get('unit')) if i.get('amount') is not None else '',
-                      'prep': i.get('prep_style') or '', 'cut': i.get('cut'),
+                      'prep': i.get('prep_style') or '', 'cut': i.get('cut'), 'count': count_of(i, factor),
                       'group': groups.group_of(ingredients.get(lid), mise.staple(i))} for lid, i in lines.items()}
 
     # Prep: the lines in bowls, and the rest to take out, drawn like in the delta

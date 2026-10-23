@@ -946,6 +946,11 @@ I tillegg: listen over alle steg (ingredienser i steget) med symbolet inne i men
 
 **Prep er forenklet.** «Take out» og «On the counter» (9.13) er slått sammen til én «Take out» i de samme gruppene, med gruppene side om side. En ingrediens som brukes i flere steg, er én flis med mengdene og stegene («½ tsp + to taste», «step 3, 6»), så salt vises én gang i stedet for tre. Basisvarene er én rad med navn: du har dem, og stegene gir mengdene. Skillet mellom «mål opp når du bruker den» og «står fremme» står ikke lenger på Prep. Cook viser fortsatt per steg hva som skal inn.
 
+
+**Skålene på Gjør klart (23.10.2026).** En skål viser alltid bare nøkkelinfo: nummeret, et kort navn og ingrediensene med mengde og tilstand. Antall står som et merke på bildet når linjen telles i stykker eller fedd (3× på tre fedd), og tilstanden («finhakket») som en etikett under. Et trykk på skålen åpner resten: hvilket steg den er til, hvorfor den er en skål og forarbeidet per ingrediens. Avkryssingen er nummeret, en egen knapp på 44 px.
+
+**Tilstand og mengde i bilder, trinnvis.** Prep skal vise hvilke ingredienser, hvilke som hører sammen, hvor mye og tilstanden etter forarbeid. Første trinn er det enkle som er gjort: skålen samler, merket viser antall, etiketten og kuttmerket viser tilstanden. Neste trinn, bare hvis det trengs: enhetsbilder for varer der det man kjøper og det man bruker er forskjellig (hvitløk og fedd, urter og kvist), gjentatt for små antall; deretter bilder av tilstanden (ingrediens og kutt, slått sammen til rundt seks synlige tilstander), laget ved behov, med kuttmerket som reserve. Datamodellen har allerede det som trengs (`cut`, `amount`, `unit`).
+
 ---
 
 ## Vedlegg: parkerte visninger

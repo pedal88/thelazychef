@@ -11,6 +11,10 @@
 
 {% from "components/recipe_head.html" import recipe_head with context %}
 
+{% macro ing_pic(item, size) -%}
+<span class="sym" style="--s:{{ size }}px">{% if item.img %}<img src="{{ item.img }}" alt="" width="{{ size }}" height="{{ size }}" loading="lazy">{% else %}<span class="sym-letter" aria-hidden="true">{{ item.name[:1]|upper }}</span>{% endif %}</span>
+{%- endmacro %}
+
 {% macro link(servings, plan) -%}
 {{ url_for('recipe_detail', recipe_id=recipe.id, servings=servings, plan=plan) }}
 {%- endmacro %}
@@ -141,13 +145,32 @@
 
   <aside class="ov-ings" aria-labelledby="ings-h">
     <div class="sec-head"><h2 id="ings-h">Ingredients</h2><span class="eyebrow">{{ v.shopping|length }} items</span></div>
+    {% set ls = chosen_list_style() %}
     {% for g in v.shop_groups %}
     <h3 class="shop-group">{{ g.label }}</h3>
+    {% if ls == 'now' %}
     <ul class="shop{{ ' shop-staples' if g.key == 'staples' }}">
       {% for item in g['items'] %}
       <li>{{ item.symbol }}<span class="nm">{{ item.name }}{% if item.note %}<small>{{ item.note }}</small>{% endif %}{% if item.missing and recipe.status != 'approved' %}<small class="missing">Not in the pantry</small>{% endif %}</span><span class="amt">{{ item.amount }}</span></li>
       {% endfor %}
     </ul>
+    {% elif ls in ('a', 'd') %}
+    {# A: the rows, smaller and tighter. D: one line each, the amount first, as a shopping list. #}
+    <ul class="ilist ilist-{{ ls }}{{ ' ilist-staples' if g.key == 'staples' }}">
+      {% for item in g['items'] %}
+      <li>{{ ing_pic(item, 40 if ls == 'a' else 32) }}
+        {% if ls == 'a' %}<span class="nm">{{ item.name }}{% if item.note %}<small>{{ item.note }}</small>{% endif %}</span><span class="amt">{{ item.amount }}</span>
+        {% else %}<span class="line"><b class="amt">{{ item.amount }}</b> {{ item.name }}{% if item.note %} <small>· {{ item.note }}</small>{% endif %}</span>{% endif %}</li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    {# B: tiles with the name and amount on a band over the image. C: small tiles with the text under the image. #}
+    <ul class="itiles itiles-{{ ls }}">
+      {% for item in g['items'] %}
+      <li title="{{ item.note }}">{{ ing_pic(item, 88 if ls == 'b' else 48) }}<span class="cap"><b>{{ item.amount or 'to taste' }}</b> {{ item.name }}</span></li>
+      {% endfor %}
+    </ul>
+    {% endif %}
     {% endfor %}
   </aside>
 

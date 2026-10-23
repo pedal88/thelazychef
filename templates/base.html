@@ -54,6 +54,12 @@
                     location.reload();
                     return;
                 }
+                var li = e.target.closest && e.target.closest('[data-list-switch] [data-list]');
+                if (li) {  // the ingredient list trial on Overview
+                    document.cookie = 'ing_list=' + li.getAttribute('data-list') + '; path=/; max-age=31536000; samesite=lax';
+                    location.reload();
+                    return;
+                }
                 var b = e.target.closest && e.target.closest('[data-look-switch] [data-look]');
                 if (!b) return;
                 var key = b.getAttribute('data-look');
