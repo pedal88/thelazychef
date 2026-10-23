@@ -33,6 +33,7 @@
   </div>
   <div class="tgroup" data-list-switch><span class="tlabel">List</span>
     {%- for key, label in LIST_STYLES.items() %}<button type="button" data-list="{{ key }}" aria-pressed="{{ 'true' if key == chosen_list_style() else 'false' }}">{{ label }}</button>{% endfor -%}
+  </div>
   <div class="tgroup" data-eq-switch><span class="tlabel">Tools</span>
     {%- for key, label in EQUIPMENT_STYLES.items() %}<button type="button" data-eq="{{ key }}" aria-pressed="{{ 'true' if key == chosen_equipment_style() else 'false' }}">{{ label }}</button>{% endfor -%}
   </div>
