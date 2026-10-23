@@ -16,7 +16,7 @@ from markupsafe import Markup, escape
 
 from database.models import Ingredient, Recipe, RecipeLine, RecipeStep, db
 from services.recipe_v2 import delta, groups, mise, nutrition, whole
-from services.recipe_v2.derive import HEAT_LABELS
+from services.recipe_v2.derive import HEAT_LABELS, heat_steps
 from services.recipe_v2.persona import SETTINGS, age_label
 from services.recipe_v2.planner import MODES, plan_v2
 from services.recipe_v2.read import shopping_list
@@ -253,6 +253,7 @@ def build(recipe, servings=None, plan='calm'):
                      'missing': not e.get('pantry_id') or e['pantry_id'] not in pantry, 'group': group,
                      'img': found.image_url if found is not None else None})
 
+    heated = {x['local_id'] for x in heat_steps(v2)}
     steps = []
     for n, sid in enumerate(sch['order'], 1):
         s = steps_by[sid]
@@ -263,7 +264,11 @@ def build(recipe, servings=None, plan='calm'):
             'duration': step_duration(s), 'equipment': equipment_text(s), 'start': p['start'],
             'while': f"While: {during['short'].lower()}" if during else '',
             'html': step_html(s, lines, ingredients, factor), 'done_when': s.get('done_when'),
+            'setup': bool(s.get('setup')), 'heat': sid in heated,
         })
+    # Where the heat goes on, for the step list of the one-page flow: the first step that heats the food (not
+    # preheating the oven or bringing water to the boil), and the time from there to the table
+    heat_on = next(({'id': x['id'], 'left': duration(sch['T'] - x['start'])} for x in steps if x['heat']), None)
 
     for i in v2['ingredients']:
         if ingredients.get(i['local_id']) is not None:
@@ -309,6 +314,7 @@ def build(recipe, servings=None, plan='calm'):
         'total': duration(sch['T']), 'active': duration(sch['A']), 'plan': plan, 'plans': PLAN_NAMES,
         'plan_hint': PLAN_HINTS[plan], 'parts': [c['name'] for c in v2['components']],
         'shopping': shop, 'shop_groups': groups.grouped(shop), 'equipment': equipment_list(first_use, cat), 'steps': steps,
+        'heat_on': heat_on,
         'chef_note': recipe.chef_note, 'missing': sum(1 for s in shop if s['missing']),
         'errors': [e for e in recipe.validation_errors or [] if e.get('rule') not in ('persona', 'image')],
         'image_notes': [e['message'] for e in recipe.validation_errors or [] if e.get('rule') == 'image'],

@@ -1,0 +1,159 @@
+/* The step list of the one-page flow (templates/components/step_list.html).
+   Tap a step to tick it off; the first step not ticked is marked as the next one. A step with waiting time has a
+   button that starts its timer: the running timers stand in a line above the list and the views, and when the
+   time is up the timer turns red, beeps and vibrates (static/js/kitchen.js). A step that uses what was standing
+   ends its timer. The tabs swap the list for the timeline, the metro map or the river delta, which mark the next
+   step. The ticks and timers are kept on this device per recipe, apart from cooking mode's; the chosen view for
+   all recipes. The Bowls button shows how many bowls are ready (the board in the sheet is static/js/ready.js). */
+(function () {
+  'use strict';
+  const page = document.querySelector('.make[data-recipe]');
+  const list = page && page.querySelector('.slist');
+  if (!list) return;
+  const { beep, ring, wake, leftMin, fmtLeft, esc } = window.Kitchen;
+  const KEY = `steps:${page.dataset.recipe}`, VIEW = 'one-page-view';
+  const $ = s => page.querySelector(s), $$ = s => [...page.querySelectorAll(s)];
+  const rows = $$('.st[data-st]');
+  const byId = Object.fromEntries(rows.map(r => [r.dataset.st, r]));
+
+  let st = { done: [], runs: [] };
+  try { Object.assign(st, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { /* start afresh */ }
+  st.done = (st.done || []).filter(id => byId[id]);
+  st.runs = (st.runs || []).filter(r => byId[r.step] && r.end > Date.now() - 3 * 3600e3);
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) { /* kept for this visit only */ } };
+  const runOf = id => st.runs.find(r => r.step === id);
+
+  function render() {
+    const done = new Set(st.done);
+    const next = rows.find(r => !done.has(r.dataset.st));
+    rows.forEach(r => {
+      const on = done.has(r.dataset.st);
+      r.classList.toggle('is-done', on);
+      r.classList.toggle('is-next', r === next);
+      r.querySelector('.st-tick').setAttribute('aria-pressed', String(on));
+      const n = r.querySelector('.n');
+      n.textContent = on ? '✓' : n.dataset.n;
+    });
+    marks(next ? next.dataset.st : null);
+    runs();
+    save();
+  }
+
+  /* The timers: a line of chips above the list, and the step's own button */
+  function runs() {
+    const line = $('[data-runs]');
+    line.hidden = !st.runs.length;
+    line.innerHTML = st.runs.map(r => {
+      const fin = Date.now() >= r.end;
+      return `<span class="tm${fin ? ' fin' : ''}"><button type="button" data-run-go="${esc(r.step)}">${esc(r.label)} <b>${fmtLeft(r)}</b></button>`
+        + `<button type="button" class="tm-x" data-run-stop="${esc(r.step)}" aria-label="Stop the timer for ${esc(r.label)}">×</button></span>`;
+    }).join('');
+    rows.forEach(row => {
+      const b = row.querySelector('[data-start]');
+      if (!b) return;
+      const r = runOf(row.dataset.st);
+      b.classList.toggle('running', !!r);
+      b.querySelector('span').textContent = !r ? `Start ${row.dataset.passive} min`
+        : Date.now() >= r.end ? 'Time is up' : `${leftMin(r)} min left`;
+    });
+  }
+
+  function tick(row) {
+    const id = row.dataset.st, i = st.done.indexOf(id);
+    if (i >= 0) st.done.splice(i, 1);
+    else {
+      st.done.push(id);
+      // The water has boiled once the pasta is in: a step that used what was standing ends its timer
+      const used = (row.dataset.after || '').split(' ');
+      st.runs = st.runs.filter(r => !used.includes(r.step));
+    }
+    render();
+  }
+
+  function start(row) {
+    if (runOf(row.dataset.st)) return;
+    st.runs.push({ step: row.dataset.st, label: row.dataset.label, end: Date.now() + row.dataset.passive * 60e3, rang: false });
+    render();
+  }
+
+  /* The next step, marked in the timeline, the metro map and the delta */
+  function marks(id) {
+    $$('.vpanel .cur').forEach(e => e.classList.remove('cur'));
+    if (id) {
+      $$(`.vpanel [data-step="${id}"], .vpanel [data-station="${id}"]`).forEach(e => e.classList.add('cur'));
+      const seg = $(`.vpanel .fx-seg[data-step="${id}"]`);
+      if (seg) seg.closest('.g2-node').classList.add('cur');
+    }
+    const tl = $('.tl'), status = $('[data-tl-status]');
+    if (!tl) return;
+    const total = +tl.dataset.total, tlRows = $$('.tl-row[data-step]'), here = tlRows.find(r => r.dataset.step === id);
+    const m = !id ? total : here ? +here.dataset.start : 0;
+    $('.nowline').style.setProperty('--x', (m / total).toFixed(4));
+    const doing = tlRows.filter(r => +r.dataset.start <= m && m < +r.dataset.aend).map(r => r.dataset.short);
+    const nxt = tlRows.find(r => +r.dataset.start > m);
+    if (status) status.innerHTML = `<b>Minute ${m} of ${total} in the plan.</b> `
+      + (doing.length ? `Next up: ${esc(doing.join(', '))}. ` : '')
+      + (nxt ? `Then: ${esc(nxt.dataset.short.toLowerCase())} at minute ${nxt.dataset.start}.` : 'The food is ready.');
+  }
+
+  /* The tabs: the list is the default; the choice is remembered for all recipes */
+  function view(v) {
+    const tabs = $$('[data-view]');
+    if (!tabs.some(b => b.dataset.view === v)) v = 'steps';
+    tabs.forEach(b => b.setAttribute('aria-selected', String(b.dataset.view === v)));
+    $$('.vpanel').forEach(p => { p.hidden = p.dataset.panel !== v; });
+    try { localStorage.setItem(VIEW, v); } catch (e) { /* remembered for this visit only */ }
+    if (v === 'delta') dispatchEvent(new Event('resize'));  // the delta lays itself out once it can be seen
+  }
+
+  /* How many bowls are ready, on the Bowls button, after static/js/ready.js has painted them */
+  function bowls() {
+    const count = $('[data-bowl-count]');
+    if (!count) return;
+    const all = $$('#sheet-bowls section > .board > [data-bowl]');
+    count.textContent = `${all.filter(b => b.classList.contains('is-ready')).length}/${all.length}`;
+  }
+
+  page.addEventListener('click', e => {
+    beep(true); wake();
+    const t = e.target;
+    const go = t.closest('[data-run-go]'), stop = t.closest('[data-run-stop]');
+    if (stop) { st.runs = st.runs.filter(r => r.step !== stop.dataset.runStop); render(); return; }
+    if (go) {
+      const row = byId[go.dataset.runGo];
+      view('steps');
+      if (row) row.scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+      return;
+    }
+    if (t.closest('[data-view]')) { view(t.closest('[data-view]').dataset.view); return; }
+    if (t.closest('[data-steps-reset]')) { st = { done: [], runs: [] }; render(); return; }
+    const row = t.closest('.st[data-st]');
+    if (!row) { setTimeout(bowls); return; }
+    if (t.closest('[data-start]')) { start(row); return; }
+    if (t.closest('a')) return;  // a link in a step is followed, not a tick
+    tick(row);
+  });
+
+  setInterval(() => {
+    let rang = false;
+    st.runs.forEach(r => { if (!r.rang && Date.now() >= r.end) { r.rang = rang = true; ring(); } });
+    if (rang) render(); else if (st.runs.length) runs();
+  }, 1000);
+
+  /* The bowls sheet closes when dragged down from its top, as well as on × , Esc or a tap beside it */
+  const sheet = document.getElementById('sheet-bowls');
+  if (sheet) {
+    let y0 = null;
+    sheet.addEventListener('touchstart', e => { y0 = sheet.scrollTop <= 0 ? e.touches[0].clientY : null; }, { passive: true });
+    sheet.addEventListener('touchend', e => {
+      if (y0 !== null && e.changedTouches[0].clientY - y0 > 90) sheet.close();
+      y0 = null;
+    });
+    sheet.addEventListener('close', bowls);
+  }
+
+  try { view(localStorage.getItem(VIEW)); } catch (e) { view('steps'); }
+  wake();
+  render();
+  bowls();
+})();

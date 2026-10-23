@@ -57,7 +57,7 @@ class CookTests(unittest.TestCase):
         _, overview = self.page('carbonara')
         self.assertIn(f'/recipe/{self.ids["carbonara"]}/cook?', overview)
 
-    def test_one_page_flow_is_for_admins_and_has_the_dish_and_both_stages(self):
+    def test_one_page_flow_is_for_admins_and_has_the_dish_and_the_steps_as_a_list(self):
         rid = self.ids["carbonara"]
         self.client.set_cookie('flow', 'one')
         html = self.client.get(f'/recipe/{rid}').get_data(as_text=True)
@@ -70,10 +70,17 @@ class CookTests(unittest.TestCase):
         # An admin who picks the one page gets Overview, Prep and Cook on the recipe's own page, with no tabs
         self.client.set_cookie('flow', 'one')
         html = self.client.get(f'/recipe/{rid}?servings=2').get_data(as_text=True)
-        for text in ('class="factbar"', 'id="ings-h"', 'Get ready', 'Start cooking ↓', 'data-bowl', '<article class="card ',
-                     'id="sheet-ings"', 'js/ready.js', 'js/cook.js', 'Versions'):
+        for text in ('class="factbar"', 'id="ings-h"', 'Get ready', 'class="heat-line"', 'Heat on', 'class="st ', 'data-start',
+                     'data-view="timeline"', 'data-view="delta"', 'id="sheet-bowls"', 'data-bowl', 'js/ready.js', 'js/steps.js',
+                     'js/kitchen.js', 'Versions'):
             self.assertIn(text, html)
         self.assertNotIn('class="flowbar"', html)
+        self.assertNotIn('js/cook.js', html)
+        # The steps in the order of the plan, numbered, and the line before the first step that heats the food
+        rows = re.findall(r'class="(st [a-z ]+|heat-line)"', html)
+        line = rows.index('heat-line')
+        self.assertTrue(line > 0 and all(r.startswith('st ') for r in rows[:line] + rows[line + 1:]))
+        self.assertEqual(re.findall(r'data-n="(\d+)"', html), [str(k) for k in range(1, len(rows))])
         self.assertEqual(html.count('data-servings-form'), 1)
         # Prep, Cook and the old address lead to it, at their part of the page
         for path, end in (('/prep', '#prep'), ('/cook', '#cook'), ('/make', '')):
