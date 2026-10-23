@@ -57,20 +57,28 @@ class CookTests(unittest.TestCase):
         _, overview = self.page('carbonara')
         self.assertIn(f'/recipe/{self.ids["carbonara"]}/cook?', overview)
 
-    def test_one_page_flow_is_for_admins_and_has_both_stages(self):
-        url = f'/recipe/{self.ids["carbonara"]}/make'
-        self.assertIn('/prep', self.client.get(url).headers['Location'])  # visitors get the tabs
-        self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
-        html = self.client.get(url).get_data(as_text=True)
-        for text in ('Get ready', 'Start cooking ↓', 'data-bowl', '<article class="card ', 'id="sheet-ings"', 'js/ready.js', 'js/cook.js'):
-            self.assertIn(text, html)
-        # The tabs stay until an admin picks the one page; then the flowbar is Overview and Make
-        overview = self.client.get(f'/recipe/{self.ids["carbonara"]}').get_data(as_text=True)
-        self.assertIn('>Prep</a>', overview)
+    def test_one_page_flow_is_for_admins_and_has_the_dish_and_both_stages(self):
+        rid = self.ids["carbonara"]
         self.client.set_cookie('flow', 'one')
-        overview = self.client.get(f'/recipe/{self.ids["carbonara"]}').get_data(as_text=True)
-        self.assertIn('>Make</a>', overview)
-        self.assertNotIn('>Prep</a>', overview)
+        html = self.client.get(f'/recipe/{rid}').get_data(as_text=True)
+        self.assertIn('>Prep</a>', html)  # visitors get the tabs, whatever the cookie says
+        self.assertNotIn('Start cooking', html)
+        self.assertTrue(self.client.get(f'/recipe/{rid}/make').headers['Location'].endswith(f'/recipe/{rid}'))
+        self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
+        self.client.set_cookie('flow', 'tabs')
+        self.assertIn('>Prep</a>', self.client.get(f'/recipe/{rid}').get_data(as_text=True))
+        # An admin who picks the one page gets Overview, Prep and Cook on the recipe's own page, with no tabs
+        self.client.set_cookie('flow', 'one')
+        html = self.client.get(f'/recipe/{rid}?servings=2').get_data(as_text=True)
+        for text in ('class="factbar"', 'id="ings-h"', 'Get ready', 'Start cooking ↓', 'data-bowl', '<article class="card ',
+                     'id="sheet-ings"', 'js/ready.js', 'js/cook.js', 'Versions'):
+            self.assertIn(text, html)
+        self.assertNotIn('class="flowbar"', html)
+        self.assertEqual(html.count('data-servings-form'), 1)
+        # Prep, Cook and the old address lead to it, at their part of the page
+        for path, end in (('/prep', '#prep'), ('/cook', '#cook'), ('/make', '')):
+            location = self.client.get(f'/recipe/{rid}{path}?servings=2').headers['Location']
+            self.assertTrue(location.endswith(f'/recipe/{rid}?servings=2{end}'), location)
 
     def test_drafts_only_for_admins(self):
         url = f'/recipe/{self.ids["lasagne"]}/cook'

@@ -1,0 +1,44 @@
+{# Admin tools for the floating admin chip on the recipe page (Overview, or the one-page flow): the draft notes,
+   recalculate, images and versions. admin is the dict recipe_detail gives: the family of versions and the chefs.
+   Import with context. #}
+{% macro admin_tools() %}
+{% if recipe.status != 'approved' %}
+<div class="tsec"><span class="tlabel">Draft</span>
+  <p>Only admins can see this recipe.{% if v.missing %} {{ v.missing }} {{ 'ingredient is' if v.missing == 1 else 'ingredients are' }} not in the pantry.{% endif %}</p>
+  {% if v.errors %}<p>It did not pass validation after the retries:</p><ul>{% for e in v.errors[:5] %}<li>{{ e.message }}</li>{% endfor %}</ul>{% endif %}
+  {% if v.persona_notes %}<p>It breaks a rule of its chef:</p><ul>{% for n in v.persona_notes %}<li>{{ n }}</li>{% endfor %}</ul>{% endif %}
+</div>
+{% endif %}
+{% if v.nutrition_gap and not v.nutrition %}
+<div class="tsec"><span class="tlabel">Nutrition</span>
+  <p>None yet.{% if v.nutrition_gap.no_grams %} No weight for {{ v.nutrition_gap.no_grams|join(', ') }}.{% endif %}{% if v.nutrition_gap.no_nutrition %} No pantry nutrition for {{ v.nutrition_gap.no_nutrition|join(', ') }}.{% endif %}</p>
+</div>
+{% endif %}
+{% if admin %}
+{% if recipe.steps %}
+<div class="tsec"><span class="tlabel">Recipe</span>
+  <form method="post" action="{{ url_for('recipe_v2.recalculate', recipe_id=recipe.id) }}"><button type="submit">Recalculate</button>
+    <span>Metadata, nutrition and the chef's rules again, after the pantry or the rules changed. No AI.</span></form>
+  <form method="post" action="{{ url_for('recipe_v2.make_images', recipe_id=recipe.id) }}"><button type="submit">{{ 'Make the images again' if recipe.image_filename else 'Make images' }}</button>
+    <span>About a minute, up to {{ '%.2f'|format(0.1 + 0.1 * v.parts|length) }} USD.{% if recipe.image_style %} Style: {{ recipe.image_style }}.{% endif %}</span></form>
+  {% if v.image_notes %}<p>The image check found: {{ v.image_notes|join('; ') }}</p>{% endif %}
+</div>
+{% endif %}
+<div class="tsec"><span class="tlabel" id="versions-h">Versions</span>
+  <ul>
+    {% for r in admin.family %}
+    <li>{% if r.id == recipe.id %}<b>{{ r.title }}</b>{% else %}<a href="{{ url_for('recipe_detail', recipe_id=r.id) }}">{{ r.title }}</a>{% endif %}
+      <span>{{ 'Version' if r.base_recipe_id else 'Base recipe' }}{{ ' by ' ~ r.chef.name if r.chef }} · {{ r.status }}{{ ' · ' ~ r.language|upper if r.language }}</span></li>
+    {% endfor %}
+  </ul>
+  {% if recipe.steps %}
+  <form method="post" action="{{ url_for('recipe_v2.new_version', recipe_id=recipe.id) }}">
+    <select id="version-chef" name="chef_id" required aria-label="Make a version by">
+      {% for c in admin.chefs %}<option value="{{ c.id }}">{{ c.name }}: {{ c.archetype }}</option>{% endfor %}
+    </select>
+    <button type="submit">Make the version</button>
+  </form>
+  {% endif %}
+</div>
+{% endif %}
+{% endmacro %}

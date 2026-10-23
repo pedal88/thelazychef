@@ -1,14 +1,24 @@
-/* Prep and cooking on one page (templates/recipe_v2_make.html): two stages in the phase colours, with a milestone
-   between, and the ingredients and facts in sheets. */
-.rv2.make { max-width: 1180px; }
-.make-tools { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-2); margin: var(--space-2) 0 var(--space-4); }
+/* The whole recipe on one page (templates/recipe_v2_make.html): the dish as on Overview, then two stages in the phase
+   colours with a milestone between. The ingredient list is beside the dish and the getting ready on wide screens,
+   and in a sheet while cooking. */
+.rv2.make { max-width: 680px; }
+.make .ov-bottom .stage-prep { margin-top: var(--space-6); }
+.make .to-start { margin-top: var(--space-4); }
+.make .stage-h .tool { margin-left: auto; min-height: 40px; font-size: 14px; }
+@media (min-width: 1000px) {
+  .rv2.make { max-width: 1180px; }
+  .make .ov-grid { grid-template-columns: 340px minmax(0, 1fr); }
+  .make .ov-bottom .stage-prep { margin-top: var(--space-4); }
+  .make .to-start { display: none; }  /* Get ready is right below */
+}
 .make .tool { display: inline-flex; align-items: center; gap: 6px; min-height: var(--tap); padding: 0 var(--space-4); border: 1px solid var(--color-line);
   border-radius: var(--radius-pill); background: var(--color-paper); font-size: 15px; }
 .make .tool:hover { border-color: var(--color-line-strong); }
 
 .stage { margin-top: var(--space-6); padding-top: var(--space-3); border-top: 3px solid var(--stage, var(--color-line)); }
 .stage-prep { --stage: var(--color-prep); }
-.stage-cook { --stage: var(--color-cook); scroll-margin-top: var(--space-4); }
+.stage-cook { --stage: var(--color-cook); }
+.stage { scroll-margin-top: 76px; }  /* below the site's sticky top bar when a link jumps here */
 .stage-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px var(--space-3); }
 .stage-h h2 { font-size: 24px; margin: 0; }
 .stage-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--stage); align-self: center; }

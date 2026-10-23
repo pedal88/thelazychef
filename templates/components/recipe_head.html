@@ -6,11 +6,9 @@
 <header class="rhead">
   <a class="back" href="{{ url_for('recipes_list') }}">← All recipes</a>
   <h1>{{ v.title }}</h1>
-  {% if v.ready %}
+  {% if v.ready and chosen_flow() != 'one' %}{# the one-page flow (an admin trial) has no tabs #}
   <nav class="flowbar" aria-label="Making the dish">
-    {%- set tabs = [('overview', 'Overview', 'recipe_detail'), ('make', 'Make', 'recipe_make')] if chosen_flow() == 'one'
-                   else [('overview', 'Overview', 'recipe_detail'), ('ready', 'Prep', 'recipe_prep'), ('cook', 'Cook', 'recipe_cook')] -%}
-    {%- for key, label, endpoint in tabs -%}
+    {%- for key, label, endpoint in [('overview', 'Overview', 'recipe_detail'), ('ready', 'Prep', 'recipe_prep'), ('cook', 'Cook', 'recipe_cook')] -%}
     <a href="{{ url_for(endpoint, **args) }}"{% if key == current %} aria-current="page"{% endif %}>{{ label }}</a>
     {%- endfor -%}
   </nav>

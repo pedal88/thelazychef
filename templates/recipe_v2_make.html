@@ -1,14 +1,17 @@
 {% extends "base.html" %}
-{# Prep and cooking on one page (a trial for admins, 23.10.2026; RECIPE_VISUALIZATIONS.md 9.17). First "Get ready":
-   the ingredient board from Prep. Then a milestone, and "Cook": the steps one at a time from cooking mode, with the
-   timers, the step list and the whole dish. The ingredients and the facts about the dish are behind two buttons.
-   The parts are shared with the Prep and Cook pages (components/prep_board.html, components/cook_flow.html). #}
+{# The whole recipe on one page (a trial for admins: Flow "One page" in the admin chip; RECIPE_VISUALIZATIONS.md
+   9.17): what Overview shows, then "Get ready" with the ingredient board from Prep, a milestone, and "Cook" with
+   the steps one at a time from cooking mode. Served at /recipe/<id>; Prep, Cook and /make lead here.
+   Wide screens: the ingredients in a column of their own on the left, beside the dish and the getting ready; the
+   cooking below in full width. Phone: one column. The parts are shared with the other pages
+   (components/dish_info.html, components/prep_board.html, components/cook_flow.html). #}
 {% from "components/recipe_head.html" import recipe_head with context %}
 {% from "components/prep_board.html" import prep_body with context %}
 {% from "components/cook_flow.html" import cook_body with context %}
 {% from "components/dish_info.html" import ingredient_list, dish_facts with context %}
+{% from "components/admin_tools.html" import admin_tools with context %}
 
-{% block title %}Make: {{ v.title }} - The Lazy Chef{% endblock %}
+{% block title %}{{ v.title }} - The Lazy Chef{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/recipe_v2.css') }}">
@@ -27,27 +30,58 @@
 
 {% block content %}
 <article class="rv2 ready cook make" data-recipe="{{ recipe.id }}">
-  {{ recipe_head(recipe, v, 'make') }}
+  {% call recipe_head(recipe, v, 'make') %}{{ admin_tools() }}{% endcall %}
 
-  <div class="make-tools">
-    <button type="button" class="tool" data-sheet="sheet-ings">{{ icon('list') }} Ingredients</button>
-    <button type="button" class="tool" data-sheet="sheet-facts">{{ icon('menu') }} Servings and facts</button>
+  <div class="ov-grid">
+  <div class="ov-top">
+    {% set imgs = dish_images(recipe) %}
+    {% if imgs.dish %}
+    <figure class="hero"><img src="{{ imgs.dish }}" alt="{{ v.title }}" width="1200" height="900"></figure>
+    {% endif %}
+
+    <div class="factbar">
+      <div class="facts">
+        <div class="fact"><span class="eyebrow">Total</span><b>{{ v.total }}</b></div>
+        <div class="fact"><span class="eyebrow">Active</span><b>{{ v.active }}</b></div>
+        <div class="fact"><span class="eyebrow">Makes</span><b>{% if v.scalable %}{{ v.servings }} servings{% else %}{{ v.yield_text }}{% endif %}</b></div>
+      </div>
+      <details class="more">
+        <summary aria-label="Servings, plan and more about the dish">{{ icon('menu') }}</summary>
+        <div class="more-panel">
+          {{ dish_facts('recipe_detail') }}
+        </div>
+      </details>
+    </div>
+
+    {% if imgs.parts %}
+    <div class="part-images" aria-label="The parts of the dish">
+      {% for p in imgs.parts %}<figure><img src="{{ p.url }}" alt="" width="600" height="600" loading="lazy"><figcaption>{{ p.name }}</figcaption></figure>{% endfor %}
+    </div>
+    {% elif v.parts|length > 1 %}
+    <p class="parts">This dish has {{ v.parts|length }} parts: {% for p in v.parts %}<span>{{ p }}</span>{% endfor %}</p>
+    {% endif %}
+
+    {% if v.chef_note %}<p class="note"><b>From the chef:</b> {{ v.chef_note }}</p>{% endif %}
+    {% if recipe.source_type == 'web' and recipe.source_input %}<p class="hint source">Based on <a href="{{ recipe.source_input }}" rel="noopener nofollow" target="_blank">{{ recipe.source_input.split('/')[2] }}</a></p>{% endif %}
+    {# On the phone the ingredient list comes next; this goes past it #}
+    <p class="next to-start"><a class="go" href="#prep">Start ↓</a>
+      <span class="hint">{% set n = r.bowls|length %}{{ n }} bowl{{ 's' if n != 1 }} to fill, then the cooking</span></p>
   </div>
-  <dialog class="sheet" id="sheet-ings" aria-labelledby="sheet-ings-h">
-    <div class="sheet-h"><h2 id="sheet-ings-h">Ingredients</h2><button type="button" class="sheet-x" data-sheet-close aria-label="Close">{{ icon('close') }}</button></div>
-    {{ ingredient_list() }}
-  </dialog>
-  <dialog class="sheet" id="sheet-facts" aria-labelledby="sheet-facts-h">
-    <div class="sheet-h"><h2 id="sheet-facts-h">Servings and facts</h2><button type="button" class="sheet-x" data-sheet-close aria-label="Close">{{ icon('close') }}</button></div>
-    <div class="more-panel in-sheet">{{ dish_facts('recipe_make') }}</div>
-  </dialog>
 
-  <section class="stage stage-prep" aria-labelledby="stage-prep-h">
-    <div class="stage-h"><span class="stage-dot" aria-hidden="true"></span><h2 id="stage-prep-h">Get ready</h2>
-      {% if r.bowls %}<span class="hint" data-count aria-live="polite">0 of {{ r.bowls|length }} bowls ready</span>{% endif %}</div>
-    {% if r.bowls %}<div class="meter" aria-hidden="true"><span></span></div>{% endif %}
-    {{ prep_body() }}
-  </section>
+  <aside class="ov-ings" aria-labelledby="ings-h">
+    <div class="sec-head"><h2 id="ings-h">Ingredients</h2><span class="eyebrow">{{ v.shopping|length }} items</span></div>
+    {{ ingredient_list() }}
+  </aside>
+
+  <div class="ov-bottom">
+    <section class="stage stage-prep" id="prep" aria-labelledby="stage-prep-h">
+      <div class="stage-h"><span class="stage-dot" aria-hidden="true"></span><h2 id="stage-prep-h">Get ready</h2>
+        {% if r.bowls %}<span class="hint" data-count aria-live="polite">0 of {{ r.bowls|length }} bowls ready</span>{% endif %}</div>
+      {% if r.bowls %}<div class="meter" aria-hidden="true"><span></span></div>{% endif %}
+      {{ prep_body() }}
+    </section>
+  </div>
+  </div>
 
   <div class="milestone">
     <span><b>All ready?</b> Then the heat can go on.</span>
@@ -56,18 +90,28 @@
 
   <section class="stage stage-cook" id="cook" aria-labelledby="stage-cook-h">
     <div class="stage-h"><span class="stage-dot" aria-hidden="true"></span><h2 id="stage-cook-h">Cook</h2>
-      <span class="hint">{{ v.total }} in all, {{ v.active }} of it your work</span></div>
+      <span class="hint">{{ v.total }} in all, {{ v.active }} of it your work</span>
+      <button type="button" class="tool" data-sheet="sheet-ings">{{ icon('list') }} Ingredients</button></div>
     {{ cook_body() }}
   </section>
+
+  <dialog class="sheet" id="sheet-ings" aria-labelledby="sheet-ings-h">
+    <div class="sheet-h"><h2 id="sheet-ings-h">Ingredients</h2><button type="button" class="sheet-x" data-sheet-close aria-label="Close">{{ icon('close') }}</button></div>
+    {{ ingredient_list() }}
+  </dialog>
 </article>
 <script>
   (function () {
-    // The two sheets: the ingredients, and servings with the facts
+    // The ingredients sheet while cooking, and the menu at the top, which closes on a click outside it or on Esc
     document.addEventListener('click', function (e) {
+      document.querySelectorAll('details.more[open]').forEach(function (d) { if (!d.contains(e.target)) d.open = false; });
       var open = e.target.closest('[data-sheet]');
       if (open) { var d = document.getElementById(open.dataset.sheet); if (d && d.showModal) d.showModal(); return; }
       if (e.target.closest('[data-sheet-close]')) { var dlg = e.target.closest('dialog'); if (dlg) dlg.close(); return; }
       if (e.target.tagName === 'DIALOG') e.target.close();  // a tap on the backdrop
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') document.querySelectorAll('details.more[open]').forEach(function (d) { d.open = false; });
     });
     // The cooking bar shows once the cooking is on screen
     var page = document.querySelector('.make'), cook = document.getElementById('cook');

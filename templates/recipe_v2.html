@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 {# Recipe page for recipe model v2 (schema_version 2). Overview and step list, phone first.
    Data comes from services/recipe_v2/view.py; the river delta from templates/components/delta.html.
-   Prep (Gjør klart) and Cook are pages of their own. #}
+   Prep (Gjør klart) and Cook are pages of their own; with the one-page flow (an admin trial) all three are one
+   page, recipe_v2_make.html. #}
 
 {% block title %}{{ v.title }} - The Lazy Chef{% endblock %}
 
@@ -12,55 +13,13 @@
 
 {% from "components/recipe_head.html" import recipe_head with context %}
 {% from "components/dish_info.html" import ingredient_list, dish_facts with context %}
+{% from "components/admin_tools.html" import admin_tools with context %}
 
 
 {% macro link(servings, plan) -%}
 {{ url_for('recipe_detail', recipe_id=recipe.id, servings=servings, plan=plan) }}
 {%- endmacro %}
 
-
-{# Admin only, shown in the floating admin chip: the draft notes, recalculate, images and versions. #}
-{% macro admin_tools() %}
-{% if recipe.status != 'approved' %}
-<div class="tsec"><span class="tlabel">Draft</span>
-  <p>Only admins can see this recipe.{% if v.missing %} {{ v.missing }} {{ 'ingredient is' if v.missing == 1 else 'ingredients are' }} not in the pantry.{% endif %}</p>
-  {% if v.errors %}<p>It did not pass validation after the retries:</p><ul>{% for e in v.errors[:5] %}<li>{{ e.message }}</li>{% endfor %}</ul>{% endif %}
-  {% if v.persona_notes %}<p>It breaks a rule of its chef:</p><ul>{% for n in v.persona_notes %}<li>{{ n }}</li>{% endfor %}</ul>{% endif %}
-</div>
-{% endif %}
-{% if v.nutrition_gap and not v.nutrition %}
-<div class="tsec"><span class="tlabel">Nutrition</span>
-  <p>None yet.{% if v.nutrition_gap.no_grams %} No weight for {{ v.nutrition_gap.no_grams|join(', ') }}.{% endif %}{% if v.nutrition_gap.no_nutrition %} No pantry nutrition for {{ v.nutrition_gap.no_nutrition|join(', ') }}.{% endif %}</p>
-</div>
-{% endif %}
-{% if admin %}
-{% if recipe.steps %}
-<div class="tsec"><span class="tlabel">Recipe</span>
-  <form method="post" action="{{ url_for('recipe_v2.recalculate', recipe_id=recipe.id) }}"><button type="submit">Recalculate</button>
-    <span>Metadata, nutrition and the chef's rules again, after the pantry or the rules changed. No AI.</span></form>
-  <form method="post" action="{{ url_for('recipe_v2.make_images', recipe_id=recipe.id) }}"><button type="submit">{{ 'Make the images again' if recipe.image_filename else 'Make images' }}</button>
-    <span>About a minute, up to {{ '%.2f'|format(0.1 + 0.1 * v.parts|length) }} USD.{% if recipe.image_style %} Style: {{ recipe.image_style }}.{% endif %}</span></form>
-  {% if v.image_notes %}<p>The image check found: {{ v.image_notes|join('; ') }}</p>{% endif %}
-</div>
-{% endif %}
-<div class="tsec"><span class="tlabel" id="versions-h">Versions</span>
-  <ul>
-    {% for r in admin.family %}
-    <li>{% if r.id == recipe.id %}<b>{{ r.title }}</b>{% else %}<a href="{{ url_for('recipe_detail', recipe_id=r.id) }}">{{ r.title }}</a>{% endif %}
-      <span>{{ 'Version' if r.base_recipe_id else 'Base recipe' }}{{ ' by ' ~ r.chef.name if r.chef }} · {{ r.status }}{{ ' · ' ~ r.language|upper if r.language }}</span></li>
-    {% endfor %}
-  </ul>
-  {% if recipe.steps %}
-  <form method="post" action="{{ url_for('recipe_v2.new_version', recipe_id=recipe.id) }}">
-    <select id="version-chef" name="chef_id" required aria-label="Make a version by">
-      {% for c in admin.chefs %}<option value="{{ c.id }}">{{ c.name }}: {{ c.archetype }}</option>{% endfor %}
-    </select>
-    <button type="submit">Make the version</button>
-  </form>
-  {% endif %}
-</div>
-{% endif %}
-{% endmacro %}
 
 {% block content %}
 {# Wide screens: the ingredients in a column of their own on the left, the dish in the main column. Phone: one
@@ -104,10 +63,7 @@
   </aside>
 
   <div class="ov-bottom">
-    {% if v.ready and chosen_flow() == 'one' %}
-    <p class="next"><a class="go" href="{{ url_for('recipe_make', recipe_id=recipe.id, servings=v.servings, plan=v.plan) }}">Start →</a>
-      <span class="hint">{% set n = v.ready.bowls|length %}{{ n }} bowl{{ 's' if n != 1 }} to fill, then the cooking, on one page</span></p>
-    {% elif v.ready %}
+    {% if v.ready %}
     <p class="next"><a class="go" href="{{ url_for('recipe_prep', recipe_id=recipe.id, servings=v.servings, plan=v.plan) }}">Prep →</a>
       <span class="hint">{% set n = v.ready.bowls|length %}{{ n }} bowl{{ 's' if n != 1 }} to fill, then
         <a href="{{ url_for('recipe_cook', recipe_id=recipe.id, servings=v.servings, plan=v.plan) }}">the cooking</a></span></p>
