@@ -4,6 +4,7 @@
     python scripts/equipment_symbols.py generate                    # every item that gets a symbol
     python scripts/equipment_symbols.py generate --run <dir> --only whisk,grater --notes <json>   # again, with notes
     python scripts/equipment_symbols.py generate --pilot --style painted --run <dir>   # the pilot in another style
+    python scripts/equipment_symbols.py edit --run <dir> --edits <json>   # fix images in place: {id: "Remove the spoon."}
     python scripts/equipment_symbols.py promote --run <dir> [--style painted]   # upload and set image (or image_variants[style])
 
 generate writes the images and sheet.png (each symbol large, at 48 px and at 32 px) to
@@ -79,6 +80,33 @@ def generate(run, only=None, pilot=False, notes=None, workers=4, style=None):
     sheet(run, manifest)
 
 
+def edit(run, edits, workers=4):
+    """Fix an image in place of making it again: the current image and an instruction ("Remove the wooden spoon.")
+    go to the image model, which keeps the rest. For what the model keeps adding however it is asked (a spoon in a
+    bowl). edits is {id: instruction}; each result is a new version."""
+    from services.image_generation import generate_image
+
+    manifest_path = run / 'manifest.json'
+    manifest = json.loads(manifest_path.read_text())
+    keep = (' Keep everything else exactly the same: the same object, angle, style, colours and the plain white '
+            'background. No text.')
+
+    def work(key):
+        entry = manifest[key]
+        png, _ = generate_image(edits[key].strip() + keep, references=[(run / entry['image']).read_bytes()])
+        version = entry['version'] + 1
+        path = run / 'images' / f'{key}-v{version}.png'
+        path.write_bytes(png)
+        return key, dict(entry, version=version, image=str(path.relative_to(run)), edit=edits[key])
+
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        for key, entry in pool.map(work, [k for k in edits if k in manifest]):
+            manifest[key] = entry
+            manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False))
+            print(f'  {key}', flush=True)
+    sheet(run, manifest)
+
+
 def sheet(run, manifest):
     """sheet.png: each symbol at 180 px, and the same at 48 and 32 px under it, to judge them at small sizes."""
     from PIL import Image, ImageDraw
@@ -132,13 +160,19 @@ def promote(run, style=None):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument('command', choices=('generate', 'promote'))
+    p.add_argument('command', choices=('generate', 'edit', 'promote'))
+    p.add_argument('--edits', type=Path, help='JSON {id: instruction} for edit')
     p.add_argument('--run', type=Path)
     p.add_argument('--pilot', action='store_true')
     p.add_argument('--only', help='comma separated ids to make (again)')
     p.add_argument('--notes', type=Path, help='JSON {id: what to change}')
     p.add_argument('--style', help='another style layer from the lab task (illustrated, painted, line_tint, risograph)')
     args = p.parse_args()
+    if args.command == 'edit':
+        if not (args.run and args.edits):
+            raise SystemExit('Give --run and --edits')
+        edit(args.run, json.loads(args.edits.read_text()))
+        return
     if args.command == 'promote':
         if not args.run:
             raise SystemExit('Give --run')
