@@ -31,6 +31,9 @@
   <div class="tgroup" data-img-switch><span class="tlabel">Images</span>
     {%- for key, label in IMAGE_STYLES.items() %}<button type="button" data-img="{{ key }}" aria-pressed="{{ 'true' if key == imgs.style else 'false' }}">{{ label }}</button>{% endfor -%}
   </div>
+  <div class="tgroup" data-list-switch><span class="tlabel">List</span>
+    {%- for key, label in LIST_STYLES.items() %}<button type="button" data-list="{{ key }}" aria-pressed="{{ 'true' if key == chosen_list_style() else 'false' }}">{{ label }}</button>{% endfor -%}
+  </div>
   {% if not imgs.have and recipe.steps %}
   <form method="post" action="{{ url_for('recipe_v2.make_images', recipe_id=recipe.id) }}" class="tmake">
     <input type="hidden" name="style" value="{{ imgs.style }}">

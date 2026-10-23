@@ -86,6 +86,17 @@ def chosen_image_style():
     return style if admin and style in IMAGE_STYLES else None
 
 
+# Ingredient list trial (temporary): four ways to show the ingredients on Overview, for admins (cookie ing_list).
+# Everyone else sees the list as it is ('now').
+LIST_STYLES = {'now': 'Now', 'a': 'A', 'b': 'B', 'c': 'C', 'd': 'D'}
+
+
+def chosen_list_style():
+    style = request.cookies.get('ing_list')
+    admin = current_user.is_authenticated and getattr(current_user, 'is_admin', False)
+    return style if admin and style in LIST_STYLES else 'now'
+
+
 def dish_images(recipe):
     """The dish and part images in the chosen style: a trial variant when there is one, else the recipe's own.
     have is False when the chosen style has no images for this recipe yet."""

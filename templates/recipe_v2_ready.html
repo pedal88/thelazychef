@@ -18,19 +18,28 @@
 {% set WHY = {'mix': 'mix ahead', 'rush': 'goes in fast at the heat', 'prep': 'cut or prepared'} %}
 
 {% macro sym(p, size) -%}
-<span class="sym" style="--s:{{ size }}px">{% if p.img %}<img src="{{ p.img }}" alt="" width="{{ size }}" height="{{ size }}" loading="lazy">{% else %}<span class="sym-letter" aria-hidden="true">{{ p.name[:1]|upper }}</span>{% endif %}{% if p.mark %}<i class="mark">{{ MARKS[p.mark]|safe }}</i>{% endif %}</span>
+<span class="sym" style="--s:{{ size }}px">{% if p.img %}<img src="{{ p.img }}" alt="" width="{{ size }}" height="{{ size }}" loading="lazy">{% else %}<span class="sym-letter" aria-hidden="true">{{ p.name[:1]|upper }}</span>{% endif %}{% if p.mark %}<i class="mark">{{ MARKS[p.mark]|safe }}</i>{% endif %}{% if p.count and p.count > 1 %}<i class="cnt">{{ p.count }}×</i>{% endif %}</span>
 {%- endmacro %}
 
 {% macro tile(p) -%}
 <span class="tile">{{ sym(p, 64) }}<span class="ta">{{ p.amount or 'to taste' }}</span><span class="tn" lang="{{ lang }}">{{ p.name }}{% if p.prep %}<em>{{ p.prep }}</em>{% endif %}</span></span>
 {%- endmacro %}
 
+{# A bowl: always its number, a short name, and what goes in it with amount and state. Tap it for the rest: the
+   step it is for, why it is a bowl, and the prep. The number is the tick (static/js/ready.js). #}
 {% macro bowl(b) -%}
-<button type="button" class="bowl ph-{{ b.used.phase }}" data-tick="{{ b.key }}" data-bowl aria-pressed="false">
-  <span class="bowl-h"><span class="bno" data-no="{{ b.no }}">{{ b.no }}</span><b lang="{{ lang }}">{{ b.name }}</b><span class="state">Tap when ready</span></span>
-  <small>For step {{ b.used.no }}, {{ b.used.short|lower }}{% if b.prep %} · {{ b.prep|map('lower')|join(', ') }}{% elif not b.named_by_step %} · {{ WHY[b.why] }}{% endif %}</small>
-  <span class="tiles">{% for p in b.lines %}{{ tile(p) }}{% endfor %}</span>
-</button>
+<details class="bowl ph-{{ b.used.phase }}" data-bowl data-key="{{ b.key }}">
+  <summary>
+    <span class="bowl-h"><button type="button" class="bcheck" data-tick="{{ b.key }}" aria-pressed="false" aria-label="Bowl {{ b.no }} ready"><span class="bno" data-no="{{ b.no }}">{{ b.no }}</span></button><b lang="{{ lang }}">{{ b.name }}</b><span class="more-ic" aria-hidden="true">{{ icon('chevron-down') }}</span></span>
+    <span class="tiles">{% for p in b.lines %}{{ tile(p) }}{% endfor %}</span>
+  </summary>
+  <div class="bowl-more">
+    <p><span class="eyebrow">For step {{ b.used.no }}</span> <span lang="{{ lang }}">{{ b.used.short }}</span></p>
+    {% if b.prep %}<p><span class="eyebrow">Prep</span> <span lang="{{ lang }}">{{ b.prep|join(', ') }}</span></p>
+    {% elif not b.named_by_step %}<p><span class="eyebrow">Why a bowl</span> {{ WHY[b.why] }}</p>{% endif %}
+    {% for p in b.lines if p.prep %}{% if loop.first %}<ul>{% endif %}<li lang="{{ lang }}">{{ (p.amount ~ ' ' ~ p.name)|trim }}: {{ p.prep }}</li>{% if loop.last %}</ul>{% endif %}{% endfor %}
+  </div>
+</details>
 {%- endmacro %}
 
 {% macro loose(items) -%}
