@@ -255,7 +255,8 @@
       "name_en": "Thermometer",
       "role": "koke",
       "exclusive": false,
-      "level": "special"
+      "level": "special",
+      "image_notes": "A digital meat thermometer: a small display with a long thin metal probe."
     },
     {
       "id": "bowl",
