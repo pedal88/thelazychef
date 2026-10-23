@@ -87,15 +87,18 @@ def chosen_image_style():
 
 
 # Equipment symbol trial (temporary): the same, for the equipment symbols (data/constraints/equipment.json "image" is
-# the realistic set, "image_variants" the others). Cookie equipment_images, admins only.
+# the realistic set, "image_variants" the others). Cookie equipment_images, admins only; everyone else gets the default.
 EQUIPMENT_STYLES = {'realistic': 'Realistic', 'painted': 'Painted', 'line_tint': 'Line'}
 
 
+DEFAULT_EQUIPMENT_STYLE = 'line_tint'  # Pål's favourite for now (23.10.2026), not final
+
+
 def chosen_equipment_style():
-    """The admin's chosen equipment style; 'realistic' for everyone else."""
+    """The admin's chosen equipment style; the default for everyone else."""
     style = request.cookies.get('equipment_images')
     admin = current_user.is_authenticated and getattr(current_user, 'is_admin', False)
-    return style if admin and style in EQUIPMENT_STYLES else 'realistic'
+    return style if admin and style in EQUIPMENT_STYLES else DEFAULT_EQUIPMENT_STYLE
 
 
 def equipment_image(item):

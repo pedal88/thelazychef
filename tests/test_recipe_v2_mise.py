@@ -107,6 +107,19 @@ class GetReadyPageTests(unittest.TestCase):
         self.assertGreater(len(salt['steps']), 1)
         self.assertIn('to taste', salt['amount'])
 
+    def test_the_state_comes_from_the_prep_step_when_the_line_has_none(self):
+        from database.models import RecipeLine
+        recipe = db.session.get(Recipe, self.ids['carbonara'])
+        line = next(ln for ln in recipe.lines if 'guanciale' in ln.name)
+        line.cut, line.prep_style = None, None  # as when the model leaves them out; "Skjær guancialen" is method slice
+        recipe.language = 'nb'
+        db.session.commit()
+        bowls = build(db.session.get(Recipe, self.ids['carbonara']))['ready']['bowls']
+        tile = next(t for b in bowls for t in b['lines'] if 'guanciale' in t['name'])
+        self.assertEqual((tile['cut'], tile['state'], tile['mark']), ('slice', 'i skiver', 'cut'))
+        self.assertIn('i skiver', self.get('carbonara')[1])
+        self.assertIsInstance(line, RecipeLine)
+
     def test_the_first_address_still_works(self):
         res = self.client.get(f'/recipe/{self.ids["carbonara"]}/get-ready')
         self.assertEqual(res.status_code, 200)
