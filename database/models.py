@@ -301,6 +301,9 @@ class Recipe(db.Model):
     # Settings the recipe was written with, on top of the chef: 'vegetarian', 'kid_friendly', 'low_carb'
     # (services/recipe_v2/persona.py SETTINGS)
     settings: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
+    # With the Baby setting: the age in months the recipe suits from (data/constraints/age_stages.json); it suits
+    # older children too, so a child of n months gets age_from_months <= n. None for every other recipe.
+    age_from_months: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     # The dish image (image_filename): how one serving is presented, the prompt it was made from and the style
     # (services/recipe_v2/images.py, RECIPE_VISUALIZATIONS.md 9.7)
     plating: Mapped[Optional[str]] = mapped_column(Text, nullable=True)

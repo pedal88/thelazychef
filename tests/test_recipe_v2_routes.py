@@ -140,6 +140,31 @@ class RecipeV2RouteTests(unittest.TestCase):
             self.client.post('/new-recipe/v2', data={'source': 'Fish pie', 'chef_id': 'family_cook'})
         self.assertIsNone(db.session.execute(db.select(Recipe).order_by(Recipe.id.desc())).scalars().first().chef_id)
 
+    def test_baby_keeps_its_age_tags_the_recipe_and_flags_what_a_baby_should_not_get(self):
+        self.login()
+        page = self.client.get('/new-recipe/v2').get_data(as_text=True)
+        self.assertIn('value="baby"', page)
+        self.assertIn('8 months+: coarser mash', page)
+        asked = []
+        call = fake_claude()
+        with mock.patch.object(claude, 'call', lambda *a, **kw: asked.append(a[2]) or call(*a, **kw)):
+            self.client.post('/new-recipe/v2', data={'source': 'Spaghetti carbonara for four', 'settings': ['baby'],
+                                                     'age_from_months': '8'})
+        recipe = db.session.execute(db.select(Recipe)).scalar_one()
+        self.assertEqual((recipe.settings, recipe.age_from_months), (['baby'], 8))
+        self.assertIn('From 8 months: a coarser mash', asked[0][0]['content'])
+        self.assertIn('Baby Food', recipe.meal_types_list)
+        notes = [e['message'] for e in recipe.validation_errors if e['rule'] == 'persona']
+        self.assertTrue(any(n.startswith('For a baby 8 months+') and 'salt' in n for n in notes), notes)  # carbonara has salt
+        self.assertIn('Baby, 8 months+', self.client.get(f'/recipe/{recipe.id}').get_data(as_text=True))
+        # An age that is not a stage becomes the youngest; without Baby there is no age
+        with mock.patch.object(claude, 'call', fake_claude()):
+            self.client.post('/new-recipe/v2', data={'source': 'Fish pie', 'settings': ['baby'], 'age_from_months': '7'})
+        with mock.patch.object(claude, 'call', fake_claude()):
+            self.client.post('/new-recipe/v2', data={'source': 'Fish pie', 'age_from_months': '8'})
+        ages = [r.age_from_months for r in db.session.execute(db.select(Recipe).order_by(Recipe.id)).scalars()]
+        self.assertEqual(ages, [8, 6, None])
+
     def test_an_unknown_chef_is_ignored(self):
         self.login()
         with mock.patch.object(claude, 'call', fake_claude()):

@@ -17,11 +17,16 @@ round 1 prompt. Its hard side, `constraints`, is checked on the saved recipe:
 and two that only steer the writing: forms (fresh or shortcut herbs, garlic and ginger) and ready_made.
 
 A chef is a philosophy; settings go on top of any chef and are stored on the recipe (SETTINGS, with_settings):
-vegetarian, kid_friendly and low_carb (RECIPE_MODEL_V2.md, "Kokker og innstillinger").
+vegetarian, kid_friendly, low_carb and baby (RECIPE_MODEL_V2.md, "Kokker og innstillinger"). Baby has age stages
+(data/constraints/age_stages.json): the recipe stores the stage's age in recipe.age_from_months, and the stage
+sets the texture and what to leave out.
 
 A broken rule does not stop the recipe; it is noted and the recipe flagged for review.
 """
 import copy
+import json
+import os
+from functools import lru_cache
 
 from services.chef_service import chef_to_dict
 
@@ -36,6 +41,8 @@ SETTINGS = {
                      'they recognise or hidden in the sauce; chili and strong herbs go on the table, not in the pot.'),
     'low_carb': ('Low carb', {'max_carbs_per_serving': 20}, 'Low carb: about 20 g of carbohydrate a serving at most. '
                  'Swap the starch (cauliflower rice, courgette noodles, lettuce wraps); keep protein, vegetables and good fats.'),
+    # The writing and the rules beyond max_spice come from the age stage (stage_for)
+    'baby': ('Baby', {'max_spice': 0}, ''),
 }
 FORMS = {
     'fresh': 'Use fresh herbs, fresh garlic and fresh ginger.',
@@ -48,10 +55,32 @@ READY_MADE = {
 }
 
 
-def spec(chef, settings=None):
+@lru_cache(maxsize=1)
+def age_stages():
+    path = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'constraints', 'age_stages.json')
+    with open(path, encoding='utf-8') as f:
+        return json.load(f)
+
+
+def stage_for(months):
+    """The baby age stage for a recipe's age_from_months: the oldest stage that is not older than it. Without an
+    age, the youngest stage, the strictest."""
+    stages = sorted(age_stages()['stages'], key=lambda s: s['from_months'])
+    fits = [s for s in stages if months is not None and s['from_months'] <= months]
+    return fits[-1] if fits else stages[0]
+
+
+def age_label(recipe):
+    """'Baby, 8 months+' for a recipe made with the Baby setting; None otherwise."""
+    if 'baby' not in (recipe.settings or []):
+        return None
+    return f"Baby, {stage_for(recipe.age_from_months)['label']}"
+
+
+def spec(chef, settings=None, age_from_months=None):
     """The chef row as a dict (constraints and the rest parsed), with the settings on top; None when there is neither.
-    Carries the foundation pantry when a rule needs it."""
-    p = with_settings(chef_to_dict(chef) if chef is not None else None, settings)
+    Carries the foundation pantry when a rule needs it. age_from_months picks the stage of the Baby setting."""
+    p = with_settings(chef_to_dict(chef) if chef is not None else None, settings, age_from_months)
     if p and (p.get('constraints') or {}).get('max_extra') is not None:
         p['foundation'] = foundation_names()
     return p
@@ -64,12 +93,12 @@ def spec_for(recipe):
 
     chef = db.session.get(Chef, recipe.chef_id) if recipe.chef_id and recipe.source_type in PERSONA_KINDS else None
     settings = recipe.settings if recipe.source_type in PERSONA_KINDS else None
-    return spec(chef, settings)
+    return spec(chef, settings, getattr(recipe, 'age_from_months', None))
 
 
-def with_settings(p, settings):
+def with_settings(p, settings, age_from_months=None):
     """The persona with the settings added: their rules tighten the chef's, their notes go into the prompt.
-    Without a chef, the settings alone. Unknown settings are ignored."""
+    Without a chef, the settings alone. Unknown settings are ignored. Baby adds its age stage as p['baby']."""
     settings = [k for k in settings or [] if k in SETTINGS]
     if not settings:
         return p
@@ -82,6 +111,8 @@ def with_settings(p, settings):
             else:
                 rules[rule] = value if rules.get(rule) is None else min(rules[rule], value)
     p['settings'] = settings
+    if 'baby' in settings:
+        p['baby'] = stage_for(age_from_months)
     return p
 
 
@@ -144,7 +175,10 @@ def prompt_block(p):
     if rules.get('ready_made') in READY_MADE:
         lines.append(READY_MADE[rules['ready_made']])
     for key in p.get('settings') or []:
-        lines.append(SETTINGS[key][2])
+        if SETTINGS[key][2]:
+            lines.append(SETTINGS[key][2])
+    if p.get('baby'):
+        lines.append(f"{age_stages()['common']['writing']} {p['baby']['writing']}")
     if voice.get('tone'):
         tip = f" Example: \"{voice['example_phrase']}\"" if voice.get('example_phrase') else ''
         lines.append(f"Write the tip from the cook in this voice: {voice['tone']}{tip}")
@@ -195,7 +229,29 @@ def check(recipe, p):
             if any(w in line.name.lower() or (line.ingredient is not None and w in line.ingredient.name.lower()) for w in words)]
     if hits:
         notes.append(f"Uses ingredients {p['name']} never uses: {', '.join(hits)}.")
+    if p.get('baby'):
+        notes += baby_notes(recipe, p['baby'])
     return notes
+
+
+def _has(names, rule):
+    return any(w in n for n in names for w in rule['words']) and not any(w in n for n in names for w in rule.get('except', []))
+
+
+def baby_notes(recipe, stage):
+    """What the recipe has that a baby of the stage's age should not get, line by line (age_stages.json)."""
+    cat = age_stages()
+    rules = [cat['avoid'][key] for key in stage['avoid']] + ([cat['salty']] if stage.get('no_salt') else [])
+    out = []
+    for rule in rules:
+        hits = []
+        for line in recipe.lines:
+            names = [line.name.lower()] + ([line.ingredient.name.lower()] if line.ingredient is not None else [])
+            if _has(names, rule) and line.name not in hits:
+                hits.append(line.name)
+        if hits:
+            out.append(f"For a baby {stage['label']}: {', '.join(hits)}; {rule['why']}.")
+    return out
 
 
 def active_minutes(recipe):

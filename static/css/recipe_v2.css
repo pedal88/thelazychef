@@ -78,6 +78,9 @@
 .rv2 .newform .settings label { display: inline-flex; align-items: center; gap: 6px; min-height: var(--tap); font-size: 16px; cursor: pointer; }
 .rv2 .newform .settings input { width: 18px; height: 18px; accent-color: var(--color-accent); }
 .rv2 .newform .settings .hint { flex-basis: 100%; }
+.rv2 .newform .settings .age { display: none; flex-basis: 100%; cursor: default; }  /* only with Baby ticked */
+.rv2 .newform .settings:has(input[value="baby"]:checked) .age { display: inline-flex; }
+.rv2 .newform .settings .age select { width: auto; min-height: 40px; font-size: 15px; }
 .rv2 .formerror { color: var(--color-warning); margin: 0; font-size: 14px; }
 .rv2 .go { justify-self: start; min-height: var(--tap); padding: 0 var(--space-6); border: 0; border-radius: var(--radius-pill); background: var(--color-accent); color: var(--color-paper); font: 600 16px/1 var(--font-sans); cursor: pointer; }
 .rv2 .working { display: flex; gap: var(--space-3); align-items: center; padding: var(--space-4); background: var(--color-soft); border-radius: var(--radius); margin-bottom: var(--space-4); }

@@ -22,11 +22,13 @@
         "Summer BBQ",
         "One-Pot",
         "Freezer Friendly",
-        "Slow Cooker"
+        "Slow Cooker",
+        "Baby Food"
     ],
     "derived": [
         "One-Pot",
         "Freezer Friendly",
-        "Slow Cooker"
+        "Slow Cooker",
+        "Baby Food"
     ]
 }

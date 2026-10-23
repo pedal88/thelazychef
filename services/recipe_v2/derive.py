@@ -42,7 +42,7 @@ OTHER_PROTEINS = (('tofu', 'Tofu'), ('tempeh', 'Tempeh'), ('seitan', 'Seitan'), 
 ANIMAL = ('meat', 'fish and seafood')
 
 # Tags in data/constraints/meal_types.json that the app sets, never the model.
-DERIVED_TAGS = ('One-Pot', 'Freezer Friendly', 'Slow Cooker')
+DERIVED_TAGS = ('One-Pot', 'Freezer Friendly', 'Slow Cooker', 'Baby Food')
 
 
 def heat_steps(v2):
@@ -121,7 +121,8 @@ def apply(recipe, v2):
     recipe.prep_time_mins = plan_v2(v2)['T']
     tags = [m.meal_type for m in recipe.meal_types if m.meal_type not in DERIVED_TAGS]
     tags += [tag for tag, yes in (('One-Pot', one_pot(v2)), ('Freezer Friendly', bool(recipe.freezes)),
-                                  ('Slow Cooker', recipe.heat_source == 'slow_cooker')) if yes]
+                                  ('Slow Cooker', recipe.heat_source == 'slow_cooker'),
+                                  ('Baby Food', 'baby' in (recipe.settings or []))) if yes]
     set_meal_types(recipe, tags)
     nutrition.apply(recipe)
     return recipe
