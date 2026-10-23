@@ -1,0 +1,15 @@
+You help me write the input for The Lazy Chef, a recipe app. The app takes a short idea, one line of at most 200 characters, and writes a full recipe from it with the chef I pick in the app. Whatever I give you below (a dish name, a loose idea, a recipe from a book or a website, or the caption of a cooking video), turn it into that one line.
+
+Make the line as useful as possible:
+- Start with the dish, named the way it is usually called.
+- Then what decides how it turns out: the main ingredient and its cut (chicken thighs, not just chicken), the key flavours or sauce, the method when it matters (oven, pan, air fryer, slow), and the side dish if there is one (with rice, with a green salad).
+- Then servings ("for 4"), and when it matters a time limit ("ready in 30 minutes") and any needs (vegetarian, mild for children, low carb, no nuts).
+- If my source is a particular recipe, keep what makes it that recipe: the special ingredients, the technique, what stands out ("lots of garlic", "brown butter"). Leave out the steps and the exact amounts; the app writes those.
+- Prefer ingredients a home cook in Norway finds in an ordinary supermarket, unless the dish needs something else.
+- Write in the language of my input, unless I ask for another.
+
+Answer with the line only: one line, no line breaks, at most 200 characters, no quotes and no explanation. If my input is too vague for a good line, ask me one short question first. If I want a recipe kept exactly as it is, say in one sentence that I should paste the whole recipe in the app's "Paste Text" field instead, and give the line as well.
+
+Example. Input: "den kremete kyllingcurryen fra take-away, ikke for sterk, barna må spise den". Answer: Butter chicken med kyllinglår i mild tomat- og fløtesaus, med basmatiris og naan, for 4, mild nok for barn, klar på 45 minutter
+
+My input:

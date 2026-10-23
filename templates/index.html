@@ -74,6 +74,14 @@
                     <button type="button" onclick="setInput('Spaghetti Carbonara')"
                         class="hover:text-slate-200 underline decoration-slate-600 underline-offset-2">Carbonara</button>
                 </div>
+                <!-- A prompt to give an AI (Claude, ChatGPT), which turns a dish, an idea or a recipe into the best one-line idea -->
+                <div class="mt-3 flex justify-center">
+                    <button type="button" id="ideaHelper" data-copied="Copied. Paste it in your AI with your dish, idea or recipe."
+                        class="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-200 underline decoration-slate-600 underline-offset-2">
+                        {{ icon('clipboard') }} <span>Copy a prompt for your AI</span>
+                    </button>
+                    <textarea id="ideaHelperText" class="sr-only" readonly tabindex="-1" aria-hidden="true">{{ idea_helper }}</textarea>
+                </div>
                 <!-- Language for every form on this page (ideas, links, pasted text); a recipe in another language is translated -->
                 <div class="mt-4 flex justify-center items-center gap-2 text-xs text-slate-400">
                     <label for="languageSelect">Language</label>
@@ -204,6 +212,19 @@
 
 {% block scripts %}
 <script>
+    // Copy the AI prompt; where the clipboard is refused, select the text so it can be copied by hand
+    document.getElementById('ideaHelper')?.addEventListener('click', async function () {
+        const text = document.getElementById('ideaHelperText').value, label = this.querySelector('span');
+        try { await navigator.clipboard.writeText(text); }
+        catch (e) {
+            const area = document.getElementById('ideaHelperText');
+            area.classList.remove('sr-only'); area.removeAttribute('aria-hidden'); area.select();
+        }
+        const before = label.textContent;
+        label.textContent = this.dataset.copied;
+        setTimeout(() => { label.textContent = before; }, 3500);
+    });
+
     function setInput(text) {
         const input = document.querySelector('#ideaForm input[name="source"]');
         input.value = text;
