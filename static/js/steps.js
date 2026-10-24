@@ -1,7 +1,10 @@
 /* The one-page flow's two screens (templates/recipe_v2_make.html): the overview, and cooking at #cook, which hides
    the site's top bar and footer; the back button or × goes back. And the step list on the cooking screen
    (templates/components/step_list.html).
-   Tap a step to tick it off; the first step not ticked is marked as the next one. A step with waiting time has a
+   The number ticks a step off; the first step not ticked is the next one, and shows everything. The other steps
+   show one line and open on a tap, or all of them with "Show all details" in the view menu (remembered for all
+   recipes). A tap on a step in the timeline, the metro map or the delta opens the same card in a sheet, with its
+   tick and timer. A step with waiting time has a
    button that starts its timer: the running timers stand in a line above the list and the views, and when the
    time is up the timer turns red, beeps and vibrates (static/js/kitchen.js). A step that uses what was standing
    ends its timer. The view menu at the bottom swaps the list for the timeline, the metro map or the river delta,
@@ -13,7 +16,7 @@
   const list = page && page.querySelector('.slist');
   if (!list) return;
   const { beep, ring, wake, leftMin, fmtLeft, esc } = window.Kitchen;
-  const KEY = `steps:${page.dataset.recipe}`, VIEW = 'one-page-view';
+  const KEY = `steps:${page.dataset.recipe}`, VIEW = 'one-page-view', DETAILS = 'one-page-details';
   const $ = s => page.querySelector(s), $$ = s => [...page.querySelectorAll(s)];
   const rows = $$('.st[data-st]');
   const byId = Object.fromEntries(rows.map(r => [r.dataset.st, r]));
@@ -24,6 +27,9 @@
   st.runs = (st.runs || []).filter(r => byId[r.step] && r.end > Date.now() - 3 * 3600e3);
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) { /* kept for this visit only */ } };
   const runOf = id => st.runs.find(r => r.step === id);
+  const opened = new Set();  // steps opened with a tap, for this visit
+  let all = false;           // "Show all details"
+  try { all = localStorage.getItem(DETAILS) === 'all'; } catch (e) { /* the steps in focus */ }
 
   function render() {
     const done = new Set(st.done);
@@ -32,13 +38,34 @@
       const on = done.has(r.dataset.st);
       r.classList.toggle('is-done', on);
       r.classList.toggle('is-next', r === next);
+      r.classList.toggle('is-open', opened.has(r.dataset.st));
       r.querySelector('.st-tick').setAttribute('aria-pressed', String(on));
       const n = r.querySelector('.n');
       n.textContent = on ? '✓' : n.dataset.n;
     });
+    list.classList.toggle('all', all);
+    list.classList.toggle('focus', !all);
+    const sw = $('[data-details]');
+    if (sw) sw.setAttribute('aria-checked', String(all));
     marks(next ? next.dataset.st : null);
     runs();
     save();
+  }
+
+  /* A step tapped in a view: the same card as in the list, in a sheet. Filled again when it changes */
+  const stepSheet = document.getElementById('sheet-step');
+  let shown = null;
+  function card() {
+    if (!stepSheet || !stepSheet.open || !byId[shown]) return;
+    const copy = byId[shown].cloneNode(true);
+    copy.classList.add('is-open');
+    stepSheet.querySelector('[data-step-card]').replaceChildren(copy);
+  }
+  function showStep(id) {
+    if (!stepSheet || !byId[id]) return;
+    shown = id;
+    if (!stepSheet.open) stepSheet.showModal();
+    card();
   }
 
   /* The timers: a line of chips above the list, and the step's own button */
@@ -51,19 +78,22 @@
         + `<button type="button" class="tm-x" data-run-stop="${esc(r.step)}" aria-label="Stop the timer for ${esc(r.label)}">×</button></span>`;
     }).join('');
     rows.forEach(row => {
-      const b = row.querySelector('[data-start]');
-      if (!b) return;
-      const r = runOf(row.dataset.st);
-      b.classList.toggle('running', !!r);
-      b.querySelector('span').textContent = !r ? `Start ${row.dataset.passive} min`
-        : Date.now() >= r.end ? 'Time is up' : `${leftMin(r)} min left`;
+      const r = runOf(row.dataset.st), up = r && Date.now() >= r.end;
+      row.querySelectorAll('[data-start]').forEach(b => {
+        const mini = b.classList.contains('st-timer-mini');
+        b.classList.toggle('running', !!r);
+        b.querySelector('span').textContent = !r ? (mini ? `${row.dataset.passive} min` : `Start ${row.dataset.passive} min`)
+          : up ? (mini ? 'Up' : 'Time is up') : (mini ? `${leftMin(r)} min` : `${leftMin(r)} min left`);
+      });
     });
+    card();
   }
 
   function tick(row) {
     const id = row.dataset.st, i = st.done.indexOf(id);
     if (i >= 0) st.done.splice(i, 1);
     else {
+      opened.delete(id);
       st.done.push(id);
       // The water has boiled once the pasta is in: a step that used what was standing ends its timer
       const used = (row.dataset.after || '').split(' ');
@@ -164,12 +194,25 @@
       return;
     }
     if (t.closest('[data-view]')) { view(t.closest('[data-view]').dataset.view); return; }
-    if (t.closest('[data-steps-reset]')) { st = { done: [], runs: [] }; render(); return; }
+    if (t.closest('[data-details]')) {
+      all = !all;
+      try { localStorage.setItem(DETAILS, all ? 'all' : 'focus'); } catch (err) { /* for this visit only */ }
+      openMenu(false);
+      render();
+      return;
+    }
+    if (t.closest('[data-steps-reset]')) { st = { done: [], runs: [] }; opened.clear(); render(); return; }
+    // A step in the timeline, the metro map or the delta (the delta's own numbers still tick there)
+    const hit = !t.closest('.fx-no') && t.closest('.vpanel:not([data-panel="steps"]) [data-step], .vpanel [data-station]');
+    if (hit) { showStep(hit.dataset.step || hit.dataset.station); return; }
     const row = t.closest('.st[data-st]');
     if (!row) { setTimeout(bowls); return; }
     if (t.closest('[data-start]')) { start(row); return; }
-    if (t.closest('a')) return;  // a link in a step is followed, not a tick
-    tick(row);
+    if (t.closest('.st-tick')) { tick(row); return; }
+    if (t.closest('a') || row.closest('[data-step-card]') || all || row.classList.contains('is-next')) return;
+    // Open or close another step to read it
+    opened.has(row.dataset.st) ? opened.delete(row.dataset.st) : opened.add(row.dataset.st);
+    render();
   });
 
   setInterval(() => {
