@@ -2,8 +2,8 @@
    the site's top bar and footer; the back button or × goes back. And the step list on the cooking screen
    (templates/components/step_list.html).
    The number ticks a step off; the first step not ticked is the next one, and shows everything. The other steps
-   show one line and open on a tap, or all of them with "Show all details" in the view menu (remembered for all
-   recipes). A tap on a step in the timeline, the metro map or the delta opens the same card in a sheet, with its
+   show one line and open on a tap, or all of them with the small details button at the bottom right
+   (remembered for all recipes). A tap on a step in the timeline, the metro map or the delta opens the same card in a sheet, with its
    tick and timer. A step with waiting time has a
    button that starts its timer: the running timers stand in a line above the list and the views, and when the
    time is up the timer turns red, beeps and vibrates (static/js/kitchen.js). A step that uses what was standing
@@ -46,7 +46,12 @@
     list.classList.toggle('all', all);
     list.classList.toggle('focus', !all);
     const sw = $('[data-details]');
-    if (sw) sw.setAttribute('aria-checked', String(all));
+    if (sw) {
+      sw.setAttribute('aria-pressed', String(all));
+      const say = all ? 'Show the step you are on' : 'Show all details';
+      sw.setAttribute('aria-label', say);
+      sw.title = say;
+    }
     marks(next ? next.dataset.st : null);
     runs();
     save();
@@ -258,6 +263,20 @@
   }
 
   document.addEventListener('keydown', e => { if (e.key === 'Escape') openMenu(false); });
+
+  /* The admin chip (notes, look) over an open sheet too: a modal sheet lies above everything else on the page,
+     so the chip moves into it while it is open and back when it closes */
+  const chip = document.querySelector('[data-trial]');
+  if (chip) {
+    const home = document.createComment('admin chip');
+    chip.before(home);
+    page.querySelectorAll('dialog').forEach(d => {
+      new MutationObserver(() => {
+        if (d.open) d.append(chip);
+        else if (chip.parentNode === d) home.after(chip);
+      }).observe(d, { attributes: true, attributeFilter: ['open'] });
+    });
+  }
 
   try { view(localStorage.getItem(VIEW)); } catch (e) { view('steps'); }
   // Prep and Cook lead here as #prep and #cook: both open the cooking screen, #prep with the bowls
