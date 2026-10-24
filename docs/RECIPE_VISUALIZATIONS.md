@@ -976,6 +976,8 @@ Delene deles med Gjør klart og Lag mat (`components/prep_board.html`, `componen
 
 **To skjermer (24.10.2026, Pål):** én side er nå to skjermer. Oversikten (bilde, deler, ingredienser, ☰) har «Start cooking» i en linje nederst. Kokevisningen (`#cook`) viser bare stegene: sidens toppmeny og bunntekst er borte, øverst en tynn linje med tilbake, tittel og tidtakere, og nederst, i tommelhøyde, ett lite valg for visning (Steps, Timeline, Metro map, River delta) og «Bowls». Tilbakeknappen og × går til oversikten, på samme sted; en reload eller delt lenke med `#cook` åpner rett i kokevisningen, og `/prep` åpner den med skålene. Valgt framfor kokemodus som slår seg på når man scroller (uforutsigbart) og bare en bunnlinje (overgangen fortsatt utydelig).
 
+**Diskré kontroller (24.10.2026, Pål):** kokevisningen har ingen stolper. Små, runde, halvgjennomsiktige knapper i hjørnene: ‹ tilbake øverst til venstre, tidtakerne som små piller øverst til høyre bare når noe går, og nederst til høyre en ikonknapp for visning (menyen åpner seg oppover) og 🥣 med telleren. Valgt framfor én «⋯»-meny for alt (skålene ville kreve to trykk) og kontroller som scroller bort med innholdet (tungvint å bytte visning midt i kokingen).
+
 **Visningene underveis:** stegene er hovedsaken; tilleggene kommer når de trengs, ikke ved å veksle. Midt i et steg: stegkortet. Mellom steg eller mens noe står: nå/neste med tidtakere (statuslinjen). Når man har mistet tråden: hele retten i et ark, med tidslinje, T-banekart og elvedelta som faner. Stor skjerm: ved siden av.
 
 ---

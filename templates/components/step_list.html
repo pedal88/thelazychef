@@ -8,10 +8,10 @@
 
 {% set VIEWS = [('steps', 'Steps', true), ('timeline', 'Timeline', v.timeline), ('metro', 'Metro map', v.metro), ('delta', 'River delta', v.delta)] %}
 
-{# The choice of view: one small button that opens a menu upwards, in the bar at the bottom #}
+{# The choice of view: one small round button that opens a menu upwards #}
 {% macro view_menu() -%}
 <div class="vmenu">
-  <button type="button" class="vmenu-btn" data-view-menu aria-haspopup="menu" aria-expanded="false">{{ icon('list') }} <span data-view-label>Steps</span> <span aria-hidden="true">▾</span></button>
+  <button type="button" class="vmenu-btn" data-view-menu aria-haspopup="menu" aria-expanded="false" aria-label="View: Steps" title="How to show the steps">{{ icon('list') }}</button>
   <div class="vmenu-list" role="menu" aria-label="How to show the steps" hidden>
     {%- for key, label, there in VIEWS if there %}<button type="button" role="menuitemradio" data-view="{{ key }}" aria-checked="{{ 'true' if key == 'steps' else 'false' }}">{{ label }}</button>{% endfor -%}
   </div>

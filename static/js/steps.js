@@ -109,8 +109,8 @@
     const items = $$('[data-view]');
     if (!items.some(b => b.dataset.view === v)) v = 'steps';
     items.forEach(b => b.setAttribute('aria-checked', String(b.dataset.view === v)));
-    const label = $('[data-view-label]'), item = items.find(b => b.dataset.view === v);
-    if (label && item) label.textContent = item.textContent;
+    const item = items.find(b => b.dataset.view === v);
+    if (menuBtn && item) menuBtn.setAttribute('aria-label', `View: ${item.textContent}`);
     $$('.vpanel').forEach(p => { p.hidden = p.dataset.panel !== v; });
     openMenu(false);
     try { localStorage.setItem(VIEW, v); } catch (e) { /* remembered for this visit only */ }
