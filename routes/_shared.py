@@ -112,22 +112,6 @@ def chosen_flow():
     return style if admin and style in FLOWS else 'tabs'
 
 
-# View trials (temporary, 25.10.2026): variants of the three whole-dish views on the cooking screen of the one-page
-# flow, to compare. A cookie per view (view_timeline, view_metro, view_delta), admins only; "now" is the view as it was.
-VIEW_TRIALS = {
-    'timeline': ('Timeline', {'now': 'Now', 't1': 'Dock', 't2': 'Inline', 't3': 'Split'}),
-    'metro': ('Metro', {'now': 'Now', 'm1': 'Transit', 'm2': 'Timed', 'm3': 'Lines'}),
-    'delta': ('Delta', {'now': 'Now', 'd1': 'Readable', 'd2': 'Rivers', 'd3': 'Progress'}),
-}
-
-
-def view_trial(view):
-    """The admin's chosen variant of a whole-dish view; "now" for everyone else."""
-    choice = request.cookies.get(f'view_{view}')
-    admin = current_user.is_authenticated and getattr(current_user, 'is_admin', False)
-    return choice if admin and choice in VIEW_TRIALS[view][1] else 'now'
-
-
 # Equipment symbol trial (temporary): the same, for the equipment symbols (data/constraints/equipment.json "image" is
 # the realistic set, "image_variants" the others). Cookie equipment_images, admins only; everyone else gets the default.
 EQUIPMENT_STYLES = {'realistic': 'Realistic', 'painted': 'Painted', 'line_tint': 'Line'}

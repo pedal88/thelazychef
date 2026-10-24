@@ -59,30 +59,28 @@
     save();
   }
 
-  /* View trials (admin chip). Timeline t1-t3: the chosen step, or else the next one, always in full beside the
-     timeline: docked at the bottom (t1), inside it under its row (t2), beside it on a wide screen (t3). */
-  const tlPanel = $('[data-panel="timeline"][data-tl-trial]'), tlCard = $('[data-tl-card]');
-  const tlTrial = tlPanel ? tlPanel.dataset.tlTrial : 'now';
-  let tlPick = null, tlFolded = false;  // a step chosen in the timeline (null: follow the next step)
-  function tlRender() {
-    if (!tlCard) return;
-    if (tlPick && st.done.includes(tlPick)) tlPick = null;
-    const id = tlPick || nextId(), list = tlCard.querySelector('[data-step-card]');
-    tlPanel.querySelectorAll('.tl-row.sel').forEach(r => r.classList.remove('sel'));
-    const tlRow = id && tlPanel.querySelector(`.tl-row[data-step="${id}"]`);
-    if (tlRow) tlRow.classList.add('sel');
-    if (tlTrial === 't2' && tlRow && tlRow.nextElementSibling !== tlCard) tlRow.after(tlCard);
-    tlCard.querySelector('[data-tl-card-label]').textContent = !id ? 'The food is ready' : tlPick ? 'The step you chose' : 'Next step';
-    tlCard.classList.toggle('folded', tlFolded);
-    tlCard.querySelector('[data-tl-fold]').setAttribute('aria-expanded', String(!tlFolded));
-    if (!id || !byId[id]) { list.replaceChildren(); return; }
-    const copy = byId[id].cloneNode(true);
-    copy.classList.add('is-open');
-    list.replaceChildren(copy);
+  /* The timeline and the metro map: the step you tap in them, or else the next one, in full beside the view (on a
+     wide screen) or docked at the bottom (on a phone). A second tap on the same step goes back to the next one. */
+  const splits = $$('.vpanel.split').map(panel => ({ panel, card: panel.querySelector('[data-side-card]'), pick: null, folded: false }));
+  function splitRender() {
+    const next = nextId();
+    splits.forEach(sp => {
+      if (sp.pick && st.done.includes(sp.pick)) sp.pick = null;
+      const id = sp.pick || next, list = sp.card.querySelector('[data-step-card]');
+      sp.panel.querySelectorAll('.sel').forEach(e => e.classList.remove('sel'));
+      if (id) sp.panel.querySelectorAll(`.split-main [data-step="${id}"]`).forEach(e => e.classList.add('sel'));
+      sp.card.querySelector('[data-side-card-label]').textContent = !id ? 'The food is ready' : sp.pick ? 'The step you chose' : 'Next step';
+      sp.card.classList.toggle('folded', sp.folded);
+      sp.card.querySelector('[data-side-fold]').setAttribute('aria-expanded', String(!sp.folded));
+      if (!id || !byId[id]) { list.replaceChildren(); return; }
+      const copy = byId[id].cloneNode(true);
+      copy.classList.add('is-open');
+      list.replaceChildren(copy);
+    });
   }
 
-  /* Delta d3: the river fills as steps are ticked off in the list, and a running timer counts down on its step */
-  const dFlow = $('[data-delta-trial="d3"]');
+  /* The delta fills as steps are ticked off in the list, and a running timer counts down on its step */
+  const dFlow = $('[data-delta-flow]');
   function deltaFlow() {
     if (!dFlow) return;
     const done = new Set(st.done);
@@ -148,7 +146,7 @@
       });
     });
     card();
-    tlRender();
+    splitRender();
     deltaRuns();
   }
 
@@ -174,9 +172,10 @@
   /* The next step, marked in the timeline, the metro map and the delta */
   function marks(id) {
     $$('.vpanel .cur').forEach(e => e.classList.remove('cur'));
-    const now = $('[data-mt-now]');  // metro trial m2: a line across the map at the next step
+    const now = $('[data-mt-now]');  // the metro map: a line across it at the next step that is on the map
     if (now) {
-      const at = id && $(`.mt2 .mt-names [data-step="${id}"]`);
+      const done = new Set(st.done);
+      const at = rows.map(r => !done.has(r.dataset.st) && $(`.mt .mt-names [data-step="${r.dataset.st}"]`)).find(Boolean);
       now.hidden = !at;
       if (at) now.style.top = `${at.dataset.y}px`;
     }
@@ -271,12 +270,22 @@
       return;
     }
     if (t.closest('[data-steps-reset]')) { st = { done: [], runs: [] }; opened.clear(); render(); return; }
-    if (t.closest('[data-tl-fold]')) { tlFolded = !tlFolded; tlRender(); return; }
-    const tlHit = tlCard && t.closest('[data-panel="timeline"] .tl-row[data-step]');
-    if (tlHit) { tlPick = tlPick === tlHit.dataset.step ? null : tlHit.dataset.step; tlRender(); return; }
+    const fold = t.closest('[data-side-fold]');
+    if (fold) { const sp = splits.find(x => x.card.contains(fold)); sp.folded = !sp.folded; splitRender(); return; }
+    // A step in the timeline or the metro map: shown beside it
+    const pick = t.closest('.split-main [data-step]');
+    if (pick) {
+      const sp = splits.find(x => x.panel.contains(pick));
+      sp.pick = sp.pick === pick.dataset.step ? null : pick.dataset.step;
+      splitRender();
+      return;
+    }
     // A step in the timeline, the metro map or the delta (the delta's own numbers still tick there)
     const hit = !t.closest('.fx-no') && t.closest('.vpanel:not([data-panel="steps"]) [data-step], .vpanel [data-station]');
     if (hit) { showStep(hit.dataset.step || hit.dataset.station); return; }
+    const node = !t.closest('.fx-no') && t.closest('[data-delta-flow] .g2-node');  // anywhere on a step in the delta
+    const seg = node && node.querySelector('.fx-seg[data-step]');
+    if (seg) { showStep(seg.dataset.step); return; }
     const row = t.closest('.st[data-st]');
     if (!row) { setTimeout(bowls); return; }
     if (t.closest('[data-start]')) { start(row); return; }

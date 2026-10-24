@@ -60,12 +60,6 @@
                     location.reload();
                     return;
                 }
-                var vt = e.target.closest && e.target.closest('[data-view-trial] [data-trial-key]');
-                if (vt) {  // the view trials on the cooking screen: timeline, metro map and river delta
-                    document.cookie = 'view_' + vt.closest('[data-view-trial]').getAttribute('data-view-trial') + '=' + vt.getAttribute('data-trial-key') + '; path=/; max-age=31536000; samesite=lax';
-                    location.reload();
-                    return;
-                }
                 var eq = e.target.closest && e.target.closest('[data-eq-switch] [data-eq]');
                 if (eq) {  // the equipment symbol trial, the same way
                     document.cookie = 'equipment_images=' + eq.getAttribute('data-eq') + '; path=/; max-age=31536000; samesite=lax';
