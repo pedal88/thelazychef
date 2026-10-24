@@ -165,6 +165,76 @@ class RecipeV2RouteTests(unittest.TestCase):
         ages = [r.age_from_months for r in db.session.execute(db.select(Recipe).order_by(Recipe.id)).scalars()]
         self.assertEqual(ages, [8, 6, None])
 
+    def _chefs(self):
+        with open(os.path.join(ROOT, 'data', 'agents', 'chefs.json'), encoding='utf-8') as f:
+            seeds = {c['id']: c for c in json.load(f)['chefs']}
+        for cid in ('the_classicist', 'the_smart_cook', 'the_minimalist'):
+            c = seeds[cid]
+            db.session.add(Chef(id=cid, name=c['name'], archetype=c['archetype'], description=c['description'],
+                                image_filename='', active=True, **{k: json.dumps(c[k]) for k in ('constraints', 'diet_preferences',
+                                'cooking_style', 'ingredient_logic', 'instruction_style')}))
+        db.session.commit()
+
+    def test_batch_reads_each_line_into_what_new_recipe_would_get(self):
+        from services.chef_service import get_chefs
+        from services.recipe_v2 import batch
+        self._chefs()
+        text = """# a note
+Butter chicken, for 4 | smart | kid, low carb
+Kjøttkaker i brun saus | Klassikeren
+Søtpotetmos med linser | minimalist | baby 8
+
+Pasta med tomatsaus | | vegetar
+https://example.com/lasagne | classicist | kid
+Pizza | nobody
+Taco | smart | spicy
+""" + 'x' * 201
+        rows, over = batch.parse(text, get_chefs(), default_settings=['vegetarian'])
+        got = [(r['no'], r['chef']['id'] if r['chef'] else None, r['settings'], r['age'], bool(r['error'])) for r in rows]
+        self.assertEqual(got, [
+            (2, 'the_smart_cook', ['kid_friendly', 'low_carb'], None, False),
+            (3, 'the_classicist', ['vegetarian'], None, False),  # no settings on the line: the default
+            (4, 'the_minimalist', ['baby'], 8, False),
+            (6, None, ['vegetarian'], None, False),
+            (7, 'the_classicist', [], None, False),  # a recipe page is kept as it is
+            (8, None, ['vegetarian'], None, True),   # no such chef
+            (9, 'the_smart_cook', [], None, True),   # no such setting
+            (10, None, ['vegetarian'], None, True),  # too long for an idea
+        ])
+        self.assertEqual(rows[4]['kind'], 'web')
+        self.assertEqual(over, 0)
+
+    def test_batch_checks_first_then_makes_the_recipes_and_shows_how_they_get_on(self):
+        self._chefs()
+        self.login()
+        page = self.client.get('/new-recipe/v2/batch').get_data(as_text=True)
+        self.assertIn('Many recipes at once', page)
+        lines = 'Spaghetti carbonara for four | smart\nPasta for two | nobody\nCarbonara for two | minimalist | baby 8'
+        checked = self.client.post('/new-recipe/v2/batch', data={'lines': lines, 'action': 'check'}).get_data(as_text=True)
+        self.assertIn('Make 2 recipes', checked)
+        self.assertIn('No single chef called', checked)
+        self.assertEqual(db.session.execute(db.select(db.func.count(Recipe.id))).scalar(), 0)  # checking makes nothing
+        fakes = []  # a recorded answer pair (round 1, round 2) per recipe
+
+        def call(*a, **kw):
+            if not fakes or fakes[-1][1] == 2:
+                fakes.append([fake_claude(), 0])
+            fakes[-1][1] += 1
+            return fakes[-1][0](*a, **kw)
+        with mock.patch.object(claude, 'call', call):
+            res = self.client.post('/new-recipe/v2/batch', data={'lines': lines, 'action': 'make'})
+        self.assertIn('/new-recipe/v2/batch/status?ids=', res.headers['Location'])
+        made = db.session.execute(db.select(Recipe).order_by(Recipe.id)).scalars().all()
+        self.assertEqual([(r.chef_id, r.settings, r.age_from_months) for r in made],
+                         [('the_smart_cook', None, None), ('the_minimalist', ['baby'], 8)])
+        status = self.client.get(res.headers['Location']).get_data(as_text=True)
+        self.assertIn('2 recipes made', status)
+        self.assertNotIn('http-equiv="refresh"', status)
+        # The same lines again: made before, so skipped unless asked
+        again = self.client.post('/new-recipe/v2/batch', data={'lines': lines, 'action': 'check'}).get_data(as_text=True)
+        self.assertIn('Made before', again)
+        self.assertNotIn('Make 2 recipes', again)
+
     def test_an_unknown_chef_is_ignored(self):
         self.login()
         with mock.patch.object(claude, 'call', fake_claude()):
