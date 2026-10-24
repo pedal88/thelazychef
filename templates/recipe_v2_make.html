@@ -1,9 +1,10 @@
 {% extends "base.html" %}
 {# The whole recipe on one page, as two screens (a trial for admins: Flow "One page" in the admin chip;
    RECIPE_VISUALIZATIONS.md 9.17). The overview: what Overview shows, the dish, its parts and the ingredients, with
-   "Start cooking" at the bottom. Cooking (#cook): only the steps, without the site's top bar and footer; the
-   timers in a thin line at the top, and at the bottom the choice of view (steps, timeline, metro map, river delta)
-   and the bowls. The back button or × goes back to the overview. Served at /recipe/<id>; Prep, Cook and /make
+   "Start cooking" at the bottom. Cooking (#cook): only the steps, without the site's top bar and footer and
+   without bars of its own; small floating controls in the corners: back at the top left, the running timers at
+   the top right, and at the bottom right the choice of view (steps, timeline, metro map, river delta) and the
+   bowls. The browser's back button goes back to the overview too. Served at /recipe/<id>; Prep, Cook and /make
    lead here (components/step_list.html, static/js/steps.js). #}
 {% from "components/recipe_head.html" import recipe_head with context %}
 {% from "components/prep_board.html" import prep_body with context %}
@@ -80,16 +81,14 @@
 
   {# Cooking: the steps over the whole screen #}
   <section class="cookmode" id="cook" aria-label="Cooking" hidden>
-    <div class="cm-top">
-      <button type="button" class="cm-x" data-cook-close aria-label="Back to the overview">{{ icon('back') }}</button>
-      <b class="cm-title">{{ v.title }}</b>
-      <div class="runs-line" data-runs aria-live="polite" hidden></div>
-    </div>
+    {# No bars: small floating controls in the corners, so the steps have the whole screen #}
+    <button type="button" class="fab fab-back" data-cook-close aria-label="Back to the overview">{{ icon('back') }}</button>
+    <div class="runs-line fab-runs" data-runs aria-live="polite" hidden></div>
     {{ step_list() }}
-    <div class="cm-bar"><div class="bar-in">
+    <div class="fab-tools">
       {{ view_menu() }}
       {{ bowls_button() }}
-    </div></div>
+    </div>
   </section>
 
   {# The bowls over the whole screen, scaled to fit it without scrolling (static/js/steps.js) #}
