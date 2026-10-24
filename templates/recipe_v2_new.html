@@ -6,7 +6,7 @@
 {% endblock %}
 {% block content %}
 <article class="rv2">
-  <a class="back" href="{{ url_for('new_recipe') }}">← New recipe</a>
+  <a class="back" href="{{ url_for('new_recipe') }}">← New recipe</a> <a class="back" href="{{ url_for('recipe_v2.batch_new') }}">Many at once →</a>
   <p class="eyebrow">Recipe model v2 · admin</p>
   <h1>Make a recipe</h1>
   <p class="hint">Write an idea ("Chicken tikka masala for four"), paste a whole recipe, or paste a link to a recipe page. Claude writes it out, turns it into steps and matches the ingredients to the pantry. It takes about a minute, and the recipe is saved as a draft.</p>

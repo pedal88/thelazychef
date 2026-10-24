@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{# How the recipes of a batch are getting on (routes/recipe_v2_routes.py batch_status). Reloads itself every 10
+   seconds while any is still being made. #}
+{% block title %}Making recipes - The Lazy Chef{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/recipe_v2.css') }}">
+{% if working %}<meta http-equiv="refresh" content="10">{% endif %}
+{% endblock %}
+{% block content %}
+<article class="rv2 batch">
+  <a class="back" href="{{ url_for('recipe_v2.batch_new') }}">← Many recipes</a>
+  <p class="eyebrow">Recipe model v2 · admin</p>
+  <h1>{% if working %}Making {{ working }} of {{ recipes|length }} recipes{% else %}{{ recipes|length }} recipe{{ 's' if recipes|length != 1 }} made{% endif %}</h1>
+  <p class="hint">{% if working %}They are made in the background, a few at a time; this page updates itself. You can leave it and come back with the same address.{% else %}All done. Drafts are only seen by admins until they are approved.{% endif %}</p>
+  <table class="batch-table">
+    <thead><tr><th>Recipe</th><th>Chef</th><th>Settings</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for r in recipes %}
+      {% set notes = (r.validation_errors or [])|length %}
+      <tr class="{{ 'working' if r.status == 'generating' else 'bad' if r.is_flagged_for_review else 'ok' }}">
+        <td>{% if r.status == 'generating' %}{{ r.title }}{% else %}<a href="{{ url_for('recipe_detail', recipe_id=r.id) }}">{{ r.title }}</a>{% endif %} <span class="n">{{ r.id }}</span></td>
+        <td>{{ r.chef.name if r.chef else '–' }}</td>
+        <td>{% for k in r.settings or [] if k in settings %}{{ settings[k][0] }}{% if k == 'baby' and r.age_from_months %} {{ r.age_from_months }} mo+{% endif %}{{ ', ' if not loop.last }}{% else %}–{% endfor %}</td>
+        <td class="st">{% if r.status == 'generating' %}Being made…{% elif r.is_flagged_for_review %}{{ r.status|capitalize }}, flagged{% if notes %} ({{ notes }} note{{ 's' if notes != 1 }}){% endif %}{% else %}{{ r.status|capitalize }}{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</article>
+<style>
+  .rv2.batch { max-width: 1000px; }
+  .batch-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: var(--space-4); }
+  .batch-table th { text-align: left; font: 600 11px var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--color-muted); padding: 6px; border-bottom: 1px solid var(--color-line); }
+  .batch-table td { padding: 8px 6px; border-bottom: 1px solid var(--color-line); vertical-align: top; }
+  .batch-table .n { font: 11px var(--font-mono); color: var(--color-muted); }
+  .batch-table tr.working .st { color: var(--color-muted); }
+  .batch-table tr.bad .st { color: var(--color-warning, var(--color-danger)); font-weight: 600; }
+  .batch-table tr.ok .st { color: var(--color-prep-ink); font-weight: 600; }
+</style>
+{% endblock %}

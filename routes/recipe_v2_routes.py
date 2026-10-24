@@ -7,7 +7,7 @@ from flask_login import login_required
 
 from database.models import Recipe, db
 from services.chef_service import get_chefs
-from services.recipe_v2 import generate, tasks
+from services.recipe_v2 import batch, generate, tasks
 from services.recipe_v2.persona import SETTINGS, age_stages
 from services.recipe_v2.language import DEFAULT as DEFAULT_LANGUAGE, LANGUAGES, code_of
 from services.recipe_v2.sources import is_link, is_video
@@ -24,6 +24,23 @@ def kind_of(source):
     if is_link(source):
         return 'web'
     return 'text' if len(source) > IDEA_MAX or '\n' in source.strip() else 'idea'
+
+
+def start(source, kind, chef_id, chosen, age, language):
+    """Save the placeholder recipe (status "generating") and queue the job that writes it. Settings and the baby's
+    age go with an idea only; a pasted recipe or a link is kept as it is. Returns the recipe."""
+    recipe = Recipe(title=source.splitlines()[0][:120], cuisine='', difficulty='', status='generating', schema_version=2, chef_id=chef_id, language=language,
+                    source_type={'idea': 'description', 'text': 'text', 'web': 'web'}[kind], source_input=source[:500],
+                    settings=(chosen or None) if kind == 'idea' else None, age_from_months=age if kind == 'idea' else None)
+    db.session.add(recipe)
+    db.session.commit()
+    try:
+        tasks.enqueue(recipe.id, kind, source, language)
+    except Exception as e:
+        recipe.status, recipe.is_flagged_for_review = 'draft', True
+        recipe.validation_errors = [{'rule': 'error', 'message': friendly_ai_error(e, 'Could not start making the recipe.')}]
+        db.session.commit()
+    return recipe
 
 
 @recipe_v2_bp.route('/new-recipe/v2', methods=['GET', 'POST'])
@@ -52,18 +69,59 @@ def new_recipe():
         return render_template('recipe_v2_new.html', source=source, chefs=chefs, chef_id=chef_id or '', languages=LANGUAGES,
                                language=language, settings=SETTINGS, chosen=chosen, stages=age_stages()['stages'], age=age,
                                error='Video links are not supported here yet. Use the old importer, or paste the recipe text.'), 400
-    recipe = Recipe(title=source.splitlines()[0][:120], cuisine='', difficulty='', status='generating', schema_version=2, chef_id=chef_id, language=language,
-                    source_type={'idea': 'description', 'text': 'text', 'web': 'web'}[kind], source_input=source[:500],
-                    settings=(chosen or None) if kind == 'idea' else None, age_from_months=age if kind == 'idea' else None)
-    db.session.add(recipe)
-    db.session.commit()
-    try:
-        tasks.enqueue(recipe.id, kind, source, language)
-    except Exception as e:
-        recipe.status, recipe.is_flagged_for_review = 'draft', True
-        recipe.validation_errors = [{'rule': 'error', 'message': friendly_ai_error(e, 'Could not start making the recipe.')}]
-        db.session.commit()
+    recipe = start(source, kind, chef_id, chosen, age, language)
     return redirect(url_for('recipe_v2.generating', recipe_id=recipe.id))
+
+
+@recipe_v2_bp.route('/new-recipe/v2/batch', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def batch_new():
+    """Many recipes at once: one line per recipe (services/recipe_v2/batch.py). "Check" shows what each line becomes
+    and what it costs; "Make" starts them, each as New Recipe would, and goes to the status page."""
+    chefs = get_chefs()
+    form = request.form
+    text = form.get('lines') or ''
+    default_chef = next((c for c in chefs if c['id'] == form.get('chef_id')), None)
+    default_settings = [k for k in form.getlist('settings') if k in SETTINGS]
+    ages = {s['from_months'] for s in age_stages()['stages']}
+    default_age = form.get('age_from_months', type=int)
+    default_age = (default_age if default_age in ages else min(ages)) if 'baby' in default_settings else None
+    language = code_of(form.get('language')) or DEFAULT_LANGUAGE
+    page = dict(text=text, chefs=chefs, chef_id=default_chef['id'] if default_chef else '', settings=SETTINGS,
+                chosen=default_settings, stages=age_stages()['stages'], age=default_age, languages=LANGUAGES,
+                language=language, again=bool(form.get('again')), max_lines=batch.MAX_LINES, idea_max=batch.IDEA_MAX)
+    if request.method == 'GET':
+        return render_template('recipe_v2_batch.html', rows=None, **page)
+
+    # Lines already made before: the same idea or link
+    lowered = {line.split('|')[0].strip().lower() for line in text.splitlines() if line.strip()}
+    existing = {}
+    if lowered:
+        for rid, src in db.session.execute(db.select(Recipe.id, Recipe.source_input).where(
+                Recipe.schema_version == 2, db.func.lower(Recipe.source_input).in_(lowered))).all():
+            existing.setdefault(src.lower(), rid)
+    rows, over = batch.parse(text, chefs, default_chef, default_settings, default_age, existing)
+    todo = [r for r in rows if not r['error'] and (page['again'] or not r['made'])]
+    low, high = batch.COST_EACH
+    page.update(rows=rows, over=over, todo=len(todo), cost=(round(low * len(todo), 2), round(high * len(todo), 2)))
+    if form.get('action') != 'make' or not todo:
+        return render_template('recipe_v2_batch.html', **page)
+    ids = [start(r['source'], r['kind'], r['chef']['id'] if r['chef'] else None, r['settings'], r['age'], language).id
+           for r in todo]
+    return redirect(url_for('recipe_v2.batch_status', ids=','.join(map(str, ids))))
+
+
+@recipe_v2_bp.route('/new-recipe/v2/batch/status')
+@login_required
+@admin_required
+def batch_status():
+    """How the recipes of a batch are getting on; the page reloads itself while any is still being made."""
+    ids = [int(x) for x in (request.args.get('ids') or '').split(',') if x.strip().isdigit()][:batch.MAX_LINES]
+    recipes = {r.id: r for r in db.session.execute(db.select(Recipe).where(Recipe.id.in_(ids))).scalars()} if ids else {}
+    rows = [recipes[i] for i in ids if i in recipes]
+    return render_template('recipe_v2_batch_status.html', recipes=rows,
+                           working=sum(r.status == 'generating' for r in rows), settings=SETTINGS)
 
 
 @recipe_v2_bp.route('/new-recipe/v2/version/<int:recipe_id>', methods=['POST'])

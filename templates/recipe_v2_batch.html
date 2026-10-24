@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{# Many recipes at once (routes/recipe_v2_routes.py batch_new, services/recipe_v2/batch.py): one line per recipe,
+   checked first, then started, each as New Recipe would. #}
+{% block title %}Many recipes (v2) - The Lazy Chef{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/recipe_v2.css') }}">
+{% endblock %}
+{% block content %}
+<article class="rv2 batch">
+  <a class="back" href="{{ url_for('recipe_v2.new_recipe') }}">← One recipe</a>
+  <p class="eyebrow">Recipe model v2 · admin</p>
+  <h1>Many recipes at once</h1>
+  <p class="hint">One recipe per line: the idea (at most {{ idea_max }} characters, or a link to a recipe page), then after “|” the chef and the settings, if they differ from the defaults below. Lines that start with # are skipped. At most {{ max_lines }} at a time.</p>
+<pre class="batch-eg">Butter chicken med kyllinglår i mild tomat- og fløtesaus, med basmatiris, for 4 | smart | kid
+Kjøttkaker i brun saus med potetmos og tyttebær, for 4 | classicist
+Søtpotetmos med røde linser | minimalist | baby 8
+Pasta med tomatsaus og linser, for 4 | | vegetarian, kid</pre>
+  <form method="post" class="newform">
+    <label for="lines" class="eyebrow">Recipes</label>
+    <textarea id="lines" name="lines" rows="14" required spellcheck="false">{{ text }}</textarea>
+    <label for="chef_id" class="eyebrow">Chef, unless a line says another</label>
+    <select id="chef_id" name="chef_id">
+      <option value="">No chef</option>
+      {% for c in chefs %}<option value="{{ c.id }}"{% if c.id == chef_id %} selected{% endif %}>{{ c.name }}: {{ c.archetype }}</option>{% endfor %}
+    </select>
+    <fieldset class="settings">
+      <legend class="eyebrow">Settings, unless a line says others</legend>
+      {% for key, s in settings.items() %}<label><input type="checkbox" name="settings" value="{{ key }}"{% if key in chosen %} checked{% endif %}> {{ s[0] }}</label>{% endfor %}
+      <label class="age">Baby from
+        <select name="age_from_months" aria-label="The baby's age">
+          {% for st in stages %}<option value="{{ st.from_months }}"{% if st.from_months == age %} selected{% endif %}>{{ st.label }}</option>{% endfor %}
+        </select></label>
+    </fieldset>
+    <label for="language" class="eyebrow">Language</label>
+    <select id="language" name="language">
+      {% for code, name in languages.items() %}<option value="{{ code }}"{% if code == language %} selected{% endif %}>{{ name }}</option>{% endfor %}
+    </select>
+    <label class="again"><input type="checkbox" name="again" value="1"{% if again %} checked{% endif %}> Make lines again that were made before</label>
+    <div class="batch-go">
+      <button type="submit" name="action" value="check" class="go{{ ' quiet' if rows and todo }}">Check the lines</button>
+      {% if rows and todo %}<button type="submit" name="action" value="make" class="go">Make {{ todo }} recipe{{ 's' if todo != 1 }}</button>
+      <span class="hint">About {{ '%.2f'|format(cost[0]) }}–{{ '%.2f'|format(cost[1]) }} USD with Claude, images not included. They are made one after another in the background; you can leave the page.</span>{% endif %}
+    </div>
+  </form>
+
+  {% if rows is not none %}
+  <h2 class="batch-h">{{ rows|length }} line{{ 's' if rows|length != 1 }}{% if over %}; {{ over }} more not read (at most {{ max_lines }}){% endif %}</h2>
+  {% if rows %}
+  <table class="batch-table">
+    <thead><tr><th>Line</th><th>Idea</th><th>Chef</th><th>Settings</th><th></th></tr></thead>
+    <tbody>
+      {% for r in rows %}
+      <tr class="{{ 'bad' if r.error else 'made' if r.made and not again else 'ok' }}">
+        <td class="n">{{ r.no }}</td>
+        <td>{{ r.source }}{% if r.kind == 'web' %} <span class="hint">(a recipe page, kept as it is)</span>{% endif %}</td>
+        <td>{{ r.chef.name if r.chef else '–' }}</td>
+        <td>{% for k in r.settings %}{{ settings[k][0] }}{% if k == 'baby' and r.age %} {{ r.age }} mo+{% endif %}{{ ', ' if not loop.last }}{% else %}–{% endfor %}</td>
+        <td class="st">{% if r.error %}{{ r.error }}{% elif r.made and not again %}Made before: <a href="{{ url_for('recipe_detail', recipe_id=r.made) }}">recipe {{ r.made }}</a>, skipped{% elif r.made %}Made before (<a href="{{ url_for('recipe_detail', recipe_id=r.made) }}">{{ r.made }}</a>), made again{% else %}Ready{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+  {% endif %}
+</article>
+<style>
+  .rv2.batch { max-width: 1000px; }
+  .batch-eg { font: 12px/1.6 var(--font-mono); background: var(--color-soft); border-radius: var(--radius); padding: var(--space-3); overflow-x: auto; white-space: pre; }
+  .rv2.batch .newform textarea { font: 14px/1.6 var(--font-mono); }
+  .batch .again { display: inline-flex; gap: 8px; align-items: center; font-size: 15px; }
+  .batch-go { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+  .batch-go .go.quiet { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-line); }
+  .batch-h { font-size: 18px; margin: var(--space-6) 0 var(--space-2); }
+  .batch-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .batch-table th { text-align: left; font: 600 11px var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--color-muted); padding: 6px; border-bottom: 1px solid var(--color-line); }
+  .batch-table td { padding: 8px 6px; border-bottom: 1px solid var(--color-line); vertical-align: top; }
+  .batch-table .n { font: 12px var(--font-mono); color: var(--color-muted); }
+  .batch-table tr.bad .st { color: var(--color-danger); font-weight: 600; }
+  .batch-table tr.made td { color: var(--color-muted); }
+  .batch-table tr.ok .st { color: var(--color-prep-ink); font-weight: 600; }
+</style>
+{% endblock %}
