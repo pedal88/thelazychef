@@ -15,10 +15,13 @@
   <button type="button" class="vmenu-btn" data-view-menu aria-haspopup="menu" aria-expanded="false" aria-label="View: Steps" title="How to show the steps">{{ icon('list') }}</button>
   <div class="vmenu-list" role="menu" aria-label="How to show the steps" hidden>
     {%- for key, label, there in VIEWS if there %}<button type="button" role="menuitemradio" data-view="{{ key }}" aria-checked="{{ 'true' if key == 'steps' else 'false' }}">{{ label }}</button>{% endfor -%}
-    <hr>
-    <button type="button" role="menuitemcheckbox" data-details aria-checked="false">Show all details</button>
   </div>
 </div>
+{%- endmacro %}
+
+{# Steps in focus (the step you are on in full, the rest one line) or all in full #}
+{% macro details_button() -%}
+<button type="button" class="details-btn" data-details aria-pressed="false" aria-label="Show all details" title="Show all details">{{ icon('chevrons-up-down') }}</button>
 {%- endmacro %}
 
 {# The bowls, with how many are ready #}

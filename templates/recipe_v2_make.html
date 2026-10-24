@@ -8,7 +8,7 @@
    lead here (components/step_list.html, static/js/steps.js). #}
 {% from "components/recipe_head.html" import recipe_head with context %}
 {% from "components/prep_board.html" import prep_body with context %}
-{% from "components/step_list.html" import step_list, view_menu, bowls_button with context %}
+{% from "components/step_list.html" import step_list, view_menu, details_button, bowls_button with context %}
 {% from "components/dish_info.html" import ingredient_list, dish_facts with context %}
 {% from "components/admin_tools.html" import admin_tools with context %}
 
@@ -86,6 +86,7 @@
     <div class="runs-line fab-runs" data-runs aria-live="polite" hidden></div>
     {{ step_list() }}
     <div class="fab-tools">
+      {{ details_button() }}
       {{ view_menu() }}
       {{ bowls_button() }}
     </div>
