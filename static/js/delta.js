@@ -103,6 +103,9 @@
   function fit(section, box, wrap) {
     const page = PAGE[document.body.dataset.print];
     Object.assign(box.style, { transform: '', zoom: '', marginBottom: '', marginRight: '', marginLeft: '', width: 'max-content' });
+    // The arrows of the last drawing would count in its size: measure without them (drawArrows draws them again)
+    const svg = box.querySelector('.sk-arrows');
+    svg.removeAttribute('width'); svg.removeAttribute('height'); svg.removeAttribute('viewBox');
     // Its natural width; portrait on a screen also spreads its columns over the width there is
     const natW = Math.max(box.scrollWidth, page || box.classList.contains('horiz') ? 0 : wrap.clientWidth - 8);
     box.style.width = `${natW}px`;
@@ -165,6 +168,21 @@
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(go);
     let t;
     addEventListener('resize', () => { clearTimeout(t); t = setTimeout(go, 150); });
+    // Fit again whenever the drawing or its room changes size without a window resize: shown after being hidden
+    // (another view was chosen), a font or an image arriving, a column getting narrower. Without this the frame
+    // kept the height of an earlier fit and cut off the bottom of the drawing.
+    if ('ResizeObserver' in window) {
+      const wrap = section.querySelector('.dl-wrap'), box = section.querySelector('.skv');
+      const size = () => `${wrap.clientWidth}:${box.offsetWidth}x${box.offsetHeight}`;
+      let seen = '';
+      const ro = new ResizeObserver(() => {
+        if (size() === seen) return;
+        clearTimeout(t);
+        t = setTimeout(() => { go(); seen = size(); }, 80);
+      });
+      ro.observe(wrap);
+      ro.observe(box);
+    }
     if (document.body.dataset.print && document.body.dataset.autoprint) {
       (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => setTimeout(() => { go(); print(); }, 300));
     }
