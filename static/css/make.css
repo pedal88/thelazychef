@@ -1,12 +1,14 @@
-/* The whole recipe on one page (templates/recipe_v2_make.html): the dish as on Overview, then the steps as a list
-   (templates/components/step_list.html), with the ingredients beside them on wide screens as in a cookbook.
-   The bowls are in a sheet: from the bottom on a phone, from the right on a wide screen. */
+/* The whole recipe on one page (templates/recipe_v2_make.html): the dish as on Overview, with the ingredients beside
+   it on wide screens, then the steps as a list in full width (templates/components/step_list.html). Once you are
+   cooking the shopping list is out of sight. The bowls open over the whole screen. */
 .rv2.make { max-width: 680px; }
 .make .to-start { margin-top: var(--space-4); }
 .make .one-steps { margin-top: var(--space-6); scroll-margin-top: 76px; /* below the site's sticky top bar */ }
 @media (min-width: 1000px) {
   .rv2.make { max-width: 1180px; }
-  .make .ov-grid { grid-template-columns: 340px minmax(0, 1fr); }
+  .make .ov-grid { grid-template-columns: 340px minmax(0, 1fr); grid-template-areas: "ings top" "bottom bottom"; }
+  .make .ov-ings { position: static; max-height: none; overflow: visible; }  /* stays beside the dish, not the steps */
+  .make .slist { max-width: 780px; }
   .make .one-steps { margin-top: var(--space-4); }
   .make .to-start { display: none; }  /* the steps are right below */
 }
@@ -78,22 +80,19 @@
 .vpanel .g2-node.cur { background: color-mix(in srgb, var(--color-serve) 8%, transparent); border-radius: 16px; box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-serve) 8%, transparent); }
 .vpanel .fx-seg.cur .mn-v { text-decoration: underline; text-decoration-color: var(--color-serve); text-decoration-thickness: 3px; text-underline-offset: 4px; }
 
-/* Sheets: the bowls slide up from the bottom on a phone, in from the right on a wide screen */
-.sheet { border: 0; padding: var(--space-3) var(--space-4) var(--space-6); background: var(--color-paper); color: var(--color-ink);
-  width: 100%; max-width: 100%; max-height: 88vh; margin: auto 0 0; border-radius: 20px 20px 0 0; box-shadow: 0 -10px 40px rgb(0 0 0 / .2);
-  overscroll-behavior: contain; }
-.sheet[open] { animation: sheet-up .22s ease-out; }
-@keyframes sheet-up { from { transform: translateY(40px); opacity: .6; } }
-.sheet::backdrop { background: rgb(0 0 0 / .35); }
-.sheet-grip { width: 44px; height: 5px; border-radius: 3px; background: var(--color-line-strong); margin: 0 auto var(--space-2); }
-.sheet-h { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-2); }
-.sheet-h h2 { margin: 0; font-size: 20px; }
-.sheet-x { width: var(--tap); height: var(--tap); border: 0; background: none; display: grid; place-items: center; color: var(--color-muted); cursor: pointer; }
-.sheet .meter { margin-bottom: var(--space-3); }
-@media (min-width: 1000px) {
-  .sheet { width: min(620px, 50vw); height: 100vh; max-height: 100vh; margin: 0 0 0 auto; border-radius: 20px 0 0 20px; box-shadow: -10px 0 40px rgb(0 0 0 / .2); }
-  .sheet[open] { animation: sheet-in .22s ease-out; }
-  @keyframes sheet-in { from { transform: translateX(40px); opacity: .6; } }
-  .sheet-grip { display: none; }
-}
+/* The bowls over the whole screen. static/js/steps.js scales the board down until it fits without scrolling */
+.sheet { border: 0; margin: 0; padding: var(--space-3) var(--space-4) var(--space-4); background: var(--color-paper); color: var(--color-ink);
+  width: 100vw; height: 100dvh; max-width: 100vw; max-height: 100dvh; display: none; overflow: hidden; overscroll-behavior: contain; }
+.sheet[open] { display: flex; flex-direction: column; animation: sheet-up .2s ease-out; }
+@keyframes sheet-up { from { transform: translateY(24px); opacity: .5; } }
 @media (prefers-reduced-motion: reduce) { .sheet[open] { animation: none; } }
+.sheet::backdrop { background: var(--color-paper); }
+.sheet-h { display: flex; align-items: center; gap: var(--space-3); flex: none; }
+.sheet-h h2 { margin: 0; font-size: 20px; }
+.sheet-h .hint { margin: 0; }
+.sheet-x { margin-left: auto; width: var(--tap); height: var(--tap); border: 0; background: none; display: grid; place-items: center; color: var(--color-muted); cursor: pointer; }
+.sheet .meter { flex: none; margin: var(--space-2) 0 var(--space-3); }
+.sheet-fit { flex: 1; min-height: 0; overflow: hidden; }
+.sheet-fit.scrolls { overflow: auto; }  /* too much to fit at a size you can still read: it scrolls instead */
+.sheet-bowls .board { grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); }  /* more columns once scaled */
+@media (min-width: 1000px) { .sheet { padding: var(--space-4) var(--space-8); } }

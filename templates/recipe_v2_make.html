@@ -2,9 +2,9 @@
 {# The whole recipe on one page (a trial for admins: Flow "One page" in the admin chip; RECIPE_VISUALIZATIONS.md
    9.17): what Overview shows, then the steps as an ordinary list in the order of the plan, Get ready and Cook
    with a dashed line where the heat goes on (components/step_list.html). Tabs swap the list for the timeline,
-   the metro map or the river delta; the Bowls button opens the ingredient board from Prep in a sheet.
+   the metro map or the river delta; the Bowls button opens the ingredient board from Prep over the whole screen.
    Served at /recipe/<id>; Prep, Cook and /make lead here. Wide screens: the ingredients in a column of their own
-   on the left, beside the dish and the steps, as in a cookbook. Phone: one column. #}
+   on the left, beside the dish; the steps below in full width, without the list beside them. Phone: one column. #}
 {% from "components/recipe_head.html" import recipe_head with context %}
 {% from "components/prep_board.html" import prep_body with context %}
 {% from "components/step_list.html" import step_list with context %}
@@ -81,11 +81,13 @@
   </div>
   </div>
 
+  {# The bowls over the whole screen, scaled to fit it without scrolling (static/js/steps.js) #}
   <dialog class="sheet sheet-bowls" id="sheet-bowls" aria-labelledby="sheet-bowls-h">
-    <div class="sheet-grip" aria-hidden="true"></div>
-    <div class="sheet-h"><h2 id="sheet-bowls-h">Bowls and ingredients</h2><button type="button" class="sheet-x" data-sheet-close aria-label="Close">{{ icon('close') }}</button></div>
-    {% if r.bowls %}<p class="hint" data-count aria-live="polite">0 of {{ r.bowls|length }} bowls ready</p><div class="meter" aria-hidden="true"><span></span></div>{% endif %}
-    {{ prep_body() }}
+    <div class="sheet-h"><h2 id="sheet-bowls-h">Bowls and ingredients</h2>
+      {% if r.bowls %}<span class="hint" data-count aria-live="polite">0 of {{ r.bowls|length }} bowls ready</span>{% endif %}
+      <button type="button" class="sheet-x" data-sheet-close aria-label="Close">{{ icon('close') }}</button></div>
+    {% if r.bowls %}<div class="meter" aria-hidden="true"><span></span></div>{% endif %}
+    <div class="sheet-fit" data-fit><div class="fit-in">{{ prep_body() }}</div></div>
   </dialog>
 </article>
 <script>
