@@ -1,26 +1,32 @@
-{# The steps of the one-page flow (recipe_v2_make.html): an ordinary numbered list in the order of the plan, with a
-   dashed line where the heat goes on, Get ready above it and Cook below. A prep step the plan puts in the waiting
-   time stays below the line, in green. Tap a step to tick it off; a step with waiting time has a button that
-   starts its timer. Tabs swap the list for the timeline, the metro map or the river delta; the Bowls button opens
-   the ingredient board from Prep in a sheet. static/js/steps.js drives it. Import with context. #}
+{# The steps of the one-page flow's cooking screen (recipe_v2_make.html): an ordinary numbered list in the order of
+   the plan, with a dashed line where the heat goes on, Get ready above it and Cook below. A prep step the plan
+   puts in the waiting time stays below the line, in green. Tap a step to tick it off; a step with waiting time
+   has a button that starts its timer. view_menu swaps the list for the timeline, the metro map or the river
+   delta; bowls_button opens the ingredient board from Prep. static/js/steps.js drives it. Import with context. #}
 {% from "components/delta.html" import delta with context %}
 {% from "components/whole_dish.html" import timeline, metro %}
+
+{% set VIEWS = [('steps', 'Steps', true), ('timeline', 'Timeline', v.timeline), ('metro', 'Metro map', v.metro), ('delta', 'River delta', v.delta)] %}
+
+{# The choice of view: one small button that opens a menu upwards, in the bar at the bottom #}
+{% macro view_menu() -%}
+<div class="vmenu">
+  <button type="button" class="vmenu-btn" data-view-menu aria-haspopup="menu" aria-expanded="false">{{ icon('list') }} <span data-view-label>Steps</span> <span aria-hidden="true">▾</span></button>
+  <div class="vmenu-list" role="menu" aria-label="How to show the steps" hidden>
+    {%- for key, label, there in VIEWS if there %}<button type="button" role="menuitemradio" data-view="{{ key }}" aria-checked="{{ 'true' if key == 'steps' else 'false' }}">{{ label }}</button>{% endfor -%}
+  </div>
+</div>
+{%- endmacro %}
+
+{# The bowls, with how many are ready #}
+{% macro bowls_button() -%}
+{% set bowls = v.ready.bowls if v.ready else [] %}
+{% if v.ready %}<button type="button" class="bowls-open" data-sheet="sheet-bowls" aria-label="Bowls and ingredients">{{ icon('salad') }} <span class="bl">Bowls</span>{% if bowls %} <span data-bowl-count>0/{{ bowls|length }}</span>{% endif %}</button>{% endif %}
+{%- endmacro %}
 
 {% macro step_list() -%}
 {% set lang = recipe.language or 'en' %}
 {% set heat = v.heat_on %}
-{% set bowls = v.ready.bowls if v.ready else [] %}
-<div class="steps-head">
-  <div class="vtabs" role="tablist" aria-label="How to show the steps">
-    <button type="button" role="tab" data-view="steps" aria-selected="true">Steps</button>
-    {%- if v.timeline %}<button type="button" role="tab" data-view="timeline" aria-selected="false">Timeline</button>{% endif -%}
-    {%- if v.metro %}<button type="button" role="tab" data-view="metro" aria-selected="false">Metro</button>{% endif -%}
-    {%- if v.delta %}<button type="button" role="tab" data-view="delta" aria-selected="false">Delta</button>{% endif -%}
-  </div>
-  {% if v.ready %}<button type="button" class="bowls-open" data-sheet="sheet-bowls" aria-label="Bowls and ingredients">{{ icon('salad') }} <span class="bl">Bowls</span>{% if bowls %} <span data-bowl-count>0/{{ bowls|length }}</span>{% endif %}</button>{% endif %}
-  <div class="runs-line" data-runs aria-live="polite" hidden></div>
-</div>
-
 <section class="vpanel" data-panel="steps" aria-label="Steps">
   <ol class="slist">
     {% if heat %}<li class="seg-h prep" aria-hidden="true">Get ready</li>{% endif %}
