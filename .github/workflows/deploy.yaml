@@ -139,9 +139,11 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Week number, to refresh the OS packages weekly
+      # Daily, not weekly: a Debian fix that lands mid-week (libbrotli1, CVE-2026-111497, 24.10.2026) otherwise
+      # stays out of the cached layer and Trivy blocks every deploy until the week turns
+      - name: The date, to refresh the OS packages daily
         id: week
-        run: echo "week=$(date +%G-%V)" >> "$GITHUB_OUTPUT"
+        run: echo "week=$(date +%F)" >> "$GITHUB_OUTPUT"
 
       - name: Build and Push Container
         uses: docker/build-push-action@v6
