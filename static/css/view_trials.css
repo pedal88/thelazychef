@@ -1,0 +1,126 @@
+/* View trials on the cooking screen of the one-page flow (admin chip: Timeline, Metro, Delta; templates/components/
+   step_list.html and whole_dish.html, static/js/steps.js). Temporary: what is chosen moves into make.css and
+   cook.css, the rest goes. */
+
+/* ---- Timeline: the chosen step (or the next one) always in full ---- */
+.tlv .tl-row[data-step] { cursor: pointer; }
+.tlv .tl-row.sel { background: var(--color-soft); box-shadow: inset 4px 0 0 var(--ph); }
+.tlv .tl-row.sel .tl-l span { font-weight: 700; }
+.tl-card { background: var(--color-paper); border: 1px solid var(--color-line); border-radius: 16px; padding: 6px 8px 8px;
+  box-shadow: 0 10px 30px rgb(0 0 0 / .12); }
+.tl-card-h { display: flex; align-items: center; justify-content: space-between; padding: 0 4px 0 8px;
+  font: 600 11px var(--font-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--color-muted); }
+.tl-fold { width: 34px; height: 34px; border: 0; background: none; display: grid; place-items: center; color: var(--color-muted); cursor: pointer; border-radius: 50%; }
+.tl-fold:hover { background: var(--color-soft); }
+.tl-card.folded .tl-fold { transform: rotate(180deg); }
+.tl-card.folded .st-more { display: none; }
+.tl-card .slist { margin: 0; }
+.tl-card .st { padding: 8px 6px; }
+/* t1: docked at the bottom, over the timeline; the timeline gets room to scroll above it */
+.tlv-t1 { padding-bottom: 46vh; }
+.tlv-t1 .tl-card { position: fixed; z-index: 125; left: max(10px, calc(50% - 390px)); right: max(10px, calc(50% - 390px)); bottom: calc(66px + env(safe-area-inset-bottom, 0px));
+  max-height: 42vh; overflow: auto; }
+/* t2: inside the timeline, under the chosen row, over the lines that cross it */
+.tlv-t2 .tl-card { position: sticky; left: 0; z-index: 3; margin: 6px 0 10px; max-width: calc(100vw - 32px); }  /* the timeline may scroll sideways; the card stays in view */
+/* t3: beside the timeline on a wide screen; docked as t1 on a phone */
+@media (min-width: 1000px) {
+  .tlv-t3 { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 24px; align-items: start; }
+  .tlv-t3[hidden] { display: none; }
+  .tlv-t3 .tl-card { position: sticky; top: 16px; max-height: calc(100vh - 110px); overflow: auto; }
+}
+@media (max-width: 999px) {
+  .tlv-t3 { padding-bottom: 46vh; }
+  .tlv-t3 .tl-card { position: fixed; z-index: 125; left: 10px; right: 10px; bottom: calc(66px + env(safe-area-inset-bottom, 0px)); max-height: 42vh; overflow: auto; }
+}
+
+/* ---- Metro: the three redrawings ---- */
+.mt .lane-0, .mt-key .lane-0 { --lane: #0f766e; }
+.mt .lane-1, .mt-key .lane-1 { --lane: #7c3aed; }
+.mt .lane-2, .mt-key .lane-2 { --lane: #be185d; }
+.mt .lane-3, .mt-key .lane-3 { --lane: #475569; }
+.mt-key { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin: 4px 0 var(--space-3); font-size: 13px; color: var(--color-muted); }
+.mt-key span { display: inline-flex; align-items: center; gap: 6px; }
+.mt-key i { width: 22px; height: 7px; border-radius: 4px; background: var(--lane); }
+.mt-key .k-merge { width: 26px; height: 12px; border-radius: 6px; background: var(--color-paper); border: 2.5px solid var(--color-ink); }
+.mt-key .k-ph b, .mt-ph { font: 600 10px var(--font-mono); text-transform: uppercase; letter-spacing: .06em; padding: 2px 7px; border-radius: var(--radius-pill); }
+.ph-prep.mt-ph, .k-ph .ph-prep { background: var(--color-prep-soft); color: var(--color-prep-ink); }
+.ph-cook.mt-ph, .k-ph .ph-cook { background: var(--color-cook-soft); color: var(--color-cook-ink); }
+.ph-serve.mt-ph { background: var(--color-soft); color: var(--color-ink); }
+.k-ph { gap: 4px !important; }
+
+.mt { position: relative; height: var(--h); margin: 0 0 var(--space-3); }
+.mt-svg { position: absolute; left: 0; top: 0; overflow: visible; }
+.mt-line { fill: none; stroke: var(--lane); stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; }
+.mt-stand { fill: none; stroke: var(--lane); stroke-width: 3; stroke-dasharray: 3 5; stroke-linecap: round; opacity: .85; }
+.mt-st { cursor: pointer; }
+.mt-st circle { fill: var(--color-paper); stroke: var(--lane); stroke-width: 4; }
+.mt-st.merge rect { fill: var(--color-paper); stroke: var(--color-ink); stroke-width: 3; }
+.mt-st.final circle { stroke: var(--color-ink); stroke-width: 5; }
+.mt-st.final .dot { fill: var(--color-ink); stroke: none; }
+.mt-st.cur circle, .mt-st.cur rect { stroke: var(--color-danger); }
+.mt-names { list-style: none; margin: 0; padding: 0; position: absolute; top: 0; bottom: 0; left: calc(var(--w) + 8px); right: 0; }
+.mt-names li { position: absolute; left: 0; right: 0; transform: translateY(-50%); display: flex; align-items: baseline; gap: 6px;
+  white-space: nowrap; overflow: hidden; font-size: 15px; cursor: pointer; border-radius: 8px; padding: 2px 6px; }
+.mt-names li:hover { background: var(--color-soft); }
+.mt-names li.cur { background: var(--color-soft); font-weight: 700; box-shadow: inset 3px 0 0 var(--color-danger); }
+.mt-name { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.mt-no { font: 600 11px var(--font-mono); color: var(--color-muted); }
+.mt-time { font: 400 12px var(--font-mono); color: var(--color-muted); flex: none; }
+.mt-min { font: 400 11px var(--font-mono); color: var(--color-muted); width: 30px; flex: none; }
+.mt-names .mt-ph { flex: none; margin-left: auto; }
+/* m1 and m2 on a phone: the name may take two lines rather than be cut */
+@media (max-width: 600px) {
+  .mt1 .mt-names li, .mt2 .mt-names li { flex-wrap: wrap; row-gap: 0; white-space: normal; line-height: 1.2; }
+  .mt1 .mt-name, .mt2 .mt-name { white-space: normal; }
+}
+/* m2: minutes down the left, the drawing after them, and a line for now */
+.mt2 .mt-svg { left: 40px; }
+.mt2 .mt-names { left: calc(var(--w) + 48px); }
+.mt-ticks { list-style: none; margin: 0; padding: 0; position: absolute; left: 0; top: 0; width: 34px; }
+.mt-ticks li { position: absolute; right: 0; transform: translateY(-50%); font: 11px var(--font-mono); color: var(--color-muted); }
+.mt-now { position: absolute; left: 36px; right: 0; height: 0; border-top: 2px solid var(--color-danger); z-index: 1; pointer-events: none; }
+.mt2 .mt-names { z-index: 2; }
+.mt2 .mt-names li.cur { background: var(--color-paper); }  /* the line runs behind the name it is at */
+.mt-now[hidden] { display: none; }
+/* m3: left to right, scrolls sideways */
+.mt3-scroll { overflow-x: auto; padding-bottom: 6px; }
+.mt3 { width: var(--w); }
+.mt3 .mt-names { left: 0; }
+.mt3 .mt-names li { right: auto; transform: translate(-50%, 16px); width: calc(var(--col) - 10px); white-space: normal; display: block; text-align: center;
+  font-size: 13px; line-height: 1.2; padding: 2px 4px; }
+.mt3 .mt-names li .mt-min { display: block; width: auto; margin-top: 2px; }
+.mt3-lane { position: absolute; transform: translateY(-170%); font: 600 12px var(--font-sans); color: var(--lane); white-space: nowrap; }
+
+/* ---- Delta ---- */
+/* d1 readable: bigger type, a key, the drawing kept near full size (it scrolls instead of shrinking) */
+.dv-key { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 var(--space-3); font-size: 13px; color: var(--color-muted); }
+.dv-key span { display: inline-flex; align-items: center; gap: 6px; }
+.dv-key i { display: inline-block; width: 14px; height: 14px; border-radius: 3px; }
+.dv-key .k-heat { background: linear-gradient(var(--color-cook), var(--color-cook)) bottom / 100% 3px no-repeat; border-bottom: 0; mask: none; }
+.dv-key .k-glass { border: 1.5px solid var(--color-pencil); border-radius: 2px 2px 6px 6px; width: 10px; }
+.dv-key .k-clock { border: 1.5px solid var(--color-pencil); border-radius: 50%; }
+.dv-key .k-cut { background: var(--color-pencil); height: 3px; transform: rotate(-35deg); }
+.dv-d1 .mn-ing small { font-size: 13px; }
+.dv-d1 .fx-bowl .mn-ing small { font-size: 12px; }
+.dv-d1 .mn-v { font-size: 26px; }
+.dv-d1 .fx-no { min-width: 22px; height: 22px; font-size: 12px; }
+.dv-d1 .dl-wrap { overflow-x: auto; }
+/* d2 rivers: the phases as soft bands, the main river thick, the hand only for the verbs */
+.dv-d2 .g2-node.ph-prep { background: var(--color-prep-soft); border-radius: 16px; padding: 8px 10px; }
+.dv-d2 .g2-node.ph-cook { background: var(--color-cook-soft); border-radius: 16px; padding: 8px 10px; }
+.dv-d2 .g2-node.ph-serve { background: var(--color-soft); border-radius: 16px; padding: 8px 10px; }
+.dv-d2 .g2-node.main { box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-cook) 45%, transparent); }
+.dv-d2 .fx-no { min-width: 24px; height: 24px; border: 0; background: var(--color-ink); color: var(--color-paper); font-size: 12px; }
+.dv-d2 .mn-ing small, .dv-d2 .mn-wait .hand, .dv-d2 .mn-temp { font-family: var(--font-sans); font-weight: 500; font-size: 12px; }
+.dv-d2 .ed.main .pa { stroke: var(--color-cook); stroke-width: 4; }
+.dv-d2 .ed.main .pa2 { stroke-width: 2; }
+/* d3 progress: the river fills as you cook, the next step is ringed, timers count down on their step */
+.dv-d3 .g2-node { transition: opacity .3s; }
+.dv-d3 .g2-node.flow-done { opacity: .35; }
+.dv-d3 .g2-node.nextup { background: var(--color-paper); border-radius: 16px; box-shadow: 0 0 0 3px var(--color-cook), 0 8px 24px rgb(0 0 0 / .12); }
+.dv-d3 .g2-node.nextup::before { content: "next"; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); padding: 1px 8px; border-radius: var(--radius-pill);
+  background: var(--color-cook); color: var(--color-paper); font: 600 10px var(--font-mono); text-transform: uppercase; letter-spacing: .08em; }
+.dv-d3 .ed.flowed .pa { stroke: var(--color-prep); stroke-width: 3.4; }
+.dv-d3 .ed.flowed .pa2 { opacity: .6; }
+.fx-run { align-self: center; font: 600 11px var(--font-mono); padding: 1px 7px; border-radius: var(--radius-pill); background: var(--color-cook-soft); color: var(--color-cook-ink); }
+.fx-run.fin { background: var(--color-danger); color: var(--color-paper); }

@@ -88,6 +88,23 @@ class CookTests(unittest.TestCase):
             location = self.client.get(f'/recipe/{rid}{path}?servings=2').headers['Location']
             self.assertTrue(location.endswith(f'/recipe/{rid}?servings=2{end}'), location)
 
+    def test_view_trials_for_admins_on_the_one_page(self):
+        rid = self.ids["carbonara"]
+        self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
+        self.client.set_cookie('flow', 'one')
+        html = self.client.get(f'/recipe/{rid}').get_data(as_text=True)
+        for view in ('timeline', 'metro', 'delta'):
+            self.assertIn(f'data-view-trial="{view}"', html)  # the switches in the admin chip
+        self.assertNotIn('data-tl-card', html)  # "now" is the view as it was
+        for name, key, mark in (('timeline', 't1', 'data-tl-card'), ('timeline', 't3', 'tlv-t3'), ('metro', 'm1', 'class="mt mt1"'),
+                                ('metro', 'm2', 'data-mt-now'), ('metro', 'm3', 'class="mt mt3"'), ('delta', 'd1', 'class="dv-key"'),
+                                ('delta', 'd3', 'data-delta-trial="d3"')):
+            self.client.set_cookie(f'view_{name}', key)
+            self.assertIn(mark, self.client.get(f'/recipe/{rid}').get_data(as_text=True), key)
+        # Visitors never get a trial
+        self.client.get('/logout')
+        self.assertNotIn('data-view-trial="timeline"', self.client.get(f'/recipe/{rid}').get_data(as_text=True))
+
     def test_drafts_only_for_admins(self):
         url = f'/recipe/{self.ids["lasagne"]}/cook'
         self.assertEqual(self.client.get(url).status_code, 302)

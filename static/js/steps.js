@@ -27,6 +27,7 @@
   st.runs = (st.runs || []).filter(r => byId[r.step] && r.end > Date.now() - 3 * 3600e3);
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) { /* kept for this visit only */ } };
   const runOf = id => st.runs.find(r => r.step === id);
+  const nextId = () => { const done = new Set(st.done), r = rows.find(x => !done.has(x.dataset.st)); return r ? r.dataset.st : null; };
   const opened = new Set();  // steps opened with a tap, for this visit
   let all = false;           // "Show all details"
   try { all = localStorage.getItem(DETAILS) === 'all'; } catch (e) { /* the steps in focus */ }
@@ -54,8 +55,63 @@
     }
     marks(next ? next.dataset.st : null);
     runs();
+    deltaFlow();
     save();
   }
+
+  /* View trials (admin chip). Timeline t1-t3: the chosen step, or else the next one, always in full beside the
+     timeline: docked at the bottom (t1), inside it under its row (t2), beside it on a wide screen (t3). */
+  const tlPanel = $('[data-panel="timeline"][data-tl-trial]'), tlCard = $('[data-tl-card]');
+  const tlTrial = tlPanel ? tlPanel.dataset.tlTrial : 'now';
+  let tlPick = null, tlFolded = false;  // a step chosen in the timeline (null: follow the next step)
+  function tlRender() {
+    if (!tlCard) return;
+    if (tlPick && st.done.includes(tlPick)) tlPick = null;
+    const id = tlPick || nextId(), list = tlCard.querySelector('[data-step-card]');
+    tlPanel.querySelectorAll('.tl-row.sel').forEach(r => r.classList.remove('sel'));
+    const tlRow = id && tlPanel.querySelector(`.tl-row[data-step="${id}"]`);
+    if (tlRow) tlRow.classList.add('sel');
+    if (tlTrial === 't2' && tlRow && tlRow.nextElementSibling !== tlCard) tlRow.after(tlCard);
+    tlCard.querySelector('[data-tl-card-label]').textContent = !id ? 'The food is ready' : tlPick ? 'The step you chose' : 'Next step';
+    tlCard.classList.toggle('folded', tlFolded);
+    tlCard.querySelector('[data-tl-fold]').setAttribute('aria-expanded', String(!tlFolded));
+    if (!id || !byId[id]) { list.replaceChildren(); return; }
+    const copy = byId[id].cloneNode(true);
+    copy.classList.add('is-open');
+    list.replaceChildren(copy);
+  }
+
+  /* Delta d3: the river fills as steps are ticked off in the list, and a running timer counts down on its step */
+  const dFlow = $('[data-delta-trial="d3"]');
+  function deltaFlow() {
+    if (!dFlow) return;
+    const done = new Set(st.done);
+    dFlow.querySelectorAll('.g2-node').forEach(n => {
+      const segs = [...n.querySelectorAll('.fx-seg')];
+      n.classList.toggle('flow-done', segs.length > 0 && segs.every(x => done.has(x.dataset.step)));
+    });
+    // The next step that is in the drawing (preheating the oven, say, is not)
+    dFlow.querySelectorAll('.g2-node.nextup').forEach(n => n.classList.remove('nextup'));
+    const up = rows.map(r => !done.has(r.dataset.st) && dFlow.querySelector(`.fx-seg[data-step="${r.dataset.st}"]`)).find(Boolean);
+    if (up) up.closest('.g2-node').classList.add('nextup');
+    dFlow.querySelectorAll('.sk-arrows [data-f]').forEach(g => {
+      const from = dFlow.querySelector(`.g2-node[data-n="${g.dataset.f}"]`);
+      g.classList.toggle('flowed', !!from && from.classList.contains('flow-done'));
+    });
+  }
+  function deltaRuns() {
+    if (!dFlow) return;
+    dFlow.querySelectorAll('.fx-run').forEach(b => { if (!runOf(b.dataset.run)) b.remove(); });
+    st.runs.forEach(r => {
+      const seg = dFlow.querySelector(`.fx-seg[data-step="${r.step}"]`);
+      if (!seg) return;
+      let b = seg.querySelector('.fx-run');
+      if (!b) { b = document.createElement('span'); b.className = 'fx-run'; b.dataset.run = r.step; seg.append(b); }
+      b.textContent = fmtLeft(r);
+      b.classList.toggle('fin', Date.now() >= r.end);
+    });
+  }
+  if (dFlow) dFlow.addEventListener('delta:drawn', deltaFlow);
 
   /* A step tapped in a view: the same card as in the list, in a sheet. Filled again when it changes */
   const stepSheet = document.getElementById('sheet-step');
@@ -92,6 +148,8 @@
       });
     });
     card();
+    tlRender();
+    deltaRuns();
   }
 
   function tick(row) {
@@ -116,6 +174,12 @@
   /* The next step, marked in the timeline, the metro map and the delta */
   function marks(id) {
     $$('.vpanel .cur').forEach(e => e.classList.remove('cur'));
+    const now = $('[data-mt-now]');  // metro trial m2: a line across the map at the next step
+    if (now) {
+      const at = id && $(`.mt2 .mt-names [data-step="${id}"]`);
+      now.hidden = !at;
+      if (at) now.style.top = `${at.dataset.y}px`;
+    }
     if (id) {
       $$(`.vpanel [data-step="${id}"], .vpanel [data-station="${id}"]`).forEach(e => e.classList.add('cur'));
       const seg = $(`.vpanel .fx-seg[data-step="${id}"]`);
@@ -207,6 +271,9 @@
       return;
     }
     if (t.closest('[data-steps-reset]')) { st = { done: [], runs: [] }; opened.clear(); render(); return; }
+    if (t.closest('[data-tl-fold]')) { tlFolded = !tlFolded; tlRender(); return; }
+    const tlHit = tlCard && t.closest('[data-panel="timeline"] .tl-row[data-step]');
+    if (tlHit) { tlPick = tlPick === tlHit.dataset.step ? null : tlHit.dataset.step; tlRender(); return; }
     // A step in the timeline, the metro map or the delta (the delta's own numbers still tick there)
     const hit = !t.closest('.fx-no') && t.closest('.vpanel:not([data-panel="steps"]) [data-step], .vpanel [data-station]');
     if (hit) { showStep(hit.dataset.step || hit.dataset.station); return; }

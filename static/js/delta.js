@@ -38,6 +38,9 @@
       const F0 = box.querySelector(`[data-n="${f}"]`), T0 = box.querySelector(`[data-n="${t}"]`);
       if (!F0 || !T0) return;
       const F = rect(F0), T = rect(T0), seed = f + t;
+      // Each arrow in its own group, so a page can colour it (the main river, a step done: static/js/steps.js)
+      const main = F0.classList.contains('main') && T0.classList.contains('main');
+      const g = d => `<g class="ed${main ? ' main' : ''}" data-f="${f}" data-t="${t}">${d}</g>`;
       /* A bend is only used when no other cell lies where it would run */
       const clear = (a, b, c, d) => { const os = all.filter(e => e !== F0 && e !== T0).map(rect);
         for (let i = 1; i < 24; i++) { const u = i / 24, v = 1 - u;
@@ -51,22 +54,22 @@
         if (room > 24 && Math.abs(dy) > gap * 0.8) {
           const p0 = [F.r - Math.min(36, (F.r - F.l) / 3), dy > 0 ? F.b + 3 : F.t - 3];
           const c1 = [p0[0], p0[1] + (p3[1] - p0[1]) * 0.62], c2 = [p3[0] - (p3[0] - p0[0]) * 0.62, p3[1]];
-          if (clear(p0, c1, c2, p3)) { out += handCurve(p0, c1, c2, p3, seed); return; }
+          if (clear(p0, c1, c2, p3)) { out += g(handCurve(p0, c1, c2, p3, seed)); return; }
         }
         const p0 = [F.r + 3, F.cy], dx = Math.max(14, (p3[0] - p0[0]) * 0.5);
         const c2 = Math.abs(p3[1] - p0[1]) > (p3[0] - p0[0]) * 0.8 ? [p3[0] - (p3[0] - p0[0]) * 0.3, p3[1] - (p3[1] - p0[1]) * 0.3] : [p3[0] - dx, p3[1]];
-        out += handCurve(p0, [p0[0] + dx, p0[1]], c2, p3, seed);
+        out += g(handCurve(p0, [p0[0] + dx, p0[1]], c2, p3, seed));
       } else {
         const x3 = Math.max(T.l + 16, Math.min(T.r - 16, F.cx)), gap = T.t - F.b, dx = x3 - F.cx, p3 = [x3, T.t - 5];
         const room = dx > 0 ? x3 - F.r : F.l - x3;
         if (room > 24 && Math.abs(dx) > gap * 1.2) {
           const p0 = [dx > 0 ? F.r + 3 : F.l - 3, F.b - Math.min(24, (F.b - F.t) / 3)];
           const c1 = [p0[0] + (p3[0] - p0[0]) * 0.62, p0[1]], c2 = [p3[0], p3[1] - (p3[1] - p0[1]) * 0.62];
-          if (clear(p0, c1, c2, p3)) { out += handCurve(p0, c1, c2, p3, seed); return; }
+          if (clear(p0, c1, c2, p3)) { out += g(handCurve(p0, c1, c2, p3, seed)); return; }
         }
         const p0 = [F.cx, F.b + 3], dy = Math.max(14, (p3[1] - p0[1]) * 0.5);
         const c2 = Math.abs(p3[0] - p0[0]) > (p3[1] - p0[1]) * 1.2 ? [p3[0] - (p3[0] - p0[0]) * 0.3, p3[1] - (p3[1] - p0[1]) * 0.3] : [p3[0], p3[1] - dy];
-        out += handCurve(p0, [p0[0], p0[1] + dy], c2, p3, seed);
+        out += g(handCurve(p0, [p0[0], p0[1] + dy], c2, p3, seed));
       }
     });
     svg.innerHTML = out;
@@ -97,6 +100,7 @@
     section.querySelectorAll('[data-orient]').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.orient === 'landscape') === horiz)));
     fit(section, box, wrap);
     drawArrows(box, horiz);
+    section.dispatchEvent(new CustomEvent('delta:drawn', { bubbles: true }));
   }
 
   /* Scale down until the drawing fits the width (and on screen the height below its top), never under 60–75 % */
@@ -113,7 +117,9 @@
     const availW = (page ? page[0] : wrap.clientWidth) - 8;
     const availH = page ? page[1] - (box.getBoundingClientRect().top - section.getBoundingClientRect().top) - 60
       : Math.max(360, innerHeight - 140);
-    const floor = page ? 0.6 : innerWidth < 700 ? 0.6 : 0.75;
+    // The "readable" trial (admin chip, Delta d1) keeps the drawing near full size and lets it scroll instead
+    const readable = section.closest('[data-delta-trial="d1"]');
+    const floor = page ? 0.6 : readable ? 0.9 : innerWidth < 700 ? 0.6 : 0.75;
     const sc = Math.max(floor, Math.min(page ? 1.4 : 1, availW / natW, availH / natH));
     box.dataset.scale = sc;
     if (page) { // zoom also shrinks the space the drawing takes, so the browser does not shrink the whole sheet
@@ -124,6 +130,14 @@
       box.style.transform = `scale(${sc})`;
       box.style.marginBottom = `${-natH * (1 - sc)}px`;
       box.style.marginRight = `${-natW * (1 - sc)}px`;
+    }
+    // Readable trial: the drawing is wider than the screen, so open it at the step you are on (or the main river)
+    if (readable && wrap.scrollWidth > wrap.clientWidth) {
+      const at = box.querySelector('.g2-node.cur') || box.querySelector('.g2-node.main');
+      if (at) {
+        const r = at.getBoundingClientRect(), W = wrap.getBoundingClientRect();
+        wrap.scrollLeft += (r.left + r.width / 2) - (W.left + W.width / 2);
+      }
     }
     const note = section.querySelector('.dl-scale');
     if (note) note.textContent = sc < 0.95 && !page ? `shown at ${Math.round(sc * 100)} %` : '';

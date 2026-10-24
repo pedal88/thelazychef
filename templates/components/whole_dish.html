@@ -42,3 +42,67 @@
 </svg>
 <p class="hint">The number on the left is the minute the step starts, and the number before the name is the step in the list. Open rings are prep, filled are cooking.</p>
 {% endmacro %}
+
+{# Metro map trials (services/recipe_v2/whole.py metro_trials; admin chip "Metro"). The drawing is an SVG at its own
+   size; the names are HTML beside it, so the text stays readable on a phone. Every name and station carries
+   data-step, so a tap opens the step's card. #}
+{% macro _stations(m, r=8) %}
+  {%- for s in m.stations %}
+  <g class="mt-st ph-{{ s.phase }}{{ ' final' if s.final }}{{ ' merge' if s.merge }}" data-step="{{ s.id }}">
+    {%- if s.merge %}<rect x="{{ s.x0 - 9 }}" y="{{ s.y - 9 }}" width="{{ s.x1 - s.x0 + 18 }}" height="18" rx="9"></rect>
+    {%- elif s.final %}<circle cx="{{ s.x }}" cy="{{ s.y }}" r="{{ r + 4 }}"></circle><circle class="dot" cx="{{ s.x }}" cy="{{ s.y }}" r="4"></circle>
+    {%- else %}<circle class="lane-{{ s.lane % 4 }}" cx="{{ s.x }}" cy="{{ s.y }}" r="{{ r }}"></circle>{% endif -%}
+  </g>
+  {%- endfor %}
+{% endmacro %}
+
+{% macro metro_key(t, merge=True, phases=True) %}
+<div class="mt-key">{% for l in t.lanes %}<span><i class="lane-{{ l.n }}"></i>{{ l.name }}</span>{% endfor %}
+  {% if merge %}<span><i class="k-merge"></i>the parts meet</span>{% endif %}{% if phases %}<span class="k-ph"><b class="ph-prep">prep</b><b class="ph-cook">cook</b></span>{% endif %}</div>
+{% endmacro %}
+
+{% macro metro_m1(t) %}{% set m = t.m1 %}
+{{ metro_key(t) }}
+<div class="mt mt1" style="--h:{{ m.height }}px; --w:{{ m.width }}px">
+  <svg class="mt-svg" width="{{ m.width }}" height="{{ m.height }}" viewBox="0 0 {{ m.width }} {{ m.height }}" aria-hidden="true">
+    {% for p in m.paths %}<path class="mt-line lane-{{ t.lanes[p.lane].n }}" d="{{ p.d }}"></path>{% endfor %}
+    {{ _stations(m) }}
+  </svg>
+  <ol class="mt-names">
+    {% for s in m.stations %}<li data-step="{{ s.id }}" style="top:{{ s.y }}px"><span class="mt-min">{{ s.start }}′</span><b class="mt-no">{{ s.no }}</b> <span class="mt-name">{{ s.short }}</span>{% if s.time %} <span class="mt-time">{{ s.time }}</span>{% endif %} <span class="mt-ph ph-{{ s.phase }}">{{ s.phase }}</span></li>{% endfor %}
+  </ol>
+</div>
+{% endmacro %}
+
+{% macro metro_m2(t) %}{% set m = t.m2 %}
+{{ metro_key(t, phases=False) }}
+<div class="mt mt2" style="--h:{{ m.height }}px; --w:{{ m.width }}px">
+  <ol class="mt-ticks" aria-hidden="true">{% for k in m.ticks %}<li style="top:{{ k.y }}px">{{ k.m }}′</li>{% endfor %}</ol>
+  <svg class="mt-svg" width="{{ m.width }}" height="{{ m.height }}" viewBox="0 0 {{ m.width }} {{ m.height }}" aria-hidden="true">
+    {% for p in m.paths %}<path class="mt-line lane-{{ t.lanes[p.lane].n }}" d="{{ p.d }}"></path>{% endfor %}
+    {% for s in m.stations if s.stand %}<path class="mt-stand lane-{{ t.lanes[s.lane].n }}" d="M{{ s.x + 9 }} {{ s.stand.y0 }} V{{ s.stand.y1 }}"></path>{% endfor %}
+    {{ _stations(m, 7) }}
+  </svg>
+  <div class="mt-now" data-mt-now hidden></div>
+  <ol class="mt-names">
+    {% for s in m.stations %}<li data-step="{{ s.id }}" data-y="{{ s.y }}" style="top:{{ s.y }}px"><b class="mt-no">{{ s.no }}</b> <span class="mt-name">{{ s.short }}</span>{% if s.time %} <span class="mt-time">{{ s.time }}</span>{% endif %}</li>{% endfor %}
+  </ol>
+</div>
+<p class="hint">Down the map is time: a long stretch is waiting, the dashed stretch is time a step stands on its own.</p>
+{% endmacro %}
+
+{% macro metro_m3(t) %}{% set m = t.m3 %}
+{{ metro_key(t, merge=False, phases=False) }}
+<div class="mt3-scroll">
+<div class="mt mt3" style="--h:{{ m.height }}px; --w:{{ m.width }}px; --col:{{ m.col }}px">
+  <svg class="mt-svg" width="{{ m.width }}" height="{{ m.height }}" viewBox="0 0 {{ m.width }} {{ m.height }}" aria-hidden="true">
+    {% for p in m.paths %}<path class="mt-line lane-{{ t.lanes[p.lane].n }}" d="{{ p.d }}"></path>{% endfor %}
+    {{ _stations(m) }}
+  </svg>
+  {% for l in m.lane_rows %}<span class="mt3-lane lane-{{ l.n }}" style="left:{{ l.x }}px; top:{{ l.y }}px">{{ l.name }}</span>{% endfor %}
+  <ol class="mt-names">
+    {% for s in m.stations %}<li data-step="{{ s.id }}" style="left:{{ s.x }}px; top:{{ s.y }}px"><b class="mt-no">{{ s.no }}</b> <span class="mt-name">{{ s.short }}</span><span class="mt-min">{{ s.start }}′</span></li>{% endfor %}
+  </ol>
+</div>
+</div>
+{% endmacro %}
