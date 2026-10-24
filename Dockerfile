@@ -6,7 +6,7 @@ ENV PYTHONUNBUFFERED=1
 
 # Install system dependencies
 # gcc and python3-dev might be needed for some python packages
-# APT_REFRESH (the week, from CI) makes the cached layer refresh weekly, so OS security fixes still arrive
+# APT_REFRESH (the date, from CI) makes the cached layer refresh daily, so OS security fixes arrive within a day
 ARG APT_REFRESH=none
 RUN echo "OS packages as of ${APT_REFRESH}" && apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     gcc \
