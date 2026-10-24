@@ -8,8 +8,11 @@
 
   function where(box) {
     const page = box.dataset.page;
-    const make = document.querySelector('.make');
-    if (make && !make.classList.contains('cooking')) return `${page} · get ready`;
+    if (document.querySelector('.make')) {  // the one-page flow: the overview, or cooking at the next step
+      if (!document.documentElement.classList.contains('cooking')) return `${page} · overview`;
+      const next = document.querySelector('.st.is-next');
+      return next ? `${page} · cooking · step ${next.querySelector('.n').dataset.n} (${next.dataset.label})` : `${page} · cooking`;
+    }
     const card = document.querySelector('.cook .card[data-step]:not([hidden])');
     if (card && (page === 'cook' || page === 'make')) return `${page} · step ${card.dataset.no} (${card.dataset.label})`;
     return page;

@@ -72,7 +72,7 @@ class CookTests(unittest.TestCase):
         html = self.client.get(f'/recipe/{rid}?servings=2').get_data(as_text=True)
         for text in ('class="factbar"', 'id="ings-h"', 'Get ready', 'class="heat-line"', 'Heat on', 'class="st ', 'data-start',
                      'data-view="timeline"', 'data-view="delta"', 'id="sheet-bowls"', 'data-bowl', 'js/ready.js', 'js/steps.js',
-                     'js/kitchen.js', 'Versions'):
+                     'js/kitchen.js', 'Versions', 'data-cook-open', 'id="cook"', 'data-cook-close', 'data-view-menu'):
             self.assertIn(text, html)
         self.assertNotIn('class="flowbar"', html)
         self.assertNotIn('js/cook.js', html)

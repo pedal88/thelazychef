@@ -1,9 +1,11 @@
-/* The step list of the one-page flow (templates/components/step_list.html).
+/* The one-page flow's two screens (templates/recipe_v2_make.html): the overview, and cooking at #cook, which hides
+   the site's top bar and footer; the back button or × goes back. And the step list on the cooking screen
+   (templates/components/step_list.html).
    Tap a step to tick it off; the first step not ticked is marked as the next one. A step with waiting time has a
    button that starts its timer: the running timers stand in a line above the list and the views, and when the
    time is up the timer turns red, beeps and vibrates (static/js/kitchen.js). A step that uses what was standing
-   ends its timer. The tabs swap the list for the timeline, the metro map or the river delta, which mark the next
-   step. The ticks and timers are kept on this device per recipe, apart from cooking mode's; the chosen view for
+   ends its timer. The view menu at the bottom swaps the list for the timeline, the metro map or the river delta,
+   which mark the next step. The ticks and timers are kept on this device per recipe, apart from cooking mode's; the chosen view for
    all recipes. The Bowls button shows how many bowls are ready (the board in the sheet is static/js/ready.js). */
 (function () {
   'use strict';
@@ -96,15 +98,47 @@
       + (nxt ? `Then: ${esc(nxt.dataset.short.toLowerCase())} at minute ${nxt.dataset.start}.` : 'The food is ready.');
   }
 
-  /* The tabs: the list is the default; the choice is remembered for all recipes */
+  /* The view menu: the list is the default; the choice is remembered for all recipes */
+  const menu = $('.vmenu-list'), menuBtn = $('[data-view-menu]');
+  function openMenu(on) {
+    if (!menu) return;
+    menu.hidden = !on;
+    menuBtn.setAttribute('aria-expanded', String(on));
+  }
   function view(v) {
-    const tabs = $$('[data-view]');
-    if (!tabs.some(b => b.dataset.view === v)) v = 'steps';
-    tabs.forEach(b => b.setAttribute('aria-selected', String(b.dataset.view === v)));
+    const items = $$('[data-view]');
+    if (!items.some(b => b.dataset.view === v)) v = 'steps';
+    items.forEach(b => b.setAttribute('aria-checked', String(b.dataset.view === v)));
+    const label = $('[data-view-label]'), item = items.find(b => b.dataset.view === v);
+    if (label && item) label.textContent = item.textContent;
     $$('.vpanel').forEach(p => { p.hidden = p.dataset.panel !== v; });
+    openMenu(false);
     try { localStorage.setItem(VIEW, v); } catch (e) { /* remembered for this visit only */ }
     if (v === 'delta') dispatchEvent(new Event('resize'));  // the delta lays itself out once it can be seen
   }
+
+  /* The two screens. Cooking has its own address (#cook), so the back button, a reload and a shared link work */
+  const cook = document.getElementById('cook');
+  let overviewY = 0;
+  function cooking(on) {
+    if (!cook) return;
+    const was = !cook.hidden;
+    if (on && !was) overviewY = scrollY;
+    document.documentElement.classList.toggle('cooking', on);
+    cook.hidden = !on;
+    if (on && !was) { scrollTo(0, 0); wake(); dispatchEvent(new Event('resize')); }
+    if (!on && was) scrollTo(0, overviewY);
+    openMenu(false);
+  }
+  function startCooking() {
+    if (location.hash !== '#cook') history.pushState({ cook: true }, '', '#cook');
+    cooking(true);
+  }
+  function stopCooking() {
+    if (history.state && history.state.cook) history.back();  // popstate shows the overview
+    else { history.replaceState(null, '', location.pathname + location.search); cooking(false); }
+  }
+  addEventListener('popstate', () => cooking(location.hash === '#cook'));
 
   /* How many bowls are ready, on the Bowls button, after static/js/ready.js has painted them */
   function bowls() {
@@ -117,6 +151,10 @@
   page.addEventListener('click', e => {
     beep(true); wake();
     const t = e.target;
+    if (t.closest('[data-cook-open]')) { e.preventDefault(); startCooking(); return; }
+    if (t.closest('[data-cook-close]')) { stopCooking(); return; }
+    if (t.closest('[data-view-menu]')) { openMenu(menu.hidden); return; }
+    if (menu && !menu.hidden && !t.closest('.vmenu')) openMenu(false);
     const go = t.closest('[data-run-go]'), stop = t.closest('[data-run-stop]');
     if (stop) { st.runs = st.runs.filter(r => r.step !== stop.dataset.runStop); render(); return; }
     if (go) {
@@ -176,7 +214,18 @@
     addEventListener('resize', () => { clearTimeout(t); t = setTimeout(fit, 120); });
   }
 
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') openMenu(false); });
+
   try { view(localStorage.getItem(VIEW)); } catch (e) { view('steps'); }
+  // Prep and Cook lead here as #prep and #cook: both open the cooking screen, #prep with the bowls
+  if (location.hash === '#cook' || location.hash === '#prep') {
+    const bowlsFirst = location.hash === '#prep';
+    // The overview goes underneath in the history, so × and the back button lead to it, not off the page
+    history.replaceState(null, '', location.pathname + location.search);
+    history.pushState({ cook: true }, '', '#cook');
+    cooking(true);
+    if (bowlsFirst && sheet && sheet.showModal) { sheet.showModal(); requestAnimationFrame(fit); }
+  }
   wake();
   render();
   bowls();

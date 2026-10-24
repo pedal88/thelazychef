@@ -92,7 +92,7 @@
   background: rgba(24, 24, 28, .72); -webkit-backdrop-filter: blur(14px) saturate(1.4); backdrop-filter: blur(14px) saturate(1.4);
   border: 1px solid rgba(255, 255, 255, .1); border-radius: 14px; box-shadow: 0 8px 28px rgba(0, 0, 0, .22); opacity: .55; transition: opacity .15s; }
 .trialbar:hover, .trialbar:focus-within, .trialbar[open] { opacity: 1; }
-body:has(.bar) .trialbar { bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+body:has(.bar) .trialbar, body:has(.ov-bar) .trialbar { bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
 html.whole-fullscreen .trialbar { display: none; }
 .trialbar summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 7px; padding: 7px 11px; user-select: none; }
 .trialbar summary::-webkit-details-marker { display: none; }

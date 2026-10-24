@@ -1,13 +1,13 @@
 {% extends "base.html" %}
-{# The whole recipe on one page (a trial for admins: Flow "One page" in the admin chip; RECIPE_VISUALIZATIONS.md
-   9.17): what Overview shows, then the steps as an ordinary list in the order of the plan, Get ready and Cook
-   with a dashed line where the heat goes on (components/step_list.html). Tabs swap the list for the timeline,
-   the metro map or the river delta; the Bowls button opens the ingredient board from Prep over the whole screen.
-   Served at /recipe/<id>; Prep, Cook and /make lead here. Wide screens: the ingredients in a column of their own
-   on the left, beside the dish; the steps below in full width, without the list beside them. Phone: one column. #}
+{# The whole recipe on one page, as two screens (a trial for admins: Flow "One page" in the admin chip;
+   RECIPE_VISUALIZATIONS.md 9.17). The overview: what Overview shows, the dish, its parts and the ingredients, with
+   "Start cooking" at the bottom. Cooking (#cook): only the steps, without the site's top bar and footer; the
+   timers in a thin line at the top, and at the bottom the choice of view (steps, timeline, metro map, river delta)
+   and the bowls. The back button or × goes back to the overview. Served at /recipe/<id>; Prep, Cook and /make
+   lead here (components/step_list.html, static/js/steps.js). #}
 {% from "components/recipe_head.html" import recipe_head with context %}
 {% from "components/prep_board.html" import prep_body with context %}
-{% from "components/step_list.html" import step_list with context %}
+{% from "components/step_list.html" import step_list, view_menu, bowls_button with context %}
 {% from "components/dish_info.html" import ingredient_list, dish_facts with context %}
 {% from "components/admin_tools.html" import admin_tools with context %}
 
@@ -64,9 +64,6 @@
 
     {% if v.chef_note %}<p class="note"><b>From the chef:</b> {{ v.chef_note }}</p>{% endif %}
     {% if recipe.source_type == 'web' and recipe.source_input %}<p class="hint source">Based on <a href="{{ recipe.source_input }}" rel="noopener nofollow" target="_blank">{{ recipe.source_input.split('/')[2] }}</a></p>{% endif %}
-    {# On the phone the ingredient list comes next; this goes past it #}
-    <p class="next to-start"><a class="go" href="#steps">Start ↓</a>
-      <span class="hint">{{ v.steps|length }} steps, {{ v.total }} in all</span></p>
   </div>
 
   <aside class="ov-ings" aria-labelledby="ings-h">
@@ -74,12 +71,26 @@
     {{ ingredient_list() }}
   </aside>
 
-  <div class="ov-bottom">
-    <section class="one-steps" id="steps" aria-label="Steps">
-      {{ step_list() }}
-    </section>
   </div>
-  </div>
+
+  <div class="ov-bar"><div class="bar-in">
+    <a class="go" href="#cook" data-cook-open>Start cooking →</a>
+    <span class="hint">{{ v.steps|length }} steps · {{ v.total }}</span>
+  </div></div>
+
+  {# Cooking: the steps over the whole screen #}
+  <section class="cookmode" id="cook" aria-label="Cooking" hidden>
+    <div class="cm-top">
+      <button type="button" class="cm-x" data-cook-close aria-label="Back to the overview">{{ icon('back') }}</button>
+      <b class="cm-title">{{ v.title }}</b>
+      <div class="runs-line" data-runs aria-live="polite" hidden></div>
+    </div>
+    {{ step_list() }}
+    <div class="cm-bar"><div class="bar-in">
+      {{ view_menu() }}
+      {{ bowls_button() }}
+    </div></div>
+  </section>
 
   {# The bowls over the whole screen, scaled to fit it without scrolling (static/js/steps.js) #}
   <dialog class="sheet sheet-bowls" id="sheet-bowls" aria-labelledby="sheet-bowls-h">
