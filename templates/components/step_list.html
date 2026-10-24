@@ -1,7 +1,8 @@
 {# The steps of the one-page flow's cooking screen (recipe_v2_make.html): an ordinary numbered list in the order of
    the plan, with a dashed line where the heat goes on, Get ready above it and Cook below. A prep step the plan
-   puts in the waiting time stays below the line, in green. Tap a step to tick it off; a step with waiting time
-   has a button that starts its timer. view_menu swaps the list for the timeline, the metro map or the river
+   puts in the waiting time stays below the line, in green. The step you are on shows everything; the others
+   show one line (what, how long, the timer) and open on a tap, or all of them with "Show all details". The
+   number ticks a step off. A tap on a step in the timeline, the metro map or the delta opens the same card. view_menu swaps the list for the timeline, the metro map or the river
    delta; bowls_button opens the ingredient board from Prep. static/js/steps.js drives it. Import with context. #}
 {% from "components/delta.html" import delta with context %}
 {% from "components/whole_dish.html" import timeline, metro %}
@@ -14,6 +15,8 @@
   <button type="button" class="vmenu-btn" data-view-menu aria-haspopup="menu" aria-expanded="false" aria-label="View: Steps" title="How to show the steps">{{ icon('list') }}</button>
   <div class="vmenu-list" role="menu" aria-label="How to show the steps" hidden>
     {%- for key, label, there in VIEWS if there %}<button type="button" role="menuitemradio" data-view="{{ key }}" aria-checked="{{ 'true' if key == 'steps' else 'false' }}">{{ label }}</button>{% endfor -%}
+    <hr>
+    <button type="button" role="menuitemcheckbox" data-details aria-checked="false">Show all details</button>
   </div>
 </div>
 {%- endmacro %}
@@ -28,7 +31,7 @@
 {% set lang = recipe.language or 'en' %}
 {% set heat = v.heat_on %}
 <section class="vpanel" data-panel="steps" aria-label="Steps">
-  <ol class="slist">
+  <ol class="slist focus" data-slist>
     {% if heat %}<li class="seg-h prep" aria-hidden="true">Get ready</li>{% endif %}
     {% for s in v.steps %}
     {% if heat and s.id == heat.id %}
@@ -39,18 +42,32 @@
         data-passive="{{ s.passive_min or 0 }}" data-after="{{ (s.after or [])|join(' ') }}">
       <button type="button" class="st-tick" aria-pressed="false" aria-label="Step {{ s.n }} done"><span class="n" data-n="{{ s.n }}">{{ s.n }}</span></button>
       <div class="st-body">
-        <h3 lang="{{ lang }}">{{ s.short }}<span class="st-meta">{{ s.duration or '' }}{% if v.parts|length > 1 and s.component %} · {{ s.component }}{% endif %}</span></h3>
-        {% if s.while and s.phase == 'prep' %}<p class="st-while">{{ s.while }}</p>{% endif %}
-        <p class="txt" lang="{{ lang }}">{{ s.html }}</p>
-        {% if s.equipment %}<p class="st-eq">{{ s.equipment }}</p>{% endif %}
-        {% if s.done_when %}<p class="st-donewhen"><b>Done when</b> <span lang="{{ lang }}">{{ s.done_when }}</span></p>{% endif %}
-        {% if s.passive_min %}<button type="button" class="st-timer" data-start>{{ icon('timer') }} <span>Start {{ s.passive_min }} min</span></button>{% endif %}
+        {# Always: what to do, how long, and while what #}
+        <div class="st-line">
+          <h3 lang="{{ lang }}">{{ s.short }}</h3>
+          <span class="st-meta">{{ s.duration or '' }}</span>
+          {% if s.while and s.phase == 'prep' %}<span class="st-tag">{{ s.while }}</span>{% endif %}
+          {% if s.passive_min %}<button type="button" class="st-timer-mini" data-start aria-label="Start the {{ s.passive_min }} minute timer">{{ icon('timer') }} <span>{{ s.passive_min }} min</span></button>{% endif %}
+        </div>
+        {# The details: shown for the step you are on, for a step you open, and for all with "Show all details" #}
+        <div class="st-more">
+          {% if v.parts|length > 1 and s.component %}<p class="st-part">{{ s.component }}</p>{% endif %}
+          <p class="txt" lang="{{ lang }}">{{ s.html }}</p>
+          {% if s.equipment %}<p class="st-eq">{{ s.equipment }}</p>{% endif %}
+          {% if s.done_when %}<p class="st-donewhen"><b>Done when</b> <span lang="{{ lang }}">{{ s.done_when }}</span></p>{% endif %}
+          {% if s.passive_min %}<button type="button" class="st-timer" data-start>{{ icon('timer') }} <span>Start {{ s.passive_min }} min</span></button>{% endif %}
+        </div>
       </div>
     </li>
     {% endfor %}
   </ol>
   <p class="st-reset"><button type="button" data-steps-reset>Untick all the steps</button></p>
 </section>
+{# A step tapped in the timeline, the metro map or the delta: the same card as in the list, with its tick and timer #}
+<dialog class="step-sheet" id="sheet-step" aria-label="Step">
+  <button type="button" class="sheet-x" data-sheet-close aria-label="Close">{{ icon('close') }}</button>
+  <ol class="slist all" data-step-card></ol>
+</dialog>
 {% if v.timeline %}<section class="vpanel" data-panel="timeline" aria-label="Timeline" hidden>{{ timeline(v.timeline) }}</section>{% endif %}
 {% if v.metro %}<section class="vpanel" data-panel="metro" aria-label="Metro map" hidden>{{ metro(v.metro) }}</section>{% endif %}
 {% if v.delta %}<section class="vpanel" data-panel="delta" aria-label="River delta" hidden>

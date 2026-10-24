@@ -76,10 +76,16 @@ html.cooking body .trialbar { bottom: calc(14px + env(safe-area-inset-bottom, 0p
 .st-tick { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--ph); background: var(--color-paper); color: var(--color-ink);
   display: grid; place-items: center; font: 600 14px var(--font-mono); cursor: pointer; padding: 0; margin-top: 2px; }
 .st-body h3 { margin: 0; font-size: 17px; line-height: 1.3; }
-.st-meta { margin-left: 8px; font: 400 12px var(--font-mono); color: var(--color-muted); }
+.st-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
+.st-meta { font: 400 12px var(--font-mono); color: var(--color-muted); }
+.st-tag { font-size: 12px; font-weight: 600; color: var(--color-prep-ink); background: var(--color-prep-soft); border-radius: var(--radius-pill); padding: 1px 8px; }
+.st-timer-mini { display: inline-flex; align-items: center; gap: 4px; min-height: 28px; padding: 0 10px; margin-left: auto; border: 1px solid var(--ph);
+  border-radius: var(--radius-pill); background: var(--color-paper); color: var(--color-ink); font: 600 12px/1 var(--font-sans); cursor: pointer; font-variant-numeric: tabular-nums; }
+.st-timer-mini.running { background: var(--ph-soft); }
+.st-timer-mini .icon { width: 14px; height: 14px; }
+.st-part { font: 500 12px var(--font-mono); color: var(--color-muted); text-transform: uppercase; letter-spacing: .06em; }
 .st-body p { margin: 6px 0 0; }
 .st-body .txt { font-size: 16px; line-height: 1.55; }
-.st-while { font-size: 13px; color: var(--color-prep-ink); font-weight: 600; }
 .st-eq { font-size: 13px; color: var(--color-muted); }
 .st-donewhen { font-size: 14px; }
 .st-donewhen b { font: 600 11px var(--font-mono); text-transform: uppercase; letter-spacing: .08em; margin-right: 4px; color: var(--color-muted); }
@@ -93,11 +99,26 @@ html.cooking body .trialbar { bottom: calc(14px + env(safe-area-inset-bottom, 0p
 .st.is-done .st-body { opacity: .45; }
 .st.is-done .st-body h3 { text-decoration: line-through; text-decoration-thickness: 1px; }
 .st.is-done .st-tick { background: var(--ph); border-color: var(--ph); color: var(--color-paper); }
+/* Focus: the step you are on shows everything, the others one line that opens on a tap. "Show all details" opens all */
+.slist.focus .st:not(.is-next):not(.is-open) .st-more { display: none; }
+.slist.focus .st:not(.is-next):not(.is-open) { padding-block: 10px; }
+.slist.focus .st:not(.is-next):hover { background: var(--color-soft); }
+.slist.focus .st.is-next { cursor: default; }
+.slist.all .st { cursor: default; }
+.slist.all .st-timer-mini, .st.is-next .st-timer-mini, .st.is-open .st-timer-mini { display: none; }
 .st-reset { margin: var(--space-4) 0 0; text-align: right; }
 .st-reset button { border: 0; background: none; color: var(--color-muted); font-size: 13px; text-decoration: underline; cursor: pointer; }
 
-/* The views the tabs show instead of the list; the next step is marked */
+/* The views the menu shows instead of the list; the next step is marked, and a tap on a step opens its card */
 .vpanel { margin-top: var(--space-3); }
+.vpanel:not([data-panel="steps"]) :is(.tl-row, .mv-row, .m-st, .fx-seg) { cursor: pointer; }
+.step-sheet { border: 0; border-radius: 18px; padding: 14px 10px 10px; width: min(600px, calc(100vw - 20px)); max-height: 85vh; overflow: auto;
+  background: var(--color-paper); color: var(--color-ink); box-shadow: 0 20px 60px rgb(0 0 0 / .25); }
+.step-sheet::backdrop { background: rgb(0 0 0 / .35); }
+.step-sheet .sheet-x { position: absolute; top: 4px; right: 4px; }
+.step-sheet .slist { margin: 0; }
+.step-sheet .st { padding-right: 40px; }
+.vmenu-list hr { border: 0; border-top: 1px solid var(--color-line); margin: 4px 6px; }
 .vpanel .g2-node.cur { background: color-mix(in srgb, var(--color-serve) 8%, transparent); border-radius: 16px; box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-serve) 8%, transparent); }
 .vpanel .fx-seg.cur .mn-v { text-decoration: underline; text-decoration-color: var(--color-serve); text-decoration-thickness: 3px; text-underline-offset: 4px; }
 
