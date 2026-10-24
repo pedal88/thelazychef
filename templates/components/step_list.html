@@ -2,12 +2,13 @@
    the plan, with a dashed line where the heat goes on, Get ready above it and Cook below. A prep step the plan
    puts in the waiting time stays below the line, in green. The step you are on shows everything; the others
    show one line (what, how long, the timer) and open on a tap, or all of them with "Show all details". The
-   number ticks a step off. A tap on a step in the timeline, the metro map or the delta opens the same card. view_menu swaps the list for the timeline, the metro map or the river
-   delta; bowls_button opens the ingredient board from Prep. static/js/steps.js drives it. Import with context. #}
+   number ticks a step off. view_menu swaps the list for the timeline, the metro map or the river delta; a tap on
+   a step in the timeline or the map shows the same card beside it, in the delta in a sheet. bowls_button opens
+   the ingredient board from Prep. static/js/steps.js drives it. Import with context. #}
 {% from "components/delta.html" import delta with context %}
-{% from "components/whole_dish.html" import timeline, metro, metro_m1, metro_m2, metro_m3 %}
+{% from "components/whole_dish.html" import timeline, metro_map %}
 
-{% set VIEWS = [('steps', 'Steps', true), ('timeline', 'Timeline', v.timeline), ('metro', 'Metro map', v.metro), ('delta', 'River delta', v.delta)] %}
+{% set VIEWS = [('steps', 'Steps', true), ('timeline', 'Timeline', v.timeline), ('metro', 'Metro map', v.metro_map), ('delta', 'River delta', v.delta)] %}
 
 {# The choice of view: one small round button that opens a menu upwards #}
 {% macro view_menu() -%}
@@ -66,32 +67,31 @@
   </ol>
   <p class="st-reset"><button type="button" data-steps-reset>Untick all the steps</button></p>
 </section>
-{# A step tapped in the timeline, the metro map or the delta: the same card as in the list, with its tick and timer #}
+{# A step tapped in the delta: the same card as in the list, with its tick and timer, in a sheet #}
 <dialog class="step-sheet" id="sheet-step" aria-label="Step">
   <button type="button" class="sheet-x" data-sheet-close aria-label="Close">{{ icon('close') }}</button>
   <ol class="slist all" data-step-card></ol>
 </dialog>
-{# View trials (admin chip): the timeline with the chosen step always in full beside it (t1 docked at the bottom,
-   t2 inside the timeline under its row, t3 beside it on a wide screen); the metro map redrawn (m1-m3); the delta
-   made readable (d1), with rivers (d2) or filling as you cook (d3). "now" is each view as it was. #}
-{% set tv, mv, dv = view_trial('timeline'), view_trial('metro'), view_trial('delta') %}
-{% if v.timeline %}<section class="vpanel tlv tlv-{{ tv }}" data-panel="timeline" data-tl-trial="{{ tv }}" aria-label="Timeline" hidden>
-  <div class="tlv-main">{{ timeline(v.timeline) }}</div>
-  {% if tv != 'now' %}<aside class="tl-card" data-tl-card aria-live="polite">
-    <div class="tl-card-h"><span data-tl-card-label></span><button type="button" class="tl-fold" data-tl-fold aria-expanded="true" aria-label="Fold the step">{{ icon('chevron-down') }}</button></div>
-    <ol class="slist all" data-step-card></ol>
-  </aside>{% endif %}
+{# The step beside a view: the step you tap in it, or else the next one, in full. Beside the view on a wide
+   screen, docked at the bottom on a phone (static/js/steps.js, splitRender). #}
+{% macro side_card() -%}
+<aside class="side-card" data-side-card aria-live="polite">
+  <div class="side-card-h"><span data-side-card-label></span><button type="button" class="side-fold" data-side-fold aria-expanded="true" aria-label="Fold the step">{{ icon('chevron-down') }}</button></div>
+  <ol class="slist all" data-step-card></ol>
+</aside>
+{%- endmacro %}
+{% if v.timeline %}<section class="vpanel split" data-panel="timeline" aria-label="Timeline" hidden>
+  <div class="split-main">{{ timeline(v.timeline) }}</div>
+  {{ side_card() }}
 </section>{% endif %}
-{% if v.metro %}<section class="vpanel mtv-{{ mv }}" data-panel="metro" aria-label="Metro map" hidden>
-  {%- if mv == 'm1' and v.metro_trials %}{{ metro_m1(v.metro_trials) }}
-  {%- elif mv == 'm2' and v.metro_trials %}{{ metro_m2(v.metro_trials) }}
-  {%- elif mv == 'm3' and v.metro_trials %}{{ metro_m3(v.metro_trials) }}
-  {%- else %}{{ metro(v.metro) }}{% endif -%}
+{% if v.metro_map %}<section class="vpanel split" data-panel="metro" aria-label="Metro map" hidden>
+  <div class="split-main">{{ metro_map(v.metro_map) }}</div>
+  {{ side_card() }}
 </section>{% endif %}
-{% if v.delta %}<section class="vpanel dv dv-{{ dv }}" data-panel="delta" data-delta-trial="{{ dv }}" aria-label="River delta" hidden>
-  {% if dv == 'd1' %}<p class="dv-key"><span><i class="k-heat"></i>heat, one to three flames</span><span><i class="k-glass"></i>stands on its own</span><span><i class="k-clock"></i>start this first</span><span><i class="k-cut"></i>cut, grated, juiced</span><span>pinch or scroll to look closer</span></p>
-  {% elif dv == 'd3' %}<p class="hint">The river fills as you tick off steps in the list; the next step is ringed.</p>
-  {% else %}<p class="hint">Tap a number to tick a step off in the drawing.</p>{% endif %}
+{# The delta with its phases as soft bands and the main river thick, filling as you tick off steps in the list:
+   the next step in the drawing ringed, running timers counting down on their step #}
+{% if v.delta %}<section class="vpanel dv-rivers dv-progress" data-panel="delta" data-delta-flow aria-label="River delta" hidden>
+  <p class="hint">The river fills as you tick off steps; the next step is ringed. Tap a step for all of it.</p>
   {{ delta(v.delta, recipe.id, print_links=False) }}
 </section>{% endif %}
 {%- endmacro %}

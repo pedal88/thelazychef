@@ -1,0 +1,98 @@
+/* The whole-dish views on the cooking screen of the one-page flow (templates/components/step_list.html and
+   whole_dish.html, static/js/steps.js; RECIPE_VISUALIZATIONS.md 9.17): the timeline and the metro map with the
+   chosen step beside them, the metro map as a transit map with time down the page, and the river delta with
+   rivers that fill as you cook. Chosen from the view trials, 25.10.2026. */
+
+/* ---- The step beside a view: beside it on a wide screen, docked at the bottom on a phone ---- */
+.split .tl-row[data-step], .split .mt [data-step] { cursor: pointer; }
+.split .tl-row.sel { background: var(--color-soft); box-shadow: inset 4px 0 0 var(--ph); }
+.split .tl-row.sel .tl-l span { font-weight: 700; }
+.side-card { background: var(--color-paper); border: 1px solid var(--color-line); border-radius: 16px; padding: 6px 8px 8px;
+  box-shadow: 0 10px 30px rgb(0 0 0 / .12); }
+.side-card-h { display: flex; align-items: center; justify-content: space-between; padding: 0 4px 0 8px;
+  font: 600 11px var(--font-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--color-muted); }
+.side-fold { width: 34px; height: 34px; border: 0; background: none; display: grid; place-items: center; color: var(--color-muted); cursor: pointer; border-radius: 50%; }
+.side-fold:hover { background: var(--color-soft); }
+.side-card.folded .side-fold { transform: rotate(180deg); }
+.side-card.folded .st-more { display: none; }
+.side-card .slist { margin: 0; }
+.side-card .st { padding: 8px 6px; }
+@media (min-width: 1000px) {
+  .split { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 24px; align-items: start; }
+  .split[hidden] { display: none; }
+  .split .side-card { position: sticky; top: 16px; max-height: calc(100vh - 110px); overflow: auto; }
+}
+@media (max-width: 999px) {
+  .split { padding-bottom: 46vh; }  /* room to scroll the view above the docked card */
+  .split .side-card { position: fixed; z-index: 125; left: 10px; right: 10px; bottom: calc(66px + env(safe-area-inset-bottom, 0px)); max-height: 42vh; overflow: auto; }
+}
+
+/* ---- Metro map: a transit map, time down the page ---- */
+.mt .lane-0, .mt-key .lane-0 { --lane: #0f766e; }
+.mt .lane-1, .mt-key .lane-1 { --lane: #7c3aed; }
+.mt .lane-2, .mt-key .lane-2 { --lane: #be185d; }
+.mt .lane-3, .mt-key .lane-3 { --lane: #475569; }
+.mt-key { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin: 4px 0 var(--space-3); font-size: 13px; color: var(--color-muted); }
+.mt-key span { display: inline-flex; align-items: center; gap: 6px; }
+.mt-key i { width: 22px; height: 7px; border-radius: 4px; background: var(--lane); }
+.mt-key .k-merge { width: 26px; height: 12px; border-radius: 6px; background: var(--color-paper); border: 2.5px solid var(--color-ink); }
+.mt-key .k-stand { width: 3px; height: 16px; border-radius: 0; background: repeating-linear-gradient(var(--color-muted) 0 3px, transparent 3px 7px); }
+.mt-key .k-ph b, .mt-ph { font: 600 10px var(--font-mono); text-transform: uppercase; letter-spacing: .06em; padding: 2px 7px; border-radius: var(--radius-pill); }
+.ph-prep.mt-ph, .k-ph .ph-prep { background: var(--color-prep-soft); color: var(--color-prep-ink); }
+.ph-cook.mt-ph, .k-ph .ph-cook { background: var(--color-cook-soft); color: var(--color-cook-ink); }
+.ph-serve.mt-ph { background: var(--color-soft); color: var(--color-ink); }
+.k-ph { gap: 4px !important; }
+
+.mt { position: relative; height: var(--h); margin: 0 0 var(--space-3); }
+.mt-ticks { list-style: none; margin: 0; padding: 0; position: absolute; left: 0; top: 0; width: 34px; }
+.mt-ticks li { position: absolute; right: 0; transform: translateY(-50%); font: 11px var(--font-mono); color: var(--color-muted); }
+.mt-svg { position: absolute; left: 40px; top: 0; overflow: visible; }
+.mt-line { fill: none; stroke: var(--lane); stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; }
+.mt-stand { fill: none; stroke: var(--lane); stroke-width: 3; stroke-dasharray: 3 5; stroke-linecap: round; opacity: .85; }
+.mt-break rect { fill: var(--color-paper); }
+.mt-break path { fill: none; stroke: var(--color-muted); stroke-width: 1.5; stroke-linejoin: round; }
+.mt-break-l { position: absolute; left: 0; width: 34px; transform: translateY(-50%); text-align: right; font: 600 10px var(--font-mono); color: var(--color-muted); line-height: 1.1; }
+.mt-st circle { fill: var(--color-paper); stroke: var(--lane); stroke-width: 4; }
+.mt-st.merge rect { fill: var(--color-paper); stroke: var(--color-ink); stroke-width: 3; }
+.mt-st.final circle { stroke: var(--color-ink); stroke-width: 5; }
+.mt-st.final .dot { fill: var(--color-ink); stroke: none; }
+.mt-st.cur circle, .mt-st.cur rect { stroke: var(--color-danger); }
+.mt-st.sel circle, .mt-st.sel rect { stroke-width: 6; }
+.mt-names { list-style: none; margin: 0; padding: 0; position: absolute; top: 0; bottom: 0; left: calc(var(--w) + 48px); right: 0; z-index: 2; }
+.mt-names li { position: absolute; left: 0; right: 0; transform: translateY(-50%); display: flex; align-items: baseline; gap: 6px;
+  white-space: nowrap; overflow: hidden; font-size: 15px; border-radius: 8px; padding: 2px 6px; }
+.mt-names li:hover { background: var(--color-soft); }
+.mt-names li.cur { background: var(--color-paper); font-weight: 700; box-shadow: inset 3px 0 0 var(--color-danger); }
+.mt-names li.sel { background: var(--color-soft); }
+.mt-name { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.mt-no { font: 600 11px var(--font-mono); color: var(--color-muted); }
+.mt-time { font: 400 12px var(--font-mono); color: var(--color-muted); flex: none; }
+.mt-names .mt-ph { flex: none; margin-left: auto; }
+.mt-now { position: absolute; left: 36px; right: 0; height: 0; border-top: 2px solid var(--color-danger); z-index: 1; pointer-events: none; }
+.mt-now[hidden] { display: none; }
+@media (max-width: 600px) {  /* the name may take two lines rather than be cut */
+  .mt-names li { flex-wrap: wrap; row-gap: 0; white-space: normal; line-height: 1.2; }
+  .mt-name { white-space: normal; }
+}
+
+/* ---- River delta: rivers, filling as you cook ---- */
+/* the phases as soft bands, the main river thick, the hand only for the verbs */
+.dv-rivers .g2-node.ph-prep { background: var(--color-prep-soft); border-radius: 16px; padding: 8px 10px; }
+.dv-rivers .g2-node.ph-cook { background: var(--color-cook-soft); border-radius: 16px; padding: 8px 10px; }
+.dv-rivers .g2-node.ph-serve { background: var(--color-soft); border-radius: 16px; padding: 8px 10px; }
+.dv-rivers .g2-node.main { box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-cook) 45%, transparent); }
+.dv-rivers .fx-no { min-width: 24px; height: 24px; border: 0; background: var(--color-ink); color: var(--color-paper); font-size: 12px; }
+.dv-rivers .mn-ing small, .dv-rivers .mn-wait .hand, .dv-rivers .mn-temp { font-family: var(--font-sans); font-weight: 500; font-size: 12px; }
+.dv-rivers .ed.main .pa { stroke: var(--color-cook); stroke-width: 4; }
+.dv-rivers .ed.main .pa2 { stroke-width: 2; }
+/* filling: steps done fade, the river from them turns green, the next step is ringed, timers count down */
+.dv-progress .g2-node { transition: opacity .3s; }
+.dv-progress .g2-node.flow-done { opacity: .35; }
+.dv-progress .g2-node.nextup { background: var(--color-paper); border-radius: 16px; box-shadow: 0 0 0 3px var(--color-cook), 0 8px 24px rgb(0 0 0 / .12); }
+.dv-progress .g2-node.nextup::before { content: "next"; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); padding: 1px 8px; border-radius: var(--radius-pill);
+  background: var(--color-cook); color: var(--color-paper); font: 600 10px var(--font-mono); text-transform: uppercase; letter-spacing: .08em; }
+.dv-progress .ed.flowed .pa { stroke: var(--color-prep); stroke-width: 3.4; }
+.dv-progress .ed.flowed .pa2 { opacity: .6; }
+.fx-run { align-self: center; font: 600 11px var(--font-mono); padding: 1px 7px; border-radius: var(--radius-pill); background: var(--color-cook-soft); color: var(--color-cook-ink); }
+.fx-run.fin { background: var(--color-danger); color: var(--color-paper); }
+.dv-progress .g2-node { cursor: pointer; }

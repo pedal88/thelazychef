@@ -88,22 +88,34 @@ class CookTests(unittest.TestCase):
             location = self.client.get(f'/recipe/{rid}{path}?servings=2').headers['Location']
             self.assertTrue(location.endswith(f'/recipe/{rid}?servings=2{end}'), location)
 
-    def test_view_trials_for_admins_on_the_one_page(self):
+    def test_the_views_on_the_one_page(self):
         rid = self.ids["carbonara"]
         self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
         self.client.set_cookie('flow', 'one')
         html = self.client.get(f'/recipe/{rid}').get_data(as_text=True)
-        for view in ('timeline', 'metro', 'delta'):
-            self.assertIn(f'data-view-trial="{view}"', html)  # the switches in the admin chip
-        self.assertNotIn('data-tl-card', html)  # "now" is the view as it was
-        for name, key, mark in (('timeline', 't1', 'data-tl-card'), ('timeline', 't3', 'tlv-t3'), ('metro', 'm1', 'class="mt mt1"'),
-                                ('metro', 'm2', 'data-mt-now'), ('metro', 'm3', 'class="mt mt3"'), ('delta', 'd1', 'class="dv-key"'),
-                                ('delta', 'd3', 'data-delta-trial="d3"')):
-            self.client.set_cookie(f'view_{name}', key)
-            self.assertIn(mark, self.client.get(f'/recipe/{rid}').get_data(as_text=True), key)
-        # Visitors never get a trial
-        self.client.get('/logout')
-        self.assertNotIn('data-view-trial="timeline"', self.client.get(f'/recipe/{rid}').get_data(as_text=True))
+        # The timeline and the metro map with the chosen step beside them; the map as a transit map with time
+        self.assertEqual(html.count('class="vpanel split"'), 2)
+        self.assertEqual(html.count('class="side-card"'), 2)
+        for part in ('class="mt"', 'class="mt-key"', 'data-mt-now', 'class="mt-ticks"'):
+            self.assertIn(part, html)
+        # The delta with rivers, filling as you cook
+        self.assertIn('class="vpanel dv-rivers dv-progress"', html)
+        self.assertIn('data-delta-flow', html)
+        self.assertNotIn('data-trial-key', html)
+
+    def test_a_long_wait_on_the_metro_map_is_cut_short(self):
+        from services.recipe_v2 import whole
+        v2 = {'components': [{'local_id': 'c1', 'name': 'Dish'}],
+              'steps': [{'local_id': 'a', 'short': 'Marinate', 'phase': 'prep', 'component_id': 'c1', 'uses': ['i1'], 'after': [],
+                         'active_minutes': 5, 'passive_minutes': 60},
+                        {'local_id': 'b', 'short': 'Grill', 'phase': 'cook', 'component_id': 'c1', 'uses': ['i2'], 'after': ['a'],
+                         'active_minutes': 10, 'passive_minutes': 0}]}
+        sch = {'order': ['a', 'b'], 'T': 75, 'plan': {'a': {'start': 0, 'a_end': 5, 'end': 65}, 'b': {'start': 65, 'a_end': 75, 'end': 75}}}
+        m = whole.metro_map(v2, sch, {'c1': 'Dish'})
+        self.assertEqual([(br['minutes'], br['from'], br['to']) for br in m['breaks']], [(65, 0, 65)])
+        a, b = m['stations']
+        self.assertLess(b['y'] - a['y'], 65 * 4)  # drawn far shorter than 65 minutes
+        self.assertTrue(all(not 0 < t['m'] < 65 for t in m['ticks']))  # no minute marks inside the cut
 
     def test_drafts_only_for_admins(self):
         url = f'/recipe/{self.ids["lasagne"]}/cook'

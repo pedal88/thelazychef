@@ -324,7 +324,8 @@ def build(recipe, servings=None, plan='calm'):
         # The whole dish beside cooking mode (services/recipe_v2/whole.py)
         'timeline': whole.timeline(v2, sch, comps) if v2['steps'] else None,
         'metro': whole.metro(v2, sch, comps) if v2['steps'] else None,
-        'metro_trials': whole.metro_trials(v2, sch, comps) if v2['steps'] else None,
+        # The one-page flow's map: a transit map with time down the page
+        'metro_map': whole.metro_map(v2, sch, comps) if v2['steps'] else None,
         'ready': ready,
         'nutrition': nutrition.per_serving(recipe),
         # Why there is no nutrition, for the admin: lines without grams, and lines without pantry nutrition

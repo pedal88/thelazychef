@@ -980,6 +980,13 @@ Delene deles med Gjør klart og Lag mat (`components/prep_board.html`, `componen
 
 **Fokus på steget du står på (24.10.2026, Pål):** neste uavkryssede steg viser alt (teksten med ingrediensmerker, kokekar og varme, «ferdig når», tidtakeren). De andre stegene står på én linje: tittel, tid, «While: …» og en liten tidtaker-knapp; et trykk folder dem ut for å lese fremover. En liten knapp nede til høyre (⇕, ved siden av visningsmenyen) veksler mellom fokus og alle detaljer (huskes). Nummeret krysser av, siden et trykk på steget nå folder ut. Et trykk på et steg i tidslinjen, T-banekartet eller deltaet åpner det samme kortet i et ark, med avkrysning og tidtaker (deltaets egne nummer krysser fortsatt av i tegningen). Valgt framfor en bryter kompakt/utvidet (steget du står på måtte foldes ut hver gang) og detaljer bare i et vindu over listen (åpne og lukke for hvert steg, og hover finnes ikke på telefon).
 
+**Visningene valgt (25.10.2026, Pål):** etter prøvene med brytere i admin-panelet (tre varianter av hver):
+- **Tidslinjen: Split.** Steget du trykker på, ellers neste steg, står i sin helhet ved siden av tidslinjen på stor skjerm og dokket nederst på telefon. Et nytt trykk på samme rad følger neste steg igjen. Kortet kan foldes til én linje.
+- **T-banekartet: Transit med tid, og Split.** Egne linjefarger som ikke kolliderer med fasene, hvite stasjoner, en bred stasjon der delene møtes og en stor endestasjon. Navnene er HTML, så de er lesbare på telefon. Avstanden nedover er minutter. En strekning på mer enn 20 minutter uten ny stasjon kortes ned til 8 minutter og får et sikk-sakk-brudd som sier hvor lang den egentlig er; ingen minuttmerker inni bruddet. Tid som står av seg selv er stiplet ved stasjonen, og en rød linje står ved neste steg på kartet. Samme stegkort som tidslinjen (`whole.metro_map`). Kokemodus-siden beholder det gamle kartet.
+- **Elvedeltaet: Rivers og Progress sammen.** Fasene som myke fargefelt, hovedelven tykk og oransje, nummer i fylte sirkler, håndskrift bare for verbene; elven fylles når steg krysses av i listen, neste steg som finnes i tegningen er ringet, og tidtakere teller ned på steget sitt. Et trykk hvor som helst på et steg åpner kortet i et ark.
+
+Valgt bort: tidslinjekortet dokket også på stor skjerm og inne i tidslinjen under raden; kartet uten tid og som liggende linjer; deltaet bare større og scrollende. Stilene står i `static/css/cook_views.css`.
+
 **Visningene underveis:** stegene er hovedsaken; tilleggene kommer når de trengs, ikke ved å veksle. Midt i et steg: stegkortet. Mellom steg eller mens noe står: nå/neste med tidtakere (statuslinjen). Når man har mistet tråden: hele retten i et ark, med tidslinje, T-banekart og elvedelta som faner. Stor skjerm: ved siden av.
 
 ---
