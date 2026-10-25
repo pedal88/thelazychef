@@ -33,7 +33,6 @@
     if (document.fonts) document.fonts.ready.then(() => fit(box));
     if (box.hasAttribute('data-fit-steps')) {
       const page = box.closest('[data-recipe]');
-      if (page) page.addEventListener('steps:refit', () => fit(box));  // the rail's switches in the admin chip
       if (page) page.addEventListener('steps:render', () => {
         let i = STEPS.indexOf(box.dataset.density);
         while (box.clientHeight && !fits(box) && i < STEPS.length - 1) box.dataset.density = STEPS[++i];
