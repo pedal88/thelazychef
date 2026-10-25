@@ -11,6 +11,7 @@
 {% from "components/step_list.html" import step_list, view_menu, details_button, bowls_button with context %}
 {% from "components/dish_info.html" import ingredient_list, dish_facts with context %}
 {% from "components/admin_tools.html" import admin_tools with context %}
+{% from "components/overview_layouts.html" import poster, compact, more_sheet with context %}
 
 {% block title %}{{ v.title }} - The Lazy Chef{% endblock %}
 
@@ -22,6 +23,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/cook.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/make.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/cook_views.css') }}">
+{% if chosen_overview() != 'now' %}<link rel="stylesheet" href="{{ url_for('static', filename='css/overview_layouts.css') }}">{% endif %}
 <script src="{{ url_for('static', filename='js/ready.js') }}" defer></script>
 <script src="{{ url_for('static', filename='js/kitchen.js') }}" defer></script>
 <script src="{{ url_for('static', filename='js/steps.js') }}" defer></script>
@@ -30,11 +32,15 @@
 {% endblock %}
 
 {% set r = v.ready %}
+{% set ovl = chosen_overview() %}
 
 {% block content %}
-<article class="rv2 ready make" data-recipe="{{ recipe.id }}">
+<article class="rv2 ready make{% if ovl != 'now' %} has-ovl{% endif %}" data-recipe="{{ recipe.id }}">
   {% call recipe_head(recipe, v, 'make') %}{{ admin_tools() }}{% endcall %}
 
+  {% if ovl == 'poster' %}{{ poster() }}
+  {% elif ovl == 'compact' %}{{ compact() }}
+  {% else %}
   <div class="ov-grid">
   <div class="ov-top">
     {% set imgs = dish_images(recipe) %}
@@ -79,6 +85,7 @@
     <a class="go" href="#cook" data-cook-open>Start cooking →</a>
     <span class="hint">{{ v.steps|length }} steps · {{ v.total }}</span>
   </div></div>
+  {% endif %}
 
   {# Cooking: the steps over the whole screen #}
   <section class="cookmode" id="cook" aria-label="Cooking" hidden>
@@ -101,6 +108,7 @@
     {% if r.bowls %}<div class="meter" aria-hidden="true"><span></span></div>{% endif %}
     <div class="sheet-fit" data-fit><div class="fit-in">{{ prep_body() }}</div></div>
   </dialog>
+  {% if ovl != 'now' %}{{ more_sheet() }}{% endif %}
 </article>
 <script>
   (function () {
@@ -108,7 +116,13 @@
     document.addEventListener('click', function (e) {
       document.querySelectorAll('details.more[open]').forEach(function (d) { if (!d.contains(e.target)) d.open = false; });
       var open = e.target.closest('[data-sheet]');
-      if (open) { var d = document.getElementById(open.dataset.sheet); if (d && d.showModal) d.showModal(); return; }
+      if (open) {
+        var d = document.getElementById(open.dataset.sheet); if (d && d.showModal) d.showModal();
+        var at = open.dataset.jump && document.getElementById(open.dataset.jump); if (at) at.scrollIntoView({ block: 'start' });
+        return;
+      }
+      var menu = e.target.closest('[data-site-menu]');  // the overview trials: show or hide the site's top bar
+      if (menu) { var on = document.documentElement.classList.toggle('site-menu'); menu.setAttribute('aria-expanded', on ? 'true' : 'false'); return; }
       if (e.target.closest('[data-sheet-close]')) { var dlg = e.target.closest('dialog'); if (dlg) dlg.close(); return; }
       if (e.target.tagName === 'DIALOG') {  // a tap on the backdrop, not on the sheet's own padding
         var b = e.target.getBoundingClientRect();

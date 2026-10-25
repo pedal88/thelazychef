@@ -1,0 +1,102 @@
+{# The overview of the one-page flow laid out to fit one screen (a trial for admins: Overview in the admin chip,
+   chosen_overview() in routes/_shared.py; static/css/overview_layouts.css). Without the site's top bar and footer:
+   a small round back button at the top left, and one at the top right that shows the site's menu. "Start cooking"
+   is part of the layout, not a bar of its own. What is not needed to start, the parts, the chef's note, the plan,
+   the facts and nutrition, opens in a sheet.
+   A, poster: the image over half the screen with the title on it, the ingredients beside it (under it when the
+   screen stands up). C, compact: a small plate with the image, the title, the times and the servings, a row of
+   actions, and the ingredients in columns under it. Import with context. #}
+{% from "components/dish_info.html" import ingredient_list, dish_facts, servings_stepper with context %}
+
+{% macro corner_buttons() -%}
+<a class="fab ovl-back" href="{{ url_for('recipes_list') }}" aria-label="All recipes">{{ icon('back') }}</a>
+<button type="button" class="fab ovl-menu" data-site-menu aria-expanded="false" aria-label="Show the site menu">{{ icon('menu') }}</button>
+{%- endmacro %}
+
+{% macro servings_part() -%}
+{% if v.scalable %}<div class="ovl-serv"><span class="eyebrow">Servings</span>{{ servings_stepper('recipe_detail') }}</div>
+{% else %}<div class="ovl-serv"><span class="eyebrow">Makes</span> <b>{{ v.yield_text }}</b></div>{% endif %}
+{%- endmacro %}
+
+{% macro has_parts(imgs) %}{{ 'y' if imgs.parts or v.parts|length > 1 else '' }}{% endmacro %}
+
+{# Chips that open the sheet at their part #}
+{% macro more_chips(imgs) -%}
+<div class="ovl-chips">
+  {% if has_parts(imgs) %}<button type="button" class="chip" data-sheet="sheet-more" data-jump="more-parts">Parts · {{ imgs.parts|length if imgs.parts else v.parts|length }}</button>{% endif %}
+  {% if v.chef_note %}<button type="button" class="chip" data-sheet="sheet-more" data-jump="more-chef">From the chef</button>{% endif %}
+  <button type="button" class="chip" data-sheet="sheet-more" data-jump="more-facts">Facts &amp; nutrition</button>
+</div>
+{%- endmacro %}
+
+{% macro start_button() -%}
+<a class="go ovl-go" href="#cook" data-cook-open>Start cooking →</a>
+{%- endmacro %}
+
+{% macro ingredients(imgs) -%}
+<section class="ovl-ings" aria-labelledby="ings-h">
+  <div class="sec-head"><h2 id="ings-h">Ingredients</h2><span class="eyebrow">{{ v.shopping|length }} items</span></div>
+  <div class="ovl-cols">{{ ingredient_list() }}</div>
+</section>
+{%- endmacro %}
+
+{# A: the poster #}
+{% macro poster() -%}
+{% set imgs = dish_images(recipe) %}
+<div class="ovl ovl-poster">
+  {{ corner_buttons() }}
+  <figure class="pp-img{% if not imgs.dish %} no-img{% endif %}">
+    {% if imgs.dish %}<img src="{{ imgs.dish }}" alt="{{ v.title }}" width="1200" height="900">{% endif %}
+    <figcaption>
+      <h1>{{ v.title }}</h1>
+      <p class="pp-times"><span><b>{{ v.total }}</b> total</span><span><b>{{ v.active }}</b> active</span><span><b>{{ v.steps|length }}</b> steps</span></p>
+    </figcaption>
+  </figure>
+  <div class="pp-side">
+    <div class="pp-top">{{ servings_part() }}{{ more_chips(imgs) }}</div>
+    {{ ingredients(imgs) }}
+    <div class="pp-go">{{ start_button() }}</div>
+  </div>
+</div>
+{%- endmacro %}
+
+{# C: the compact dashboard #}
+{% macro compact() -%}
+{% set imgs = dish_images(recipe) %}
+<div class="ovl ovl-compact">
+  {{ corner_buttons() }}
+  <div class="cc-plate">
+    {% if imgs.dish %}<img class="cc-thumb" src="{{ imgs.dish }}" alt="{{ v.title }}" width="600" height="450">{% endif %}
+    <div class="cc-head">
+      <h1>{{ v.title }}</h1>
+      <p class="pp-times"><span><b>{{ v.total }}</b> total</span><span><b>{{ v.active }}</b> active</span><span><b>{{ v.steps|length }}</b> steps</span></p>
+      {{ servings_part() }}
+    </div>
+  </div>
+  <div class="cc-actions">
+    {{ start_button() }}
+    {% if v.ready %}<button type="button" class="cc-btn" data-sheet="sheet-bowls">{{ icon('salad') }} Bowls{% if v.ready.bowls %} · {{ v.ready.bowls|length }}{% endif %}</button>{% endif %}
+    <button type="button" class="cc-btn" data-sheet="sheet-more" data-jump="more-top" aria-label="More about the dish">⋯ More</button>
+  </div>
+  {{ ingredients(imgs) }}
+</div>
+{%- endmacro %}
+
+{# The sheet with the rest; a drawer from the right on wide screens #}
+{% macro more_sheet() -%}
+{% set imgs = dish_images(recipe) %}
+<dialog class="ovl-more" id="sheet-more" aria-labelledby="sheet-more-h">
+  <div class="sheet-h" id="more-top"><h2 id="sheet-more-h">About the dish</h2>
+    <button type="button" class="sheet-x" data-sheet-close aria-label="Close">{{ icon('close') }}</button></div>
+  {% if has_parts(imgs) %}
+  <section id="more-parts"><h3 class="eyebrow">The parts</h3>
+    {% if imgs.parts %}
+    <div class="part-images">{% for p in imgs.parts %}<figure><img src="{{ p.url }}" alt="" width="600" height="600" loading="lazy"><figcaption>{{ p.name }}</figcaption></figure>{% endfor %}</div>
+    {% else %}<p class="parts">{% for p in v.parts %}<span>{{ p }}</span>{% endfor %}</p>{% endif %}
+  </section>
+  {% endif %}
+  {% if v.chef_note %}<section id="more-chef"><h3 class="eyebrow">From the chef</h3><p class="note">{{ v.chef_note }}</p></section>{% endif %}
+  <section id="more-facts" class="more-panel">{{ dish_facts('recipe_detail', with_servings=False) }}</section>
+  {% if recipe.source_type == 'web' and recipe.source_input %}<p class="hint source">Based on <a href="{{ recipe.source_input }}" rel="noopener nofollow" target="_blank">{{ recipe.source_input.split('/')[2] }}</a></p>{% endif %}
+</dialog>
+{%- endmacro %}
