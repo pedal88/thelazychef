@@ -47,8 +47,12 @@ html.site-menu:not(.cooking) body:has(.make.has-ovl) .trialbar { top: 76px; }
   background: linear-gradient(to bottom, transparent, rgb(0 0 0 / .68)); }
 .pp-img h1 { margin: 0; color: inherit; font-size: clamp(28px, 3.4vw, 54px); line-height: 1.05; text-wrap: balance; }
 .pp-img.no-img figcaption { color: var(--color-ink); background: none; }
-.pp-side { display: flex; flex-direction: column; gap: var(--space-4); min-height: 0; padding: 68px var(--space-8) var(--space-6); }
-.pp-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.pp-side { display: flex; flex-direction: column; gap: var(--space-4); min-height: 0; padding: 12px var(--space-8) var(--space-6); }
+/* The servings and the chips on a line with the menu button, so the ingredients get the height under it */
+.pp-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-3);
+  min-height: 40px; padding-right: 52px; }
+.pp-top .ovl-chips { gap: 6px; }
+.pp-top .chip { min-height: 34px; padding: 0 12px; font-size: 13px; }
 .ovl-poster .ovl-ings { flex: 1; }
 .pp-go .ovl-go { width: 100%; min-height: 56px; font-size: 18px; }
 /* Standing up, or narrow: the image at the top */
@@ -56,6 +60,7 @@ html.site-menu:not(.cooking) body:has(.make.has-ovl) .trialbar { top: 76px; }
   /* The ingredients take what they need, up to two thirds; the image gets the rest */
   .ovl-poster { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(32vh, 1fr) auto; grid-template-rows: minmax(32dvh, 1fr) auto; }
   .pp-side { max-height: 68vh; max-height: 68dvh; padding: var(--space-4) var(--space-6) var(--space-4); }
+  .pp-top { padding-right: 0; }  /* the menu button is on the image */
   .pp-img figcaption { padding: 64px var(--space-6) var(--space-4); }
 }
 @media (max-width: 600px) {
@@ -102,3 +107,27 @@ html.site-menu:not(.cooking) body:has(.make.has-ovl) .trialbar { top: 76px; }
 .ovl-more .note { margin: 0; }
 .ovl-more .more-panel { position: static; width: auto; border: 0; border-radius: 0; padding: 0; box-shadow: none; }
 .ovl-more .source { margin-top: var(--space-6); }
+
+/* The ingredients as large as fits (static/js/overview_fit.js picks the first step that needs no scrolling, and
+   the last when none does): large and roomy for a short list, normal, and tight for a long one */
+.ovl-ings[data-density="large"] .ilist li { gap: var(--space-4); padding: 6px 0; font-size: 20px; }
+.ovl-ings[data-density="large"] .sym { --s: 68px !important; }
+.ovl-ings[data-density="large"] .ilist .amt { font-size: 18px; }
+.ovl-ings[data-density="large"] .ilist small { font-size: 14px; }
+.ovl-ings[data-density="large"] .shop-group { margin-top: var(--space-6); font-size: 13px; }
+.ovl-ings[data-density="large"] .ovl-cols { columns: 250px; }
+.ovl-ings[data-density="roomy"] .ilist li { gap: var(--space-3); padding: 4px 0; font-size: 18px; }
+.ovl-ings[data-density="roomy"] .sym { --s: 52px !important; }
+.ovl-ings[data-density="roomy"] .ilist .amt { font-size: 16px; }
+.ovl-ings[data-density="roomy"] .ilist small { font-size: 13px; }
+.ovl-ings[data-density="roomy"] .shop-group { margin-top: 20px; font-size: 13px; }
+.ovl-ings[data-density="roomy"] .ovl-cols { columns: 240px; }
+.ovl-ings[data-density="tight"] .ilist li { gap: 6px; padding: 0; font-size: 14px; line-height: 1.25; }
+.ovl-ings[data-density="tight"] .sym { --s: 28px !important; }
+.ovl-ings[data-density="tight"] .ilist .amt { font-size: 13px; }
+.ovl-ings[data-density="tight"] .ilist small { font-size: 11px; }
+.ovl-ings[data-density="tight"] .shop-group { margin-top: var(--space-2); }
+.ovl-ings[data-density="tight"] .sec-head { margin-bottom: 4px; }
+.ovl-ings[data-density="tight"] .ovl-cols { columns: 200px; column-gap: var(--space-6); }
+.ovl-poster:has(.ovl-ings[data-density="tight"]) .pp-side { gap: var(--space-3); }
+.ovl-poster:has(.ovl-ings[data-density="tight"]) .pp-go .ovl-go { min-height: 48px; font-size: 16px; }

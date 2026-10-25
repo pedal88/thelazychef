@@ -1,24 +1,10 @@
-/* The whole recipe on one page, as two screens (templates/recipe_v2_make.html). The overview: the dish as on
-   Overview with the ingredients beside it on wide screens, and "Start cooking" in a bar at the bottom. Cooking
-   (html.cooking): only the steps, without the site's top bar and footer and without bars of its own; small
-   floating controls in the corners. The bowls open over the whole screen. */
-.rv2.make { max-width: 680px; padding-bottom: 110px; /* room for the bar at the bottom */ }
-@media (min-width: 1000px) {
-  .rv2.make { max-width: 1180px; }
-  .make .ov-grid { grid-template-columns: 340px minmax(0, 1fr); }
-}
-
-/* Start cooking, in a bar at the bottom of the overview */
-.ov-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 120; background: var(--color-paper); border-top: 1px solid var(--color-line);
-  padding: 10px var(--space-4) calc(10px + env(safe-area-inset-bottom, 0px)); }
-.ov-bar .bar-in { max-width: 780px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
-.ov-bar .go { display: inline-flex; align-items: center; text-decoration: none; }
-.ov-bar .hint { margin: 0; }
-html.cooking .ov-bar { display: none; }
+/* The whole recipe on one page, as two screens (templates/recipe_v2_make.html). The overview is laid out in
+   static/css/overview_layouts.css. Cooking (html.cooking): only the steps, without the site's top bar and footer
+   and without bars of its own; small floating controls in the corners. The bowls open over the whole screen. */
 
 /* Cooking: nothing but the steps */
 html.cooking body > header, html.cooking body > footer { display: none !important; }
-html.cooking .make .rhead, html.cooking .make .ov-grid { display: none; }
+html.cooking .make .rhead { display: none; }
 html.cooking .rv2.make { padding-top: 0; }
 .cookmode { margin-top: 0; padding: 52px 0 84px; /* clear of the floating controls at the top and the bottom */ }
 .cookmode[hidden] { display: none; }
