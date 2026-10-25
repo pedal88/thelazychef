@@ -62,7 +62,7 @@
 .rv2 .steps .txt { margin: 4px 0 0; font-size: 17px; line-height: 1.6; }
 .rv2 .pill { display: inline-flex; align-items: center; gap: 4px; background: var(--color-soft); border: 1px solid var(--color-line); border-radius: var(--radius-sm); padding: 0 6px 0 2px; font-weight: 600; vertical-align: middle; line-height: 1.5; max-width: 100%; overflow-wrap: anywhere; }
 .rv2 .pill .sym-letter { border-radius: 6px; border: 0; }
-.rv2 .prep { color: var(--color-muted); }
+.rv2 span.prep { color: var(--color-muted); }  /* the prep style after a pill (view.step_html), not a step in the prep phase */
 .rv2 .done { margin: var(--space-2) 0 0; font-size: 14px; color: var(--color-muted); }
 .rv2 .done b { color: var(--color-ink); font-weight: 600; }
 .rv2 .note { margin-top: var(--space-6); padding: var(--space-4); background: var(--color-soft); border-radius: var(--radius); font-size: 15px; }

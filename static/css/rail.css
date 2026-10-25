@@ -1,0 +1,137 @@
+/* The steps on a wide screen (templates/components/step_list.html, static/js/steps.js): every step on a line at
+   the left, the step you are on as a page beside them, the list fitted to the height (static/js/overview_fit.js:
+   large, roomy, normal, snug or tight). Narrower screens keep the list.
+   Five improvements, each switched off on this device with html.rx-off-N from the admin chip (temporary, to see
+   what each adds; they are meant to work together): 1 a quiet list, 2 the card as a page, 3 one clear action,
+   4 the rail as a thin time line, 5 one type system and calm motion. */
+
+[data-fit-steps] { --row-pad: 10px; --h3: 17px; --tick: 34px; --txt: 16px; --meta: 12px; }
+[data-fit-steps][data-density="large"] { --row-pad: 15px; --h3: 21px; --tick: 42px; --txt: 19px; --meta: 14px; }
+[data-fit-steps][data-density="roomy"] { --row-pad: 12px; --h3: 19px; --tick: 38px; --txt: 17.5px; --meta: 13px; }
+[data-fit-steps][data-density="snug"] { --row-pad: 6px; --h3: 16px; --tick: 30px; --txt: 15.5px; --meta: 11.5px; }
+[data-fit-steps][data-density="tight"] { --row-pad: 3px; --h3: 15px; --tick: 28px; --txt: 15px; --meta: 11px; }
+
+/* The parts of the card that belong to the improvements */
+.sc-count, .sc-left, .sc-needs, .sc-act, .sc-then { display: none; }
+
+@media (max-width: 999px) {
+  .rail .side-card { display: none; }
+}
+
+@media (min-width: 1000px) {
+  .rail-reset { display: none; }
+
+  /* The sizes */
+  [data-fit-steps] .st { grid-template-columns: calc(var(--tick) + 6px) minmax(0, 1fr); }
+  [data-fit-steps] .st-tick { width: var(--tick); height: var(--tick); font-size: calc(var(--tick) * .4); }
+  [data-fit-steps] .st-body h3 { font-size: var(--h3); }
+  [data-fit-steps] .st-meta { font-size: var(--meta); }
+  [data-fit-steps][data-density="tight"] .seg-h { margin: var(--space-2) 0 2px; }
+  [data-fit-steps][data-density="tight"] .heat-line { margin: var(--space-3) 0 2px; }
+  [data-fit-steps][data-density="tight"] .st-timer-mini { min-height: 24px; }
+
+  /* The layout: the height between the controls at the top and the bottom, without the page scrolling */
+  .cookmode:has(> .vpanel.rail:not([hidden])) { padding-bottom: 64px; }
+  .cookmode .vpanel.rail:not([hidden]) { display: grid; grid-template-columns: minmax(360px, 5fr) minmax(0, 7fr); gap: var(--space-8);
+    max-width: 1560px; margin: 0 auto; padding-inline: var(--space-6); }
+  .rail-main { height: calc(100vh - 116px); height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding-right: var(--space-2); }
+  .cookmode .rail-main .slist { max-width: none; margin: 0; }
+  .rail-main .slist .st .st-more { display: none; }
+  .rail-main .slist .st, .rail-main .slist .st:not(.is-next):not(.is-open) { padding-block: var(--row-pad); cursor: pointer; }
+  .rail-main .slist .st .st-timer-mini { display: inline-flex; }
+  .rail-main .slist .st:hover { background: var(--color-soft); }
+  .rail-main .slist .st.is-next:hover { background: var(--ph-soft); }
+  .rail-main .slist .st.sel { box-shadow: inset 4px 0 0 var(--ph); }
+  .rail .side-card { position: sticky; top: 0; max-height: calc(100vh - 116px); max-height: calc(100dvh - 116px); overflow: auto;
+    padding: var(--space-4) var(--space-6) var(--space-6); border-radius: 20px; }
+  .rail .side-fold { display: none; }
+  .rail .side-card-h { padding: 0 0 var(--space-2); font-size: 12px; gap: var(--space-3); justify-content: flex-start; }
+  .rail .side-card .st-reset { margin: var(--space-4) 0 0; }
+  .rail .side-card .st { grid-template-columns: 56px minmax(0, 1fr); padding: var(--space-2) 0; }
+  .rail .side-card .st-tick { width: 48px; height: 48px; font-size: 18px; }
+  .rail .side-card .st-body h3 { font-size: clamp(22px, 1.9vw, 30px); }
+  .rail .side-card .st-meta { font-size: 14px; }
+  .rail .side-card .st-body .txt { font-size: clamp(18px, 1.45vw, 24px); line-height: 1.5; }
+  .rail .side-card :is(.st-eq, .st-donewhen, .st-part) { font-size: clamp(15px, 1.1vw, 18px); }
+  .rail .side-card .st-timer { min-height: 48px; padding: 0 18px; font-size: 16px; }
+  html:has(.vpanel.rail:not([hidden])) .fab-tools .details-btn { display: none; }  /* every step is one line */
+
+  /* ---- 1. A quiet list: no rings, borders or tags; done steps fade, the step you are on stands out ---- */
+  html:not(.rx-off-1) .rail-main .st + .st { border-top: 0; }
+  html:not(.rx-off-1) .rail-main .st-tick { border-color: transparent; background: none; color: var(--color-muted); font-weight: 500; }
+  html:not(.rx-off-1) .rail-main .st.is-next .st-tick { background: var(--ph); color: var(--color-paper); }
+  html:not(.rx-off-1) .rail-main .st.is-done .st-tick { background: none; border-color: transparent; color: var(--color-muted); }
+  html:not(.rx-off-1) .rail-main .st.is-done { opacity: .45; }
+  html:not(.rx-off-1) .rail-main .st.is-done .st-body { opacity: 1; }
+  html:not(.rx-off-1) .rail-main .st.is-next { background: none; }
+  html:not(.rx-off-1) .rail-main .st:not(.is-next) .st-body h3 { font-weight: 400; }
+  html:not(.rx-off-1) .rail-main .st.is-next .st-body h3 { font-weight: 700; }
+  html:not(.rx-off-1) .rail-main .st-timer-mini:not(.running) { display: none; }
+  html:not(.rx-off-1) .rail-main .st-tag { background: none; padding: 0; font-weight: 400; color: var(--color-muted); }
+  html:not(.rx-off-1) .rail-main .st-meta { opacity: .75; }
+  html:not(.rx-off-1) .rail-main .slist .st:hover, html:not(.rx-off-1) .rail-main .slist .st.is-next:hover { background: color-mix(in srgb, var(--color-soft) 60%, transparent); }
+  html:not(.rx-off-1) .rail-main .slist .st.sel { box-shadow: none; background: var(--color-soft); }
+
+  /* ---- 2. The card as a page: no box, in the middle of the height, which step of how many, what it needs as a
+          list, and the step after it ---- */
+  html:not(.rx-off-2) .rail .side-card { height: calc(100vh - 116px); height: calc(100dvh - 116px); display: flex; flex-direction: column; justify-content: center;
+    background: none; border: 0; box-shadow: none; padding: 0 var(--space-8); }
+  html:not(.rx-off-2) .rail [data-side-card-label] { display: none; }
+  html:not(.rx-off-2) .rail .sc-count { display: inline; }
+  html:not(.rx-off-2) .rail .side-card [data-step-card] { max-width: 62ch; }
+  html:not(.rx-off-2) .rail .side-card .st { background: none; padding: var(--space-3) 0; }
+  html:not(.rx-off-2) .rail .side-card .txt .pill { background: none; border: 0; padding: 0; font-weight: 600; }
+  html:not(.rx-off-2) .rail .side-card .txt .pill .sym { display: none; }
+  html:not(.rx-off-2) .rail .sc-needs:not([hidden]) { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-6); list-style: none;
+    margin: var(--space-2) 0 0 56px; padding: var(--space-4) 0 0; border-top: 1px solid var(--color-line); max-width: 62ch; }
+  html:not(.rx-off-2) .rail .sc-needs li { display: inline-flex; align-items: center; gap: var(--space-2); font-size: clamp(15px, 1.1vw, 18px); }
+  html:not(.rx-off-2) .rail .sc-needs .sym { --s: 32px !important; }
+  html:not(.rx-off-2) .rail .sc-then { display: block; margin: var(--space-6) 0 0 56px; color: var(--color-muted); font-size: 15px; }
+  html:not(.rx-off-2) .rail .side-card .st-reset { margin-left: 56px; text-align: left; }
+
+  /* ---- 3. One clear action: a large Done button instead of the small circle; → or space on a keyboard ---- */
+  html:not(.rx-off-3) .rail .side-card .st-tick { display: none; }
+  html:not(.rx-off-3) .rail .side-card .st { grid-template-columns: minmax(0, 1fr); }
+  html:not(.rx-off-3) .rail :is(.sc-needs, .sc-then, .side-card .st-reset) { margin-left: 0; }
+  html:not(.rx-off-3) .rail .sc-act { display: flex; align-items: center; gap: var(--space-3); margin-top: var(--space-6); }
+  html:not(.rx-off-3) .rail .sc-act:has(> [hidden]) { display: none; }
+  .rail .sc-done { min-height: 56px; padding: 0 28px; border: 0; border-radius: var(--radius-pill); background: var(--color-ink); color: var(--color-paper);
+    font: 600 18px var(--font-sans); cursor: pointer; }
+  .rail .sc-done:hover { background: color-mix(in srgb, var(--color-ink) 85%, var(--color-paper)); }
+  .rail .sc-done:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+
+  /* ---- 4. The rail as a thin time line: a line down the list with a dot for each step, the heat as a mark on it,
+          and the time to the table on the card ---- */
+  html:not(.rx-off-4) .rail-main .slist { position: relative; }
+  html:not(.rx-off-4) .rail-main .slist::before { content: ""; position: absolute; top: 12px; bottom: 12px; left: calc(var(--space-2) + (var(--tick) + 6px) / 2 - 1px);
+    width: 2px; background: var(--color-line); border-radius: 1px; }
+  html:not(.rx-off-4) .rail-main .seg-h { display: none; }
+  html:not(.rx-off-4) .rail-main .st-tick { position: relative; z-index: 1; width: 12px; height: 12px; margin: calc((var(--h3) * 1.3 - 12px) / 2) auto 0;
+    border: 2px solid var(--color-line); background: var(--color-paper); font-size: 0; justify-self: center; }
+  html:not(.rx-off-4) .rail-main .st.is-done .st-tick { background: var(--color-line); border-color: var(--color-line); }
+  html:not(.rx-off-4) .rail-main .st.is-next .st-tick { width: 18px; height: 18px; margin-top: calc((var(--h3) * 1.3 - 18px) / 2); border: 0; background: var(--ph);
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--ph) 22%, transparent); }
+  html:not(.rx-off-4) .rail-main .heat-line { position: relative; display: block; margin: var(--space-2) 0;
+    padding-left: calc(var(--space-2) + var(--tick) + 6px + var(--space-3)); font: 500 12px var(--font-mono); color: var(--color-cook-ink); }
+  html:not(.rx-off-4) .rail-main .heat-line::before { content: ""; position: absolute; z-index: 1; left: calc(var(--space-2) + (var(--tick) + 6px) / 2 - 7px); top: 50%;
+    width: 14px; height: 4px; margin-top: -2px; border: 0; border-radius: 2px; background: var(--color-cook); flex: none; }
+  html:not(.rx-off-4) .rail-main .heat-line::after { display: none; }
+  html:not(.rx-off-4) .rail .sc-left { display: inline; }
+  html:not(.rx-off-4):not(.rx-off-2) .rail .sc-left::before { content: "· "; }
+
+  /* ---- 5. One type system and calm motion: serif titles, sans text, mono only for times; quieter controls;
+          the card eases in when the step changes ---- */
+  html:not(.rx-off-5) .rail .side-card .st-body h3 { font-family: var(--font-serif); font-weight: 700; font-size: clamp(28px, 2.4vw, 40px); line-height: 1.15; letter-spacing: -.01em; }
+  html:not(.rx-off-5) .rail .side-card .st-line { gap: 4px 14px; }
+  html:not(.rx-off-5) .rail .side-card .st-body .txt { margin-top: var(--space-4); line-height: 1.6; }
+  html:not(.rx-off-5) .rail .side-card .st-part { margin-bottom: var(--space-2); }
+  html:not(.rx-off-5) .rail .side-card-h { font: 500 13px var(--font-sans); letter-spacing: .02em; text-transform: none; }
+  html:not(.rx-off-5) .rail .side-card .st-donewhen b { font-family: var(--font-sans); letter-spacing: .04em; }
+  html:not(.rx-off-5) .rail-main .heat-line { font-family: var(--font-sans); }
+  html:not(.rx-off-5) .rail-main .st-tag { font-size: var(--meta); }
+  html:not(.rx-off-5) .rail .side-card .sc-new { animation: sc-in .2s ease-out; }
+  html:not(.rx-off-5):has(.vpanel.rail:not([hidden])) :is(.fab, .fab-tools .vmenu-btn, .fab-tools .bowls-open) { box-shadow: none; opacity: .7; }
+  html:not(.rx-off-5):has(.vpanel.rail:not([hidden])) :is(.fab, .fab-tools .vmenu-btn, .fab-tools .bowls-open):hover { opacity: 1; }
+}
+@keyframes sc-in { from { opacity: 0; transform: translateY(8px); } }
+@media (prefers-reduced-motion: reduce) { .rail .side-card .sc-new { animation: none !important; } }

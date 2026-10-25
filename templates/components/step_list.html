@@ -1,5 +1,6 @@
-{# The steps of the one-page flow's cooking screen (recipe_v2_make.html): an ordinary numbered list in the order of
-   the plan, with a dashed line where the heat goes on, Get ready above it and Cook below. A prep step the plan
+{# The steps of the one-page flow's cooking screen (recipe_v2_make.html). On a wide screen every step is a line at
+   the left and the step you are on a page beside them (step_list, side_card). Underneath, and on a narrow screen,
+   an ordinary numbered list in the order of the plan, with a dashed line where the heat goes on, Get ready above it and Cook below. A prep step the plan
    puts in the waiting time stays below the line, in green. The step you are on shows everything; the others
    show one line (what, how long, the timer) and open on a tap, or all of them with "Show all details". The
    number ticks a step off. view_menu swaps the list for the timeline, the metro map or the river delta; a tap on
@@ -34,7 +35,7 @@
 {# One step of the list #}
 {% macro step_row(s, lang) -%}
     <li class="st {{ s.phase }}{{ ' setup' if s.setup }}" data-st="{{ s.id }}" data-label="{{ s.short }}" data-done="{{ s.done_when or '' }}"
-        data-passive="{{ s.passive_min or 0 }}" data-after="{{ (s.after or [])|join(' ') }}">
+        data-passive="{{ s.passive_min or 0 }}" data-after="{{ (s.after or [])|join(' ') }}" data-start="{{ s.start }}">
       <button type="button" class="st-tick" aria-pressed="false" aria-label="Step {{ s.n }} done"><span class="n" data-n="{{ s.n }}">{{ s.n }}</span></button>
       <div class="st-body">
         {# Always: what to do, how long, and while what #}
@@ -57,41 +58,30 @@
 {%- endmacro %}
 
 {# The step beside a view: the step you tap in it, or else the next one, in full. Beside the view on a wide
-   screen, docked at the bottom on a phone (static/js/steps.js, splitRender). #}
-{% macro side_card(reset=False) -%}
+   screen, docked at the bottom on a phone (static/js/steps.js, splitRender). Beside the steps (rail=True) it is
+   the page you cook from: which step of how many and the time to the table, what the step needs, a button for
+   done, and the step after it. #}
+{% macro side_card(rail=False) -%}
 <aside class="side-card" data-side-card aria-live="polite">
-  <div class="side-card-h"><span data-side-card-label></span><button type="button" class="side-fold" data-side-fold aria-expanded="true" aria-label="Fold the step">{{ icon('chevron-down') }}</button></div>
+  <div class="side-card-h"><span data-side-card-label></span>{% if rail %}<span class="sc-count" data-side-card-count></span><span class="sc-left" data-side-card-left></span>{% endif %}<button type="button" class="side-fold" data-side-fold aria-expanded="true" aria-label="Fold the step">{{ icon('chevron-down') }}</button></div>
   <ol class="slist all" data-step-card></ol>
-  {% if reset %}<p class="st-reset"><button type="button" data-steps-reset>Untick all the steps</button></p>{% endif %}
+  {% if rail %}
+  <ul class="sc-needs" data-side-card-needs aria-label="What the step needs"></ul>
+  <div class="sc-act"><button type="button" class="sc-done" data-sc-done>Done <span aria-hidden="true">→</span> next step</button></div>
+  <p class="sc-then" data-side-card-then></p>
+  <p class="st-reset"><button type="button" data-steps-reset>Untick all the steps</button></p>
+  {% endif %}
 </aside>
 {%- endmacro %}
 
-{# The steps as one list; with the step layout trial "phases" (chosen_steps_layout()) Get ready and Cook in two
-   lists side by side, and with "rail" every step on a line with the step you are on as a large card beside them.
-   On a narrow screen both look like the list. #}
+{# The steps: on a wide screen every step on a line at the left and the step you are on as a page beside them
+   (static/css/rail.css), fitted to the height (static/js/overview_fit.js); on a narrow screen the list, the step
+   you are on in full. #}
 {% macro step_list() -%}
 {% set lang = recipe.language or 'en' %}
 {% set heat = v.heat_on %}
-{% set lay = chosen_steps_layout() %}
-{% set heat_at = (v.steps|map(attribute='id')|list).index(heat.id) if heat else none %}
-{% if lay == 'phases' and heat_at %}
-<section class="vpanel phases" data-panel="steps" aria-label="Steps">
-  <div class="phase-cols" data-fit-steps data-density="normal">
-    <ol class="slist focus" data-slist aria-label="Get ready">
-      <li class="seg-h prep" aria-hidden="true">Get ready</li>
-      {% for s in v.steps[:heat_at] %}{{ step_row(s, lang) }}{% endfor %}
-    </ol>
-    <ol class="slist focus" data-slist aria-label="Cook" start="{{ heat_at + 1 }}">
-      <li class="heat-line" role="separator"><span>Heat on · {{ heat.left }} to the table</span></li>
-      <li class="seg-h cook" aria-hidden="true">Cook</li>
-      {% for s in v.steps[heat_at:] %}{{ step_row(s, lang) }}{% endfor %}
-    </ol>
-  </div>
-  <p class="st-reset"><button type="button" data-steps-reset>Untick all the steps</button></p>
-</section>
-{% else %}
-<section class="vpanel{{ ' rail' if lay == 'rail' }}" data-panel="steps" aria-label="Steps">
-  {% if lay == 'rail' %}<div class="rail-main" data-fit-steps data-density="normal">{% endif %}
+<section class="vpanel rail" data-panel="steps" aria-label="Steps" data-total="{{ v.total_min }}">
+  <div class="rail-main" data-fit-steps data-density="normal">
   <ol class="slist focus" data-slist>
     {% if heat %}<li class="seg-h prep" aria-hidden="true">Get ready</li>{% endif %}
     {% for s in v.steps %}
@@ -102,11 +92,10 @@
     {{ step_row(s, lang) }}
     {% endfor %}
   </ol>
-  {% if lay == 'rail' %}</div>
-  {{ side_card(reset=True) }}{% else %}
-  <p class="st-reset"><button type="button" data-steps-reset>Untick all the steps</button></p>{% endif %}
+  <p class="st-reset rail-reset"><button type="button" data-steps-reset>Untick all the steps</button></p>
+  </div>
+  {{ side_card(rail=True) }}
 </section>
-{% endif %}
 {# A step tapped in the delta: the same card as in the list, with its tick and timer, in a sheet #}
 <dialog class="step-sheet" id="sheet-step" aria-label="Step">
   <button type="button" class="sheet-x" data-sheet-close aria-label="Close">{{ icon('close') }}</button>
