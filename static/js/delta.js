@@ -81,6 +81,7 @@
     if (print) return print === 'landscape';
     const chosen = section.querySelector('[data-orient]') && store.get('delta-orient');  // a side view has no choice
     if (chosen) return chosen === 'landscape';
+    if (section.closest('.dl-panel') && innerWidth >= 1000) return true;  // the cooking screen: lying, beside the card too
     const availH = Math.max(320, innerHeight - 120);
     return wrap.clientWidth >= 700 && wrap.clientWidth / availH > 1.15;
   }
@@ -117,7 +118,7 @@
     const availW = (page ? page[0] : wrap.clientWidth) - 8;
     const availH = page ? page[1] - (box.getBoundingClientRect().top - section.getBoundingClientRect().top) - 60
       : Math.max(360, innerHeight - 140);
-    const floor = page ? 0.6 : innerWidth < 700 ? 0.6 : 0.75;
+    const floor = page ? 0.6 : innerWidth < 700 ? 0.6 : section.closest('.dl-panel') ? 0.65 : 0.75;
     const sc = Math.max(floor, Math.min(page ? 1.4 : 1, availW / natW, availH / natH));
     box.dataset.scale = sc;
     if (page) { // zoom also shrinks the space the drawing takes, so the browser does not shrink the whole sheet

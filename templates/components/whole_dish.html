@@ -48,8 +48,7 @@
    stretch with nothing new is cut short with a zigzag that says how long it really is. Names and stations carry
    data-step: a tap shows the step beside the map. #}
 {# The lines fill as you go (the stretch travelled in full colour); where parts meet, the station says which, with a
-   tick for each that is ready. Two trials in the admin chip (static/js/steps.js): "Times", the clock time each step
-   starts beside its name, and "Work", how long the work takes as the station's length down its line. #}
+   tick for each that is ready. #}
 {% macro metro_map(m, part_images={}) %}
 <div class="mt-key">{% for l in m.lanes %}<span><i class="lane-{{ l.n }}"></i>{{ l.name }}</span>{% endfor %}
   <span><i class="k-merge"></i>the parts meet</span><span><i class="k-stand"></i>stands on its own</span>
@@ -73,8 +72,6 @@
     {% for s in m.stations if s.stand %}<path class="mt-stand lane-{{ m.lanes[s.lane].n }}" data-lane="{{ s.lane }}" d="M{{ s.x + 10 }} {{ s.stand.y0 }} V{{ s.stand.y1 }}"></path>{% endfor %}
     {% for br in m.breaks %}<g class="mt-break"><rect x="-6" y="{{ br.y - 7 }}" width="{{ m.width + 12 }}" height="14"></rect>
       {%- for dy in (-4, 4) %}<path d="M-6 {{ br.y + dy }}{% for k in range(((m.width + 12) / 4)|int + 1) %} l4 {{ 3 if k % 2 else -3 }}{% endfor %}"></path>{% endfor %}</g>{% endfor %}
-    {# The work as the station's length down the line (a trial, "Work" in the admin chip) #}
-    {% for s in m.stations if s.work %}<rect class="mt-work lane-{{ m.lanes[s.lane].n }}" data-lane="{{ s.lane }}" x="{{ s.x - 6 }}" y="{{ s.y }}" width="12" height="{{ (s.work - s.y)|round(1) }}" rx="6"></rect>{% endfor %}
     {%- for s in m.stations %}
     <g class="mt-st ph-{{ s.phase }}{{ ' final' if s.final }}{{ ' merge' if s.merge }}" data-step="{{ s.id }}" data-lane="{{ s.lane }}">
       {%- if s.merge %}<rect x="{{ s.x0 - 9 }}" y="{{ s.y - 9 }}" width="{{ s.x1 - s.x0 + 18 }}" height="18" rx="9"></rect>
@@ -93,7 +90,7 @@
       <span>{{ l.name }}</span><small data-mt-count></small></button>{% endfor -%}
   </div>
   <ol class="mt-names">
-    {% for s in m.stations %}<li data-step="{{ s.id }}" data-y="{{ s.y }}" data-lane="{{ s.lane }}" style="top:{{ s.y }}px"><span class="mt-at" data-at-min="{{ s.start }}"></span><b class="mt-no">{{ s.no }}</b> <span class="mt-name">{{ s.short }}</span>{% if s.time %} <span class="mt-time">{{ s.time }}</span>{% endif %}
+    {% for s in m.stations %}<li data-step="{{ s.id }}" data-y="{{ s.y }}" data-lane="{{ s.lane }}" style="top:{{ s.y }}px"><b class="mt-no">{{ s.no }}</b> <span class="mt-name">{{ s.short }}</span>{% if s.time %} <span class="mt-time">{{ s.time }}</span>{% endif %}
       {%- if s.meets %} <span class="mt-meets">{% for k in s.meets %}<span class="lane-{{ m.lanes[k].n }}" data-meet="{{ k }}">{{ m.lanes[k].name }}</span>{{ ' + ' if not loop.last }}{% endfor %}</span>{% endif %} <span class="mt-ph ph-{{ s.phase }}">{{ s.phase }}</span></li>{% endfor %}
     {# A long wait, between the names, with what you could do while you wait (static/js/steps.js) #}
     {% for br in m.breaks %}<li class="mt-wait" style="top:{{ br.y }}px" data-from="{{ br.from }}" data-to="{{ br.to }}">{{ br.minutes }} min wait</li>{% endfor %}
