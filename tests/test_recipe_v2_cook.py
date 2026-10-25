@@ -139,8 +139,8 @@ class CookTests(unittest.TestCase):
             self.assertIn(part, html)
         self.assertEqual(html.count('class="side-card"'), 3)  # the rail, the timeline and the metro map
         self.assertEqual(len(re.findall(r'data-st="[^"]+"[^>]*data-start="\d+"', html)), html.count('class="st-tick"'))
-        # The five improvements as switches in the admin chip (temporary); the step layout trial is gone
-        self.assertEqual(html.count('data-rx="'), 5)
+        # No trials left for the steps
+        self.assertNotIn('data-rx="', html)
         self.assertNotIn('data-sl="', html)
 
     def test_the_time_strip_is_prep_cook_and_serve(self):

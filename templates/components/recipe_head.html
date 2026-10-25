@@ -40,11 +40,6 @@
   <div class="tgroup" data-ov-switch><span class="tlabel">Overview</span>
     {%- for key, label in OVERVIEW_LAYOUTS.items() %}<button type="button" data-ov="{{ key }}" aria-pressed="{{ 'true' if key == chosen_overview() else 'false' }}">{{ label }}</button>{% endfor -%}
   </div>
-  {# The five improvements of the steps on a wide screen, each on or off on this device (static/js/steps.js);
-     temporary, to see what each adds #}
-  <div class="tgroup" data-rail-switch><span class="tlabel">Rail</span>
-    {%- for key, label in [('1', 'Quiet'), ('2', 'Page'), ('3', 'Action'), ('4', 'Line'), ('5', 'Type')] %}<button type="button" data-rx="{{ key }}" aria-pressed="true">{{ key }} {{ label }}</button>{% endfor -%}
-  </div>
   {% endif %}
   <div class="tgroup" data-eq-switch><span class="tlabel">Tools</span>
     {%- for key, label in EQUIPMENT_STYLES.items() %}<button type="button" data-eq="{{ key }}" aria-pressed="{{ 'true' if key == chosen_equipment_style() else 'false' }}">{{ label }}</button>{% endfor -%}

@@ -16,7 +16,7 @@
   const lists = page ? [...page.querySelectorAll('[data-slist]')] : [];  // two with the step layout trial "phases"
   if (!lists.length) return;
   const { beep, ring, wake, leftMin, fmtLeft, esc } = window.Kitchen;
-  const KEY = `steps:${page.dataset.recipe}`, VIEW = 'one-page-view', DETAILS = 'one-page-details', RAIL_OFF = 'rail-off';
+  const KEY = `steps:${page.dataset.recipe}`, VIEW = 'one-page-view', DETAILS = 'one-page-details';
   const $ = s => page.querySelector(s), $$ = s => [...page.querySelectorAll(s)];
   const rows = $$('.st[data-st]');
   const byId = Object.fromEntries(rows.map(r => [r.dataset.st, r]));
@@ -112,7 +112,7 @@
   }
   const railSplit = splits.find(sp => sp.panel.classList.contains('rail'));
   const railOn = () => railSplit && !railSplit.panel.hidden && getComputedStyle(railSplit.card).display !== 'none'
-    && !document.documentElement.classList.contains('rx-off-3') && document.documentElement.classList.contains('cooking');
+    && document.documentElement.classList.contains('cooking');
 
   /* The delta fills as steps are ticked off in the list, and a running timer counts down on its step */
   const dFlow = $('[data-delta-flow]');
@@ -284,15 +284,6 @@
   page.addEventListener('click', e => {
     beep(true); wake();
     const t = e.target;
-    // The five improvements of the rail, each on or off on this device (the admin chip; temporary)
-    const rx = t.closest('[data-rx]');
-    if (rx) {
-      const off = document.documentElement.classList.toggle(`rx-off-${rx.dataset.rx}`);
-      rx.setAttribute('aria-pressed', String(!off));
-      try { localStorage.setItem(RAIL_OFF, $$('[data-rx]').filter(b => b.getAttribute('aria-pressed') === 'false').map(b => b.dataset.rx).join(' ')); } catch (err) { /* this visit */ }
-      page.dispatchEvent(new Event('steps:refit'));
-      return;
-    }
     if (t.closest('[data-sc-done]')) { cardDone(splits.find(x => x.card.contains(t))); return; }
     if (t.closest('[data-cook-open]')) { e.preventDefault(); startCooking(); return; }
     if (t.closest('[data-cook-close]')) { stopCooking(); return; }
@@ -403,8 +394,6 @@
       x0 = null;
     });
   }
-  // The switches show what is on
-  $$('[data-rx]').forEach(b => b.setAttribute('aria-pressed', String(!document.documentElement.classList.contains(`rx-off-${b.dataset.rx}`))));
 
   /* The admin chip (notes, look) over an open sheet too: a modal sheet lies above everything else on the page,
      so the chip moves into it while it is open and back when it closes */
