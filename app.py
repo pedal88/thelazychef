@@ -14,7 +14,7 @@ from database.db_connector import configure_database
 # The models are re-exported here: many scripts do "from app import app, db, Recipe, ..."
 from database.models import db, Ingredient, Recipe, Instruction, RecipeIngredient, RecipeMealType, RecipeDiet, User, Resource, resource_relations, Chef, UserRecipeInteraction, RecipeEvaluation, RecipeCollection, CollectionItem, UserQueue, UserLink, ConceptVisual, VisualStyleGuide
 from services.storage_service import get_storage_provider
-from routes._shared import DIFFICULTY_LABELS, EQUIPMENT_STYLES, FLOWS, chosen_flow, OVERVIEW_LAYOUTS, chosen_overview, IMAGE_STYLES, chosen_equipment_style, dish_images, equipment_image, get_recipe_image_url, get_image_url, icon, notes_text
+from routes._shared import DIFFICULTY_LABELS, EQUIPMENT_STYLES, FLOWS, chosen_flow, OVERVIEW_LAYOUTS, chosen_overview, STEP_LAYOUTS, chosen_steps_layout, IMAGE_STYLES, chosen_equipment_style, dish_images, equipment_image, get_recipe_image_url, get_image_url, icon, notes_text
 
 
 app = Flask(__name__)
@@ -128,6 +128,8 @@ app.add_template_global(FLOWS, 'FLOWS')
 app.add_template_global(OVERVIEW_LAYOUTS, 'OVERVIEW_LAYOUTS')
 app.add_template_global(chosen_flow)
 app.add_template_global(chosen_overview)
+app.add_template_global(STEP_LAYOUTS, 'STEP_LAYOUTS')
+app.add_template_global(chosen_steps_layout)
 app.add_template_global(chosen_equipment_style)
 app.add_template_global(equipment_image)
 app.add_template_global(notes_text)

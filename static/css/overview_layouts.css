@@ -31,7 +31,7 @@ html.site-menu:not(.cooking) body:has(.make.has-ovl) .trialbar { top: 76px; }
   color: var(--color-ink); font: 500 14px var(--font-sans); cursor: pointer; }
 .ovl-chips .chip:hover { background: var(--color-paper); }
 .ovl .ovl-go { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; white-space: nowrap; }
-.ovl-ings { min-height: 0; overflow: auto; overscroll-behavior: contain; }
+.rv2 .ovl-ings { min-height: 0; margin-top: 0; overflow: auto; overscroll-behavior: contain; }  /* not the margin of .rv2 section */
 .ovl-ings .sec-head { margin-bottom: var(--space-2); }
 .ovl-cols { columns: 230px; column-gap: var(--space-8); }
 .ovl-cols .shop-group { break-after: avoid; margin-top: var(--space-3); }
@@ -97,6 +97,7 @@ html.site-menu:not(.cooking) body:has(.make.has-ovl) .trialbar { top: 76px; }
 /* At a glance: the time, the equipment, the parts and the chef's note */
 .cc-glance { min-height: 0; overflow: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: var(--space-6);
   padding-left: var(--space-6); border-left: 1px solid var(--color-line); }
+.rv2 .cc-glance section { margin-top: 0; }
 .cc-glance h2.eyebrow { margin: 0 0 var(--space-2); }
 .cc-parts { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: var(--space-2); }
 .cc-parts figure { margin: 0; text-align: center; font-size: 12px; }

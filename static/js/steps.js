@@ -13,8 +13,8 @@
 (function () {
   'use strict';
   const page = document.querySelector('.make[data-recipe]');
-  const list = page && page.querySelector('.slist');
-  if (!list) return;
+  const lists = page ? [...page.querySelectorAll('[data-slist]')] : [];  // two with the step layout trial "phases"
+  if (!lists.length) return;
   const { beep, ring, wake, leftMin, fmtLeft, esc } = window.Kitchen;
   const KEY = `steps:${page.dataset.recipe}`, VIEW = 'one-page-view', DETAILS = 'one-page-details';
   const $ = s => page.querySelector(s), $$ = s => [...page.querySelectorAll(s)];
@@ -44,8 +44,7 @@
       const n = r.querySelector('.n');
       n.textContent = on ? '✓' : n.dataset.n;
     });
-    list.classList.toggle('all', all);
-    list.classList.toggle('focus', !all);
+    lists.forEach(l => { l.classList.toggle('all', all); l.classList.toggle('focus', !all); });
     const sw = $('[data-details]');
     if (sw) {
       sw.setAttribute('aria-pressed', String(all));
@@ -57,18 +56,20 @@
     runs();
     deltaFlow();
     save();
+    page.dispatchEvent(new Event('steps:render'));  // static/js/overview_fit.js checks the steps still fit
   }
 
   /* The timeline and the metro map: the step you tap in them, or else the next one, in full beside the view (on a
      wide screen) or docked at the bottom (on a phone). A second tap on the same step goes back to the next one. */
-  const splits = $$('.vpanel.split').map(panel => ({ panel, card: panel.querySelector('[data-side-card]'), pick: null, folded: false }));
+  // The step layout trial "rail" has the same card beside its list of steps (on a wide screen)
+  const splits = $$('.vpanel.split, .vpanel.rail').map(panel => ({ panel, card: panel.querySelector('[data-side-card]'), pick: null, folded: false }));
   function splitRender() {
     const next = nextId();
     splits.forEach(sp => {
       if (sp.pick && st.done.includes(sp.pick)) sp.pick = null;
       const id = sp.pick || next, list = sp.card.querySelector('[data-step-card]');
       sp.panel.querySelectorAll('.sel').forEach(e => e.classList.remove('sel'));
-      if (id) sp.panel.querySelectorAll(`.split-main [data-step="${id}"]`).forEach(e => e.classList.add('sel'));
+      if (id) sp.panel.querySelectorAll(`.split-main [data-step="${id}"], .rail-main [data-st="${id}"]`).forEach(e => e.classList.add('sel'));
       sp.card.querySelector('[data-side-card-label]').textContent = !id ? 'The food is ready' : sp.pick ? 'The step you chose' : 'Next step';
       sp.card.classList.toggle('folded', sp.folded);
       sp.card.querySelector('[data-side-fold]').setAttribute('aria-expanded', String(!sp.folded));
@@ -272,11 +273,14 @@
     if (t.closest('[data-steps-reset]')) { st = { done: [], runs: [] }; opened.clear(); render(); return; }
     const fold = t.closest('[data-side-fold]');
     if (fold) { const sp = splits.find(x => x.card.contains(fold)); sp.folded = !sp.folded; splitRender(); return; }
-    // A step in the timeline or the metro map: shown beside it
-    const pick = t.closest('.split-main [data-step]');
+    // A step in the timeline or the metro map, or in the list beside the card (the trial "rail", when the card
+    // is shown): shown beside it
+    const railRow = !t.closest('.st-tick, [data-start]') && t.closest('.rail-main .st[data-st]');
+    const railSp = railRow && splits.find(x => x.panel.contains(railRow));
+    const pick = t.closest('.split-main [data-step]') || (railSp && getComputedStyle(railSp.card).display !== 'none' && railRow);
     if (pick) {
-      const sp = splits.find(x => x.panel.contains(pick));
-      sp.pick = sp.pick === pick.dataset.step ? null : pick.dataset.step;
+      const sp = splits.find(x => x.panel.contains(pick)), id = pick.dataset.step || pick.dataset.st;
+      sp.pick = sp.pick === id ? null : id;
       splitRender();
       return;
     }

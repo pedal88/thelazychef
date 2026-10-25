@@ -6,7 +6,7 @@
 html.cooking body > header, html.cooking body > footer { display: none !important; }
 html.cooking .make .rhead { display: none; }
 html.cooking .rv2.make { padding-top: 0; }
-.cookmode { margin-top: 0; padding: 52px 0 84px; /* clear of the floating controls at the top and the bottom */ }
+.rv2 .cookmode { margin-top: 0; padding: 52px 0 84px; /* clear of the floating controls at the top and the bottom */ }
 .cookmode[hidden] { display: none; }
 .cookmode .slist { max-width: 780px; margin-inline: auto; }
 html.cooking body .trialbar { bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }  /* no bar under it while cooking */
