@@ -70,7 +70,7 @@ class CookTests(unittest.TestCase):
         # An admin who picks the one page gets Overview, Prep and Cook on the recipe's own page, with no tabs
         self.client.set_cookie('flow', 'one')
         html = self.client.get(f'/recipe/{rid}?servings=2').get_data(as_text=True)
-        for text in ('class="factbar"', 'id="ings-h"', 'Get ready', 'class="heat-line"', 'Heat on', 'class="st ', 'data-start',
+        for text in ('class="ovl ovl-poster"', 'data-fit-ings', 'id="ings-h"', 'Get ready', 'class="heat-line"', 'Heat on', 'class="st ', 'data-start',
                      'data-view="timeline"', 'data-view="delta"', 'id="sheet-bowls"', 'data-bowl', 'js/ready.js', 'js/steps.js',
                      'js/kitchen.js', 'Versions', 'data-cook-open', 'id="cook"', 'data-cook-close', 'data-view-menu',
                      'class="slist focus"', 'class="st-line"', 'class="st-more"', 'data-details', 'id="sheet-step"'):
@@ -105,25 +105,18 @@ class CookTests(unittest.TestCase):
 
     def test_the_overview_layouts_on_the_one_page(self):
         rid = self.ids["carbonara"]
-        self.client.set_cookie('flow', 'one')
-        self.client.set_cookie('overview_layout', 'poster')
-        self.assertNotIn('class="ovl ', self.client.get(f'/recipe/{rid}').get_data(as_text=True))  # admins only
         self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
-        # Now: the overview as it is, with the bar at the bottom
-        self.client.set_cookie('overview_layout', 'now')
-        html = self.client.get(f'/recipe/{rid}').get_data(as_text=True)
-        self.assertIn('class="ov-bar"', html)
-        self.assertIn('data-ov="poster" aria-pressed="false"', html)
-        self.assertNotIn('overview_layouts.css', html)
-        # A and C: no bar; Start cooking, the servings and the sheet with the rest are in the layout; the steps unchanged
-        for key, part in (('poster', 'class="ovl ovl-poster"'), ('compact', 'class="ovl ovl-compact"')):
-            self.client.set_cookie('overview_layout', key)
+        self.client.set_cookie('flow', 'one')
+        # A, the poster, unless C is chosen; the first layout, with the bar at the bottom, is gone
+        for cookie, key in (('now', 'poster'), ('poster', 'poster'), ('compact', 'compact')):
+            self.client.set_cookie('overview_layout', cookie)
             html = self.client.get(f'/recipe/{rid}').get_data(as_text=True)
-            for text in (part, 'overview_layouts.css', 'data-site-menu', 'id="sheet-more"', 'data-jump="more-facts"' if key == 'poster' else 'data-jump="more-top"',
+            for text in (f'class="ovl ovl-{key}"', 'overview_layouts.css', 'js/overview_fit.js', 'data-fit-ings', 'data-site-menu',
+                         'id="sheet-more"', 'data-jump="more-facts"' if key == 'poster' else 'data-jump="more-top"',
                          'data-cook-open', 'id="cook"', 'id="sheet-bowls"', 'class="slist focus"', f'data-ov="{key}" aria-pressed="true"'):
                 self.assertIn(text, html)
-            self.assertNotIn('class="ov-bar"', html)
-            self.assertNotIn('class="factbar"', html)
+            for gone in ('class="ov-bar"', 'class="factbar"', 'data-ov="now"'):
+                self.assertNotIn(gone, html)
             self.assertEqual(html.count('data-servings-form'), 1)  # in the layout, not again in the sheet
         # Without the one-page flow there is no choice of overview
         self.client.set_cookie('flow', 'tabs')
