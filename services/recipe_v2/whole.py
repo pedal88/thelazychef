@@ -42,7 +42,7 @@ def timeline(v2, sch, comps):
         busy.append({'left': pct(x), 'width': pct(y - x)})
         if k + 1 < len(me) and me[k + 1][0] - y >= 4:
             gap = me[k + 1][0] - y
-            free.append({'left': pct(y), 'width': pct(gap), 'minutes': gap, 'label': gap / total > 0.09})
+            free.append({'left': pct(y), 'width': pct(gap), 'minutes': gap, 'from': y, 'to': me[k + 1][0], 'label': gap / total > 0.09})
     step = 30 if total > 150 else 15 if total > 70 else 10
     return {
         'total': total, 'rows': rows, 'busy': busy, 'free': free,
