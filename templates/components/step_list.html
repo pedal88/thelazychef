@@ -58,17 +58,19 @@
 {%- endmacro %}
 
 {# The step beside a view: the step you tap in it, or else the next one, in full. Beside the view on a wide
-   screen, docked at the bottom on a phone (static/js/steps.js, splitRender). Beside the steps (rail=True) it is
-   the page you cook from: which step of how many and the time to the table, what the step needs, a button for
-   done, and the step after it. A step tapped in the list is shown as a look, with the way back. #}
-{% macro side_card(rail=False) -%}
-<aside class="side-card" data-side-card aria-live="polite">
-  <div class="side-card-h"><span data-side-card-label></span>{% if rail %}<span class="sc-count" data-side-card-count></span><span class="sc-left" data-side-card-left></span><button type="button" class="sc-back" data-sc-back hidden></button>{% endif %}<button type="button" class="side-fold" data-side-fold aria-expanded="true" aria-label="Fold the step">{{ icon('chevron-down') }}</button></div>
+   screen, docked at the bottom on a phone (static/js/steps.js, splitRender). Beside the steps and the timeline
+   (page=True) it is, on a wide screen, the page you cook from: which step of how many and the time to the table,
+   what the step needs, a button for done, and the step after it. A step tapped in the list or the timeline is
+   shown as a look, with the way back. #}
+{% macro side_card(page=False) -%}
+<aside class="side-card{{ ' pagecard' if page }}" data-side-card aria-live="polite">
+  <div class="side-card-h"><span data-side-card-label></span>{% if page %}<span class="sc-count" data-side-card-count></span><span class="sc-left" data-side-card-left></span><button type="button" class="sc-back" data-sc-back hidden></button>{% endif %}<button type="button" class="side-fold" data-side-fold aria-expanded="true" aria-label="Fold the step">{{ icon('chevron-down') }}</button></div>
   <ol class="slist all" data-step-card></ol>
-  {% if rail %}
+  {% if page %}
   <ul class="sc-needs" data-side-card-needs aria-label="What the step needs"></ul>
   <div class="sc-act"><button type="button" class="sc-done" data-sc-done>Done <span aria-hidden="true">→</span> next step</button><button type="button" class="sc-alt" data-sc-alt hidden></button></div>
   <p class="sc-then" data-side-card-then></p>
+  <p class="sc-tip" data-side-card-tip hidden></p>
   <p class="st-reset"><button type="button" data-steps-reset>Untick all the steps</button></p>
   {% endif %}
 </aside>
@@ -94,16 +96,16 @@
   </ol>
   <p class="st-reset rail-reset"><button type="button" data-steps-reset>Untick all the steps</button></p>
   </div>
-  {{ side_card(rail=True) }}
+  {{ side_card(page=True) }}
 </section>
 {# A step tapped in the delta: the same card as in the list, with its tick and timer, in a sheet #}
 <dialog class="step-sheet" id="sheet-step" aria-label="Step">
   <button type="button" class="sheet-x" data-sheet-close aria-label="Close">{{ icon('close') }}</button>
   <ol class="slist all" data-step-card></ol>
 </dialog>
-{% if v.timeline %}<section class="vpanel split" data-panel="timeline" aria-label="Timeline" hidden>
+{% if v.timeline %}<section class="vpanel split tl-panel" data-panel="timeline" aria-label="Timeline" hidden>
   <div class="split-main">{{ timeline(v.timeline) }}</div>
-  {{ side_card() }}
+  {{ side_card(page=True) }}
 </section>{% endif %}
 {% if v.metro_map %}<section class="vpanel split" data-panel="metro" aria-label="Metro map" hidden>
   <div class="split-main">{{ metro_map(v.metro_map) }}</div>

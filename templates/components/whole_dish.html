@@ -3,10 +3,10 @@
 
 {% macro timeline(t) %}
 <div class="tl-scroll">
-  <div class="tl" data-total="{{ t.total }}">
+  <div class="tl" data-total="{{ t.total }}" style="--rows: {{ t.rows|length + 1 }}">
     <div class="tl-row tl-me"><div class="tl-l"><span>You</span></div><div class="tl-t">
       {%- for b in t.busy %}<i class="tb me" style="left:{{ b.left }}%;width:{{ b.width }}%"></i>{% endfor -%}
-      {%- for f in t.free %}<i class="tb free" style="left:{{ f.left }}%;width:{{ f.width }}%">{% if f.label %}<b>free {{ f.minutes }} min</b>{% endif %}</i>{% endfor -%}
+      {%- for f in t.free %}<i class="tb free" style="left:{{ f.left }}%;width:{{ f.width }}%" data-from="{{ f.from }}" data-to="{{ f.to }}">{% if f.label %}<b>free {{ f.minutes }} min</b>{% endif %}</i>{% endfor -%}
     </div></div>
     {% for r in t.rows %}
     <div class="tl-row ph-{{ r.phase }}" data-step="{{ r.id }}" data-start="{{ r.start }}" data-aend="{{ r.a_end }}" data-end="{{ r.end }}" data-short="{{ r.short }}">
@@ -18,7 +18,7 @@
       </div>
     </div>
     {% endfor %}
-    <div class="tl-axis"><div></div><div>{% for k in t.ticks %}<span style="left:{{ k.left }}%">{{ k.label }}</span>{% endfor %}</div></div>
+    <div class="tl-axis"><div></div><div>{% for k in t.ticks %}<span style="left:{{ k.left }}%" data-min="{{ k.label }}">{{ k.label }}</span>{% endfor %}</div></div>
     {% for ph in t.phases %}<div class="phline{{ ' r' if ph.right }}" style="--x:{{ ph.x }}"><span>{{ ph.label }}</span></div>{% endfor %}
     <div class="nowline" style="--x:0"></div>
   </div>

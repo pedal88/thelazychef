@@ -94,8 +94,11 @@ class CookTests(unittest.TestCase):
         self.client.set_cookie('flow', 'one')
         html = self.client.get(f'/recipe/{rid}').get_data(as_text=True)
         # The timeline and the metro map with the chosen step beside them; the map as a transit map with time
-        self.assertEqual(html.count('class="vpanel split"'), 2)
-        self.assertEqual(html.count('class="side-card"'), 3)  # and the rail's
+        self.assertIn('class="vpanel split tl-panel"', html)
+        self.assertIn('class="vpanel split"', html)
+        self.assertEqual(len(re.findall(r'class="side-card[ "]', html)), 3)  # and the rail's
+        # The rail and the timeline have the page card, the metro map the plain one
+        self.assertEqual(html.count('class="side-card pagecard"'), 2)
         for part in ('class="mt"', 'class="mt-key"', 'data-mt-now', 'class="mt-ticks"'):
             self.assertIn(part, html)
         # The delta with rivers, filling as you cook
@@ -137,11 +140,13 @@ class CookTests(unittest.TestCase):
         self.assertIn('data-total="', html)
         for part in ('data-side-card-count', 'data-side-card-left', 'data-side-card-needs', 'data-sc-done', 'data-side-card-then', 'css/rail.css'):
             self.assertIn(part, html)
-        self.assertEqual(html.count('class="side-card"'), 3)  # the rail, the timeline and the metro map
+        self.assertEqual(len(re.findall(r'class="side-card[ "]', html)), 3)  # the rail, the timeline and the metro map
         self.assertEqual(len(re.findall(r'data-st="[^"]+"[^>]*data-at="\d+"', html)), html.count('class="st-tick"'))
         # data-start marks a timer button (static/js/steps.js); on a step it made every tap on it start a timer
         self.assertIsNone(re.search(r'<li[^>]*\bdata-start\b', html))
-        # No trials left for the steps
+        # The timeline's trials (temporary): clock and free time, off until switched on
+        self.assertEqual(html.count('data-tlx="'), 2)
+        self.assertIn('data-from="', html)
         self.assertNotIn('data-fx="', html)
         self.assertNotIn('data-rx="', html)
         self.assertNotIn('data-sl="', html)
