@@ -11,7 +11,8 @@ scales it to fit and draws the arrows (static/js/delta.js).
 - The steps form a tree towards the final step. The heaviest branch runs through
   the middle, and the main line (most active time) is drawn larger.
 - A result used in a second step gets a note there, not an arrow across the drawing.
-- Numbers are the step numbers of the method list, so step 6 is the same step everywhere.
+- Numbers are the step numbers of the method list, so step 6 is the same step everywhere. The steps folded away
+  are listed on their node ('folded'), for a page that shows every step.
 """
 from services.recipe_v2.planner import steps_from_v2
 
@@ -188,7 +189,7 @@ def build(v2, order, lines):
         s = by[f]
         return len(s.get('uses') or []) > 1 and bool(BOWLS & set(s.get('equipment') or []))
 
-    out = []
+    out, listed = [], set()  # a setting up two steps wait for is listed on the first
     for sid in nodes:
         if sid not in span:
             continue  # not connected to the dish
@@ -202,11 +203,16 @@ def build(v2, order, lines):
                          'label': label(s, k == 0 and bool(own), near if k == 0 else []),
                          'heat': HEAT.get(s.get('mode') or '', 0), 'temp': s.get('temp_c'),
                          'wait': s.get('passive_minutes') if (s.get('passive_minutes') or 0) >= 5 else None})
-        notes = []
+        notes, setup = [], []
         for x in steps_here:
             for w in waits.get(x) or []:
                 if w in by:
                     notes.append(label(by[w], False, []) + (f" {by[w]['temp_c']}°" if by[w].get('temp_c') else ''))
+                    setup.append(w)
+        # The steps the drawing folds away (a prep step drawn as its ingredients, a setting up the step waits for),
+        # for a page that shows every step: number and label, in the order of the method
+        hidden_here = sorted((set(folded.get(sid, [])) | set(setup)) - listed, key=lambda x: number[x])
+        listed.update(hidden_here)
         bowls = [[pic(u) for u in by[f].get('uses') or []] for f in folded.get(sid, []) if is_bowl(f)]
         loose = [u for f in folded.get(sid, []) if not is_bowl(f) for u in by[f].get('uses') or []] + list(by[sid].get('uses') or [])
         out.append({
@@ -214,5 +220,7 @@ def build(v2, order, lines):
             'chain': segs, 'notes': list(dict.fromkeys(notes)), 'bowls': bowls, 'pics': [pic(u) for u in loose],
             'early': not is_main(sid) and any((by[x].get('passive_minutes') or 0) >= EARLY_MINUTES for x in steps_here),
             'also': [{'no': number[x], 'short': by[x].get('short') or ''} for x in also.get(sid, [])],
+            'folded': [{'id': x, 'no': number[x], 'short': by[x].get('short') or '',
+                        'label': label(by[x], False, []) + (f" {by[x]['temp_c']}°" if by[x].get('temp_c') else '')} for x in hidden_here],
         })
     return {'nodes': out, 'edges': edges, 'max_depth': max(depth.values()), 'leaves': leaves(root)}

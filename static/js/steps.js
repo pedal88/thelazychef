@@ -64,7 +64,8 @@
      wide screen) or docked at the bottom (on a phone). A second tap on the same step goes back to the next one. */
   // The rail has the same card beside its list of steps (on a wide screen); a step tapped there is a look at it
   // (railCard), so it stays chosen when it is done and goes back only on purpose
-  const splits = $$('.vpanel.split, .vpanel.rail').map(panel => ({ panel, card: panel.querySelector('[data-side-card]'), pick: null, folded: false }));
+  // The delta has it too, shown on a wide screen with the trial "card" (static/css/rail.css)
+  const splits = $$('.vpanel.split, .vpanel.rail, .vpanel.dl-panel').map(panel => ({ panel, card: panel.querySelector('[data-side-card]'), pick: null, folded: false }));
   function splitRender() {
     const next = nextId();
     splits.forEach(sp => {
@@ -187,7 +188,6 @@
   function metroMarks(done, z) {
     $$('.mt [data-step]').forEach(e => e.classList.toggle('is-done', done.has(e.dataset.step)));
     $$('.mt-ticks [data-min]').forEach(li => { li.textContent = hm(z + li.dataset.min * 60e3); });
-    $$('.mt-at[data-at-min]').forEach(e => { e.textContent = hm(z + e.dataset.atMin * 60e3); });
     // The lines in full down to the first station not done
     const names = $$('.mt-names [data-step]'), at = names.find(li => !done.has(li.dataset.step)), clip = $('[data-mt-travelled]');
     if (clip) clip.setAttribute('height', String((at ? +at.dataset.y : parseFloat(mtMap.style.getPropertyValue('--h'))) + 40));
@@ -225,16 +225,6 @@
     mtMap.style.zoom = Math.max(.7, Math.min(1.8, mtBox.clientHeight / tall, across)).toFixed(3);
   }
   if (mtBox) { const ro = new ResizeObserver(metroFit); ro.observe(mtBox); ro.observe(mtBox.closest('.vpanel')); }
-  // The ingredients of each step on the map, small, after its name (shown on a wide screen)
-  $$('.mt-names li[data-step]').forEach(li => {
-    const syms = byId[li.dataset.step] ? [...byId[li.dataset.step].querySelectorAll('.st-more .txt .pill .sym')].slice(0, 5) : [];
-    if (!syms.length) return;
-    const box = document.createElement('span');
-    box.className = 'mt-ings';
-    box.setAttribute('aria-hidden', 'true');
-    syms.forEach(x => box.append(x.cloneNode(true)));
-    (li.querySelector('.mt-time') || li.querySelector('.mt-name')).after(box);
-  });
 
   /* The delta fills as steps are ticked off in the list, and a running timer counts down on its step */
   const dFlow = $('[data-delta-flow]');
@@ -410,13 +400,6 @@
     // The metro map's parts (the trial "parts"): a tap shows only that part, a second tap all of them
     const lane = t.closest('[data-mt-lane]');
     if (lane) { mtFocus = mtFocus === lane.dataset.mtLane ? null : lane.dataset.mtLane; timelineMarks(); return; }
-    const mtt = t.closest('[data-mtt]');  // the metro map's trials: the start times beside the names, the work as length
-    if (mtt) {
-      const on = document.documentElement.classList.toggle(`mtt-${mtt.dataset.mtt}`);
-      mtt.setAttribute('aria-pressed', String(on));
-      try { localStorage.setItem('metro-t', $$('[data-mtt]').filter(b => b.getAttribute('aria-pressed') === 'true').map(b => b.dataset.mtt).join(' ')); } catch (err) { /* this visit */ }
-      return;
-    }
     const mtx = t.closest('[data-mtx]');  // the parts in a row above the map, or above their lines; or neither
     if (mtx) {
       const on = !document.documentElement.classList.contains(`mtx-${mtx.dataset.mtx}`);
@@ -426,6 +409,15 @@
       timelineMarks();
       metroFit();
       try { localStorage.setItem('metro-x', on ? mtx.dataset.mtx : ''); } catch (err) { /* this visit */ }
+      return;
+    }
+    const dlx = t.closest('[data-dlx]');  // the delta's trials: the card beside it, every step on it
+    if (dlx) {
+      const on = document.documentElement.classList.toggle(`dlx-${dlx.dataset.dlx}`);
+      dlx.setAttribute('aria-pressed', String(on));
+      try { localStorage.setItem('delta-x', $$('[data-dlx]').filter(b => b.getAttribute('aria-pressed') === 'true').map(b => b.dataset.dlx).join(' ')); } catch (err) { /* this visit */ }
+      dispatchEvent(new Event('resize'));  // the delta lays itself out again
+      render();
       return;
     }
     const tipLook = t.closest('[data-tip-look]');  // a step suggested while you wait: a look at it
@@ -455,11 +447,12 @@
     if (t.closest('[data-steps-reset]')) { st = { done: [], runs: [] }; opened.clear(); render(); return; }
     const fold = t.closest('[data-side-fold]');
     if (fold) { const sp = splits.find(x => x.card.contains(fold)); sp.folded = !sp.folded; splitRender(); return; }
-    // A step in the timeline or the metro map, or in the list beside the card (the trial "rail", when the card
-    // is shown): shown beside it
+    // A step in a view, or in the list beside the card, when the card is shown: shown beside it. In the delta a
+    // tap anywhere on a step's box shows its first step.
+    const shown = el => { const sp = el && splits.find(x => x.panel.contains(el)); return sp && getComputedStyle(sp.card).display !== 'none' ? el : null; };
     const railRow = !t.closest('.st-tick, [data-start]') && t.closest('.rail-main .st[data-st]');
-    const railSp = railRow && splits.find(x => x.panel.contains(railRow));
-    const pick = t.closest('.split-main [data-step]') || (railSp && getComputedStyle(railSp.card).display !== 'none' && railRow);
+    const box = !t.closest('.fx-no') && !t.closest('.fx-seg') && t.closest('.dl-panel .g2-node');
+    const pick = shown(!t.closest('.fx-no') && t.closest('.split-main [data-step]')) || shown(railRow) || shown(box && box.querySelector('.fx-seg[data-step]'));
     if (pick) {
       const sp = splits.find(x => x.panel.contains(pick)), id = pick.dataset.step || pick.dataset.st;
       sp.pick = sp.pick === id ? null : id;
@@ -570,7 +563,7 @@
     if (bowlsFirst && sheet && sheet.showModal) { sheet.showModal(); requestAnimationFrame(fit); }
   }
   $$('[data-mtx]').forEach(b => b.setAttribute('aria-pressed', String(document.documentElement.classList.contains(`mtx-${b.dataset.mtx}`))));
-  $$('[data-mtt]').forEach(b => b.setAttribute('aria-pressed', String(document.documentElement.classList.contains(`mtt-${b.dataset.mtt}`))));
+  $$('[data-dlx]').forEach(b => b.setAttribute('aria-pressed', String(document.documentElement.classList.contains(`dlx-${b.dataset.dlx}`))));
   setInterval(() => { timelineMarks(); splitRender(); }, 30e3);  // the clock moves on
   wake();
   render();

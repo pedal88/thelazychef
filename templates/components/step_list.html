@@ -114,8 +114,12 @@
 </section>{% endif %}
 {# The delta with its phases as soft bands and the main river thick, filling as you tick off steps in the list:
    the next step in the drawing ringed, running timers counting down on their step #}
-{% if v.delta %}<section class="vpanel dv-rivers dv-progress" data-panel="delta" data-delta-flow aria-label="River delta" hidden>
+{# On a wide screen, with the trial "Card", the same page card beside it (static/css/rail.css) #}
+{% if v.delta %}<section class="vpanel dv-rivers dv-progress dl-panel" data-panel="delta" data-delta-flow aria-label="River delta" hidden>
+  <div class="split-main">
   <p class="hint">The river fills as you tick off steps; the next step is ringed. Tap a step for all of it.</p>
-  {{ delta(v.delta, recipe.id, print_links=False) }}
+  {{ delta(v.delta, recipe.id, print_links=False, folds=True) }}
+  </div>
+  {{ side_card(page=True) }}
 </section>{% endif %}
 {%- endmacro %}

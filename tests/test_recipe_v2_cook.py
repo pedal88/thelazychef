@@ -96,8 +96,13 @@ class CookTests(unittest.TestCase):
         # The timeline and the metro map with the chosen step beside them; the map as a transit map with time
         self.assertIn('class="vpanel split tl-panel"', html)
         self.assertIn('class="vpanel split mt-panel"', html)
-        # The rail, the timeline and the metro map all have the page card
-        self.assertEqual(html.count('class="side-card pagecard"'), 3)
+        # The rail, the timeline, the metro map and the delta all have the page card
+        self.assertEqual(html.count('class="side-card pagecard"'), 4)
+        # The delta: the card and every step on it as trials, the steps it folds away listed on their box
+        self.assertIn('class="vpanel dv-rivers dv-progress dl-panel"', html)
+        self.assertIn('data-dlx="card"', html)
+        self.assertIn('data-dlx="steps"', html)
+        self.assertIn('class="fx-folds"', html)
         # The metro map: its parts as buttons (a trial), each station and name on its part's line, clock times down the side
         self.assertIn('data-mt-lane="0"', html)
         self.assertIn('class="mt-ticks"', html)
@@ -106,15 +111,13 @@ class CookTests(unittest.TestCase):
         self.assertIn('data-mtx="row"', html)
         self.assertIn('data-mtx="lines"', html)
         self.assertEqual(html.count('class="mt-head '), html.count('class="mt-part '))
-        # The line in full down to where you are, the start time beside each name and the trials Times and Work
+        # The line in full down to where you are; the trials Times and Work are gone
         self.assertIn('data-mt-travelled', html)
-        self.assertEqual(html.count('class="mt-at"'), html.count('class="mt-no"'))
-        self.assertIn('data-mtt="times"', html)
-        self.assertIn('data-mtt="work"', html)
+        self.assertNotIn('data-mtt=', html)
         for part in ('class="mt"', 'class="mt-key"', 'data-mt-now', 'class="mt-ticks"'):
             self.assertIn(part, html)
         # The delta with rivers, filling as you cook
-        self.assertIn('class="vpanel dv-rivers dv-progress"', html)
+        self.assertIn('class="vpanel dv-rivers dv-progress dl-panel"', html)
         self.assertIn('data-delta-flow', html)
         self.assertNotIn('data-trial-key', html)
 
@@ -152,7 +155,7 @@ class CookTests(unittest.TestCase):
         self.assertIn('data-total="', html)
         for part in ('data-side-card-count', 'data-side-card-left', 'data-side-card-needs', 'data-sc-done', 'data-side-card-then', 'css/rail.css'):
             self.assertIn(part, html)
-        self.assertEqual(len(re.findall(r'class="side-card[ "]', html)), 3)  # the rail, the timeline and the metro map
+        self.assertEqual(len(re.findall(r'class="side-card[ "]', html)), 4)  # the rail, the timeline, the metro map and the delta
         self.assertEqual(len(re.findall(r'data-st="[^"]+"[^>]*data-at="\d+"', html)), html.count('class="st-tick"'))
         # data-start marks a timer button (static/js/steps.js); on a step it made every tap on it start a timer
         self.assertIsNone(re.search(r'<li[^>]*\bdata-start\b', html))

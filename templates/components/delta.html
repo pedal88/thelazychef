@@ -20,7 +20,9 @@
 </span>
 {%- endmacro %}
 
-{% macro delta(d, recipe_id, print_links=True, servings=None) %}
+{# folds=True lists the steps the drawing folds away on their node, each with its number (the one-page flow, where
+   they show with the trial "All steps"; static/css/rail.css) #}
+{% macro delta(d, recipe_id, print_links=True, servings=None, folds=False) %}
 <section class="delta" data-recipe="{{ recipe_id }}" aria-label="The whole recipe as a drawing">
   {% if print_links %}
   <div class="delta-head">
@@ -44,6 +46,9 @@
           {% if n.early %}<span class="mn-rem">{{ CLOCK|safe }}<span class="hand">start first</span></span>{% endif %}
           {% for note in n.notes %}<span class="g2-note hand">{{ note }}</span>{% endfor %}
           {% for a in n.also %}<span class="g2-note hand fx-also" title="{{ a.short }}">+ from <b class="fx-ref">{{ a.no }}</b></span>{% endfor %}
+          {% if folds and n.folded %}
+          <div class="fx-folds">{% for f in n.folded %}<span class="fx-seg fx-fold" data-step="{{ f.id }}"><button type="button" class="fx-no" data-tick="{{ f.id }}" aria-pressed="false" aria-label="Step {{ f.no }}: {{ f.short }}. Tap when done">{{ f.no }}</button><span class="mn-v">{{ f.label }}</span></span>{% endfor %}</div>
+          {% endif %}
           <div class="mn-head fx-head">
             {%- for s in n.chain -%}
             <span class="fx-seg" data-step="{{ s.id }}">{% if not loop.first %}<span class="fx-arrow" aria-hidden="true">→</span>{% endif %}<button type="button" class="fx-no" data-tick="{{ s.id }}" aria-pressed="false" aria-label="Step {{ s.no }}: {{ s.short }}. Tap when done">{{ s.no }}</button><span class="hand mn-v">{{ s.label }}</span>{% if s.heat %}{{ heat(s.heat) }}{% endif %}{% if s.temp %}<span class="mn-temp">{{ s.temp }}°</span>{% endif %}{% if s.wait %}<span class="mn-wait" title="stands {{ s.wait }} min">{{ GLASS|safe }}<span class="hand">{{ s.wait }}</span></span>{% endif %}</span>
