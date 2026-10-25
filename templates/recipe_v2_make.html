@@ -24,6 +24,8 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/cook_views.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/overview_layouts.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/rail.css') }}">
+{# The ways to lift the step you are on, switched on on this device in the admin chip (temporary), before the page is drawn #}
+<script>try { (localStorage.getItem('rail-fx') || '').split(' ').filter(Boolean).forEach(function (n) { document.documentElement.classList.add('fx-on-' + n); }); } catch (e) {}</script>
 <script src="{{ url_for('static', filename='js/ready.js') }}" defer></script>
 <script src="{{ url_for('static', filename='js/kitchen.js') }}" defer></script>
 <script src="{{ url_for('static', filename='js/steps.js') }}" defer></script>

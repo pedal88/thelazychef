@@ -101,6 +101,8 @@
     const done = new Set(st.done), at = row ? rows.indexOf(row) : -1;
     const then = row && rows.slice(at + 1).find(r => !done.has(r.dataset.st) && r.dataset.st !== id);
     q('[data-side-card-then]').textContent = then ? `Then: ${then.dataset.label}` : '';
+    rows.forEach(r => r.classList.toggle('is-then', r === then));
+    sp.card.dataset.phase = row ? ['prep', 'cook', 'serve'].find(p => row.classList.contains(p)) || '' : '';
     q('[data-sc-done]').hidden = !row;
   }
   // Done on the card: the step it shows, then on to the next
@@ -284,6 +286,14 @@
   page.addEventListener('click', e => {
     beep(true); wake();
     const t = e.target;
+    // The ways to lift the step you are on, each on or off on this device (the admin chip; temporary)
+    const fx = t.closest('[data-fx]');
+    if (fx) {
+      const on = document.documentElement.classList.toggle(`fx-on-${fx.dataset.fx}`);
+      fx.setAttribute('aria-pressed', String(on));
+      try { localStorage.setItem('rail-fx', $$('[data-fx]').filter(b => b.getAttribute('aria-pressed') === 'true').map(b => b.dataset.fx).join(' ')); } catch (err) { /* this visit */ }
+      return;
+    }
     if (t.closest('[data-sc-done]')) { cardDone(splits.find(x => x.card.contains(t))); return; }
     if (t.closest('[data-cook-open]')) { e.preventDefault(); startCooking(); return; }
     if (t.closest('[data-cook-close]')) { stopCooking(); return; }
@@ -419,6 +429,7 @@
     cooking(true);
     if (bowlsFirst && sheet && sheet.showModal) { sheet.showModal(); requestAnimationFrame(fit); }
   }
+  $$('[data-fx]').forEach(b => b.setAttribute('aria-pressed', String(document.documentElement.classList.contains(`fx-on-${b.dataset.fx}`))));
   wake();
   render();
   bowls();
