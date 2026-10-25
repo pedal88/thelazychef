@@ -329,7 +329,7 @@ def build(recipe, servings=None, plan='calm'):
     return {
         'title': recipe.title, 'servings': servings, 'scalable': scalable, 'yield_text': recipe.yield_text,
         'unit_names': unit_names(),
-        'total': duration(sch['T']), 'active': duration(sch['A']), 'plan': plan, 'plans': PLAN_NAMES,
+        'total': duration(sch['T']), 'total_min': sch['T'], 'active': duration(sch['A']), 'plan': plan, 'plans': PLAN_NAMES,
         'plan_hint': PLAN_HINTS[plan], 'parts': [c['name'] for c in v2['components']],
         'shopping': shop, 'shop_groups': groups.grouped(shop), 'equipment': equipment_list(first_use, cat), 'steps': steps,
         'heat_on': heat_on, 'time_strip': time_strip(steps, sch['T']),

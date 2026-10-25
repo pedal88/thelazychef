@@ -16,7 +16,7 @@
   const lists = page ? [...page.querySelectorAll('[data-slist]')] : [];  // two with the step layout trial "phases"
   if (!lists.length) return;
   const { beep, ring, wake, leftMin, fmtLeft, esc } = window.Kitchen;
-  const KEY = `steps:${page.dataset.recipe}`, VIEW = 'one-page-view', DETAILS = 'one-page-details';
+  const KEY = `steps:${page.dataset.recipe}`, VIEW = 'one-page-view', DETAILS = 'one-page-details', RAIL_OFF = 'rail-off';
   const $ = s => page.querySelector(s), $$ = s => [...page.querySelectorAll(s)];
   const rows = $$('.st[data-st]');
   const byId = Object.fromEntries(rows.map(r => [r.dataset.st, r]));
@@ -73,12 +73,46 @@
       sp.card.querySelector('[data-side-card-label]').textContent = !id ? 'The food is ready' : sp.pick ? 'The step you chose' : 'Next step';
       sp.card.classList.toggle('folded', sp.folded);
       sp.card.querySelector('[data-side-fold]').setAttribute('aria-expanded', String(!sp.folded));
-      if (!id || !byId[id]) { list.replaceChildren(); return; }
+      if (!id || !byId[id]) { list.replaceChildren(); if (sp.panel.classList.contains('rail')) railCard(sp, null, null); return; }
       const copy = byId[id].cloneNode(true);
       copy.classList.add('is-open');
+      copy.classList.toggle('sc-new', sp.last !== id);  // eases in when the step changes, not on every timer tick
+      sp.last = id;
       list.replaceChildren(copy);
+      if (sp.panel.classList.contains('rail')) railCard(sp, id, copy);
     });
   }
+
+  /* The card beside the steps (the rail): which step of how many, the time from it to the table, what it needs
+     (its ingredients, from the pills in the text), and the step after it */
+  const TOTAL = +(($('.vpanel.rail') || {}).dataset || {}).total || 0;
+  function railCard(sp, id, copy) {
+    const q = s => sp.card.querySelector(s), row = id && byId[id];
+    q('[data-side-card-count]').textContent = row ? `Step ${row.querySelector('.n').dataset.n} of ${rows.length}` : 'The food is ready';
+    const left = row && TOTAL ? TOTAL - +row.dataset.start : 0;
+    q('[data-side-card-left]').textContent = !left ? '' : left >= 120 ? `About ${(left / 60).toFixed(1).replace('.0', '')} h to the table` : `About ${left} min to the table`;
+    const needs = q('[data-side-card-needs]');
+    needs.replaceChildren(...(copy ? [...copy.querySelectorAll('.txt .pill')] : []).map(p => {
+      const li = document.createElement('li');
+      li.append(...p.cloneNode(true).childNodes);
+      return li;
+    }));
+    needs.hidden = !needs.children.length;
+    const done = new Set(st.done), at = row ? rows.indexOf(row) : -1;
+    const then = row && rows.slice(at + 1).find(r => !done.has(r.dataset.st) && r.dataset.st !== id);
+    q('[data-side-card-then]').textContent = then ? `Then: ${then.dataset.label}` : '';
+    q('[data-sc-done]').hidden = !row;
+  }
+  // Done on the card: the step it shows, then on to the next
+  function cardDone(sp) {
+    const id = sp.pick || nextId();
+    if (!id || st.done.includes(id)) return;
+    sp.pick = null;
+    tick(byId[id]);
+  }
+  const railSplit = splits.find(sp => sp.panel.classList.contains('rail'));
+  const railOn = () => railSplit && !railSplit.panel.hidden && getComputedStyle(railSplit.card).display !== 'none'
+    && !document.documentElement.classList.contains('rx-off-3') && document.documentElement.classList.contains('cooking');
 
   /* The delta fills as steps are ticked off in the list, and a running timer counts down on its step */
   const dFlow = $('[data-delta-flow]');
@@ -250,6 +284,16 @@
   page.addEventListener('click', e => {
     beep(true); wake();
     const t = e.target;
+    // The five improvements of the rail, each on or off on this device (the admin chip; temporary)
+    const rx = t.closest('[data-rx]');
+    if (rx) {
+      const off = document.documentElement.classList.toggle(`rx-off-${rx.dataset.rx}`);
+      rx.setAttribute('aria-pressed', String(!off));
+      try { localStorage.setItem(RAIL_OFF, $$('[data-rx]').filter(b => b.getAttribute('aria-pressed') === 'false').map(b => b.dataset.rx).join(' ')); } catch (err) { /* this visit */ }
+      page.dispatchEvent(new Event('steps:refit'));
+      return;
+    }
+    if (t.closest('[data-sc-done]')) { cardDone(splits.find(x => x.card.contains(t))); return; }
     if (t.closest('[data-cook-open]')) { e.preventDefault(); startCooking(); return; }
     if (t.closest('[data-cook-close]')) { stopCooking(); return; }
     if (t.closest('[data-view-menu]')) { openMenu(menu.hidden); return; }
@@ -342,7 +386,25 @@
     addEventListener('resize', () => { clearTimeout(t); t = setTimeout(fit, 120); });
   }
 
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') openMenu(false); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') openMenu(false);
+    // The rail: → (or space) is done and on to the next step, ← takes the last tick back
+    if (!railOn() || document.querySelector('dialog[open]') || e.metaKey || e.ctrlKey || e.altKey || e.target.closest('input, textarea, select')) return;
+    if (e.key === 'ArrowRight' || (e.key === ' ' && e.target === document.body)) { e.preventDefault(); cardDone(railSplit); }
+    else if (e.key === 'ArrowLeft' && st.done.length) { e.preventDefault(); st.done.pop(); render(); }
+  });
+  // And a swipe to the left on the card, on a tablet
+  if (railSplit) {
+    let x0 = null, y0 = null;
+    railSplit.card.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+    railSplit.card.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+      if (x0 !== null && railOn() && dx < -80 && Math.abs(dy) < 60) cardDone(railSplit);
+      x0 = null;
+    });
+  }
+  // The switches show what is on
+  $$('[data-rx]').forEach(b => b.setAttribute('aria-pressed', String(!document.documentElement.classList.contains(`rx-off-${b.dataset.rx}`))));
 
   /* The admin chip (notes, look) over an open sheet too: a modal sheet lies above everything else on the page,
      so the chip moves into it while it is open and back when it closes */

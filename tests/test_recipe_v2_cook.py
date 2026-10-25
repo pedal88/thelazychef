@@ -95,7 +95,7 @@ class CookTests(unittest.TestCase):
         html = self.client.get(f'/recipe/{rid}').get_data(as_text=True)
         # The timeline and the metro map with the chosen step beside them; the map as a transit map with time
         self.assertEqual(html.count('class="vpanel split"'), 2)
-        self.assertEqual(html.count('class="side-card"'), 2)
+        self.assertEqual(html.count('class="side-card"'), 3)  # and the rail's
         for part in ('class="mt"', 'class="mt-key"', 'data-mt-now', 'class="mt-ticks"'):
             self.assertIn(part, html)
         # The delta with rivers, filling as you cook
@@ -126,38 +126,22 @@ class CookTests(unittest.TestCase):
         self.client.set_cookie('flow', 'tabs')
         self.assertNotIn('data-ov="poster"', self.client.get(f'/recipe/{rid}').get_data(as_text=True))
 
-    def test_the_step_layout_trials(self):
+    def test_the_steps_are_a_rail_beside_the_step_you_are_on(self):
         rid = self.ids["carbonara"]
         self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
         self.client.set_cookie('flow', 'one')
-        steps = lambda html: re.findall(r'data-st="([^"]+)"', html.split('id="sheet-step"')[0])
-        # The list: one list, as before
-        self.client.set_cookie('steps_layout', 'list')
         html = self.client.get(f'/recipe/{rid}').get_data(as_text=True)
-        every = steps(html)
+        # One list, fitted to the height on a wide screen, beside the card with what belongs to the page
         self.assertEqual(html.count('data-slist'), 1)
-        self.assertNotIn('data-fit-steps', html)
-        self.assertIn('data-sl="list" aria-pressed="true"', html)
-        # 1: Get ready and Cook as two lists side by side, the steps in the same order, the heat line atop Cook
-        self.client.set_cookie('steps_layout', 'phases')
-        html = self.client.get(f'/recipe/{rid}').get_data(as_text=True)
-        self.assertEqual(html.count('data-slist'), 2)
-        self.assertIn('class="phase-cols" data-fit-steps', html)
-        self.assertEqual(steps(html), every)
-        cook = html.split('aria-label="Cook"')[1]
-        self.assertTrue(cook.split('class="st ')[0].count('class="heat-line"') == 1)
-        # 2: the list beside a card, with the reset in the card
-        self.client.set_cookie('steps_layout', 'rail')
-        html = self.client.get(f'/recipe/{rid}').get_data(as_text=True)
-        self.assertIn('class="vpanel rail"', html)
         self.assertIn('class="rail-main" data-fit-steps', html)
-        self.assertEqual(steps(html), every)
-        self.assertEqual(html.count('data-steps-reset'), 1)
+        self.assertIn('data-total="', html)
+        for part in ('data-side-card-count', 'data-side-card-left', 'data-side-card-needs', 'data-sc-done', 'data-side-card-then', 'css/rail.css'):
+            self.assertIn(part, html)
         self.assertEqual(html.count('class="side-card"'), 3)  # the rail, the timeline and the metro map
-        # Visitors never get the trials
-        self.client.get('/logout')
-        self.client.set_cookie('flow', 'one')
-        self.assertNotIn('data-fit-steps', self.client.get(f'/recipe/{rid}').get_data(as_text=True))
+        self.assertEqual(len(re.findall(r'data-st="[^"]+"[^>]*data-start="\d+"', html)), html.count('class="st-tick"'))
+        # The five improvements as switches in the admin chip (temporary); the step layout trial is gone
+        self.assertEqual(html.count('data-rx="'), 5)
+        self.assertNotIn('data-sl="', html)
 
     def test_the_time_strip_is_prep_cook_and_serve(self):
         from services.recipe_v2.view import time_strip
