@@ -139,7 +139,9 @@ class CookTests(unittest.TestCase):
             self.assertIn(part, html)
         self.assertEqual(html.count('class="side-card"'), 3)  # the rail, the timeline and the metro map
         self.assertEqual(len(re.findall(r'data-st="[^"]+"[^>]*data-start="\d+"', html)), html.count('class="st-tick"'))
-        # No trials left for the steps
+        # The trial of ways to lift the step you are on (temporary): three switches, all off until switched on
+        self.assertEqual(html.count('data-fx="'), 3)
+        self.assertNotIn('aria-pressed="true">1 Dim', html)
         self.assertNotIn('data-rx="', html)
         self.assertNotIn('data-sl="', html)
 
