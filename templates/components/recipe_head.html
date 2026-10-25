@@ -42,6 +42,7 @@
   </div>
   {# The metro map's parts, in a row or above their lines, or neither, on this device (static/js/steps.js); temporary #}
   <div class="tgroup" data-mtx-switch><span class="tlabel">Parts</span><button type="button" data-mtx="row" aria-pressed="false">In a row</button><button type="button" data-mtx="lines" aria-pressed="false">Above the lines</button></div>
+  <div class="tgroup" data-mtt-switch><span class="tlabel">Metro</span><button type="button" data-mtt="times" aria-pressed="false">Times</button><button type="button" data-mtt="work" aria-pressed="false">Work</button></div>
   {% endif %}
   <div class="tgroup" data-eq-switch><span class="tlabel">Tools</span>
     {%- for key, label in EQUIPMENT_STYLES.items() %}<button type="button" data-eq="{{ key }}" aria-pressed="{{ 'true' if key == chosen_equipment_style() else 'false' }}">{{ label }}</button>{% endfor -%}

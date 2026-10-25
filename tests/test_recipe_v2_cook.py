@@ -106,6 +106,11 @@ class CookTests(unittest.TestCase):
         self.assertIn('data-mtx="row"', html)
         self.assertIn('data-mtx="lines"', html)
         self.assertEqual(html.count('class="mt-head '), html.count('class="mt-part '))
+        # The line in full down to where you are, the start time beside each name and the trials Times and Work
+        self.assertIn('data-mt-travelled', html)
+        self.assertEqual(html.count('class="mt-at"'), html.count('class="mt-no"'))
+        self.assertIn('data-mtt="times"', html)
+        self.assertIn('data-mtt="work"', html)
         for part in ('class="mt"', 'class="mt-key"', 'data-mt-now', 'class="mt-ticks"'):
             self.assertIn(part, html)
         # The delta with rivers, filling as you cook
