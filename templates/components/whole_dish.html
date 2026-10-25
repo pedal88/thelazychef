@@ -51,8 +51,9 @@
 <div class="mt-key">{% for l in m.lanes %}<span><i class="lane-{{ l.n }}"></i>{{ l.name }}</span>{% endfor %}
   <span><i class="k-merge"></i>the parts meet</span><span><i class="k-stand"></i>stands on its own</span>
   <span class="k-ph"><b class="ph-prep">prep</b><b class="ph-cook">cook</b></span></div>
-{# The parts as buttons, with their picture and how many of their steps are done; a tap shows only that part
-   (a trial for admins, "Parts" in the admin chip; static/js/steps.js) #}
+{# The parts as buttons, with their picture and how many of their steps are done; a tap shows only that part.
+   A trial for admins in two forms ("Metro" in the admin chip; static/js/steps.js): in a row above the map, or each
+   standing on its own line, right above the line's first station (mt-heads below). #}
 <div class="mt-parts" role="group" aria-label="The parts of the dish">
   {%- for l in m.lanes %}<button type="button" class="mt-part lane-{{ l.n }}" data-mt-lane="{{ loop.index0 }}" aria-pressed="false">
     {%- if part_images.get(l.name) %}<img src="{{ part_images[l.name] }}" alt="" width="40" height="40" loading="lazy">{% else %}<i></i>{% endif -%}
@@ -76,6 +77,13 @@
   </svg>
   {% for br in m.breaks %}<span class="mt-break-l" style="top:{{ br.y }}px">{{ br.minutes }} min</span>{% endfor %}
   <div class="mt-now" data-mt-now hidden></div>
+  {# Each part on its own line, above the line's first station (the trial's second form) #}
+  {% set firsts = {} %}{% for s in m.stations if s.lane not in firsts %}{% set _ = firsts.update({s.lane: s}) %}{% endfor %}
+  <div class="mt-heads">
+    {%- for k, s in firsts|dictsort %}{% set l = m.lanes[k] %}<button type="button" class="mt-head lane-{{ l.n }}" data-mt-lane="{{ k }}" aria-pressed="false" style="left:{{ s.x }}px; top:{{ s.y }}px">
+      {%- if part_images.get(l.name) %}<img src="{{ part_images[l.name] }}" alt="" width="28" height="28" loading="lazy">{% endif -%}
+      <span>{{ l.name }}</span><small data-mt-count></small></button>{% endfor -%}
+  </div>
   <ol class="mt-names">
     {% for s in m.stations %}<li data-step="{{ s.id }}" data-y="{{ s.y }}" data-lane="{{ s.lane }}" style="top:{{ s.y }}px"><b class="mt-no">{{ s.no }}</b> <span class="mt-name">{{ s.short }}</span>{% if s.time %} <span class="mt-time">{{ s.time }}</span>{% endif %} <span class="mt-ph ph-{{ s.phase }}">{{ s.phase }}</span></li>{% endfor %}
     {# A long wait, between the names, with what you could do while you wait (static/js/steps.js) #}

@@ -202,8 +202,12 @@
   const mtBox = $('[data-mt-fit]'), mtMap = mtBox && mtBox.querySelector('.mt');
   function metroFit() {
     if (!mtMap) return;
+    // The parts above their lines: room above the map for the first line's name
+    const heads = document.documentElement.classList.contains('mtx-lines') ? [...mtMap.querySelectorAll('.mt-head')] : [];
+    const room = Math.max(0, ...heads.map(h => h.offsetHeight + 14 - parseFloat(h.style.top)));
+    mtMap.style.marginTop = room ? `${Math.ceil(room)}px` : '';
     const wide = innerWidth >= 1000 && mtBox.clientHeight;
-    const natural = parseFloat(mtMap.style.getPropertyValue('--h')) + 24;  // and the room above it
+    const natural = parseFloat(mtMap.style.getPropertyValue('--h')) + 24 + room;  // and the room above it
     mtMap.style.zoom = wide ? Math.max(.7, Math.min(1.4, mtBox.clientHeight / natural)).toFixed(3) : '';
   }
   if (mtBox) new ResizeObserver(metroFit).observe(mtBox);
@@ -382,11 +386,14 @@
     // The metro map's parts (the trial "parts"): a tap shows only that part, a second tap all of them
     const lane = t.closest('[data-mt-lane]');
     if (lane) { mtFocus = mtFocus === lane.dataset.mtLane ? null : lane.dataset.mtLane; timelineMarks(); return; }
-    const mtx = t.closest('[data-mtx]');
+    const mtx = t.closest('[data-mtx]');  // the parts in a row above the map, or above their lines; or neither
     if (mtx) {
-      const on = document.documentElement.classList.toggle(`mtx-${mtx.dataset.mtx}`);
-      mtx.setAttribute('aria-pressed', String(on));
-      if (!on) { mtFocus = null; timelineMarks(); }
+      const on = !document.documentElement.classList.contains(`mtx-${mtx.dataset.mtx}`);
+      $$('[data-mtx]').forEach(b => { document.documentElement.classList.remove(`mtx-${b.dataset.mtx}`); b.setAttribute('aria-pressed', 'false'); });
+      if (on) { document.documentElement.classList.add(`mtx-${mtx.dataset.mtx}`); mtx.setAttribute('aria-pressed', 'true'); }
+      mtFocus = null;
+      timelineMarks();
+      metroFit();
       try { localStorage.setItem('metro-x', on ? mtx.dataset.mtx : ''); } catch (err) { /* this visit */ }
       return;
     }

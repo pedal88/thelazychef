@@ -102,7 +102,10 @@ class CookTests(unittest.TestCase):
         self.assertIn('data-mt-lane="0"', html)
         self.assertIn('class="mt-ticks"', html)
         self.assertRegex(html, r'class="mt-ticks"[^<]*<li[^>]*data-min="0"')
-        self.assertEqual(html.count('data-mtx="5"'), 1)
+        # Its parts in two forms (a trial): a row above the map, or each above its own line
+        self.assertIn('data-mtx="row"', html)
+        self.assertIn('data-mtx="lines"', html)
+        self.assertEqual(html.count('class="mt-head '), html.count('class="mt-part '))
         for part in ('class="mt"', 'class="mt-key"', 'data-mt-now', 'class="mt-ticks"'):
             self.assertIn(part, html)
         # The delta with rivers, filling as you cook
