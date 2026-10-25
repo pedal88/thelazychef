@@ -89,13 +89,25 @@
   .rail .sc-needs li { display: inline-flex; align-items: center; gap: var(--space-2); font-size: clamp(15px, 1.1vw, 18px); }
   .rail .sc-needs .sym { --s: 32px !important; }
   .rail .sc-act { display: flex; align-items: center; gap: var(--space-3); margin-top: var(--space-6); }
-  .rail .sc-act:has(> [hidden]) { display: none; }
+  .rail .sc-act:has(> .sc-done[hidden]) { display: none; }
   .rail .sc-done { min-height: 56px; padding: 0 28px; border: 0; border-radius: var(--radius-pill); background: var(--color-ink); color: var(--color-paper);
     font: 600 18px var(--font-sans); cursor: pointer; }
   .rail .sc-done:hover { background: color-mix(in srgb, var(--color-ink) 85%, var(--color-paper)); }
   .rail .sc-done:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
   .rail .sc-then { display: block; margin: var(--space-6) 0 0; color: var(--color-muted); font-size: 15px; }
   .rail .side-card .st-reset { margin: var(--space-4) 0 0; text-align: left; }
+
+  /* A look at another step than the one you are on: said at the top, a little quieter, with the way back */
+  .rail .sc-back { margin-left: var(--space-2); padding: 0; border: 0; background: none; color: var(--color-ink); font: 600 13px var(--font-sans);
+    text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  .rail .sc-back[hidden] { display: none; }
+  .rail .side-card.peek .sc-count { color: var(--color-ink); }
+  .rail .side-card.peek [data-step-card] .st-body { opacity: .78; }
+  .rail .side-card.peek .sc-needs { opacity: .78; }
+  .rail .sc-alt { padding: 0; border: 0; background: none; color: var(--color-muted); font: 500 15px var(--font-sans); text-decoration: underline;
+    text-underline-offset: 3px; cursor: pointer; }
+  .rail .sc-alt[hidden] { display: none; }
+  .rail .sc-back:focus-visible, .rail .sc-alt:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; border-radius: 4px; }
 
   /* Quieter corner controls beside the steps */
   html:has(.vpanel.rail:not([hidden])) :is(.fab, .fab-tools .vmenu-btn, .fab-tools .bowls-open) { box-shadow: none; opacity: .7; }

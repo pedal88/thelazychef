@@ -35,7 +35,7 @@
 {# One step of the list #}
 {% macro step_row(s, lang) -%}
     <li class="st {{ s.phase }}{{ ' setup' if s.setup }}" data-st="{{ s.id }}" data-label="{{ s.short }}" data-done="{{ s.done_when or '' }}"
-        data-passive="{{ s.passive_min or 0 }}" data-after="{{ (s.after or [])|join(' ') }}" data-start="{{ s.start }}">
+        data-passive="{{ s.passive_min or 0 }}" data-after="{{ (s.after or [])|join(' ') }}" data-at="{{ s.start }}">
       <button type="button" class="st-tick" aria-pressed="false" aria-label="Step {{ s.n }} done"><span class="n" data-n="{{ s.n }}">{{ s.n }}</span></button>
       <div class="st-body">
         {# Always: what to do, how long, and while what #}
@@ -60,14 +60,14 @@
 {# The step beside a view: the step you tap in it, or else the next one, in full. Beside the view on a wide
    screen, docked at the bottom on a phone (static/js/steps.js, splitRender). Beside the steps (rail=True) it is
    the page you cook from: which step of how many and the time to the table, what the step needs, a button for
-   done, and the step after it. #}
+   done, and the step after it. A step tapped in the list is shown as a look, with the way back. #}
 {% macro side_card(rail=False) -%}
 <aside class="side-card" data-side-card aria-live="polite">
-  <div class="side-card-h"><span data-side-card-label></span>{% if rail %}<span class="sc-count" data-side-card-count></span><span class="sc-left" data-side-card-left></span>{% endif %}<button type="button" class="side-fold" data-side-fold aria-expanded="true" aria-label="Fold the step">{{ icon('chevron-down') }}</button></div>
+  <div class="side-card-h"><span data-side-card-label></span>{% if rail %}<span class="sc-count" data-side-card-count></span><span class="sc-left" data-side-card-left></span><button type="button" class="sc-back" data-sc-back hidden></button>{% endif %}<button type="button" class="side-fold" data-side-fold aria-expanded="true" aria-label="Fold the step">{{ icon('chevron-down') }}</button></div>
   <ol class="slist all" data-step-card></ol>
   {% if rail %}
   <ul class="sc-needs" data-side-card-needs aria-label="What the step needs"></ul>
-  <div class="sc-act"><button type="button" class="sc-done" data-sc-done>Done <span aria-hidden="true">→</span> next step</button></div>
+  <div class="sc-act"><button type="button" class="sc-done" data-sc-done>Done <span aria-hidden="true">→</span> next step</button><button type="button" class="sc-alt" data-sc-alt hidden></button></div>
   <p class="sc-then" data-side-card-then></p>
   <p class="st-reset"><button type="button" data-steps-reset>Untick all the steps</button></p>
   {% endif %}
