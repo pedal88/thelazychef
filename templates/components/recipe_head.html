@@ -40,8 +40,8 @@
   <div class="tgroup" data-ov-switch><span class="tlabel">Overview</span>
     {%- for key, label in OVERVIEW_LAYOUTS.items() %}<button type="button" data-ov="{{ key }}" aria-pressed="{{ 'true' if key == chosen_overview() else 'false' }}">{{ label }}</button>{% endfor -%}
   </div>
-  {# The metro map's parts, in a row or above their lines, or neither, on this device (static/js/steps.js); temporary #}
-  <div class="tgroup" data-mtx-switch><span class="tlabel">Parts</span><button type="button" data-mtx="row" aria-pressed="false">In a row</button><button type="button" data-mtx="lines" aria-pressed="false">Above the lines</button></div>
+  {# The metro map's parts, in a row, above their lines or as their first station, or none, on this device (static/js/steps.js); temporary #}
+  <div class="tgroup" data-mtx-switch><span class="tlabel">Parts</span><button type="button" data-mtx="row" aria-pressed="false">In a row</button><button type="button" data-mtx="lines" aria-pressed="false">Above the lines</button><button type="button" data-mtx="ends" aria-pressed="false">At the start</button></div>
   {# The river delta's trials, each on or off on this device (static/js/steps.js); temporary #}
   <div class="tgroup" data-dlx-switch><span class="tlabel">Delta</span><button type="button" data-dlx="card" aria-pressed="false">Card</button><button type="button" data-dlx="steps" aria-pressed="false">All steps</button></div>
   {% endif %}

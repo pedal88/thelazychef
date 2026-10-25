@@ -212,7 +212,19 @@
 /* The parts (a trial): hidden until switched on in the admin chip, in a row above the map or above their lines */
 .mt-parts, .mt-heads { display: none; }
 html.mtx-row .mt-parts { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 0 0 var(--space-3); }
-html:is(.mtx-row, .mtx-lines) .mt-key { display: none; }
+html:is(.mtx-row, .mtx-lines, .mtx-ends) .mt-key { display: none; }
+/* At the start: the part's picture, large, as the line's first station (static/js/steps.js placeTermini) */
+.mt-terms { display: none; }
+html.mtx-ends .mt-terms { display: block; position: absolute; left: 52px; top: 0; z-index: 3; }
+.mt-term { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 0; border: 0; background: none; cursor: pointer; }
+.mt-term::after { content: ""; width: 6px; height: var(--stem, 12px); margin-top: -6px; border-radius: 3px; background: var(--lane); }
+.mt-term img, .mt-term i { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; background: color-mix(in srgb, var(--lane) 22%, var(--color-paper));
+  box-shadow: 0 0 0 4px var(--lane), 0 0 0 7px var(--color-paper); display: grid; place-items: center; font: 700 26px var(--font-sans); font-style: normal; color: var(--lane); }
+.mt-term small { padding: 0 6px; border-radius: 6px; background: var(--color-paper); font: 700 13px var(--font-sans); color: var(--lane); white-space: nowrap; }
+.mt-term small span { font-weight: 500; color: var(--color-muted); }
+.mt-term.ready small span { color: var(--color-prep-ink); }
+.mt-term[aria-pressed="true"] img, .mt-term[aria-pressed="true"] i { box-shadow: 0 0 0 4px var(--lane), 0 0 0 10px color-mix(in srgb, var(--lane) 25%, var(--color-paper)); }
+.mt-term:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 4px; border-radius: 8px; }
 html.mtx-lines .mt-heads { display: block; position: absolute; left: 52px; top: 0; z-index: 3; }
 .mt-head { position: absolute; transform: translate(-50%, calc(-100% - 14px)); display: flex; flex-direction: column; align-items: center; gap: 6px;
   padding: 6px 4px; border: 0; border-radius: 14px; background: var(--color-paper); color: var(--lane); cursor: pointer; }

@@ -211,9 +211,9 @@
   const mtBox = $('[data-mt-fit]'), mtMap = mtBox && mtBox.querySelector('.mt');
   function metroFit() {
     if (!mtMap) return;
-    // The parts above their lines: room above the map for the first line's name
+    // The parts above their lines, or at their start: room above the map for the highest of them
     const heads = document.documentElement.classList.contains('mtx-lines') ? [...mtMap.querySelectorAll('.mt-head')] : [];
-    const room = Math.max(0, ...heads.map(h => h.offsetHeight + 14 - parseFloat(h.style.top)));
+    const room = Math.max(0, ...heads.map(h => h.offsetHeight + 14 - parseFloat(h.style.top)), -placeTermini());
     mtMap.style.marginTop = room ? `${Math.ceil(room)}px` : '';
     const wide = innerWidth >= 1000 && mtBox.clientHeight;
     if (!wide) { mtMap.style.zoom = ''; return; }
@@ -223,6 +223,25 @@
     const panel = mtBox.closest('.vpanel'), card = Math.min(640, Math.max(380, (panel.clientWidth - 128) * .4));
     const across = (panel.clientWidth - 128 - card) / (parseFloat(mtMap.style.getPropertyValue('--w')) + 62 + 460);  // .mt's width in rail.css
     mtMap.style.zoom = Math.max(.7, Math.min(1.8, mtBox.clientHeight / tall, across)).toFixed(3);
+  }
+  /* The parts at the start of their lines: each picture just above the line's first station, joined to it by a short
+     stretch of the line; a picture that would overlap one placed before it goes higher. Returns the highest top. */
+  function placeTermini() {
+    if (!document.documentElement.classList.contains('mtx-ends')) return 0;
+    const placed = [];
+    let top0 = 0;
+    $$('.mt-term').sort((a, b) => a.dataset.y - b.dataset.y).forEach(t => {
+      t.style.setProperty('--stem', '0px');
+      const w = t.offsetWidth, h = t.offsetHeight, x = +t.dataset.x, y = +t.dataset.y;
+      if (!h) return;
+      let top = y - 9 - 12 - h;
+      for (const p of placed) if (Math.abs(p.x - x) < (w + p.w) / 2 + 4 && top < p.top + p.h + 6 && top + h > p.top - 6) top = p.top - h - 8;
+      Object.assign(t.style, { left: `${x - w / 2}px`, top: `${top}px` });
+      t.style.setProperty('--stem', `${y - 9 - top - h}px`);
+      placed.push({ x, w, h, top });
+      top0 = Math.min(top0, top);
+    });
+    return top0;
   }
   if (mtBox) { const ro = new ResizeObserver(metroFit); ro.observe(mtBox); ro.observe(mtBox.closest('.vpanel')); }
 

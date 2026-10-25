@@ -82,12 +82,19 @@
   </svg>
   {% for br in m.breaks %}<span class="mt-break-l" style="top:{{ br.y }}px">{{ br.minutes }} min</span>{% endfor %}
   <div class="mt-now" data-mt-now hidden></div>
-  {# Each part on its own line, above the line's first station (the trial's second form) #}
+  {# Each part on its own line, above the line's first station (the trial's second form), or as the line's first
+     station: its picture, large, where the line starts (the third; static/js/steps.js places them) #}
   {% set firsts = {} %}{% for s in m.stations if s.lane not in firsts %}{% set _ = firsts.update({s.lane: s}) %}{% endfor %}
   <div class="mt-heads">
     {%- for k, s in firsts|dictsort %}{% set l = m.lanes[k] %}<button type="button" class="mt-head lane-{{ l.n }}" data-mt-lane="{{ k }}" aria-pressed="false" style="left:{{ s.x }}px; top:{{ s.y }}px">
       {%- if part_images.get(l.name) %}<img src="{{ part_images[l.name] }}" alt="" width="28" height="28" loading="lazy">{% endif -%}
       <span>{{ l.name }}</span><small data-mt-count></small></button>{% endfor -%}
+  </div>
+  <div class="mt-terms">
+    {%- for k, s in firsts|dictsort %}{% set l = m.lanes[k] %}<button type="button" class="mt-term lane-{{ l.n }}" data-mt-lane="{{ k }}" data-x="{{ s.x }}" data-y="{{ s.y }}" aria-pressed="false">
+      <small>{{ l.name }} <span data-mt-count></span></small>
+      {%- if part_images.get(l.name) %}<img src="{{ part_images[l.name] }}" alt="" width="64" height="64" loading="lazy">{% else %}<i aria-hidden="true">{{ l.name[:1]|upper }}</i>{% endif -%}
+    </button>{% endfor -%}
   </div>
   <ol class="mt-names">
     {% for s in m.stations %}<li data-step="{{ s.id }}" data-y="{{ s.y }}" data-lane="{{ s.lane }}" style="top:{{ s.y }}px"><b class="mt-no">{{ s.no }}</b> <span class="mt-name">{{ s.short }}</span>{% if s.time %} <span class="mt-time">{{ s.time }}</span>{% endif %}
