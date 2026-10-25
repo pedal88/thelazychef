@@ -40,6 +40,8 @@
   <div class="tgroup" data-ov-switch><span class="tlabel">Overview</span>
     {%- for key, label in OVERVIEW_LAYOUTS.items() %}<button type="button" data-ov="{{ key }}" aria-pressed="{{ 'true' if key == chosen_overview() else 'false' }}">{{ label }}</button>{% endfor -%}
   </div>
+  {# The metro map's trial, on or off on this device (static/js/steps.js); temporary, to see what it adds #}
+  <div class="tgroup" data-mtx-switch><span class="tlabel">Metro</span><button type="button" data-mtx="5" aria-pressed="false">5 Parts</button></div>
   {% endif %}
   <div class="tgroup" data-eq-switch><span class="tlabel">Tools</span>
     {%- for key, label in EQUIPMENT_STYLES.items() %}<button type="button" data-eq="{{ key }}" aria-pressed="{{ 'true' if key == chosen_equipment_style() else 'false' }}">{{ label }}</button>{% endfor -%}

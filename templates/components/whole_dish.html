@@ -47,19 +47,27 @@
    The drawing is an SVG at its own size; the names are HTML beside it, so the text stays readable on a phone. A long
    stretch with nothing new is cut short with a zigzag that says how long it really is. Names and stations carry
    data-step: a tap shows the step beside the map. #}
-{% macro metro_map(m) %}
+{% macro metro_map(m, part_images={}) %}
 <div class="mt-key">{% for l in m.lanes %}<span><i class="lane-{{ l.n }}"></i>{{ l.name }}</span>{% endfor %}
   <span><i class="k-merge"></i>the parts meet</span><span><i class="k-stand"></i>stands on its own</span>
   <span class="k-ph"><b class="ph-prep">prep</b><b class="ph-cook">cook</b></span></div>
+{# The parts as buttons, with their picture and how many of their steps are done; a tap shows only that part
+   (a trial for admins, "Parts" in the admin chip; static/js/steps.js) #}
+<div class="mt-parts" role="group" aria-label="The parts of the dish">
+  {%- for l in m.lanes %}<button type="button" class="mt-part lane-{{ l.n }}" data-mt-lane="{{ loop.index0 }}" aria-pressed="false">
+    {%- if part_images.get(l.name) %}<img src="{{ part_images[l.name] }}" alt="" width="40" height="40" loading="lazy">{% else %}<i></i>{% endif -%}
+    <span>{{ l.name }}</span><small data-mt-count></small></button>{% endfor -%}
+</div>
+<div class="mt-fit" data-mt-fit>
 <div class="mt" style="--h:{{ m.height }}px; --w:{{ m.width }}px">
-  <ol class="mt-ticks" aria-hidden="true">{% for k in m.ticks %}<li style="top:{{ k.y }}px">{{ k.m }}′</li>{% endfor %}</ol>
+  <ol class="mt-ticks" aria-hidden="true">{% for k in m.ticks %}<li style="top:{{ k.y }}px" data-min="{{ k.m }}">{{ k.m }}′</li>{% endfor %}</ol>
   <svg class="mt-svg" width="{{ m.width }}" height="{{ m.height }}" viewBox="0 0 {{ m.width }} {{ m.height }}" aria-hidden="true">
-    {% for p in m.paths %}<path class="mt-line lane-{{ m.lanes[p.lane].n }}" d="{{ p.d }}"></path>{% endfor %}
-    {% for s in m.stations if s.stand %}<path class="mt-stand lane-{{ m.lanes[s.lane].n }}" d="M{{ s.x + 10 }} {{ s.stand.y0 }} V{{ s.stand.y1 }}"></path>{% endfor %}
+    {% for p in m.paths %}<path class="mt-line lane-{{ m.lanes[p.lane].n }}" data-lane="{{ p.lane }}" d="{{ p.d }}"></path>{% endfor %}
+    {% for s in m.stations if s.stand %}<path class="mt-stand lane-{{ m.lanes[s.lane].n }}" data-lane="{{ s.lane }}" d="M{{ s.x + 10 }} {{ s.stand.y0 }} V{{ s.stand.y1 }}"></path>{% endfor %}
     {% for br in m.breaks %}<g class="mt-break"><rect x="-6" y="{{ br.y - 7 }}" width="{{ m.width + 12 }}" height="14"></rect>
       {%- for dy in (-4, 4) %}<path d="M-6 {{ br.y + dy }}{% for k in range(((m.width + 12) / 4)|int + 1) %} l4 {{ 3 if k % 2 else -3 }}{% endfor %}"></path>{% endfor %}</g>{% endfor %}
     {%- for s in m.stations %}
-    <g class="mt-st ph-{{ s.phase }}{{ ' final' if s.final }}{{ ' merge' if s.merge }}" data-step="{{ s.id }}">
+    <g class="mt-st ph-{{ s.phase }}{{ ' final' if s.final }}{{ ' merge' if s.merge }}" data-step="{{ s.id }}" data-lane="{{ s.lane }}">
       {%- if s.merge %}<rect x="{{ s.x0 - 9 }}" y="{{ s.y - 9 }}" width="{{ s.x1 - s.x0 + 18 }}" height="18" rx="9"></rect>
       {%- elif s.final %}<circle cx="{{ s.x }}" cy="{{ s.y }}" r="11"></circle><circle class="dot" cx="{{ s.x }}" cy="{{ s.y }}" r="4"></circle>
       {%- else %}<circle class="lane-{{ m.lanes[s.lane].n }}" cx="{{ s.x }}" cy="{{ s.y }}" r="7.5"></circle>{% endif -%}
@@ -69,8 +77,11 @@
   {% for br in m.breaks %}<span class="mt-break-l" style="top:{{ br.y }}px">{{ br.minutes }} min</span>{% endfor %}
   <div class="mt-now" data-mt-now hidden></div>
   <ol class="mt-names">
-    {% for s in m.stations %}<li data-step="{{ s.id }}" data-y="{{ s.y }}" style="top:{{ s.y }}px"><b class="mt-no">{{ s.no }}</b> <span class="mt-name">{{ s.short }}</span>{% if s.time %} <span class="mt-time">{{ s.time }}</span>{% endif %} <span class="mt-ph ph-{{ s.phase }}">{{ s.phase }}</span></li>{% endfor %}
+    {% for s in m.stations %}<li data-step="{{ s.id }}" data-y="{{ s.y }}" data-lane="{{ s.lane }}" style="top:{{ s.y }}px"><b class="mt-no">{{ s.no }}</b> <span class="mt-name">{{ s.short }}</span>{% if s.time %} <span class="mt-time">{{ s.time }}</span>{% endif %} <span class="mt-ph ph-{{ s.phase }}">{{ s.phase }}</span></li>{% endfor %}
+    {# A long wait, between the names, with what you could do while you wait (static/js/steps.js) #}
+    {% for br in m.breaks %}<li class="mt-wait" style="top:{{ br.y }}px" data-from="{{ br.from }}" data-to="{{ br.to }}">{{ br.minutes }} min wait</li>{% endfor %}
   </ol>
+</div>
 </div>
 <p class="hint">Down the map is time. A zigzag cuts a long wait short and says how long it is.</p>
 {% endmacro %}
