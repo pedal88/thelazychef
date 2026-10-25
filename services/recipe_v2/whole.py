@@ -188,11 +188,18 @@ def metro_map(v2, sch, comps):
         if info[a]['lane'] != info[z]['lane']:
             paths.append({'d': _curve(xs[a], ys[a], xs[z], ys[z]), 'lane': info[a]['lane']})
     stations = []
-    for sid in st:
+    for k, sid in enumerate(st):
         s = dict(info[sid], x=xs[sid], y=round(ys[sid], 1))
         if s['merge']:  # the wide station spans the lines that meet there
             here = {info[a]['lane'] for a, z in b['edges'] if z == sid} | {s['lane']}
             s['x0'], s['x1'] = x0 + min(here) * lane_w, x0 + max(here) * lane_w
+            s['meets'] = sorted(here)
+        # The work as the station's length down its line, short of the next station on the line
+        if s['a_end'] > s['start'] and not s['merge'] and not s['final']:
+            after = next((ys[t] for t in st[k + 1:] if info[t]['lane'] == s['lane']), None)
+            y1 = y_at(s['a_end']) if after is None else min(y_at(s['a_end']), after - 10)
+            if y1 - ys[sid] >= 6:
+                s['work'] = round(y1, 1)
         if s['end'] > s['a_end']:
             s['stand'] = {'y0': round(y_at(s['a_end']), 1), 'y1': round(y_at(s['end']), 1)}
         stations.append(s)

@@ -187,6 +187,15 @@
   function metroMarks(done, z) {
     $$('.mt [data-step]').forEach(e => e.classList.toggle('is-done', done.has(e.dataset.step)));
     $$('.mt-ticks [data-min]').forEach(li => { li.textContent = hm(z + li.dataset.min * 60e3); });
+    $$('.mt-at[data-at-min]').forEach(e => { e.textContent = hm(z + e.dataset.atMin * 60e3); });
+    // The lines in full down to the first station not done
+    const names = $$('.mt-names [data-step]'), at = names.find(li => !done.has(li.dataset.step)), clip = $('[data-mt-travelled]');
+    if (clip) clip.setAttribute('height', String((at ? +at.dataset.y : parseFloat(mtMap.style.getPropertyValue('--h'))) + 40));
+    // Where parts meet: a tick for each part that has done all it does before
+    $$('.mt-meets [data-meet]').forEach(e => {
+      const y = +e.closest('li').dataset.y, before = names.filter(li => li.dataset.lane === e.dataset.meet && +li.dataset.y < y);
+      e.classList.toggle('ok', before.length > 0 && before.every(li => done.has(li.dataset.step)));
+    });
     $$('.mt-wait[data-from]').forEach(w => {
       const from = +w.dataset.from, to = +w.dataset.to, ideas = fillFree(from, to);
       w.textContent = `${to - from} min wait` + (ideas.length ? ` · while you wait: ${ideas.map(x => byId[x.id].dataset.label).join(', ')}` : '');
@@ -386,6 +395,13 @@
     // The metro map's parts (the trial "parts"): a tap shows only that part, a second tap all of them
     const lane = t.closest('[data-mt-lane]');
     if (lane) { mtFocus = mtFocus === lane.dataset.mtLane ? null : lane.dataset.mtLane; timelineMarks(); return; }
+    const mtt = t.closest('[data-mtt]');  // the metro map's trials: the start times beside the names, the work as length
+    if (mtt) {
+      const on = document.documentElement.classList.toggle(`mtt-${mtt.dataset.mtt}`);
+      mtt.setAttribute('aria-pressed', String(on));
+      try { localStorage.setItem('metro-t', $$('[data-mtt]').filter(b => b.getAttribute('aria-pressed') === 'true').map(b => b.dataset.mtt).join(' ')); } catch (err) { /* this visit */ }
+      return;
+    }
     const mtx = t.closest('[data-mtx]');  // the parts in a row above the map, or above their lines; or neither
     if (mtx) {
       const on = !document.documentElement.classList.contains(`mtx-${mtx.dataset.mtx}`);
@@ -539,6 +555,7 @@
     if (bowlsFirst && sheet && sheet.showModal) { sheet.showModal(); requestAnimationFrame(fit); }
   }
   $$('[data-mtx]').forEach(b => b.setAttribute('aria-pressed', String(document.documentElement.classList.contains(`mtx-${b.dataset.mtx}`))));
+  $$('[data-mtt]').forEach(b => b.setAttribute('aria-pressed', String(document.documentElement.classList.contains(`mtt-${b.dataset.mtt}`))));
   setInterval(() => { timelineMarks(); splitRender(); }, 30e3);  // the clock moves on
   wake();
   render();

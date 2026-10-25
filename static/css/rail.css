@@ -202,6 +202,21 @@
 .mt-now::before { content: "Now"; position: absolute; right: 0; top: -16px; font: 600 11px var(--font-sans); color: var(--color-ink); }
 .mt-names .mt-wait { display: block; padding: 0 6px; font: italic 400 12px var(--font-sans); color: var(--color-muted); white-space: nowrap;
   overflow: hidden; text-overflow: ellipsis; pointer-events: none; background: none; }
+/* The stretch travelled in full colour, the rest faint (static/js/steps.js sets the clip) */
+.mt-line.mt-ahead { opacity: .28; }
+/* Where parts meet: which, each with a tick when it is ready */
+.mt-meets { flex: none; font: 500 12px var(--font-sans); color: var(--color-muted); }
+.mt-meets::before { content: "· "; }
+.mt-meets [data-meet] { color: var(--lane); font-weight: 600; }
+.mt-meets [data-meet].ok::after { content: " ✓"; color: var(--color-prep-ink); }
+/* The trial "times": the clock time each step starts, beside its name, instead of the marks down the side */
+.mt-at { display: none; }
+html.mtt-times .mt-at { display: inline-block; flex: none; width: 3.2em; font: 500 12px var(--font-mono); color: var(--color-muted); }
+html.mtt-times .mt-ticks { visibility: hidden; }
+/* The trial "work": the work as the station's length down its line */
+.mt-work { display: none; }
+html.mtt-work .mt-work { display: inline; fill: color-mix(in srgb, var(--lane) 30%, var(--color-paper)); stroke: var(--lane); stroke-width: 2; }
+
 /* The parts (a trial): hidden until switched on in the admin chip, in a row above the map or above their lines */
 .mt-parts, .mt-heads { display: none; }
 html.mtx-row .mt-parts { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 0 0 var(--space-3); }
