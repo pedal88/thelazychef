@@ -1,0 +1,104 @@
+/* The overview layouts of the one-page flow that fit one screen (a trial for admins,
+   templates/components/overview_layouts.html). A, poster: the image over half the screen, the ingredients beside it.
+   C, compact: a small plate at the top and the ingredients in columns under it. Both take the whole screen, without
+   the site's top bar and footer; the round button at the top right shows the top bar again. */
+html:not(.site-menu) body:has(.make.has-ovl) > header, body:has(.make.has-ovl) > footer { display: none !important; }
+html.site-menu body:has(.make.has-ovl) > header { position: fixed; left: 0; right: 0; top: 0; }
+.rv2.make.has-ovl { max-width: none; margin: 0; padding: 0; }
+.make.has-ovl .rhead { display: none; }
+html.cooking .ovl { display: none; }
+/* The admin chip at the top, beside the back button, clear of the title and Start cooking */
+html:not(.cooking) body:has(.make.has-ovl) .trialbar { top: calc(12px + env(safe-area-inset-top, 0px)); bottom: auto; left: 64px; }
+
+.ovl { height: 100vh; height: 100dvh; }
+.ovl .fab { position: fixed; z-index: 130; top: calc(12px + env(safe-area-inset-top, 0px)); }
+.ovl-back { left: max(12px, env(safe-area-inset-left, 0px)); }
+.ovl-menu { right: max(12px, env(safe-area-inset-right, 0px)); }
+/* With the top bar shown, everything moves down under it */
+html.site-menu .ovl { margin-top: 64px; height: calc(100vh - 64px); height: calc(100dvh - 64px); }
+html.site-menu .ovl .fab { top: 76px; }
+html.site-menu:not(.cooking) body:has(.make.has-ovl) .trialbar { top: 76px; }
+.ovl-menu[aria-expanded="true"] { background: var(--color-ink); color: var(--color-paper); border-color: var(--color-ink); }
+
+/* Shared parts */
+.pp-times { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 8px 0 0; font: 400 14px var(--font-mono); }
+.pp-times b { font-weight: 600; }
+.ovl-serv { display: flex; align-items: center; gap: var(--space-3); }
+.ovl-serv .stepper button { height: 36px; }
+.ovl-serv .stepper input { height: 32px; width: 52px; }
+.ovl-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.ovl-chips .chip { min-height: 36px; padding: 0 14px; border: 1px solid var(--color-line); border-radius: var(--radius-pill); background: var(--color-soft);
+  color: var(--color-ink); font: 500 14px var(--font-sans); cursor: pointer; }
+.ovl-chips .chip:hover { background: var(--color-paper); }
+.ovl .ovl-go { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; white-space: nowrap; }
+.ovl-ings { min-height: 0; overflow: auto; overscroll-behavior: contain; }
+.ovl-ings .sec-head { margin-bottom: var(--space-2); }
+.ovl-cols { columns: 230px; column-gap: var(--space-8); }
+.ovl-cols .shop-group { break-after: avoid; margin-top: var(--space-3); }
+.ovl-cols .shop-group:first-child { margin-top: 0; }
+.ovl-cols .ilist li { break-inside: avoid; }
+.chip:focus-visible, .cc-btn:focus-visible, .ovl-go:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+/* A, the poster: the image to the left at full height, with the title on it */
+.ovl-poster { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(380px, 1fr); }
+.pp-img { position: relative; margin: 0; overflow: hidden; background: var(--color-soft); }
+.pp-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.pp-img figcaption { position: absolute; left: 0; right: 0; bottom: 0; padding: 96px var(--space-8) var(--space-6); color: #fff;
+  background: linear-gradient(to bottom, transparent, rgb(0 0 0 / .68)); }
+.pp-img h1 { margin: 0; color: inherit; font-size: clamp(28px, 3.4vw, 54px); line-height: 1.05; text-wrap: balance; }
+.pp-img.no-img figcaption { color: var(--color-ink); background: none; }
+.pp-side { display: flex; flex-direction: column; gap: var(--space-4); min-height: 0; padding: 68px var(--space-8) var(--space-6); }
+.pp-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.ovl-poster .ovl-ings { flex: 1; }
+.pp-go .ovl-go { width: 100%; min-height: 56px; font-size: 18px; }
+/* Standing up, or narrow: the image at the top */
+@media (orientation: portrait), (max-width: 760px) {
+  /* The ingredients take what they need, up to two thirds; the image gets the rest */
+  .ovl-poster { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(32vh, 1fr) auto; grid-template-rows: minmax(32dvh, 1fr) auto; }
+  .pp-side { max-height: 68vh; max-height: 68dvh; padding: var(--space-4) var(--space-6) var(--space-4); }
+  .pp-img figcaption { padding: 64px var(--space-6) var(--space-4); }
+}
+@media (max-width: 600px) {
+  .pp-side { padding: var(--space-3) var(--space-4) calc(var(--space-3) + env(safe-area-inset-bottom, 0px)); gap: var(--space-3); }
+  .pp-img figcaption { padding: 48px var(--space-4) var(--space-3); }
+  .pp-times { font-size: 13px; }
+}
+
+/* C, compact: a plate at the top, a row of actions, the ingredients in columns */
+.ovl-compact { display: flex; flex-direction: column; gap: var(--space-4); max-width: 1400px; margin: 0 auto;
+  padding: 64px var(--space-8) var(--space-4); }
+.cc-plate { display: flex; align-items: center; gap: var(--space-6); }
+.cc-thumb { flex: none; width: clamp(96px, 16vw, 220px); height: auto; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius); background: var(--color-soft); }
+.cc-head { min-width: 0; }
+.cc-head h1 { margin: 0; font-size: clamp(24px, 2.6vw, 40px); line-height: 1.1; text-wrap: balance; }
+.cc-head .pp-times { color: var(--color-muted); }
+.cc-head .ovl-serv { margin-top: var(--space-3); }
+.cc-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.cc-actions .ovl-go { min-height: 48px; }
+.cc-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 48px; padding: 0 18px; border: 1px solid var(--color-line); border-radius: var(--radius-pill);
+  background: var(--color-paper); color: var(--color-ink); font: 600 15px var(--font-sans); cursor: pointer; }
+.cc-btn:hover { background: var(--color-soft); }
+.cc-btn .icon { width: 18px; height: 18px; }
+.ovl-compact .ovl-ings { flex: 1; border-top: 1px solid var(--color-line); padding-top: var(--space-3); }
+.ovl-compact .ovl-cols { columns: 240px; }
+@media (max-width: 600px) {
+  .ovl-compact { padding: 60px var(--space-4) calc(var(--space-3) + env(safe-area-inset-bottom, 0px)); gap: var(--space-3); }
+  .cc-plate { gap: var(--space-3); align-items: flex-start; }
+  .cc-thumb { width: 96px; }
+  .cc-actions .ovl-go { flex: 1 1 100%; }  /* a row of its own, Bowls and More share the next */
+  .cc-btn { flex: 1; justify-content: center; padding: 0 14px; }
+}
+
+/* The rest: a drawer from the right, over the whole height */
+.ovl-more { border: 0; margin: 0 0 0 auto; padding: var(--space-3) var(--space-6) var(--space-6); width: min(460px, 100vw); max-width: 100vw;
+  height: 100%; max-height: 100%; overflow: auto; background: var(--color-paper); color: var(--color-ink); box-shadow: -12px 0 40px rgb(0 0 0 / .18); }
+.ovl-more[open] { animation: drawer-in .2s ease-out; }
+@keyframes drawer-in { from { transform: translateX(32px); opacity: .5; } }
+@media (prefers-reduced-motion: reduce) { .ovl-more[open] { animation: none; } }
+.ovl-more::backdrop { background: rgb(0 0 0 / .3); }
+.ovl-more .sheet-h { position: sticky; top: calc(-1 * var(--space-3)); z-index: 1; background: var(--color-paper); padding-block: var(--space-2); }
+.ovl-more section { margin-top: var(--space-6); scroll-margin-top: 64px; }
+.ovl-more h3.eyebrow { margin: 0 0 var(--space-2); }
+.ovl-more .note { margin: 0; }
+.ovl-more .more-panel { position: static; width: auto; border: 0; border-radius: 0; padding: 0; box-shadow: none; }
+.ovl-more .source { margin-top: var(--space-6); }

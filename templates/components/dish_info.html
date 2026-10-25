@@ -18,21 +18,25 @@
     {% endfor %}
 {%- endmacro %}
 
+{% macro servings_stepper(endpoint) -%}
+{# The servings: a number to type, or − and +. On Overview the amounts change at once (static/js/servings.js);
+   elsewhere, and without JavaScript, the form loads the page for that many servings. #}
+<form class="stepper" method="get" action="{{ url_for(endpoint, recipe_id=recipe.id) }}" data-servings-form>
+  <input type="hidden" name="plan" value="{{ v.plan }}">
+  <button type="button" data-step="-1" aria-label="Fewer servings">−</button>
+  <input type="number" name="servings" value="{{ v.servings }}" min="1" max="24" inputmode="numeric" aria-label="Servings" data-servings-input>
+  <button type="button" data-step="1" aria-label="More servings">+</button>
+</form>
+{%- endmacro %}
+
 {# Servings, plan, the facts about the dish, nutrition and the print links. endpoint is the page the servings and
-   plan links go to. #}
-{% macro dish_facts(endpoint) -%}
+   plan links go to; with_servings=False leaves the servings out, for a page that shows them elsewhere. #}
+{% macro dish_facts(endpoint, with_servings=True) -%}
 {% macro link(servings, plan) %}{{ url_for(endpoint, recipe_id=recipe.id, servings=servings, plan=plan) }}{% endmacro %}
-          {% if v.scalable %}
+          {% if v.scalable and with_servings %}
           <div class="row">
             <span>Servings</span>
-            {# A number to type, or − and +. On Overview the amounts change at once (static/js/servings.js);
-               elsewhere, and without JavaScript, the form loads the page for that many servings. #}
-            <form class="stepper" method="get" action="{{ url_for(endpoint, recipe_id=recipe.id) }}" data-servings-form>
-              <input type="hidden" name="plan" value="{{ v.plan }}">
-              <button type="button" data-step="-1" aria-label="Fewer servings">−</button>
-              <input type="number" name="servings" value="{{ v.servings }}" min="1" max="24" inputmode="numeric" aria-label="Servings" data-servings-input>
-              <button type="button" data-step="1" aria-label="More servings">+</button>
-            </form>
+            {{ servings_stepper(endpoint) }}
           </div>
           {% endif %}
           <div class="row">

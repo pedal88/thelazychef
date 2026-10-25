@@ -112,6 +112,18 @@ def chosen_flow():
     return style if admin and style in FLOWS else 'tabs'
 
 
+# Overview layout trial (temporary): how the overview of the one-page flow is laid out, to fit one screen. "now" is
+# the layout as it is; "poster" (A) the image over half the screen beside the ingredients; "compact" (C) a small plate
+# at the top and the ingredients in columns under it. Cookie overview_layout, admins only.
+OVERVIEW_LAYOUTS = {'now': 'Now', 'poster': 'A Poster', 'compact': 'C Compact'}
+
+
+def chosen_overview():
+    style = request.cookies.get('overview_layout')
+    admin = current_user.is_authenticated and getattr(current_user, 'is_admin', False)
+    return style if admin and style in OVERVIEW_LAYOUTS else 'now'
+
+
 # Equipment symbol trial (temporary): the same, for the equipment symbols (data/constraints/equipment.json "image" is
 # the realistic set, "image_variants" the others). Cookie equipment_images, admins only; everyone else gets the default.
 EQUIPMENT_STYLES = {'realistic': 'Realistic', 'painted': 'Painted', 'line_tint': 'Line'}
