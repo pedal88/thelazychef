@@ -58,10 +58,10 @@
 {%- endmacro %}
 
 {# The step beside a view: the step you tap in it, or else the next one, in full. Beside the view on a wide
-   screen, docked at the bottom on a phone (static/js/steps.js, splitRender). Beside the steps and the timeline
-   (page=True) it is, on a wide screen, the page you cook from: which step of how many and the time to the table,
-   what the step needs, a button for done, and the step after it. A step tapped in the list or the timeline is
-   shown as a look, with the way back. #}
+   screen, docked at the bottom on a phone (static/js/steps.js, splitRender). Beside the steps, the timeline and
+   the metro map (page=True) it is, on a wide screen, the page you cook from: which step of how many and the time
+   to the table, what the step needs, a button for done, and the step after it. A step tapped in the list or a
+   view is shown as a look, with the way back. #}
 {% macro side_card(page=False) -%}
 <aside class="side-card{{ ' pagecard' if page }}" data-side-card aria-live="polite">
   <div class="side-card-h"><span data-side-card-label></span>{% if page %}<span class="sc-count" data-side-card-count></span><span class="sc-left" data-side-card-left></span><button type="button" class="sc-back" data-sc-back hidden></button>{% endif %}<button type="button" class="side-fold" data-side-fold aria-expanded="true" aria-label="Fold the step">{{ icon('chevron-down') }}</button></div>
@@ -107,9 +107,10 @@
   <div class="split-main">{{ timeline(v.timeline) }}</div>
   {{ side_card(page=True) }}
 </section>{% endif %}
-{% if v.metro_map %}<section class="vpanel split" data-panel="metro" aria-label="Metro map" hidden>
-  <div class="split-main">{{ metro_map(v.metro_map) }}</div>
-  {{ side_card() }}
+{% if v.metro_map %}{% set part_images = {} %}{% for p in dish_images(recipe).parts %}{% set _ = part_images.update({p.name: p.url}) %}{% endfor %}
+<section class="vpanel split mt-panel" data-panel="metro" aria-label="Metro map" hidden>
+  <div class="split-main">{{ metro_map(v.metro_map, part_images) }}</div>
+  {{ side_card(page=True) }}
 </section>{% endif %}
 {# The delta with its phases as soft bands and the main river thick, filling as you tick off steps in the list:
    the next step in the drawing ringed, running timers counting down on their step #}

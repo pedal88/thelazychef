@@ -147,11 +147,12 @@
   const zero = () => { const r = byId[nextId()]; return Date.now() - (r ? +r.dataset.at : TOTAL) * 60e3; };  // minute 0 of the plan on the clock
   function fillFree(from, to) {
     const done = new Set(st.done), ready = x => done.has(x) || (tlRow[x] && +tlRow[x].dataset.end <= from);
-    const out = [];
+    const here = byId[nextId()], out = [];
+    if (to <= (here ? +here.dataset.at : TOTAL)) return out;  // a wait you are past
     let room = to - from;
     rows.forEach(r => {
       const t = tlRow[r.dataset.st];
-      if (!t || done.has(r.dataset.st) || !r.classList.contains('prep') || r.classList.contains('setup') || +t.dataset.start < to) return;
+      if (!t || r === here || done.has(r.dataset.st) || !r.classList.contains('prep') || r.classList.contains('setup') || +t.dataset.start < to) return;
       const minutes = +t.dataset.aend - +t.dataset.start;
       if (!minutes || minutes > room || !(r.dataset.after || '').split(' ').filter(Boolean).every(ready)) return;
       out.push({ id: r.dataset.st, minutes });
@@ -168,6 +169,7 @@
   function timelineMarks() {
     const done = new Set(st.done), z = zero();
     Object.entries(tlRow).forEach(([id, r]) => r.classList.toggle('is-done', done.has(id)));
+    metroMarks(done, z);
     $$('.tl-axis [data-min]').forEach(s => { s.textContent = hm(z + s.dataset.min * 60e3); });
     $$('.tb.free[data-from]').forEach(b => {
       const from = +b.dataset.from, to = +b.dataset.to, ideas = fillFree(from, to), when = `${hm(z + from * 60e3)}–${hm(z + to * 60e3)}`;
@@ -176,6 +178,35 @@
       if (label) label.textContent = `free ${when}` + (ideas.length ? ` · ${byId[ideas[0].id].dataset.label}${ideas.length > 1 ? ` +${ideas.length - 1}` : ''}` : '');
     });
   }
+
+  /* The metro map beside the page card: stations and names done fade, the minutes down the side are clock times, a
+     long wait says what you could do while you wait, and the map is scaled to the height (on a wide screen, between
+     70 and 140 %). The trial "parts" (admin chip, temporary): the parts as buttons with how many of their steps are
+     done; a tap shows only that part. */
+  let mtFocus = null;
+  function metroMarks(done, z) {
+    $$('.mt [data-step]').forEach(e => e.classList.toggle('is-done', done.has(e.dataset.step)));
+    $$('.mt-ticks [data-min]').forEach(li => { li.textContent = hm(z + li.dataset.min * 60e3); });
+    $$('.mt-wait[data-from]').forEach(w => {
+      const from = +w.dataset.from, to = +w.dataset.to, ideas = fillFree(from, to);
+      w.textContent = `${to - from} min wait` + (ideas.length ? ` · while you wait: ${ideas.map(x => byId[x.id].dataset.label).join(', ')}` : '');
+    });
+    $$('[data-mt-lane]').forEach(b => {
+      const mine = $$(`.mt-names [data-step][data-lane="${b.dataset.mtLane}"]`), n = mine.filter(li => done.has(li.dataset.step)).length;
+      b.classList.toggle('ready', n === mine.length);
+      b.querySelector('[data-mt-count]').textContent = n === mine.length ? '✓ ready' : `${n}/${mine.length}`;
+      b.setAttribute('aria-pressed', String(b.dataset.mtLane === mtFocus));
+    });
+    $$('.mt [data-lane]').forEach(e => e.classList.toggle('dim', mtFocus !== null && e.dataset.lane !== mtFocus));
+  }
+  const mtBox = $('[data-mt-fit]'), mtMap = mtBox && mtBox.querySelector('.mt');
+  function metroFit() {
+    if (!mtMap) return;
+    const wide = innerWidth >= 1000 && mtBox.clientHeight;
+    const natural = parseFloat(mtMap.style.getPropertyValue('--h')) + 24;  // and the room above it
+    mtMap.style.zoom = wide ? Math.max(.7, Math.min(1.4, mtBox.clientHeight / natural)).toFixed(3) : '';
+  }
+  if (mtBox) new ResizeObserver(metroFit).observe(mtBox);
 
   /* The delta fills as steps are ticked off in the list, and a running timer counts down on its step */
   const dFlow = $('[data-delta-flow]');
@@ -311,6 +342,7 @@
     openMenu(false);
     try { localStorage.setItem(VIEW, v); } catch (e) { /* remembered for this visit only */ }
     if (v === 'delta') dispatchEvent(new Event('resize'));  // the delta lays itself out once it can be seen
+    if (v === 'metro') metroFit();
   }
 
   /* The two screens. Cooking has its own address (#cook), so the back button, a reload and a shared link work */
@@ -322,7 +354,7 @@
     if (on && !was) overviewY = scrollY;
     document.documentElement.classList.toggle('cooking', on);
     cook.hidden = !on;
-    if (on && !was) { scrollTo(0, 0); wake(); dispatchEvent(new Event('resize')); }
+    if (on && !was) { scrollTo(0, 0); wake(); dispatchEvent(new Event('resize')); metroFit(); }
     if (!on && was) scrollTo(0, overviewY);
     openMenu(false);
   }
@@ -347,6 +379,17 @@
   page.addEventListener('click', e => {
     beep(true); wake();
     const t = e.target;
+    // The metro map's parts (the trial "parts"): a tap shows only that part, a second tap all of them
+    const lane = t.closest('[data-mt-lane]');
+    if (lane) { mtFocus = mtFocus === lane.dataset.mtLane ? null : lane.dataset.mtLane; timelineMarks(); return; }
+    const mtx = t.closest('[data-mtx]');
+    if (mtx) {
+      const on = document.documentElement.classList.toggle(`mtx-${mtx.dataset.mtx}`);
+      mtx.setAttribute('aria-pressed', String(on));
+      if (!on) { mtFocus = null; timelineMarks(); }
+      try { localStorage.setItem('metro-x', on ? mtx.dataset.mtx : ''); } catch (err) { /* this visit */ }
+      return;
+    }
     const tipLook = t.closest('[data-tip-look]');  // a step suggested while you wait: a look at it
     if (tipLook) { const sp = splits.find(x => x.card.contains(tipLook)); sp.pick = tipLook.dataset.tipLook; splitRender(); return; }
     if (t.closest('[data-sc-done], [data-sc-back]')) { cardDone(splits.find(x => x.card.contains(t))); return; }
@@ -488,6 +531,7 @@
     cooking(true);
     if (bowlsFirst && sheet && sheet.showModal) { sheet.showModal(); requestAnimationFrame(fit); }
   }
+  $$('[data-mtx]').forEach(b => b.setAttribute('aria-pressed', String(document.documentElement.classList.contains(`mtx-${b.dataset.mtx}`))));
   setInterval(() => { timelineMarks(); splitRender(); }, 30e3);  // the clock moves on
   wake();
   render();

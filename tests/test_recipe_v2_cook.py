@@ -95,10 +95,14 @@ class CookTests(unittest.TestCase):
         html = self.client.get(f'/recipe/{rid}').get_data(as_text=True)
         # The timeline and the metro map with the chosen step beside them; the map as a transit map with time
         self.assertIn('class="vpanel split tl-panel"', html)
-        self.assertIn('class="vpanel split"', html)
-        self.assertEqual(len(re.findall(r'class="side-card[ "]', html)), 3)  # and the rail's
-        # The rail and the timeline have the page card, the metro map the plain one
-        self.assertEqual(html.count('class="side-card pagecard"'), 2)
+        self.assertIn('class="vpanel split mt-panel"', html)
+        # The rail, the timeline and the metro map all have the page card
+        self.assertEqual(html.count('class="side-card pagecard"'), 3)
+        # The metro map: its parts as buttons (a trial), each station and name on its part's line, clock times down the side
+        self.assertIn('data-mt-lane="0"', html)
+        self.assertIn('class="mt-ticks"', html)
+        self.assertRegex(html, r'class="mt-ticks"[^<]*<li[^>]*data-min="0"')
+        self.assertEqual(html.count('data-mtx="5"'), 1)
         for part in ('class="mt"', 'class="mt-key"', 'data-mt-now', 'class="mt-ticks"'):
             self.assertIn(part, html)
         # The delta with rivers, filling as you cook

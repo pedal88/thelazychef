@@ -173,6 +173,60 @@
   .tl-panel .lg.h { height: 2px; border: 0; background: color-mix(in srgb, var(--ph) 50%, transparent); }
 }
 
+/* ---- The metro map (templates/components/whole_dish.html metro_map) in the rail's language: calmer line
+        colours, stations like the rail's dots (hollow ahead, filled when done, larger in the step's colour where
+        you are), no phase badges, clock times down the side, a Now line, and a long wait that says what you could
+        do. On a wide screen beside the page card, scaled to the height (static/js/steps.js metroFit). ---- */
+.mt .lane-0, .mt-key .lane-0, .mt-part.lane-0 { --lane: #4f7f8c; }
+.mt .lane-1, .mt-key .lane-1, .mt-part.lane-1 { --lane: #8b6fab; }
+.mt .lane-2, .mt-key .lane-2, .mt-part.lane-2 { --lane: #b8775a; }
+.mt .lane-3, .mt-key .lane-3, .mt-part.lane-3 { --lane: #6b7280; }
+.mt-key .k-ph, .mt-names .mt-ph { display: none; }
+.mt-key { font-size: 12px; }
+.mt-line { stroke-width: 6; }
+.mt-st circle { stroke-width: 3; transition: fill .2s; }
+.mt-st.is-done circle { fill: var(--lane); }
+.mt-st.merge.is-done rect, .mt-st.final.is-done circle:not(.dot) { fill: var(--color-line); }
+.mt-st.cur circle, .mt-st.cur rect { stroke: var(--color-ink); stroke-width: 4; }
+.mt-st.cur:not(.merge):not(.final) circle { fill: var(--color-paper); r: 9.5; filter: drop-shadow(0 0 4px color-mix(in srgb, var(--lane) 55%, transparent)); }
+.mt-names li { font-family: var(--font-sans); transition: opacity .2s; }
+.mt-names li.is-done { opacity: .35; }
+.mt-names li.cur { background: color-mix(in srgb, var(--color-soft) 70%, transparent); box-shadow: none; }
+.mt-no { font: 400 .8em var(--font-sans); }
+.mt-ticks { width: 44px; }
+.mt-ticks li { font: 500 11px var(--font-sans); }
+.mt-svg { left: 52px; }
+.mt-names { left: calc(var(--w) + 62px); }
+.mt-break-l { width: 44px; font: 600 10px var(--font-sans); }
+.mt-now { left: 48px; border-top-color: var(--color-ink); }
+.mt-now::before { content: "Now"; position: absolute; right: 0; top: -16px; font: 600 11px var(--font-sans); color: var(--color-ink); }
+.mt-names .mt-wait { display: block; padding: 0 6px; font: italic 400 12px var(--font-sans); color: var(--color-muted); white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; pointer-events: none; background: none; }
+/* The parts (the trial "parts"): hidden until switched on in the admin chip */
+.mt-parts { display: none; }
+html.mtx-5 .mt-parts { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 0 0 var(--space-3); }
+html.mtx-5 .mt-key { display: none; }
+.mt-part { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 44px; padding: 4px 14px 4px 4px; border: 1px solid var(--color-line);
+  border-left: 4px solid var(--lane); border-radius: 12px; background: var(--color-paper); color: var(--color-ink); font: 600 14px var(--font-sans); cursor: pointer; }
+.mt-part img, .mt-part i { width: 34px; height: 34px; border-radius: 8px; object-fit: cover; background: var(--color-soft); flex: none; }
+.mt-part i { background: color-mix(in srgb, var(--lane) 25%, var(--color-paper)); }
+.mt-part small { font: 500 12px var(--font-sans); color: var(--color-muted); }
+.mt-part.ready small { color: var(--color-prep-ink); }
+.mt-part[aria-pressed="true"] { background: color-mix(in srgb, var(--lane) 12%, var(--color-paper)); border-color: var(--lane); }
+.mt-part:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.mt .dim { opacity: .15; }
+.mt-names li.dim { opacity: .25; }
+@media (min-width: 1000px) {
+  .cookmode:has(> .vpanel.mt-panel:not([hidden])) { padding-bottom: 64px; }
+  .cookmode .vpanel.mt-panel:not([hidden]) { grid-template-columns: minmax(0, 7fr) minmax(360px, 5fr); gap: var(--space-8); align-items: stretch;
+    max-width: 1560px; margin: 0 auto; padding-inline: var(--space-6); }
+  .mt-panel .split-main { display: flex; flex-direction: column; min-height: 0; height: calc(100vh - 116px); height: calc(100dvh - 116px); }
+  .mt-panel .mt-key { margin: 0 0 var(--space-2); }
+  .mt-panel .mt-fit { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; padding-top: 16px; }
+  .mt-panel .mt { margin: 0; max-width: 620px; }
+  .mt-panel .hint { display: none; }
+}
+
 /* While you wait: what you could do while the step stands, on the card (static/js/steps.js) */
 .sc-tip:not([hidden]) { margin: var(--space-4) 0 0; font-size: 15px; color: var(--color-muted); max-width: 62ch; }
 .sc-tip b { color: var(--color-ink); font-weight: 600; }
