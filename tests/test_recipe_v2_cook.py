@@ -118,9 +118,22 @@ class CookTests(unittest.TestCase):
             for gone in ('class="ov-bar"', 'class="factbar"', 'data-ov="now"'):
                 self.assertNotIn(gone, html)
             self.assertEqual(html.count('data-servings-form'), 1)  # in the layout, not again in the sheet
+            # The time and the equipment in the sheet; in C also beside the ingredients
+            self.assertEqual(html.count('class="tstrip"'), 2 if key == 'compact' else 1)
+            self.assertIn('id="more-tools"', html)
+            self.assertEqual('class="cc-glance"' in html, key == 'compact')
         # Without the one-page flow there is no choice of overview
         self.client.set_cookie('flow', 'tabs')
         self.assertNotIn('data-ov="poster"', self.client.get(f'/recipe/{rid}').get_data(as_text=True))
+
+    def test_the_time_strip_is_prep_cook_and_serve(self):
+        from services.recipe_v2.view import time_strip
+        steps = [{'start': 0, 'heat': False, 'phase': 'prep'}, {'start': 15, 'heat': True, 'phase': 'cook'},
+                 {'start': 40, 'heat': False, 'phase': 'serve'}]
+        self.assertEqual([(p['phase'], p['minutes']) for p in time_strip(steps, 45)], [('prep', 15), ('cook', 25), ('serve', 5)])
+        # Never heated: one part; heated from the first step: no prep
+        self.assertEqual([p['phase'] for p in time_strip(steps[:1], 10)], ['prep'])
+        self.assertEqual([p['phase'] for p in time_strip([{'start': 0, 'heat': True, 'phase': 'cook'}], 10)], ['cook'])
 
     def test_a_long_wait_on_the_metro_map_is_cut_short(self):
         from services.recipe_v2 import whole

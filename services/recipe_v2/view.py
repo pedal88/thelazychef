@@ -135,6 +135,24 @@ def equipment_list(ids, cat=None):
     return list(out.values())
 
 
+def time_strip(steps, total):
+    """The time from start to table in parts, for the strip on the overview of the one-page flow: getting ready until
+    the heat goes on (see heat_on), cooking, and serving. Each part as {phase, label, minutes, text}; parts of no
+    length are left out, so a dish that is never heated is one part."""
+    marks = [('prep', 'Prep', 0)]
+    heat = next((x['start'] for x in steps if x['heat']), None)
+    serve = next((x['start'] for x in steps if x['phase'] == 'serve'), None)
+    if heat is not None:
+        marks.append(('cook', 'Cook', heat))
+    if serve is not None and serve >= marks[-1][2]:
+        marks.append(('serve', 'Serve', serve))
+    parts = []
+    for (phase, label, start), end in zip(marks, [m[2] for m in marks[1:]] + [total]):
+        if end > start:
+            parts.append({'phase': phase, 'label': label, 'minutes': end - start, 'text': duration(end - start)})
+    return parts
+
+
 def equipment_text(s):
     cat = _catalogs()
     q = (s.get('equipment') or [None])[0]
@@ -314,7 +332,7 @@ def build(recipe, servings=None, plan='calm'):
         'total': duration(sch['T']), 'active': duration(sch['A']), 'plan': plan, 'plans': PLAN_NAMES,
         'plan_hint': PLAN_HINTS[plan], 'parts': [c['name'] for c in v2['components']],
         'shopping': shop, 'shop_groups': groups.grouped(shop), 'equipment': equipment_list(first_use, cat), 'steps': steps,
-        'heat_on': heat_on,
+        'heat_on': heat_on, 'time_strip': time_strip(steps, sch['T']),
         'chef_note': recipe.chef_note, 'missing': sum(1 for s in shop if s['missing']),
         'errors': [e for e in recipe.validation_errors or [] if e.get('rule') not in ('persona', 'image')],
         'image_notes': [e['message'] for e in recipe.validation_errors or [] if e.get('rule') == 'image'],

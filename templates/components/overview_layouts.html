@@ -61,25 +61,62 @@
 </div>
 {%- endmacro %}
 
-{# C: the compact dashboard #}
+{# The time from start to table as a strip: getting ready, cooking and serving (view.time_strip) #}
+{% macro time_strip() -%}
+{% if v.time_strip %}
+<div class="tstrip" role="img" aria-label="{% for p in v.time_strip %}{{ p.label }} {{ p.text }}{{ ', ' if not loop.last }}{% endfor %}">
+  <div class="ts-bar">{% for p in v.time_strip %}<span class="ts-{{ p.phase }}" style="flex-grow: {{ p.minutes }}"></span>{% endfor %}</div>
+  <div class="ts-keys">{% for p in v.time_strip %}<span class="ts-{{ p.phase }}" style="flex-grow: {{ p.minutes }}"><b>{{ p.label }}</b> {{ p.text }}</span>{% endfor %}</div>
+</div>
+{% endif %}
+{%- endmacro %}
+
+{# The equipment, as symbols in the chosen style #}
+{% macro equipment_grid() -%}
+<ul class="eq-grid">
+  {% for e in v.equipment %}{% set src = equipment_image(e) %}
+  <li>{% if src %}<span class="sym" style="--s:40px"><img src="{{ src }}" alt="" width="40" height="40" loading="lazy"></span>{% else %}<span class="sym"><span class="sym-letter" aria-hidden="true">{{ e.name[:1]|upper }}</span></span>{% endif %}<span>{{ e.name }}</span></li>
+  {% endfor %}
+</ul>
+{%- endmacro %}
+
+{# C: the compact dashboard. The image and the ingredients grow and shrink together: the more ingredients, the
+   smaller both (static/js/overview_fit.js). Beside the ingredients, what helps to plan: the time, the equipment,
+   the parts and the chef's note; on a phone these are under More. #}
 {% macro compact() -%}
 {% set imgs = dish_images(recipe) %}
 <div class="ovl ovl-compact">
   {{ corner_buttons() }}
   <div class="cc-plate">
-    {% if imgs.dish %}<img class="cc-thumb" src="{{ imgs.dish }}" alt="{{ v.title }}" width="600" height="450">{% endif %}
+    <figure class="cc-img{% if not imgs.dish %} no-img{% endif %}">{% if imgs.dish %}<img src="{{ imgs.dish }}" alt="{{ v.title }}" width="1200" height="900">{% else %}{{ icon('pot') }}{% endif %}</figure>
     <div class="cc-head">
       <h1>{{ v.title }}</h1>
       <p class="pp-times"><span><b>{{ v.total }}</b> total</span><span><b>{{ v.active }}</b> active</span><span><b>{{ v.steps|length }}</b> steps</span></p>
       {{ servings_part() }}
+      <div class="cc-actions">
+        {{ start_button() }}
+        {% if v.ready %}<button type="button" class="cc-btn" data-sheet="sheet-bowls">{{ icon('salad') }} Bowls{% if v.ready.bowls %} · {{ v.ready.bowls|length }}{% endif %}</button>{% endif %}
+        <button type="button" class="cc-btn" data-sheet="sheet-more" data-jump="more-top" aria-label="More about the dish">⋯ More</button>
+      </div>
     </div>
   </div>
-  <div class="cc-actions">
-    {{ start_button() }}
-    {% if v.ready %}<button type="button" class="cc-btn" data-sheet="sheet-bowls">{{ icon('salad') }} Bowls{% if v.ready.bowls %} · {{ v.ready.bowls|length }}{% endif %}</button>{% endif %}
-    <button type="button" class="cc-btn" data-sheet="sheet-more" data-jump="more-top" aria-label="More about the dish">⋯ More</button>
+  <div class="cc-body">
+    {{ ingredients(imgs) }}
+    <aside class="cc-glance" aria-label="At a glance">
+      {% if v.time_strip %}<section><h2 class="eyebrow">Time</h2>{{ time_strip() }}</section>{% endif %}
+      {% if v.equipment %}<section><h2 class="eyebrow">Equipment</h2>{{ equipment_grid() }}</section>{% endif %}
+      {% if imgs.parts %}
+      <section><h2 class="eyebrow">The parts</h2>
+        <div class="cc-parts">{% for p in imgs.parts %}<figure><img src="{{ p.url }}" alt="" width="600" height="600" loading="lazy"><figcaption>{{ p.name }}</figcaption></figure>{% endfor %}</div>
+      </section>
+      {% elif v.parts|length > 1 %}<section><h2 class="eyebrow">The parts</h2><p class="parts">{% for p in v.parts %}<span>{{ p }}</span>{% endfor %}</p></section>
+      {% endif %}
+      {% if v.chef_note %}
+      <section><h2 class="eyebrow">From the chef</h2><p class="cc-note">{{ v.chef_note }}</p>
+        <button type="button" class="cc-more" data-sheet="sheet-more" data-jump="more-chef">Read all</button></section>
+      {% endif %}
+    </aside>
   </div>
-  {{ ingredients(imgs) }}
 </div>
 {%- endmacro %}
 
@@ -96,6 +133,8 @@
     {% else %}<p class="parts">{% for p in v.parts %}<span>{{ p }}</span>{% endfor %}</p>{% endif %}
   </section>
   {% endif %}
+  {% if v.time_strip %}<section id="more-time"><h3 class="eyebrow">Time</h3>{{ time_strip() }}</section>{% endif %}
+  {% if v.equipment %}<section id="more-tools"><h3 class="eyebrow">Equipment</h3>{{ equipment_grid() }}</section>{% endif %}
   {% if v.chef_note %}<section id="more-chef"><h3 class="eyebrow">From the chef</h3><p class="note">{{ v.chef_note }}</p></section>{% endif %}
   <section id="more-facts" class="more-panel">{{ dish_facts('recipe_detail', with_servings=False) }}</section>
   {% if recipe.source_type == 'web' and recipe.source_input %}<p class="hint source">Based on <a href="{{ recipe.source_input }}" rel="noopener nofollow" target="_blank">{{ recipe.source_input.split('/')[2] }}</a></p>{% endif %}
