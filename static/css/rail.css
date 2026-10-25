@@ -101,36 +101,25 @@
   html:has(.vpanel.rail:not([hidden])) :is(.fab, .fab-tools .vmenu-btn, .fab-tools .bowls-open) { box-shadow: none; opacity: .7; }
   html:has(.vpanel.rail:not([hidden])) :is(.fab, .fab-tools .vmenu-btn, .fab-tools .bowls-open):hover { opacity: 1; }
 }
-/* ---- Trials (temporary, 25.10.2026): ways to lift the step you are on, each switched on on this device with
-        html.fx-on-N from the admin chip. 1 dims the rest of the list, 2 gives the card a faint stage in the
-        step's colour with a line to it from the list, 3 gives it more typographic weight. ---- */
+/* ---- The step you are on, lifted (chosen 25.10.2026): the rest of the list fades back, and the card has larger
+        type a little above the middle with the step's number large and faint beside it ---- */
 @media (min-width: 1000px) {
-  /* 1. Dim: the steps ahead fade back, but not the next one, nor one with a timer running; all back on a hover */
-  html.fx-on-1 .rail-main .st { transition: opacity .2s; }
-  html.fx-on-1 .rail-main .st:not(.is-next):not(.is-then):not(.sel):not(:has(.st-timer-mini.running)) { opacity: .5; }
-  html.fx-on-1 .rail-main .st.is-done { opacity: .28; }
-  html.fx-on-1 .rail-main:hover .st:not(.is-done) { opacity: 1; }
-  html.fx-on-1 .rail-main .heat-line { opacity: .6; }
+  /* The steps ahead fade back, but not the next one, nor one with a timer running; all back on a hover */
+  .rail-main .st { transition: opacity .2s; }
+  /* :where keeps this at the weight of one class, so done steps and the hover below win over it */
+  .rail-main :where(.st:not(.is-next):not(.is-then):not(.sel):not(:has(.st-timer-mini.running))) { opacity: .5; }
+  .rail-main .st.is-done { opacity: .28; }
+  .rail-main:hover .st:not(.is-done) { opacity: 1; }
+  .rail-main .heat-line { opacity: .6; }
 
-  /* 2. Stage: a faint surface in the step's colour behind the card, and a hairline to it from the step in the list */
-  html.fx-on-2 .rail .side-card { --stage: var(--color-prep); background: color-mix(in srgb, var(--stage) 6%, var(--color-paper)); border-radius: 28px;
-    transition: background-color .4s; }
-  html.fx-on-2 .rail .side-card[data-phase="cook"] { --stage: var(--color-cook); }
-  html.fx-on-2 .rail .side-card[data-phase="serve"] { --stage: var(--color-serve); }
-  html.fx-on-2 .rail-main .st.sel .st-line::after { content: ""; flex: 1 1 0; min-width: 0; align-self: center; height: 1px; margin-left: var(--space-3);
-    background: linear-gradient(to right, transparent, color-mix(in srgb, var(--ph) 45%, transparent)); }
-  html.fx-on-2 .cookmode .vpanel.rail:not([hidden]) { gap: var(--space-4); }
-  html.fx-on-2 .rail-main { padding-right: 0; }
-
-  /* 3. Type: a larger title and text, a little above the middle, and the step's number large and faint beside it */
-  html.fx-on-3 .rail .side-card { justify-content: center; padding-bottom: 10vh; }
-  html.fx-on-3 .rail .side-card .st-body h3 { font-size: clamp(32px, 3vw, 48px); }
-  html.fx-on-3 .rail .side-card .st-body .txt { font-size: clamp(19px, 1.7vw, 26px); }
-  html.fx-on-3 .rail .side-card .st { grid-template-columns: clamp(64px, 6vw, 104px) minmax(0, 1fr); }
-  html.fx-on-3 .rail .side-card .st-tick { display: block; width: auto; height: auto; margin: 0; padding: 0; border: 0; background: none; pointer-events: none;
+  .rail .side-card { padding-bottom: 10vh; }
+  .rail .side-card .st-body h3 { font-size: clamp(32px, 3vw, 48px); }
+  .rail .side-card .st-body .txt { font-size: clamp(19px, 1.7vw, 26px); }
+  .rail .side-card .st { grid-template-columns: clamp(64px, 6vw, 104px) minmax(0, 1fr); }
+  .rail .side-card .st-tick { display: block; width: auto; height: auto; margin: 0; padding: 0; border: 0; background: none; pointer-events: none;
     justify-self: start; font: 400 clamp(64px, 6vw, 104px)/.9 var(--font-serif); color: color-mix(in srgb, var(--color-ink) 12%, transparent); }
-  html.fx-on-3 .rail .side-card [data-step-card] { max-width: calc(62ch + clamp(64px, 6vw, 104px)); }
-  html.fx-on-3 .rail :is(.side-card-h, .sc-needs, .sc-act, .sc-then, .side-card .st-reset) { margin-left: clamp(64px, 6vw, 104px); }
+  .rail .side-card [data-step-card] { max-width: calc(62ch + clamp(64px, 6vw, 104px)); }
+  .rail :is(.side-card-h, .sc-needs, .sc-act, .sc-then, .side-card .st-reset) { margin-left: clamp(64px, 6vw, 104px); }
 }
 @keyframes sc-in { from { opacity: 0; transform: translateY(8px); } }
 @media (prefers-reduced-motion: reduce) { .rail .side-card .sc-new { animation: none !important; } }
