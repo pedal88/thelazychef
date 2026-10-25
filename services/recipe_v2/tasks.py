@@ -22,6 +22,7 @@ log = logging.getLogger(__name__)
 PROJECT = os.getenv('GOOGLE_CLOUD_PROJECT', 'thelazychefai-prod')
 MAX_ATTEMPTS = 3  # same as the queue's --max-attempts
 TASK_PATH = '/internal/tasks/recipe-v2/{id}'
+IMAGES_PATH = '/internal/tasks/recipe-v2-images/{id}'  # the dish and part images of a recipe already made
 
 
 def configured():
@@ -35,17 +36,28 @@ def enqueue(recipe_id, kind, source, language=None):
     if not configured():
         run(recipe_id, kind, source, attempt=MAX_ATTEMPTS - 1, language=language)
         return
+    _queue(TASK_PATH.format(id=recipe_id), {'kind': kind, 'source': source, 'language': language})
+
+
+def enqueue_images(recipe_id):
+    """Queue the job that makes a recipe's images (services/recipe_v2/images.py), or run it now without a queue."""
+    if not configured():
+        run_images(recipe_id, attempt=MAX_ATTEMPTS - 1)
+        return
+    _queue(IMAGES_PATH.format(id=recipe_id), {})
+
+
+def _queue(path, payload):
     import google.auth
     from google.auth.transport.requests import AuthorizedSession
 
     base = os.environ['APP_BASE_URL'].rstrip('/')
-    url = base + TASK_PATH.format(id=recipe_id)
     queue = f"projects/{PROJECT}/locations/{os.getenv('TASKS_LOCATION', 'europe-west1')}/queues/{os.environ['TASKS_QUEUE']}"
-    body = base64.b64encode(json.dumps({'kind': kind, 'source': source, 'language': language}).encode()).decode()
+    body = base64.b64encode(json.dumps(payload).encode()).decode()
     task = {'task': {
         'dispatchDeadline': '600s',
         'httpRequest': {
-            'httpMethod': 'POST', 'url': url, 'headers': {'Content-Type': 'application/json'}, 'body': body,
+            'httpMethod': 'POST', 'url': base + path, 'headers': {'Content-Type': 'application/json'}, 'body': body,
             'oidcToken': {'serviceAccountEmail': os.environ['TASKS_SERVICE_ACCOUNT'], 'audience': base},
         },
     }}
@@ -99,5 +111,30 @@ def run(recipe_id, kind, source, attempt=0, language=None):
         recipe = db.session.get(Recipe, recipe_id)
         recipe.status, recipe.is_flagged_for_review = 'draft', True
         recipe.validation_errors = [{'rule': 'error', 'message': friendly_ai_error(e)}]  # the raw error is logged above
+        db.session.commit()
+        return True
+
+
+def run_images(recipe_id, attempt=0):
+    """Make the recipe's own images. Errors raise, so Cloud Tasks tries again, except on the last attempt: then the
+    error is noted on the recipe (rule "image"), where the admin chip shows it."""
+    from routes._shared import get_storage
+    from services.recipe_v2 import images
+
+    recipe = db.session.get(Recipe, recipe_id)
+    if recipe is None or recipe.schema_version != 2 or not recipe.steps:
+        return True
+    try:
+        images.make_images(recipe, get_storage())
+        db.session.commit()
+        return True
+    except Exception as e:
+        db.session.rollback()
+        log.exception('Recipe %s: images failed on attempt %s', recipe_id, attempt + 1)
+        if attempt + 1 < MAX_ATTEMPTS:
+            raise
+        recipe = db.session.get(Recipe, recipe_id)
+        kept = [x for x in recipe.validation_errors or [] if x.get('rule') != 'image']
+        recipe.validation_errors = kept + [{'rule': 'image', 'message': friendly_ai_error(e, 'Could not make the images.')}]
         db.session.commit()
         return True

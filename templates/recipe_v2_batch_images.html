@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{# Images for many recipes at once (routes/recipe_v2_routes.py batch_images): the v2 recipes without a dish image,
+   all ticked; "Make" queues the image jobs and the page follows them, reloading while any is being made. #}
+{% block title %}Images for many recipes - The Lazy Chef{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/recipe_v2.css') }}">
+{% if busy %}<meta http-equiv="refresh" content="15">{% endif %}
+{% endblock %}
+{% block content %}
+<article class="rv2 batch">
+  <a class="back" href="{{ url_for('recipe_v2.batch_new') }}">← Many recipes</a>
+  <p class="eyebrow">Recipe model v2 · admin</p>
+  <h1>Images for many recipes</h1>
+
+  {% if following %}
+  <h2 class="batch-h">{% if busy %}Making images for {{ busy }} of {{ following|length }}{% else %}Images made for {{ following|length }}{% endif %}</h2>
+  <p class="hint">{% if busy %}They are made in the background, a few at a time, a minute or two each; this page updates itself.{% else %}All done. Each image is checked against the recipe; what the check found is in the admin chip on the recipe.{% endif %}</p>
+  <table class="batch-table">
+    <tbody>
+      {% for r in following %}
+      {% set url = image_url(r) %}
+      {% set notes = (r.validation_errors or [])|selectattr('rule', 'equalto', 'image')|list %}
+      <tr>
+        <td class="pic">{% if url %}<img src="{{ url }}" alt="" width="64" height="48" loading="lazy">{% endif %}</td>
+        <td><a href="{{ url_for('recipe_detail', recipe_id=r.id) }}">{{ r.title }}</a> <span class="n">{{ r.id }}</span></td>
+        <td class="st">{% if url %}Done{% if notes %}, {{ notes|length }} note{{ 's' if notes|length != 1 }}{% endif %}{% elif notes %}{{ notes[-1].message }}{% else %}Being made…{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <h2 class="batch-h">{{ waiting|length }} recipe{{ 's' if waiting|length != 1 }} without an image</h2>
+  {% if waiting %}
+  <form method="post">
+    <table class="batch-table">
+      <thead><tr><th></th><th>Recipe</th><th>Chef</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for r in waiting %}
+        <tr>
+          <td><input type="checkbox" name="ids" value="{{ r.id }}" checked aria-label="Make images for {{ r.title }}"></td>
+          <td><a href="{{ url_for('recipe_detail', recipe_id=r.id) }}">{{ r.title }}</a> <span class="n">{{ r.id }}</span></td>
+          <td>{{ r.chef.name if r.chef else '–' }}</td>
+          <td>{{ r.status|capitalize }}{{ ', flagged' if r.is_flagged_for_review }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="batch-go"><button type="submit" class="go">Make images for the ticked recipes</button>
+      <span class="hint">About {{ '%.2f'|format(cost[0]) }}–{{ '%.2f'|format(cost[1]) }} USD a recipe with Gemini, more for a dish of many parts. Made one after another in the background.</span></p>
+  </form>
+  {% else %}
+  <p class="hint">Every v2 recipe has a dish image.</p>
+  {% endif %}
+</article>
+<style>
+  .rv2.batch { max-width: 1000px; }
+  .batch-h { font-size: 18px; margin: var(--space-6) 0 var(--space-2); }
+  .batch-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .batch-table th { text-align: left; font: 600 11px var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--color-muted); padding: 6px; border-bottom: 1px solid var(--color-line); }
+  .batch-table td { padding: 8px 6px; border-bottom: 1px solid var(--color-line); vertical-align: middle; }
+  .batch-table .n { font: 11px var(--font-mono); color: var(--color-muted); }
+  .batch-table .pic { width: 72px; }
+  .batch-table .pic img { display: block; width: 64px; height: 48px; object-fit: cover; border-radius: 6px; background: var(--color-soft); }
+  .batch-table input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--color-accent); }
+  .batch-go { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin-top: var(--space-4); }
+</style>
+{% endblock %}

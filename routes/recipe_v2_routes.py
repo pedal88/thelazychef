@@ -213,6 +213,54 @@ def status(recipe_id):
     return jsonify({'status': recipe.status, 'url': url_for('recipe_detail', recipe_id=recipe_id)})
 
 
+IMAGES_COST = (0.15, 0.45)  # USD for the dish image and the part images of one recipe, with the checks
+
+
+@recipe_v2_bp.route('/new-recipe/v2/images', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def batch_images():
+    """Images for many recipes at once: the v2 recipes that have no dish image yet, newest first, all ticked.
+    "Make" queues one image job each (made in the background, as the recipes are), then the page follows them."""
+    if request.method == 'POST':
+        ids = [int(x) for x in request.form.getlist('ids') if x.isdigit()][:batch.MAX_LINES]
+        for rid in ids:
+            try:
+                tasks.enqueue_images(rid)
+            except Exception as e:
+                flash(friendly_ai_error(e, f'Could not start the images of recipe {rid}.'), 'error')
+        return redirect(url_for('recipe_v2.batch_images', started=','.join(map(str, ids))))
+    started = [int(x) for x in (request.args.get('started') or '').split(',') if x.isdigit()]
+    waiting = db.session.execute(db.select(Recipe).where(
+        Recipe.schema_version == 2, Recipe.status != 'generating', Recipe.image_filename.is_(None),
+        Recipe.id.notin_(started or [0])).order_by(Recipe.id.desc()).limit(batch.MAX_LINES)).scalars().all()
+    following = db.session.execute(db.select(Recipe).where(Recipe.id.in_(started))).scalars().all() if started else []
+    following.sort(key=lambda r: started.index(r.id))
+    low, high = IMAGES_COST
+    return render_template('recipe_v2_batch_images.html', waiting=[r for r in waiting if r.steps], following=following,
+                           busy=sum(1 for r in following if not r.image_filename and not _image_failed(r)),
+                           cost=(low, high), image_url=_dish_url)
+
+
+def _image_failed(recipe):
+    return any(e.get('rule') == 'image' and e.get('message', '').startswith('Could not') for e in recipe.validation_errors or [])
+
+
+def _dish_url(recipe):
+    from routes._shared import get_recipe_image_url
+    return get_recipe_image_url(recipe) if recipe.image_filename else None
+
+
+@recipe_v2_bp.route(tasks.IMAGES_PATH.replace('{id}', '<int:recipe_id>'), methods=['POST'])
+def run_images_task(recipe_id):
+    """Called by Cloud Tasks, not by users: the images of one recipe (tasks.run_images)."""
+    if not tasks.verified(request.headers.get('Authorization')):
+        return jsonify({'error': 'unauthorized'}), 401
+    attempt = request.headers.get('X-CloudTasks-TaskRetryCount', type=int) or 0
+    tasks.run_images(recipe_id, attempt=attempt)
+    return jsonify({'done': True})
+
+
 @recipe_v2_bp.route(tasks.TASK_PATH.replace('{id}', '<int:recipe_id>'), methods=['POST'])
 def run_task(recipe_id):
     """Called by Cloud Tasks with an OIDC token from the queue's service account, not by users.

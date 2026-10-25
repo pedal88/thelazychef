@@ -7,7 +7,7 @@
 {% endblock %}
 {% block content %}
 <article class="rv2 batch">
-  <a class="back" href="{{ url_for('recipe_v2.new_recipe') }}">← One recipe</a>
+  <a class="back" href="{{ url_for('recipe_v2.new_recipe') }}">← One recipe</a> <a class="back" href="{{ url_for('recipe_v2.batch_images') }}">Images for many →</a>
   <p class="eyebrow">Recipe model v2 · admin</p>
   <h1>Many recipes at once</h1>
   <p class="hint">One recipe per line: the idea (at most {{ idea_max }} characters, or a link to a recipe page), then after “|” the chef and the settings, if they differ from the defaults below. Lines that start with # are skipped. At most {{ max_lines }} at a time.</p>
