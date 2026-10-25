@@ -111,6 +111,8 @@ class CookTests(unittest.TestCase):
         self.assertIn('data-mtx="row"', html)
         self.assertIn('data-mtx="lines"', html)
         self.assertEqual(html.count('class="mt-head '), html.count('class="mt-part '))
+        self.assertEqual(html.count('class="mt-term '), html.count('class="mt-part '))
+        self.assertIn('data-mtx="ends"', html)
         # The line in full down to where you are; the trials Times and Work are gone
         self.assertIn('data-mt-travelled', html)
         self.assertNotIn('data-mtt=', html)
