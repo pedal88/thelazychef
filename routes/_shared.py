@@ -123,6 +123,19 @@ def chosen_overview():
     return style if style in OVERVIEW_LAYOUTS else 'poster'
 
 
+# Step layout trial (temporary): how the steps on the cooking screen of the one-page flow use a wide screen. "list"
+# is the list as it is; "phases" (1) Get ready and Cook in columns side by side; "rail" (2) every step on one line
+# down the left and the step you are on as a large card beside them. Both fit the steps to the screen
+# (static/js/overview_fit.js). Narrow screens keep the list. Cookie steps_layout, admins only.
+STEP_LAYOUTS = {'list': 'List', 'phases': '1 Phases', 'rail': '2 Rail'}
+
+
+def chosen_steps_layout():
+    style = request.cookies.get('steps_layout')
+    admin = current_user.is_authenticated and getattr(current_user, 'is_admin', False)
+    return style if admin and style in STEP_LAYOUTS else 'list'
+
+
 # Equipment symbol trial (temporary): the same, for the equipment symbols (data/constraints/equipment.json "image" is
 # the realistic set, "image_variants" the others). Cookie equipment_images, admins only; everyone else gets the default.
 EQUIPMENT_STYLES = {'realistic': 'Realistic', 'painted': 'Painted', 'line_tint': 'Line'}

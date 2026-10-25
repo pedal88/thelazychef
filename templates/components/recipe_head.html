@@ -40,6 +40,9 @@
   <div class="tgroup" data-ov-switch><span class="tlabel">Overview</span>
     {%- for key, label in OVERVIEW_LAYOUTS.items() %}<button type="button" data-ov="{{ key }}" aria-pressed="{{ 'true' if key == chosen_overview() else 'false' }}">{{ label }}</button>{% endfor -%}
   </div>
+  <div class="tgroup" data-sl-switch><span class="tlabel">Steps</span>
+    {%- for key, label in STEP_LAYOUTS.items() %}<button type="button" data-sl="{{ key }}" aria-pressed="{{ 'true' if key == chosen_steps_layout() else 'false' }}">{{ label }}</button>{% endfor -%}
+  </div>
   {% endif %}
   <div class="tgroup" data-eq-switch><span class="tlabel">Tools</span>
     {%- for key, label in EQUIPMENT_STYLES.items() %}<button type="button" data-eq="{{ key }}" aria-pressed="{{ 'true' if key == chosen_equipment_style() else 'false' }}">{{ label }}</button>{% endfor -%}

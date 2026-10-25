@@ -31,17 +31,8 @@
 {% if v.ready %}<button type="button" class="bowls-open" data-sheet="sheet-bowls" aria-label="Bowls and ingredients">{{ icon('salad') }} <span class="bl">Bowls</span>{% if bowls %} <span data-bowl-count>0/{{ bowls|length }}</span>{% endif %}</button>{% endif %}
 {%- endmacro %}
 
-{% macro step_list() -%}
-{% set lang = recipe.language or 'en' %}
-{% set heat = v.heat_on %}
-<section class="vpanel" data-panel="steps" aria-label="Steps">
-  <ol class="slist focus" data-slist>
-    {% if heat %}<li class="seg-h prep" aria-hidden="true">Get ready</li>{% endif %}
-    {% for s in v.steps %}
-    {% if heat and s.id == heat.id %}
-    <li class="heat-line" role="separator"><span>Heat on · {{ heat.left }} to the table</span></li>
-    <li class="seg-h cook" aria-hidden="true">Cook</li>
-    {% endif %}
+{# One step of the list #}
+{% macro step_row(s, lang) -%}
     <li class="st {{ s.phase }}{{ ' setup' if s.setup }}" data-st="{{ s.id }}" data-label="{{ s.short }}" data-done="{{ s.done_when or '' }}"
         data-passive="{{ s.passive_min or 0 }}" data-after="{{ (s.after or [])|join(' ') }}">
       <button type="button" class="st-tick" aria-pressed="false" aria-label="Step {{ s.n }} done"><span class="n" data-n="{{ s.n }}">{{ s.n }}</span></button>
@@ -63,23 +54,64 @@
         </div>
       </div>
     </li>
-    {% endfor %}
-  </ol>
+{%- endmacro %}
+
+{# The step beside a view: the step you tap in it, or else the next one, in full. Beside the view on a wide
+   screen, docked at the bottom on a phone (static/js/steps.js, splitRender). #}
+{% macro side_card(reset=False) -%}
+<aside class="side-card" data-side-card aria-live="polite">
+  <div class="side-card-h"><span data-side-card-label></span><button type="button" class="side-fold" data-side-fold aria-expanded="true" aria-label="Fold the step">{{ icon('chevron-down') }}</button></div>
+  <ol class="slist all" data-step-card></ol>
+  {% if reset %}<p class="st-reset"><button type="button" data-steps-reset>Untick all the steps</button></p>{% endif %}
+</aside>
+{%- endmacro %}
+
+{# The steps as one list; with the step layout trial "phases" (chosen_steps_layout()) Get ready and Cook in two
+   lists side by side, and with "rail" every step on a line with the step you are on as a large card beside them.
+   On a narrow screen both look like the list. #}
+{% macro step_list() -%}
+{% set lang = recipe.language or 'en' %}
+{% set heat = v.heat_on %}
+{% set lay = chosen_steps_layout() %}
+{% set heat_at = (v.steps|map(attribute='id')|list).index(heat.id) if heat else none %}
+{% if lay == 'phases' and heat_at %}
+<section class="vpanel phases" data-panel="steps" aria-label="Steps">
+  <div class="phase-cols" data-fit-steps data-density="normal">
+    <ol class="slist focus" data-slist aria-label="Get ready">
+      <li class="seg-h prep" aria-hidden="true">Get ready</li>
+      {% for s in v.steps[:heat_at] %}{{ step_row(s, lang) }}{% endfor %}
+    </ol>
+    <ol class="slist focus" data-slist aria-label="Cook" start="{{ heat_at + 1 }}">
+      <li class="heat-line" role="separator"><span>Heat on · {{ heat.left }} to the table</span></li>
+      <li class="seg-h cook" aria-hidden="true">Cook</li>
+      {% for s in v.steps[heat_at:] %}{{ step_row(s, lang) }}{% endfor %}
+    </ol>
+  </div>
   <p class="st-reset"><button type="button" data-steps-reset>Untick all the steps</button></p>
 </section>
+{% else %}
+<section class="vpanel{{ ' rail' if lay == 'rail' }}" data-panel="steps" aria-label="Steps">
+  {% if lay == 'rail' %}<div class="rail-main" data-fit-steps data-density="normal">{% endif %}
+  <ol class="slist focus" data-slist>
+    {% if heat %}<li class="seg-h prep" aria-hidden="true">Get ready</li>{% endif %}
+    {% for s in v.steps %}
+    {% if heat and s.id == heat.id %}
+    <li class="heat-line" role="separator"><span>Heat on · {{ heat.left }} to the table</span></li>
+    <li class="seg-h cook" aria-hidden="true">Cook</li>
+    {% endif %}
+    {{ step_row(s, lang) }}
+    {% endfor %}
+  </ol>
+  {% if lay == 'rail' %}</div>
+  {{ side_card(reset=True) }}{% else %}
+  <p class="st-reset"><button type="button" data-steps-reset>Untick all the steps</button></p>{% endif %}
+</section>
+{% endif %}
 {# A step tapped in the delta: the same card as in the list, with its tick and timer, in a sheet #}
 <dialog class="step-sheet" id="sheet-step" aria-label="Step">
   <button type="button" class="sheet-x" data-sheet-close aria-label="Close">{{ icon('close') }}</button>
   <ol class="slist all" data-step-card></ol>
 </dialog>
-{# The step beside a view: the step you tap in it, or else the next one, in full. Beside the view on a wide
-   screen, docked at the bottom on a phone (static/js/steps.js, splitRender). #}
-{% macro side_card() -%}
-<aside class="side-card" data-side-card aria-live="polite">
-  <div class="side-card-h"><span data-side-card-label></span><button type="button" class="side-fold" data-side-fold aria-expanded="true" aria-label="Fold the step">{{ icon('chevron-down') }}</button></div>
-  <ol class="slist all" data-step-card></ol>
-</aside>
-{%- endmacro %}
 {% if v.timeline %}<section class="vpanel split" data-panel="timeline" aria-label="Timeline" hidden>
   <div class="split-main">{{ timeline(v.timeline) }}</div>
   {{ side_card() }}
