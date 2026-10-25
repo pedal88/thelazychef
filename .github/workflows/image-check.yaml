@@ -1,0 +1,50 @@
+name: Image check
+
+# The image is built for production only after a merge to main (deploy.yaml). A pull request that changes how it
+# is built is checked here first: it builds, the app starts in it, and Trivy passes, so a broken image or a
+# blocking CVE shows up before the merge, not in the deploy.
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - requirements.txt
+
+jobs:
+  image:
+    name: Build, start and scan the image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: lazy-chef-app:check
+          build-args: |
+            APT_REFRESH=${{ github.run_id }}
+          cache-from: type=gha
+
+      - name: The app loads in it, as the non-root user
+        run: |
+          docker run --rm -e GOOGLE_API_KEY=dummy-for-tests lazy-chef-app:check \
+            python -c "import app; print('app loads as', __import__('getpass').getuser())"
+          docker run --rm lazy-chef-app:check gunicorn --version
+          docker run --rm lazy-chef-app:check ffmpeg -version | head -1
+
+      - name: Run Trivy Vulnerability Scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: lazy-chef-app:check
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
