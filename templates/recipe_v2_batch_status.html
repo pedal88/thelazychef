@@ -12,6 +12,7 @@
   <p class="eyebrow">Recipe model v2 · admin</p>
   <h1>{% if working %}Making {{ working }} of {{ recipes|length }} recipes{% else %}{{ recipes|length }} recipe{{ 's' if recipes|length != 1 }} made{% endif %}</h1>
   <p class="hint">{% if working %}They are made in the background, a few at a time; this page updates itself. You can leave it and come back with the same address.{% else %}All done. Drafts are only seen by admins until they are approved.{% endif %}</p>
+  {% if not working %}<p><a class="go" href="{{ url_for('recipe_v2.batch_images') }}">Images for these →</a></p>{% endif %}
   <table class="batch-table">
     <thead><tr><th>Recipe</th><th>Chef</th><th>Settings</th><th>Status</th></tr></thead>
     <tbody>

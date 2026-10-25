@@ -235,6 +235,49 @@ Taco | smart | spicy
         self.assertIn('Made before', again)
         self.assertNotIn('Make 2 recipes', again)
 
+    def test_images_for_many_recipes_are_queued_and_followed(self):
+        from services.recipe_v2 import images
+        self.login()
+        with mock.patch.object(claude, 'call', fake_claude()):
+            self.client.post('/new-recipe/v2', data={'source': 'Spaghetti carbonara for four'})
+        recipe = db.session.execute(db.select(Recipe)).scalar_one()
+        page = self.client.get('/new-recipe/v2/images').get_data(as_text=True)
+        self.assertIn('1 recipe without an image', page)
+        self.assertIn(f'name="ids" value="{recipe.id}" checked', page)
+
+        def draw(recipe, storage, style=None):  # stands in for the image model
+            recipe.image_filename = 'dish_test.webp'
+            return {'dish': 'dish_test.webp', 'parts': 0, 'notes': [], 'style': 'cutout', 'trial': False, 'cost_usd': 0.1}
+        with mock.patch.object(images, 'make_images', draw):
+            res = self.client.post('/new-recipe/v2/images', data={'ids': [str(recipe.id)]})
+        self.assertTrue(res.headers['Location'].endswith(f'/new-recipe/v2/images?started={recipe.id}'))
+        db.session.refresh(recipe)
+        self.assertEqual(recipe.image_filename, 'dish_test.webp')
+        done = self.client.get(res.headers['Location']).get_data(as_text=True)
+        self.assertIn('Images made for 1', done)
+        self.assertIn('0 recipes without an image', done)
+        self.assertNotIn('http-equiv="refresh"', done)
+
+    def test_a_failed_image_job_is_noted_on_its_last_attempt(self):
+        from services.recipe_v2 import images
+        self.login()
+        with mock.patch.object(claude, 'call', fake_claude()):
+            self.client.post('/new-recipe/v2', data={'source': 'Spaghetti carbonara for four'})
+        recipe = db.session.execute(db.select(Recipe)).scalar_one()
+
+        def broken(*a, **kw):
+            raise RuntimeError('quota')
+        with mock.patch.object(images, 'make_images', broken):
+            with self.assertRaises(RuntimeError):
+                tasks.run_images(recipe.id, attempt=0)  # Cloud Tasks tries again
+            self.assertTrue(tasks.run_images(recipe.id, attempt=tasks.MAX_ATTEMPTS - 1))
+        db.session.refresh(recipe)
+        self.assertEqual([e['rule'] for e in recipe.validation_errors if e['rule'] == 'image'], ['image'])
+        self.assertIsNone(recipe.image_filename)
+        # Only Cloud Tasks may call the job
+        self.client.get('/logout')
+        self.assertEqual(self.client.post(f'/internal/tasks/recipe-v2-images/{recipe.id}').status_code, 401)
+
     def test_an_unknown_chef_is_ignored(self):
         self.login()
         with mock.patch.object(claude, 'call', fake_claude()):
