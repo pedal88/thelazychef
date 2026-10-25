@@ -37,7 +37,7 @@ html.site-menu:not(.cooking) body:has(.make.has-ovl) .trialbar { top: 76px; }
 .ovl-cols .shop-group { break-after: avoid; margin-top: var(--space-3); }
 .ovl-cols .shop-group:first-child { margin-top: 0; }
 .ovl-cols .ilist li { break-inside: avoid; }
-.chip:focus-visible, .cc-btn:focus-visible, .ovl-go:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.chip:focus-visible, .cc-btn:focus-visible, .cc-more:focus-visible, .ovl-go:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 
 /* A, the poster: the image to the left at full height, with the title on it */
 .ovl-poster { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(380px, 1fr); }
@@ -69,32 +69,82 @@ html.site-menu:not(.cooking) body:has(.make.has-ovl) .trialbar { top: 76px; }
   .pp-times { font-size: 13px; }
 }
 
-/* C, compact: a plate at the top, a row of actions, the ingredients in columns */
-.ovl-compact { display: flex; flex-direction: column; gap: var(--space-4); max-width: 1400px; margin: 0 auto;
-  padding: 64px var(--space-8) var(--space-4); }
-.cc-plate { display: flex; align-items: center; gap: var(--space-6); }
-.cc-thumb { flex: none; width: clamp(96px, 16vw, 220px); height: auto; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius); background: var(--color-soft); }
-.cc-head { min-width: 0; }
-.cc-head h1 { margin: 0; font-size: clamp(24px, 2.6vw, 40px); line-height: 1.1; text-wrap: balance; }
-.cc-head .pp-times { color: var(--color-muted); }
-.cc-head .ovl-serv { margin-top: var(--space-3); }
-.cc-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+/* C, compact: a plate at the top with the image and the title, the ingredients under it and what helps to plan
+   beside them. The image follows the ingredients' size (static/js/overview_fit.js): large with a short list,
+   small with a long one */
+.ovl-compact { --img-h: 32vh; display: flex; flex-direction: column; gap: var(--space-4); max-width: 1440px; margin: 0 auto;
+  padding: 60px var(--space-8) var(--space-4); }
+.ovl-compact:has(.ovl-ings[data-density="large"]) { --img-h: 40vh; }
+.ovl-compact:has(.ovl-ings[data-density="normal"]) { --img-h: 26vh; }
+.ovl-compact:has(.ovl-ings[data-density="tight"]) { --img-h: 20vh; }
+.cc-plate { flex: none; display: flex; align-items: center; gap: var(--space-8); }
+.cc-img { flex: none; margin: 0; height: var(--img-h); min-height: 120px; aspect-ratio: 4 / 3; overflow: hidden; border-radius: var(--radius);
+  max-width: 55%; background: var(--color-soft); display: grid; place-items: center; color: var(--color-muted); }
+.cc-img img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.cc-img > .icon { width: 40%; height: 40%; opacity: .35; }
+.cc-head { min-width: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.cc-head h1 { margin: 0; font-size: clamp(26px, 3vw, 46px); line-height: 1.08; text-wrap: balance; }
+.cc-head .pp-times { margin: 0; color: var(--color-muted); }
+.cc-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: var(--space-1); }
 .cc-actions .ovl-go { min-height: 48px; }
 .cc-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 48px; padding: 0 18px; border: 1px solid var(--color-line); border-radius: var(--radius-pill);
   background: var(--color-paper); color: var(--color-ink); font: 600 15px var(--font-sans); cursor: pointer; }
 .cc-btn:hover { background: var(--color-soft); }
 .cc-btn .icon { width: 18px; height: 18px; }
-.ovl-compact .ovl-ings { flex: 1; border-top: 1px solid var(--color-line); padding-top: var(--space-3); }
-.ovl-compact .ovl-cols { columns: 240px; }
+.cc-body { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 300px; grid-template-rows: minmax(0, 1fr); gap: var(--space-8);
+  border-top: 1px solid var(--color-line); padding-top: var(--space-3); }
+
+/* At a glance: the time, the equipment, the parts and the chef's note */
+.cc-glance { min-height: 0; overflow: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: var(--space-6);
+  padding-left: var(--space-6); border-left: 1px solid var(--color-line); }
+.cc-glance h2.eyebrow { margin: 0 0 var(--space-2); }
+.cc-parts { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: var(--space-2); }
+.cc-parts figure { margin: 0; text-align: center; font-size: 12px; }
+.cc-parts img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-sm); background: var(--color-soft); }
+.cc-note { margin: 0; font-size: 15px; line-height: 1.45; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
+.cc-more { margin-top: 4px; padding: 0; border: 0; background: none; color: var(--color-muted); font-size: 13px; text-decoration: underline; cursor: pointer; }
+.cc-glance .parts span + span::before { content: " · "; }
+
+/* The time as a strip, each part as long as it takes */
+.tstrip { display: grid; gap: 6px; }
+.ts-bar, .ts-keys { display: flex; gap: 3px; }
+.ts-bar span { height: 10px; min-width: 6px; flex-basis: 0; border-radius: 5px; background: var(--color-prep); }
+.ts-bar .ts-cook { background: var(--color-cook); }
+.ts-bar .ts-serve { background: var(--color-serve); }
+.ts-keys span { flex-basis: 0; min-width: 64px; font: 400 12px/1.3 var(--font-mono); color: var(--color-muted); }
+.ts-keys b { display: block; font: 600 12px var(--font-sans); color: var(--color-ink); }
+
+/* The equipment */
+.eq-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: var(--space-3) var(--space-2); }
+.eq-grid li { display: grid; justify-items: center; gap: 4px; text-align: center; font-size: 12px; line-height: 1.2; }
+.eq-grid .sym { --s: 40px; }
+
+/* Standing up, and on a phone: the image over the full width, the title under it */
+@media (orientation: portrait), (max-width: 600px) {
+  .cc-plate { flex-direction: column; align-items: stretch; gap: var(--space-3); }
+  .cc-img { width: 100%; max-width: none; height: var(--img-h); min-height: 0; aspect-ratio: auto; }
+}
+/* Standing up: what helps to plan in a row under the plate */
+@media (orientation: portrait) and (min-width: 601px) {
+  .cc-body { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); gap: var(--space-4); }
+  .cc-glance { order: -1; overflow: visible; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-4) var(--space-8);
+    padding: 0 0 var(--space-3); border-left: 0; border-bottom: 1px solid var(--color-line); }
+}
+/* A phone: the image over the full width, the rest under More */
 @media (max-width: 600px) {
-  .ovl-compact { padding: 60px var(--space-4) calc(var(--space-3) + env(safe-area-inset-bottom, 0px)); gap: var(--space-3); }
-  .cc-plate { gap: var(--space-3); align-items: flex-start; }
-  .cc-thumb { width: 96px; }
+  .ovl-compact { --img-h: 26vh; padding: 60px var(--space-4) calc(var(--space-3) + env(safe-area-inset-bottom, 0px)); gap: var(--space-3); }
+  .ovl-compact:has(.ovl-ings[data-density="large"]) { --img-h: 30vh; }
+  .ovl-compact:has(.ovl-ings[data-density="normal"]) { --img-h: 22vh; }
+  .ovl-compact:has(.ovl-ings[data-density="tight"]) { --img-h: 18vh; }
+  .cc-head { gap: var(--space-2); }
   .cc-actions .ovl-go { flex: 1 1 100%; }  /* a row of its own, Bowls and More share the next */
   .cc-btn { flex: 1; justify-content: center; padding: 0 14px; }
+  .cc-body { grid-template-columns: minmax(0, 1fr); }
+  .cc-glance { display: none; }
 }
 
 /* The rest: a drawer from the right, over the whole height */
+.ovl-more .eq-grid { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); }
 .ovl-more { border: 0; margin: 0 0 0 auto; padding: var(--space-3) var(--space-6) var(--space-6); width: min(460px, 100vw); max-width: 100vw;
   height: 100%; max-height: 100%; overflow: auto; background: var(--color-paper); color: var(--color-ink); box-shadow: -12px 0 40px rgb(0 0 0 / .18); }
 .ovl-more[open] { animation: drawer-in .2s ease-out; }
