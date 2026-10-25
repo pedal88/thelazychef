@@ -205,7 +205,8 @@
 /* The stretch travelled in full colour, the rest faint (static/js/steps.js sets the clip) */
 .mt-line.mt-ahead { opacity: .28; }
 /* Where parts meet: which, each with a tick when it is ready */
-.mt-meets { flex: none; font: 500 12px var(--font-sans); color: var(--color-muted); }
+.mt-meets { flex: 0 1 auto; min-width: 0; font: 500 12px var(--font-sans); color: var(--color-muted); }
+.mt-ings { display: none; }
 .mt-meets::before { content: "· "; }
 .mt-meets [data-meet] { color: var(--lane); font-weight: 600; }
 .mt-meets [data-meet].ok::after { content: " ✓"; color: var(--color-prep-ink); }
@@ -242,12 +243,20 @@ html.mtx-lines .mt-heads { display: block; position: absolute; left: 52px; top: 
 .mt-names li.dim { opacity: .25; }
 @media (min-width: 1000px) {
   .cookmode:has(> .vpanel.mt-panel:not([hidden])) { padding-bottom: 64px; }
-  .cookmode .vpanel.mt-panel:not([hidden]) { grid-template-columns: minmax(0, 7fr) minmax(360px, 5fr); gap: var(--space-8); align-items: stretch;
-    max-width: 1560px; margin: 0 auto; padding-inline: var(--space-6); }
+  /* The map as wide as it needs, the card beside it, the two together in the middle (static/js/steps.js metroFit) */
+  .cookmode .vpanel.mt-panel:not([hidden]) { grid-template-columns: auto minmax(380px, 640px); justify-content: center; gap: 64px; align-items: stretch;
+    max-width: none; margin: 0 auto; padding-inline: 32px; }
   .mt-panel .split-main { display: flex; flex-direction: column; min-height: 0; height: calc(100vh - 116px); height: calc(100dvh - 116px); }
   .mt-panel .mt-key { margin: 0 0 var(--space-2); }
   .mt-panel .mt-fit { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; padding-top: 16px; }
-  .mt-panel .mt { margin: 0; max-width: 620px; }
+  .mt-panel .mt { margin: 0; width: calc(var(--w) + 62px + 460px); }
+  /* Whole names, the ingredients after them, and which parts meet on a line of its own */
+  .mt-panel .mt-names li { flex-wrap: wrap; row-gap: 2px; white-space: normal; line-height: 1.25; }
+  .mt-panel .mt-name { overflow: visible; }
+  .mt-panel .mt-meets { flex-basis: 100%; padding-left: 1.6em; }
+  .mt-panel .mt-meets::before { content: none; }
+  .mt-panel .mt-ings { display: inline-flex; align-items: center; gap: 2px; margin-left: 4px; align-self: center; }
+  .mt-panel .mt-ings .sym { --s: 20px !important; }
   .mt-panel .hint { display: none; }
 }
 

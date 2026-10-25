@@ -216,10 +216,25 @@
     const room = Math.max(0, ...heads.map(h => h.offsetHeight + 14 - parseFloat(h.style.top)));
     mtMap.style.marginTop = room ? `${Math.ceil(room)}px` : '';
     const wide = innerWidth >= 1000 && mtBox.clientHeight;
-    const natural = parseFloat(mtMap.style.getPropertyValue('--h')) + 24 + room;  // and the room above it
-    mtMap.style.zoom = wide ? Math.max(.7, Math.min(1.4, mtBox.clientHeight / natural)).toFixed(3) : '';
+    if (!wide) { mtMap.style.zoom = ''; return; }
+    // As large as both the height and the width beside the card allow (static/css/rail.css: the card 380-640 px,
+    // the gap and the sides 64 px each), between 70 and 180 %
+    const tall = parseFloat(mtMap.style.getPropertyValue('--h')) + 24 + room;  // and the room above it
+    const panel = mtBox.closest('.vpanel'), card = Math.min(640, Math.max(380, (panel.clientWidth - 128) * .4));
+    const across = (panel.clientWidth - 128 - card) / (parseFloat(mtMap.style.getPropertyValue('--w')) + 62 + 460);  // .mt's width in rail.css
+    mtMap.style.zoom = Math.max(.7, Math.min(1.8, mtBox.clientHeight / tall, across)).toFixed(3);
   }
-  if (mtBox) new ResizeObserver(metroFit).observe(mtBox);
+  if (mtBox) { const ro = new ResizeObserver(metroFit); ro.observe(mtBox); ro.observe(mtBox.closest('.vpanel')); }
+  // The ingredients of each step on the map, small, after its name (shown on a wide screen)
+  $$('.mt-names li[data-step]').forEach(li => {
+    const syms = byId[li.dataset.step] ? [...byId[li.dataset.step].querySelectorAll('.st-more .txt .pill .sym')].slice(0, 5) : [];
+    if (!syms.length) return;
+    const box = document.createElement('span');
+    box.className = 'mt-ings';
+    box.setAttribute('aria-hidden', 'true');
+    syms.forEach(x => box.append(x.cloneNode(true)));
+    (li.querySelector('.mt-time') || li.querySelector('.mt-name')).after(box);
+  });
 
   /* The delta fills as steps are ticked off in the list, and a running timer counts down on its step */
   const dFlow = $('[data-delta-flow]');

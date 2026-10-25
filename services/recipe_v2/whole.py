@@ -145,8 +145,10 @@ def metro_map(v2, sch, comps):
         return None
     st, info, n_lanes = b['stations'], b['info'], len(b['lanes'])
     total = b['total']
-    # The lines 40 px apart, so it is plain which line belongs to which part (25.10.2026; was 22)
-    top, gap_px, lane_w, x0 = 30, 34, 40, 20
+    # The lines 40 px apart, so it is plain which line belongs to which part (25.10.2026; was 22), 48 with three
+    # lines or fewer
+    top, gap_px, x0 = 30, 34, 20
+    lane_w = 48 if n_lanes <= 3 else 40
     per_min = max(4.0, min(9.0, 640 / max(30, min(total, 120))))
 
     # Where each minute is drawn: a list of (minute, y) points, with the long stretches shortened
