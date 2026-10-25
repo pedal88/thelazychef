@@ -100,8 +100,7 @@
     back.hidden = !peek;
     back.textContent = here ? `← Back to step ${num(here)}` : '← Back';
     const left = row && !peek && TOTAL ? TOTAL - +row.dataset.at : 0;
-    q('[data-side-card-left]').textContent = !left ? '' : clockOn() ? `At the table about ${hm(Date.now() + left * 60e3)}`
-      : left >= 120 ? `About ${(left / 60).toFixed(1).replace('.0', '')} h to the table` : `About ${left} min to the table`;
+    q('[data-side-card-left]').textContent = left ? `At the table about ${hm(Date.now() + left * 60e3)}` : '';
     const needs = q('[data-side-card-needs]');
     needs.replaceChildren(...(copy ? [...copy.querySelectorAll('.txt .pill')] : []).map(p => {
       const li = document.createElement('li');
@@ -113,10 +112,10 @@
     const then = row && rows.slice(at + 1).find(r => !done.has(r.dataset.st) && r.dataset.st !== id);
     q('[data-side-card-then]').textContent = then && !peek ? `Then: ${then.dataset.label}` : '';
     if (sp.panel.classList.contains('rail')) rows.forEach(r => r.classList.toggle('is-then', r === then && !peek));  // not faded in the list (static/css/rail.css)
-    // While the step stands: what you could do in the time it leaves you free (the trial "free time")
-    const tip = q('[data-side-card-tip]'), ideas = row && !peek && freeOn() ? whileStanding(id) : null;
+    // While the step stands: what you could do in the time it leaves you free
+    const tip = q('[data-side-card-tip]'), ideas = row && !peek ? whileStanding(id) : null;
     tip.hidden = !(ideas && ideas.list.length);
-    if (!tip.hidden) tip.innerHTML = `<b>While it stands, ${ideas.minutes} min:</b> `
+    if (!tip.hidden) tip.innerHTML = `<b>While you wait, ${ideas.minutes} min:</b> `
       + ideas.list.map(x => `<button type="button" data-tip-look="${esc(x.id)}">${esc(byId[x.id].dataset.label)}</button> <span>${x.minutes} min</span>`).join(' · ');
     const main = q('[data-sc-done]'), alt = q('[data-sc-alt]');
     main.hidden = !row;
@@ -140,13 +139,10 @@
   const railOn = () => railSplit && !railSplit.panel.hidden && getComputedStyle(railSplit.card).display !== 'none'
     && document.documentElement.classList.contains('cooking');
 
-  /* The timeline beside the page card. Trials (temporary), each switched on on this device in the admin chip:
-     "clock" shows clock times, counted from now at the step you are on, on the axis, in the free time and on the
-     card; "free time" says what you could do in the time you are free: steps further on that need only what is
-     ready by then, that are not cooking and fit in the time. */
+  /* The timeline beside the page card, with clock times counted from now at the step you are on (on the axis, in
+     the free time and on the card), and "While you wait": what you could do in the time you are free, steps
+     further on that need only what is ready by then, that are not cooking or setting up, and fit in the time. */
   const tlRow = Object.fromEntries($$('.tl-row[data-step]').map(r => [r.dataset.step, r]));
-  const clockOn = () => document.documentElement.classList.contains('tlx-4');
-  const freeOn = () => document.documentElement.classList.contains('tlx-5');
   const hm = t => new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
   const zero = () => { const r = byId[nextId()]; return Date.now() - (r ? +r.dataset.at : TOTAL) * 60e3; };  // minute 0 of the plan on the clock
   function fillFree(from, to) {
@@ -172,14 +168,12 @@
   function timelineMarks() {
     const done = new Set(st.done), z = zero();
     Object.entries(tlRow).forEach(([id, r]) => r.classList.toggle('is-done', done.has(id)));
-    $$('.tl-axis [data-min]').forEach(s => { s.textContent = clockOn() ? hm(z + s.dataset.min * 60e3) : s.dataset.min; });
+    $$('.tl-axis [data-min]').forEach(s => { s.textContent = hm(z + s.dataset.min * 60e3); });
     $$('.tb.free[data-from]').forEach(b => {
-      const from = +b.dataset.from, to = +b.dataset.to, ideas = freeOn() ? fillFree(from, to) : [];
-      b.title = (clockOn() ? `Free ${hm(z + from * 60e3)}–${hm(z + to * 60e3)}` : `Free ${to - from} min`)
-        + (ideas.length ? `: ${ideas.map(x => byId[x.id].dataset.label).join(', ')}` : '');
+      const from = +b.dataset.from, to = +b.dataset.to, ideas = fillFree(from, to), when = `${hm(z + from * 60e3)}–${hm(z + to * 60e3)}`;
+      b.title = `Free ${when}` + (ideas.length ? `. While you wait: ${ideas.map(x => byId[x.id].dataset.label).join(', ')}` : '');
       const label = b.querySelector('b');
-      if (label) label.textContent = (clockOn() ? `free ${hm(z + from * 60e3)}–${hm(z + to * 60e3)}` : `free ${to - from} min`)
-        + (ideas.length ? ` · ${byId[ideas[0].id].dataset.label}${ideas.length > 1 ? ` +${ideas.length - 1}` : ''}` : '');
+      if (label) label.textContent = `free ${when}` + (ideas.length ? ` · ${byId[ideas[0].id].dataset.label}${ideas.length > 1 ? ` +${ideas.length - 1}` : ''}` : '');
     });
   }
 
@@ -353,16 +347,7 @@
   page.addEventListener('click', e => {
     beep(true); wake();
     const t = e.target;
-    // The timeline's trials, each on or off on this device (the admin chip; temporary)
-    const tlx = t.closest('[data-tlx]');
-    if (tlx) {
-      const on = document.documentElement.classList.toggle(`tlx-${tlx.dataset.tlx}`);
-      tlx.setAttribute('aria-pressed', String(on));
-      try { localStorage.setItem('timeline-x', $$('[data-tlx]').filter(b => b.getAttribute('aria-pressed') === 'true').map(b => b.dataset.tlx).join(' ')); } catch (err) { /* this visit */ }
-      render();
-      return;
-    }
-    const tipLook = t.closest('[data-tip-look]');  // a step suggested for the free time: a look at it
+    const tipLook = t.closest('[data-tip-look]');  // a step suggested while you wait: a look at it
     if (tipLook) { const sp = splits.find(x => x.card.contains(tipLook)); sp.pick = tipLook.dataset.tipLook; splitRender(); return; }
     if (t.closest('[data-sc-done], [data-sc-back]')) { cardDone(splits.find(x => x.card.contains(t))); return; }
     if (t.closest('[data-sc-alt]')) { cardAlt(splits.find(x => x.card.contains(t))); return; }
@@ -503,8 +488,7 @@
     cooking(true);
     if (bowlsFirst && sheet && sheet.showModal) { sheet.showModal(); requestAnimationFrame(fit); }
   }
-  $$('[data-tlx]').forEach(b => b.setAttribute('aria-pressed', String(document.documentElement.classList.contains(`tlx-${b.dataset.tlx}`))));
-  setInterval(() => { if (clockOn()) { timelineMarks(); splitRender(); } }, 30e3);  // the clock moves on
+  setInterval(() => { timelineMarks(); splitRender(); }, 30e3);  // the clock moves on
   wake();
   render();
   bowls();

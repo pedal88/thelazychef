@@ -173,7 +173,7 @@
   .tl-panel .lg.h { height: 2px; border: 0; background: color-mix(in srgb, var(--ph) 50%, transparent); }
 }
 
-/* The trial "free time": what you could do while the step stands, on the card (static/js/steps.js) */
+/* While you wait: what you could do while the step stands, on the card (static/js/steps.js) */
 .sc-tip:not([hidden]) { margin: var(--space-4) 0 0; font-size: 15px; color: var(--color-muted); max-width: 62ch; }
 .sc-tip b { color: var(--color-ink); font-weight: 600; }
 .sc-tip button { padding: 0; border: 0; background: none; color: var(--color-ink); font: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
