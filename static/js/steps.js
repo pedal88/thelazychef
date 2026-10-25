@@ -61,35 +61,44 @@
 
   /* The timeline and the metro map: the step you tap in them, or else the next one, in full beside the view (on a
      wide screen) or docked at the bottom (on a phone). A second tap on the same step goes back to the next one. */
-  // The step layout trial "rail" has the same card beside its list of steps (on a wide screen)
+  // The rail has the same card beside its list of steps (on a wide screen); a step tapped there is a look at it
+  // (railCard), so it stays chosen when it is done and goes back only on purpose
   const splits = $$('.vpanel.split, .vpanel.rail').map(panel => ({ panel, card: panel.querySelector('[data-side-card]'), pick: null, folded: false }));
   function splitRender() {
     const next = nextId();
     splits.forEach(sp => {
-      if (sp.pick && st.done.includes(sp.pick)) sp.pick = null;
+      const rail = sp.panel.classList.contains('rail');
+      if (sp.pick && (rail ? sp.pick === next : st.done.includes(sp.pick))) sp.pick = null;
       const id = sp.pick || next, list = sp.card.querySelector('[data-step-card]');
       sp.panel.querySelectorAll('.sel').forEach(e => e.classList.remove('sel'));
       if (id) sp.panel.querySelectorAll(`.split-main [data-step="${id}"], .rail-main [data-st="${id}"]`).forEach(e => e.classList.add('sel'));
       sp.card.querySelector('[data-side-card-label]').textContent = !id ? 'The food is ready' : sp.pick ? 'The step you chose' : 'Next step';
       sp.card.classList.toggle('folded', sp.folded);
       sp.card.querySelector('[data-side-fold]').setAttribute('aria-expanded', String(!sp.folded));
-      if (!id || !byId[id]) { list.replaceChildren(); if (sp.panel.classList.contains('rail')) railCard(sp, null, null); return; }
+      if (!id || !byId[id]) { list.replaceChildren(); if (rail) railCard(sp, null, null); return; }
       const copy = byId[id].cloneNode(true);
       copy.classList.add('is-open');
       copy.classList.toggle('sc-new', sp.last !== id);  // eases in when the step changes, not on every timer tick
       sp.last = id;
       list.replaceChildren(copy);
-      if (sp.panel.classList.contains('rail')) railCard(sp, id, copy);
+      if (rail) railCard(sp, id, copy);
     });
   }
 
   /* The card beside the steps (the rail): which step of how many, the time from it to the table, what it needs
-     (its ingredients, from the pills in the text), and the step after it */
+     (its ingredients, from the pills in the text), and the step after it.
+     A step tapped in the list is a look at it, not a jump: the card says so, its main button goes back to the step
+     you are on, and a small one ticks the step you look at off (or back on, for a step that is done). */
   const TOTAL = +(($('.vpanel.rail') || {}).dataset || {}).total || 0;
   function railCard(sp, id, copy) {
-    const q = s => sp.card.querySelector(s), row = id && byId[id];
-    q('[data-side-card-count]').textContent = row ? `Step ${row.querySelector('.n').dataset.n} of ${rows.length}` : 'The food is ready';
-    const left = row && TOTAL ? TOTAL - +row.dataset.start : 0;
+    const q = s => sp.card.querySelector(s), row = id && byId[id], num = r => r.querySelector('.n').dataset.n;
+    const peek = !!(row && sp.pick), here = byId[nextId()];
+    sp.card.classList.toggle('peek', peek);
+    q('[data-side-card-count]').textContent = !row ? 'The food is ready' : peek ? `Looking at step ${num(row)} of ${rows.length}` : `Step ${num(row)} of ${rows.length}`;
+    const back = q('[data-sc-back]');
+    back.hidden = !peek;
+    back.textContent = here ? `← Back to step ${num(here)}` : '← Back';
+    const left = row && !peek && TOTAL ? TOTAL - +row.dataset.at : 0;
     q('[data-side-card-left]').textContent = !left ? '' : left >= 120 ? `About ${(left / 60).toFixed(1).replace('.0', '')} h to the table` : `About ${left} min to the table`;
     const needs = q('[data-side-card-needs]');
     needs.replaceChildren(...(copy ? [...copy.querySelectorAll('.txt .pill')] : []).map(p => {
@@ -100,16 +109,25 @@
     needs.hidden = !needs.children.length;
     const done = new Set(st.done), at = row ? rows.indexOf(row) : -1;
     const then = row && rows.slice(at + 1).find(r => !done.has(r.dataset.st) && r.dataset.st !== id);
-    q('[data-side-card-then]').textContent = then ? `Then: ${then.dataset.label}` : '';
-    rows.forEach(r => r.classList.toggle('is-then', r === then));  // not faded in the list (static/css/rail.css)
-    q('[data-sc-done]').hidden = !row;
+    q('[data-side-card-then]').textContent = then && !peek ? `Then: ${then.dataset.label}` : '';
+    rows.forEach(r => r.classList.toggle('is-then', r === then && !peek));  // not faded in the list (static/css/rail.css)
+    const main = q('[data-sc-done]'), alt = q('[data-sc-alt]');
+    main.hidden = !row;
+    main.innerHTML = peek ? esc(back.textContent) : 'Done <span aria-hidden="true">→</span> next step';
+    alt.hidden = !peek;
+    if (peek) alt.textContent = done.has(id) ? `Untick step ${num(row)}` : `Mark step ${num(row)} as done`;
   }
-  // Done on the card: the step it shows, then on to the next
+  // The card's main button: done and on to the next step, or back to it from a look at another
   function cardDone(sp) {
-    const id = sp.pick || nextId();
-    if (!id || st.done.includes(id)) return;
+    if (sp.pick) { sp.pick = null; splitRender(); return; }
+    const id = nextId();
+    if (id) tick(byId[id]);
+  }
+  // Its small button, on a look at another step: tick that step off, or back on, and go back
+  function cardAlt(sp) {
+    const id = sp.pick;
     sp.pick = null;
-    tick(byId[id]);
+    if (id && byId[id]) tick(byId[id]); else splitRender();
   }
   const railSplit = splits.find(sp => sp.panel.classList.contains('rail'));
   const railOn = () => railSplit && !railSplit.panel.hidden && getComputedStyle(railSplit.card).display !== 'none'
@@ -285,7 +303,8 @@
   page.addEventListener('click', e => {
     beep(true); wake();
     const t = e.target;
-    if (t.closest('[data-sc-done]')) { cardDone(splits.find(x => x.card.contains(t))); return; }
+    if (t.closest('[data-sc-done], [data-sc-back]')) { cardDone(splits.find(x => x.card.contains(t))); return; }
+    if (t.closest('[data-sc-alt]')) { cardAlt(splits.find(x => x.card.contains(t))); return; }
     if (t.closest('[data-cook-open]')) { e.preventDefault(); startCooking(); return; }
     if (t.closest('[data-cook-close]')) { stopCooking(); return; }
     if (t.closest('[data-view-menu]')) { openMenu(menu.hidden); return; }
@@ -339,6 +358,7 @@
   setInterval(() => {
     let rang = false;
     st.runs.forEach(r => { if (!r.rang && Date.now() >= r.end) { r.rang = rang = true; ring(); } });
+    if (rang && railSplit) railSplit.pick = null;  // a timer that rings calls you back to the step you are on
     if (rang) render(); else if (st.runs.length) runs();
   }, 1000);
 
@@ -380,9 +400,11 @@
 
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') openMenu(false);
-    // The rail: → (or space) is done and on to the next step, ← takes the last tick back
+    // The rail: → (or space) is the card's main button, done and on to the next step (or back, on a look at
+    // another); ← and Esc go back from a look, and otherwise ← takes the last tick back
     if (!railOn() || document.querySelector('dialog[open]') || e.metaKey || e.ctrlKey || e.altKey || e.target.closest('input, textarea, select')) return;
     if (e.key === 'ArrowRight' || (e.key === ' ' && e.target === document.body)) { e.preventDefault(); cardDone(railSplit); }
+    else if ((e.key === 'ArrowLeft' || e.key === 'Escape') && railSplit.pick) { e.preventDefault(); cardDone(railSplit); }
     else if (e.key === 'ArrowLeft' && st.done.length) { e.preventDefault(); st.done.pop(); render(); }
   });
   // And a swipe to the left on the card, on a tablet
