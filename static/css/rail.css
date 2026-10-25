@@ -202,10 +202,19 @@
 .mt-now::before { content: "Now"; position: absolute; right: 0; top: -16px; font: 600 11px var(--font-sans); color: var(--color-ink); }
 .mt-names .mt-wait { display: block; padding: 0 6px; font: italic 400 12px var(--font-sans); color: var(--color-muted); white-space: nowrap;
   overflow: hidden; text-overflow: ellipsis; pointer-events: none; background: none; }
-/* The parts (the trial "parts"): hidden until switched on in the admin chip */
-.mt-parts { display: none; }
-html.mtx-5 .mt-parts { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 0 0 var(--space-3); }
-html.mtx-5 .mt-key { display: none; }
+/* The parts (a trial): hidden until switched on in the admin chip, in a row above the map or above their lines */
+.mt-parts, .mt-heads { display: none; }
+html.mtx-row .mt-parts { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 0 0 var(--space-3); }
+html:is(.mtx-row, .mtx-lines) .mt-key { display: none; }
+html.mtx-lines .mt-heads { display: block; position: absolute; left: 52px; top: 0; z-index: 3; }
+.mt-head { position: absolute; transform: translate(-50%, calc(-100% - 14px)); display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 6px 4px; border: 0; border-radius: 14px; background: var(--color-paper); color: var(--lane); cursor: pointer; }
+.mt-head img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 2px var(--lane); }
+.mt-head span { writing-mode: vertical-rl; transform: rotate(180deg); font: 700 14px var(--font-sans); white-space: nowrap; }
+.mt-head small { font: 500 11px var(--font-sans); color: var(--color-muted); white-space: nowrap; }
+.mt-head.ready small { color: var(--color-prep-ink); }
+.mt-head[aria-pressed="true"] { background: color-mix(in srgb, var(--lane) 14%, var(--color-paper)); }
+.mt-head:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 .mt-part { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 44px; padding: 4px 14px 4px 4px; border: 1px solid var(--color-line);
   border-left: 4px solid var(--lane); border-radius: 12px; background: var(--color-paper); color: var(--color-ink); font: 600 14px var(--font-sans); cursor: pointer; }
 .mt-part img, .mt-part i { width: 34px; height: 34px; border-radius: 8px; object-fit: cover; background: var(--color-soft); flex: none; }
