@@ -144,9 +144,10 @@ class CookTests(unittest.TestCase):
         self.assertEqual(len(re.findall(r'data-st="[^"]+"[^>]*data-at="\d+"', html)), html.count('class="st-tick"'))
         # data-start marks a timer button (static/js/steps.js); on a step it made every tap on it start a timer
         self.assertIsNone(re.search(r'<li[^>]*\bdata-start\b', html))
-        # The timeline's trials (temporary): clock and free time, off until switched on
-        self.assertEqual(html.count('data-tlx="'), 2)
+        # The free time for "While you wait" and the clock; no trials left
         self.assertIn('data-from="', html)
+        self.assertIn('data-min="', html)
+        self.assertNotIn('data-tlx="', html)
         self.assertNotIn('data-fx="', html)
         self.assertNotIn('data-rx="', html)
         self.assertNotIn('data-sl="', html)
