@@ -62,11 +62,12 @@
   <dialog class="sheet sheet-bowls" id="sheet-bowls" aria-labelledby="sheet-bowls-h">
     <div class="sheet-h"><h2 id="sheet-bowls-h">Bowls and ingredients</h2>
       {% if r.bowls %}<span class="hint" data-count aria-live="polite">0 of {{ r.bowls|length }} bowls ready</span>{% endif %}
+      {# Prep is done: the bowls not ticked yet are counted as ready, and the cooking starts at the step after them.
+         In the title line, so the bowls get the height; on a phone it floats at the bottom (static/css/make.css) #}
+      {% if r.bowls %}<button type="button" class="go sheet-go" data-bowls-go>The bowls are ready <span aria-hidden="true">→</span> start cooking</button>{% endif %}
       <button type="button" class="sheet-x" data-sheet-close aria-label="Close">{{ icon('close') }}</button></div>
     {% if r.bowls %}<div class="meter" aria-hidden="true"><span></span></div>{% endif %}
-    <div class="sheet-fit" data-fit><div class="fit-in">{{ prep_body() }}</div></div>
-    {# Prep is done: the bowls not ticked yet are counted as ready, and the cooking starts at the step after them #}
-    {% if r.bowls %}<div class="sheet-go"><button type="button" class="go" data-bowls-go>The bowls are ready <span aria-hidden="true">→</span> start cooking</button></div>{% endif %}
+    <div class="sheet-fit" data-fit><div class="fit-in">{{ prep_body(links=True) }}</div></div>
   </dialog>
   {{ more_sheet() }}
 </article>

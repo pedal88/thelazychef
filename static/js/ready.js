@@ -18,7 +18,8 @@
   const linked = el => !!stepsDone && stepsOf(el).length > 0;
   const isOn = el => linked(el) ? stepsOf(el).every(s => stepsDone.has(s)) : done.has(el.dataset.tick);
   const tell = (name, detail) => page.dispatchEvent(new CustomEvent(name, { detail }));
-  const nowBowls = () => [...page.querySelectorAll('section > .board > [data-bowl]')];  // the bowls for now, not the ones for later
+  // The bowls for now: not the ones for later, until the wait they are for has started (static/js/steps.js marks it)
+  const nowBowls = () => [...page.querySelectorAll('section > .board > [data-bowl], .later.is-now [data-bowl]')];
 
   function paint() {
     page.querySelectorAll('[data-tick]').forEach(b => {

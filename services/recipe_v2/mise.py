@@ -133,7 +133,7 @@ def build(v2, sch, language=None):
         if kind == 'bench':
             continue
         while_id = next((plan[p].get('during') for p in e['prep'] if plan[p].get('during')), None)
-        dest = later.setdefault(while_id, {'while': by[while_id]['short'], 'bowls': [], 'fetch': []}) if while_id else out
+        dest = later.setdefault(while_id, {'id': while_id, 'while': by[while_id]['short'], 'bowls': [], 'fetch': []}) if while_id else out
         if kind == 'bowl':
             name = by[e['key']]['short'] if e['prep'] else joined([i['name'] for i in vis], language)
             dest['bowls'].append({'key': f"b:{e['key']}", 'name': name, 'named_by_step': bool(e['prep']), 'lines': vis, 'used': target,

@@ -72,6 +72,22 @@ class CookTests(unittest.TestCase):
                 self.assertIn(f'data-st="{sid}"', html)
         self.assertIn('class="pill" data-l="', html)  # the card swaps a ready bowl's lines for the bowl
         self.assertIn('data-bowls-go', html)
+        # Each bowl's step is a button, with the key to the colours; the Prep page has neither
+        self.assertEqual(html.count('data-goto-step="'), 3)
+        self.assertIn('class="bowl-key"', html)
+        prep = self.client.get(f'/recipe/{rid}/prep', query_string={'servings': 2})
+        self.assertEqual(prep.status_code, 302)  # the one page: Prep is part of it
+
+    def test_the_bowls_for_later_know_the_wait_they_are_for(self):
+        rid = self.ids['tikka']
+        self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
+        self.client.set_cookie('flow', 'one')
+        html = self.client.get(f'/recipe/{rid}').get_data(as_text=True)
+        wait = re.search(r'<details class="later" id="later-([^"]+)" data-while="([^"]+)"', html)
+        self.assertTrue(wait and wait.group(1) == wait.group(2))
+        self.assertIn(f'data-st="{wait.group(2)}"', html)  # the step it waits for is a step of the list
+        self.client.set_cookie('flow', 'tabs')
+        self.assertNotIn('data-goto-step', self.client.get(f'/recipe/{rid}/prep').get_data(as_text=True))
 
     def test_one_page_flow_is_for_admins_and_has_the_dish_and_the_steps_as_a_list(self):
         rid = self.ids["carbonara"]
