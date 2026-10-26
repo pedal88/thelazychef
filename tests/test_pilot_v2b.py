@@ -35,6 +35,11 @@ class PilotV2bTests(unittest.TestCase):
         found = list(objects(b.recipe_json_schema()))
         self.assertGreaterEqual(len(found), 4)
         self.assertTrue(all(o['additionalProperties'] is False for o in found))
+        # Every required field is also allowed: the recipe's title is a property, not a label to strip
+        self.assertTrue(all(set(o.get('required') or []) <= set(o['properties']) for o in found))
+        from services.recipe_v2 import claude
+        self.assertIn('title', b.recipe_json_schema()['properties'])
+        self.assertIn('title', claude.recipe_json_schema()['properties'])
 
     def test_prompt_splits_into_cached_rules_and_source(self):
         _, prompt = b.p0.structure_prompt('db-1', 'Title: Toast')
