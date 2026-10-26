@@ -294,14 +294,41 @@ html.dlx-steps .dv-rivers .fx-fold .mn-v { font: 500 13px var(--font-sans); colo
 html.dlx-steps .dv-rivers .fx-fold.cur .mn-v { color: var(--color-ink); font-weight: 600; }
 html.dlx-steps .dv-rivers .g2-note:not(.fx-also) { display: none; }  /* the setting up is now a step of its own */
 
-/* The trial "Card": on a wide screen the page card beside the delta; otherwise a tap opens the step in a sheet */
-.dl-panel > .side-card { display: none; }
+/* The step you are on beside the delta, on a wide screen: a small card in the largest free space of the drawing
+   near its step, with a line to it, or a strip along the bottom when the drawing leaves no room (static/js/steps.js
+   placeDeltaCard). The admin chip can hold it to either, for now. Narrower screens open the step in a sheet. */
+.dl-panel > .side-card, .dl-leader { display: none; }
 @media (min-width: 1000px) {
-  html.dlx-card .cookmode:has(> .vpanel.dl-panel:not([hidden])) { padding-bottom: 64px; }
-  html.dlx-card .cookmode .vpanel.dl-panel:not([hidden]) { display: grid; grid-template-columns: minmax(0, 7fr) minmax(360px, 5fr); gap: var(--space-8);
-    align-items: stretch; max-width: 1560px; margin: 0 auto; padding-inline: var(--space-6); }
-  html.dlx-card .dl-panel > .split-main { min-width: 0; height: calc(100vh - 116px); height: calc(100dvh - 116px); overflow: auto; }
-  html.dlx-card .dl-panel > .side-card { display: flex; }
+  .cookmode:has(> .vpanel.dl-panel:not([hidden])) { padding-bottom: 64px; }
+  .cookmode .vpanel.dl-panel { position: relative; margin-top: 0; }
+  .dl-panel > .split-main { height: calc(100vh - 116px); height: calc(100dvh - 116px); overflow: hidden; }
+  .dl-leader { display: block; position: absolute; inset: 0; width: 100%; height: 100%; z-index: 4; pointer-events: none; overflow: visible; }
+  .dl-leader line { stroke: var(--color-line-strong); stroke-width: 1.5; stroke-dasharray: 4 4; }
+  .dl-panel > .side-card.pagecard:is(.dl-float, .dl-strip) { display: block; position: absolute; z-index: 5; height: auto; overflow: auto;
+    padding: 14px 18px 16px; background: var(--color-paper); border: 1px solid var(--color-line); border-radius: 16px; box-shadow: 0 12px 32px rgb(0 0 0 / .12); }
+  .dl-panel > .side-card.pagecard.dl-float { width: 340px; max-height: 70%; transition: left .25s, top .25s; }
+  /* Smaller than the page card: the step and its text, the timer and Done */
+  .dl-panel .side-card.pagecard :is(.sc-needs, .sc-then, .sc-tip, .st-reset, .st-eq, .st-part, .st-tick) { display: none; }
+  .dl-panel .side-card.pagecard :is(.side-card-h, .sc-act) { margin-left: 0; }
+  .dl-panel .side-card.pagecard .side-card-h { font-size: 12px; padding-bottom: 4px; }
+  .dl-panel .side-card.pagecard .st { grid-template-columns: minmax(0, 1fr); padding: 0; }
+  .dl-panel .side-card.pagecard .st-body h3 { font-size: 22px; }
+  .dl-panel .side-card.pagecard .st-meta { font-size: 12px; }
+  .dl-panel .side-card.pagecard .st-body .txt { margin-top: 6px; font-size: 15px; line-height: 1.45; display: -webkit-box; -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; }
+  .dl-panel .side-card.pagecard .st-donewhen { font-size: 13px; margin-top: 4px; }
+  .dl-panel .side-card.pagecard .st-timer { min-height: 36px; margin-top: 8px; font-size: 14px; }
+  .dl-panel .side-card.pagecard .sc-act { margin-top: 12px; }
+  .dl-panel .side-card.pagecard .sc-done { min-height: 42px; padding: 0 20px; font-size: 15px; }
+  /* The strip: where you are, the step in a line or two, and Done, along the bottom */
+  .dl-panel > .side-card.pagecard.dl-strip { left: 16px; right: 16px; top: auto; bottom: 0; max-height: 40%; display: grid; grid-template-columns: 200px minmax(0, 1fr) auto;
+    align-items: center; gap: 0 24px; padding: 12px 18px; }
+  .dl-panel .side-card.pagecard.dl-strip .side-card-h { flex-direction: column; align-items: flex-start; gap: 0; padding: 0; }
+  .dl-panel .side-card.pagecard.dl-strip .sc-left::before { content: none; }
+  .dl-panel .side-card.pagecard.dl-strip .st-body h3 { font-size: 19px; }
+  .dl-panel .side-card.pagecard.dl-strip .st-body .txt { -webkit-line-clamp: 2; line-clamp: 2; margin-top: 2px; }
+  .dl-panel .side-card.pagecard.dl-strip :is(.st-donewhen, .st-timer) { display: none; }
+  .dl-panel .side-card.pagecard.dl-strip .sc-act { margin: 0; }
 }
 
 /* While you wait: what you could do while the step stands, on the card (static/js/steps.js) */
