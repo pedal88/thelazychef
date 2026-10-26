@@ -12,7 +12,9 @@
    all recipes. The Bowls button shows how many bowls are ready (the board in the sheet is static/js/ready.js).
    A bowl that prep steps fill is ready when they are ticked off, here or on the bowl: this page keeps the ticks and
    tells the board ("steps:done"), the board asks for them ("ready:steps"). So you can do the prep from the bowls
-   and go on in any view, or never open the bowls. The card beside a view shows a ready bowl instead of what is in it. */
+   and go on in any view, or never open the bowls. The card beside a view shows a ready bowl instead of what is in it.
+   A bowl's step button shows that step in the view you are in. The bowls the plan puts in a wait come forward when the
+   step they wait for is ticked off, and the card of that step offers them under "While you wait". */
 (function () {
   'use strict';
   const page = document.querySelector('.make[data-recipe]');
@@ -48,6 +50,7 @@
       n.textContent = on ? '✓' : n.dataset.n;
     });
     lists.forEach(l => { l.classList.toggle('all', all); l.classList.toggle('focus', !all); });
+    laterNow();
     page.dispatchEvent(new CustomEvent('steps:done', { detail: st.done }));  // the bowls on the board (static/js/ready.js)
     const sw = $('[data-details]');
     if (sw) {
@@ -144,10 +147,17 @@
     q('[data-side-card-then]').textContent = then && !peek ? `Then: ${then.dataset.label}` : '';
     if (sp.panel.classList.contains('rail')) rows.forEach(r => r.classList.toggle('is-then', r === then && !peek));  // not faded in the list (static/css/rail.css)
     // While the step stands: what you could do in the time it leaves you free
+    // and the bowls for later that are not ready, for this wait or filled by a step it suggests, instead of their steps
     const tip = q('[data-side-card-tip]'), ideas = row && !peek ? whileStanding(id) : null;
-    tip.hidden = !(ideas && ideas.list.length);
-    if (!tip.hidden) tip.innerHTML = `<b>While you wait, ${ideas.minutes} min:</b> `
-      + ideas.list.map(x => `<button type="button" data-tip-look="${esc(x.id)}">${esc(byId[x.id].dataset.label)}</button> <span>${x.minutes} min</span>`).join(' · ');
+    const ideaIds = new Set(ideas ? ideas.list.map(x => x.id) : []);
+    const lb = row && !peek ? [...document.querySelectorAll('#sheet-bowls .later[data-while] [data-bowl]')].filter(b => !b.classList.contains('is-ready')
+      && (b.closest('.later').dataset.while === id || (b.dataset.steps || '').split(' ').some(x => ideaIds.has(x)))) : [];
+    const inLater = new Set(lb.flatMap(b => (b.dataset.steps || '').split(' ')));
+    const look = ideas ? ideas.list.filter(x => !inLater.has(x.id)) : [];
+    tip.hidden = !(look.length || lb.length);
+    if (!tip.hidden) tip.innerHTML = `<b>While you wait${ideas ? `, ${ideas.minutes} min` : ''}:</b> `
+      + [...lb.map(b => `<button type="button" data-sheet="sheet-bowls" data-jump="${esc(b.closest('.later').id)}">Bowl ${esc(b.querySelector('.bno').dataset.no)}: ${esc(b.querySelector('.bowl-h b').textContent)}</button>`),
+        ...look.map(x => `<button type="button" data-tip-look="${esc(x.id)}">${esc(byId[x.id].dataset.label)}</button> <span>${x.minutes} min</span>`)].join(' · ');
     const main = q('[data-sc-done]'), alt = q('[data-sc-alt]');
     main.hidden = !row;
     main.innerHTML = peek ? esc(back.textContent) : 'Done <span aria-hidden="true">→</span> next step';
@@ -315,6 +325,32 @@
   }
   if (dFlow) dFlow.addEventListener('delta:drawn', () => { deltaFlow(); placeDeltaCard(); });
 
+  /* A step from the bowls, shown in the view you are in: beside it on the card, or opened in the list, or in a sheet */
+  function lookAt(id) {
+    if (!byId[id]) return;
+    const sp = splits.find(x => !x.panel.hidden);
+    if (sp && getComputedStyle(sp.card).display !== 'none') { sp.pick = id === nextId() ? null : id; splitRender(); return; }
+    if (sp && sp.panel.dataset.panel === 'steps') {
+      if (!all && !byId[id].classList.contains('is-next')) opened.add(id);
+      render();
+      byId[id].scrollIntoView({ block: 'center' });
+      return;
+    }
+    showStep(id);
+  }
+
+  /* The bowls for later: they come forward (opened, marked, counted) once the step whose wait they are for is ticked off */
+  const laterOpened = new Set();
+  function laterNow() {
+    const done = new Set(st.done);
+    document.querySelectorAll('#sheet-bowls .later[data-while]').forEach(d => {
+      const id = d.dataset.while, on = done.has(id);
+      d.classList.toggle('is-now', on);
+      if (on && !laterOpened.has(id)) { laterOpened.add(id); d.open = true; }
+      if (!on) laterOpened.delete(id);
+    });
+  }
+
   /* A step tapped in a view: the same card as in the list, in a sheet. Filled again when it changes */
   const stepSheet = document.getElementById('sheet-step');
   let shown = null;
@@ -447,8 +483,12 @@
   function bowls() {
     const count = $('[data-bowl-count]');
     if (!count) return;
-    const all = $$('#sheet-bowls section > .board > [data-bowl]');
+    const all = $$('#sheet-bowls section > .board > [data-bowl], #sheet-bowls .later.is-now [data-bowl]');
     count.textContent = `${all.filter(b => b.classList.contains('is-ready')).length}/${all.length}`;
+    // A dot on the button while bowls for a wait that has started are not ready
+    const btn = count.closest('.bowls-open');
+    if (btn) btn.classList.toggle('later-due', $$('#sheet-bowls .later.is-now [data-bowl]').some(b => !b.classList.contains('is-ready')));
+    if (sheet && sheet.open) requestAnimationFrame(fit);  // a ready bowl folds to its title: the board fits again
   }
 
   /* The bowls board: a tap on a bowl ticks its prep steps off or back on; the button under the bowls starts the
@@ -473,6 +513,18 @@
   page.addEventListener('click', e => {
     beep(true); wake();
     const t = e.target;
+    // A bowl's step: shown in the view you are in (the button is in the bowl's summary: it must not fold the bowl)
+    const goto = t.closest('[data-goto-step]');
+    if (goto) {
+      e.preventDefault();
+      if (sheet && sheet.open) sheet.close();
+      startCooking();
+      lookAt(goto.dataset.gotoStep);
+      return;
+    }
+    // "While you wait" on the card: the bowls for that wait, opened (the sheet itself opens in recipe_v2_make.html)
+    const jump = t.closest('[data-sheet="sheet-bowls"][data-jump]');
+    if (jump) { const d = document.getElementById(jump.dataset.jump); if (d) d.open = true; }
     // The metro map's parts (the trial "parts"): a tap shows only that part, a second tap all of them
     const lane = t.closest('[data-mt-lane]');
     if (lane) { mtFocus = mtFocus === lane.dataset.mtLane ? null : lane.dataset.mtLane; timelineMarks(); return; }
@@ -578,25 +630,28 @@
     if (rang) render(); else if (st.runs.length) runs();
   }, 1000);
 
-  /* The bowls over the whole screen, scaled down until everything fits without scrolling. Below MIN the text
-     gets too small to read in a kitchen, so it stops there and scrolls. Again when a bowl is opened or closed,
-     and when the window changes. Closes on ×, Esc or a drag down. */
-  const sheet = document.getElementById('sheet-bowls'), MIN = 0.55;
+  /* The bowls over the whole screen, as large as fits without scrolling: on a large screen larger than normal, up to
+     MAX. The bowls stand in rows, each as wide as its tiles need (static/css/make.css), so the board only gets taller
+     as it grows and halving finds the size. Below MIN the text gets too small to read in a kitchen: then it is shown
+     at its normal size, and scrolls. Again when a bowl is opened or closed, and when the window changes. Closes on
+     ×, Esc or a drag down. */
+  const sheet = document.getElementById('sheet-bowls'), MIN = 0.8, MAX = 2.2;
   function fit() {
     const box = sheet && sheet.querySelector('[data-fit]'), inner = box && box.firstElementChild;
     if (!inner || !sheet.open) return;
     const fits = z => { inner.style.zoom = z; return inner.getBoundingClientRect().height <= box.clientHeight + 1; };
     box.classList.remove('scrolls');
-    if (!fits(1)) {
-      // The largest size that fits: a smaller board gets more columns, so the height does not follow the size
-      let lo = MIN, hi = 1;
-      if (fits(MIN)) {
-        for (let k = 0; k < 7; k++) { const mid = (lo + hi) / 2; if (fits(mid)) lo = mid; else hi = mid; }
-      }
-      inner.style.zoom = lo;
+    let z = 1;
+    if (fits(MAX)) z = MAX;
+    else if (fits(MIN)) {
+      let lo = MIN, hi = MAX;
+      for (let k = 0; k < 9; k++) { const mid = (lo + hi) / 2; if (fits(mid)) lo = mid; else hi = mid; }
+      z = lo;
     }
+    inner.style.zoom = z;
     box.classList.toggle('scrolls', inner.getBoundingClientRect().height > box.clientHeight + 1);
   }
+
   if (sheet) {
     let y0 = null;
     sheet.addEventListener('touchstart', e => {

@@ -13,12 +13,13 @@
 
 {# A bowl: always its number, a short name, and what goes in it with amount and state. Tap it for the rest: the
    step it is for, why it is a bowl, and the prep. The number is the tick (static/js/ready.js). data-steps are the
-   prep steps filling it does: on the cooking screen the bowl is ready when they are ticked off (static/js/steps.js). #}
-{% macro bowl(b) -%}
+   prep steps filling it does: on the cooking screen the bowl is ready when they are ticked off (static/js/steps.js).
+   With links (the cooking screen), the step it goes into is a button that shows that step in the view you are in. #}
+{% macro bowl(b, links=False) -%}
 {% set lang = recipe.language or 'en' %}{% set WHY = {'mix': 'mix ahead', 'rush': 'goes in fast at the heat', 'prep': 'cut or prepared'} %}
-<details class="bowl ph-{{ b.used.phase }}" data-bowl data-key="{{ b.key }}" data-steps="{{ (b.steps or [])|join(' ') }}" data-lines="{{ b.lines|map(attribute='lid')|join(' ') }}">
+<details class="bowl ph-{{ b.used.phase }}" data-bowl data-key="{{ b.key }}" data-steps="{{ (b.steps or [])|join(' ') }}" data-lines="{{ b.lines|map(attribute='lid')|join(' ') }}" style="--n: {{ [b.lines|length, 5]|min }}">
   <summary>
-    <span class="bowl-h"><button type="button" class="bcheck" data-tick="{{ b.key }}" aria-pressed="false" aria-label="Bowl {{ b.no }} ready"><span class="bno" data-no="{{ b.no }}">{{ b.no }}</span></button><b lang="{{ lang }}">{{ b.name }}</b><span class="more-ic" aria-hidden="true">{{ icon('chevron-down') }}</span></span>
+    <span class="bowl-h"><button type="button" class="bcheck" data-tick="{{ b.key }}" aria-pressed="false" aria-label="Bowl {{ b.no }} ready"><span class="bno" data-no="{{ b.no }}">{{ b.no }}</span></button><b lang="{{ lang }}">{{ b.name }}</b>{% if links %}<button type="button" class="bowl-go ph-{{ b.used.phase }}" data-goto-step="{{ b.used.id }}" aria-label="Show step {{ b.used.no }}, {{ b.used.short }}">step {{ b.used.no }}</button>{% endif %}<span class="more-ic" aria-hidden="true">{{ icon('chevron-down') }}</span></span>
     <span class="tiles">{% for p in b.lines %}{{ tile(p) }}{% endfor %}</span>
   </summary>
   <div class="bowl-more">
@@ -36,8 +37,9 @@
 {% endfor %}</div>
 {%- endmacro %}
 
-{# Everything Prep shows between the meter and the "Start cooking" link. #}
-{% macro prep_body() -%}
+{# Everything Prep shows between the meter and the "Start cooking" link. links: the cooking screen's sheet, where a
+   bowl's step is a button and a later group opens when the step it waits for is done (static/js/steps.js). #}
+{% macro prep_body(links=False) -%}
 {% set r = v.ready %}
 {% set lang = recipe.language or 'en' %}
   {% if r.tasks %}
@@ -52,17 +54,19 @@
   {% set loose = r.takeout|rejectattr('key', 'equalto', 'staples')|list %}
   {% set basics = r.takeout|selectattr('key', 'equalto', 'staples')|list %}
   <section>
-    <div class="sec-head"><h2>Ingredients</h2><span class="eyebrow">bowls in the order you use them</span></div>
+    {# On the cooking screen the sheet's title says it: the line says what the colours mean instead #}
+    <div class="sec-head">{% if links and r.bowls %}<p class="bowl-key"><span>The edge is the step a bowl goes into:</span> <span class="k ph-prep">prep</span> <span class="k ph-cook">cooking</span> <span class="k ph-serve">serving</span></p>
+      {%- else %}<h2>Ingredients</h2>{% endif %}<span class="eyebrow">bowls in the order you use them</span></div>
     <div class="board">
-      {% for b in r.bowls %}{{ bowl(b) }}{% endfor %}
+      {% for b in r.bowls %}{{ bowl(b, links) }}{% endfor %}
       {% if loose %}
-      <div class="bcard takeout">
+      <div class="bcard takeout" style="--n: {{ [loose|map(attribute='items')|map('length')|sum, 8]|min }}">
         <div class="bcard-h"><b>Take out</b><span class="hint">measure it when its step comes</span></div>
         <span class="tiles">{% for g in loose %}{% for t in g['items'] %}<button type="button" class="tile ftile" data-tick="{{ t.key }}" aria-pressed="false">{{ sym(t.line, 64) }}<span class="ta">{{ t.amount }}</span><span class="tn" lang="{{ lang }}">{{ t.line.name }}{% if t.line.state %}<em>{{ t.line.state }}</em>{% endif %}</span><span class="tstep">step {{ t.steps|join(', ') }}</span></button>{% endfor %}{% endfor %}</span>
       </div>
       {% endif %}
       {% if basics %}
-      <div class="bcard basics">
+      <div class="bcard basics" style="--n: {{ [basics[0]['items']|length, 6]|min }}">
         <div class="bcard-h"><b>You probably have</b><span class="hint">the steps give the amounts</span></div>
         <span class="tiles">{% for t in basics[0]['items'] %}<button type="button" class="tile btile" data-tick="{{ t.key }}" aria-pressed="false">{{ sym(t.line, 40) }}<span class="tn" lang="{{ lang }}">{{ t.line.name }}</span></button>{% endfor %}</span>
       </div>
@@ -71,9 +75,9 @@
   </section>
 
   {% for g in r.later %}
-  <details class="later">
-    <summary>Later, while: {{ g.while|lower }}<small>The plan "{{ v.plans[v.plan] }}" puts these in the waiting time.</small></summary>
-    <div class="board">{% for b in g.bowls %}{{ bowl(b) }}{% endfor %}</div>
+  <details class="later" id="later-{{ g.id }}" data-while="{{ g.id }}">
+    <summary>Later, while: {{ g.while|lower }}<small>The plan "{{ v.plans[v.plan] }}" puts these in the waiting time.</small>{% if links %}<small class="later-now">Now: the wait has started.</small>{% endif %}</summary>
+    <div class="board">{% for b in g.bowls %}{{ bowl(b, links) }}{% endfor %}</div>
     {% if g.fetch %}{{ loose(g.fetch) }}{% endif %}
   </details>
   {% endfor %}
