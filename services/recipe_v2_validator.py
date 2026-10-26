@@ -18,7 +18,9 @@ CONSTRAINTS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data
 PHASES = ('prep', 'cook', 'serve')
 ID_PATTERNS = {'component': r'c\d+', 'ingredient': r'i\d+', 'step': r's\d+'}
 PLACEHOLDER = re.compile(r'\{([^{}]*)\}')
-TO_TASTE = re.compile(r'etter smak|to taste|as needed|etter behov', re.IGNORECASE)
+# Lines that may leave the amount out: to taste, as needed, and what goes on at the table (ice cream for serving,
+# pearl sugar for garnish). prep_style holds only such notes since the state catalog, so the model writes them more
+TO_TASTE = re.compile(r'etter smak|to taste|as needed|etter behov|til servering|for serving|til pynt|for garnish', re.IGNORECASE)
 # "spe med melk mens du visper" is technique inside one step and allowed.
 # {iN} is always the total amount, so "{i4} på hver burger" is wrong (warning each_total).
 EACH = re.compile(r'\{i\d+\}[^.{}]{0,40}\b(each|apiece|hver|hvert|på hver|i hver)\b'
@@ -240,7 +242,7 @@ def validate_recipe_v2(recipe, catalogs=None):
         a = i.get('amount')
         if a is None:
             if not is_to_taste(i):
-                err(8, f'{i.get("local_id")} ({i.get("name")}) has no amount. Only "etter smak"/"to taste" lines '
+                err(8, f'{i.get("local_id")} ({i.get("name")}) has no amount. Only "etter smak", "etter behov", "til servering" or "til pynt" lines '
                        f'may omit amount, and then prep_style must say so.')
         elif not isinstance(a, (int, float)) or a <= 0:
             err(8, f'{i.get("local_id")}.amount is {a!r}, must be greater than 0.')

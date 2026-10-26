@@ -104,6 +104,10 @@ def test_rule8_amount():
     r = load('lasagne')
     del r['ingredients'][0]['amount']
     assert 8 in rules(r)
+    for note in ('etter smak', 'til servering', 'for garnish'):  # what goes on at the table may leave it out
+        r = load('lasagne')
+        r['ingredients'][0].update(amount=None, prep_style=note)
+        assert 8 not in rules(r), note
 
 
 def test_warning_time_words_but_technique_ok():
