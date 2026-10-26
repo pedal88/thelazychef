@@ -248,7 +248,7 @@ def build(recipe, servings=None, plan='calm'):
 
     shop = []
     for e in shopping_list(v2, factor):
-        notes = []
+        notes = list(e['varieties'])  # the kind to buy first: "poteter · melne"
         if len(e['parts']) > 1:
             notes.append(' and '.join(e['parts']))
         elif e['uses'] > 1:
@@ -309,7 +309,7 @@ def build(recipe, servings=None, plan='calm'):
     ready = mise.build(v2, sch, recipe.language) if v2['steps'] else None
     if ready:
         def tile(i):
-            return {**pictured[i['local_id']], 'mark': delta.MARKS.get(pictured[i['local_id']]['cut'])}
+            return {**pictured[i['local_id']], 'mark': states.mark(pictured[i['local_id']]['cut'])}
         for b in ready['bowls'] + [b for g in ready['later'] for b in g['bowls']]:
             b['lines'] = [tile(i) for i in b['lines']]
         for f in ready['fetch'] + ready['bench'] + [f for g in ready['later'] for f in g['fetch']]:

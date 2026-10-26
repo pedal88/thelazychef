@@ -67,3 +67,31 @@ def test_a_null_state_from_the_model_is_not_taken_from_the_step():
     states.fill(r)
     got = [(i.get('state'), i.get('grade'), 'state' in i) for i in r['ingredients']]
     assert got == [('crush', None, True), (None, None, False), ('chop', 'fine', True)]  # a note still says a state
+
+
+def test_each_state_has_a_sign_from_its_group_or_its_own():
+    assert (states.mark('chop'), states.mark('juice'), states.mark('soften'), states.mark('grind')) == ('knife', 'squeezer', 'thermometer', None)
+    signs = [row[0] for row in states.key()]
+    assert signs == ['knife', 'grater', 'squeezer', 'mortar', 'peeler', 'thermometer', 'whisk']
+    assert 'softened' in dict((s, w) for s, _, w in states.key())['thermometer']
+
+
+def test_what_takes_time_on_the_counter_is_taken_out_first():
+    from services.recipe_v2 import mise
+    v2 = {'ingredients': [{'local_id': 'i1', 'name': 'smør', 'state': 'soften'},
+                          {'local_id': 'i2', 'name': 'smør', 'state': 'soften'},
+                          {'local_id': 'i3', 'name': 'frosne erter', 'state': 'thaw'},
+                          {'local_id': 'i4', 'name': 'løk', 'state': 'chop'}],
+          'steps': [{'local_id': 's1', 'uses': ['i4']}, {'local_id': 's2', 'uses': ['i1', 'i3']}, {'local_id': 's3', 'uses': ['i2']}]}
+    order = ['s1', 's2', 's3']
+    jobs = mise.early(v2, order, {sid: n for n, sid in enumerate(order, 1)}, 'nb')
+    assert [(j['short'], j['text']) for j in jobs] == [('Ta ut smør', 'Skal være romtemperert til steg 2.'),
+                                                       ('Ta ut frosne erter', 'Skal være tint til steg 2.')]
+
+
+def test_the_shopping_list_says_the_kind_to_buy():
+    from services.recipe_v2.read import shopping_list
+    v2 = {'components': [], 'ingredients': [
+        {'local_id': 'i1', 'name': 'poteter', 'amount': 800, 'unit': 'g', 'variety': 'melne', 'state': 'strips'},
+        {'local_id': 'i2', 'name': 'løk', 'amount': 1, 'unit': 'piece'}]}
+    assert [e['varieties'] for e in shopping_list(v2)] == [['melne'], []]

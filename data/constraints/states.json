@@ -1,5 +1,5 @@
 {
-  "_doc": "What is done to an ingredient before it goes in (recipe_line.state), decided 26.10.2026. Replaces cuts.json, whose ids are all kept. A state is something the cook does or must see to, not how the product is sold (canned, ground cumin: the pantry) and not its kind (floury potatoes: recipe_line.variety). grade adds how fine, thin or stiff, from the grades listed for the state. The words are what the app writes; synonyms are words that mean the same state (for the validator and for converting old recipes). methods: the step methods (methods.json) whose lines are in this state afterwards. group gives the sign in the drawings. Keep it to about 30 states: add one only when it changes what the cook does or sees and cannot be said as another state with a grade.",
+  "_doc": "What is done to an ingredient before it goes in (recipe_line.state), decided 26.10.2026. Replaces cuts.json, whose ids are all kept. A state is something the cook does or must see to, not how the product is sold (canned, ground cumin: the pantry) and not its kind (floury potatoes: recipe_line.variety). grade adds how fine, thin or stiff, from the grades listed for the state. The words are what the app writes; synonyms are words that mean the same state (for the validator and for converting old recipes). methods: the step methods (methods.json) whose lines are in this state afterwards. group gives the sign in the drawings; a state's own sign overrides it, and null means no sign (ground at the stove, leftovers). Keep it to about 30 states: add one only when it changes what the cook does or sees and cannot be said as another state with a grade.",
   "groups": [
     {"id": "cut", "en": "cut", "nb": "kuttet", "sign": "knife"},
     {"id": "grate", "en": "grated", "nb": "revet", "sign": "grater"},
@@ -43,7 +43,7 @@
      "synonyms": {"en": ["grated", "finely grated", "coarsely grated"], "nb": ["revet", "finrevet", "grovrevet"]}},
     {"id": "zest", "group": "grate", "en": "zested", "nb": "skall revet", "grades": [], "methods": [],
      "synonyms": {"en": ["zested", "zest of"], "nb": ["skall revet", "revet skall"]}},
-    {"id": "juice", "group": "press", "en": "juiced", "nb": "presset", "grades": [], "methods": ["juice"],
+    {"id": "juice", "group": "press", "sign": "squeezer", "en": "juiced", "nb": "presset", "grades": [], "methods": ["juice"],
      "synonyms": {"en": ["juiced", "juice of"], "nb": ["presset", "saften av"]}},
     {"id": "crush", "group": "press", "en": "crushed", "nb": "knust", "grades": ["fine", "coarse"], "methods": ["crush"],
      "synonyms": {"en": ["crushed", "crumbled"], "nb": ["knust", "smuldret"]}},
@@ -51,7 +51,7 @@
      "synonyms": {"en": ["mashed"], "nb": ["most", "moset"]}},
     {"id": "puree", "group": "press", "en": "puréed", "nb": "purert", "grades": [], "methods": ["blend"],
      "synonyms": {"en": ["puréed", "pureed", "blended"], "nb": ["purert", "kjørt glatt"]}},
-    {"id": "grind", "group": "press", "en": "ground", "nb": "kvernet", "grades": ["fine", "coarse"], "methods": [],
+    {"id": "grind", "group": "press", "sign": null, "en": "ground", "nb": "kvernet", "grades": ["fine", "coarse"], "methods": [],
      "synonyms": {"en": ["freshly ground", "ground"], "nb": ["nykvernet", "kvernet", "grovkvernet", "malt"]}},
     {"id": "peel", "group": "clean", "en": "peeled", "nb": "skrelt", "grades": [], "methods": ["peel"],
      "synonyms": {"en": ["peeled"], "nb": ["skrelt", "skrellet"]}},
@@ -73,7 +73,7 @@
      "synonyms": {"en": ["lukewarm", "warm", "tepid"], "nb": ["lunken", "fingervarm"]}},
     {"id": "toast", "group": "ready", "en": "toasted", "nb": "ristet", "grades": [], "methods": ["toast"],
      "synonyms": {"en": ["toasted"], "nb": ["ristet"]}},
-    {"id": "cooked", "group": "ready", "en": "cooked", "nb": "kokt", "grades": [], "methods": [],
+    {"id": "cooked", "group": "ready", "sign": null, "en": "cooked", "nb": "kokt", "grades": [], "methods": [],
      "synonyms": {"en": ["cooked", "leftover"], "nb": ["kokt", "ferdigkokt"]}},
     {"id": "beaten", "group": "ready", "en": "beaten", "nb": "sammenpisket", "grades": [], "methods": [],
      "synonyms": {"en": ["beaten", "lightly beaten", "whisked"], "nb": ["sammenpisket", "pisket sammen"]}},
