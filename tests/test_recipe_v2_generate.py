@@ -115,7 +115,8 @@ class GenerateTests(unittest.TestCase):
             self.assertIn(text, system)
         self.assertEqual(schema['properties']['difficulty']['enum'], ['Simplistic', 'Moderate', 'Elevated'])
         line_schema = schema['$defs']['IngredientLineV2']['properties']
-        self.assertIn('soften', line_schema['state']['enum'])
+        self.assertIn('soften', line_schema['state']['anyOf'][0]['enum'])
+        self.assertIn('state', schema['$defs']['IngredientLineV2']['required'])  # null when used as it comes
         self.assertIn('stiff', line_schema['grade']['enum'])
         self.assertNotIn('cut', line_schema)
 

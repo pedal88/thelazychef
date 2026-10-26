@@ -49,7 +49,9 @@ class IngredientLineV2(typing.TypedDict):
     unit: typing.NotRequired[str]  # id from data/constraints/units.json
     # What is done to the ingredient before it goes in: an id from data/constraints/states.json, how fine or thin
     # (one of the grades listed for the state), and the kind when the recipe asks for one ("melne", "waxy").
-    state: typing.NotRequired[State]
+    # state is required and null for a line used as it comes: when it could be left out, the model mostly did
+    # (the comparison of 26.10.2026), and the app had to guess it from the prep step.
+    state: typing.Optional[State]
     grade: typing.NotRequired[Grade]
     variety: typing.NotRequired[str]
     prep_style: typing.NotRequired[str]  # only a note the catalog cannot say: "etter smak", "valgfritt"
