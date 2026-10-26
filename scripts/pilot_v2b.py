@@ -70,7 +70,8 @@ def recipe_json_schema():
 
     def clean(node):
         if isinstance(node, dict):
-            node.pop('title', None)
+            if isinstance(node.get('title'), str):  # pydantic's label, not the recipe's title property
+                node.pop('title')
             if node.get('type') == 'object':
                 node['additionalProperties'] = False
             for v in node.values():
