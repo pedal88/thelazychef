@@ -44,7 +44,7 @@
     {"id": "zest", "group": "grate", "en": "zested", "nb": "skall revet", "grades": [], "methods": [],
      "synonyms": {"en": ["zested", "zest of"], "nb": ["skall revet", "revet skall"]}},
     {"id": "juice", "group": "press", "sign": "squeezer", "en": "juiced", "nb": "presset", "grades": [], "methods": ["juice"],
-     "synonyms": {"en": ["juiced", "juice of"], "nb": ["presset", "saften av"]}},
+     "synonyms": {"en": ["juiced", "juice of"], "nb": ["presset", "saften av", "saften"]}},
     {"id": "crush", "group": "press", "en": "crushed", "nb": "knust", "grades": ["fine", "coarse"], "methods": ["crush"],
      "synonyms": {"en": ["crushed", "crumbled"], "nb": ["knust", "smuldret"]}},
     {"id": "mash", "group": "press", "en": "mashed", "nb": "most", "grades": [], "methods": ["mash"],
