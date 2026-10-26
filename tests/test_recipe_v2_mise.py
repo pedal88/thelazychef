@@ -68,6 +68,19 @@ class MiseModelTests(unittest.TestCase):
         self.assertTrue(r['done_here'])
         self.assertTrue(set(r['done_here']) <= prep)
 
+    def test_a_bowl_knows_the_steps_that_fill_it(self):
+        # A tick on the bowl ticks them off on the cooking screen, and the other way round (static/js/ready.js)
+        v2 = view_tests.fasit('burger')
+        short = {s['local_id']: s['short'] for s in v2['steps']}
+        r = ready('burger')
+        bowls = r['bowls'] + [b for g in r['later'] for b in g['bowls']]
+        fries = next(b for b in bowls if b['name'] == 'Tørk og olje')
+        self.assertEqual([short[x] for x in fries['steps']], ['Skjær potetene', 'Tørk og olje'])  # the whole chain, in order
+        every = [x for b in bowls for x in b['steps']]
+        self.assertEqual(sorted(every), sorted(r['done_here']))  # each prep step done here is in one bowl
+        cheese = ready('carbonara')['bowls'][2]
+        self.assertEqual((cheese['name'], cheese['steps']), ('Pecorino romano', []))  # no step behind it: a tick of its own
+
     def test_names_join_in_the_recipe_language(self):
         self.assertEqual(mise.joined(['onion', 'carrot', 'garlic'], 'en'), 'Onion, carrot and garlic')
         self.assertEqual(mise.joined(['løk', 'gulrot'], 'nb'), 'Løk og gulrot')

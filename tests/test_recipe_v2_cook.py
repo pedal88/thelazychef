@@ -57,6 +57,22 @@ class CookTests(unittest.TestCase):
         _, overview = self.page('carbonara')
         self.assertIn(f'/recipe/{self.ids["carbonara"]}/cook?', overview)
 
+    def test_the_bowls_and_the_steps_share_their_ticks(self):
+        rid = self.ids['carbonara']
+        self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
+        self.client.set_cookie('flow', 'one')
+        html = self.client.get(f'/recipe/{rid}').get_data(as_text=True)
+        bowls = re.findall(r'data-bowl data-key="(b:[^"]+)" data-steps="([^"]*)" data-lines="([^"]*)"', html)
+        self.assertEqual(len(bowls), 3)
+        self.assertTrue(bowls[0][1] and bowls[0][2])  # the guanciale: its prep step and its line
+        self.assertEqual(bowls[2][1], '')  # the pecorino has no step behind it
+        for key, steps, _ in bowls:
+            self.assertIn(f'data-bowls="{key}', html.replace(f' {key}', key))  # the step it goes into knows it
+            for sid in steps.split():
+                self.assertIn(f'data-st="{sid}"', html)
+        self.assertIn('class="pill" data-l="', html)  # the card swaps a ready bowl's lines for the bowl
+        self.assertIn('data-bowls-go', html)
+
     def test_one_page_flow_is_for_admins_and_has_the_dish_and_the_steps_as_a_list(self):
         rid = self.ids["carbonara"]
         self.client.set_cookie('flow', 'one')

@@ -123,4 +123,5 @@ html.cooking body .trialbar { bottom: calc(14px + env(safe-area-inset-bottom, 0p
 .sheet-fit { flex: 1; min-height: 0; overflow: hidden; }
 .sheet-fit.scrolls { overflow: auto; }  /* too much to fit at a size you can still read: it scrolls instead */
 .sheet-bowls .board { grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); }  /* more columns once scaled */
+.sheet-go { flex: none; display: flex; justify-content: flex-end; padding-top: var(--space-3); }  /* under the bowls, not scaled with them */
 @media (min-width: 1000px) { .sheet { padding: var(--space-4) var(--space-8); } }

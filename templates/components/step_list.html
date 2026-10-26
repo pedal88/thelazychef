@@ -35,7 +35,7 @@
 {# One step of the list #}
 {% macro step_row(s, lang) -%}
     <li class="st {{ s.phase }}{{ ' setup' if s.setup }}" data-st="{{ s.id }}" data-label="{{ s.short }}" data-done="{{ s.done_when or '' }}"
-        data-passive="{{ s.passive_min or 0 }}" data-after="{{ (s.after or [])|join(' ') }}" data-at="{{ s.start }}">
+        data-passive="{{ s.passive_min or 0 }}" data-after="{{ (s.after or [])|join(' ') }}" data-at="{{ s.start }}"{% if s.bowls %} data-bowls="{{ s.bowls|map(attribute='key')|join(' ') }}"{% endif %}>
       <button type="button" class="st-tick" aria-pressed="false" aria-label="Step {{ s.n }} done"><span class="n" data-n="{{ s.n }}">{{ s.n }}</span></button>
       <div class="st-body">
         {# Always: what to do, how long, and while what #}

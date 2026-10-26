@@ -9,7 +9,10 @@
    time is up the timer turns red, beeps and vibrates (static/js/kitchen.js). A step that uses what was standing
    ends its timer. The view menu at the bottom swaps the list for the timeline, the metro map or the river delta,
    which mark the next step. The ticks and timers are kept on this device per recipe, apart from cooking mode's; the chosen view for
-   all recipes. The Bowls button shows how many bowls are ready (the board in the sheet is static/js/ready.js). */
+   all recipes. The Bowls button shows how many bowls are ready (the board in the sheet is static/js/ready.js).
+   A bowl that prep steps fill is ready when they are ticked off, here or on the bowl: this page keeps the ticks and
+   tells the board ("steps:done"), the board asks for them ("ready:steps"). So you can do the prep from the bowls
+   and go on in any view, or never open the bowls. The card beside a view shows a ready bowl instead of what is in it. */
 (function () {
   'use strict';
   const page = document.querySelector('.make[data-recipe]');
@@ -45,6 +48,7 @@
       n.textContent = on ? '✓' : n.dataset.n;
     });
     lists.forEach(l => { l.classList.toggle('all', all); l.classList.toggle('focus', !all); });
+    page.dispatchEvent(new CustomEvent('steps:done', { detail: st.done }));  // the bowls on the board (static/js/ready.js)
     const sw = $('[data-details]');
     if (sw) {
       sw.setAttribute('aria-pressed', String(all));
@@ -57,6 +61,7 @@
     runs();
     deltaFlow();
     save();
+    bowls();
     page.dispatchEvent(new Event('steps:render'));  // static/js/overview_fit.js checks the steps still fit
   }
 
@@ -116,8 +121,19 @@
     back.textContent = here ? `← Back to step ${num(here)}` : '← Back';
     const left = row && !peek && TOTAL ? TOTAL - +row.dataset.at : 0;
     q('[data-side-card-left]').textContent = left ? `At the table about ${hm(Date.now() + left * 60e3)}` : '';
+    // A bowl that is ready stands for what is in it: its number and name, which open the bowls
+    const ready = (row && row.dataset.bowls ? row.dataset.bowls.split(' ') : [])
+      .map(k => document.querySelector(`#sheet-bowls [data-bowl][data-key="${CSS.escape(k)}"]`)).filter(b => b && b.classList.contains('is-ready'));
+    const inBowl = new Set(ready.flatMap(b => (b.dataset.lines || '').split(' ')));
     const needs = q('[data-side-card-needs]');
-    needs.replaceChildren(...(copy ? [...copy.querySelectorAll('.txt .pill')] : []).map(p => {
+    needs.replaceChildren(...ready.map(b => {
+      const li = document.createElement('li');
+      li.className = 'sc-bowl';
+      const no = esc(b.querySelector('.bno').dataset.no);
+      li.innerHTML = `<button type="button" data-sheet="sheet-bowls" aria-label="Bowl ${no}, ready: open the bowls"><span class="bno">${no}</span>`
+        + `<span><b>${esc(b.querySelector('.bowl-h b').textContent)}</b> <small>bowl ${no} · ready</small></span></button>`;
+      return li;
+    }), ...(copy ? [...copy.querySelectorAll('.txt .pill')] : []).filter(p => !inBowl.has(p.dataset.l)).map(p => {
       const li = document.createElement('li');
       li.append(...p.cloneNode(true).childNodes);
       return li;
@@ -434,6 +450,25 @@
     const all = $$('#sheet-bowls section > .board > [data-bowl]');
     count.textContent = `${all.filter(b => b.classList.contains('is-ready')).length}/${all.length}`;
   }
+
+  /* The bowls board: a tap on a bowl ticks its prep steps off or back on; the button under the bowls starts the
+     cooking at the step after them, in the view you chose */
+  page.addEventListener('ready:steps', e => {
+    const { steps, on } = e.detail;
+    steps.filter(id => byId[id]).forEach(id => {
+      const i = st.done.indexOf(id);
+      if (on && i < 0) { st.done.push(id); opened.delete(id); }
+      if (!on && i >= 0) st.done.splice(i, 1);
+    });
+    render();
+  });
+  page.addEventListener('ready:change', () => { splitRender(); bowls(); });  // a bowl with no steps behind it
+  page.addEventListener('ready:go', () => {
+    if (sheet && sheet.open) sheet.close();
+    splits.forEach(sp => { sp.pick = null; });
+    startCooking();
+    render();
+  });
 
   page.addEventListener('click', e => {
     beep(true); wake();
