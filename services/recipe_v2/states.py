@@ -86,6 +86,8 @@ def fill(data):
     for line in data.get('ingredients') or []:
         if line.get('state'):
             continue
+        as_it_comes = 'state' in line  # null from the model: used as it comes, so not taken from the prep step
+        line.pop('state', None)
         state, grade, rest = (line.get('cut'), None, line.get('prep_style') or '') if line.get('cut') else from_text(line.get('prep_style'))
         if line.get('cut'):  # the old field: keep its id, and still take a grade and a note from prep_style
             _, grade, rest = from_text(line.get('prep_style'))
@@ -93,7 +95,9 @@ def fill(data):
                 grade = None
         elif state and by_id()[state]['group'] in SOLD_SO and line.get('local_id') not in method_of:
             state, grade = None, None
-        if not state and line.get('unit') not in MEASURED:
+        # Only a line without the key (a recipe from before the catalog, or an answer that left it out) takes its
+        # state from the prep step
+        if not state and not as_it_comes and line.get('unit') not in MEASURED:
             state = state_of_method(method_of.get(line.get('local_id')))
             rest = line.get('prep_style') or ''
         if not state:

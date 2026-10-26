@@ -56,3 +56,14 @@ def test_fill_keeps_a_state_the_model_gave():
                [{'local_id': 's1', 'phase': 'prep', 'method': 'melt', 'uses': ['i1']}])
     assert states.fill(r) == 0
     assert r['ingredients'][0]['state'] == 'soften'
+
+
+def test_a_null_state_from_the_model_is_not_taken_from_the_step():
+    r = recipe(
+        [{'local_id': 'i1', 'name': 'peanøtter', 'unit': 'g', 'state': 'crush'},
+         {'local_id': 'i2', 'name': 'koriander', 'unit': 'bunch', 'state': None},
+         {'local_id': 'i3', 'name': 'hvitløk', 'unit': 'clove', 'state': None, 'prep_style': 'finhakket'}],
+        [{'local_id': 's1', 'phase': 'prep', 'method': 'crush', 'uses': ['i1', 'i2', 'i3']}])
+    states.fill(r)
+    got = [(i.get('state'), i.get('grade'), 'state' in i) for i in r['ingredients']]
+    assert got == [('crush', None, True), (None, None, False), ('chop', 'fine', True)]  # a note still says a state
