@@ -138,8 +138,11 @@
     if (note) note.textContent = sc < 0.95 && !page ? `shown at ${Math.round(sc * 100)} %` : '';
   }
 
-  /* Ticked-off steps, per recipe, on this device */
+  /* Ticked-off steps, per recipe, on this device. On the one-page flow's cooking screen the steps' own ticks are
+     used instead (static/js/steps.js deltaFlow), so the delta and the list never disagree. */
   function ticks(section) {
+    section.querySelectorAll('.fx-no').forEach(b => { b.dataset.no = b.textContent; });
+    if (section.closest('[data-delta-flow]')) return;
     const key = `delta:${section.dataset.recipe}`;
     const done = new Set((store.get(key) || '').split(' ').filter(Boolean));
     const paint = () => {
@@ -155,7 +158,6 @@
         n.classList.toggle('done', segs.length > 0 && segs.every(s => done.has(s.dataset.step)));
       });
     };
-    section.querySelectorAll('.fx-no').forEach(b => { b.dataset.no = b.textContent; });
     section.addEventListener('click', e => {
       const b = e.target.closest('[data-tick]');
       if (!b) return;

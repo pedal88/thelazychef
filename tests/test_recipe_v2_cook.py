@@ -103,6 +103,10 @@ class CookTests(unittest.TestCase):
         self.assertIn('data-dlx="float"', html)
         self.assertIn('data-dlx="strip"', html)
         self.assertIn('class="dl-leader"', html)
+        # The key to the delta's signs, and the trial for how a tap on a step's number works
+        self.assertIn('class="dl-key"', html)
+        self.assertIn('data-dltap="1"', html)
+        self.assertIn('data-dltap="2"', html)
         self.assertIn('data-dlx="steps"', html)
         self.assertIn('class="fx-folds"', html)
         # The metro map: its parts as buttons (a trial), each station and name on its part's line, clock times down the side

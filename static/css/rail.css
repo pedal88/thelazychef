@@ -285,7 +285,38 @@ html.mtx-lines .mt-heads { display: block; position: absolute; left: 52px; top: 
 .dv-progress .ed.flowed .pa { stroke: var(--color-prep); stroke-width: 2.6; }
 .dv-progress .g2-node.nextup { background: var(--color-paper); box-shadow: 0 6px 20px rgb(0 0 0 / .08); }
 .dv-progress .g2-node.nextup::before { content: none; }
-.dl-panel > .split-main > .hint { font-size: 13px; }
+/* Above the drawing: the hint, and the key to its signs */
+.dl-top { display: flex; align-items: center; gap: var(--space-4); }
+.dl-top .hint { margin: 0; font-size: 13px; }
+.dl-key { position: relative; z-index: 6; }
+.dl-key summary { list-style: none; cursor: pointer; padding: 2px 10px; border: 1px solid var(--color-line); border-radius: var(--radius-pill);
+  font: 500 12px var(--font-sans); color: var(--color-muted); background: var(--color-paper); }
+.dl-key summary::-webkit-details-marker { display: none; }
+.dl-key[open] summary { color: var(--color-ink); border-color: var(--color-line-strong); }
+.dl-key-panel { position: absolute; left: 0; top: calc(100% + 8px); width: 340px; padding: 12px 16px; background: var(--color-paper); border: 1px solid var(--color-line);
+  border-radius: 14px; box-shadow: 0 12px 32px rgb(0 0 0 / .12); font: 400 13px/1.35 var(--font-sans); color: var(--color-ink); }
+.dl-key-panel .eyebrow { margin: 8px 0 4px; }
+.dl-key-panel .eyebrow:first-child { margin-top: 0; }
+.dl-key-panel ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; }
+.dl-key-panel li { display: grid; grid-template-columns: 34px minmax(0, 1fr); align-items: center; gap: 8px; }
+.dl-key-panel li > :first-child { justify-self: center; }
+.dl-key-panel .mark { position: static; width: 18px; height: 18px; border-radius: 50%; background: var(--color-paper); border: 1px solid var(--color-line-strong);
+  display: grid; place-items: center; color: var(--color-ink); }
+.dl-key-panel .mark svg { width: 11px; height: 11px; }
+.dl-key-panel .k-tray { width: 30px; height: 16px; border-radius: 6px; background: color-mix(in srgb, var(--color-ink) 6%, transparent); }
+.dl-key-panel .ic-heat { width: 22px; height: 17px; fill: none; stroke-linecap: round; stroke-width: 2; }
+.dl-key-panel .ic-heat .on { stroke: var(--color-cook); }
+.dl-key-panel .ic-heat .off { stroke: var(--color-line-strong); opacity: .6; }
+.dl-key-panel .ic-heat .pl-ring { stroke: var(--color-pencil); }
+.dl-key-panel .ic-glass { width: 11px; height: 14px; fill: none; stroke: var(--color-pencil); stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+.dl-key-panel .mn-wait { display: inline-flex; align-items: center; gap: 3px; font: 500 12px var(--font-sans); }
+.dl-key-panel .k-no { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--color-line-strong);
+  font: 500 11px var(--font-sans); color: var(--color-muted); }
+.dl-key-panel .k-arrow { width: 30px; height: 3px; border-radius: 2px; background: var(--color-cook); }
+.dl-key-panel .k-from { font: 500 11px var(--font-sans); color: var(--color-muted); white-space: nowrap; }
+/* The trial "Done in card": a step's number only shows where it stands, a tap on it opens the step */
+html.dltap-2 .dv-rivers .fx-no { cursor: pointer; }
+html.dltap-2 .dv-rivers .fx-no:hover { border-color: var(--color-line-strong); color: var(--color-muted); }
 
 /* The trial "All steps": the steps the drawing folds away, on their box with their numbers */
 .fx-folds { display: none; }

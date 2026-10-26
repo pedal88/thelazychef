@@ -6,7 +6,7 @@
    number ticks a step off. view_menu swaps the list for the timeline, the metro map or the river delta; a tap on
    a step in the timeline or the map shows the same card beside it, in the delta in a sheet. bowls_button opens
    the ingredient board from Prep. static/js/steps.js drives it. Import with context. #}
-{% from "components/delta.html" import delta with context %}
+{% from "components/delta.html" import delta, delta_key with context %}
 {% from "components/whole_dish.html" import timeline, metro_map %}
 
 {% set VIEWS = [('steps', 'Steps', true), ('timeline', 'Timeline', v.timeline), ('metro', 'Metro map', v.metro_map), ('delta', 'River delta', v.delta)] %}
@@ -118,7 +118,7 @@
    (static/css/rail.css, static/js/steps.js placeDeltaCard) #}
 {% if v.delta %}<section class="vpanel dv-rivers dv-progress dl-panel" data-panel="delta" data-delta-flow aria-label="River delta" hidden>
   <div class="split-main">
-  <p class="hint">The river fills as you tick off steps; the next step is ringed. Tap a step for all of it.</p>
+  <div class="dl-top"><p class="hint">The river fills as you tick off steps. Tap a step for all of it.</p>{{ delta_key() }}</div>
   {{ delta(v.delta, recipe.id, print_links=False, folds=True) }}
   </div>
   {{ side_card(page=True) }}

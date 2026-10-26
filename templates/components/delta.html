@@ -13,6 +13,37 @@
 <span class="mn-heat"><svg class="ic-heat" viewBox="0 0 24 18" aria-hidden="true"><path class="pl-ring" d="M2.5 16 H21.5"/>{% for k in range(3) %}<path class="{{ 'on' if k < n else 'off' }}" d="M{{ 6 + k * 6 }} 13 C{{ 4 + k * 6 }} 10 {{ 8 + k * 6 }} 8 {{ 6 + k * 6 }} 3"/>{% endfor %}</svg></span>
 {%- endmacro %}
 
+{# What the signs in the drawing mean, in a small panel that opens from "Key" (the one-page flow) #}
+{% macro delta_key() -%}
+<details class="dl-key">
+  <summary>Key</summary>
+  <div class="dl-key-panel">
+    <p class="eyebrow">How it is cut</p>
+    <ul>
+      <li><i class="mark">{{ MARKS.cut|safe }}</i> cut: chopped, sliced, diced, in pieces, strips, wedges or rings, halved, torn</li>
+      <li><i class="mark">{{ MARKS.grate|safe }}</i> grated or zested</li>
+      <li><i class="mark">{{ MARKS.juice|safe }}</i> juiced</li>
+      <li><i class="mark">{{ MARKS.crush|safe }}</i> crushed or mashed</li>
+      <li><span class="k-tray"></span> mixed together in a bowl first</li>
+    </ul>
+    <p class="eyebrow">Heat and time</p>
+    <ul>
+      <li>{{ heat(1) }} low heat</li>
+      <li>{{ heat(2) }} medium heat</li>
+      <li>{{ heat(3) }} high heat</li>
+      <li><span class="mn-wait">{{ GLASS|safe }}<span>30</span></span> stands on its own, in minutes</li>
+      <li><span class="mn-rem">{{ CLOCK|safe }}</span> start early: it stands a long time</li>
+    </ul>
+    <p class="eyebrow">The drawing</p>
+    <ul>
+      <li><b class="k-no">7</b> the step's number, the same as in the list</li>
+      <li><span class="k-arrow"></span> how the food flows; the thick one is the main line</li>
+      <li><span class="k-from">+ from 9</span> also uses what step 9 made</li>
+    </ul>
+  </div>
+</details>
+{%- endmacro %}
+
 {% macro pic(p, size) -%}
 <span class="mn-ing" title="{{ p.name }}{{ ', ' ~ p.state if p.state }}">
   <span class="ing-img" style="--s:{{ size }}px">{% if p.img %}<img src="{{ p.img }}" alt="" width="{{ size }}" height="{{ size }}" loading="lazy">{% else %}<span class="ing-letter" aria-hidden="true">{{ p.name[:1]|upper }}</span>{% endif %}{% if p.mark %}<i class="mark">{{ MARKS[p.mark]|safe }}</i>{% endif %}</span>
