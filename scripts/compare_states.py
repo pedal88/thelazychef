@@ -30,15 +30,23 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-# Runs in the tree being tested: round 2 with its validator loop, the answer to the file in argv[1]
+# Runs in the tree being tested: round 2 with its validator loop, the answer to the file in argv[1]. Each answer
+# the model gave is kept as text too, so a failed attempt can be read.
 RUNNER = '''
 import json, os, sys
 sys.path.insert(0, os.getcwd())
 from app import app, db
-from services.recipe_v2 import generate
+from services.recipe_v2 import claude, generate
+answers = []
+def call(*args, **kwargs):
+    msg, usage = claude.call(*args, **kwargs)
+    answers.append(claude.text_of(msg))
+    return msg, usage
 with app.app_context():
     db.create_all()
-    recipe, attempts = generate.structure(sys.stdin.read())
+    recipe, attempts = generate.structure(sys.stdin.read(), call=call)
+for a, text in zip(attempts, answers):
+    a['answer'] = text
 with open(sys.argv[1], 'w', encoding='utf-8') as f:
     json.dump({'recipe': recipe, 'attempts': attempts}, f, ensure_ascii=False, indent=1)
 '''
@@ -69,6 +77,7 @@ def run(tree, text, dest):
     if p.returncode:
         dest.with_suffix('.err').write_text(p.stderr[-4000:])
         return f'{dest.parent.name}/{dest.stem}: failed, see {dest.with_suffix(".err")}'
+    dest.with_suffix('.err').unlink(missing_ok=True)
     return f'{dest.parent.name}/{dest.stem}: done'
 
 
@@ -83,6 +92,7 @@ def facts(res):
     return {
         'valid': bool(res.get('recipe')), 'attempts': len(attempts),
         'failed_rules': [sorted({e['rule'] for e in a.get('errors') or []}, key=str) for a in attempts if not a.get('valid')],
+        'first_errors': [(a.get('errors') or [{}])[0].get('message', '')[:160] for a in attempts if not a.get('valid')],
         'cost_usd': round(sum(a.get('cost_usd') or 0 for a in attempts), 3),
         'seconds': round(sum(a.get('seconds') or 0 for a in attempts)),
         'lines': len(lines), 'steps': len(steps),
@@ -158,6 +168,8 @@ def report(out, names):
                       + (f"; notat som er tilstand: {', '.join(x['note_is_state'])}" if x['note_is_state'] else '')
                       + (f"; varianter: {', '.join(x['varieties'])}" if x['varieties'] else '')
                       + (f"; tomme verb: {', '.join(x['empty_verbs'])}" if x['empty_verbs'] else ''))
+        for side, label in (('old', 'Gammel'), ('new', 'Ny')):
+            md += [f'  - {label}, forsøk {n + 1}: {e}' for n, e in enumerate(f[side]['first_errors'])]
         md += ['', '| Linje | Gammel | Konvertert | Ny |', '|---|---|---|---|']
         conv_by = {i['local_id']: i for i in conv.get('ingredients') or []}
         for a, b in pair((res['old'].get('recipe') or {}).get('ingredients') or [], (res['new'].get('recipe') or {}).get('ingredients') or []):
@@ -172,6 +184,7 @@ def main():
     ap.add_argument('--old', default='origin/main', help='the code to compare with (a git revision)')
     ap.add_argument('--only', nargs='*', help='only these recipes')
     ap.add_argument('--out', default=str(Path.home() / 'promptlab-runs' / 'states-compare'))
+    ap.add_argument('--sides', nargs='*', default=['old', 'new'], choices=['old', 'new'])
     ap.add_argument('--workers', type=int, default=4)
     ap.add_argument('--force', action='store_true')
     ap.add_argument('--report', action='store_true', help='only write the report from saved runs')
@@ -183,7 +196,7 @@ def main():
     if not args.report:
         if not os.getenv('ANTHROPIC_API_KEY'):
             sys.exit('ANTHROPIC_API_KEY is not set.')
-        trees = {'old': old_tree(out, args.old), 'new': ROOT}
+        trees = {side: old_tree(out, args.old) if side == 'old' else ROOT for side in args.sides}
         jobs = []
         for side, tree in trees.items():
             (out / side).mkdir(parents=True, exist_ok=True)
