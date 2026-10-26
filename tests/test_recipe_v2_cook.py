@@ -100,7 +100,9 @@ class CookTests(unittest.TestCase):
         self.assertEqual(html.count('class="side-card pagecard"'), 4)
         # The delta: the card and every step on it as trials, the steps it folds away listed on their box
         self.assertIn('class="vpanel dv-rivers dv-progress dl-panel"', html)
-        self.assertIn('data-dlx="card"', html)
+        self.assertIn('data-dlx="float"', html)
+        self.assertIn('data-dlx="strip"', html)
+        self.assertIn('class="dl-leader"', html)
         self.assertIn('data-dlx="steps"', html)
         self.assertIn('class="fx-folds"', html)
         # The metro map: its parts as buttons (a trial), each station and name on its part's line, clock times down the side

@@ -116,7 +116,11 @@
     box.style.width = `${natW}px`;
     const natH = box.scrollHeight; // after the width is fixed: narrower columns wrap into a taller drawing
     const availW = (page ? page[0] : wrap.clientWidth) - 8;
+    // On the cooking screen the room below its top, less the strip along the bottom (static/js/steps.js)
+    const panel = !page && innerWidth >= 1000 && section.closest('.dl-panel');
+    const strip = panel && panel.classList.contains('strip') ? panel.querySelector('.side-card').offsetHeight + 16 : 0;
     const availH = page ? page[1] - (box.getBoundingClientRect().top - section.getBoundingClientRect().top) - 60
+      : panel ? Math.max(300, panel.getBoundingClientRect().bottom - box.getBoundingClientRect().top - strip - 24)
       : Math.max(360, innerHeight - 140);
     const floor = page ? 0.6 : innerWidth < 700 ? 0.6 : section.closest('.dl-panel') ? 0.65 : 0.75;
     const sc = Math.max(floor, Math.min(page ? 1.4 : 1, availW / natW, availH / natH));
