@@ -42,9 +42,8 @@
   </div>
   {# The metro map's parts, in a row, above their lines or as their first station, or none, on this device (static/js/steps.js); temporary #}
   <div class="tgroup" data-mtx-switch><span class="tlabel">Parts</span><button type="button" data-mtx="row" aria-pressed="false">In a row</button><button type="button" data-mtx="lines" aria-pressed="false">Above the lines</button><button type="button" data-mtx="ends" aria-pressed="false">At the start</button></div>
-  {# The river delta's trials on this device (static/js/steps.js); temporary: hold the step to the small card or the
-     strip (else the card where there is room, the strip where not), and every step on the drawing #}
-  <div class="tgroup" data-dlx-switch><span class="tlabel">Delta</span><button type="button" data-dlx="float" aria-pressed="false">Small card</button><button type="button" data-dlx="strip" aria-pressed="false">Strip</button><button type="button" data-dlx="steps" aria-pressed="false">All steps</button></div>
+  {# The river delta's trial on this device (static/js/steps.js); temporary: every step on the drawing #}
+  <div class="tgroup" data-dlx-switch><span class="tlabel">Delta</span><button type="button" data-dlx="steps" aria-pressed="false">All steps</button></div>
   <div class="tgroup" data-dltap-switch><span class="tlabel">Tap</span><button type="button" data-dltap="1" aria-pressed="true">1 Number ticks</button><button type="button" data-dltap="2" aria-pressed="false">2 Done in card</button></div>
   {% endif %}
   <div class="tgroup" data-eq-switch><span class="tlabel">Tools</span>
