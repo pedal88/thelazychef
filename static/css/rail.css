@@ -285,6 +285,14 @@ html.mtx-lines .mt-heads { display: block; position: absolute; left: 52px; top: 
 .dv-progress .ed.flowed .pa { stroke: var(--color-prep); stroke-width: 2.6; }
 .dv-progress .g2-node.nextup { background: var(--color-paper); box-shadow: 0 6px 20px rgb(0 0 0 / .08); }
 .dv-progress .g2-node.nextup::before { content: none; }
+/* How an ingredient is cut: a larger, clearer sign, and the word ("finely chopped") on a hover or a tap on it */
+.dv-rivers .ing-img .mark { right: -6px; bottom: -6px; width: 22px; height: 22px; border: 1.5px solid var(--color-line-strong); box-shadow: 0 1px 3px rgb(0 0 0 / .1); cursor: help; }
+.dv-rivers .ing-img .mark svg { width: 14px; height: 14px; }
+.dv-rivers .ing-img[data-state]::after { content: attr(data-state); position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%); z-index: 7;
+  padding: 3px 8px; border-radius: 8px; background: var(--color-ink); color: var(--color-paper); font: 500 12px var(--font-sans); white-space: nowrap;
+  opacity: 0; pointer-events: none; transition: opacity .15s; }
+.dv-rivers .ing-img[data-state]:hover::after, .dv-rivers .ing-img.say::after { opacity: 1; }
+
 /* Above the drawing: the hint, and the key to its signs */
 .dl-top { display: flex; align-items: center; gap: var(--space-4); }
 .dl-top .hint { margin: 0; font-size: 13px; }
@@ -300,9 +308,9 @@ html.mtx-lines .mt-heads { display: block; position: absolute; left: 52px; top: 
 .dl-key-panel ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; }
 .dl-key-panel li { display: grid; grid-template-columns: 34px minmax(0, 1fr); align-items: center; gap: 8px; }
 .dl-key-panel li > :first-child { justify-self: center; }
-.dl-key-panel .mark { position: static; width: 18px; height: 18px; border-radius: 50%; background: var(--color-paper); border: 1px solid var(--color-line-strong);
+.dl-key-panel .mark { position: static; width: 22px; height: 22px; border-radius: 50%; background: var(--color-paper); border: 1.5px solid var(--color-line-strong);
   display: grid; place-items: center; color: var(--color-ink); }
-.dl-key-panel .mark svg { width: 11px; height: 11px; }
+.dl-key-panel .mark svg { width: 14px; height: 14px; }
 .dl-key-panel .k-tray { width: 30px; height: 16px; border-radius: 6px; background: color-mix(in srgb, var(--color-ink) 6%, transparent); }
 .dl-key-panel .ic-heat { width: 22px; height: 17px; fill: none; stroke-linecap: round; stroke-width: 2; }
 .dl-key-panel .ic-heat .on { stroke: var(--color-cook); }
