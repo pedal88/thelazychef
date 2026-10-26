@@ -88,6 +88,10 @@
     margin: var(--space-2) 0 0; padding: var(--space-4) 0 0; border-top: 1px solid var(--color-line); }
   .pagecard .sc-needs li { display: inline-flex; align-items: center; gap: var(--space-2); font-size: clamp(15px, 1.1vw, 18px); }
   .pagecard .sc-needs .sym { --s: 32px !important; }
+  /* A ready bowl stands for what is in it; a tap opens the bowls */
+  .pagecard .sc-needs .sc-bowl button { display: inline-flex; align-items: center; gap: var(--space-2); padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
+  .pagecard .sc-needs .sc-bowl .bno { width: 32px; height: 32px; background: var(--color-prep); color: var(--color-paper); }
+  .pagecard .sc-needs .sc-bowl small { color: var(--color-muted); font-size: .8em; }
   .pagecard .sc-act { display: flex; align-items: center; gap: var(--space-3); margin-top: var(--space-6); }
   .pagecard .sc-act:has(> .sc-done[hidden]) { display: none; }
   .pagecard .sc-done { min-height: 56px; padding: 0 28px; border: 0; border-radius: var(--radius-pill); background: var(--color-ink); color: var(--color-paper);

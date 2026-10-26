@@ -12,10 +12,11 @@
 {%- endmacro %}
 
 {# A bowl: always its number, a short name, and what goes in it with amount and state. Tap it for the rest: the
-   step it is for, why it is a bowl, and the prep. The number is the tick (static/js/ready.js). #}
+   step it is for, why it is a bowl, and the prep. The number is the tick (static/js/ready.js). data-steps are the
+   prep steps filling it does: on the cooking screen the bowl is ready when they are ticked off (static/js/steps.js). #}
 {% macro bowl(b) -%}
 {% set lang = recipe.language or 'en' %}{% set WHY = {'mix': 'mix ahead', 'rush': 'goes in fast at the heat', 'prep': 'cut or prepared'} %}
-<details class="bowl ph-{{ b.used.phase }}" data-bowl data-key="{{ b.key }}">
+<details class="bowl ph-{{ b.used.phase }}" data-bowl data-key="{{ b.key }}" data-steps="{{ (b.steps or [])|join(' ') }}" data-lines="{{ b.lines|map(attribute='lid')|join(' ') }}">
   <summary>
     <span class="bowl-h"><button type="button" class="bcheck" data-tick="{{ b.key }}" aria-pressed="false" aria-label="Bowl {{ b.no }} ready"><span class="bno" data-no="{{ b.no }}">{{ b.no }}</span></button><b lang="{{ lang }}">{{ b.name }}</b><span class="more-ic" aria-hidden="true">{{ icon('chevron-down') }}</span></span>
     <span class="tiles">{% for p in b.lines %}{{ tile(p) }}{% endfor %}</span>

@@ -4,7 +4,7 @@
    or C (compact), Overview in the admin chip (components/overview_layouts.html). Cooking (#cook): only the steps, without the site's top bar and footer and
    without bars of its own; small floating controls in the corners: back at the top left, the running timers at
    the top right, and at the bottom right the choice of view (steps, timeline, metro map, river delta) and the
-   bowls. The browser's back button goes back to the overview too. Served at /recipe/<id>; Prep, Cook and /make
+   bowls, which share their ticks with the steps they stand for. The browser's back button goes back to the overview too. Served at /recipe/<id>; Prep, Cook and /make
    lead here (components/step_list.html, static/js/steps.js). #}
 {% from "components/recipe_head.html" import recipe_head with context %}
 {% from "components/prep_board.html" import prep_body with context %}
@@ -65,6 +65,8 @@
       <button type="button" class="sheet-x" data-sheet-close aria-label="Close">{{ icon('close') }}</button></div>
     {% if r.bowls %}<div class="meter" aria-hidden="true"><span></span></div>{% endif %}
     <div class="sheet-fit" data-fit><div class="fit-in">{{ prep_body() }}</div></div>
+    {# Prep is done: the bowls not ticked yet are counted as ready, and the cooking starts at the step after them #}
+    {% if r.bowls %}<div class="sheet-go"><button type="button" class="go" data-bowls-go>The bowls are ready <span aria-hidden="true">→</span> start cooking</button></div>{% endif %}
   </dialog>
   {{ more_sheet() }}
 </article>

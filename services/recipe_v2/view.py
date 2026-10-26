@@ -174,7 +174,7 @@ def step_html(s, lines, ingredients, factor, lang='en'):
             return escape(m.group(0))
         amount = fmt_amount(line['amount'] * factor if line.get('amount') is not None else None, line.get('unit'))
         label = f"{amount} {line['name']}".strip()
-        out = Markup('<span class="pill">{sym}{label}</span>').format(sym=symbol(ingredients.get(m.group(1)), line['name'], 24), label=label)
+        out = Markup('<span class="pill" data-l="{lid}">{sym}{label}</span>').format(lid=m.group(1), sym=symbol(ingredients.get(m.group(1)), line['name'], 24), label=label)
         said = line_state(line, lang) if s['phase'] != 'prep' else ''
         if said:
             out += Markup(' <span class="prep">({})</span>').format(said)
@@ -304,7 +304,7 @@ def build(recipe, servings=None, plan='calm'):
     ready = mise.build(v2, sch, recipe.language) if v2['steps'] else None
     if ready:
         def tile(i):
-            return {**pictured[i['local_id']], 'mark': states.mark(pictured[i['local_id']]['cut'])}
+            return {**pictured[i['local_id']], 'lid': i['local_id'], 'mark': states.mark(pictured[i['local_id']]['cut'])}
         for b in ready['bowls'] + [b for g in ready['later'] for b in g['bowls']]:
             b['lines'] = [tile(i) for i in b['lines']]
         for f in ready['fetch'] + ready['bench'] + [f for g in ready['later'] for f in g['fetch']]:

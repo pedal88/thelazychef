@@ -87,6 +87,12 @@ def build(v2, sch, language=None):
     def in_prep(sid):  # prep done ahead that is not a step on the clock of its own
         return sid in ahead and (by[sid].get('passive_minutes') or 0) < STANDS
 
+    def path(sid):  # a prep step and the ones done ahead after it, to where its result goes into the cooking
+        out = [sid]
+        while out[-1] != exit_of(out[-1]):
+            out.append(cons[out[-1]][0])
+        return out
+
     # Group the lines into elements, keyed by the step whose result (or which) they stand ready for
     elements = {}
     for sid in order:
@@ -133,6 +139,8 @@ def build(v2, sch, language=None):
             dest['bowls'].append({'key': f"b:{e['key']}", 'name': name, 'named_by_step': bool(e['prep']), 'lines': vis, 'used': target,
                                   # the prep steps besides the one the bowl is named after
                                   'prep': [by[p]['short'] for p in sorted(e['prep'], key=number.get) if p != e['key']],
+                                  # the steps filling it does, so a tick on the bowl ticks them off and the other way round
+                                  'steps': sorted({x for p in e['prep'] for x in path(p)}, key=number.get),
                                   'why': reasons[0]})
         else:
             dest['fetch'] += [{'key': f"f:{i['local_id']}", 'line': i, 'used': target} for i in vis]
