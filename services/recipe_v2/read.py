@@ -18,8 +18,10 @@ def shopping_list(v2, factor=1.0):
     for line in v2.get('ingredients') or []:
         key = line.get('pantry_id') or (line.get('name') or '').strip().lower()
         e = entries.setdefault(key, {'name': line['name'], 'pantry_id': line.get('pantry_id'), 'amounts': {},
-                                     'to_taste': False, 'parts': [], 'uses': 0})
+                                     'to_taste': False, 'parts': [], 'uses': 0, 'varieties': []})
         e['uses'] += 1
+        if line.get('variety') and line['variety'] not in e['varieties']:  # what to buy: "melne" potatoes
+            e['varieties'].append(line['variety'])
         part = comps.get(line.get('component_id'))
         if part and part not in e['parts']:
             e['parts'].append(part)

@@ -116,7 +116,7 @@ class GetReadyPageTests(unittest.TestCase):
         db.session.commit()
         bowls = build(db.session.get(Recipe, self.ids['carbonara']))['ready']['bowls']
         tile = next(t for b in bowls for t in b['lines'] if 'guanciale' in t['name'])
-        self.assertEqual((tile['cut'], tile['state'], tile['mark']), ('slice', 'i skiver', 'cut'))
+        self.assertEqual((tile['cut'], tile['state'], tile['mark']), ('slice', 'i skiver', 'knife'))
         self.assertIn('i skiver', self.get('carbonara')[1])
         self.assertIsInstance(line, RecipeLine)
 

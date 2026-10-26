@@ -18,6 +18,8 @@ order they are used. Prep that the plan puts in a waiting time comes later, "whi
 """
 import re
 
+from services.recipe_v2 import states
+
 SMALL_UNITS = {'tsp', 'tbsp', 'pinch', 'dash', 'drop'}
 HOT = {'medium', 'medium_high', 'high'}
 STAPLES = {'salt', 'sea salt', 'flaky salt', 'pepper', 'black pepper', 'salt and pepper', 'water', 'olive oil',
@@ -139,10 +141,33 @@ def build(v2, sch, language=None):
     out['done_here'] = sorted({p for e in elements.values() for p in e['prep']}, key=number.get)
     for n, b in enumerate(out['bowls'] + [b for g in out['later'] for b in g['bowls']], 1):
         b['no'] = n
-    # Jobs before anything else: steps with no ingredients, no inputs and no cookware ("take the butter out")
-    out['tasks'] = [{'key': f't:{sid}', 'short': by[sid]['short'], 'text': by[sid].get('text') or ''}
-                    for sid in order if not by[sid].get('uses') and not by[sid].get('after') and not by[sid].get('equipment')]
+    # Jobs before anything else: what takes time on the counter (softened butter, thawed peas), then steps with no
+    # ingredients, no inputs and no cookware
+    out['tasks'] = early(v2, order, number, language) + [
+        {'key': f't:{sid}', 'short': by[sid]['short'], 'text': by[sid].get('text') or ''}
+        for sid in order if not by[sid].get('uses') and not by[sid].get('after') and not by[sid].get('equipment')]
     return out
+
+
+def early(v2, order, number, language=None):
+    """A job for each ingredient that must be taken out in good time: softened butter, eggs at room temperature,
+    something to thaw. One per ingredient, for the first step that uses it."""
+    lang = 'nb' if language == 'nb' else 'en'
+    step_of = {u: sid for sid in order for s in v2['steps'] if s['local_id'] == sid for u in s.get('uses') or []}
+    jobs = {}
+    for i in v2.get('ingredients') or []:
+        state = i.get('state') or i.get('cut')
+        if state not in states.EARLY or i['local_id'] not in step_of:
+            continue
+        name = (i.get('pantry_name') or i['name']).strip()
+        no = number[step_of[i['local_id']]]
+        if name.lower() in jobs and jobs[name.lower()]['no'] <= no:
+            continue
+        word = states.word(state, None, lang)
+        jobs[name.lower()] = {'no': no, 'key': f"e:{i['local_id']}",
+                              'short': f'Ta ut {name}' if lang == 'nb' else f'Take out the {name}',
+                              'text': f'Skal være {word} til steg {no}.' if lang == 'nb' else f'Should be {word} by step {no}.'}
+    return [{k: v for k, v in j.items() if k != 'no'} for j in sorted(jobs.values(), key=lambda j: j['no'])]
 
 
 def used_of(e, cons):

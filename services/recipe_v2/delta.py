@@ -14,12 +14,10 @@ scales it to fit and draws the arrows (static/js/delta.js).
 - Numbers are the step numbers of the method list, so step 6 is the same step everywhere. The steps folded away
   are listed on their node ('folded'), for a page that shows every step.
 """
+from services.recipe_v2 import states
 from services.recipe_v2.planner import steps_from_v2
 
 HEAT = {'low': 1, 'medium_low': 2, 'medium': 2, 'medium_high': 3, 'high': 3}
-# The small sign on an ingredient for its state (data/constraints/states.json); step 3 gives every group a sign
-MARKS = {'chop': 'cut', 'slice': 'cut', 'dice': 'cut', 'pieces': 'cut', 'strips': 'cut', 'wedges': 'cut', 'rings': 'cut',
-         'halve': 'cut', 'tear': 'cut', 'grate': 'grate', 'zest': 'grate', 'juice': 'juice', 'crush': 'crush', 'mash': 'crush'}
 # Verbs that say too little on their own; they always get their object ("cook the rice", not "cook")
 GENERIC = {'cook', 'make', 'prepare', 'add', 'ha i', 'ha', 'kok', 'lag', 'tilbered', 'gjør'}
 BOWLS = {'bowl', 'small_bowl', 'large_bowl'}
@@ -183,7 +181,7 @@ def build(v2, order, lines):
 
     def pic(u):
         line = lines.get(u) or {'name': u}
-        return {**line, 'mark': MARKS.get(line.get('cut'))}
+        return {**line, 'mark': states.mark(line.get('cut'))}
 
     def is_bowl(f):
         s = by[f]

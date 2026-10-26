@@ -103,6 +103,8 @@ class CookTests(unittest.TestCase):
         self.assertNotIn('data-dlx="float"', html)  # the step in a strip; the small card is gone
         # The key to the delta's signs, and the trial for how a tap on a step's number works
         self.assertIn('class="dl-key"', html)
+        self.assertIn('What is done to it first', html)  # one sign per group in the state catalog
+        self.assertIn('temperature and texture: softened, melted', html)
         self.assertIn('data-state="', html)  # the word for how a cut ingredient is cut, on its sign
         self.assertIn('data-dltap="1"', html)
         self.assertIn('data-dltap="2"', html)

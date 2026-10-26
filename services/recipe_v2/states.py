@@ -41,6 +41,30 @@ def state_of_method(method):
     return next((s['id'] for s in catalog()['states'] if method in s['methods']), None)
 
 
+def mark(state):
+    """The sign a line in this state gets in the drawings (templates/components/delta.html), or None."""
+    s = by_id().get(state)
+    if not s:
+        return None
+    if 'sign' in s:
+        return s['sign']
+    return next(g['sign'] for g in catalog()['groups'] if g['id'] == s['group'])
+
+
+def key(lang='en'):
+    """The signs and what they stand for, in the order of the catalog: [(sign, label, ["chopped", "sliced", …])]."""
+    rows = {}
+    for s in catalog()['states']:
+        sign = mark(s['id'])
+        if sign:
+            label = 'juiced' if sign == 'squeezer' else next(g[lang] for g in catalog()['groups'] if g['id'] == s['group'])
+            rows.setdefault(sign, (sign, label, []))[2].append(s[lang])
+    return list(rows.values())
+
+
+EARLY = {'soften', 'thaw'}  # states that take time on the counter: the butter is taken out before anything else
+
+
 def word(state, grade=None, lang='en'):
     """The state in words: "finely chopped", "fint hakket"; '' for no state."""
     s = by_id().get(state)
