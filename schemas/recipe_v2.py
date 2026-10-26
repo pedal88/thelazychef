@@ -19,14 +19,17 @@ def _load(name):
 
 
 # Closed lists, so structured output can only answer with values the app knows.
-CUTS = tuple(c['id'] for c in _load('cuts.json')['cuts'])
+_STATES = _load('states.json')
+STATES = tuple(s['id'] for s in _STATES['states'])
+GRADES = tuple(g['id'] for g in _STATES['grades'])
 CUISINES = tuple(_load('graph_metadata.json')['cuisines'])
 # What a cuisine covers, for the prompt ("Mexican" includes Tex-Mex); the value stays the plain name
 CUISINE_NOTES = _load('graph_metadata.json').get('cuisine_notes', {})
 DIFFICULTIES = tuple(_load('difficulty.json')['difficulty'])
 _MEAL = _load('meal_types.json')
 MEAL_TYPES = tuple(m for m in _MEAL['meal_types'] if m not in _MEAL['derived'])  # the derived tags are set by the app
-Cut = typing.Literal[CUTS]
+State = typing.Literal[STATES]
+Grade = typing.Literal[GRADES]
 Cuisine = typing.Literal[CUISINES]
 Difficulty = typing.Literal[DIFFICULTIES]
 MealType = typing.Literal[MEAL_TYPES]
@@ -44,8 +47,14 @@ class IngredientLineV2(typing.TypedDict):
     # Omitted (null) only for "etter smak" / "to taste"; then prep_style says so.
     amount: typing.NotRequired[float]
     unit: typing.NotRequired[str]  # id from data/constraints/units.json
-    prep_style: typing.NotRequired[str]  # "finhakket", "i terninger", "etter smak"
-    cut: typing.NotRequired[Cut]  # id from data/constraints/cuts.json; omitted when the line is not cut
+    # What is done to the ingredient before it goes in: an id from data/constraints/states.json, how fine or thin
+    # (one of the grades listed for the state), and the kind when the recipe asks for one ("melne", "waxy").
+    # state is required and null for a line used as it comes: when it could be left out, the model mostly did
+    # (the comparison of 26.10.2026), and the app had to guess it from the prep step.
+    state: typing.Optional[State]
+    grade: typing.NotRequired[Grade]
+    variety: typing.NotRequired[str]
+    prep_style: typing.NotRequired[str]  # only a note the catalog cannot say: "etter smak", "valgfritt"
     gram_weight_estimate: typing.NotRequired[float]
     pantry_id: typing.NotRequired[str]
 

@@ -104,6 +104,10 @@ def test_rule8_amount():
     r = load('lasagne')
     del r['ingredients'][0]['amount']
     assert 8 in rules(r)
+    for note in ('etter smak', 'til servering', 'for garnish'):  # what goes on at the table may leave it out
+        r = load('lasagne')
+        r['ingredients'][0].update(amount=None, prep_style=note)
+        assert 8 not in rules(r), note
 
 
 def test_warning_time_words_but_technique_ok():
@@ -113,9 +117,12 @@ def test_warning_time_words_but_technique_ok():
     assert [w for w in validate_recipe_v2(r)['warnings'] if w['code'] == 'time_words']
 
 
-def test_rule7_cut_and_metadata_come_from_the_catalogs():
+def test_rule7_state_grade_and_metadata_come_from_the_catalogs():
     r = load('carbonara')
-    r['ingredients'][1]['cut'] = 'julienne'
+    r['ingredients'][1]['state'] = 'julienne'
+    assert rules(r) == [7]
+    r = load('carbonara')
+    r['ingredients'][1].update(state='chop', grade='stiff')  # a grade the state does not have
     assert rules(r) == [7]
     for key, value in (('cuisine', 'Martian'), ('difficulty', 'Hard'), ('meal_types', ['Brunch'])):
         r = load('carbonara')
@@ -139,10 +146,19 @@ def test_verb_must_start_like_short():
     assert 'verb_not_in_short' in {w['code'] for w in validate_recipe_v2(r)['warnings']}
 
 
-def test_a_cutting_prep_step_wants_a_cut_on_its_lines():
+def test_a_line_in_a_prep_step_without_a_state_is_a_warning():
     r = load('lasagne')
     line = next(i for i in r['ingredients'] if i['local_id'] == 'i2')  # onion, chopped in s2
-    del line['cut']
+    del line['state'], line['grade']
     result = validate_recipe_v2(r)
     assert result['valid']
-    assert any(w['code'] == 'no_cut' and 'i2' in w['message'] for w in result['warnings'])
+    assert any(w['code'] == 'no_state' and "'chop'" in w['message'] for w in result['warnings'])
+
+
+def test_a_state_written_as_a_note_and_an_empty_verb_are_warnings():
+    r = load('lasagne')
+    next(i for i in r['ingredients'] if i['local_id'] == 'i2')['prep_style'] = 'finhakket'
+    step(r, 's2')['verb'] = 'forbered'
+    result = validate_recipe_v2(r)
+    assert result['valid']
+    assert {'note_is_state', 'generic_verb'} <= {w['code'] for w in result['warnings']}

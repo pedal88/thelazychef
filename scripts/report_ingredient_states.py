@@ -12,7 +12,8 @@ printed or stored:
     DB_USER=<user> DB_NAME=<name> ./venv/bin/python -m scripts.report_ingredient_states
 
 The report is written outside the repo (the repo is public, the report holds recipe content), by default to
-~/promptlab-runs/ingredient_states_report.json, and a short summary is printed.
+~/promptlab-runs/ingredient_states_report.json, and a short summary is printed. --pantry-out also writes the active
+pantry as [food_id, name] pairs, for scripts/compare_states.py --pantry.
 """
 import argparse
 import collections
@@ -46,6 +47,7 @@ def main():
     ap = argparse.ArgumentParser(description='Read-only report on ingredient states, verbs, methods and the pantry.')
     ap.add_argument('--out', default=str(Path.home() / 'promptlab-runs' / 'ingredient_states_report.json'))
     ap.add_argument('--top', type=int, default=300, help='how many of each list to keep')
+    ap.add_argument('--pantry-out', help='also write the active pantry here, as [food_id, name] pairs')
     args = ap.parse_args()
 
     if os.getenv('DB_BACKEND', 'local').lower() == 'cloudsql' and not os.getenv('DB_PASS'):
@@ -75,7 +77,7 @@ def main():
         v1_lines = q("""SELECT ri.prep_style, i.name AS pantry_name, i.main_category
                         FROM recipe_ingredient ri JOIN ingredient i ON i.id = ri.ingredient_id
                         JOIN recipe r ON r.id = ri.recipe_id WHERE coalesce(r.schema_version, 1) = 1""")
-        pantry = q("""SELECT id, name, main_category, sub_category, tier, base_ingredient_id, status FROM ingredient""")
+        pantry = q("""SELECT id, food_id, name, main_category, sub_category, tier, base_ingredient_id, status FROM ingredient""")
         db.session.rollback()  # nothing to keep, and nothing was written
 
     report = {'recipes': {}, 'v2_lines': {}, 'v2_steps': {}, 'v1_lines': {}, 'pantry': {}}
@@ -150,6 +152,11 @@ def main():
         'product_form_words': [{'value': w, 'count': n, 'examples': form_ex[w][:8]} for w, n in forms.most_common()],
         'possible_duplicates': [names for names in dupes.values() if len(names) > 1][:200],
     }
+
+    if args.pantry_out:
+        active = sorted([i['food_id'], i['name']] for i in pantry if (i['status'] or 'active') == 'active' and i['food_id'])
+        Path(args.pantry_out).expanduser().write_text(json.dumps(active, ensure_ascii=False))
+        print(f'Pantry: {len(active)} active ingredients to {args.pantry_out}')
 
     out = Path(args.out).expanduser()
     out.parent.mkdir(parents=True, exist_ok=True)

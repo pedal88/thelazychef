@@ -111,7 +111,7 @@ class GetReadyPageTests(unittest.TestCase):
         from database.models import RecipeLine
         recipe = db.session.get(Recipe, self.ids['carbonara'])
         line = next(ln for ln in recipe.lines if 'guanciale' in ln.name)
-        line.cut, line.prep_style = None, None  # as when the model leaves them out; "Skjær guancialen" is method slice
+        line.state, line.cut, line.prep_style = None, None, None  # a recipe from before the catalog; "Skjær guancialen" is method slice
         recipe.language = 'nb'
         db.session.commit()
         bowls = build(db.session.get(Recipe, self.ids['carbonara']))['ready']['bowls']

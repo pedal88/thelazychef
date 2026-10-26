@@ -10,7 +10,7 @@ from database.models import Recipe, RecipeComponent, RecipeLine, RecipeMealType,
 
 STEP_FIELDS = ('phase', 'short', 'verb', 'text', 'active_minutes', 'passive_minutes', 'holds_minutes', 'method',
                'temp_c', 'mode', 'done_when')
-LINE_FIELDS = ('name', 'amount', 'unit', 'prep_style', 'cut')
+LINE_FIELDS = ('name', 'amount', 'unit', 'prep_style', 'state', 'grade', 'variety')
 
 
 def save_v2(recipe: Recipe, data: dict, ingredient_ids: dict | None = None) -> Recipe:
@@ -86,7 +86,8 @@ def to_v2(recipe: Recipe) -> dict:
         'components': [{'local_id': c.local_id, 'name': c.name} for c in recipe.components],
         'ingredients': [drop_none({
             'local_id': i.local_id, 'component_id': i.component.local_id, 'name': i.name, 'amount': i.amount,
-            'unit': i.unit, 'prep_style': i.prep_style, 'cut': i.cut, 'gram_weight_estimate': i.gram_weight,
+            'unit': i.unit, 'prep_style': i.prep_style, 'state': i.state or i.cut, 'grade': i.grade,
+            'variety': i.variety, 'gram_weight_estimate': i.gram_weight,
             'pantry_id': i.ingredient.food_id if i.ingredient else None,
         }) for i in recipe.lines],
         'steps': [drop_none({

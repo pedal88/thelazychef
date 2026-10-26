@@ -35,8 +35,8 @@
       "amount": 1,
       "unit": "piece",
       "gram_weight_estimate": 150,
-      "prep_style": "finhakket",
-      "cut": "chop"
+      "state": "chop",
+      "grade": "fine"
     },
     {
       "local_id": "i3",
@@ -45,8 +45,8 @@
       "amount": 1,
       "unit": "piece",
       "gram_weight_estimate": 80,
-      "prep_style": "finrevet",
-      "cut": "grate"
+      "state": "grate",
+      "grade": "fine"
     },
     {
       "local_id": "i4",
@@ -55,8 +55,8 @@
       "amount": 2,
       "unit": "clove",
       "gram_weight_estimate": 10,
-      "prep_style": "finhakket",
-      "cut": "chop"
+      "state": "chop",
+      "grade": "fine"
     },
     {
       "local_id": "i5",
@@ -174,8 +174,8 @@
       "amount": 30,
       "unit": "g",
       "gram_weight_estimate": 30,
-      "prep_style": "finrevet",
-      "cut": "grate"
+      "state": "grate",
+      "grade": "fine"
     },
     {
       "local_id": "i19",
@@ -184,8 +184,7 @@
       "amount": 1,
       "unit": "piece",
       "gram_weight_estimate": 250,
-      "prep_style": "revet i biter",
-      "cut": "tear"
+      "state": "tear"
     },
     {
       "local_id": "i20",
@@ -194,8 +193,8 @@
       "amount": 0.5,
       "unit": "piece",
       "gram_weight_estimate": 175,
-      "prep_style": "tynne skiver",
-      "cut": "slice"
+      "state": "slice",
+      "grade": "thin"
     },
     {
       "local_id": "i21",
@@ -204,8 +203,7 @@
       "amount": 150,
       "unit": "g",
       "gram_weight_estimate": 150,
-      "prep_style": "delt i to",
-      "cut": "halve"
+      "state": "halve"
     },
     {
       "local_id": "i22",

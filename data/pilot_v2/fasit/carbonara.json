@@ -23,8 +23,7 @@
       "amount": 150,
       "unit": "g",
       "gram_weight_estimate": 150,
-      "prep_style": "i staver",
-      "cut": "strips"
+      "state": "strips"
     },
     {
       "local_id": "i3",
@@ -50,8 +49,8 @@
       "amount": 60,
       "unit": "g",
       "gram_weight_estimate": 60,
-      "prep_style": "finrevet",
-      "cut": "grate"
+      "state": "grate",
+      "grade": "fine"
     },
     {
       "local_id": "i6",
@@ -60,8 +59,8 @@
       "amount": 20,
       "unit": "g",
       "gram_weight_estimate": 20,
-      "prep_style": "finrevet",
-      "cut": "grate"
+      "state": "grate",
+      "grade": "fine"
     },
     {
       "local_id": "i7",
@@ -70,7 +69,8 @@
       "amount": 1.5,
       "unit": "tsp",
       "gram_weight_estimate": 3,
-      "prep_style": "grovkvernet"
+      "state": "grind",
+      "grade": "coarse"
     },
     {
       "local_id": "i8",

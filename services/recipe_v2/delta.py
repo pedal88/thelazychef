@@ -17,7 +17,7 @@ scales it to fit and draws the arrows (static/js/delta.js).
 from services.recipe_v2.planner import steps_from_v2
 
 HEAT = {'low': 1, 'medium_low': 2, 'medium': 2, 'medium_high': 3, 'high': 3}
-# The small sign on an ingredient for how it is cut (data/constraints/cuts.json)
+# The small sign on an ingredient for its state (data/constraints/states.json); step 3 gives every group a sign
 MARKS = {'chop': 'cut', 'slice': 'cut', 'dice': 'cut', 'pieces': 'cut', 'strips': 'cut', 'wedges': 'cut', 'rings': 'cut',
          'halve': 'cut', 'tear': 'cut', 'grate': 'grate', 'zest': 'grate', 'juice': 'juice', 'crush': 'crush', 'mash': 'crush'}
 # Verbs that say too little on their own; they always get their object ("cook the rice", not "cook")

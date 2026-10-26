@@ -72,7 +72,8 @@
         "name": "benfrie kyllinglårfileter uten skinn",
         "amount": 800,
         "unit": "g",
-        "prep_style": "i biter på 4–5 cm"
+        "prep_style": "på 4–5 cm",
+        "state": "pieces"
       },
       {
         "local_id": "i2",
@@ -94,7 +95,8 @@
         "name": "hvitløk",
         "amount": 3,
         "unit": "clove",
-        "prep_style": "finrevet"
+        "state": "grate",
+        "grade": "fine"
       },
       {
         "local_id": "i5",
@@ -102,7 +104,8 @@
         "name": "fersk ingefær",
         "amount": 2,
         "unit": "tbsp",
-        "prep_style": "finrevet"
+        "state": "grate",
+        "grade": "fine"
       },
       {
         "local_id": "i6",
@@ -288,7 +291,8 @@
         "component_id": "c3",
         "name": "basmatiris",
         "amount": 4,
-        "unit": "dl"
+        "unit": "dl",
+        "state": "rinse"
       },
       {
         "local_id": "i32",

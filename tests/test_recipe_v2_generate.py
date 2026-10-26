@@ -85,13 +85,13 @@ class GenerateTests(unittest.TestCase):
         self.assertNotIn(self.run_['source_text'][:40], fake.requests[1]['system'])
         self.assertIsNotNone(fake.requests[1]['schema'])
 
-    def test_verb_cut_and_metadata_are_asked_for_and_saved(self):
+    def test_verb_state_and_metadata_are_asked_for_and_saved(self):
         answer = copy.deepcopy(self.run_['recipe'])
         answer.update(cuisine='Italian', difficulty='Moderate', meal_types=['Dinner', 'Main Dish'],
                       spice_level=0, keeps_days=1, freezes=True)
         answer['steps'][0]['verb'] = answer['steps'][0]['short'].split()[0].lower()
-        cut_line = next(i for i in answer['ingredients'] if i.get('prep_style'))
-        cut_line['cut'] = 'grate'
+        cut_line = next(i for i in answer['ingredients'] if 'pecorino' in i['name'].lower())
+        cut_line.update(state='grate', grade='fine', variety='Romano')
         fake = FakeClaude(message(self.run_['source_text']), message(json.dumps(answer, ensure_ascii=False)))
         recipe, report = generate.create_recipe('idea', 'Spaghetti carbonara for four', call=fake)
 
@@ -107,13 +107,31 @@ class GenerateTests(unittest.TestCase):
         self.assertIn(saved.cleanup_factor, range(1, 6))
         self.assertGreater(saved.prep_time_mins, 0)
         self.assertEqual(saved.steps[0].verb, answer['steps'][0]['verb'])
-        self.assertEqual(next(line.cut for line in saved.lines if line.local_id == cut_line['local_id']), 'grate')
+        line = next(line for line in saved.lines if line.local_id == cut_line['local_id'])
+        self.assertEqual((line.state, line.grade, line.variety, line.cut), ('grate', 'fine', 'Romano', None))
         # The catalogs are in the prompt, and the schema only allows their values
         system, schema = fake.requests[1]['system'], fake.requests[1]['schema']
-        for text in ('CUT CATALOG: chop', 'CUISINE LIST: Nordic (Norwegian first', 'DIFFICULTY LIST: Simplistic', 'MEAL TYPE LIST: Breakfast', '20b. verb'):
+        for text in ('STATE CATALOG: chop (chopped / hakket; grades: fine, coarse)', 'CUISINE LIST: Nordic (Norwegian first', 'DIFFICULTY LIST: Simplistic', 'MEAL TYPE LIST: Breakfast', '20b. verb'):
             self.assertIn(text, system)
         self.assertEqual(schema['properties']['difficulty']['enum'], ['Simplistic', 'Moderate', 'Elevated'])
-        self.assertIn('grate', schema['$defs']['IngredientLineV2']['properties']['cut']['enum'])
+        line_schema = schema['$defs']['IngredientLineV2']['properties']
+        self.assertIn('soften', line_schema['state']['anyOf'][0]['enum'])
+        self.assertIn('state', schema['$defs']['IngredientLineV2']['required'])  # null when used as it comes
+        self.assertIn('stiff', line_schema['grade']['enum'])
+        self.assertNotIn('cut', line_schema)
+
+    def test_a_state_the_model_left_out_comes_from_the_prep_step(self):
+        answer = copy.deepcopy(self.run_['recipe'])
+        step = next(x for x in answer['steps'] if x['phase'] == 'prep' and x['method'] == 'chop')  # cut the guanciale
+        line = next(i for i in answer['ingredients'] if i['local_id'] in step['uses'] and i.get('unit') not in ('tbsp', 'tsp'))
+        line.pop('state', None)
+        line.pop('grade', None)
+        fake = FakeClaude(message(self.run_['source_text']), message(json.dumps(answer, ensure_ascii=False)))
+        recipe, report = generate.create_recipe('idea', 'Spaghetti carbonara for four', call=fake)
+        self.assertTrue(report['valid'])
+        self.assertEqual(len(fake.requests), 2)  # no new attempt for it
+        saved = next(x for x in db.session.get(Recipe, recipe.id).lines if x.local_id == line['local_id'])
+        self.assertEqual(saved.state, 'chop')
 
     def test_lines_are_matched_to_the_pantry_and_the_rest_flags_the_recipe(self):
         fake = FakeClaude(message('text'), self._good())

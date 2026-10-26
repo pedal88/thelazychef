@@ -15,7 +15,7 @@ from functools import lru_cache
 from markupsafe import Markup, escape
 
 from database.models import Ingredient, Recipe, RecipeLine, RecipeStep, db
-from services.recipe_v2 import delta, groups, mise, nutrition, whole
+from services.recipe_v2 import delta, groups, mise, nutrition, states, whole
 from services.recipe_v2.derive import HEAT_LABELS, heat_steps
 from services.recipe_v2.persona import SETTINGS, age_label
 from services.recipe_v2.planner import MODES, plan_v2
@@ -98,19 +98,6 @@ def step_duration(s):
     return ' '.join(parts)
 
 
-# A prep step's method that says how its lines are cut (data/constraints/methods.json -> cuts.json)
-CUT_BY_METHOD = {'chop': 'chop', 'slice': 'slice', 'grate': 'grate', 'mash': 'mash', 'juice': 'juice', 'crush': 'crush'}
-# The state a cut leaves an ingredient in, in a few words, for a line with a cut and no prep_style of its own
-STATE_WORDS = {
-    'en': {'chop': 'chopped', 'slice': 'sliced', 'dice': 'diced', 'pieces': 'in pieces', 'strips': 'in strips',
-           'wedges': 'in wedges', 'rings': 'in rings', 'halve': 'halved', 'grate': 'grated', 'zest': 'zested',
-           'juice': 'juiced', 'crush': 'crushed', 'mash': 'mashed', 'tear': 'torn'},
-    'nb': {'chop': 'hakket', 'slice': 'i skiver', 'dice': 'i terninger', 'pieces': 'i biter', 'strips': 'i strimler',
-           'wedges': 'i båter', 'rings': 'i ringer', 'halve': 'delt i to', 'grate': 'revet', 'zest': 'skall revet',
-           'juice': 'presset', 'crush': 'knust', 'mash': 'most', 'tear': 'revet i biter'},
-}
-
-
 def count_of(line, factor=1.0):
     """How many, for a line counted in pieces or cloves (3 cloves of garlic): a whole number from 1 to 12, else None.
     Prep shows it on the image, so the amount reads at a glance."""
@@ -174,8 +161,13 @@ def symbol(ingredient, name, size):
     return Markup('<span class="sym sym-letter" style="--s:{s}px" aria-hidden="true">{c}</span>').format(s=size, c=(name or '?')[:1].upper())
 
 
-def step_html(s, lines, ingredients, factor):
-    """Step text with each {iN} as a pill: symbol, amount and name. In cook and serve steps the prep style follows in brackets."""
+def line_state(line, lang='en'):
+    """What the cook has done to a line, in words, with its note: "finely chopped, for garnish"."""
+    return ', '.join(x for x in (states.word(line.get('state') or line.get('cut'), line.get('grade'), lang), line.get('prep_style')) if x)
+
+
+def step_html(s, lines, ingredients, factor, lang='en'):
+    """Step text with each {iN} as a pill: symbol, amount and name. In cook and serve steps the state and note follow in brackets."""
     def pill(m):
         line = lines.get(m.group(1))
         if not line:
@@ -183,8 +175,9 @@ def step_html(s, lines, ingredients, factor):
         amount = fmt_amount(line['amount'] * factor if line.get('amount') is not None else None, line.get('unit'))
         label = f"{amount} {line['name']}".strip()
         out = Markup('<span class="pill">{sym}{label}</span>').format(sym=symbol(ingredients.get(m.group(1)), line['name'], 24), label=label)
-        if s['phase'] != 'prep' and line.get('prep_style'):
-            out += Markup(' <span class="prep">({})</span>').format(line['prep_style'])
+        said = line_state(line, lang) if s['phase'] != 'prep' else ''
+        if said:
+            out += Markup(' <span class="prep">({})</span>').format(said)
         return out
 
     text = str(escape(s.get('text') or ''))
@@ -281,7 +274,7 @@ def build(recipe, servings=None, plan='calm'):
             'n': n, 'id': sid, 'phase': s['phase'], 'short': s['short'], 'component': comps.get(s['component_id'], ''),
             'duration': step_duration(s), 'equipment': equipment_text(s), 'start': p['start'],
             'while': f"While: {during['short'].lower()}" if during else '',
-            'html': step_html(s, lines, ingredients, factor), 'done_when': s.get('done_when'),
+            'html': step_html(s, lines, ingredients, factor, recipe.language), 'done_when': s.get('done_when'),
             'setup': bool(s.get('setup')), 'heat': sid in heated,
         })
     # Where the heat goes on, for the step list of the one-page flow: the first step that heats the food (not
@@ -292,21 +285,24 @@ def build(recipe, servings=None, plan='calm'):
         if ingredients.get(i['local_id']) is not None:
             i['pantry_name'] = ingredients[i['local_id']].name
             i['pantry_tier'] = ingredients[i['local_id']].tier
-    # How a line is cut, from its prep step when the model left the line's own cut out ("Cut the ham" with method
-    # slice): the state then shows on Prep, in Cook and in the delta all the same
-    cut_from_step = {}
+    # A line's state, from its prep step when the line has none of its own (a recipe made before the state catalog:
+    # "Cut the ham" with method slice): the state then shows on Prep, in Cook and in the delta all the same
+    state_from_step = {}
     for st in v2['steps']:
-        if st.get('phase') == 'prep' and st.get('method') in CUT_BY_METHOD:
+        if st.get('phase') == 'prep' and states.state_of_method(st.get('method')):
             for u in st.get('uses') or []:
-                cut_from_step.setdefault(u, CUT_BY_METHOD[st['method']])
-    words = STATE_WORDS.get(recipe.language) or STATE_WORDS['en']
+                state_from_step.setdefault(u, states.state_of_method(st['method']))
+    lang = recipe.language or 'en'
+
+    def state_of(lid, i):
+        return i.get('state') or i.get('cut') or state_from_step.get(lid)
     # The river delta: every line as the drawing shows it, with the amount for these servings
     pictured = {lid: {'name': i['name'], 'img': (ingredients.get(lid).image_url if ingredients.get(lid) is not None else None),
                       'amount': fmt_amount(i['amount'] * factor, i.get('unit')) if i.get('amount') is not None else '',
-                      'prep': i.get('prep_style') or '', 'cut': i.get('cut') or cut_from_step.get(lid), 'count': count_of(i, factor),
-                      'state': i.get('prep_style') or words.get(i.get('cut') or cut_from_step.get(lid), ''),
-                      # the word for the cut alone, for its sign in the delta (prep_style may say something else: "melne")
-                      'cut_word': words.get(i.get('cut') or cut_from_step.get(lid), ''),
+                      'prep': i.get('prep_style') or '', 'cut': state_of(lid, i), 'count': count_of(i, factor),
+                      'state': line_state({**i, 'state': state_of(lid, i)}, lang),
+                      # the state alone in words, for its sign in the delta (the note may say something else: "melne")
+                      'cut_word': states.word(state_of(lid, i), i.get('grade'), lang),
                       'group': groups.group_of(ingredients.get(lid), mise.staple(i))} for lid, i in lines.items()}
 
     # Prep: the lines in bowls, and the rest to take out, drawn like in the delta
@@ -435,8 +431,9 @@ def v2_text(v2, yield_text=None, chef_note=None):
 
     def line_text(i, prep=True):
         amount = fmt_amount(i.get('amount'), i.get('unit'))
-        text = ' '.join(x for x in (amount, i['name']) if x)
-        return text + (f", {i['prep_style']}" if prep and i.get('prep_style') else '')
+        text = ' '.join(x for x in (amount, i['name']) if x) + (f" ({i['variety']})" if i.get('variety') else '')
+        said = line_state(i) if prep else ''
+        return text + (f', {said}' if said else '')
 
     out = [v2['title'], '', f"Servings: {yield_text or v2['servings']}", '', 'Ingredients']
     for c in v2['components']:

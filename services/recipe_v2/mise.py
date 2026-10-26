@@ -24,7 +24,7 @@ STAPLES = {'salt', 'sea salt', 'flaky salt', 'pepper', 'black pepper', 'salt and
            'vegetable oil', 'neutral oil', 'rapeseed oil', 'canola oil', 'sunflower oil',
            'havsalt', 'flaksalt', 'sort pepper', 'salt og pepper', 'vann', 'olivenolje', 'nøytral olje', 'rapsolje',
            'solsikkeolje'}
-# A state the cook brings a line to before it goes in. "Chopped tomatoes" is a product, not a state, and has no cut.
+# A state the cook brings a line to before it goes in. "Chopped tomatoes" is a product, not a state, and has none.
 WORKED = re.compile(r'soft|room temp|melted|beaten|whisked|juice|zest|squeezed|lukewarm|toasted|'
                     r'myk|romtemp|smeltet|pisket|saft|skall|presset|lunken|ristet', re.I)
 AND = {'nb': 'og'}
@@ -38,8 +38,12 @@ def staple(line):
     return (line.get('name') or '').strip().lower() in STAPLES or (line.get('pantry_name') or '').lower() in STAPLES
 
 
+# States that ask nothing of the cook before the line goes in: it comes from the fridge, is left over, or is ground at the stove
+UNWORKED = {'chill', 'cooked', 'grind'}
+
+
 def worked(line):
-    return bool(line.get('cut')) or bool(WORKED.search(line.get('prep_style') or ''))
+    return (line.get('state') or line.get('cut') or 'chill') not in UNWORKED or bool(WORKED.search(line.get('prep_style') or ''))
 
 
 def small(line):

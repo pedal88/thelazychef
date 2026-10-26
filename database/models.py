@@ -542,7 +542,11 @@ class RecipeLine(db.Model):
     amount: Mapped[Optional[float]] = mapped_column(Float, nullable=True)  # null only for "to taste"
     unit: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)  # id in data/constraints/units.json
     prep_style: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
-    cut: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)  # id in data/constraints/cuts.json
+    # Before the state catalog (26.10.2026): how the line is cut. Read as the state when state is empty; not written any more.
+    cut: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    state: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)  # id in data/constraints/states.json
+    grade: Mapped[Optional[str]] = mapped_column(String(12), nullable=True)  # how fine, thin or stiff: a grade of the state
+    variety: Mapped[Optional[str]] = mapped_column(String(80), nullable=True)  # the kind ("floury", "San Marzano"), not a state
     gram_weight: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
 
     recipe: Mapped["Recipe"] = relationship(back_populates="lines")
