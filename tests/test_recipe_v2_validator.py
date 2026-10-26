@@ -113,9 +113,12 @@ def test_warning_time_words_but_technique_ok():
     assert [w for w in validate_recipe_v2(r)['warnings'] if w['code'] == 'time_words']
 
 
-def test_rule7_cut_and_metadata_come_from_the_catalogs():
+def test_rule7_state_grade_and_metadata_come_from_the_catalogs():
     r = load('carbonara')
-    r['ingredients'][1]['cut'] = 'julienne'
+    r['ingredients'][1]['state'] = 'julienne'
+    assert rules(r) == [7]
+    r = load('carbonara')
+    r['ingredients'][1].update(state='chop', grade='stiff')  # a grade the state does not have
     assert rules(r) == [7]
     for key, value in (('cuisine', 'Martian'), ('difficulty', 'Hard'), ('meal_types', ['Brunch'])):
         r = load('carbonara')
@@ -139,10 +142,18 @@ def test_verb_must_start_like_short():
     assert 'verb_not_in_short' in {w['code'] for w in validate_recipe_v2(r)['warnings']}
 
 
-def test_a_cutting_prep_step_wants_a_cut_on_its_lines():
+def test_a_prep_step_that_changes_a_line_wants_its_state():
     r = load('lasagne')
     line = next(i for i in r['ingredients'] if i['local_id'] == 'i2')  # onion, chopped in s2
-    del line['cut']
+    del line['state'], line['grade']
+    assert rules(r) == [10]
+    assert "'chop'" in next(e['message'] for e in validate_recipe_v2(r)['errors'] if e['rule'] == 10)
+
+
+def test_a_state_written_as_a_note_and_an_empty_verb_are_warnings():
+    r = load('lasagne')
+    next(i for i in r['ingredients'] if i['local_id'] == 'i2')['prep_style'] = 'finhakket'
+    step(r, 's2')['verb'] = 'forbered'
     result = validate_recipe_v2(r)
     assert result['valid']
-    assert any(w['code'] == 'no_cut' and 'i2' in w['message'] for w in result['warnings'])
+    assert {'note_is_state', 'generic_verb'} <= {w['code'] for w in result['warnings']}

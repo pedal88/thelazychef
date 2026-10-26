@@ -86,7 +86,7 @@
         "name": "egg",
         "amount": 3,
         "unit": "piece",
-        "prep_style": "romtemperert"
+        "state": "soften"
       },
       {
         "local_id": "i5",
@@ -129,7 +129,8 @@
         "name": "mørk sjokolade",
         "amount": 50,
         "unit": "g",
-        "prep_style": "grovt hakket"
+        "state": "chop",
+        "grade": "coarse"
       },
       {
         "local_id": "i11",

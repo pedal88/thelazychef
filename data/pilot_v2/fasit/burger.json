@@ -50,7 +50,7 @@
       "name": "melk",
       "amount": 1.75,
       "unit": "dl",
-      "prep_style": "lunken"
+      "state": "warm"
     },
     {
       "local_id": "i6",
@@ -66,7 +66,8 @@
       "name": "egg",
       "amount": 1,
       "unit": "piece",
-      "prep_style": "sammenpisket, til pensling"
+      "prep_style": "til pensling",
+      "state": "beaten"
     },
     {
       "local_id": "i8",
@@ -109,8 +110,7 @@
       "name": "tomat",
       "amount": 1,
       "unit": "piece",
-      "prep_style": "skiver",
-      "cut": "slice"
+      "state": "slice"
     },
     {
       "local_id": "i14",
@@ -118,15 +118,16 @@
       "name": "rødløk",
       "amount": 0.5,
       "unit": "piece",
-      "prep_style": "tynne ringer",
-      "cut": "rings"
+      "state": "rings",
+      "grade": "thin"
     },
     {
       "local_id": "i15",
       "component_id": "c2",
       "name": "hjertesalat",
       "amount": 4,
-      "unit": "leaf"
+      "unit": "leaf",
+      "state": "slice"
     },
     {
       "local_id": "i16",
@@ -162,8 +163,8 @@
       "name": "poteter",
       "amount": 800,
       "unit": "g",
-      "prep_style": "melne, i staver med skall",
-      "cut": "strips"
+      "prep_style": "melne, med skall",
+      "state": "strips"
     },
     {
       "local_id": "i21",

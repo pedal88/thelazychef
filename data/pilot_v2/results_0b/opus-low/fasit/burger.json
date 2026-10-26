@@ -125,7 +125,7 @@
         "name": "egg",
         "amount": 1,
         "unit": "piece",
-        "prep_style": "sammenpisket"
+        "state": "beaten"
       },
       {
         "local_id": "i9",
@@ -154,7 +154,7 @@
         "name": "sort pepper",
         "amount": 0.5,
         "unit": "tsp",
-        "prep_style": "nykvernet"
+        "state": "grind"
       },
       {
         "local_id": "i13",
@@ -176,7 +176,8 @@
         "name": "rødløk",
         "amount": 1,
         "unit": "piece",
-        "prep_style": "i tynne ringer"
+        "state": "rings",
+        "grade": "thin"
       },
       {
         "local_id": "i16",
@@ -184,14 +185,15 @@
         "name": "tomater",
         "amount": 2,
         "unit": "piece",
-        "prep_style": "i skiver"
+        "state": "slice"
       },
       {
         "local_id": "i17",
         "component_id": "c2",
         "name": "isbergsalat eller hjertesalat",
         "amount": 4,
-        "unit": "leaf"
+        "unit": "leaf",
+        "state": "slice"
       },
       {
         "local_id": "i18",
@@ -199,7 +201,7 @@
         "name": "sylteagurk (eller 8 skiver)",
         "amount": 1,
         "unit": "piece",
-        "prep_style": "i skiver"
+        "state": "slice"
       },
       {
         "local_id": "i19",
@@ -221,7 +223,8 @@
         "name": "sylteagurk",
         "amount": 1,
         "unit": "tbsp",
-        "prep_style": "finhakket"
+        "state": "chop",
+        "grade": "fine"
       },
       {
         "local_id": "i22",
@@ -242,7 +245,8 @@
         "component_id": "c4",
         "name": "melne poteter, f.eks. Kerrs Pink eller Beate",
         "amount": 1,
-        "unit": "kg"
+        "unit": "kg",
+        "state": "slice"
       },
       {
         "local_id": "i25",

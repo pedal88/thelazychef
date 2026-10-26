@@ -41,7 +41,9 @@ def catalogs():
     eq = _load(*c, 'equipment.json')['equipment']
     units = _load(*c, 'units.json')['units']
     return {
-        'cuts': ', '.join(f"{x['id']} ({x['name']})" for x in _load(*c, 'cuts.json')['cuts']),
+        'states': '; '.join(f"{x['id']} ({x['en']} / {x['nb']}" + (f"; grades: {', '.join(x['grades'])}" if x['grades'] else '') + ')'
+                            for x in _load(*c, 'states.json')['states']),
+        'notes': ', '.join(_load(*c, 'states.json')['notes']['en'] + _load(*c, 'states.json')['notes']['nb']),
         'cuisines': ', '.join(f'{c} ({CUISINE_NOTES[c]})' if c in CUISINE_NOTES else c for c in CUISINES),
         'difficulties': ', '.join(DIFFICULTIES),
         'meal_types': ', '.join(MEAL_TYPES),

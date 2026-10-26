@@ -18,8 +18,8 @@
       "name": "kyllinglårfilet",
       "amount": 700,
       "unit": "g",
-      "prep_style": "biter à 3 cm",
-      "cut": "pieces"
+      "prep_style": "à 3 cm",
+      "state": "pieces"
     },
     {
       "local_id": "i2",
@@ -35,7 +35,7 @@
       "amount": 0.5,
       "unit": "piece",
       "prep_style": "saften",
-      "cut": "juice"
+      "state": "juice"
     },
     {
       "local_id": "i4",
@@ -43,8 +43,8 @@
       "name": "hvitløk",
       "amount": 2,
       "unit": "clove",
-      "prep_style": "finrevet",
-      "cut": "grate"
+      "state": "grate",
+      "grade": "fine"
     },
     {
       "local_id": "i5",
@@ -52,8 +52,8 @@
       "name": "hvitløk",
       "amount": 3,
       "unit": "clove",
-      "prep_style": "finrevet",
-      "cut": "grate"
+      "state": "grate",
+      "grade": "fine"
     },
     {
       "local_id": "i6",
@@ -61,8 +61,8 @@
       "name": "ingefær",
       "amount": 2,
       "unit": "cm",
-      "prep_style": "finrevet",
-      "cut": "grate"
+      "state": "grate",
+      "grade": "fine"
     },
     {
       "local_id": "i7",
@@ -70,8 +70,8 @@
       "name": "ingefær",
       "amount": 2,
       "unit": "cm",
-      "prep_style": "finrevet",
-      "cut": "grate"
+      "state": "grate",
+      "grade": "fine"
     },
     {
       "local_id": "i8",
@@ -142,8 +142,8 @@
       "name": "løk",
       "amount": 1,
       "unit": "piece",
-      "prep_style": "finhakket",
-      "cut": "chop"
+      "state": "chop",
+      "grade": "fine"
     },
     {
       "local_id": "i18",
@@ -194,15 +194,16 @@
       "name": "frisk koriander",
       "amount": 1,
       "unit": "handful",
-      "prep_style": "grovhakket",
-      "cut": "chop"
+      "state": "chop",
+      "grade": "coarse"
     },
     {
       "local_id": "i25",
       "component_id": "c2",
       "name": "basmatiris",
       "amount": 3,
-      "unit": "dl"
+      "unit": "dl",
+      "state": "rinse"
     },
     {
       "local_id": "i26",

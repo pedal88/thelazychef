@@ -85,7 +85,8 @@
         "name": "guanciale",
         "amount": 200,
         "unit": "g",
-        "prep_style": "staver à 1 × 3 cm"
+        "prep_style": "à 1 × 3 cm",
+        "state": "strips"
       },
       {
         "local_id": "i5",
@@ -107,7 +108,8 @@
         "name": "pecorino romano",
         "amount": 100,
         "unit": "g",
-        "prep_style": "finrevet"
+        "state": "grate",
+        "grade": "fine"
       },
       {
         "local_id": "i8",

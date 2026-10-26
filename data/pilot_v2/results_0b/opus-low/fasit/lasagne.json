@@ -231,14 +231,15 @@
         "name": "parmesan (valgfritt)",
         "amount": 2,
         "unit": "tbsp",
-        "prep_style": "revet"
+        "state": "grate"
       },
       {
         "local_id": "i23",
         "component_id": "c4",
         "name": "hjertesalat eller 150 g blandet salat",
         "amount": 1,
-        "unit": "piece"
+        "unit": "piece",
+        "state": "chop"
       },
       {
         "local_id": "i24",
@@ -246,7 +247,8 @@
         "name": "agurk",
         "amount": 0.5,
         "unit": "piece",
-        "prep_style": "i halvmåner"
+        "prep_style": "i halvmåner",
+        "state": "chop"
       },
       {
         "local_id": "i25",
@@ -254,7 +256,7 @@
         "name": "cherrytomater",
         "amount": 10,
         "unit": "piece",
-        "prep_style": "delt i to"
+        "state": "halve"
       },
       {
         "local_id": "i26",
@@ -262,7 +264,8 @@
         "name": "rødløk",
         "amount": 0.5,
         "unit": "piece",
-        "prep_style": "i tynne ringer"
+        "state": "rings",
+        "grade": "thin"
       },
       {
         "local_id": "i27",

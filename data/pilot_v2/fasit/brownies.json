@@ -14,8 +14,7 @@
       "name": "smør",
       "amount": 150,
       "unit": "g",
-      "prep_style": "i terninger",
-      "cut": "dice"
+      "state": "dice"
     },
     {
       "local_id": "i2",
@@ -23,8 +22,8 @@
       "name": "mørk sjokolade",
       "amount": 200,
       "unit": "g",
-      "prep_style": "grovhakket",
-      "cut": "chop"
+      "state": "chop",
+      "grade": "coarse"
     },
     {
       "local_id": "i3",
@@ -52,21 +51,24 @@
       "component_id": "c1",
       "name": "hvetemel",
       "amount": 100,
-      "unit": "g"
+      "unit": "g",
+      "state": "sifted"
     },
     {
       "local_id": "i7",
       "component_id": "c1",
       "name": "kakao",
       "amount": 30,
-      "unit": "g"
+      "unit": "g",
+      "state": "sifted"
     },
     {
       "local_id": "i8",
       "component_id": "c1",
       "name": "salt",
       "amount": 0.25,
-      "unit": "tsp"
+      "unit": "tsp",
+      "state": "sifted"
     },
     {
       "local_id": "i9",
@@ -74,8 +76,8 @@
       "name": "valnøtter",
       "amount": 75,
       "unit": "g",
-      "prep_style": "grovhakket",
-      "cut": "chop"
+      "state": "chop",
+      "grade": "coarse"
     }
   ],
   "steps": [

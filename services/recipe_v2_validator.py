@@ -34,8 +34,9 @@ RULES = {
     4: 'Hver ingredienslinje brukes av nøyaktig ett steg',
     5: 'Ingen sykler, nøyaktig ett sluttsteg',
     6: 'Steg med varmemetode har phase = cook',
-    7: 'equipment, method, unit, cut, cuisine, difficulty og meal_types finnes i katalogene',
+    7: 'equipment, method, unit, state, grade, cuisine, difficulty og meal_types finnes i katalogene',
     8: 'amount > 0, eller null med «etter smak»',
+    10: 'En linje som et forberedelsessteg endrer (hakker, river, skreller …), har en tilstand (state)',
 }
 
 
@@ -55,7 +56,11 @@ def load_catalogs():
         'methods': {m['id'] for m in methods},
         'heat_methods': {m['id'] for m in methods if m['heat']},
         'units': {u['id'] for u in units},
-        'cuts': {c['id'] for c in _load('cuts.json')['cuts']},
+        'states': {s['id']: s for s in _load('states.json')['states']},
+        # The method of a prep step -> the state its lines are in afterwards (data/constraints/states.json)
+        'state_of_method': {m: s['id'] for s in _load('states.json')['states'] for m in s['methods']},
+        'state_words': [w for s in _load('states.json')['states'] for lang in ('en', 'nb') for w in s['synonyms'][lang]],
+        'empty_verbs': {v for lang in ('en', 'nb') for v in _load('states.json')['empty_verbs'][lang]},
         'cuisines': set(_load('graph_metadata.json')['cuisines']),
         'difficulties': set(_load('difficulty.json')['difficulty']),
         'meal_types': set(_load('meal_types.json')['meal_types']),
@@ -217,8 +222,13 @@ def validate_recipe_v2(recipe, catalogs=None):
                 err(7, f'{i.get("local_id")}.unit {u!r} is not in the unit catalog.')
         elif u and u not in cat['units']:
             err(7, f'{i.get("local_id")}.unit {u!r} is not in the unit catalog.')
-        if i.get('cut') and i.get('cut') not in cat['cuts']:
-            err(7, f'{i.get("local_id")}.cut {i.get("cut")!r} is not in the cut catalog.')
+        # state, and cut in recipes made before the state catalog (26.10.2026): the same ids
+        state = i.get('state') or i.get('cut')
+        if state and state not in cat['states']:
+            err(7, f'{i.get("local_id")}.state {state!r} is not in the state catalog.')
+        if i.get('grade') and (not state or i['grade'] not in (cat['states'].get(state) or {}).get('grades', [])):
+            err(7, f'{i.get("local_id")}.grade {i.get("grade")!r} is not a grade of state {state!r}; '
+                   f'use one of its grades or leave grade out.')
     for key, catalog, label in (('cuisine', 'cuisines', 'cuisine'), ('difficulty', 'difficulties', 'difficulty')):
         if recipe.get(key) and recipe.get(key) not in cat[catalog]:
             err(7, f'{key} {recipe.get(key)!r} is not in the {label} list.')
@@ -235,6 +245,17 @@ def validate_recipe_v2(recipe, catalogs=None):
                        f'may omit amount, and then prep_style must say so.')
         elif not isinstance(a, (int, float)) or a <= 0:
             err(8, f'{i.get("local_id")}.amount is {a!r}, must be greater than 0.')
+
+    # Rule 10: a line a prep step changes (chops, grates, peels, rinses …) says how it ends up
+    for s in steps:
+        changed = cat['state_of_method'].get(s.get('method'))
+        if s.get('phase') != 'prep' or not changed:
+            continue
+        for u in s.get('uses') or []:
+            line = ing_by.get(u)
+            if line and not (line.get('state') or line.get('cut')) and not is_to_taste(line):
+                err(10, f"{u} ({line.get('name')}) is changed in {s.get('local_id')} (method {s.get('method')!r}) but has no "
+                        f"state. Give it the state it ends up in, from the STATE CATALOG (probably {changed!r}).")
 
     # Warnings (stored, flagged, not rejected)
     for s in steps:
@@ -261,12 +282,19 @@ def validate_recipe_v2(recipe, catalogs=None):
             warn('no_verb', f'{sid} has no verb.')
         elif not short.startswith(verb.split()[0]):
             warn('verb_not_in_short', f'{sid}.verb {s.get("verb")!r} is not the first word of short {s.get("short")!r}.')
-    cutting = {'chop', 'slice', 'grate', 'juice', 'crush', 'mash'}
+    # A note that says what the catalog says, a long variety, a verb that says too little
+    for i in ings:
+        note = (i.get('prep_style') or '').lower()
+        said = next((w for w in cat['state_words'] if re.search(rf'(?<!\w){re.escape(w)}(?!\w)', note)), None)
+        if said:
+            warn('note_is_state', f"{i.get('local_id')}.prep_style {i.get('prep_style')!r} says {said!r}: that is a state "
+                                  f"(and a grade); put it in state and leave it out of prep_style.")
+        if len((i.get('variety') or '').split()) > 3:
+            warn('long_variety', f"{i.get('local_id')}.variety {i.get('variety')!r} is more than three words.")
     for s in steps:
-        if s.get('phase') == 'prep' and s.get('method') in cutting:
-            for u in s.get('uses') or []:
-                if u in ing_by and not ing_by[u].get('cut') and not is_to_taste(ing_by[u]):
-                    warn('no_cut', f"{u} ({ing_by[u].get('name')}) is cut in {s.get('local_id')} but has no cut.")
+        if (s.get('verb') or '').strip().lower() in cat['empty_verbs'] and s.get('method') not in ('prepare', 'measure', 'serve', 'plate'):
+            warn('generic_verb', f"{s.get('local_id')}.verb {s.get('verb')!r} says too little for method {s.get('method')!r}; "
+                                 f"use the action itself.")
     for i in ings:
         if i.get('amount') is not None and i.get('gram_weight_estimate') is None:
             warn('no_gram_weight', f"{i.get('local_id')} ({i.get('name')}) has an amount but no gram_weight_estimate.")

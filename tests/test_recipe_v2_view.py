@@ -41,7 +41,7 @@ class RecipeV2ViewTests(unittest.TestCase):
         self.ids = {}
         for name, status in (('carbonara', 'approved'), ('tikka', 'approved'), ('lasagne', 'draft')):
             data = fasit(name)
-            r = Recipe(title=data['title'], status=status, cuisine='', difficulty='', chef_id='gourmet')
+            r = Recipe(title=data['title'], status=status, cuisine='', difficulty='', chef_id='gourmet', language='nb')
             db.session.add(r)
             links = {i['local_id']: spaghetti.id for i in data['ingredients'] if i['name'] == 'spaghetti'}
             save_v2(r, data, links)
@@ -91,9 +91,9 @@ class RecipeV2ViewTests(unittest.TestCase):
         _, cook = self.page('carbonara', '/cook', servings=6)
         self.assertIn('600 g spaghetti', cook)
 
-    def test_prep_style_follows_the_ingredient_in_cook_steps(self):
+    def test_the_state_follows_the_ingredient_in_cook_steps(self):
         _, html = self.page('tikka', '/cook')
-        self.assertIn('3 cloves hvitløk</span> <span class="prep">(finrevet)</span>', html)
+        self.assertIn('3 cloves hvitløk</span> <span class="prep">(fint revet)</span>', html)  # the state and grade in the recipe's language
         _, overview = self.page('tikka')
         self.assertIn('used 2 times', overview)  # garlic in the marinade and in the sauce
 
