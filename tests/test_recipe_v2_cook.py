@@ -100,9 +100,7 @@ class CookTests(unittest.TestCase):
         self.assertEqual(html.count('class="side-card pagecard"'), 4)
         # The delta: the card and every step on it as trials, the steps it folds away listed on their box
         self.assertIn('class="vpanel dv-rivers dv-progress dl-panel"', html)
-        self.assertIn('data-dlx="float"', html)
-        self.assertIn('data-dlx="strip"', html)
-        self.assertIn('class="dl-leader"', html)
+        self.assertNotIn('data-dlx="float"', html)  # the step in a strip; the small card is gone
         # The key to the delta's signs, and the trial for how a tap on a step's number works
         self.assertIn('class="dl-key"', html)
         self.assertIn('data-state="', html)  # the word for how a cut ingredient is cut, on its sign

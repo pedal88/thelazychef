@@ -88,63 +88,17 @@
     placeDeltaCard();
   }
 
-  /* The step beside the delta (a wide screen): a small card in the largest free space of the drawing near the
-     step's box, with a line to it, or else a strip along the bottom, which the drawing then makes room for. Which
-     of the two is decided once for the screen size, so the drawing does not change size from step to step; the
-     admin chip can hold it to either (html.dlx-float, html.dlx-strip). */
-  let dlMode = null, dlSize = '';
+  /* The step beside the delta (a wide screen): a strip along the bottom, which the drawing makes room for
+     (static/js/delta.js) */
   function placeDeltaCard() {
     const sp = splits.find(x => x.panel.classList.contains('dl-panel'));
     if (!sp) return;
-    const { panel, card } = sp, html = document.documentElement, leader = panel.querySelector('.dl-leader line');
-    const size = `${innerWidth}x${innerHeight}`;
-    if (size !== dlSize) { dlMode = null; dlSize = size; }
-    const force = html.classList.contains('dlx-float') ? 'float' : html.classList.contains('dlx-strip') ? 'strip' : null;
-    const show = mode => {
-      card.classList.toggle('dl-float', mode === 'float');
-      card.classList.toggle('dl-strip', mode === 'strip');
-      if (panel.classList.contains('strip') !== (mode === 'strip')) {
-        panel.classList.toggle('strip', mode === 'strip');
-        dispatchEvent(new Event('resize'));  // the delta makes room for the strip, or takes it back
-      }
-    };
-    if (panel.hidden || innerWidth < 1000 || !html.classList.contains('cooking')) { show(null); return; }
-    leader.setAttribute('x2', '0'); leader.setAttribute('x1', '0'); leader.setAttribute('y1', '0'); leader.setAttribute('y2', '0');
-    let mode = force || dlMode || 'float';
-    if (mode === 'float') {
-      show('float');
-      const P = panel.getBoundingClientRect(), rel = r => ({ l: r.left - P.left, t: r.top - P.top, r: r.right - P.left, b: r.bottom - P.top });
-      const W = card.offsetWidth, H = card.offsetHeight, area = rel(panel.querySelector('.split-main').getBoundingClientRect());
-      const taken = [...panel.querySelectorAll('.g2-node, .dl-top, .dl-scale')].map(e => rel(e.getBoundingClientRect())).filter(b => b.r > b.l);
-      const id = sp.pick || nextId(), seg = id && panel.querySelector(`.fx-seg[data-step="${id}"]`), node = seg && seg.closest('.g2-node');
-      const goal = node ? rel(node.getBoundingClientRect()) : null;
-      let best = null;
-      for (let y = area.t + 8; y + H <= area.b - 8; y += 16) {
-        for (let x = area.l + 8; x + W <= area.r - 8; x += 16) {
-          if (taken.some(b => x < b.r + 12 && x + W > b.l - 12 && y < b.b + 12 && y + H > b.t - 12)) continue;
-          const d = goal ? Math.hypot(x + W / 2 - (goal.l + goal.r) / 2, y + H / 2 - (goal.t + goal.b) / 2) : 0;
-          if (!best || d < best.d) best = { x, y, d };
-        }
-      }
-      if (!best && force === 'float') best = { x: area.r - W - 8, y: area.b - H - 8 };  // held to the card: over the drawing
-      if (best) {
-        if (!force) dlMode = 'float';
-        card.style.left = `${best.x}px`;
-        card.style.top = `${best.y}px`;
-        if (goal) {  // a line from the side of the card that faces the box to the nearest point of the box
-          const cx = best.x + W / 2, cy = best.y + H / 2, gx = (goal.l + goal.r) / 2, gy = (goal.t + goal.b) / 2;
-          const horiz = Math.abs(gx - cx) / W > Math.abs(gy - cy) / H;
-          const x1 = horiz ? (gx > cx ? best.x + W : best.x) : cx, y1 = horiz ? cy : (gy > cy ? best.y + H : best.y);
-          leader.setAttribute('x1', x1); leader.setAttribute('y1', y1);
-          leader.setAttribute('x2', Math.max(goal.l, Math.min(goal.r, x1))); leader.setAttribute('y2', Math.max(goal.t, Math.min(goal.b, y1)));
-        }
-        return;
-      }
-      mode = 'strip';
+    const on = !sp.panel.hidden && innerWidth >= 1000 && document.documentElement.classList.contains('cooking');
+    sp.card.classList.toggle('dl-strip', on);
+    if (sp.panel.classList.contains('strip') !== on) {
+      sp.panel.classList.toggle('strip', on);
+      dispatchEvent(new Event('resize'));  // the delta makes room for the strip, or takes it back
     }
-    if (!force) dlMode = 'strip';
-    card.style.left = card.style.top = '';
-    show('strip');
   }
 
   /* The card beside the steps (the rail): which step of how many, the time from it to the table, what it needs
@@ -498,16 +452,10 @@
       try { localStorage.setItem('metro-x', on ? mtx.dataset.mtx : ''); } catch (err) { /* this visit */ }
       return;
     }
-    const dlx = t.closest('[data-dlx]');  // the delta's trials: the step held to the small card or the strip, every step on it
+    const dlx = t.closest('[data-dlx]');  // the delta's trial: every step on it
     if (dlx) {
       const on = document.documentElement.classList.toggle(`dlx-${dlx.dataset.dlx}`);
       dlx.setAttribute('aria-pressed', String(on));
-      if (on && ['float', 'strip'].includes(dlx.dataset.dlx)) {
-        const other = dlx.dataset.dlx === 'float' ? 'strip' : 'float';
-        document.documentElement.classList.remove(`dlx-${other}`);
-        $$(`[data-dlx="${other}"]`).forEach(b => b.setAttribute('aria-pressed', 'false'));
-      }
-      dlMode = null;
       try { localStorage.setItem('delta-x', $$('[data-dlx]').filter(b => b.getAttribute('aria-pressed') === 'true').map(b => b.dataset.dlx).join(' ')); } catch (err) { /* this visit */ }
       dispatchEvent(new Event('resize'));  // the delta lays itself out again
       render();
