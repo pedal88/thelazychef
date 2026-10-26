@@ -3,14 +3,16 @@
 The five fasit dishes (their recorded source texts) and the recipes in data/pilot_v2/inputs/state_sources.json
 (baking, desserts, Asian, grill, sauces, preserving) go through round 2 twice: with the code at --old (default
 origin/main, checked out in a worktree next to the results) and with this checkout. Both use the model and effort
-the app uses, and an empty pantry, so pantry ids are left out on both sides.
+the app uses. Give it the pantry with --pantry (a file of [food_id, name] pairs, from
+scripts/report_ingredient_states.py --pantry-out): with an empty pantry the model often gives up after two lines and
+writes no steps at all (the first run, 26.10.2026), which says nothing about the prompts.
 
 It also converts the old answers with services/recipe_v2/states.fill(), the way the saved v2 recipes will be
 converted, so the report shows conversion next to a fresh structuring.
 
 Run from the repo root. Needs ANTHROPIC_API_KEY; it is passed on to the runs and never printed or stored:
 
-    ANTHROPIC_API_KEY=... ./venv/bin/python -m scripts.compare_states
+    ANTHROPIC_API_KEY=... ./venv/bin/python -m scripts.compare_states --pantry ~/promptlab-runs/pantry.json
 
 Results and the report go outside the repo (the answers are long, and the repo is public), by default to
 ~/promptlab-runs/states-compare: old/<name>.json, new/<name>.json and report.md. Runs that exist are skipped;
@@ -42,8 +44,13 @@ def call(*args, **kwargs):
     msg, usage = claude.call(*args, **kwargs)
     answers.append(claude.text_of(msg))
     return msg, usage
+from database.models import Ingredient
 with app.app_context():
     db.create_all()
+    if os.getenv('PANTRY_FILE'):
+        with open(os.environ['PANTRY_FILE'], encoding='utf-8') as f:
+            db.session.add_all(Ingredient(food_id=fid, name=name, status='active') for fid, name in json.load(f))
+        db.session.commit()
     recipe, attempts = generate.structure(sys.stdin.read(), call=call)
 for a, text in zip(attempts, answers):
     a['answer'] = text
@@ -68,9 +75,11 @@ def old_tree(out, rev):
     return tree
 
 
-def run(tree, text, dest):
+def run(tree, text, dest, pantry=None):
     with tempfile.TemporaryDirectory() as tmp:
         env = {**os.environ, 'DB_BACKEND': 'local', 'DATABASE_URL': f'sqlite:///{tmp}/pantry.db'}
+        if pantry:
+            env['PANTRY_FILE'] = str(Path(pantry).expanduser().resolve())
         env.setdefault('GOOGLE_API_KEY', 'not-used')  # app.py wants one; round 2 calls Claude only
         p = subprocess.run([sys.executable, '-c', RUNNER, str(dest)], cwd=tree, input=text, text=True,
                            capture_output=True, env=env)
@@ -185,6 +194,7 @@ def main():
     ap.add_argument('--only', nargs='*', help='only these recipes')
     ap.add_argument('--out', default=str(Path.home() / 'promptlab-runs' / 'states-compare'))
     ap.add_argument('--sides', nargs='*', default=['old', 'new'], choices=['old', 'new'])
+    ap.add_argument('--pantry', help='the pantry, as [food_id, name] pairs (scripts/report_ingredient_states.py --pantry-out)')
     ap.add_argument('--workers', type=int, default=4)
     ap.add_argument('--force', action='store_true')
     ap.add_argument('--report', action='store_true', help='only write the report from saved runs')
@@ -196,6 +206,8 @@ def main():
     if not args.report:
         if not os.getenv('ANTHROPIC_API_KEY'):
             sys.exit('ANTHROPIC_API_KEY is not set.')
+        if not args.pantry:
+            print('No --pantry: the model sees an empty pantry, and often writes no steps. See the docstring.')
         trees = {side: old_tree(out, args.old) if side == 'old' else ROOT for side in args.sides}
         jobs = []
         for side, tree in trees.items():
@@ -203,7 +215,7 @@ def main():
             for n in names:
                 dest = out / side / f'{n}.json'
                 if args.force or not dest.exists():
-                    jobs.append((tree, src[n], dest))
+                    jobs.append((tree, src[n], dest, args.pantry))
         print(f'{len(jobs)} runs ({len(names)} recipes, old and new).')
         with ThreadPoolExecutor(args.workers) as pool:
             for line in pool.map(lambda j: run(*j), jobs):

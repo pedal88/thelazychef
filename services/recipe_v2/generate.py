@@ -16,7 +16,7 @@ from jinja2 import Environment, FileSystemLoader
 from database.models import Chef, Ingredient, Recipe, db
 from schemas.recipe_v2 import CUISINE_NOTES, CUISINES, DIFFICULTIES, MEAL_TYPES
 from services.ai_models import RECIPE_V2_EFFORT, RECIPE_V2_MODEL
-from services.recipe_v2 import claude, derive, persona
+from services.recipe_v2 import claude, derive, persona, states
 from services.recipe_v2.language import prompt_name
 from services.recipe_v2.store import save_v2, to_v2
 from services.recipe_v2_validator import format_errors_for_retry, validate_recipe_v2
@@ -117,6 +117,7 @@ def structure(text, call=None):
             if msg.stop_reason in ('refusal', 'max_tokens'):
                 raise ValueError(f'stop_reason {msg.stop_reason}')
             recipe = json.loads(claude.text_of(msg))
+            states.fill(recipe)  # the states the prep steps give, where the model left them out
             result = validate_recipe_v2(recipe)
         except ValueError as e:  # json.JSONDecodeError is a ValueError
             recipe = None

@@ -142,12 +142,13 @@ def test_verb_must_start_like_short():
     assert 'verb_not_in_short' in {w['code'] for w in validate_recipe_v2(r)['warnings']}
 
 
-def test_a_prep_step_that_changes_a_line_wants_its_state():
+def test_a_line_in_a_prep_step_without_a_state_is_a_warning():
     r = load('lasagne')
     line = next(i for i in r['ingredients'] if i['local_id'] == 'i2')  # onion, chopped in s2
     del line['state'], line['grade']
-    assert rules(r) == [10]
-    assert "'chop'" in next(e['message'] for e in validate_recipe_v2(r)['errors'] if e['rule'] == 10)
+    result = validate_recipe_v2(r)
+    assert result['valid']
+    assert any(w['code'] == 'no_state' and "'chop'" in w['message'] for w in result['warnings'])
 
 
 def test_a_state_written_as_a_note_and_an_empty_verb_are_warnings():

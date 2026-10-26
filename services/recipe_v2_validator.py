@@ -36,7 +36,6 @@ RULES = {
     6: 'Steg med varmemetode har phase = cook',
     7: 'equipment, method, unit, state, grade, cuisine, difficulty og meal_types finnes i katalogene',
     8: 'amount > 0, eller null med «etter smak»',
-    10: 'En linje som et forberedelsessteg endrer (hakker, river, skreller …), har en tilstand (state)',
 }
 
 
@@ -246,7 +245,8 @@ def validate_recipe_v2(recipe, catalogs=None):
         elif not isinstance(a, (int, float)) or a <= 0:
             err(8, f'{i.get("local_id")}.amount is {a!r}, must be greater than 0.')
 
-    # Rule 10: a line a prep step changes (chops, grates, peels, rinses …) says how it ends up
+    # A line a prep step changes (chops, grates, peels, rinses …) says how it ends up. A warning: structure() fills
+    # the state from the step, so what is left here is a line the step does not change after all (oil, lemon juice)
     for s in steps:
         changed = cat['state_of_method'].get(s.get('method'))
         if s.get('phase') != 'prep' or not changed:
@@ -254,8 +254,8 @@ def validate_recipe_v2(recipe, catalogs=None):
         for u in s.get('uses') or []:
             line = ing_by.get(u)
             if line and not (line.get('state') or line.get('cut')) and not is_to_taste(line):
-                err(10, f"{u} ({line.get('name')}) is changed in {s.get('local_id')} (method {s.get('method')!r}) but has no "
-                        f"state. Give it the state it ends up in, from the STATE CATALOG (probably {changed!r}).")
+                warn('no_state', f"{u} ({line.get('name')}) is in {s.get('local_id')} (method {s.get('method')!r}) but has no "
+                                 f"state; {changed!r} if the step changes it.")
 
     # Warnings (stored, flagged, not rejected)
     for s in steps:

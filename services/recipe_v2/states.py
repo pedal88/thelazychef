@@ -5,6 +5,9 @@ catalog (26.10.2026) its states: from prep_style where it says one ("finhakket" 
 the note), else from the method of the prep step that changes the line ("Skyll risen" -> rinse). A cut, grated or
 pressed state read from the note alone, on a line no prep step works on, is how the product is sold ("hermetiske
 tomater, hakkede") and stays a note. It never touches the steps, so a converted recipe keeps its step numbers.
+
+generate.structure() runs it on every new recipe too: the model often leaves state out, and asking again does not
+help (the comparison of 26.10.2026), so the app sets what the prep steps say.
 """
 import json
 import os
@@ -14,6 +17,9 @@ from functools import lru_cache
 PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'data', 'constraints', 'states.json')
 
 # Words in a synonym that say the grade ("finhakket", "roughly chopped", "tynne skiver", "stivpisket")
+# Lines measured by volume or spoon are liquids, spices and the like that go into a prep step without being changed
+# by it ("Hakk urtene og bland med oljen", "Skjær eplene og vend med sitronsaft og kanel")
+MEASURED = {'ml', 'cl', 'dl', 'l', 'cup', 'fl_oz', 'tsp', 'tbsp', 'pinch', 'dash', 'drop'}
 # The groups a product can be bought in ("hakkede tomater", "revet ost"): read from a note only on a line a prep step works on
 SOLD_SO = {'cut', 'grate', 'press'}
 GRADE_WORDS = (('fine', r'\bfin|finely|\bfine\b'), ('coarse', r'\bgrov|coarse|roughly'), ('thin', r'\btynn|thin'),
@@ -87,7 +93,7 @@ def fill(data):
                 grade = None
         elif state and by_id()[state]['group'] in SOLD_SO and line.get('local_id') not in method_of:
             state, grade = None, None
-        if not state:
+        if not state and line.get('unit') not in MEASURED:
             state = state_of_method(method_of.get(line.get('local_id')))
             rest = line.get('prep_style') or ''
         if not state:

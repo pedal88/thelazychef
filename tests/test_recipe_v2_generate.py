@@ -119,6 +119,19 @@ class GenerateTests(unittest.TestCase):
         self.assertIn('stiff', line_schema['grade']['enum'])
         self.assertNotIn('cut', line_schema)
 
+    def test_a_state_the_model_left_out_comes_from_the_prep_step(self):
+        answer = copy.deepcopy(self.run_['recipe'])
+        step = next(x for x in answer['steps'] if x['phase'] == 'prep' and x['method'] == 'chop')  # cut the guanciale
+        line = next(i for i in answer['ingredients'] if i['local_id'] in step['uses'] and i.get('unit') not in ('tbsp', 'tsp'))
+        line.pop('state', None)
+        line.pop('grade', None)
+        fake = FakeClaude(message(self.run_['source_text']), message(json.dumps(answer, ensure_ascii=False)))
+        recipe, report = generate.create_recipe('idea', 'Spaghetti carbonara for four', call=fake)
+        self.assertTrue(report['valid'])
+        self.assertEqual(len(fake.requests), 2)  # no new attempt for it
+        saved = next(x for x in db.session.get(Recipe, recipe.id).lines if x.local_id == line['local_id'])
+        self.assertEqual(saved.state, 'chop')
+
     def test_lines_are_matched_to_the_pantry_and_the_rest_flags_the_recipe(self):
         fake = FakeClaude(message('text'), self._good())
         recipe, report = generate.create_recipe('idea', 'carbonara', call=fake)
