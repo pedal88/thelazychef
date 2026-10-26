@@ -115,7 +115,7 @@
       show('float');
       const P = panel.getBoundingClientRect(), rel = r => ({ l: r.left - P.left, t: r.top - P.top, r: r.right - P.left, b: r.bottom - P.top });
       const W = card.offsetWidth, H = card.offsetHeight, area = rel(panel.querySelector('.split-main').getBoundingClientRect());
-      const taken = [...panel.querySelectorAll('.g2-node, .split-main > .hint, .dl-scale')].map(e => rel(e.getBoundingClientRect())).filter(b => b.r > b.l);
+      const taken = [...panel.querySelectorAll('.g2-node, .dl-top, .dl-scale')].map(e => rel(e.getBoundingClientRect())).filter(b => b.r > b.l);
       const id = sp.pick || nextId(), seg = id && panel.querySelector(`.fx-seg[data-step="${id}"]`), node = seg && seg.closest('.g2-node');
       const goal = node ? rel(node.getBoundingClientRect()) : null;
       let best = null;
@@ -310,6 +310,14 @@
   function deltaFlow() {
     if (!dFlow) return;
     const done = new Set(st.done);
+    dFlow.querySelectorAll('.fx-seg').forEach(seg => {  // the numbers show the list's ticks
+      const on = done.has(seg.dataset.step), btn = seg.querySelector('.fx-no');
+      seg.classList.toggle('done', on);
+      if (!btn) return;
+      btn.classList.toggle('ok', on);
+      btn.setAttribute('aria-pressed', String(on));
+      btn.textContent = on ? '✓' : (btn.dataset.no || btn.textContent);
+    });
     dFlow.querySelectorAll('.g2-node').forEach(n => {
       const segs = [...n.querySelectorAll('.fx-seg')];
       n.classList.toggle('flow-done', segs.length > 0 && segs.every(x => done.has(x.dataset.step)));
@@ -505,6 +513,13 @@
       render();
       return;
     }
+    const dlt = t.closest('[data-dltap]');  // the delta's trial: how a tap on a step's number works
+    if (dlt) {
+      document.documentElement.classList.toggle('dltap-2', dlt.dataset.dltap === '2');
+      $$('[data-dltap]').forEach(b => b.setAttribute('aria-pressed', String(b === dlt)));
+      try { localStorage.setItem('delta-tap', dlt.dataset.dltap); } catch (err) { /* this visit */ }
+      return;
+    }
     const tipLook = t.closest('[data-tip-look]');  // a step suggested while you wait: a look at it
     if (tipLook) { const sp = splits.find(x => x.card.contains(tipLook)); sp.pick = tipLook.dataset.tipLook; splitRender(); return; }
     if (t.closest('[data-sc-done], [data-sc-back]')) { cardDone(splits.find(x => x.card.contains(t))); return; }
@@ -527,6 +542,15 @@
       try { localStorage.setItem(DETAILS, all ? 'all' : 'focus'); } catch (err) { /* for this visit only */ }
       openMenu(false);
       render();
+      return;
+    }
+    // A step's number in the delta: ticks it off (as in the list), or with the trial "Done in card" opens it like
+    // the rest of the step, Done being on the card
+    const dlNo = t.closest('[data-delta-flow] .fx-no');
+    if (dlNo) {
+      const id = dlNo.closest('.fx-seg').dataset.step, sp = splits.find(x => x.panel.contains(dlNo));
+      if (!document.documentElement.classList.contains('dltap-2')) { if (byId[id]) tick(byId[id]); return; }
+      if (sp && getComputedStyle(sp.card).display !== 'none') { sp.pick = id === nextId() ? null : id; splitRender(); } else showStep(id);
       return;
     }
     if (t.closest('[data-steps-reset]')) { st = { done: [], runs: [] }; opened.clear(); render(); return; }
@@ -649,6 +673,10 @@
   }
   $$('[data-mtx]').forEach(b => b.setAttribute('aria-pressed', String(document.documentElement.classList.contains(`mtx-${b.dataset.mtx}`))));
   $$('[data-dlx]').forEach(b => b.setAttribute('aria-pressed', String(document.documentElement.classList.contains(`dlx-${b.dataset.dlx}`))));
+  $$('[data-dltap]').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.dltap === '2') === document.documentElement.classList.contains('dltap-2'))));
+  // The delta's key closes on a click outside it or on Esc
+  document.addEventListener('click', e => { $$('.dl-key[open]').forEach(d => { if (!d.contains(e.target)) d.open = false; }); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') $$('.dl-key[open]').forEach(d => { d.open = false; }); });
   setInterval(() => { timelineMarks(); splitRender(); }, 30e3);  // the clock moves on
   wake();
   render();

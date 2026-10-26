@@ -45,6 +45,7 @@
   {# The river delta's trials on this device (static/js/steps.js); temporary: hold the step to the small card or the
      strip (else the card where there is room, the strip where not), and every step on the drawing #}
   <div class="tgroup" data-dlx-switch><span class="tlabel">Delta</span><button type="button" data-dlx="float" aria-pressed="false">Small card</button><button type="button" data-dlx="strip" aria-pressed="false">Strip</button><button type="button" data-dlx="steps" aria-pressed="false">All steps</button></div>
+  <div class="tgroup" data-dltap-switch><span class="tlabel">Tap</span><button type="button" data-dltap="1" aria-pressed="true">1 Number ticks</button><button type="button" data-dltap="2" aria-pressed="false">2 Done in card</button></div>
   {% endif %}
   <div class="tgroup" data-eq-switch><span class="tlabel">Tools</span>
     {%- for key, label in EQUIPMENT_STYLES.items() %}<button type="button" data-eq="{{ key }}" aria-pressed="{{ 'true' if key == chosen_equipment_style() else 'false' }}">{{ label }}</button>{% endfor -%}
