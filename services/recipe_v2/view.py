@@ -285,17 +285,12 @@ def build(recipe, servings=None, plan='calm'):
         if ingredients.get(i['local_id']) is not None:
             i['pantry_name'] = ingredients[i['local_id']].name
             i['pantry_tier'] = ingredients[i['local_id']].tier
-    # A line's state, from its prep step when the line has none of its own (a recipe made before the state catalog:
-    # "Cut the ham" with method slice): the state then shows on Prep, in Cook and in the delta all the same
-    state_from_step = {}
-    for st in v2['steps']:
-        if st.get('phase') == 'prep' and states.state_of_method(st.get('method')):
-            for u in st.get('uses') or []:
-                state_from_step.setdefault(u, states.state_of_method(st['method']))
+    # A line's state is its own: every v2 recipe has them since the conversion of 26.10.2026, and a line without
+    # one is used as it comes (canned corn and sour cream in a "prepare the toppings" step are not cut)
     lang = recipe.language or 'en'
 
     def state_of(lid, i):
-        return i.get('state') or i.get('cut') or state_from_step.get(lid)
+        return i.get('state') or i.get('cut')
     # The river delta: every line as the drawing shows it, with the amount for these servings
     pictured = {lid: {'name': i['name'], 'img': (ingredients.get(lid).image_url if ingredients.get(lid) is not None else None),
                       'amount': fmt_amount(i['amount'] * factor, i.get('unit')) if i.get('amount') is not None else '',
