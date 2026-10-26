@@ -544,6 +544,10 @@
       render();
       return;
     }
+    // The sign for how an ingredient is cut, in the delta: its word, until the next tap
+    const sign = t.closest('[data-delta-flow] .ing-img[data-state] .mark');
+    $$('[data-delta-flow] .ing-img.say').forEach(x => { if (!sign || !x.contains(sign)) x.classList.remove('say'); });
+    if (sign) { sign.closest('.ing-img').classList.toggle('say'); return; }
     // A step's number in the delta: ticks it off (as in the list), or with the trial "Done in card" opens it like
     // the rest of the step, Done being on the card
     const dlNo = t.closest('[data-delta-flow] .fx-no');

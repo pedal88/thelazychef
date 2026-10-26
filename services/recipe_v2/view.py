@@ -305,6 +305,8 @@ def build(recipe, servings=None, plan='calm'):
                       'amount': fmt_amount(i['amount'] * factor, i.get('unit')) if i.get('amount') is not None else '',
                       'prep': i.get('prep_style') or '', 'cut': i.get('cut') or cut_from_step.get(lid), 'count': count_of(i, factor),
                       'state': i.get('prep_style') or words.get(i.get('cut') or cut_from_step.get(lid), ''),
+                      # the word for the cut alone, for its sign in the delta (prep_style may say something else: "melne")
+                      'cut_word': words.get(i.get('cut') or cut_from_step.get(lid), ''),
                       'group': groups.group_of(ingredients.get(lid), mise.staple(i))} for lid, i in lines.items()}
 
     # Prep: the lines in bowls, and the rest to take out, drawn like in the delta
