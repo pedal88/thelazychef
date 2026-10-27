@@ -61,15 +61,17 @@ def toggle_favorite_recipe(recipe_id):
 
 @interactions_bp.route('/api/feed/recipes', methods=['GET'])
 def get_feed_recipes():
-    """Returns a list of random recipes for the feed (Tinder-style)."""
+    """Returns a list of random recipes for the feed (Tinder-style): approved recipes with a dish image only, so
+    Discover never shows a dish without its picture."""
     limit = 10
+    shown = (Recipe.status == 'approved', Recipe.image_filename.isnot(None))
     
     if current_user.is_authenticated:
         # Priority 1: Exclude recipes user has interacted with (new ones only)
         subq_all = db.select(UserRecipeInteraction.recipe_id).where(UserRecipeInteraction.user_id == current_user.id)
         stmt = (
             db.select(Recipe)
-            .where(Recipe.status == 'approved')  # Public guard
+            .where(*shown)  # Public guard
             .where(Recipe.id.not_in(subq_all))
             .order_by(func.random())
             .limit(limit)
@@ -84,7 +86,7 @@ def get_feed_recipes():
             )
             stmt = (
                 db.select(Recipe)
-                .where(Recipe.status == 'approved')
+                .where(*shown)
                 .where(Recipe.id.in_(subq_pass))
                 .order_by(func.random())
                 .limit(limit)
@@ -92,7 +94,7 @@ def get_feed_recipes():
             recipes = db.session.execute(stmt).scalars().all()
     else:
         # Anonymous: Random selection of approved only
-        stmt = db.select(Recipe).where(Recipe.status == 'approved').order_by(func.random()).limit(limit)
+        stmt = db.select(Recipe).where(*shown).order_by(func.random()).limit(limit)
         recipes = db.session.execute(stmt).scalars().all()
     
     data = []

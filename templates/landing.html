@@ -29,7 +29,6 @@
 <script>
 (function () {
     const isLoggedIn = {{ current_user.is_authenticated | tojson }};
-    const fallbackImg = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80';
     const deck = document.getElementById('deck');
     const loading = document.getElementById('loading');
     const emptyState = document.getElementById('empty-state');
@@ -55,7 +54,7 @@
 
         const pic = el('div', 'rcard-img');
         const img = el('img');
-        img.src = r.image_url || fallbackImg;
+        img.src = r.image_url;  // the feed sends only recipes with a dish image
         img.alt = '';
         img.draggable = false;
         pic.appendChild(img);
