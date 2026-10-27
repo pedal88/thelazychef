@@ -14,6 +14,8 @@
     <!-- Style trial (temporary): a look chosen in the admin menu or with ?look=c|d|e|f, kept on this device.
          Visitors who have not chosen one see today's look. See static/css/themes.css. -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/themes.css') }}">
+    <!-- The browsing pages (recipe list, collections) in the recipe page's language -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/library.css') }}">
     <script>
         (function () {
             var FONTS = {

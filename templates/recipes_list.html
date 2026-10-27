@@ -10,239 +10,43 @@
 
 {% block content %}
 
-{# ================================================================= #}
-{# IMMERSIVE MOBILE DISCOVERY VIEW — Full-viewport scrolling cards #}
-{# Only activates for discover mode; other views use the standard UI #}
-{# ================================================================= #}
-{% if current_view == 'discover' %}
 
-<style>
-    /* Immersive card container */
-    .immersive-feed {
-        height: 100dvh;
-        overflow-y: scroll;
-        scroll-snap-type: y mandatory;
-        overscroll-behavior-y: contain;
-        -webkit-overflow-scrolling: touch;
-    }
+    {# The head: which list, its name and a line about it (static/css/library.css) #}
+    {% set heads = {'saved': ('Your recipes', 'Saved', 'The recipes you have saved.'),
+                    'made': ('Your recipes', 'Made', 'The recipes you have cooked.'),
+                    'next': ('Your recipes', 'Cook next', 'What you plan to cook, in the order you added it.')} %}
+    {% set eyebrow, title, line = heads.get(current_view, ('Recipes', 'All recipes', 'Every dish in The Lazy Chef. Filter by what you feel like.')) %}
+    <header class="lib-head">
+        <p class="eyebrow">{{ eyebrow }}</p>
+        <h1>{{ title }}</h1>
+        <p class="lib-sub">{{ line }}</p>
+    </header>
 
-    .immersive-card-slot {
-        height: 100dvh;
-        scroll-snap-align: start;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0;
-    }
+    <div class="pb-12">
+        <div class="mx-auto px-6" style="max-width: 1180px">
 
-    .immersive-card {
-        width: 95vw;
-        height: 80dvh;
-        border-radius: 1.5rem;
-        overflow: hidden;
-        position: relative;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    }
-
-    .immersive-card img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .immersive-card-overlay {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        padding: 2rem 1.5rem 1.5rem;
-        background: linear-gradient(to top, rgba(0, 0, 0, 0.80) 0%, rgba(0, 0, 0, 0.40) 50%, transparent 100%);
-    }
-
-    /* Desktop: show standard grid, hide immersive */
-    @media (min-width: 768px) {
-        .immersive-feed {
-            display: none;
-        }
-
-        .standard-discovery {
-            display: block !important;
-        }
-    }
-
-    /* Mobile: show immersive, hide standard */
-    @media (max-width: 767px) {
-        .standard-discovery {
-            display: none !important;
-        }
-    }
-</style>
-
-
-{# --------- MOBILE: Immersive scroll-snap feed --------- #}
-<div class="immersive-feed bg-slate-900">
-    {% if recipes %}
-    {% for recipe in recipes %}
-    <div class="immersive-card-slot">
-        <a href="/recipe/{{ recipe.id }}" class="immersive-card block">
-            {# Image #}
-            {% if recipe.image_filename %}
-            <img src="{{ get_recipe_image_url(recipe) }}" alt="{{ recipe.title }}" loading="lazy">
-            {% else %}
-            <div
-                class="w-full h-full bg-gradient-to-br from-orange-400 via-orange-500 to-red-500 flex items-center justify-center">
-                <span class="text-8xl opacity-30">🍳</span>
-            </div>
-            {% endif %}
-
-            {# Info overlay #}
-            <div class="immersive-card-overlay">
-                {# Action buttons — positioned above the text #}
-                {% if current_user.is_authenticated %}
-                <div class="flex items-center gap-3 mb-4">
-                    <button type="button" onclick="event.preventDefault(); event.stopPropagation();"
-                        class="favorite-btn w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 flex items-center justify-center transition-all active:scale-90"
-                        data-recipe-id="{{ recipe.id }}" title="Save Recipe">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path
-                                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
-                            </path>
-                        </svg>
-                    </button>
-                    <button type="button"
-                        onclick="event.preventDefault(); event.stopPropagation(); addToQueue({{ recipe.id }}, this)"
-                        class="queue-btn w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 flex items-center justify-center transition-all active:scale-90"
-                        data-recipe-id="{{ recipe.id }}" title="Add to Cook Next">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
-                    </button>
-                </div>
-                {% endif %}
-
-                {# Meta tags #}
-                <div class="flex items-center gap-2 mb-2">
-                    <span
-                        class="inline-flex items-center rounded-full bg-white/20 backdrop-blur-sm px-3 py-1 text-xs font-bold text-white uppercase tracking-wide">
-                        {{ recipe.cuisine }}
-                    </span>
-                    {% if recipe.prep_time_mins %}
-                    <span class="inline-flex items-center gap-1 text-xs text-white/80">
-                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10" />
-                            <polyline points="12 6 12 12 16 14" />
-                        </svg>
-                        {{ recipe.prep_time_mins }} min
-                    </span>
+            {# Which list, and grid or table #}
+            <div class="lib-bar mt-2">
+                <nav class="lib-tabs" aria-label="Which recipes">
+                    {% for key, label, ic, signed_in in [('discover', 'All', 'book', False), ('saved', 'Saved', 'heart', True), ('made', 'Made', 'check', True), ('next', 'Cook next', 'pot', True)] %}
+                    {% if not signed_in or current_user.is_authenticated %}
+                    <a href="{{ url_for('recipes_list', view=key, style=view_style) }}"{% if key == current_view %} aria-current="page"{% endif %}>{{ icon(ic) }}{{ label }}</a>
                     {% endif %}
-                    <span class="text-xs text-white/60">{{ recipe.difficulty|difficulty_label }}</span>
-                </div>
-
-                {# Title #}
-                <h2 class="font-serif text-2xl font-bold text-white leading-tight line-clamp-2">
-                    {{ recipe.title }}
-                </h2>
-
-                {# Diet tags #}
-                {% if recipe.diets_list %}
-                <div class="mt-2 flex flex-wrap gap-1.5">
-                    {% for diet in recipe.diets_list[:3] %}
-                    <span class="text-[10px] font-medium text-white/70 bg-white/10 rounded-full px-2 py-0.5">{{ diet
-                        }}</span>
                     {% endfor %}
-                </div>
-                {% endif %}
-            </div>
-        </a>
-    </div>
-    {% endfor %}
-    {% else %}
-    <div class="immersive-card-slot">
-        <div class="text-center text-white px-8">
-            <div class="text-6xl mb-4">🔍</div>
-            <h3 class="text-lg font-semibold mb-2">No recipes match your filters</h3>
-            <p class="text-white/60 mb-6 text-sm">Try adjusting or clearing your filters.</p>
-            <a href="{{ url_for('recipes_list', view='discover') }}"
-                class="rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-slate-900 shadow-sm hover:bg-slate-100 transition-colors">
-                Clear Filters
-            </a>
-        </div>
-    </div>
-    {% endif %}
-</div>
-
-{# --------- DESKTOP: Standard grid (hidden on mobile discover) --------- #}
-<div class="standard-discovery">
-    {% endif %}
-
-    <div class="bg-white {% if current_view == 'discover' %}py-6{% else %}py-12{% endif %}">
-        <div class="mx-auto max-w-7xl px-6 lg:px-8">
-
-            {# ---------- Page Header ---------- #}
-            {% if current_view == 'saved' %}
-            {{ type.page_header('My Cookbook', 'Your personal collection of favorite recipes.') }}
-            {% elif current_view == 'made' %}
-            {{ type.page_header('Made Recipes', 'Recipes you\'ve cooked — your kitchen hall of fame.') }}
-            {% elif current_view == 'next' %}
-            {{ type.page_header('Cook Next', 'Recipes queued up and ready for your kitchen.') }}
-            {% elif current_view != 'discover' %}
-            {{ type.page_header('Recipe Library', 'Every dish created with your AI Chef.') }}
-            {% endif %}
-
-            {# ---------- Toolbar: View Tabs + Style Toggle ---------- #}
-            <div
-                class="mt-4 flex flex-col sm:flex-row justify-between items-center bg-white p-2 rounded-xl border border-gray-100 shadow-sm gap-3">
-
-                {# Context Tabs #}
-                <nav class="flex space-x-1" aria-label="View tabs">
-                    <a href="{{ url_for('recipes_list', view='discover', style=view_style) }}"
-                        class="{% if current_view == 'discover' %}bg-indigo-50 text-indigo-700 font-semibold{% else %}text-gray-500 hover:text-gray-700 hover:bg-gray-50{% endif %} rounded-lg px-4 py-2 text-sm font-medium transition-colors">
-                        🔍 Discover
-                    </a>
-                    {% if current_user.is_authenticated %}
-                    <a href="{{ url_for('recipes_list', view='saved', style=view_style) }}"
-                        class="{% if current_view == 'saved' %}bg-indigo-50 text-indigo-700 font-semibold{% else %}text-gray-500 hover:text-gray-700 hover:bg-gray-50{% endif %} rounded-lg px-4 py-2 text-sm font-medium transition-colors">
-                        ❤️ Saved
-                    </a>
-                    <a href="{{ url_for('recipes_list', view='made', style=view_style) }}"
-                        class="{% if current_view == 'made' %}bg-indigo-50 text-indigo-700 font-semibold{% else %}text-gray-500 hover:text-gray-700 hover:bg-gray-50{% endif %} rounded-lg px-4 py-2 text-sm font-medium transition-colors">
-                        ✅ Made
-                    </a>
-                    <a href="{{ url_for('recipes_list', view='next', style=view_style) }}"
-                        class="{% if current_view == 'next' %}bg-indigo-50 text-indigo-700 font-semibold{% else %}text-gray-500 hover:text-gray-700 hover:bg-gray-50{% endif %} rounded-lg px-4 py-2 text-sm font-medium transition-colors">
-                        ⏰ Queue
-                    </a>
-                    {% endif %}
                 </nav>
-
-                {# Style Toggle #}
-                <div class="flex bg-gray-100 p-1 rounded-lg shrink-0">
-                    <a href="{{ url_for('recipes_list', view=current_view, style='grid') }}"
-                        class="{% if view_style == 'grid' %}bg-white shadow-sm text-gray-900{% else %}text-gray-500 hover:text-gray-700{% endif %} rounded-md px-3 py-1.5 text-sm font-medium flex items-center gap-2 transition-all">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
-                            </path>
-                        </svg>
-                        Grid
-                    </a>
-                    <a href="{{ url_for('recipes_list', view=current_view, style='table') }}"
-                        class="{% if view_style == 'table' %}bg-white shadow-sm text-gray-900{% else %}text-gray-500 hover:text-gray-700{% endif %} rounded-md px-3 py-1.5 text-sm font-medium flex items-center gap-2 transition-all">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
-                        </svg>
-                        Table
-                    </a>
-                </div>
+                <nav class="lib-tabs" aria-label="How to show them">
+                    <a href="{{ url_for('recipes_list', view=current_view, style='grid') }}"{% if view_style == 'grid' %} aria-current="page"{% endif %}>Grid</a>
+                    <a href="{{ url_for('recipes_list', view=current_view, style='table') }}"{% if view_style == 'table' %} aria-current="page"{% endif %}>{{ icon('list') }}Table</a>
+                </nav>
             </div>
 
-            {# ---------- Filter Form ---------- #}
+            {# ---------- Filter Form: open on a wide screen; on a phone behind "Filters", unless one is in use ---------- #}
+            {% set filtering = request.args|select('in', ['cuisine', 'diet', 'meal_type', 'protein_type', 'difficulty', 'heat_source'])|list %}
+            <details class="lib-filters" data-filters{% if filtering %} open{% endif %}>
+            <summary class="lib-filters-sum">{{ icon('list') }} Filters{% if filtering %} · {{ filtering|length }} in use{% endif %}</summary>
+            <script>if (matchMedia('(min-width: 768px)').matches) document.currentScript.parentElement.open = true;</script>
             <form method="GET" action="{{ url_for('recipes_list') }}" id="filterForm"
-                class="mt-4 mb-8 bg-gray-50 rounded-2xl p-6 border border-gray-100">
+                class="mt-4 mb-8 bg-white rounded-2xl p-6 border border-slate-200">
                 {# Preserve view + style via hidden inputs so Apply Filters doesn't lose context #}
                 <input type="hidden" name="view" value="{{ current_view }}">
                 <input type="hidden" name="style" value="{{ view_style }}">
@@ -338,6 +142,7 @@
                     </button>
                 </div>
             </form>
+            </details>
 
             {# ---------- Dropdown JS ---------- #}
             <script>
@@ -389,45 +194,16 @@
 
             {# ---------- Recipe Content Area ---------- #}
             {% if not recipes %}
-            {# Contextual Empty State #}
-            <div class="mt-12 flex flex-col items-center justify-center py-20 text-center">
-                {% if current_view == 'saved' %}
-                <div class="text-6xl mb-4">❤️</div>
-                <h3 class="text-lg font-semibold text-gray-800 mb-2">No saved recipes yet</h3>
-                <p class="text-gray-500 mb-6 max-w-sm">You haven't liked any recipes yet. Go to Discover to find some!
-                </p>
-                <a href="{{ url_for('recipes_list', view='discover') }}"
-                    class="rounded-full bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition-colors">
-                    Browse Recipes
-                </a>
-                {% elif current_view == 'made' %}
-                <div class="text-6xl mb-4">✅</div>
-                <h3 class="text-lg font-semibold text-gray-800 mb-2">No recipes made yet</h3>
-                <p class="text-gray-500 mb-6 max-w-sm">Mark recipes as "Made it" after you cook them to build your kitchen track record.
-                </p>
-                <a href="{{ url_for('recipes_list', view='discover') }}"
-                    class="rounded-full bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition-colors">
-                    Find Recipes
-                </a>
-                {% elif current_view == 'next' %}
-                <div class="text-6xl mb-4">⏰</div>
-                <h3 class="text-lg font-semibold text-gray-800 mb-2">Your cooking queue is empty</h3>
-                <p class="text-gray-500 mb-6 max-w-sm">What's for dinner? Add recipes to your queue from any recipe
-                    page.
-                </p>
-                <a href="{{ url_for('recipes_list', view='discover') }}"
-                    class="rounded-full bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition-colors">
-                    Discover Recipes
-                </a>
-                {% else %}
-                <div class="text-6xl mb-4">🔍</div>
-                <h3 class="text-lg font-semibold text-gray-800 mb-2">No recipes match your filters</h3>
-                <p class="text-gray-500 mb-6 max-w-sm">Try adjusting or clearing your filters to see more results.</p>
-                <a href="{{ url_for('recipes_list', view='discover') }}"
-                    class="rounded-full bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition-colors">
-                    Clear Filters
-                </a>
-                {% endif %}
+            {# Nothing here yet: an icon, a line, what to do and the way on (static/css/library.css) #}
+            {% set empties = {'saved': ('heart', 'No saved recipes yet', 'Tap the heart on a recipe to keep it here.', 'Find recipes'),
+                              'made': ('check', 'Nothing cooked yet', 'Mark a recipe as made after you cook it, and it shows up here.', 'Find recipes'),
+                              'next': ('pot', 'Nothing to cook next', 'Tap the pot on a recipe to put it in your queue.', 'Find recipes')} %}
+            {% set ic, line, hint, go = empties.get(current_view, ('search', 'No recipes match your filters', 'Try fewer filters, or clear them.', 'Clear filters')) %}
+            <div class="lib-empty">
+                <span class="lib-empty-ic">{{ icon(ic) }}</span>
+                <h3>{{ line }}</h3>
+                <p>{{ hint }}</p>
+                <a class="lib-go" href="{{ url_for('recipes_list', view='discover') }}">{{ go }}</a>
             </div>
 
             {% elif view_style == 'table' %}
@@ -945,9 +721,5 @@
     </script>
     {% endif %}
 
-    {# Close standard-discovery wrapper if in discover mode #}
-    {% if current_view == 'discover' %}
-</div>{# /standard-discovery #}
-{% endif %}
 
 {% endblock %}

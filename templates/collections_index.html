@@ -47,9 +47,10 @@
         width: 2.5rem;
         height: 2.5rem;
         border-radius: 9999px;
-        background: rgba(255, 255, 255, 0.9);
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+        background: var(--color-paper);
+        border: 1px solid var(--color-line);
+        box-shadow: 0 2px 8px rgb(0 0 0 / .12);
+        color: var(--color-ink);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -58,8 +59,7 @@
     }
 
     .carousel-arrow:hover {
-        background: #fff;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+        box-shadow: 0 4px 16px rgb(0 0 0 / .18);
     }
 
     .carousel-arrow.hidden {
@@ -80,18 +80,14 @@
 {% block content %}
 {% from "components/cards.html" import recipe_preview_card with context %}
 
-<!-- Hero -->
-<section class="bg-gradient-to-br from-orange-50 to-amber-100 border-b border-orange-100">
-    <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h1 class="font-serif text-5xl font-bold text-slate-900 mb-3">Collections</h1>
-        <p class="text-lg text-slate-600 max-w-xl">
-            Handpicked recipe sets for every occasion, season, and craving.
-        </p>
-    </div>
-</section>
+<header class="lib-head">
+    <p class="eyebrow">Recipes</p>
+    <h1>Collections</h1>
+    <p class="lib-sub">Recipes picked for an occasion, a season or a craving.</p>
+</header>
 
 <!-- Collections rows -->
-<div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
+<div class="mx-auto px-6 pb-12 space-y-14" style="max-width: 1180px">
 
     {% if rows %}
     {% for collection, recipes in rows %}
@@ -100,7 +96,7 @@
         <!-- Row header -->
         <div class="flex items-end justify-between mb-5">
             <div>
-                <h2 class="font-serif text-2xl font-bold text-slate-900">{{ collection.title }}</h2>
+                <h2 class="font-serif text-2xl font-semibold text-slate-900">{{ collection.title }}</h2>
                 {% if collection.description %}
                 <p class="text-sm text-slate-500 mt-1 max-w-lg">{{ collection.description }}</p>
                 {% endif %}
@@ -117,10 +113,7 @@
 
             <!-- Left arrow -->
             <button class="carousel-arrow carousel-arrow-left hidden" aria-label="Scroll left">
-                <svg class="w-4 h-4 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                    stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
+{{ icon('back') }}
             </button>
 
             <!-- Scrollable track -->
@@ -134,25 +127,23 @@
 
             <!-- Right arrow -->
             <button class="carousel-arrow carousel-arrow-right" aria-label="Scroll right">
-                <svg class="w-4 h-4 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                    stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
+<span style="display:inline-flex;transform:scaleX(-1)">{{ icon('back') }}</span>
             </button>
 
         </div>
         {% else %}
-        <p class="text-sm text-slate-400 italic">No approved recipes in this collection yet.</p>
+        <p class="text-sm text-slate-500">No recipes in this collection yet.</p>
         {% endif %}
 
     </section>
     {% endfor %}
 
     {% else %}
-    <div class="text-center py-32 text-slate-400">
-        <div class="text-6xl mb-4">🍳</div>
-        <p class="text-lg font-medium">No collections published yet.</p>
-        <p class="text-sm mt-1">Check back soon!</p>
+    <div class="lib-empty">
+        <span class="lib-empty-ic">{{ icon('folders') }}</span>
+        <h3>No collections yet</h3>
+        <p>Collections of recipes come here as they are put together.</p>
+        <a class="lib-go" href="{{ url_for('recipes_list') }}">See all recipes</a>
     </div>
     {% endif %}
 
