@@ -131,7 +131,7 @@ class RecipeV2RouteTests(unittest.TestCase):
         recipe = db.session.execute(db.select(Recipe)).scalar_one()
         self.assertEqual((recipe.chef_id, recipe.settings), ('the_minimalist', ['vegetarian', 'low_carb']))
         prompt = asked[0][0]['content']
-        for part in ('Write it as The Minimalist', 'Vegetarian:', 'Low carb:', 'at most 6 ingredients'):
+        for part in ('Write it as The Minimalist', 'Vegetarian:', 'Low carb:', 'at most 8 ingredients'):
             self.assertIn(part, prompt)
         notes = [e['message'] for e in recipe.validation_errors if e['rule'] == 'persona']
         self.assertTrue(any('outside the foundation pantry' in n and 'allows 1' in n for n in notes), notes)

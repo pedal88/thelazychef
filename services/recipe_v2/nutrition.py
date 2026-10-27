@@ -87,6 +87,7 @@ def per_serving(recipe):
         return None
     n = recipe.base_servings or 1
     v = {f: getattr(recipe, 'total_' + f) / n if getattr(recipe, 'total_' + f) is not None else None for f, _ in NUTRIENTS}
-    return {'kcal': round(v['calories']), 'protein': round(v['protein']), 'carbs': round(v['carbs']), 'fat': round(v['fat']),
+    return {'kcal': round(v['calories']), 'protein': round(v['protein']), 'carbs': round(v['carbs']),
+            'net_carbs': round(v['carbs'] - (v['fiber'] or 0)), 'fat': round(v['fat']),
             'saturated_fat': round(v['saturated_fat'] or 0, 1), 'fiber': round(v['fiber'] or 0, 1),
             'sugar': round(v['sugar'] or 0), 'salt': round((v['sodium_mg'] or 0) * 2.5 / 1000, 1)}

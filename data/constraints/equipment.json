@@ -320,6 +320,14 @@
       }
     },
     {
+      "id": "silicone_cups",
+      "name": "Silikonformer",
+      "name_en": "Silicone cups",
+      "role": "forberede",
+      "exclusive": false,
+      "level": "standard"
+    },
+    {
       "id": "pie_dish",
       "name": "Paiform",
       "name_en": "Pie dish",

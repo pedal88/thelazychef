@@ -178,7 +178,14 @@ def refresh(recipe, chef=None):
 
 
 def recalculate(recipe):
-    """Refresh a saved v2 recipe in place (services/recipe_v2/derive.py, nutrition.py, persona.py)."""
+    """Refresh a saved v2 recipe in place (services/recipe_v2/derive.py, nutrition.py, persona.py). Lines not in the
+    pantry are matched again first: an ingredient or alias added since ("frozen chopped spinach") links them."""
+    unlinked = [line for line in recipe.lines if line.ingredient_id is None]
+    if unlinked:
+        found, _ = match_pantry({'ingredients': [{'local_id': line.local_id, 'name': line.name} for line in unlinked]})
+        for line in unlinked:
+            if line.local_id in found:
+                line.ingredient = db.session.get(Ingredient, found[line.local_id])
     refresh(recipe, persona.spec_for(recipe))
     missing = any(line.ingredient_id is None for line in recipe.lines)
     recipe.is_flagged_for_review = bool(recipe.validation_errors) or missing

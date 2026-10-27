@@ -55,14 +55,15 @@ def test_the_minimalist_counts_ingredients_and_what_is_outside_the_foundation():
     notes = persona.check(recipe(lines=lines), p)
     assert any('outside the foundation pantry (harissa, preserved lemon, saffron)' in n and 'allows 1' in n for n in notes)
     assert not any('besides the staples' in n for n in notes)  # 5 ingredients, the staples not counted
-    many = lines + [tiered(f'veg {k}', 'foundation') for k in range(3)]
-    assert any('Uses 8 ingredients besides the staples' in n for n in persona.check(recipe(lines=many), p))
+    many = lines + [tiered(f'veg {k}', 'foundation') for k in range(5)]  # 10: the Minimalist allows 8 (27.10.2026)
+    assert any('Uses 10 ingredients besides the staples' in n for n in persona.check(recipe(lines=many), p))
+    assert not any('besides the staples' in n for n in persona.check(recipe(lines=lines + [tiered('veg', 'foundation')] * 3), p))
 
 
 def test_the_philosophy_goes_into_the_prompt():
     p = dict(seed('the_minimalist'), foundation=['chicken breast', 'onion'])
     text = persona.prompt_block(p)
-    for part in ('The Minimalist', 'at most 6 ingredients besides salt, pepper', 'at most 1 ingredients that are not in the FOUNDATION',
+    for part in ('The Minimalist', 'at most 8 ingredients besides salt, pepper', 'at most 1 ingredients that are not in the FOUNDATION',
                  'Approach: Strip the dish', 'from a jar or tube', 'Ready-made sauces', 'FOUNDATION (', 'chicken breast, onion'):
         assert part in text, part
     assert 'Use fresh herbs' in persona.prompt_block(seed('the_classicist'))

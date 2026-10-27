@@ -10,7 +10,8 @@ round 1 prompt. Its hard side, `constraints`, is checked on the saved recipe:
     max_spice           spice_level from the model, 0-3
     difficulties        allowed difficulty values
     diet                "vegetarian" or "vegan": no meat or fish lines (vegan: no dairy or egg either)
-    max_carbs_per_serving   carbohydrate per serving, when the recipe has nutrition (services/recipe_v2/nutrition.py)
+    max_carbs_per_serving   net carbohydrate per serving (carbohydrate minus fibre: the pantry's carbs are totals, as
+                            in USDA), when the recipe has nutrition (services/recipe_v2/nutrition.py)
     max_ingredients     ingredients besides the staples (pantry tier 'staple')
     max_extra           ingredients outside the foundation pantry and the staples
 
@@ -39,7 +40,7 @@ SETTINGS = {
                    'beans, lentils, eggs or cheese so it is a full meal.'),
     'kid_friendly': ('Kid-friendly', {'max_spice': 1}, 'For children: mild, familiar flavours; vegetables in pieces '
                      'they recognise or hidden in the sauce; chili and strong herbs go on the table, not in the pot.'),
-    'low_carb': ('Low carb', {'max_carbs_per_serving': 20}, 'Low carb: about 20 g of carbohydrate a serving at most. '
+    'low_carb': ('Low carb', {'max_carbs_per_serving': 20}, 'Low carb: about 20 g of net carbohydrate (carbohydrate minus fibre) a serving at most. '
                  'Swap the starch (cauliflower rice, courgette noodles, lettuce wraps); keep protein, vegetables and good fats.'),
     # The writing and the rules beyond max_spice come from the age stage (stage_for)
     'baby': ('Baby', {'max_spice': 0}, ''),
@@ -149,7 +150,7 @@ def prompt_block(p):
     if rules.get('max_cleanup') and rules['max_cleanup'] <= 2:
         hard.append('as few pots, pans and bowls as possible')
     if rules.get('max_carbs_per_serving'):
-        hard.append(f"at most about {rules['max_carbs_per_serving']} g of carbohydrate per serving")
+        hard.append(f"at most about {rules['max_carbs_per_serving']} g of net carbohydrate (carbohydrate minus fibre) per serving")
     if logic.get('banned_ingredients'):
         hard.append('never use ' + ', '.join(logic['banned_ingredients']))
     if rules.get('max_ingredients'):
@@ -214,9 +215,11 @@ def check(recipe, p):
         notes.append(f"Spice level is {recipe.spice_level}; {p['name']} allows {rules['max_spice']}.")
     carbs = getattr(recipe, 'total_carbs', None)
     if rules.get('max_carbs_per_serving') and carbs is not None:
-        per = carbs / (getattr(recipe, 'base_servings', None) or 1)
+        # Net: fibre is not digested, and low carb counts without it (cauliflower is 5 g carbs, 2 of them fibre)
+        net = carbs - (getattr(recipe, 'total_fiber', None) or 0)
+        per = net / (getattr(recipe, 'base_servings', None) or 1)
         if per > rules['max_carbs_per_serving']:
-            notes.append(f"About {per:.0f} g carbs a serving; {p['name']} allows {rules['max_carbs_per_serving']}.")
+            notes.append(f"About {per:.0f} g net carbs a serving; {p['name']} allows {rules['max_carbs_per_serving']}.")
     if rules.get('difficulties') and recipe.difficulty and recipe.difficulty not in rules['difficulties']:
         notes.append(f"Difficulty is {recipe.difficulty}; {p['name']} makes {', '.join(rules['difficulties'])}.")
     if rules.get('diet') in ('vegetarian', 'vegan'):
@@ -294,7 +297,7 @@ def badges(p):
     if rules.get('diet'):
         out.append(rules['diet'].capitalize())
     if rules.get('max_carbs_per_serving'):
-        out.append(f"About {rules['max_carbs_per_serving']} g carbs a serving")
+        out.append(f"About {rules['max_carbs_per_serving']} g net carbs a serving")
     if rules.get('max_spice') is not None and rules['max_spice'] <= 1:
         out.append('Mild')
     if rules.get('max_cleanup') and rules['max_cleanup'] <= 3:
