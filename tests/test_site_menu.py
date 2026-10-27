@@ -21,7 +21,7 @@ class SiteMenuTests(unittest.TestCase):
 
     def test_admins_see_everything_in_every_menu(self):
         self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
-        html = self.client.get('/recipes').get_data(as_text=True)
+        html = self.client.get('/collections').get_data(as_text=True)  # a page with no tabs of its own
         # The top bar and the phone menu, from the same list
         for text in ('Saved', 'Made', 'Cook next', 'Recipe Mirror', 'Many recipes at once', 'Notes on recipes', 'New article'):
             self.assertEqual(html.count(f'{text}</a>'), 2, text)

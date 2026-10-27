@@ -1,8 +1,5 @@
 """Recipes Blueprint: landing page, recipe library, the recipe page, recipe JSON APIs and public collections."""
-import json
-import os
-
-from flask import abort, current_app, flash, jsonify, redirect, render_template, request, session, url_for
+from flask import abort, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
@@ -27,23 +24,8 @@ recipes_bp = FlatBlueprint("recipes", __name__)
 
 @recipes_bp.route('/')
 def discover():
-    # Load Recent Recipes (approved only)
-    recent_recipes = db.session.execute(db.select(Recipe).where(Recipe.status == 'approved').order_by(Recipe.id.desc()).limit(8)).scalars().all()
-    
-    resources = load_resources()
-    active_template = session.get('active_card_template', 'original')
-    return render_template('landing.html', recipes=recent_recipes, resources=resources, active_template=active_template)
-
-def load_resources():
-    try:
-        data_dir = os.path.join(current_app.root_path, 'data')
-        with open(os.path.join(data_dir, 'resources.json'), 'r') as f:
-            return json.load(f)
-    except Exception as e:
-        print(f"Error loading resources: {e}")
-        return []
-
-
+    """One dish at a time to save or pass on; the cards come from /api/feed/recipes."""
+    return render_template('landing.html')
 
 
 @recipes_bp.route('/recipes')

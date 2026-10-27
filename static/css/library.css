@@ -1,0 +1,104 @@
+/* The pages people browse recipes on (the recipe list and its tabs, collections, Discover) in the language of the recipe
+   page (static/css/recipe_v2.css): tokens only (tokens.css), small mono labels, serif titles, quiet surfaces, thin
+   lines and the line icons. Loaded on every page by base.html; everything is under lib- and rcard. */
+
+/* The head of a page: what it is (a small label), its name, and a line about it */
+.lib-head { max-width: 1180px; margin: 0 auto; padding: var(--space-8) var(--space-6) var(--space-4); }
+.lib-head .eyebrow, .lib-eyebrow { font: 500 12px/1.3 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--color-muted); margin: 0; }
+.lib-head h1 { font: 600 clamp(30px, 4vw, 44px)/1.1 var(--font-serif); color: var(--color-ink); margin: var(--space-2) 0 var(--space-2); }
+.lib-head p.lib-sub { margin: 0; color: var(--color-muted); font-size: 16px; max-width: 60ch; }
+
+/* Tabs and switches: one rounded bar, the chosen one in ink (as the recipe page's segmented controls) */
+.lib-bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-3); }
+.lib-tabs { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 3px; border: 1px solid var(--color-line); border-radius: var(--radius-pill);
+  background: var(--color-paper); }
+.lib-tabs a { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 var(--space-4); border-radius: var(--radius-pill);
+  color: var(--color-muted); font: 600 14px/1 var(--font-sans); text-decoration: none; }
+.lib-tabs a:hover { color: var(--color-ink); }
+.lib-tabs a[aria-current="page"] { background: var(--color-ink); color: var(--color-paper); }
+.lib-tabs .icon { width: 16px; height: 16px; }
+
+/* A recipe card: the dish, what kind of dish and how long, its name, and what it suits */
+.rcard { display: flex; flex-direction: column; height: 100%; overflow: hidden; text-decoration: none; color: var(--color-ink);
+  background: var(--color-paper); border: 1px solid var(--color-line); border-radius: var(--radius);
+  transition: border-color .15s, box-shadow .15s; }
+.rcard:hover { border-color: var(--color-line-strong); box-shadow: 0 6px 20px rgb(0 0 0 / .06); }
+.rcard:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.rcard-img { position: relative; aspect-ratio: 4 / 3; background: var(--color-soft); overflow: hidden; }
+.rcard-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s; }
+.rcard:hover .rcard-img img { transform: scale(1.03); }
+.rcard-img .no-img { position: absolute; inset: 0; display: grid; place-items: center; color: var(--color-line-strong); }
+.rcard-img .no-img .icon { width: 40px; height: 40px; }
+.rcard-acts { position: absolute; top: var(--space-2); right: var(--space-2); display: flex; gap: 6px; z-index: 2; }
+.rcard-acts button { display: grid; place-items: center; width: 36px; height: 36px; border: 0; border-radius: 50%; cursor: pointer;
+  background: color-mix(in srgb, var(--color-paper) 92%, transparent); color: var(--color-muted); box-shadow: 0 1px 4px rgb(0 0 0 / .12); }
+.rcard-acts button:hover { color: var(--color-ink); }
+.rcard-acts .favorite-btn:hover, .rcard-acts .favorite-btn.text-red-500 { color: var(--color-danger); }
+.rcard-acts .queue-btn.text-orange-500 { color: var(--color-accent); }  /* in the queue (addToQueue in base.html) */
+.rcard-acts .icon { width: 18px; height: 18px; }
+.rcard-pick { position: absolute; bottom: var(--space-2); left: var(--space-2); z-index: 2; }
+.rcard-pick input { width: 20px; height: 20px; cursor: pointer; accent-color: var(--color-accent); }
+.rcard-star { position: absolute; top: var(--space-2); left: var(--space-2); z-index: 2; padding: 3px 10px; border-radius: var(--radius-pill);
+  background: var(--color-serve); color: var(--color-paper); font: 600 11px/1.6 var(--font-sans); }
+.rcard-body { display: flex; flex-direction: column; gap: var(--space-2); flex: 1; padding: var(--space-4) var(--space-4) var(--space-4); }
+.rcard-meta { display: flex; flex-wrap: wrap; gap: 4px var(--space-2); font: 500 11px/1.3 var(--font-mono); letter-spacing: .06em;
+  text-transform: uppercase; color: var(--color-muted); }
+.rcard-meta span + span::before { content: "·"; margin-right: var(--space-2); }
+.rcard h3 { margin: 0; font: 600 20px/1.2 var(--font-serif); color: var(--color-ink); display: -webkit-box; -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical; overflow: hidden; }
+.rcard:hover h3 { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.rcard-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: var(--space-2); }
+.rcard-tags span { padding: 2px 10px; border-radius: var(--radius-pill); background: var(--color-soft); border: 1px solid var(--color-line);
+  font-size: 12px; color: var(--color-muted); }
+
+/* Nothing here yet: an icon, a line in serif, what to do, and the one way on */
+.lib-empty { display: grid; justify-items: center; gap: var(--space-3); text-align: center; padding: var(--space-8) var(--space-4) 64px; }
+.lib-empty .lib-empty-ic { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%;
+  background: var(--color-soft); border: 1px solid var(--color-line); color: var(--color-muted); }
+.lib-empty .lib-empty-ic .icon { width: 28px; height: 28px; }
+.lib-empty h3 { margin: 0; font: 600 22px/1.2 var(--font-serif); color: var(--color-ink); }
+.lib-empty p { margin: 0; color: var(--color-muted); max-width: 42ch; }
+.lib-go { display: inline-flex; align-items: center; min-height: var(--tap); padding: 0 var(--space-6); border-radius: var(--radius-pill);
+  background: var(--color-accent); color: var(--color-paper); font: 600 15px/1 var(--font-sans); text-decoration: none; }
+.lib-go:hover { filter: brightness(.95); }
+
+/* The recipe list's filters: behind a button on a phone, always open on a wide screen */
+.lib-filters-sum { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; margin-top: var(--space-3); padding: 0 var(--space-4);
+  border: 1px solid var(--color-line); border-radius: var(--radius-pill); background: var(--color-paper); color: var(--color-ink);
+  font: 600 14px/1 var(--font-sans); cursor: pointer; list-style: none; }
+.lib-filters-sum::-webkit-details-marker { display: none; }
+.lib-filters-sum .icon { width: 16px; height: 16px; }
+@media (min-width: 768px) { .lib-filters-sum { display: none; } }
+
+/* Discover: the recipe card one at a time, the next two peeking out below, and two buttons to save or pass */
+.disc-head { text-align: center; padding-bottom: var(--space-2); }
+.disc-head p.lib-sub { margin: 0 auto; }
+.disc-head a { color: var(--color-accent); }
+.disc { display: grid; justify-items: center; gap: var(--space-6); padding: var(--space-4) var(--space-4) 64px; }
+.disc-deck { position: relative; width: min(100%, 400px); height: clamp(360px, calc(100dvh - 390px), 600px); margin-bottom: 28px; }
+.disc-loading { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; color: var(--color-muted);
+  font: 500 12px/1.3 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; }
+.disc-empty { position: absolute; inset: 0; align-content: center; background: var(--color-paper); border: 1px solid var(--color-line);
+  border-radius: var(--radius); }
+.dcard { position: absolute; inset: 0; height: auto; transform-origin: 50% 100%; user-select: none; -webkit-user-select: none;
+  box-shadow: 0 10px 30px rgb(0 0 0 / .08); transition: transform .4s ease, opacity .4s ease, box-shadow .15s; }
+.dcard .rcard-img { flex: 1; aspect-ratio: auto; min-height: 0; }
+.dcard .rcard-body { flex: none; }
+.dcard h3 { font-size: 24px; }
+.dcard-stamp { position: absolute; top: var(--space-6); padding: 4px 14px; border: 2px solid currentColor; border-radius: var(--radius-pill);
+  background: var(--color-paper); font: 600 13px/1.4 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; opacity: 0;
+  transition: opacity .15s; }
+.dcard-stamp-like { left: var(--space-6); color: var(--color-serve); }
+.dcard-stamp-pass { right: var(--space-6); color: var(--color-danger); }
+.dcard.is-liked .dcard-stamp-like, .dcard.is-passed .dcard-stamp-pass { opacity: 1; }
+.disc-acts { display: flex; gap: var(--space-4); }
+.disc-acts[hidden] { display: none; }
+.disc-btn { display: inline-flex; align-items: center; gap: 8px; min-height: 52px; padding: 0 var(--space-6); border-radius: var(--radius-pill);
+  border: 1px solid var(--color-line-strong); background: var(--color-paper); color: var(--color-ink); font: 600 15px/1 var(--font-sans);
+  cursor: pointer; transition: border-color .15s, color .15s, transform .1s; }
+.disc-btn:hover { border-color: var(--color-ink); }
+.disc-btn:active { transform: scale(.97); }
+.disc-btn .icon { width: 20px; height: 20px; }
+.disc-save { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-paper); }
+.disc-save:hover { border-color: var(--color-accent); filter: brightness(.95); }
+@media (prefers-reduced-motion: reduce) { .dcard { transition: opacity .2s; } }
