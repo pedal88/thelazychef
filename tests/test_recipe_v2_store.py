@@ -141,6 +141,29 @@ class RecipeV2StoreTests(unittest.TestCase):
         self.assertEqual(line.ingredient_id, winner.id)
         self.assertIsNone(db.session.get(Ingredient, loser.id))
 
+    def test_merge_recalculates_v2_nutrition_from_the_lines(self):
+        # The old calculation reads only v1 rows and set a v2 recipe's totals to 0
+        from services.recipe_v2 import nutrition
+        winner = Ingredient(food_id='w', name='garlic', status='active', default_unit='g', calories_per_100g=150)
+        loser = Ingredient(food_id='l', name='garlic cloves', status='active', default_unit='g')
+        db.session.add_all([winner, loser])
+        db.session.flush()
+        data = fasit('lasagne')
+        garlic = next(i for i in data['ingredients'] if i['name'] == 'hvitløk')
+        recipe = Recipe(title='x', cuisine='', difficulty='', protein_type='', chef_id='gourmet')
+        db.session.add(recipe)
+        save_v2(recipe, data, {garlic['local_id']: loser.id})
+        recipe.total_calories = 1234.0
+        db.session.commit()
+        self.assertEqual(recipe.schema_version, 2)
+
+        merge_ingredients(winner.id, loser.id)
+
+        db.session.expire_all()
+        recipe = db.session.get(Recipe, recipe.id)
+        self.assertNotEqual(recipe.total_calories, 0.0)
+        self.assertEqual(recipe.total_calories, nutrition.compute(recipe.lines)['totals']['calories'])
+
     def test_deleting_an_ingredient_does_not_unlink_v2_lines(self):
         # In Postgres the foreign key then blocks the delete. SQLite does not enforce
         # foreign keys, so this checks that the ORM leaves the link alone.
