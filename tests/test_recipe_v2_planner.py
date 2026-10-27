@@ -61,6 +61,25 @@ class PlannerTests(unittest.TestCase):
         self.assertFalse(steps['s1'].excl)
         self.assertEqual(steps['s4'].waits, [])
 
+    def test_an_air_fryer_with_two_drawers_cooks_two_things_at_once(self):
+        def step(sid, after=(), eq=None, active=1, passive=0, phase='cook'):
+            return {'local_id': sid, 'phase': phase, 'after': list(after), 'uses': [] if after else [f'i{sid}'],
+                    'active_minutes': active, 'passive_minutes': passive, 'equipment': [eq] if eq else [],
+                    'temp_c': 200 if eq else None, 'mode': 'high' if eq else None}
+        fry = [step('s1', eq='airfryer', passive=8), step('s2', eq='airfryer', passive=8)]
+        v2 = {'ingredients': [], 'steps': fry + [step('s9', after=['s1', 's2'], phase='serve', active=2)]}
+        both = plan_v2(v2)['plan']
+        self.assertLess(both['s1']['start'], both['s2']['end'])  # side by side: only the cook's minute apart
+        self.assertEqual(plan_v2(v2)['T'], 12)
+        # One drawer (the user's own kitchen over the catalog): one after the other
+        self.assertEqual(plan_v2(v2, kitchen={'airfryer': 1})['T'], 20)
+        # A third thing waits for a free drawer
+        v2['steps'] = fry + [step('s3', eq='airfryer', passive=8), step('s9', after=['s1', 's2', 's3'], phase='serve', active=2)]
+        self.assertEqual(plan_v2(v2)['T'], 20)
+        # The oven still holds one thing
+        v2['steps'] = [dict(s, equipment=['oven']) for s in fry] + [step('s9', after=['s1', 's2'], phase='serve', active=2)]
+        self.assertEqual(plan_v2(v2)['T'], 20)
+
     def test_unknown_plan_is_an_error(self):
         with self.assertRaises(ValueError):
             plan_v2(v2_of('fasit/carbonara.json'), 'fast')

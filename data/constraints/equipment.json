@@ -1,6 +1,6 @@
 {
   "_about": "The equipment bank (RECIPE_VISUALIZATIONS.md 9.6): level \"standard\" is what most kitchens have, \"special\" the rest. kind \"supply\" (foil, plates) is planned with but not shown as equipment. same_as shows an item as another one (one symbol, listed once). image is the symbol, image_notes what it should show.",
-  "_doc": "Fast utstyrskatalog for oppskriftsmodell v2 (RECIPE_MODEL_V2.md). equipment[0] på et steg er kokekaret. role: koke | forberede | avlastning. exclusive: kan bare brukes til én ting om gangen (planleggeren legger slike steg etter hverandre). modes gjelder kokekaret: oven-moduser for ovn/airfryer, plate-moduser for plate og grill.",
+  "_doc": "Fast utstyrskatalog for oppskriftsmodell v2 (RECIPE_MODEL_V2.md). equipment[0] på et steg er kokekaret. role: koke | forberede | avlastning. exclusive: kan bare brukes til én ting om gangen (planleggeren legger slike steg etter hverandre). capacity: hvor mange ting et exclusive kokekar holder samtidig (standard 1; airfryer 2 for to skuffer, som Ninja Dual Zone). Brukerens eget kjøkken kan overstyre det (planner.plan_v2, kitchen). modes gjelder kokekaret: oven-moduser for ovn/airfryer, plate-moduser for plate og grill.",
   "equipment": [
     {
       "id": "oven",
@@ -22,6 +22,7 @@
       "name_en": "Air fryer",
       "role": "koke",
       "exclusive": true,
+      "capacity": 2,
       "level": "standard",
       "image": "https://storage.googleapis.com/thelazychef-assets/equipment/symbols/equipment-all/airfryer-v2.webp",
       "image_variants": {
