@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 {% import "components/typography.html" as type %}
 
-{% block title %}Pantry Management - The Lazy Chef{% endblock %}
+{% block title %}Ingredients - The Lazy Chef{% endblock %}
 
 {% block content %}
 <div class="bg-white min-h-screen pb-24">
     <!-- Header -->
     <div class="bg-slate-50 border-b border-slate-200">
         <div class="max-w-screen-2xl mx-auto px-4 py-8 text-center">
-            {{ type.page_header('Pantry Management', 'Manage your staple ingredients and preferences.') }}
-            <p class="mt-2 text-sm text-slate-500">Flag ingredients as "Basic" to tell the AI what you always have in
-                stock.</p>
+            {{ type.page_header('Ingredients', 'Every ingredient the recipes use, with its nutrition per 100 g.') }}
+            {% if current_user.is_admin %}<p class="mt-2 text-sm text-slate-500">Admin: flag ingredients as "Basic" to tell the AI what you always have in
+                stock.</p>{% endif %}
         </div>
     </div>
 
@@ -67,7 +67,7 @@
                                         class="sort-icon text-slate-300 group-hover:text-slate-500 text-[10px]">▲▼</span>
                                 </div>
                             </th>
-                            <th class="p-4 w-20 text-center sticky top-0 bg-slate-50 z-10">Actions</th>
+                            {% if current_user.is_admin %}<th class="p-4 w-20 text-center sticky top-0 bg-slate-50 z-10">Actions</th>{% endif %}
                             <th class="p-4 w-16 cursor-pointer hover:bg-slate-100 group select-none sticky top-0 bg-slate-50 z-10"
                                 onclick="sortTable('unit')">
                                 Unit
@@ -133,7 +133,7 @@
                                     class="w-full text-xs border border-slate-300 rounded px-2 py-1 focus:ring-1 focus:ring-orange-500 focus:outline-none font-normal"
                                     oninput="updateTextFilter('name', this.value)">
                             </th>
-                            <th class="sticky top-[50px] bg-slate-50 z-10"></th>
+                            {% if current_user.is_admin %}<th class="sticky top-[50px] bg-slate-50 z-10"></th>{% endif %}
                             <!-- Spacers for other columns -->
                             <th class="sticky top-[50px] bg-slate-50 z-10"></th>
                             <th class="sticky top-[50px] bg-slate-50 z-10"></th>
@@ -204,6 +204,7 @@
                                 </span>
                             </td>
 
+                            {% if current_user.is_admin %}
                             <!-- Actions -->
                             <td class="p-4 text-center align-middle whitespace-nowrap bg-slate-50/20">
                                 <div class="flex items-center justify-center gap-2">
@@ -228,6 +229,7 @@
                                     </button>
                                 </div>
                             </td>
+                            {% endif %}
 
                             <td class="p-4 text-xs text-slate-500 align-middle">{{ ing.default_unit }}</td>
 
@@ -259,8 +261,8 @@
                             </td>
 
                             <!-- Basic Toggle -->
-                            <td class="p-4 text-center cursor-pointer select-none align-middle"
-                                onclick="toggleBasic('{{ ing.id }}', this)">
+                            <td class="p-4 text-center select-none align-middle{{ ' cursor-pointer' if current_user.is_admin }}"
+                                {% if current_user.is_admin %}onclick="toggleBasic('{{ ing.id }}', this)"{% endif %}>
                                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm transition-all duration-200 badge-status
                                     {% if ing.is_staple %}
                                         bg-green-100 text-green-700 font-bold

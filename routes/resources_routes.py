@@ -13,12 +13,15 @@ from utils.decorators import admin_required
 resources_bp = FlatBlueprint("resources", __name__)
 
 
+# Learn: the articles. /become-a-chef was its first address and still works.
 @resources_bp.route('/become-a-chef')
+@resources_bp.route('/learn')
 def resources_list():
     resources = db.session.execute(db.select(Resource).where(Resource.status == 'published').order_by(Resource.created_at.desc())).scalars().all()
     return render_template('resources.html', resources=resources)
 
 @resources_bp.route('/become-a-chef/<slug>')
+@resources_bp.route('/learn/<slug>')
 def resource_detail(slug):
     # Try fetching by slug first
     resource = db.session.execute(db.select(Resource).where(Resource.slug == slug)).scalar_one_or_none()

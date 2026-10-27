@@ -106,7 +106,7 @@
 {% endmacro %}
 
 {% macro resource_preview_card(resource) %}
-<a href="/become-a-chef/{{ resource.slug }}"
+<a href="{{ url_for('resource_detail', slug=resource.slug) }}"
     class="group block h-full bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-200 transition-all duration-300 overflow-hidden flex flex-col">
     <!-- Image / Gradient Placeholder -->
     <div class="h-48 bg-slate-100 relative overflow-hidden">
