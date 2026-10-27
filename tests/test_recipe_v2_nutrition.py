@@ -50,7 +50,7 @@ def test_per_serving_rounds_and_turns_sodium_into_salt():
         calories=2000, protein=100, carbs=200, fat=80, saturated_fat=20, fiber=12, sugar=30, cholesterol_mg=0,
         sodium_mg=4000, calcium_mg=0, potassium_mg=0).items()})
     s = nutrition.per_serving(recipe)
-    assert (s['kcal'], s['carbs'], s['salt']) == (500, 50, 2.5)
+    assert (s['kcal'], s['carbs'], s['net_carbs'], s['salt']) == (500, 50, 47, 2.5)
     recipe.total_calories = None
     assert nutrition.per_serving(recipe) is None
 
@@ -61,7 +61,10 @@ def test_low_carb_rule_is_checked_once_there_is_nutrition():
     base = dict(prep_time_mins=20, cleanup_factor=2, spice_level=0, difficulty='Moderate', lines=[], base_servings=4)
     assert persona.check(SimpleNamespace(total_carbs=None, **base), low) == []
     assert persona.check(SimpleNamespace(total_carbs=60, **base), low) == []
-    assert persona.check(SimpleNamespace(total_carbs=200, **base), low) == ['About 50 g carbs a serving; The Low Carb Chef allows 20.']
+    assert persona.check(SimpleNamespace(total_carbs=200, **base), low) == ['About 50 g net carbs a serving; The Low Carb Chef allows 20.']
+    # Net of fibre: a cauliflower dish with 120 g carbs, 48 of them fibre, is 18 g a serving
+    assert persona.check(SimpleNamespace(total_carbs=120, total_fiber=48, **base), low) == []
+    assert persona.check(SimpleNamespace(total_carbs=120, total_fiber=0, **base), low) == ['About 30 g net carbs a serving; The Low Carb Chef allows 20.']
 
 
 def test_a_saved_carbonara_gets_its_nutrition():

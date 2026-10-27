@@ -29,7 +29,7 @@ _SOURCE_OF = {eq: source for source, eqs in HEAT_SOURCES.items() for eq in eqs}
 # and appliances that are not washed (oven, microwave, grill) do not count.
 VESSELS = {'airfryer', 'grill_pan', 'saucepan', 'large_pot', 'wide_pot', 'dutch_oven', 'frying_pan', 'wok', 'steamer',
            'deep_fryer', 'slow_cooker', 'baking_tray', 'roasting_pan', 'ovenproof_dish', 'form_20x20', 'form_20x30',
-           'springform_24', 'loaf_tin', 'muffin_tin', 'pie_dish', 'bowl', 'small_bowl', 'large_bowl', 'sieve', 'colander',
+           'springform_24', 'loaf_tin', 'muffin_tin', 'silicone_cups', 'pie_dish', 'bowl', 'small_bowl', 'large_bowl', 'sieve', 'colander',
            'mortar', 'blender', 'food_processor', 'stand_mixer', 'salad_spinner', 'jar', 'measuring_jug'}
 
 # Main protein: pantry sub_category -> the label the protein filter uses (data/constraints/main_protein.json).

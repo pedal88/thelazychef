@@ -103,7 +103,7 @@
                 ],
                 "diet": null,
                 "max_carbs_per_serving": null,
-                "max_ingredients": 6,
+                "max_ingredients": 8,
                 "max_extra": 1,
                 "forms": "shortcut",
                 "ready_made": "welcome",

@@ -109,6 +109,26 @@ class VersionTests(unittest.TestCase):
         self.assertEqual([e for e in recipe.validation_errors if e['rule'] == 'persona'], [])
         self.assertIsNotNone(recipe.prep_time_mins)
 
+    def test_recalculate_links_lines_that_have_come_into_the_pantry(self):
+        from database.models import Ingredient, RecipeLine
+
+        self.login()
+        with mock.patch.object(claude, 'call', route_tests.fake_claude()):
+            self.client.post('/new-recipe/v2', data={'source': 'Spaghetti carbonara for four'})
+        recipe = db.session.execute(db.select(Recipe)).scalar_one()
+        line = db.session.execute(db.select(RecipeLine).filter_by(recipe_id=recipe.id)).scalars().first()
+        line.ingredient_id = None  # not in the pantry when it was made
+        db.session.commit()
+        added = Ingredient(food_id='T-new', name=line.name, status='active', default_unit='g', main_category='vegetables')
+        db.session.add(added)
+        db.session.commit()
+        import ai_engine
+        ai_engine.pantry_map = {}  # the matcher reads the pantry again, as after a deploy
+        with mock.patch.object(claude, 'call', side_effect=AssertionError('Claude was called')):
+            self.client.post(f'/new-recipe/v2/recalculate/{recipe.id}')
+        db.session.refresh(line)
+        self.assertEqual(line.ingredient_id, added.id)
+
     def test_recalculate_is_for_admins_and_v2_recipes(self):
         old = Recipe(title='Old', cuisine='', difficulty='', schema_version=1)
         db.session.add(old)
