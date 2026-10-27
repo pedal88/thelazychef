@@ -12,7 +12,7 @@ from flask_login import LoginManager
 import markdown
 from database.db_connector import configure_database
 # The models are re-exported here: many scripts do "from app import app, db, Recipe, ..."
-from database.models import db, Ingredient, Recipe, RecipeMealType, RecipeDiet, User, Resource, resource_relations, Chef, UserRecipeInteraction, RecipeEvaluation, RecipeCollection, CollectionItem, UserQueue, UserLink, ConceptVisual, VisualStyleGuide
+from database.models import db, Ingredient, Recipe, RecipeMealType, RecipeDiet, User, Resource, resource_relations, Chef, UserRecipeInteraction, RecipeCollection, CollectionItem, UserQueue, UserLink, ConceptVisual, VisualStyleGuide
 from services.storage_service import get_storage_provider
 from services.recipe_v2 import states
 from routes._shared import DIFFICULTY_LABELS, EQUIPMENT_STYLES, OVERVIEW_LAYOUTS, chosen_overview, IMAGE_STYLES, chosen_equipment_style, dish_images, equipment_image, get_recipe_image_url, get_image_url, icon, notes_text

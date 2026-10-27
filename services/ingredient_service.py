@@ -43,15 +43,10 @@ def merge_ingredients(winner_id: int, loser_id: int) -> dict:
 
     try:
         # 1. Move every recipe line. Assigning through the relationship also
-        #    removes the line from loser.recipe_ingredients, so deleting the
-        #    loser below does not touch it.
+        #    removes the line from loser.recipe_lines, so deleting the loser
+        #    below does not touch it.
         affected_recipe_ids = set()
         moved = 0
-        for usage in list(loser.recipe_ingredients):
-            usage.ingredient = winner
-            affected_recipe_ids.add(usage.recipe_id)
-            moved += 1
-        # Lines in v2 recipes (recipe_line) move the same way.
         for line in list(loser.recipe_lines):
             line.ingredient = winner
             affected_recipe_ids.add(line.recipe_id)
@@ -76,8 +71,7 @@ def merge_ingredients(winner_id: int, loser_id: int) -> dict:
         db.session.delete(loser)
         db.session.commit()
 
-        # 5. Nutrition depends on the ingredient, so recalculate what changed (services/recipe_v2/nutrition.py); the
-        #    retired v1 recipes are left as they are
+        # 5. Nutrition depends on the ingredient, so recalculate what changed (services/recipe_v2/nutrition.py)
         from database.models import Recipe
         from services.recipe_v2 import nutrition
         for recipe_id in affected_recipe_ids:

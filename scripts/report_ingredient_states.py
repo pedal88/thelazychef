@@ -74,13 +74,10 @@ def main():
                      LEFT JOIN ingredient i ON i.id = l.ingredient_id""")
         steps = q("""SELECT s.method, s.verb, s.short, s.phase, coalesce(r.language, '?') AS language
                      FROM recipe_step s JOIN recipe r ON r.id = s.recipe_id""")
-        v1_lines = q("""SELECT ri.prep_style, i.name AS pantry_name, i.main_category
-                        FROM recipe_ingredient ri JOIN ingredient i ON i.id = ri.ingredient_id
-                        JOIN recipe r ON r.id = ri.recipe_id WHERE coalesce(r.schema_version, 1) = 1""")
         pantry = q("""SELECT id, food_id, name, main_category, sub_category, tier, base_ingredient_id, status FROM ingredient""")
         db.session.rollback()  # nothing to keep, and nothing was written
 
-    report = {'recipes': {}, 'v2_lines': {}, 'v2_steps': {}, 'v1_lines': {}, 'pantry': {}}
+    report = {'recipes': {}, 'v2_lines': {}, 'v2_steps': {}, 'pantry': {}}
 
     # The recipes: how many of each version and language, and the cuisines (how representative the data is)
     by_version, cuisines = collections.Counter(), collections.Counter()
@@ -123,15 +120,6 @@ def main():
         'verbs_by_method': {m: top(c, 12) for m, c in sorted(verbs_by_method.items())},
     }
 
-    # v1 lines: prep_style only, but from the older and larger set of recipes
-    v1, v1_ex = collections.Counter(), collections.defaultdict(set)
-    for line in v1_lines:
-        p = norm(line['prep_style'])
-        if p:
-            v1[p] += 1
-            v1_ex[p].add(line['pantry_name'])
-    report['v1_lines'] = {'total': len(v1_lines), 'with_prep_style': sum(v1.values()), 'prep_style': top(v1, args.top, v1_ex)}
-
     # The pantry: size, categories, tiers, variants, product forms and names that look like the same thing
     cats, tiers, forms, form_ex, dupes = (collections.Counter(), collections.Counter(), collections.Counter(),
                                           collections.defaultdict(list), collections.defaultdict(list))
@@ -162,11 +150,9 @@ def main():
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(report, ensure_ascii=False, indent=2))
 
-    print(f'Recipes: {sum(by_version.values())}  v2 lines: {len(lines)}  v2 steps: {len(steps)}  '
-          f'v1 lines: {len(v1_lines)}  pantry: {len(pantry)}')
+    print(f'Recipes: {sum(by_version.values())}  v2 lines: {len(lines)}  v2 steps: {len(steps)}  pantry: {len(pantry)}')
     print(f"v2 lines with prep_style: {report['v2_lines']['with_prep_style']}, with cut: {report['v2_lines']['with_cut']}")
     print('Most common prep_style (v2):', ', '.join(f"{r['value']} ({r['count']})" for r in report['v2_lines']['prep_style'][:15]))
-    print('Most common prep_style (v1):', ', '.join(f"{r['value']} ({r['count']})" for r in report['v1_lines']['prep_style'][:15]))
     print(f"Possible duplicates in the pantry: {len(report['pantry']['possible_duplicates'])}")
     print(f'Report: {out}')
 

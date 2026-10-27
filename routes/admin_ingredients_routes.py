@@ -194,9 +194,7 @@ def delete_ingredient(ing_id: int):
             "new_status": "inactive",
         })
 
-    # Truly unused — safe to hard delete, with the rows of the retired v1 recipes
-    for ri in list(ing.recipe_ingredients):
-        db.session.delete(ri)
+    # Truly unused — safe to hard delete
     db.session.delete(ing)
     db.session.commit()
     return jsonify({"success": True, "action": "deleted"})
