@@ -13,15 +13,15 @@ os.environ.setdefault('GOOGLE_API_KEY', 'test-key')
 from services.recipe_v2 import nutrition, persona  # noqa: E402
 
 
-def ing(kcal=100, carbs=10, sodium=0, default_unit='g', density=None):
+def ing(kcal=100, carbs=10, sodium=0, default_unit='g', density=None, name='x'):
     return SimpleNamespace(calories_per_100g=kcal, protein_per_100g=5, carbs_per_100g=carbs, fat_per_100g=2,
                            fat_saturated_per_100g=1, fiber_per_100g=1, sugar_per_100g=1, cholesterol_mg_per_100g=0,
                            sodium_mg_per_100g=sodium, calcium_mg_per_100g=0, potassium_mg_per_100g=0,
-                           default_unit=default_unit, average_g_per_unit=density, name='x')
+                           default_unit=default_unit, average_g_per_unit=density, name=name)
 
 
-def line(name, amount, unit, gram_weight=None, ingredient=None):
-    return SimpleNamespace(name=name, amount=amount, unit=unit, gram_weight=gram_weight, ingredient=ingredient)
+def line(name, amount, unit, gram_weight=None, ingredient=None, state=None):
+    return SimpleNamespace(name=name, amount=amount, unit=unit, gram_weight=gram_weight, ingredient=ingredient, state=state)
 
 
 def test_grams_prefers_the_estimate_then_weight_units_then_liquid_density():
@@ -43,6 +43,23 @@ def test_compute_needs_grams_for_every_measured_line_and_enough_nutrition():
     assert r['totals']['calories'] == 1400 and r['no_nutrition'] == ['mystery spice']
     r = nutrition.compute(lines + [line('mystery cheese', 100, 'g')])
     assert r['totals']['calories'] is None
+
+
+def test_cooked_grains_count_as_their_dry_weight():
+    rice = ing(kcal=360, carbs=80, name='jasmine rice')
+    # Day-old rice for fried rice: 800 g cooked is about 286 g dry
+    r = nutrition.compute([line('jasmine rice', 800, 'g', ingredient=rice, state='cooked')])
+    assert r['totals']['calories'] == round(800 / 2.8 * 3.6, 1) and r['grams'] == 800
+    # Raw rice, and a pantry item that already has cooked values, are counted as they are
+    assert nutrition.compute([line('jasmine rice', 300, 'g', ingredient=rice)])['totals']['calories'] == 1080
+    cooked = ing(kcal=164, name='chickpeas')
+    assert nutrition.compute([line('chickpeas', 200, 'g', ingredient=cooked, state='cooked')])['totals']['calories'] == 328
+    # Not a grain: cooked chicken is not made lighter
+    chicken = ing(kcal=260, name='chicken thigh')
+    assert nutrition.compute([line('chicken', 100, 'g', ingredient=chicken, state='cooked')])['totals']['calories'] == 260
+    # Rice noodles gain like noodles, not like rice
+    noodles = ing(kcal=364, name='rice noodles')
+    assert nutrition.dry_grams(line('noodles', 240, 'g', ingredient=noodles, state='cooked'), 240) == 100
 
 
 def test_per_serving_rounds_and_turns_sodium_into_salt():

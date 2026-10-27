@@ -6,15 +6,26 @@ the model gave none, weight units are converted, and volumes of liquids use the
 pantry density (average_g_per_unit when default_unit is ml). Lines "to taste"
 have no amount and are left out.
 
+A line in the state "cooked" (day-old rice, leftover pasta) is weighed cooked, while the pantry has most grains,
+pasta and dried pulses dry. Its grams are then turned into dry grams with COOKED_GAIN before the pantry's values
+are used. A pantry item whose values are already those of the cooked food (under DRY_KCAL a 100 g) is left as it is.
+
 The totals are only kept when every measured line has grams and the lines with
 pantry nutrition make up at least COVERAGE of the weight. Otherwise the recipe
 shows no nutrition rather than a wrong number.
 """
 import json
 import os
+import re
 from functools import lru_cache
 
 COVERAGE = 0.95
+# How many times heavier a dry food gets when cooked (cooked g / dry g), by a word of the pantry name or its plural
+# (so not "oat" in goat or "pea" in peanuts); the first that matches counts. From USDA dry and cooked values, rounded.
+COOKED_GAIN = (('noodle', 2.4), ('rice', 2.8), ('quinoa', 2.7), ('couscous', 2.5), ('bulgur', 2.5), ('barley', 2.7),
+               ('oat', 2.5), ('lentil', 2.5), ('chickpea', 2.4), ('bean', 2.5), ('pea', 2.5), ('pasta', 2.3),
+               ('spaghetti', 2.3), ('macaroni', 2.3), ('penne', 2.3), ('fusilli', 2.3), ('tagliatelle', 2.3))
+DRY_KCAL = 250  # a pantry item above this a 100 g is the dry food
 # Recipe field -> Ingredient field, per 100 g
 NUTRIENTS = (('calories', 'calories_per_100g'), ('protein', 'protein_per_100g'), ('carbs', 'carbs_per_100g'),
              ('fat', 'fat_per_100g'), ('saturated_fat', 'fat_saturated_per_100g'), ('fiber', 'fiber_per_100g'),
@@ -45,6 +56,16 @@ def grams(line):
     return None
 
 
+def dry_grams(line, g):
+    """The grams to count the pantry values for: the dry weight of a cooked grain, pasta or pulse, else g."""
+    ing = line.ingredient
+    if getattr(line, 'state', None) != 'cooked' or ing is None or (ing.calories_per_100g or 0) < DRY_KCAL:
+        return g
+    name = (ing.name or '').lower()
+    gain = next((x for word, x in COOKED_GAIN if re.search(r'\b' + word + r's?\b', name)), None)
+    return g / gain if gain else g
+
+
 def compute(lines):
     """Totals for the whole recipe and what is missing. Returns a dict:
     totals (field -> amount, or None when not shown), grams, coverage, no_grams and no_nutrition (line names)."""
@@ -65,8 +86,9 @@ def compute(lines):
                 no_nutrition.append(line.name)
             continue
         covered_g += g
+        counted = dry_grams(line, g)
         for field, per_100g in NUTRIENTS:
-            sums[field] += g * (getattr(ing, per_100g) or 0) / 100
+            sums[field] += counted * (getattr(ing, per_100g) or 0) / 100
     coverage = covered_g / total_g if total_g else 0.0
     ok = not no_grams and total_g > 0 and coverage >= COVERAGE
     return {'totals': {f: (round(v, 1) if ok else None) for f, v in sums.items()}, 'grams': round(total_g),
