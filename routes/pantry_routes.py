@@ -261,7 +261,7 @@ def get_ingredient_details_api(id):
 @admin_required
 def delete_ingredient_api(id):
     """Delete an ingredient no recipe uses. One that recipe lines use is merged into another instead (the lines move
-    with it); deleting it would leave them without their pantry row. Rows of the retired v1 recipes go with it."""
+    with it); deleting it would leave them without their pantry row."""
     try:
         ingredient = db.session.get(Ingredient, id)
         if not ingredient:
@@ -270,8 +270,6 @@ def delete_ingredient_api(id):
         if used:
             return jsonify({'success': False, 'recipes': used,
                             'error': f"Used in {len(used)} recipes: {', '.join(used)}. Merge it into another ingredient instead."}), 409
-        for ri in list(ingredient.recipe_ingredients):
-            db.session.delete(ri)
         db.session.delete(ingredient)
         db.session.commit()
         return jsonify({'success': True})

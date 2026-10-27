@@ -19,8 +19,8 @@ os.environ.pop('K_SERVICE', None)
 
 from app import app  # noqa: E402
 from database.models import (  # noqa: E402
-    CollectionItem, Ingredient, IngredientAlias, Instruction, Recipe, RecipeCollection, RecipeDiet,
-    RecipeIngredient, RecipeMealType, User, UserQueue,
+    CollectionItem, Ingredient, IngredientAlias, Recipe, RecipeCollection, RecipeDiet,
+    RecipeLine, RecipeMealType, User, UserQueue,
     UserRecipeInteraction, db,
 )
 from services.ingredient_service import add_alias, merge_ingredients  # noqa: E402
@@ -70,8 +70,6 @@ class DataIntegrityTests(unittest.TestCase):
         db.session.add(collection)
         db.session.flush()
         db.session.add_all([
-            RecipeIngredient(recipe_id=recipe.id, ingredient_id=onion.id, amount=100, unit='g'),
-            Instruction(recipe_id=recipe.id, phase='prep', step_number=1, text='Chop'),
             RecipeMealType(recipe_id=recipe.id, meal_type='Dinner'),
             RecipeDiet(recipe_id=recipe.id, diet='vegetarian'),
             CollectionItem(collection_id=collection.id, recipe_id=recipe.id),
@@ -84,7 +82,7 @@ class DataIntegrityTests(unittest.TestCase):
         self.assertEqual(delete_recipes([recipe.id]), 1)
 
         self.assertIsNone(db.session.get(Recipe, recipe.id))
-        for model in (RecipeIngredient, Instruction, RecipeMealType, RecipeDiet, CollectionItem,
+        for model in (RecipeMealType, RecipeDiet, CollectionItem,
                       UserQueue, UserRecipeInteraction):
             self.assertEqual(_count(model, recipe_id=recipe.id), 0, model.__name__)
         self.assertIsNone(db.session.get(Ingredient, stock.id).sub_recipe_id)
@@ -94,13 +92,16 @@ class DataIntegrityTests(unittest.TestCase):
         self.assertEqual(delete_recipes([999]), 0)
 
     def test_merge_moves_lines_even_when_recipe_already_has_winner(self):
+        import json
+        from services.recipe_v2.store import save_v2
+
         recipe = self._recipe()
         winner = self._ingredient('red onion')
         loser = self._ingredient('red onion, diced', aliases=['rødløk'])
-        db.session.add_all([
-            RecipeIngredient(recipe_id=recipe.id, ingredient_id=winner.id, amount=100, unit='g'),
-            RecipeIngredient(recipe_id=recipe.id, ingredient_id=loser.id, amount=2, unit='pcs'),
-        ])
+        with open(os.path.join(os.path.dirname(__file__), '..', 'data', 'pilot_v2', 'fasit', 'carbonara.json'), encoding='utf-8') as f:
+            data = json.load(f)
+        first, second = data['ingredients'][:2]
+        save_v2(recipe, data, {first['local_id']: winner.id, second['local_id']: loser.id})
         db.session.commit()
         loser_id = loser.id
 
@@ -108,11 +109,11 @@ class DataIntegrityTests(unittest.TestCase):
 
         self.assertTrue(result['success'], result['message'])
         self.assertIsNone(db.session.get(Ingredient, loser_id))
-        lines = db.session.execute(
-            db.select(RecipeIngredient).filter_by(recipe_id=recipe.id).order_by(RecipeIngredient.amount)
+        moved = db.session.execute(
+            db.select(RecipeLine.ingredient_id).filter(RecipeLine.recipe_id == recipe.id,
+                                                       RecipeLine.local_id.in_([first['local_id'], second['local_id']]))
         ).scalars().all()
-        self.assertEqual([(line.ingredient_id, line.amount, line.unit) for line in lines],
-                         [(winner.id, 2, 'pcs'), (winner.id, 100, 'g')])
+        self.assertEqual(moved, [winner.id, winner.id])
 
     def test_merge_moves_aliases_and_adds_loser_name(self):
         winner = self._ingredient('red onion', aliases=['rødløk'])

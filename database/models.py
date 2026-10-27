@@ -170,7 +170,6 @@ class Ingredient(db.Model):
     calcium_mg_per_100g: Mapped[float] = mapped_column(Float, nullable=True)
     potassium_mg_per_100g: Mapped[float] = mapped_column(Float, nullable=True)
 
-    recipe_ingredients: Mapped[list["RecipeIngredient"]] = relationship(back_populates="ingredient")
     # passive_deletes='all': the ORM must not unlink v2 lines when an ingredient is deleted.
     # The foreign key blocks the delete instead, as for recipe_ingredient. Merge first.
     recipe_lines: Mapped[list["RecipeLine"]] = relationship(back_populates="ingredient", passive_deletes='all')
@@ -289,7 +288,6 @@ class Recipe(db.Model):
     difficulty: Mapped[str] = mapped_column(String)
     protein_type: Mapped[str] = mapped_column(String, nullable=True)
     image_filename: Mapped[str] = mapped_column(String, nullable=True)
-    source_image_filename: Mapped[str] = mapped_column(String, nullable=True)
 
     # New Metadata
     base_servings: Mapped[int] = mapped_column(Integer, default=4, server_default='4')
@@ -324,8 +322,8 @@ class Recipe(db.Model):
     source_input: Mapped[str] = mapped_column(String(500), nullable=True)
     source_type: Mapped[str] = mapped_column(String(50), default='manual', server_default='manual')
 
-    # Recipe model v2 (docs/RECIPE_MODEL_V2.md). schema_version 1 = the old lists
-    # (ingredients, instructions), 2 = the graph (components, lines, steps).
+    # Recipe model v2 (docs/RECIPE_MODEL_V2.md): the graph (components, lines, steps). schema_version 1 was the old
+    # model, retired 27.10.2026: its recipes are archived and empty, and its tables are dropped.
     schema_version: Mapped[int] = mapped_column(Integer, default=1, server_default='1', nullable=False)
     # Goes up when the content changes (lines, steps, amounts, text), not for status or images.
     revision: Mapped[int] = mapped_column(Integer, default=1, server_default='1', nullable=False)
@@ -353,12 +351,6 @@ class Recipe(db.Model):
     total_calcium_mg: Mapped[float] = mapped_column(Float, nullable=True)
     total_potassium_mg: Mapped[float] = mapped_column(Float, nullable=True)
     
-    # Nested mapping of component names to image URLs/filenames
-    component_images: Mapped[dict] = mapped_column(JSON, default=dict, server_default='{}')
-
-    # AI-generated hook texts (e.g. native_social, cinematic_result)
-    social_hooks: Mapped[dict] = mapped_column(JSON, default=dict, server_default='{}')
-
     # Knowledge Factory: link to the auto-generated "Official Deep Dive" article
     primary_resource_id: Mapped[Optional[int]] = mapped_column(ForeignKey("resource.id", ondelete='SET NULL'), nullable=True)
     primary_resource: Mapped[Optional["Resource"]] = relationship(
@@ -366,8 +358,6 @@ class Recipe(db.Model):
         foreign_keys=[primary_resource_id],
     )
 
-    instructions: Mapped[list["Instruction"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
-    ingredients: Mapped[list["RecipeIngredient"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
     components: Mapped[list["RecipeComponent"]] = relationship(back_populates="recipe", cascade="all, delete-orphan", order_by="RecipeComponent.sort_order")
     steps: Mapped[list["RecipeStep"]] = relationship(back_populates="recipe", cascade="all, delete-orphan", order_by="RecipeStep.sort_order")
     lines: Mapped[list["RecipeLine"]] = relationship(back_populates="recipe", cascade="all, delete-orphan", order_by="RecipeLine.sort_order")
@@ -375,7 +365,6 @@ class Recipe(db.Model):
     base_recipe: Mapped[Optional["Recipe"]] = relationship(remote_side="Recipe.id", backref="versions")
     meal_types: Mapped[list["RecipeMealType"]] = relationship(cascade="all, delete-orphan")
     diets: Mapped[list["RecipeDiet"]] = relationship(cascade="all, delete-orphan")
-    evaluation: Mapped["RecipeEvaluation"] = relationship(back_populates="recipe", uselist=False, cascade="all, delete-orphan")
 
     @property
     def meal_types_list(self) -> list[str]:
@@ -384,11 +373,6 @@ class Recipe(db.Model):
     @property
     def diets_list(self) -> list[str]:
         return [rd.diet for rd in self.diets]
-
-    @property
-    def total_weight_g(self) -> float:
-        """Sums up the physical gram weight of all ingredients for 'per 100g' nutrition calculations."""
-        return sum([float(i.gram_weight) for i in self.ingredients if i.gram_weight]) or 0.0
 
     interactions: Mapped[list["UserRecipeInteraction"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
     collections: Mapped[list["CollectionItem"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
@@ -409,51 +393,6 @@ class RecipeNote(db.Model):
 
     recipe: Mapped["Recipe"] = relationship(back_populates="notes")
 
-
-class Instruction(db.Model):
-    __tablename__ = 'instruction'
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id", ondelete='CASCADE'), nullable=False)
-    phase: Mapped[str] = mapped_column(String, nullable=False) # "Prep", "Cook", "Serve"
-    component: Mapped[str] = mapped_column(String(100), nullable=False, default="Main Dish") # NEW: e.g., "The Steak", "The Sauce"
-    step_number: Mapped[int] = mapped_column(Integer, nullable=False)
-    text: Mapped[str] = mapped_column(Text, nullable=False)
-    estimated_minutes: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    global_order_index: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-
-    recipe: Mapped["Recipe"] = relationship(back_populates="instructions")
-
-class RecipeEvaluation(db.Model):
-    __tablename__ = 'recipe_evaluation'
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id", ondelete='CASCADE'), unique=True, nullable=False)
-    
-    score_name: Mapped[int] = mapped_column(Integer) # 1-100 scale
-    score_ingredients: Mapped[int] = mapped_column(Integer) # 1-100 scale
-    score_components: Mapped[int] = mapped_column(Integer) # 1-100 scale
-    score_amounts: Mapped[int] = mapped_column(Integer) # 1-100 scale
-    score_steps: Mapped[int] = mapped_column(Integer) # 1-100 scale
-    score_image: Mapped[int] = mapped_column(Integer, nullable=True) # 1-100 scale, nullable for text-only recipes
-    
-    total_score: Mapped[float] = mapped_column(Float)
-    
-    evaluation_details: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
-    
-    recipe: Mapped["Recipe"] = relationship(back_populates="evaluation")
-
-class RecipeIngredient(db.Model):
-    __tablename__ = 'recipe_ingredient'
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id", ondelete='CASCADE'), nullable=False)
-    ingredient_id: Mapped[int] = mapped_column(ForeignKey("ingredient.id"), nullable=False)
-    amount: Mapped[float] = mapped_column(Float)
-    unit: Mapped[str] = mapped_column(String)
-    prep_style: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    gram_weight: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    component: Mapped[str] = mapped_column(String, default="Main", nullable=False)
-
-    recipe: Mapped["Recipe"] = relationship(back_populates="ingredients")
-    ingredient: Mapped["Ingredient"] = relationship(back_populates="recipe_ingredients")
 
 # ---------------------------------------------------------------------------
 # Recipe model v2: the recipe as a graph (docs/RECIPE_MODEL_V2.md, section 5).
@@ -533,7 +472,7 @@ class RecipeLine(db.Model):
     recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id", ondelete='CASCADE'), nullable=False, index=True)
     component_id: Mapped[int] = mapped_column(ForeignKey("recipe_component.id", ondelete='CASCADE'), nullable=False, index=True)
     step_id: Mapped[int] = mapped_column(ForeignKey("recipe_step.id", ondelete='CASCADE'), nullable=False, index=True)
-    # No ondelete: like recipe_ingredient, a used ingredient cannot be deleted, only merged.
+    # No ondelete: a used ingredient cannot be deleted, only merged.
     # Null while the ingredient is missing from the pantry; the recipe is then flagged.
     ingredient_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ingredient.id"), nullable=True, index=True)
     local_id: Mapped[str] = mapped_column(String(16), nullable=False)

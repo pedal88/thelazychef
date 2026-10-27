@@ -118,7 +118,7 @@ class PantryReviewTests(unittest.TestCase):
         from alembic.migration import MigrationContext
         from alembic.operations import Operations
         import sqlalchemy as sa
-        from database.models import Ingredient, IngredientAlias, RecipeIngredient, Recipe, db
+        from database.models import Ingredient, IngredientAlias, RecipeLine, Recipe, db
 
         rows = [dict(r, food_id=f'00000{r["id"]}') for r in ROWS]
         decisions = self.decisions(**{'5': {'alias': False}})
@@ -129,12 +129,12 @@ class PantryReviewTests(unittest.TestCase):
 
         engine = sa.create_engine('sqlite://')
         db.metadata.create_all(engine, tables=[t for t in db.metadata.sorted_tables if t.name in (
-            'ingredient', 'ingredient_alias', 'recipe', 'recipe_ingredient', 'recipe_line', 'recipe_step', 'recipe_component')])
+            'ingredient', 'ingredient_alias', 'recipe', 'recipe_line', 'recipe_step', 'recipe_component')])
         with engine.begin() as conn:
             for r in rows:
                 conn.execute(sa.insert(Ingredient).values(id=r['id'], food_id=r['food_id'], name=r['name'], status='active'))
             conn.execute(sa.insert(Recipe).values(id=1, title='x', cuisine='', difficulty='', status='draft'))
-            conn.execute(sa.insert(RecipeIngredient).values(recipe_id=1, ingredient_id=5, amount=1, unit='pc'))
+            conn.execute(sa.insert(RecipeLine).values(recipe_id=1, component_id=1, step_id=1, local_id='i1', name='x', ingredient_id=5, amount=1, unit='piece'))
 
             def run(step):
                 with Operations.context(MigrationContext.configure(conn)):
@@ -143,7 +143,7 @@ class PantryReviewTests(unittest.TestCase):
             run(m.upgrade)
             status = dict(conn.execute(sa.select(Ingredient.name, Ingredient.status)).all())
             self.assertEqual((status['cabernet sauvignon'], status['scallion'], status['fresh ginger']), ('inactive', 'inactive', 'active'))
-            self.assertEqual(conn.execute(sa.select(RecipeIngredient.ingredient_id)).scalar(), 4)
+            self.assertEqual(conn.execute(sa.select(RecipeLine.ingredient_id)).scalar(), 4)
             aliases = dict(conn.execute(sa.select(IngredientAlias.name, IngredientAlias.ingredient_id)).all())
             self.assertEqual(aliases, {'green onions': 4, 'scallion': 4})  # from gaps; the merge itself adds none here
             ginger = conn.execute(sa.select(Ingredient).where(Ingredient.name == 'fresh ginger')).one()

@@ -382,7 +382,7 @@ def upgrade():
         lid, wid = refs.get(loser), refs.get(winner)
         if not lid or not wid:
             continue
-        for table in ('recipe_ingredient', 'recipe_line', 'ingredient_alias'):
+        for table in ('recipe_line', 'ingredient_alias'):
             _q(conn, f'UPDATE {{table}} SET ingredient_id = :w WHERE ingredient_id = :l', w=wid, l=lid)
         _q(conn, "UPDATE ingredient SET status = 'inactive' WHERE id = :l", l=lid)
         if alias:
@@ -407,8 +407,7 @@ def downgrade():
     for name, *_ in NEW:
         for (i,) in _q(conn, 'SELECT id FROM ingredient WHERE lower(name) = :n AND data_source = :s', n=name, s=SOURCE).all():
             _q(conn, 'UPDATE ingredient SET base_ingredient_id = NULL WHERE base_ingredient_id = :i', i=i)
-            used = _q(conn, 'SELECT 1 FROM recipe_ingredient WHERE ingredient_id = :i UNION ALL '
-                            'SELECT 1 FROM recipe_line WHERE ingredient_id = :i', i=i).first()
+            used = _q(conn, 'SELECT 1 FROM recipe_line WHERE ingredient_id = :i', i=i).first()
             if used:
                 _q(conn, "UPDATE ingredient SET status = 'inactive', tier = NULL WHERE id = :i", i=i)
             else:
