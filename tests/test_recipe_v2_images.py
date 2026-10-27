@@ -130,7 +130,7 @@ class ImageTests(unittest.TestCase):
         r = self.recipe('lasagne')
         self.assertTrue(r.image_filename.startswith(f'dish_{r.id}_'))
         _, html = self.page('lasagne')
-        self.assertIn('<figure class="hero">', html)
+        self.assertIn('<figure class="pp-img">', html)  # the dish on the overview, not the empty plate (pp-img no-img)
         self.assertIn('class="part-images"', html)
         self.assertIn('Make the images again', html)
 
@@ -154,7 +154,7 @@ class ImageTests(unittest.TestCase):
         self.assertIn(variant['dish'], html)  # the admin sees the trial style
         self.assertIn('data-img="editorial" aria-pressed="true"', html)
         self.client.set_cookie('dish_images', 'overhead')
-        html = self.client.get(url + '/prep').get_data(as_text=True)
+        html = self.client.get(url).get_data(as_text=True)
         self.assertIn('Make “From above” images', html)  # none in that style yet
         self.client.get('/logout')
         self.client.set_cookie('dish_images', 'editorial')

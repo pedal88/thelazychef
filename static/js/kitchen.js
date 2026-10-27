@@ -1,4 +1,4 @@
-/* What cooking mode (static/js/cook.js) and the step list of the one-page flow (static/js/steps.js) share: the
+/* What the step list on the cooking screen (static/js/steps.js) needs from the kitchen: the
    timers' sound and buzz, keeping the screen awake, and how the time left is written. Window.Kitchen. */
 (function () {
   'use strict';

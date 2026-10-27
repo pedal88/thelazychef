@@ -29,7 +29,7 @@ class StyleTokenTests(unittest.TestCase):
     def test_the_v2_pages_and_their_styles_use_tokens_only(self):
         for path in (('static', 'css', f) for f in ('recipe_v2.css', 'ready.css', 'cook.css', 'delta.css')):
             self.assertEqual(re.findall(r'#[0-9a-fA-F]{3,6}\b', read(*path)), [], os.path.join(*path))
-        for name in ('recipe_v2.html', 'recipe_v2_ready.html', 'recipe_v2_cook.html', 'chefs.html'):
+        for name in ('recipe_v2_make.html', 'chefs.html'):
             self.assertEqual(re.findall(r'#[0-9a-fA-F]{6}\b', read('templates', name)), [], name)
 
 

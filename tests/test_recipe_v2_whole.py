@@ -1,4 +1,4 @@
-"""The whole dish beside cooking mode: the timeline and the metro map (services/recipe_v2/whole.py)."""
+"""The whole dish on the cooking screen: the timeline and the metro map (services/recipe_v2/whole.py)."""
 import os
 import sys
 import unittest
@@ -15,7 +15,7 @@ def views(name):
     v2 = view_tests.fasit(name)
     sch = plan_v2(v2, 'calm')
     comps = {c['local_id']: c['name'] for c in v2['components']}
-    return v2, sch, whole.timeline(v2, sch, comps), whole.metro(v2, sch, comps)
+    return v2, sch, whole.timeline(v2, sch, comps), whole.metro_map(v2, sch, comps)
 
 
 class WholeDishTests(unittest.TestCase):
@@ -45,7 +45,7 @@ class WholeDishTests(unittest.TestCase):
 
     def test_no_steps_no_views(self):
         self.assertIsNone(whole.timeline({'steps': []}, {'order': [], 'plan': {}, 'T': 0}, {}))
-        self.assertIsNone(whole.metro({'steps': []}, {'order': [], 'plan': {}, 'T': 0}, {}))
+        self.assertIsNone(whole.metro_map({'steps': []}, {'order': [], 'plan': {}, 'T': 0}, {}))
 
 
 class WholeDishPageTests(unittest.TestCase):
@@ -53,12 +53,11 @@ class WholeDishPageTests(unittest.TestCase):
                              view_tests.RecipeV2ViewTests.page)
 
     def test_cooking_mode_has_the_three_views(self):
-        _, html = self.page('carbonara', '/cook')
-        for text in ('data-whole="timeline"', 'data-whole="metro"', 'data-whole="delta"', 'class="tl"', 'class="mv-svg"',
-                     'class="delta"', 'data-whole-open', 'Whole dish', 'data-tl-status', 'data-whole-full', '#i-expand'):
+        _, html = self.page('carbonara')
+        for text in ('data-view="timeline"', 'data-view="metro"', 'data-view="delta"', 'class="tl"', 'class="mt-svg"',
+                     'data-delta-flow', 'data-tl-status'):
             self.assertIn(text, html)
         self.assertEqual(html.count('class="tl-row ph-'), 9)
-
 
 if __name__ == '__main__':
     unittest.main()

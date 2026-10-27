@@ -62,40 +62,30 @@ class RecipeV2ViewTests(unittest.TestCase):
     def test_page_shows_overview_and_shopping_list(self):
         status, html = self.page('carbonara')
         self.assertEqual(status, 200)
-        for text in ('Spaghetti carbonara', 'Ingredients', '26 min', 'class="flowbar"', 'aria-current="page">Overview'):
+        for text in ('Spaghetti carbonara', 'Ingredients', '26 min', 'data-cook-open', 'id="sheet-more"'):
             self.assertIn(text, html)
         self.assertIn('https://example.com/spaghetti.webp', html)  # the pantry symbol
         # The shopping list in kitchen groups, the staples last
         self.assertIn('class="shop-group"', html)
         self.assertLess(html.index('spaghetti.webp'), html.index('You probably have'))
-        # Equipment is on Prep, not here; servings and plan are behind the menu
-        self.assertNotIn('<h2>Equipment</h2>', html)
-        self.assertIn('class="more"', html)
-        # The steps are in cooking mode, not on the overview
-        self.assertNotIn('Method', html)
-        self.assertNotIn('class="delta"', html)
-        _, cook = self.page('carbonara', '/cook')
+        # The steps are on the cooking screen of the same page, in planned order: boil the water first, serve last
+        cook = html[html.index('id="cook"'):]
         self.assertIn('400 g spaghetti', cook)
         self.assertIn('Done when', cook)
-        # Steps come in planned order: boil the water first, serve last
         self.assertLess(cook.index('Kok opp vann'), cook.index('>Server<'))
 
     def test_servings_scale_the_amounts(self):
         _, html = self.page('carbonara', servings=6)
-        self.assertIn('data-servings-label>6</span> servings', html)
-        self.assertIn('/cook?servings=6', html)
-        # The page can scale the amounts itself: the amounts for 6, a number field, and the unit names
-        self.assertIn('data-amounts=\'[[600.0, "g"]]\'', html)
         self.assertIn('name="servings" value="6"', html)
-        self.assertIn('data-units=', html)
-        _, cook = self.page('carbonara', '/cook', servings=6)
-        self.assertIn('600 g spaghetti', cook)
+        self.assertIn('servings=6&amp;plan=prep', html)  # the plan links keep the servings
+        # The amounts for 6
+        self.assertIn('data-amounts=\'[[600.0, "g"]]\'', html)
+        self.assertIn('600 g spaghetti', html[html.index('id="cook"'):])
 
     def test_the_state_follows_the_ingredient_in_cook_steps(self):
-        _, html = self.page('tikka', '/cook')
+        _, html = self.page('tikka')
         self.assertIn('3 cloves hvitløk</span> <span class="prep">(fint revet)</span>', html)  # the state and grade in the recipe's language
-        _, overview = self.page('tikka')
-        self.assertIn('used 2 times', overview)  # garlic in the marinade and in the sauce
+        self.assertIn('used 2 times', html)  # garlic in the marinade and in the sauce
 
     def test_the_plan_can_be_changed(self):
         _, calm = self.page('carbonara', plan='calm')

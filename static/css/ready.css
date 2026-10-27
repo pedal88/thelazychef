@@ -1,4 +1,5 @@
-/* Prep (templates/recipe_v2_ready.html), from the phone and large-screen prototypes (RECIPE_VISUALIZATIONS.md 9.15).
+/* The ingredient board with the bowls (components/prep_board.html), on the recipe page's Bowls sheet; from the
+   phone and large-screen prototypes (RECIPE_VISUALIZATIONS.md 9.15).
    Colours, fonts and sizes from tokens.css. */
 .rv2.ready { max-width: 1180px; }
 

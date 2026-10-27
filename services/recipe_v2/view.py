@@ -312,7 +312,7 @@ def build(recipe, servings=None, plan='calm'):
         ready['takeout'] = take_out(ready['fetch'] + ready['bench'])
 
     if ready:
-        cook_needs(steps, steps_by, ready, sch, {lid: tile(i) for lid, i in lines.items()})
+        cook_needs(steps, steps_by, ready)
 
     first_use = {}
     for sid in sch['order']:
@@ -334,7 +334,6 @@ def build(recipe, servings=None, plan='calm'):
         'delta': delta.build(v2, sch['order'], pictured),
         # The whole dish beside cooking mode (services/recipe_v2/whole.py)
         'timeline': whole.timeline(v2, sch, comps) if v2['steps'] else None,
-        'metro': whole.metro(v2, sch, comps) if v2['steps'] else None,
         # The one-page flow's map: a transit map with time down the page
         'metro_map': whole.metro_map(v2, sch, comps) if v2['steps'] else None,
         'ready': ready,
@@ -365,33 +364,16 @@ def take_out(loose):
     return groups.grouped(items.values())
 
 
-def cook_needs(steps, steps_by, ready, sch, tiles):
-    """What cooking mode needs per step: the bowls and lines from Prep that go in here, the results of
-    earlier steps, the step standing while this one is done, and whether Prep already did it."""
-    plan, number = sch['plan'], {s['id']: s['n'] for s in steps}
-    done_here = set(ready['done_here'])
+def cook_needs(steps, steps_by, ready):
+    """What the cooking screen needs per step: the bowls from Prep that go in here (the card shows a ready bowl
+    instead of its lines), the steps it waits for, and its standing time for the timer."""
     bowls = ready['bowls'] + [b for g in ready['later'] for b in g['bowls']]
-    loose = ready['fetch'] + ready['bench'] + [f for g in ready['later'] for f in g['fetch']]
     for s in steps:
         raw = steps_by[s['id']]
-        here_bowls = [b for b in bowls if b['used']['id'] == s['id']]
-        here_tiles = [f['line'] for f in loose if f['used']['id'] == s['id']]
-        # A prep step that is part of a bowl, cooked here instead of in Prep: its own lines
-        if s['id'] in done_here:
-            here_tiles += [tiles[u] for u in raw.get('uses') or [] if u in tiles]
-        after = [a for a in raw.get('after') or [] if a in steps_by]
-        results = [{'no': number[a], 'short': steps_by[a]['short'], 'ready': a in done_here} for a in after
-                   if steps_by[a].get('uses') or not steps_by[a].get('setup')]
-        start = plan[s['id']]['start']
-        standing = [x for x in steps if x['id'] != s['id'] and (steps_by[x['id']].get('passive_minutes') or 0) >= 3
-                    and plan[x['id']]['a_end'] <= start < plan[x['id']]['end']]
-        standing.sort(key=lambda x: -plan[x['id']]['a_end'])
         s.update({
-            'bowls': here_bowls, 'tiles': here_tiles, 'results': [r for r in results if not r['ready']],
-            'after': after, 'ahead': s['id'] in done_here, 'standing': standing[0] if standing else None,
-            'active_min': raw.get('active_minutes') or 0, 'passive_min': raw.get('passive_minutes') or 0,
-            # Jobs Prep lists first ("take the butter out") are not cooking steps
-            'task': not raw.get('uses') and not raw.get('after') and not raw.get('equipment'),
+            'bowls': [b for b in bowls if b['used']['id'] == s['id']],
+            'after': [a for a in raw.get('after') or [] if a in steps_by],
+            'passive_min': raw.get('passive_minutes') or 0,
         })
 
 

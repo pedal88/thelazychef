@@ -54,14 +54,8 @@
                     location.reload();
                     return;
                 }
-                var fl = e.target.closest && e.target.closest('[data-flow-switch] [data-flow]');
-                if (fl) {  // the flow trial: tabs, or prep and cooking on one page
-                    document.cookie = 'flow=' + fl.getAttribute('data-flow') + '; path=/; max-age=31536000; samesite=lax';
-                    location.reload();
-                    return;
-                }
                 var ov = e.target.closest && e.target.closest('[data-ov-switch] [data-ov]');
-                if (ov) {  // the overview layout trial on the one-page flow, the same way
+                if (ov) {  // the overview layout trial on the recipe page, the same way
                     document.cookie = 'overview_layout=' + ov.getAttribute('data-ov') + '; path=/; max-age=31536000; samesite=lax';
                     location.reload();
                     return;

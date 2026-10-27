@@ -1,4 +1,4 @@
-"""Cooking mode: what each step needs (services/recipe_v2/view.cook_needs) and the page."""
+"""The recipe page: what each step needs on the cooking screen (services/recipe_v2/view.cook_needs), and the page."""
 import os
 import re
 import sys
@@ -19,48 +19,22 @@ class CookTests(unittest.TestCase):
     def steps(self, name):
         return {s['short']: s for s in build(db.session.get(Recipe, self.ids[name]))['steps']}
 
-    def test_each_step_gets_its_bowls_lines_and_results(self):
+    def test_each_step_gets_its_bowls_and_waits(self):
         s = self.steps('carbonara')
-        stir = s['Rør inn eggeblandingen']
-        self.assertEqual([b['name'] for b in stir['bowls']], ['Pisk eggeblandingen'])
-        self.assertEqual([(r['no'], r['short']) for r in stir['results']], [(7, 'Vend pastaen i fettet')])
-        self.assertEqual([t['name'] for t in s['Kok pastaen']['tiles']], ['spaghetti'])
-        # The boiling water is a result for the pasta, from the setup step that used it
-        self.assertEqual([r['no'] for r in s['Kok pastaen']['results']], [1])
-
-    def test_prep_done_in_prep_is_marked_and_not_a_result(self):
-        s = self.steps('carbonara')
-        self.assertTrue(s['Pisk eggeblandingen']['ahead'])
-        self.assertTrue(s['Skjær guancialen']['ahead'])
-        self.assertFalse(s['Kok pastaen']['ahead'])
-        self.assertEqual(s['Stek guancialen']['results'], [])  # the cut guanciale comes as bowl 1
-        self.assertEqual([b['no'] for b in s['Stek guancialen']['bowls']], [1])
-
-    def test_the_step_standing_while_this_one_is_done(self):
-        s = self.steps('carbonara')
-        self.assertEqual(s['Ta av pastavann']['standing']['short'], 'Stek guancialen')
+        self.assertEqual([b['name'] for b in s['Rør inn eggeblandingen']['bowls']], ['Pisk eggeblandingen'])
+        self.assertEqual([b['no'] for b in s['Stek guancialen']['bowls']], [1])  # the cut guanciale comes as bowl 1
+        self.assertEqual(s['Kok pastaen']['bowls'], [])
         self.assertEqual(s['Kok pastaen']['passive_min'], 9)
+        self.assertTrue(s['Kok pastaen']['after'])  # it waits for the boiling water
 
-    def test_the_page(self):
-        res = self.client.get(f'/recipe/{self.ids["carbonara"]}/cook', query_string={'servings': 6})
-        html = res.get_data(as_text=True)
-        self.assertEqual(res.status_code, 200)
-        self.assertEqual(len(re.findall(r'<article class="card ', html)), 9)
-        self.assertEqual(len(re.findall(r'<article class="card [^>]*data-ahead', html, re.S)), 2)
-        for text in ('js/cook.js', 'You need', 'from step 7', 'Done when', 'Start, then next', '600 g',
-                     'class="cook-side"', 'data-passive="9"'):
-            self.assertIn(text, html)
-
-    def test_prep_leads_to_cooking(self):
-        html = self.client.get(f'/recipe/{self.ids["carbonara"]}/prep').get_data(as_text=True)
-        self.assertIn(f'/recipe/{self.ids["carbonara"]}/cook?servings=4&amp;plan=calm', html)
-        _, overview = self.page('carbonara')
-        self.assertIn(f'/recipe/{self.ids["carbonara"]}/cook?', overview)
+    def test_the_old_addresses_open_the_page(self):
+        rid = self.ids['carbonara']
+        for path, end in (('/cook', '#cook'), ('/make', '')):
+            location = self.client.get(f'/recipe/{rid}{path}', query_string={'servings': 6}).headers['Location']
+            self.assertTrue(location.endswith(f'/recipe/{rid}?servings=6{end}'), location)
 
     def test_the_bowls_and_the_steps_share_their_ticks(self):
         rid = self.ids['carbonara']
-        self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
-        self.client.set_cookie('flow', 'one')
         html = self.client.get(f'/recipe/{rid}').get_data(as_text=True)
         bowls = re.findall(r'data-bowl data-key="(b:[^"]+)" data-steps="([^"]*)" data-lines="([^"]*)"', html)
         self.assertEqual(len(bowls), 3)
@@ -72,58 +46,38 @@ class CookTests(unittest.TestCase):
                 self.assertIn(f'data-st="{sid}"', html)
         self.assertIn('class="pill" data-l="', html)  # the card swaps a ready bowl's lines for the bowl
         self.assertIn('data-bowls-go', html)
-        # Each bowl's step is a button, with the key to the colours; the Prep page has neither
+        # Each bowl's step is a button, with the key to the colours
         self.assertEqual(html.count('data-goto-step="'), 3)
         self.assertIn('class="bowl-key"', html)
-        prep = self.client.get(f'/recipe/{rid}/prep', query_string={'servings': 2})
-        self.assertEqual(prep.status_code, 302)  # the one page: Prep is part of it
 
     def test_the_bowls_for_later_know_the_wait_they_are_for(self):
         rid = self.ids['tikka']
-        self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
-        self.client.set_cookie('flow', 'one')
         html = self.client.get(f'/recipe/{rid}').get_data(as_text=True)
         wait = re.search(r'<details class="later" id="later-([^"]+)" data-while="([^"]+)"', html)
         self.assertTrue(wait and wait.group(1) == wait.group(2))
         self.assertIn(f'data-st="{wait.group(2)}"', html)  # the step it waits for is a step of the list
-        self.client.set_cookie('flow', 'tabs')
-        self.assertNotIn('data-goto-step', self.client.get(f'/recipe/{rid}/prep').get_data(as_text=True))
 
-    def test_one_page_flow_is_for_admins_and_has_the_dish_and_the_steps_as_a_list(self):
+    def test_the_recipe_page_is_one_page_with_the_dish_and_the_steps_as_a_list(self):
         rid = self.ids["carbonara"]
-        self.client.set_cookie('flow', 'one')
-        html = self.client.get(f'/recipe/{rid}').get_data(as_text=True)
-        self.assertIn('>Prep</a>', html)  # visitors get the tabs, whatever the cookie says
-        self.assertNotIn('Start cooking', html)
-        self.assertTrue(self.client.get(f'/recipe/{rid}/make').headers['Location'].endswith(f'/recipe/{rid}'))
-        self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
-        self.client.set_cookie('flow', 'tabs')
-        self.assertIn('>Prep</a>', self.client.get(f'/recipe/{rid}').get_data(as_text=True))
-        # An admin who picks the one page gets Overview, Prep and Cook on the recipe's own page, with no tabs
-        self.client.set_cookie('flow', 'one')
-        html = self.client.get(f'/recipe/{rid}?servings=2').get_data(as_text=True)
+        self.client.set_cookie('flow', 'tabs')  # the cookie of the old trial changes nothing
+        html = self.client.get(f'/recipe/{rid}?servings=2').get_data(as_text=True)  # a visitor
         for text in ('class="ovl ovl-poster"', 'data-fit-ings', 'id="ings-h"', 'Get ready', 'class="heat-line"', 'Heat on', 'class="st ', 'data-start',
                      'data-view="timeline"', 'data-view="delta"', 'id="sheet-bowls"', 'data-bowl', 'js/ready.js', 'js/steps.js',
-                     'js/kitchen.js', 'Versions', 'data-cook-open', 'id="cook"', 'data-cook-close', 'data-view-menu',
+                     'js/kitchen.js', 'data-cook-open', 'id="cook"', 'data-cook-close', 'data-view-menu',
                      'class="slist focus"', 'class="st-line"', 'class="st-more"', 'data-details', 'id="sheet-step"'):
             self.assertIn(text, html)
         self.assertNotIn('class="flowbar"', html)
-        self.assertNotIn('js/cook.js', html)
+        self.assertNotIn('class="trialbar"', html)  # the admin chip is for admins
         # The steps in the order of the plan, numbered, and the line before the first step that heats the food
         rows = re.findall(r'class="(st [a-z ]+|heat-line)"', html)
         line = rows.index('heat-line')
         self.assertTrue(line > 0 and all(r.startswith('st ') for r in rows[:line] + rows[line + 1:]))
         self.assertEqual(re.findall(r'data-n="(\d+)"', html), [str(k) for k in range(1, len(rows))])
         self.assertEqual(html.count('data-servings-form'), 1)
-        # Prep, Cook and the old address lead to it, at their part of the page
-        for path, end in (('/prep', '#prep'), ('/cook', '#cook'), ('/make', '')):
-            location = self.client.get(f'/recipe/{rid}{path}?servings=2').headers['Location']
-            self.assertTrue(location.endswith(f'/recipe/{rid}?servings=2{end}'), location)
 
     def test_the_views_on_the_one_page(self):
-        rid = self.ids["carbonara"]
         self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
-        self.client.set_cookie('flow', 'one')
+        rid = self.ids["carbonara"]
         html = self.client.get(f'/recipe/{rid}').get_data(as_text=True)
         # The timeline and the metro map with the chosen step beside them; the map as a transit map with time
         self.assertIn('class="vpanel split tl-panel"', html)
@@ -165,7 +119,6 @@ class CookTests(unittest.TestCase):
     def test_the_overview_layouts_on_the_one_page(self):
         rid = self.ids["carbonara"]
         self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
-        self.client.set_cookie('flow', 'one')
         # A, the poster, unless C is chosen; the first layout, with the bar at the bottom, is gone
         for cookie, key in (('now', 'poster'), ('poster', 'poster'), ('compact', 'compact')):
             self.client.set_cookie('overview_layout', cookie)
@@ -181,14 +134,10 @@ class CookTests(unittest.TestCase):
             self.assertEqual(html.count('class="tstrip"'), 2 if key == 'compact' else 1)
             self.assertIn('id="more-tools"', html)
             self.assertEqual('class="cc-glance"' in html, key == 'compact')
-        # Without the one-page flow there is no choice of overview
-        self.client.set_cookie('flow', 'tabs')
-        self.assertNotIn('data-ov="poster"', self.client.get(f'/recipe/{rid}').get_data(as_text=True))
 
     def test_the_steps_are_a_rail_beside_the_step_you_are_on(self):
-        rid = self.ids["carbonara"]
         self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
-        self.client.set_cookie('flow', 'one')
+        rid = self.ids["carbonara"]
         html = self.client.get(f'/recipe/{rid}').get_data(as_text=True)
         # One list, fitted to the height on a wide screen, beside the card with what belongs to the page
         self.assertEqual(html.count('data-slist'), 1)
@@ -232,11 +181,24 @@ class CookTests(unittest.TestCase):
         self.assertTrue(all(not 0 < t['m'] < 65 for t in m['ticks']))  # no minute marks inside the cut
 
     def test_drafts_only_for_admins(self):
-        url = f'/recipe/{self.ids["lasagne"]}/cook'
+        url = f'/recipe/{self.ids["lasagne"]}'
         self.assertEqual(self.client.get(url).status_code, 302)
         self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
         self.assertEqual(self.client.get(url).status_code, 200)
 
+    def test_a_recipe_with_no_steps_is_only_its_overview(self):
+        from database.models import RecipeStep
+        recipe = db.session.get(Recipe, self.ids['carbonara'])
+        for line in recipe.lines:
+            db.session.delete(line)
+        for step in db.session.execute(db.select(RecipeStep).where(RecipeStep.recipe_id == recipe.id)).scalars():
+            db.session.delete(step)
+        db.session.commit()
+        status, html = self.page('carbonara')
+        self.assertEqual(status, 200)
+        self.assertIn('No steps yet.', html)
+        for gone in ('id="cook"', 'id="sheet-bowls"', 'data-cook-open'):
+            self.assertNotIn(gone, html)
 
 if __name__ == '__main__':
     unittest.main()

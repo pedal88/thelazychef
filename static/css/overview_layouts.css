@@ -5,7 +5,6 @@
 html:not(.site-menu) body:has(.make.has-ovl) > header, body:has(.make.has-ovl) > footer { display: none !important; }
 html.site-menu body:has(.make.has-ovl) > header { position: fixed; left: 0; right: 0; top: 0; }
 .rv2.make.has-ovl { max-width: none; margin: 0; padding: 0; }
-.make.has-ovl .rhead { display: none; }
 html.cooking .ovl { display: none; }
 /* The admin chip at the top, beside the back button, clear of the title and Start cooking */
 html:not(.cooking) body:has(.make.has-ovl) .trialbar { top: calc(12px + env(safe-area-inset-top, 0px)); bottom: auto; left: 64px; }

@@ -15,7 +15,7 @@ from database.db_connector import configure_database
 from database.models import db, Ingredient, Recipe, Instruction, RecipeIngredient, RecipeMealType, RecipeDiet, User, Resource, resource_relations, Chef, UserRecipeInteraction, RecipeEvaluation, RecipeCollection, CollectionItem, UserQueue, UserLink, ConceptVisual, VisualStyleGuide
 from services.storage_service import get_storage_provider
 from services.recipe_v2 import states
-from routes._shared import DIFFICULTY_LABELS, EQUIPMENT_STYLES, FLOWS, chosen_flow, OVERVIEW_LAYOUTS, chosen_overview, IMAGE_STYLES, chosen_equipment_style, dish_images, equipment_image, get_recipe_image_url, get_image_url, icon, notes_text
+from routes._shared import DIFFICULTY_LABELS, EQUIPMENT_STYLES, OVERVIEW_LAYOUTS, chosen_overview, IMAGE_STYLES, chosen_equipment_style, dish_images, equipment_image, get_recipe_image_url, get_image_url, icon, notes_text
 
 
 app = Flask(__name__)
@@ -125,9 +125,7 @@ app.add_template_global(icon)
 app.add_template_global(dish_images)
 app.add_template_global(IMAGE_STYLES, 'IMAGE_STYLES')
 app.add_template_global(EQUIPMENT_STYLES, 'EQUIPMENT_STYLES')
-app.add_template_global(FLOWS, 'FLOWS')
 app.add_template_global(OVERVIEW_LAYOUTS, 'OVERVIEW_LAYOUTS')
-app.add_template_global(chosen_flow)
 app.add_template_global(states.key, 'state_key')  # the signs for what is done to an ingredient (states.json)
 app.add_template_global(chosen_overview)
 app.add_template_global(chosen_equipment_style)

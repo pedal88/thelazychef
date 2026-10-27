@@ -29,14 +29,13 @@ class PageSpeedTests(unittest.TestCase):
         finally:
             event.remove(db.engine, 'before_cursor_execute', count)
 
-    def test_a_recipe_takes_a_handful_of_queries_and_the_other_tabs_reuse_it(self):
+    def test_a_recipe_takes_a_handful_of_queries_and_the_next_visit_reuses_it(self):
         with self.queries() as first:
             self.assertEqual(self.page('tikka')[0], 200)
         self.assertLessEqual(len(first), 15)  # it was one per step and per line: 50+
-        for part in ('/prep', '/cook', ''):
-            with self.queries() as again:
-                self.assertEqual(self.page('tikka', part)[0], 200)
-            self.assertLessEqual(len(again), 4, part)
+        with self.queries() as again:
+            self.assertEqual(self.page('tikka')[0], 200)
+        self.assertLessEqual(len(again), 4)
 
     def test_a_change_to_the_recipe_shows_at_once(self):
         self.page('carbonara')
@@ -44,7 +43,7 @@ class PageSpeedTests(unittest.TestCase):
         recipe.chef_note = 'Use the pasta water.'
         db.session.commit()
         self.assertIn('Use the pasta water.', self.page('carbonara')[1])
-        self.assertIn('data-servings-label>6</span> servings', self.page('carbonara', servings=6)[1])  # servings are part of the key
+        self.assertIn('name="servings" value="6"', self.page('carbonara', servings=6)[1])  # servings are part of the key
 
     def test_the_recipe_list_does_not_query_per_card(self):
         def list_queries():

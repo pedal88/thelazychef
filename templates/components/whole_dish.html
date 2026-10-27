@@ -1,5 +1,5 @@
 {# The whole dish beside cooking mode: the timeline and the metro map (services/recipe_v2/whole.py), drawn from
-   the plan. static/js/cook.js marks the step you are on and moves the red line to its minute. #}
+   the plan. static/js/steps.js marks the step you are on and moves the red line to its minute. #}
 
 {% macro timeline(t) %}
 <div class="tl-scroll">
@@ -27,21 +27,6 @@
 <p class="legend"><span><i class="lg a"></i>your work</span><span><i class="lg p"></i>stands on its own</span><span><i class="lg h"></i>waits to be used</span></p>
 {% endmacro %}
 
-{% macro metro(m) %}
-<div class="mv-key">{% for l in m.lanes %}<span><i class="lane-{{ l.n }}"></i>{{ l.name }}</span>{% endfor %}</div>
-<svg class="mv-svg" viewBox="0 0 {{ m.width }} {{ m.height }}" role="img" aria-label="Metro map: each part of the dish is a line, the stations in the order you start them">
-  {% for s in m.stations %}
-  <g class="mv-row" data-step="{{ s.id }}">
-    <rect x="0" y="{{ s.y - m.row_h / 2 }}" width="{{ m.width }}" height="{{ m.row_h }}" rx="8"></rect>
-    <text class="mv-min" x="{{ m.min_x }}" y="{{ s.y + 4 }}" text-anchor="end">{{ s.start }}</text>
-    <text class="mv-lbl" x="{{ m.text_x }}" y="{{ s.y + 4 }}"><tspan class="mv-no">{{ s.no }}</tspan>  {{ s.short }}</text>
-  </g>
-  {% endfor %}
-  {% for p in m.paths %}<path class="m-line lane-{{ m.lanes[p.lane].n }}" d="{{ p.d }}"></path>{% endfor %}
-  {% for s in m.stations %}<circle class="m-st ph-{{ s.phase }}" data-station="{{ s.id }}" cx="{{ s.x }}" cy="{{ s.y }}" r="{{ 9 if s.final else 6.5 }}"></circle>{% endfor %}
-</svg>
-<p class="hint">The number on the left is the minute the step starts, and the number before the name is the step in the list. Open rings are prep, filled are cooking.</p>
-{% endmacro %}
 
 {# The metro map of the one-page flow (services/recipe_v2/whole.py metro_map): a transit map with time down the page.
    The drawing is an SVG at its own size; the names are HTML beside it, so the text stays readable on a phone. A long
