@@ -39,6 +39,9 @@ def plan_recipe(v2, db_ids):
     from services.recipe_v2 import states
 
     after = copy.deepcopy(v2)
+    for line in after['ingredients']:  # a state taken from the old cut is decided again, by fill's rules of now
+        if line.get('state') and line.get('state') == line.get('cut'):
+            line.pop('state')
     states.fill(after)
     step_of = {u: s for s in v2['steps'] for u in s.get('uses') or []}
     rows = []

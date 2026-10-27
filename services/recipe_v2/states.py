@@ -114,9 +114,14 @@ def fill(data):
         line.pop('state', None)
         state, grade, rest = (line.get('cut'), None, line.get('prep_style') or '') if line.get('cut') else from_text(line.get('prep_style'))
         if line.get('cut'):  # the old field: keep its id, and still take a grade and a note from prep_style
-            _, grade, rest = from_text(line.get('prep_style'))
+            said, grade, rest = from_text(line.get('prep_style'))
             if grade not in (by_id().get(state) or {}).get('grades', []):
                 grade = None
+            # The old generation gave a line the cut of its prep step, salt and pepper too ("Cut and season"). A
+            # measured line (a teaspoon of salt) is cut only when its note says so ("1 tbsp chopped parsley"); else
+            # it is what its note says ("freshly ground"), or as it comes
+            if line.get('unit') in MEASURED and (by_id().get(state) or {}).get('group') in SOLD_SO and said != state:
+                state, grade, rest = from_text(line.get('prep_style'))
         elif state and by_id()[state]['group'] in SOLD_SO and line.get('local_id') not in method_of:
             state, grade = None, None
         # Only a line without the key (a recipe from before the catalog, or an answer that left it out) takes its
