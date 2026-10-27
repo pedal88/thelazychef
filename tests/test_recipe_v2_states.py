@@ -95,3 +95,16 @@ def test_the_shopping_list_says_the_kind_to_buy():
         {'local_id': 'i1', 'name': 'poteter', 'amount': 800, 'unit': 'g', 'variety': 'melne', 'state': 'strips'},
         {'local_id': 'i2', 'name': 'løk', 'amount': 1, 'unit': 'piece'}]}
     assert [e['varieties'] for e in shopping_list(v2)] == [['melne'], []]
+
+
+def test_a_measured_line_keeps_an_old_cut_only_when_its_note_says_so():
+    # The old generation gave salt and pepper the cut of their step ("Cut and season the chicken")
+    r = recipe(
+        [{'local_id': 'i1', 'name': 'salt', 'unit': 'tsp', 'cut': 'chop'},
+         {'local_id': 'i2', 'name': 'ground black pepper', 'unit': 'tsp', 'cut': 'chop', 'prep_style': 'freshly ground'},
+         {'local_id': 'i3', 'name': 'persille', 'unit': 'tbsp', 'cut': 'chop', 'prep_style': 'hakket'},
+         {'local_id': 'i4', 'name': 'chicken thighs', 'unit': 'g', 'cut': 'chop'}],
+        [{'local_id': 's1', 'phase': 'prep', 'method': 'chop', 'uses': ['i1', 'i2', 'i3', 'i4']}])
+    states.fill(r)
+    got = {i['local_id']: i.get('state') for i in r['ingredients']}
+    assert got == {'i1': None, 'i2': 'grind', 'i3': 'chop', 'i4': 'chop'}

@@ -23,3 +23,14 @@ def test_the_plan_lists_what_changes_where_it_comes_from_and_what_to_look_at():
     assert rows['i2']['after']['prep_style'] is None and 'variety' in rows['i2']['flags']
     assert (rows['i3']['source'], rows['i3']['after']['state'], rows['i3']['flags']) == ('step', 'chop', ['mixed_step'])
     assert rows['i3']['line_id'] == 13
+
+
+def test_a_state_from_the_old_cut_on_a_measured_line_is_taken_back():
+    # Recipe 308: salt and pepper converted to "chopped" from the cut of "Cut and season chicken"
+    v2 = {'ingredients': [
+        {'local_id': 'i1', 'name': 'salt', 'unit': 'tsp', 'cut': 'chop', 'state': 'chop'},
+        {'local_id': 'i2', 'name': 'chicken thighs', 'unit': 'g', 'cut': 'chop', 'state': 'chop'}],
+        'steps': [{'local_id': 's1', 'phase': 'prep', 'method': 'chop', 'short': 'Cut and season chicken', 'uses': ['i1', 'i2']}]}
+    rows = {r['local_id']: r for r in plan_recipe(v2, {'i1': 21, 'i2': 22})}
+    assert set(rows) == {'i1'}  # the chicken is cut; the salt is not
+    assert (rows['i1']['before']['state'], rows['i1']['after']['state'], rows['i1']['source']) == ('chop', None, 'cut')
