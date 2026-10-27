@@ -80,6 +80,19 @@ class PublicVisibilityTests(unittest.TestCase):
     def _shows_recipe(self, url):
         return self.client.get(url).status_code == 200
 
+    def test_discover_shows_approved_recipes_with_a_picture_only(self):
+        pictured = Recipe(title='Pictured', status='approved', cuisine='Italian', difficulty='Easy',
+                          image_filename='dish_x.webp')
+        drafted = Recipe(title='Pictured draft', status='draft', cuisine='Italian', difficulty='Easy',
+                         image_filename='dish_y.webp')
+        db.session.add_all([pictured, drafted])
+        db.session.commit()
+        shown = [r['id'] for r in self.client.get('/api/feed/recipes').get_json()['recipes']]
+        self.assertEqual(shown, [pictured.id])  # not self.approved, which has no picture yet
+        self._login_admin()
+        shown = [r['id'] for r in self.client.get('/api/feed/recipes').get_json()['recipes']]
+        self.assertEqual(shown, [pictured.id])
+
     def test_recipe_pages_hide_drafts_from_anonymous(self):
         self.assertTrue(self._shows_recipe(f'/recipe/{self.approved.id}'))
         self.assertFalse(self._shows_recipe(f'/recipe/{self.draft.id}'))
