@@ -1,4 +1,4 @@
-/* The pages people browse recipes on (the recipe list and its tabs, collections) in the language of the recipe
+/* The pages people browse recipes on (the recipe list and its tabs, collections, Discover) in the language of the recipe
    page (static/css/recipe_v2.css): tokens only (tokens.css), small mono labels, serif titles, quiet surfaces, thin
    lines and the line icons. Loaded on every page by base.html; everything is under lib- and rcard. */
 
@@ -69,3 +69,36 @@
 .lib-filters-sum::-webkit-details-marker { display: none; }
 .lib-filters-sum .icon { width: 16px; height: 16px; }
 @media (min-width: 768px) { .lib-filters-sum { display: none; } }
+
+/* Discover: the recipe card one at a time, the next two peeking out below, and two buttons to save or pass */
+.disc-head { text-align: center; padding-bottom: var(--space-2); }
+.disc-head p.lib-sub { margin: 0 auto; }
+.disc-head a { color: var(--color-accent); }
+.disc { display: grid; justify-items: center; gap: var(--space-6); padding: var(--space-4) var(--space-4) 64px; }
+.disc-deck { position: relative; width: min(100%, 400px); height: clamp(360px, calc(100dvh - 390px), 600px); margin-bottom: 28px; }
+.disc-loading { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; color: var(--color-muted);
+  font: 500 12px/1.3 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; }
+.disc-empty { position: absolute; inset: 0; align-content: center; background: var(--color-paper); border: 1px solid var(--color-line);
+  border-radius: var(--radius); }
+.dcard { position: absolute; inset: 0; height: auto; transform-origin: 50% 100%; user-select: none; -webkit-user-select: none;
+  box-shadow: 0 10px 30px rgb(0 0 0 / .08); transition: transform .4s ease, opacity .4s ease, box-shadow .15s; }
+.dcard .rcard-img { flex: 1; aspect-ratio: auto; min-height: 0; }
+.dcard .rcard-body { flex: none; }
+.dcard h3 { font-size: 24px; }
+.dcard-stamp { position: absolute; top: var(--space-6); padding: 4px 14px; border: 2px solid currentColor; border-radius: var(--radius-pill);
+  background: var(--color-paper); font: 600 13px/1.4 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; opacity: 0;
+  transition: opacity .15s; }
+.dcard-stamp-like { left: var(--space-6); color: var(--color-serve); }
+.dcard-stamp-pass { right: var(--space-6); color: var(--color-danger); }
+.dcard.is-liked .dcard-stamp-like, .dcard.is-passed .dcard-stamp-pass { opacity: 1; }
+.disc-acts { display: flex; gap: var(--space-4); }
+.disc-acts[hidden] { display: none; }
+.disc-btn { display: inline-flex; align-items: center; gap: 8px; min-height: 52px; padding: 0 var(--space-6); border-radius: var(--radius-pill);
+  border: 1px solid var(--color-line-strong); background: var(--color-paper); color: var(--color-ink); font: 600 15px/1 var(--font-sans);
+  cursor: pointer; transition: border-color .15s, color .15s, transform .1s; }
+.disc-btn:hover { border-color: var(--color-ink); }
+.disc-btn:active { transform: scale(.97); }
+.disc-btn .icon { width: 20px; height: 20px; }
+.disc-save { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-paper); }
+.disc-save:hover { border-color: var(--color-accent); filter: brightness(.95); }
+@media (prefers-reduced-motion: reduce) { .dcard { transition: opacity .2s; } }

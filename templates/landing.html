@@ -1,401 +1,136 @@
 {% extends "base.html" %}
 
-{% set is_landing_page = True %}
-
+{# Discover: one dish at a time, on the same paper as the recipe list. Save it or pass on it with the buttons or the
+   arrow keys; tap the card to open the recipe. The cards come from /api/feed/recipes, ten at a time. #}
 {% block content %}
-<!-- Main Container -->
-<div class="h-[100dvh] overflow-hidden bg-slate-900 relative flex flex-col items-center justify-center overscroll-none">
+<header class="lib-head disc-head">
+    <p class="eyebrow">Discover</p>
+    <h1>What shall we cook?</h1>
+    <p class="lib-sub">Save a dish for later or pass on it. Tap the card to open the recipe.{% if not current_user.is_authenticated %} <a href="{{ url_for('login') }}">Log in</a> to keep what you save.{% endif %}</p>
+</header>
 
-    <!-- Background Decoration -->
-    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-orange-500/10 rounded-full blur-3xl"></div>
-        <div class="absolute top-[20%] -right-[10%] w-[40%] h-[40%] bg-indigo-500/10 rounded-full blur-3xl"></div>
-    </div>
-
-    <!-- Card Deck Container -->
-    <div id="deck" class="relative w-[95vw] max-w-sm h-[80dvh] flex items-center justify-center">
-        <!-- Loading State -->
-        <div id="loading" class="absolute inset-0 flex items-center justify-center text-slate-400 z-0">
-            <div class="flex flex-col items-center gap-3">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
-                <span class="text-xs font-medium">Finding recipes...</span>
-            </div>
-        </div>
-
-        <!-- Empty State -->
-        <div id="empty-state"
-            class="hidden absolute inset-0 flex flex-col items-center justify-center text-center p-8 bg-white rounded-3xl shadow-lg border border-slate-100 z-0 mx-4 max-h-[400px]">
-            <span class="text-5xl mb-6">🎉</span>
-            <h3 class="text-xl font-bold text-white">You're all caught up!</h3>
-            <p class="text-white/60 mt-2 text-sm leading-relaxed mb-6">
-                We've run out of recipes for now. Check back later or review your favorites.
-            </p>
-            <a href="/recipes"
-                class="px-6 py-3 bg-white text-slate-900 rounded-full text-sm font-semibold hover:bg-slate-100 transition-colors shadow-lg">
-                Browse Cookbook
-            </a>
+<section class="disc" aria-label="Recipes to discover">
+    <div id="deck" class="disc-deck">
+        <p id="loading" class="disc-loading">Finding recipes…</p>
+        <div id="empty-state" class="lib-empty disc-empty" hidden>
+            <span class="lib-empty-ic">{{ icon('check') }}</span>
+            <h3>You have seen them all</h3>
+            <p>There are no new dishes for now. Look through the whole list, or come back later.</p>
+            <a class="lib-go" href="{{ url_for('recipes_list') }}">Browse all recipes</a>
         </div>
     </div>
 
-</div>
-
-{# No bottom button row — Pass/Like live as card overlays (see addCard JS) #}
-
-</div>
+    <div class="disc-acts" id="disc-acts" hidden>
+        <button type="button" class="disc-btn" data-act="pass" aria-label="Pass">{{ icon('close') }}<span>Pass</span></button>
+        <button type="button" class="disc-btn disc-save" data-act="like" aria-label="Save">{{ icon('heart') }}<span>Save</span></button>
+    </div>
+</section>
 
 <script>
-    // Constants
+(function () {
     const isLoggedIn = {{ current_user.is_authenticated | tojson }};
+    const fallbackImg = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80';
     const deck = document.getElementById('deck');
     const loading = document.getElementById('loading');
     const emptyState = document.getElementById('empty-state');
+    const acts = document.getElementById('disc-acts');
 
-    let cards = []; // keeps track of card objects {id, el}
+    // cards: [bottom … top]; the last one is the dish on show
+    const cards = [];
     let isLoading = false;
 
-
-
-    async function fetchRecipes() {
-        if (isLoading) return;
-        isLoading = true;
-        try {
-            const res = await fetch('/api/feed/recipes');
-            const data = await res.json();
-
-            if (data.recipes.length > 0) {
-                emptyState.classList.add('hidden');
-                // We add new cards to the BOTTOM of the stack.
-                // In DOM terms, since we position absolutely and manage z-index,
-                // we can just prepend them to deck container to keep them "behind" current ones in default stacking context,
-                // but we rely on explicit z-index in updateStack().
-                // Let's prepend to deck so they sit behind existing dom elements naturally (if z-index matches).
-
-                data.recipes.forEach(recipe => addCard(recipe));
-                updateStack(); // Refresh layout
-            } else if (cards.length === 0) {
-                // Truly empty
-                emptyState.classList.remove('hidden');
-            }
-        } catch (e) { console.error(e); }
-        isLoading = false;
-        loading.classList.add('hidden');
+    function el(tag, cls, text) {
+        const n = document.createElement(tag);
+        if (cls) n.className = cls;
+        if (text != null) n.textContent = text;
+        return n;
     }
 
+    // The recipe list's card (rcard in static/css/library.css), stacked
+    function makeCard(r) {
+        const a = el('a', 'rcard dcard');
+        a.href = '/recipe/' + r.id;
+        a.dataset.id = r.id;
+        a.draggable = false;
 
-    const activeTemplate = "{{ active_template }}";
+        const pic = el('div', 'rcard-img');
+        const img = el('img');
+        img.src = r.image_url || fallbackImg;
+        img.alt = '';
+        img.draggable = false;
+        pic.appendChild(img);
+        a.appendChild(pic);
 
-    function addCard(recipe) {
-        const el = document.createElement('div');
-        el.dataset.id = recipe.id;
-        const imgUrl = recipe.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80';
-        
-        if (activeTemplate === 'dynamic') {
-             el.className = 'absolute w-[95vw] sm:w-[350px] max-w-sm h-[75dvh] will-change-transform z-10 transition-all duration-300 overflow-hidden rounded-[2.5rem] border border-slate-600 bg-slate-900 shadow-2xl origin-bottom touch-none select-none cursor-pointer border border-white/10';
-             el.innerHTML = `
-                <img src="${imgUrl}" class="absolute inset-0 w-full h-full object-cover brightness-[0.6] pointer-events-none">
-                
-                <div class="absolute top-6 left-6 backdrop-blur-lg bg-white/10 rounded-2xl p-3 flex items-center gap-2 border border-white/20 shadow-xl pointer-events-none">
-                    <span class="text-white font-inter text-sm font-semibold tracking-wide">${recipe.diet || 'None'}</span>
-                </div>
-
-                <div class="absolute top-6 right-6 flex flex-col gap-3 pointer-events-none">
-                    <div class="backdrop-blur-lg bg-white/10 rounded-2xl px-3 py-2 flex items-center gap-2 border border-white/20 shadow-xl">
-                        <span class="text-white font-inter text-xs font-bold tracking-wider">${recipe.time_estimate || 0}M</span>
-                    </div>
-                    <div class="backdrop-blur-lg bg-white/10 rounded-2xl px-3 py-2 flex items-center gap-2 border border-white/20 shadow-xl">
-                        <span class="text-white font-inter text-xs font-bold tracking-wider">${recipe.calories || 0}K</span>
-                    </div>
-                </div>
-
-                <div class="absolute bottom-10 left-6 right-6 backdrop-blur-xl bg-black/40 rounded-3xl p-5 border border-white/10 shadow-2xl pointer-events-none">
-                    <h2 class="text-white font-inter font-bold text-[22px] leading-tight mb-2 tracking-tight drop-shadow-md line-clamp-2">${recipe.title}</h2>
-                    <p class="text-white/60 font-inter text-xs uppercase tracking-widest font-bold">${recipe.cuisine || 'Unknown'}</p>
-                </div>
-
-                <div class="stamp-save card-btn-like absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/90 backdrop-blur text-green-500 border border-green-200 shadow-2xl rounded-full w-32 h-32 flex items-center justify-center text-7xl font-inter font-black opacity-0 z-30 pointer-events-none scale-110">✓</div>
-                <div class="stamp-pass card-btn-pass absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/90 backdrop-blur text-red-500 border border-red-200 shadow-2xl rounded-full w-32 h-32 flex items-center justify-center text-7xl font-inter font-black opacity-0 z-30 pointer-events-none scale-110">✕</div>
-            `;
-        } else if (activeTemplate === 'editorial') {
-             el.className = 'absolute w-[95vw] sm:w-[350px] max-w-sm h-[75dvh] will-change-transform z-10 transition-all duration-300 overflow-hidden rounded-[2rem] bg-white shadow-2xl origin-bottom touch-none select-none cursor-pointer';
-             el.innerHTML = `
-                <img src="${imgUrl}" class="absolute inset-0 w-full h-full object-cover saturate-[1.2] pointer-events-none">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none"></div>
-                
-                <div class="absolute bottom-6 left-6 w-[75%] bg-white shadow-2xl p-6 rounded-tr-[2rem] rounded-bl-lg rounded-br-2xl pointer-events-none">
-                    <p class="font-inter text-[10px] font-bold text-orange-600 tracking-widest uppercase mb-2">${recipe.cuisine || 'Unknown'}</p>
-                    <h2 class="font-serif text-[28px] text-slate-900 leading-[1.1] mb-5 lowercase tracking-tight line-clamp-2">${recipe.title}</h2>
-                    <div class="flex flex-wrap gap-2">
-                        <div class="flex items-center gap-2 border border-slate-200 rounded-full px-3 py-1.5 bg-white text-slate-600">
-                            <span class="font-inter text-[10px] font-semibold uppercase tracking-wider">${recipe.time_estimate || 0} min</span>
-                        </div>
-                        <div class="flex items-center gap-2 border border-slate-200 rounded-full px-3 py-1.5 bg-white text-slate-600">
-                            <span class="font-inter text-[10px] font-semibold uppercase tracking-wider">${recipe.difficulty || 'Medium'}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="stamp-save card-btn-like absolute top-16 left-8 text-green-600 text-6xl font-serif italic tracking-widest opacity-0 z-20 pointer-events-none" style="text-shadow: 2px 2px 0px rgba(255,255,255,0.9); transform: rotate(-5deg);">Saved.</div>
-                <div class="stamp-pass card-btn-pass absolute top-16 right-8 text-red-600 text-6xl font-serif italic tracking-widest opacity-0 z-20 pointer-events-none" style="text-shadow: 2px 2px 0px rgba(255,255,255,0.9); transform: rotate(5deg);">Pass.</div>
-            `;
-        } else if (activeTemplate === 'minimalist') {
-             el.className = 'absolute w-[95vw] sm:w-[350px] max-w-sm h-[75dvh] will-change-transform z-10 transition-all duration-300 overflow-hidden border-2 border-black rounded-none bg-white shadow-2xl flex touch-none select-none origin-bottom cursor-pointer';
-             el.innerHTML = `
-                <div class="relative flex-grow h-full overflow-hidden">
-                    <img src="${imgUrl}" class="absolute inset-0 w-full h-full object-cover grayscale-[20%] pointer-events-none">
-                    <div class="absolute bottom-0 inset-x-0 p-5 bg-white border-t-2 border-black">
-                        <h2 class="font-inter font-black uppercase tracking-tighter text-3xl leading-none text-black line-clamp-2 truncate">${recipe.title}</h2>
-                        <p class="text-black/60 text-xs font-bold uppercase tracking-widest mt-1">${recipe.cuisine || 'Unknown'}</p>
-                    </div>
-                </div>
-                <div class="w-14 h-full bg-white/95 flex flex-col items-center py-6 gap-8 border-l-2 border-black z-10 shrink-0 pointer-events-none">
-                    <div class="flex flex-col items-center gap-1">
-                        <span class="text-[9px] font-black uppercase tracking-tighter text-black">Diet</span>
-                    </div>
-                    <div class="flex flex-col items-center gap-1">
-                        <span class="text-[9px] font-black uppercase tracking-tighter text-black">${recipe.time_estimate || 0}M</span>
-                    </div>
-                    <div class="flex flex-col items-center gap-1">
-                        <span class="text-[9px] font-black uppercase tracking-tighter text-black">${recipe.calories || 0}K</span>
-                    </div>
-                </div>
-                <div class="stamp-save card-btn-like absolute top-8 left-6 border-4 border-black bg-white text-black text-5xl font-black px-4 py-2 transform -rotate-12 opacity-0 z-20 pointer-events-none tracking-tighter shadow-[8px_8px_0px_#000]">SAVE</div>
-                <div class="stamp-pass card-btn-pass absolute top-8 right-16 border-4 border-black bg-black text-white text-5xl font-black px-4 py-2 transform rotate-12 opacity-0 z-20 pointer-events-none tracking-tighter shadow-[8px_8px_0px_#fff]">PASS</div>
-            `;
-        } else if (activeTemplate === 'glassmorphism') {
-             el.className = 'absolute w-[95vw] sm:w-[350px] max-w-sm h-[75dvh] bg-slate-800 rounded-3xl shadow-xl overflow-hidden touch-none select-none will-change-transform z-10 border border-white/10 origin-bottom cursor-pointer';
-             el.innerHTML = `
-                <img src="${imgUrl}" alt="${recipe.title}" class="absolute inset-0 w-full h-full object-cover pointer-events-none">
-                
-                <div class="stamp-save card-btn-like absolute top-8 left-8 border-4 border-green-500 text-green-500 text-4xl font-black px-4 py-2 rounded-lg transform -rotate-12 opacity-0 z-20 pointer-events-none drop-shadow-md tracking-wider">SAVE</div>
-                <div class="stamp-pass card-btn-pass absolute top-8 right-8 border-4 border-red-500 text-red-500 text-4xl font-black px-4 py-2 rounded-lg transform rotate-12 opacity-0 z-20 pointer-events-none drop-shadow-md tracking-wider">PASS</div>
-
-                <div class="absolute bottom-0 inset-x-0 h-[30%] bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end">
-                    <div class="w-full backdrop-blur-md bg-white/20 border-t border-white/30 p-5 pt-4">
-                        <div class="flex items-center gap-2 mb-3 overflow-x-auto hide-scrollbar pb-1">
-                            <div class="flex items-center gap-1.5 bg-green-500/20 border border-green-400 text-green-100 rounded-full pl-0.5 pr-2.5 py-0.5 whitespace-nowrap">
-                                <span class="text-[11px] font-semibold uppercase tracking-wider">${recipe.diet || 'None'}</span>
-                            </div>
-                            <div class="flex items-center gap-1.5 bg-black/30 border border-white/20 text-white rounded-full pl-0.5 pr-2.5 py-0.5 whitespace-nowrap">
-                                <span class="text-xs font-medium">${recipe.time_estimate || 0} min</span>
-                            </div>
-                            <div class="flex items-center gap-1.5 bg-black/30 border border-white/20 text-white rounded-full pl-0.5 pr-2.5 py-0.5 whitespace-nowrap">
-                                <span class="text-xs font-medium">${recipe.calories || 0} kcal</span>
-                            </div>
-                        </div>
-                        <h2 class="text-white font-inter font-bold text-2xl leading-tight mb-1.5 line-clamp-2 drop-shadow-md">${recipe.title}</h2>
-                        <p class="text-white/80 font-inter text-xs font-bold uppercase tracking-widest drop-shadow-md">${recipe.cuisine || 'Unknown'}</p>
-                    </div>
-                </div>
-            `;
-        } else {
-             // Default ORIGINAL
-             el.className = 'absolute w-[95vw] max-w-sm h-[75dvh] bg-white rounded-3xl shadow-2xl overflow-hidden touch-none transition-all duration-300 origin-bottom select-none border border-white/10 will-change-transform';
-             el.innerHTML = `
-                <div class="relative h-full flex flex-col group cursor-pointer">
-                    <!-- Image Section -->
-                    <div class="h-[65%] relative overflow-hidden">
-                        <img src="${imgUrl}" class="w-full h-full object-cover pointer-events-none transition-transform duration-700 group-hover:scale-105" draggable="false">
-                        <div class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/80 to-transparent"></div>
-
-                        <!-- Pass overlay — middle-left -->
-                        <button class="card-btn-pass absolute left-3 top-1/2 -translate-y-1/2 z-10
-                            w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm text-slate-500
-                            hover:bg-red-50 hover:text-red-500 hover:scale-110 active:scale-95
-                            flex items-center justify-center shadow-lg transition-all duration-150
-                            border border-white/60"
-                            title="Pass">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                        </button>
-
-                        <!-- Like overlay — middle-right -->
-                        <button class="card-btn-like absolute right-3 top-1/2 -translate-y-1/2 z-10
-                            w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm text-green-500
-                            hover:bg-green-50 hover:text-green-600 hover:scale-110 active:scale-95
-                            flex items-center justify-center shadow-lg transition-all duration-150
-                            border border-white/60"
-                            title="Like">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                            </svg>
-                        </button>
-
-                        <div class="absolute bottom-5 left-5 right-5 text-white">
-                            <div class="flex items-center gap-2 mb-2">
-                               <span class="bg-white/20 backdrop-blur-md text-white border border-white/30 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide shadow-sm">${recipe.cuisine}</span>
-                               <span class="text-xs font-medium text-white/90">⏱️ ${recipe.time_estimate}m</span>
-                            </div>
-                            <h2 class="text-3xl font-serif font-bold leading-tight drop-shadow-md line-clamp-2">${recipe.title}</h2>
-                        </div>
-                    </div>
-
-                    <!-- Content Section -->
-                    <div class="flex-grow p-6 bg-white flex flex-col text-left">
-                        <div class="flex gap-2 mb-3">
-                             <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-500/10 uppercase tracking-wider">${recipe.difficulty}</span>
-                        </div>
-
-                        <p class="text-slate-500 text-sm line-clamp-3 leading-relaxed">
-                            A ${recipe.difficulty.toLowerCase()} ${recipe.cuisine.toLowerCase()} dish. Perfect for your next meal.
-                        </p>
-
-                        <div class="mt-auto pt-4 flex items-center justify-center opacity-50 text-slate-300 text-xs font-bold uppercase tracking-widest gap-2">
-                            <span>Tap for Details</span>
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-
-        el.onclick = (e) => {
-            // Only navigate if it wasn't a drag release (simple check)
-            window.location = '/recipe/' + recipe.id;
-        };
-
-        // Insert at the beginning of deck (behind others visually if default order)
-        // But we handle order via z-index in updateStack
-        deck.insertBefore(el, deck.firstChild);
-
-        // Add to our internal tracking (at the beginning of array = bottom of stack)
-        // Wait, standard stack: [Bottom, Middle, Top].
-        // If I fetch 10 items. Item 0 is Top?
-        // Let's say we process data.recipes [0..9]. 0 should be top. 9 should be bottom.
-        // So we should add them in reverse order to the deck?
-        // Or add them and `cards` array order matters.
-        // Let's say `cards` [0] is BOTTOM, `cards` [length-1] is TOP.
-        // Then `data.recipes` need to be pushed onto `cards`.
-        // So `data.recipes[0]` is the first one user sees? Yes.
-        // So it should be at TOP.
-
-        // If I iterate `data.recipes` (0 to 9).
-        // If I convert this to a stack where Top is Last.
-        // I should REVERSE `data.recipes` before adding?
-        // Yes.
-
-        cards.unshift({ id: recipe.id, el: el }); // Add to "bottom" logic
-    }
-
-    // Fix: We need to load items such that the first one in API response is ON TOP.
-    // If API returns [A, B, C]. User sees A.
-    // My `cards` array logic: cards[length-1] is TOP.
-    // So I need to add C, then B, then A.
-    // So I should iterate API response in REVERSE.
-
-    async function safeFetch() {
-        if (isLoading) return;
-        isLoading = true;
-        try {
-            const res = await fetch('/api/feed/recipes');
-            const data = await res.json();
-            if (data.recipes.length > 0) {
-                emptyState.classList.add('hidden');
-                // Reverse to stack them correctly (First item on Top)
-                [...data.recipes].reverse().forEach(r => {
-                    // Add logic: unshift to cards array?
-                    // Wait, `cards` array: [Bottom ... Top].
-                    // If I have [A, B] and I append [C, D]. New stack: [A, B, C, D] (D on top).
-                    // But API returns [1, 2, 3] where 1 is "next".
-                    // So I want [..., 3, 2, 1] essentially? No.
-                    // If I have [Existing]. I want to add new items UNDERNEATH.
-                    // So [New3, New2, New1, ExistingTop].
-                    // So I should PREPEND to `cards` array.
-                    // And insert into DOM at start.
-
-                    // `addCard` does: `deck.insertBefore` (DOM bottom) and `cards.unshift`.
-                    // So if API gives [1, 2, 3].
-                    // forEach(1): add 1 to bottom. Cards: [1]
-                    // forEach(2): add 2 to bottom (behind 1). Cards: [2, 1].
-                    // forEach(3): add 3 to bottom (behind 2). Cards: [3, 2, 1].
-                    // Result: 1 is TOP. 3 is BOTTOM.
-                    // This is correct!
-
-                    addCard(r);
-                });
-                updateStack();
-            } else if (cards.length === 0) {
-                emptyState.classList.remove('hidden');
-            }
-        } catch (e) { console.error(e); }
-        isLoading = false;
-        loading.classList.add('hidden');
-    }
-
-    function updateStack() {
-        // cards array: [Bottom, ..., Top]
-        // Top card is at cards.length - 1
-
-        cards.forEach((cardObj, index) => {
-            // index from 0 (bottom) to length-1 (top)
-            // We want Top (length-1) to have index 0 visual logic
-            const reverseIndex = cards.length - 1 - index;
-
-            const card = cardObj.el;
-
-            if (reverseIndex === 0) {
-                // The Active Card
-                card.style.zIndex = 50;
-                card.style.transform = 'scale(1) translateY(0)';
-                card.style.opacity = 1;
-                card.style.filter = 'blur(0px)';
-                card.style.pointerEvents = 'auto'; // enable clicks
-            } else if (reverseIndex === 1) {
-                // Second card
-                card.style.zIndex = 40;
-                card.style.transform = 'scale(0.95) translateY(12px)';
-                card.style.opacity = 1;
-                card.style.filter = 'brightness(0.95)';
-                card.style.pointerEvents = 'none';
-            } else if (reverseIndex === 2) {
-                // Third card
-                card.style.zIndex = 30;
-                card.style.transform = 'scale(0.90) translateY(24px)';
-                card.style.opacity = 1; // Keep visible
-                card.style.filter = 'brightness(0.9)';
-                card.style.pointerEvents = 'none';
-            } else {
-                // Hidden cards
-                card.style.opacity = 0;
-                card.style.zIndex = 10;
-                card.style.transform = 'scale(0.85) translateY(36px)';
-                card.style.pointerEvents = 'none';
-            }
+        const body = el('div', 'rcard-body');
+        const meta = el('div', 'rcard-meta');
+        [r.cuisine, r.time_estimate ? r.time_estimate + ' min' : '', r.difficulty_label].forEach(t => {
+            if (t) meta.appendChild(el('span', '', t));
         });
+        body.appendChild(meta);
+        body.appendChild(el('h3', '', r.title));
+        if (r.diets && r.diets.length) {
+            const tags = el('div', 'rcard-tags');
+            r.diets.forEach(d => tags.appendChild(el('span', '', d)));
+            body.appendChild(tags);
+        }
+        a.appendChild(body);
+
+        a.appendChild(el('span', 'dcard-stamp dcard-stamp-like', 'Saved'));
+        a.appendChild(el('span', 'dcard-stamp dcard-stamp-pass', 'Passed'));
+        return a;
     }
 
-    async function handleAction(action) {
-        if (cards.length === 0) return;
+    // The top card in front, the next two peeking out below it
+    function updateStack() {
+        cards.forEach((c, i) => {
+            const depth = Math.min(cards.length - 1 - i, 3);
+            const card = c.el;
+            card.style.zIndex = 50 - depth * 10;
+            card.style.transform = `scale(${1 - depth * 0.04}) translateY(${depth * 14}px)`;
+            card.style.opacity = depth > 2 ? 0 : 1;
+            card.style.pointerEvents = depth === 0 ? 'auto' : 'none';
+            card.tabIndex = depth === 0 ? 0 : -1;
+            card.setAttribute('aria-hidden', depth === 0 ? 'false' : 'true');
+        });
+        acts.hidden = cards.length === 0;
+    }
 
-        const topCardObj = cards[cards.length - 1];
-        const topCard = topCardObj.el;
-
-        // Animate
-        let x = 0, y = 0, rot = 0;
-        if (action === 'pass') { x = -150; rot = -25; }
-        else if (action === 'like') { x = 150; rot = 25; }
-        else if (action === 'super_like') { y = -200; rot = 0; }
-
-        topCard.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s';
-        topCard.style.transform = `translate(${x}%, ${y}px) rotate(${rot}deg)`;
-        topCard.style.opacity = '0';
-
-        // Remove from Logical Array immediately to prevent double clicks?
-        // Better to flag it.
-
-        setTimeout(() => {
-            topCard.remove();
-            cards.pop(); // Remove from TOP
+    async function fetchMore() {
+        if (isLoading) return;
+        isLoading = true;
+        try {
+            const res = await fetch('/api/feed/recipes');
+            const data = await res.json();
+            // New cards go under the ones already there; the first in the answer is shown first
+            data.recipes.forEach(r => {
+                if (cards.some(c => c.id === r.id)) return;
+                const card = makeCard(r);
+                deck.insertBefore(card, deck.firstChild);
+                cards.unshift({ id: r.id, el: card });
+            });
             updateStack();
+        } catch (e) {
+            console.error(e);
+        }
+        isLoading = false;
+        loading.hidden = true;
+        emptyState.hidden = cards.length > 0;
+    }
 
-            // Refill if low
-            if (cards.length < 3) safeFetch();
-        }, 300);
+    function handleAction(action) {
+        if (cards.length === 0) return;
+        const top = cards.pop();
+        const card = top.el;
+        card.classList.add(action === 'like' ? 'is-liked' : 'is-passed');
+        card.style.pointerEvents = 'none';
+        card.style.transform = `translateX(${action === 'like' ? 120 : -120}%) rotate(${action === 'like' ? 12 : -12}deg)`;
+        card.style.opacity = '0';
+        setTimeout(() => card.remove(), 450);
+        updateStack();
+        if (cards.length < 3) fetchMore();
 
-        // API Call
         if (isLoggedIn) {
-            fetch('/api/interactions/recipe/' + topCard.dataset.id, {
+            fetch('/api/interactions/recipe/' + top.id, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: action })
@@ -403,25 +138,17 @@
         }
     }
 
-    // Wire overlay buttons on each new card (event delegation on deck)
-    deck.addEventListener('click', (e) => {
-        const passBtn = e.target.closest('.card-btn-pass');
-        const likeBtn = e.target.closest('.card-btn-like');
-        if (passBtn || likeBtn) {
-            e.stopPropagation(); // don't navigate to recipe page
-            handleAction(passBtn ? 'pass' : 'like');
-        }
+    acts.addEventListener('click', e => {
+        const b = e.target.closest('[data-act]');
+        if (b) handleAction(b.dataset.act);
     });
-
-    // Keyboard support (super_like removed)
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', e => {
+        if (e.target.closest('input, textarea, select')) return;
         if (e.key === 'ArrowLeft') handleAction('pass');
         if (e.key === 'ArrowRight') handleAction('like');
     });
 
-    // Init
-    fetchRecipes = safeFetch;
-    safeFetch();
-
+    fetchMore();
+})();
 </script>
 {% endblock %}
