@@ -140,7 +140,9 @@ class PantryFillTests(unittest.TestCase):
             self.assertTrue(tasks.run_pantry(self.recipe.id))
             fill.assert_called_once()
             images.assert_called_once_with(self.recipe.id)
-            tasks.run_pantry(self.recipe.id, images=False)
+            with mock.patch.object(pantry_fill, 'make_symbols') as symbols:
+                tasks.run_pantry(self.recipe.id, images=False)
+            symbols.assert_called_once()  # the new items' symbols, after the fill
             self.assertEqual(images.call_count, 1)
             fill.side_effect = RuntimeError('overloaded')
             with self.assertRaises(RuntimeError):
@@ -168,6 +170,32 @@ class PantryFillTests(unittest.TestCase):
         with mock.patch.object(tasks, 'verified', return_value=True), mock.patch.object(tasks, 'run_pantry') as run:
             self.assertEqual(client.post(url, json={'images': False}, headers={'Authorization': 'Bearer ok'}).status_code, 200)
         self.assertEqual(run.call_args.kwargs['images'], False)
+
+    def test_new_items_get_their_symbol_image_and_a_failure_leaves_one_without(self):
+        pantry_fill.fill(self.recipe, call=answer([decision('pecorino romano', 'new', new=PECORINO),
+                                                   decision('vann', 'new', new=dict(PECORINO, name='water'))]))
+        db.session.commit()
+        items = pantry_fill.without_symbol(self.recipe)
+        self.assertEqual([i.name for i in items], ['pecorino romano', 'water'])
+        self.assertEqual(pantry_fill.without_symbol(), items)  # the items of every recipe
+        self.pasta.data_source = 'usda'
+        saved = []
+        storage = SimpleNamespace(save=lambda data, name, folder: saved.append((name, folder)) or f'https://b/{folder}/{name}')
+
+        def draw(ing):
+            if ing.name == 'water':
+                raise RuntimeError('quota')
+            from io import BytesIO
+            from PIL import Image
+            out = BytesIO()
+            Image.new('RGB', (8, 8)).save(out, 'PNG')
+            return out.getvalue(), 'a prompt', {}
+        made = pantry_fill.make_symbols(items, storage, draw=draw)
+        self.assertEqual(made, ['pecorino romano'])
+        self.assertEqual(saved[0][1], 'pantry/symbols')
+        self.assertTrue(items[0].image_url.startswith('https://b/pantry/symbols/auto-'))
+        self.assertIsNone(items[1].image_url)
+        self.assertEqual([i.name for i in pantry_fill.without_symbol()], ['water'])
 
     def test_ids_for_the_script(self):
         self.assertEqual(parse_ids('337-340, 345'), [337, 338, 339, 340, 345])

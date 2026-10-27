@@ -10,6 +10,12 @@ Without --apply nothing is saved: the decisions are printed and rolled back (Cla
 
     SSL_CERT_FILE=... DB_PASS=... DB_BACKEND=cloudsql ... ANTHROPIC_API_KEY=... ./venv/bin/python -m scripts.fill_pantry --ids 337-360
     ... -m scripts.fill_pantry --ids 337-360 --apply
+
+--symbols instead makes the symbol images of every item added this way that has none yet (the queue job does it
+for new recipes). It saves to the bucket, so it needs GOOGLE_API_KEY (Gemini), STORAGE_BACKEND=gcs,
+GCS_BUCKET_NAME and Google application default credentials (gcloud auth application-default login).
+
+    ... GOOGLE_API_KEY=... STORAGE_BACKEND=gcs GCS_BUCKET_NAME=thelazychef-assets ./venv/bin/python -m scripts.fill_pantry --symbols
 """
 import argparse
 import getpass
@@ -30,13 +36,18 @@ def parse_ids(text):
 
 def main():
     ap = argparse.ArgumentParser(description='Fill the pantry for saved v2 recipes with unlinked lines.')
-    ap.add_argument('--ids', required=True, help='recipe ids: 337-360 or 337,340')
+    ap.add_argument('--ids', help='recipe ids: 337-360 or 337,340')
     ap.add_argument('--apply', action='store_true', help='save; without it the decisions are only printed')
+    ap.add_argument('--symbols', action='store_true', help='make the missing symbol images of the items added here')
     args = ap.parse_args()
+    if not args.ids and not args.symbols:
+        ap.error('give --ids or --symbols')
 
     if os.getenv('DB_BACKEND', 'local').lower() == 'cloudsql' and not os.getenv('DB_PASS'):
         os.environ['DB_PASS'] = getpass.getpass('Database password (not shown, not stored): ')
-    os.environ.setdefault('GOOGLE_API_KEY', 'not-used')  # app.py wants one; nothing here calls Google
+    if args.symbols and (not os.getenv('GOOGLE_API_KEY') or os.getenv('STORAGE_BACKEND') != 'gcs'):
+        ap.error('--symbols needs GOOGLE_API_KEY and STORAGE_BACKEND=gcs with GCS_BUCKET_NAME')
+    os.environ.setdefault('GOOGLE_API_KEY', 'not-used')  # app.py wants one; without --symbols nothing calls Google
 
     from app import app, db
     from database.models import Recipe
@@ -44,6 +55,14 @@ def main():
     from services.recipe_v2.generate import recalculate
 
     with app.app_context():
+        if args.symbols:
+            from routes._shared import get_storage
+
+            items = pantry_fill.without_symbol()
+            made = pantry_fill.make_symbols(items, get_storage())
+            db.session.commit()
+            print(f'Symbol images made for {len(made)} of {len(items)}: {", ".join(made) or "-"}')
+            return
         recipes = db.session.execute(db.select(Recipe).where(
             Recipe.id.in_(parse_ids(args.ids)), Recipe.schema_version == 2).order_by(Recipe.id)).scalars().all()
         cost = 0.0
