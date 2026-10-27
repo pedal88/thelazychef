@@ -23,6 +23,7 @@ PROJECT = os.getenv('GOOGLE_CLOUD_PROJECT', 'thelazychefai-prod')
 MAX_ATTEMPTS = 3  # same as the queue's --max-attempts
 TASK_PATH = '/internal/tasks/recipe-v2/{id}'
 IMAGES_PATH = '/internal/tasks/recipe-v2-images/{id}'  # the dish and part images of a recipe already made
+PANTRY_PATH = '/internal/tasks/recipe-v2-pantry/{id}'  # the pantry items for its unlinked lines (pantry_fill.py)
 
 
 def configured():
@@ -38,6 +39,11 @@ def enqueue(recipe_id, kind, source, language=None, images=True):
         run(recipe_id, kind, source, attempt=MAX_ATTEMPTS - 1, language=language, images=images)
         return
     _queue(TASK_PATH.format(id=recipe_id), {'kind': kind, 'source': source, 'language': language, 'images': images})
+
+
+def enqueue_pantry(recipe_id, images=True):
+    """Queue the job that fills the pantry for a recipe's unlinked lines; it queues the images after."""
+    _queue(PANTRY_PATH.format(id=recipe_id), {'images': images})
 
 
 def enqueue_images(recipe_id):
@@ -86,8 +92,10 @@ def run(recipe_id, kind, source, attempt=0, language=None, images=True):
 
     Errors raise, so Cloud Tasks tries again, except on the last attempt: then the
     placeholder becomes a flagged draft with the error, so it never stays "generating".
-    With images, a recipe that was made gets its image job queued straight after, so it is seen with its picture
-    when it is reviewed. Only with a queue: locally, images are made from the recipe page or the images page."""
+    A recipe that was made then gets its follow-up jobs: the pantry job when some lines are not in the pantry
+    (run_pantry), and with images the image job, so it is seen complete when it is reviewed. The pantry job queues
+    the images itself, so the two never change the recipe at once. Only with a queue: locally, both are done from
+    the recipe page, the images page and scripts/fill_pantry.py."""
     from services.recipe_v2.generate import create_recipe
 
     recipe = db.session.get(Recipe, recipe_id)
@@ -115,11 +123,46 @@ def run(recipe_id, kind, source, attempt=0, language=None, images=True):
         recipe.validation_errors = [{'rule': 'error', 'message': friendly_ai_error(e)}]  # the raw error is logged above
         db.session.commit()
         return True
+    if configured():
+        from services.recipe_v2.pantry_fill import needs_filling
+
+        try:
+            if needs_filling(recipe_id):
+                enqueue_pantry(recipe_id, images)
+            elif images:
+                enqueue_images(recipe_id)
+        except Exception:
+            # The recipe is made; the rest can still be done from the images page and scripts/fill_pantry.py
+            log.exception('Recipe %s: could not queue the follow-up jobs', recipe_id)
+    return True
+
+
+def run_pantry(recipe_id, images=True, attempt=0):
+    """Fill the pantry for the recipe's unlinked lines and recalculate it (pantry_fill.fill), then queue its images.
+    Errors raise, so Cloud Tasks tries again, except on the last attempt: then the error is noted on the recipe
+    (rule "pantry") and the images are queued anyway."""
+    from services.recipe_v2 import pantry_fill
+
+    recipe = db.session.get(Recipe, recipe_id)
+    if recipe is None or recipe.schema_version != 2 or not recipe.steps:
+        return True
+    try:
+        pantry_fill.fill(recipe)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        log.exception('Recipe %s: pantry failed on attempt %s', recipe_id, attempt + 1)
+        if attempt + 1 < MAX_ATTEMPTS:
+            raise
+        recipe = db.session.get(Recipe, recipe_id)
+        kept = [x for x in recipe.validation_errors or [] if x.get('rule') != pantry_fill.RULE]
+        recipe.validation_errors = kept + [{'rule': pantry_fill.RULE,
+                                            'message': friendly_ai_error(e, 'Could not fill the pantry.')}]
+        db.session.commit()
     if images and configured():
         try:
             enqueue_images(recipe_id)
         except Exception:
-            # The recipe is made; its image can still be made from the images page
             log.exception('Recipe %s: could not queue the images', recipe_id)
     return True
 

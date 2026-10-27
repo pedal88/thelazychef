@@ -188,7 +188,8 @@ def recalculate(recipe):
                 line.ingredient = db.session.get(Ingredient, found[line.local_id])
     refresh(recipe, persona.spec_for(recipe))
     missing = any(line.ingredient_id is None for line in recipe.lines)
-    recipe.is_flagged_for_review = bool(recipe.validation_errors) or missing
+    noted = [e for e in recipe.validation_errors or [] if e.get('rule') != 'pantry']  # what pantry_fill did is information
+    recipe.is_flagged_for_review = bool(noted) or missing
     return recipe
 
 

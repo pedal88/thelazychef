@@ -369,11 +369,13 @@ Taco | smart | spicy
         with mock.patch.dict(os.environ, QUEUE_ENV):
             self.assertEqual(self.client.post(url, json=body, headers={'Authorization': 'Bearer forged'}).status_code, 401)
             with mock.patch.object(tasks, 'verified', return_value=True), mock.patch.object(claude, 'call', fake_claude()), \
-                    mock.patch.object(tasks, 'enqueue_images') as queued:
+                    mock.patch.object(tasks, 'enqueue_images') as queued, mock.patch.object(tasks, 'enqueue_pantry') as pantry, \
+                    mock.patch('services.recipe_v2.pantry_fill.needs_filling', return_value=False):
                 res = self.client.post(url, json=body, headers={'Authorization': 'Bearer ok'})
         self.assertEqual(res.status_code, 200)
         self.assertEqual(db.session.get(Recipe, recipe.id).status, 'draft')
         queued.assert_called_once_with(recipe.id)  # a task from before the option gets its images too
+        pantry.assert_not_called()  # every line linked: no pantry job
 
     def test_a_made_recipe_queues_its_images_unless_asked_not_to(self):
         def placeholder():
@@ -382,7 +384,9 @@ Taco | smart | spicy
             db.session.commit()
             return recipe.id
 
-        with mock.patch.dict(os.environ, QUEUE_ENV), mock.patch.object(tasks, 'enqueue_images') as queued:
+        with mock.patch.dict(os.environ, QUEUE_ENV), mock.patch.object(tasks, 'enqueue_images') as queued, \
+                mock.patch.object(tasks, 'enqueue_pantry') as pantry, \
+                mock.patch('services.recipe_v2.pantry_fill.needs_filling', return_value=False):
             with mock.patch.object(claude, 'call', fake_claude()):
                 first = placeholder()
                 self.assertTrue(tasks.run(first, 'idea', 'Spaghetti carbonara'))
@@ -394,6 +398,7 @@ Taco | smart | spicy
                 third = placeholder()
                 self.assertTrue(tasks.run(third, 'idea', 'Spaghetti carbonara'))
         self.assertEqual([c.args for c in queued.call_args_list], [(first,), (third,)])
+        pantry.assert_not_called()
         self.assertEqual(db.session.get(Recipe, third).status, 'draft')
         self.assertTrue(db.session.get(Recipe, third).steps)
         # Without a queue (locally) no images are made on their own
