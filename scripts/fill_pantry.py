@@ -1,7 +1,9 @@
 """Fill the pantry for saved v2 recipes whose lines are not all linked (services/recipe_v2/pantry_fill.py, 27.10.2026).
 
 New recipes get this in the queue after they are made; this is for the ones made before. For each recipe Claude
-decides per unlinked line: alias to a pantry item, a new pending item, or leave it. Then the recipe is recalculated.
+decides per unlinked line: alias to a pantry item, a new item, or leave it. Then the recipe is recalculated; a
+recipe with every line linked is only recalculated (as the Recalculate button), so fixes to the nutrition or the
+chefs' rules reach it too.
 
 Without --apply nothing is saved: the decisions are printed and rolled back (Claude is still called, about
 0.01-0.05 USD a recipe). With --apply each recipe is committed on its own.
@@ -39,21 +41,22 @@ def main():
     from app import app, db
     from database.models import Recipe
     from services.recipe_v2 import pantry_fill
+    from services.recipe_v2.generate import recalculate
 
     with app.app_context():
         recipes = db.session.execute(db.select(Recipe).where(
             Recipe.id.in_(parse_ids(args.ids)), Recipe.schema_version == 2).order_by(Recipe.id)).scalars().all()
         cost = 0.0
         for recipe in recipes:
-            todo = [line.name for line in pantry_fill.unlinked(recipe)]
-            if not todo:
-                print(f'#{recipe.id} {recipe.title}: every line is linked')
-                continue
-            result = pantry_fill.fill(recipe)
-            cost += result['cost_usd']
-            print(f'#{recipe.id} {recipe.title}')
-            for note in result['notes']:
-                print(f'   {note}')
+            if not pantry_fill.unlinked(recipe):
+                recalculate(recipe)
+                print(f'#{recipe.id} {recipe.title}: every line is linked, recalculated')
+            else:
+                result = pantry_fill.fill(recipe)
+                cost += result['cost_usd']
+                print(f'#{recipe.id} {recipe.title}')
+                for note in result['notes']:
+                    print(f'   {note}')
             if args.apply:
                 db.session.commit()
             else:
