@@ -60,8 +60,7 @@ def get_recipe_image_url(recipe):
         return url_for('static', filename='recipes/' + recipe.image_filename)
 
 
-# The site menu: one list for the top bar, the phone menu and the menu on the Discover page
-# (components/site_menu.html). A group: (label, who, items); an item: (label, endpoint, url arguments, icon, who), or
+# The site menu: one list for the top bar and the phone menu (components/site_menu.html). A group: (label, who, items); an item: (label, endpoint, url arguments, icon, who), or
 # None for a line between items. who: 'all', 'user' (signed in) or 'admin'. A group with one item is a plain link.
 MENU = [
     ('Discover', 'all', [('Discover recipes', 'discover', {}, 'search', 'all'),
@@ -78,6 +77,7 @@ MENU = [
     ('Learn', 'all', [('Learn', 'resources_list', {}, 'library', 'all')]),
     ('Admin', 'admin', [('New recipe', 'new_recipe', {}, 'pot', 'admin'),
                         ('Many recipes at once', 'recipe_v2.batch_new', {}, 'list', 'admin'),
+                        ('Images for recipes', 'recipe_v2.batch_images', {}, 'image', 'admin'),
                         ('New ingredient', 'new_ingredient_view', {}, 'carrot', 'admin'),
                         None,
                         ('Recipes', 'admin_recipes_management', {}, 'clipboard', 'admin'),

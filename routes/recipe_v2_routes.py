@@ -26,9 +26,10 @@ def kind_of(source):
     return 'text' if len(source) > IDEA_MAX or '\n' in source.strip() else 'idea'
 
 
-def start(source, kind, chef_id, chosen, age, language):
+def start(source, kind, chef_id, chosen, age, language, images=True):
     """Save the placeholder recipe (status "generating") and queue the job that writes it. Settings and the baby's
-    age go with an idea only; a pasted recipe or a link is kept as it is. Returns the recipe."""
+    age go with an idea only; a pasted recipe or a link is kept as it is. images: make its images once it is made
+    (tasks.run). Returns the recipe."""
     recipe = Recipe(title=source.splitlines()[0][:120], cuisine='', difficulty='', status='generating', schema_version=2, chef_id=chef_id, language=language,
                     source_type={'idea': 'description', 'text': 'text', 'web': 'web', 'video': 'video'}[kind], source_input=source[:500],
                     settings=(chosen or None) if kind == 'idea' else None, age_from_months=age if kind == 'idea' else None)
@@ -42,7 +43,7 @@ def start(source, kind, chef_id, chosen, age, language):
         ingredient.sub_recipe_id = recipe.id
     db.session.commit()
     try:
-        tasks.enqueue(recipe.id, kind, source, language)
+        tasks.enqueue(recipe.id, kind, source, language, images=images)
     except Exception as e:
         recipe.status, recipe.is_flagged_for_review = 'draft', True
         recipe.validation_errors = [{'rule': 'error', 'message': friendly_ai_error(e, 'Could not start making the recipe.')}]
@@ -57,7 +58,8 @@ def new_recipe():
     chefs = get_chefs()
     if request.method == 'GET':
         return render_template('recipe_v2_new.html', error=None, source=request.args.get('source', ''), chefs=chefs, chef_id='', languages=LANGUAGES,
-                               language=DEFAULT_LANGUAGE, settings=SETTINGS, chosen=[], stages=age_stages()['stages'], age=None)
+                               language=DEFAULT_LANGUAGE, settings=SETTINGS, chosen=[], stages=age_stages()['stages'], age=None,
+                               images=True)
     source = (request.form.get('source') or '').strip()
     chef_id = request.form.get('chef_id') or None
     if chef_id not in {c['id'] for c in chefs}:
@@ -67,11 +69,12 @@ def new_recipe():
     ages = {s['from_months'] for s in age_stages()['stages']}
     age = request.form.get('age_from_months', type=int)
     age = (age if age in ages else min(ages)) if 'baby' in chosen else None
+    images = not request.form.get('no_images')  # on unless asked not to; the New Recipe page has no such box
     if not source:
         return render_template('recipe_v2_new.html', error='Write an idea or paste a recipe.', source=source,
                                chefs=chefs, chef_id=chef_id or '', languages=LANGUAGES, language=language,
-                               settings=SETTINGS, chosen=chosen, stages=age_stages()['stages'], age=age), 400
-    recipe = start(source, kind_of(source), chef_id, chosen, age, language)
+                               settings=SETTINGS, chosen=chosen, stages=age_stages()['stages'], age=age, images=images), 400
+    recipe = start(source, kind_of(source), chef_id, chosen, age, language, images)
     return redirect(url_for('recipe_v2.generating', recipe_id=recipe.id))
 
 
@@ -92,7 +95,8 @@ def batch_new():
     language = code_of(form.get('language')) or DEFAULT_LANGUAGE
     page = dict(text=text, chefs=chefs, chef_id=default_chef['id'] if default_chef else '', settings=SETTINGS,
                 chosen=default_settings, stages=age_stages()['stages'], age=default_age, languages=LANGUAGES,
-                language=language, again=bool(form.get('again')), max_lines=batch.MAX_LINES, idea_max=batch.IDEA_MAX)
+                language=language, again=bool(form.get('again')), max_lines=batch.MAX_LINES, idea_max=batch.IDEA_MAX,
+                images=not form.get('no_images'))
     if request.method == 'GET':
         return render_template('recipe_v2_batch.html', rows=None, **page)
 
@@ -106,11 +110,13 @@ def batch_new():
     rows, over = batch.parse(text, chefs, default_chef, default_settings, default_age, existing)
     todo = [r for r in rows if not r['error'] and (page['again'] or not r['made'])]
     low, high = batch.COST_EACH
+    if page['images']:
+        low, high = low + IMAGES_COST[0], high + IMAGES_COST[1]
     page.update(rows=rows, over=over, todo=len(todo), cost=(round(low * len(todo), 2), round(high * len(todo), 2)))
     if form.get('action') != 'make' or not todo:
         return render_template('recipe_v2_batch.html', **page)
-    ids = [start(r['source'], r['kind'], r['chef']['id'] if r['chef'] else None, r['settings'], r['age'], language).id
-           for r in todo]
+    ids = [start(r['source'], r['kind'], r['chef']['id'] if r['chef'] else None, r['settings'], r['age'], language,
+                 page['images']).id for r in todo]
     return redirect(url_for('recipe_v2.batch_status', ids=','.join(map(str, ids))))
 
 
@@ -274,5 +280,6 @@ def run_task(recipe_id):
     if data.get('kind') not in generate.SOURCE_TYPES or not data.get('source'):
         return jsonify({'error': 'bad task'}), 400
     attempt = request.headers.get('X-CloudTasks-TaskRetryCount', type=int) or 0
-    tasks.run(recipe_id, data['kind'], data['source'], attempt=attempt, language=code_of(data.get('language')))
+    tasks.run(recipe_id, data['kind'], data['source'], attempt=attempt, language=code_of(data.get('language')),
+              images=data.get('images', True))  # tasks queued before the option get images too
     return jsonify({'done': True})
