@@ -138,6 +138,6 @@
   {% if v.equipment %}<section id="more-tools"><h3 class="eyebrow">Equipment</h3>{{ equipment_grid() }}</section>{% endif %}
   {% if v.chef_note %}<section id="more-chef"><h3 class="eyebrow">From the chef</h3><p class="note">{{ v.chef_note }}</p></section>{% endif %}
   <section id="more-facts" class="more-panel">{{ dish_facts('recipe_detail', with_servings=False) }}</section>
-  {% if recipe.source_type == 'web' and recipe.source_input %}<p class="hint source">Based on <a href="{{ recipe.source_input }}" rel="noopener nofollow" target="_blank">{{ recipe.source_input.split('/')[2] }}</a></p>{% endif %}
+  {% if recipe.source_type in ('web', 'video') and recipe.source_input %}<p class="hint source">Based on <a href="{{ recipe.source_input }}" rel="noopener nofollow" target="_blank">{{ recipe.source_input.split('/')[2] }}</a></p>{% endif %}
 </dialog>
 {%- endmacro %}

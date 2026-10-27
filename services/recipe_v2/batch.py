@@ -74,7 +74,7 @@ def parse(text, chefs, default_chef=None, default_settings=(), default_age=None,
         parts = [p.strip() for p in line.split('|')]
         source, chef_word = parts[0], parts[1] if len(parts) > 1 else ''
         setting_text = ' '.join(parts[2:]) if len(parts) > 2 else ''
-        row = {'no': no, 'source': source, 'kind': 'web' if is_link(source) else 'idea', 'chef': default_chef,
+        row = {'no': no, 'source': source, 'kind': ('video' if is_video(source) else 'web') if is_link(source) else 'idea', 'chef': default_chef,
                'settings': list(default_settings), 'age': default_age, 'error': None,
                'made': (existing or {}).get(source.lower())}
         if chef_word:
@@ -91,11 +91,9 @@ def parse(text, chefs, default_chef=None, default_settings=(), default_age=None,
             row['age'] = None
         if not source:
             row['error'] = 'No idea before the "|".'
-        elif row['kind'] == 'web' and is_video(source):
-            row['error'] = 'Video links are not supported; paste the recipe text in New Recipe instead.'
         elif row['kind'] == 'idea' and len(source) > IDEA_MAX:
             row['error'] = f'The idea is {len(source)} characters; at most {IDEA_MAX}. Paste a whole recipe in New Recipe instead.'
-        if row['kind'] == 'web':  # a recipe page is kept as it is: no chef style, no settings (as in New Recipe)
+        if row['kind'] in ('web', 'video'):  # a recipe page or video is kept as it is: no chef style, no settings (as in New Recipe)
             row['settings'], row['age'] = [], None
         rows.append(row)
     return rows[:MAX_LINES], max(0, len(rows) - MAX_LINES)

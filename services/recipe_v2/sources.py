@@ -7,6 +7,10 @@ pages at 20 000 characters, which drops the recipe on long blogs (phase 0b).
 
 Some sites block scripts (Cloudflare and similar). That is not worth retrying;
 the user is asked to paste the text instead.
+
+A video link (TikTok, Instagram, YouTube) is downloaded and watched by Gemini, which writes down the recipe it shows
+(data/prompts/recipe_v2/video_text.jinja2); Claude cannot watch video. The text then goes through round 1 like a
+pasted recipe.
 """
 import json
 import re
@@ -59,7 +63,7 @@ def fetch_recipe_text(url, get=None, public=None):
     from bs4 import BeautifulSoup
 
     if is_video(url):
-        raise SourceError('Video links are not supported here yet. Use the old importer, or paste the recipe text.')
+        raise SourceError('This is a video link: it is read as a video, not as a page.')
     get, public = get or requests.get, public or _public
     try:
         for _ in range(5):  # follow redirects one by one, so each target is checked
@@ -141,3 +145,51 @@ def jsonld_text(r):
     if r.get('description'):
         lines += ['', 'Note: ' + _clean(r['description'])]
     return '\n'.join(lines)
+
+
+VIDEO_WAIT = 180  # seconds Gemini may take to process an uploaded video
+
+
+def fetch_video_text(url, download=None, watch=None):
+    """The recipe a cooking video shows, as text for round 1. download and watch can stand in for yt-dlp and Gemini in
+    tests: download(url) -> {'video_path', 'caption', 'thumbnail_path'}; watch(path, caption) -> text."""
+    from services.social_media_service import SocialMediaExtractor
+
+    try:
+        video = (download or SocialMediaExtractor.download_video)(url)
+    except ValueError:  # private, removed or not a video: trying again does not help
+        raise SourceError('Could not get the video. Check that it is public, or paste the recipe text instead.')
+    try:
+        text = (watch or _watch)(video['video_path'], video.get('caption') or '')
+    finally:
+        SocialMediaExtractor.cleanup(video['video_path'], video.get('thumbnail_path'))
+    if not (text or '').strip():
+        raise SourceError('No recipe could be read from the video. Paste the recipe text instead.')
+    return text
+
+
+def _watch(path, caption):
+    """Gemini watches the video and writes down the recipe, with the caption as help."""
+    import os
+    import time
+
+    from google.genai import types
+    from jinja2 import Environment, FileSystemLoader
+    from services.ai_models import GEMINI_TEXT, gemini_client
+
+    client = gemini_client()
+    ref = client.files.upload(file=path)
+    waited = 0
+    while ref.state and ref.state.name == 'PROCESSING':
+        if waited >= VIDEO_WAIT:
+            raise TimeoutError('Gemini did not finish processing the video')
+        time.sleep(3)
+        waited += 3
+        ref = client.files.get(name=ref.name)
+    if ref.state and ref.state.name == 'FAILED':
+        raise SourceError('The video could not be read. Paste the recipe text instead.')
+    root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    prompt = Environment(loader=FileSystemLoader(os.path.join(root, 'data', 'prompts'))).get_template(
+        'recipe_v2/video_text.jinja2').render(caption=caption)
+    resp = client.models.generate_content(model=GEMINI_TEXT, contents=[types.Part.from_uri(file_uri=ref.uri, mime_type=ref.mime_type), prompt])
+    return resp.text

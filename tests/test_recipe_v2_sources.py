@@ -119,11 +119,44 @@ class WebRecipeTests(unittest.TestCase):
         db.drop_all()
         self.ctx.pop()
 
-    def test_video_links_are_refused_in_the_form(self):
-        res = self.client.post('/new-recipe/v2', data={'source': 'https://www.instagram.com/reel/abc/'})
-        self.assertEqual(res.status_code, 400)
-        self.assertIn('Video links are not supported', res.get_data(as_text=True))
-        self.assertEqual(db.session.execute(db.select(db.func.count()).select_from(Recipe)).scalar(), 0)
+    def test_a_video_link_starts_a_video_recipe(self):
+        self.assertEqual(kind_of('https://www.tiktok.com/@cook/video/123'), 'video')
+        with mock.patch.object(tasks, 'enqueue') as enqueue:
+            res = self.client.post('/new-recipe/v2', data={'source': 'https://www.instagram.com/reel/abc/'})
+        self.assertEqual(res.status_code, 302)
+        recipe = db.session.execute(db.select(Recipe)).scalar_one()
+        self.assertEqual((recipe.source_type, recipe.status), ('video', 'generating'))
+        self.assertEqual(enqueue.call_args[0][1:3], ('video', 'https://www.instagram.com/reel/abc/'))
+
+    def test_the_video_is_watched_and_its_text_goes_into_round_1(self):
+        from services.recipe_v2 import claude, generate
+
+        seen, cleaned = [], []
+
+        def call(model, effort, messages, system=None, schema=None):
+            seen.append(messages[0]['content'])
+            raise RuntimeError('stop after round 1')
+
+        download = lambda url: {'video_path': '/tmp/v.mp4', 'caption': 'Smash burgers #dinner'}  # noqa: E731
+        watch = lambda path, caption: f'Smash burgers\n- 500 g ground beef\n(caption: {caption})'  # noqa: E731
+        real = sources.fetch_video_text
+        with mock.patch('services.recipe_v2.sources.fetch_video_text', lambda url: real(url, download=download, watch=watch)), \
+                mock.patch('services.social_media_service.SocialMediaExtractor.cleanup', lambda *a: cleaned.append(a)), \
+                mock.patch.object(claude, 'call', call), self.assertRaises(RuntimeError):
+            generate.create_recipe('video', 'https://www.tiktok.com/@cook/video/123')
+        self.assertIn('a cooking video', seen[0])
+        self.assertIn('500 g ground beef', seen[0])
+        self.assertIn('Smash burgers #dinner', seen[0])
+        self.assertEqual(cleaned, [('/tmp/v.mp4', None)])  # the download is removed
+
+    def test_a_video_that_cannot_be_had_is_a_source_error(self):
+        def gone(url):
+            raise ValueError('Failed to download video: private')
+        with mock.patch('services.social_media_service.SocialMediaExtractor.cleanup'):
+            with self.assertRaises(SourceError):
+                sources.fetch_video_text('https://www.tiktok.com/@cook/video/1', download=gone)
+            with self.assertRaises(SourceError):  # nothing could be read
+                sources.fetch_video_text('https://www.tiktok.com/@cook/video/1', download=lambda u: {'video_path': 'x'}, watch=lambda p, c: ' ')
 
     def test_an_unreadable_page_gives_a_flagged_draft_without_retries(self):
         recipe = Recipe(title='x', cuisine='', difficulty='', status='generating', schema_version=2, source_type='web')
