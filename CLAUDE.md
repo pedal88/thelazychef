@@ -1,6 +1,6 @@
 # The Lazy Chef
 
-AI recipe app: Flask + Jinja templates (Tailwind), Gemini for recipe logic, Imagen/Vertex for dish images.
+AI recipe app: Flask + Jinja templates (Tailwind), Claude for recipes (recipe model v2, `services/recipe_v2/`), Gemini for ingredient analysis and for watching recipe videos, Imagen/Vertex for dish images. The old recipe model (v1) is retired: its recipes are archived and its code is gone; only its tables remain for now.
 Production runs on Google Cloud Run with Postgres on Cloud SQL and assets in GCS.
 
 ## Layout
@@ -8,7 +8,7 @@ Production runs on Google Cloud Run with Postgres on Cloud SQL and assets in GCS
 - `app.py` – app setup only: config, template filters/globals, login manager, blueprint registration. No routes; it re-exports the models because many scripts do `from app import app, db, Recipe`
 - `routes/` – all routes, as Flask blueprints. Blueprints moved out of `app.py` use `FlatBlueprint` (`routes/_flat.py`) so their endpoint names stay un-prefixed (`url_for('recipes_list')`); new areas can use a normal `Blueprint`. Route modules must not import from `app` (circular import); shared helpers live in `routes/_shared.py`, and the storage provider comes from `get_storage()`
 - `services/` – business logic and AI calls (recipes, images, nutrition, storage, …)
-- `ai_engine.py` – Gemini prompt/response handling
+- `ai_engine.py` – pantry matching (ingredient names to the pantry) and the Gemini calls for ingredient analysis
 - `database/` – SQLAlchemy models and `db_connector.py` (`DB_BACKEND=local` → SQLite, `cloudsql` → Postgres)
 - `migrations/` – Alembic migrations via Flask-Migrate
 - `templates/` – Jinja; `base.html` holds the shared layout and footer

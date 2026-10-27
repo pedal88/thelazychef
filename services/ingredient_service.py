@@ -1,5 +1,4 @@
 from database.models import db, Ingredient, IngredientAlias
-from services.nutrition_service import calculate_nutritional_totals
 
 def normalize_alias(name: str) -> str:
     return " ".join((name or "").split()).lower()
@@ -77,8 +76,8 @@ def merge_ingredients(winner_id: int, loser_id: int) -> dict:
         db.session.delete(loser)
         db.session.commit()
 
-        # 5. Nutrition depends on the ingredient, so recalculate what changed: a v2 recipe from its lines
-        #    (services/recipe_v2/nutrition.py), an old one the old way, which would set a v2 recipe's totals to 0
+        # 5. Nutrition depends on the ingredient, so recalculate what changed (services/recipe_v2/nutrition.py); the
+        #    retired v1 recipes are left as they are
         from database.models import Recipe
         from services.recipe_v2 import nutrition
         for recipe_id in affected_recipe_ids:
@@ -87,8 +86,6 @@ def merge_ingredients(winner_id: int, loser_id: int) -> dict:
                 if recipe is not None and recipe.schema_version == 2:
                     nutrition.apply(recipe)
                     db.session.commit()
-                else:
-                    calculate_nutritional_totals(recipe_id)
             except Exception as e:
                 db.session.rollback()
                 print(f"Nutrition recalculation failed for recipe {recipe_id}: {e}")

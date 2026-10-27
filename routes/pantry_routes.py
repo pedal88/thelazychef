@@ -9,11 +9,10 @@ import uuid
 from flask import current_app, jsonify, render_template, request, session, url_for
 from flask_login import current_user, login_required
 
-from ai_engine import analyze_ingredient_ai, extract_nutrients_from_text, get_top_pantry_suggestions
-from database.models import Ingredient, Recipe, RecipeIngredient, db
+from ai_engine import analyze_ingredient_ai, extract_nutrients_from_text
+from database.models import Ingredient, Recipe, db
 from routes._flat import FlatBlueprint
-from routes._shared import get_recipe_image_url, get_storage, viewer_is_admin
-from services.pantry_service import get_slim_pantry_context
+from routes._shared import get_storage, viewer_is_admin
 from services.photographer_service import generate_actual_image
 from utils.decorators import admin_required
 from utils.image_helpers import generate_ingredient_placeholder
@@ -139,106 +138,6 @@ def search_ingredients_api():
         print(f"Search API Error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
-@pantry_bp.route('/api/relink-ingredient', methods=['POST'])
-@login_required
-@admin_required
-def relink_ingredient_api():
-    """Swap the ingredient linked to a RecipeIngredient row. Admin only."""
-    if not current_user.is_admin:
-        return jsonify({'success': False, 'error': 'Admin access required'}), 403
-    
-    try:
-        data = request.get_json()
-        ri_id = data.get('recipe_ingredient_id')
-        new_ing_id = data.get('new_ingredient_id')
-        
-        if not ri_id or not new_ing_id:
-            return jsonify({'success': False, 'error': 'Missing parameters'}), 400
-        
-        # Fetch the RecipeIngredient row
-        ri = db.session.get(RecipeIngredient, ri_id)
-        if not ri:
-            return jsonify({'success': False, 'error': 'Recipe ingredient link not found'}), 404
-        
-        # Verify the target ingredient exists
-        new_ingredient = db.session.get(Ingredient, new_ing_id)
-        if not new_ingredient:
-            return jsonify({'success': False, 'error': 'Target ingredient not found'}), 404
-        
-        old_name = ri.ingredient.name
-        ri.ingredient_id = new_ingredient.id
-        db.session.commit()
-        
-        print(f"🔗 Relinked: '{old_name}' → '{new_ingredient.name}' (recipe_ingredient #{ri_id})")
-        return jsonify({'success': True, 'old_name': old_name, 'new_name': new_ingredient.name})
-        
-    except Exception as e:
-        db.session.rollback()
-        print(f"Relink API Error: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-@pantry_bp.route('/api/suggest-substitutes', methods=['POST'])
-@login_required
-@admin_required
-def suggest_substitutes_api():
-    """Return top 3 pantry substitutes for a missing ingredient name."""
-    try:
-        data = request.get_json()
-        name = data.get('name', '').strip()
-        
-        if not name:
-            return jsonify({'success': True, 'suggestions': []})
-        
-        # Ensure pantry_map includes DB items (not just pantry.json)
-        from ai_engine import set_pantry_memory
-        slim_context = get_slim_pantry_context()
-        set_pantry_memory(slim_context)
-        
-        
-        # Get fuzzy suggestions (extra to account for filtered imports)
-        suggestions = get_top_pantry_suggestions(name, top_n=6)
-        
-        # Enrich with DB data (image, full name casing, category)
-        
-        enriched = []
-        for sug in suggestions:
-            if len(enriched) >= 3:
-                break
-                
-            ingredient = db.session.execute(
-                db.select(Ingredient).where(Ingredient.food_id == sug['food_id'])
-            ).scalars().first()
-            
-            if not ingredient:
-                continue
-            # Skip IMP-imported ingredients only (not all non-original)
-            if (ingredient.main_category or '').lower() == 'imported':
-                continue
-            if ingredient.food_id.startswith('IMP-'):
-                continue
-            
-            img = None
-            if ingredient.image_url:
-                if ingredient.image_url.startswith('http'):
-                    img = ingredient.image_url
-                else:
-                    img = url_for('static', filename=ingredient.image_url)
-            
-            enriched.append({
-                'id': ingredient.id,
-                'name': ingredient.name,
-                'food_id': ingredient.food_id,
-                'category': ingredient.main_category or 'Uncategorized',
-                'image_url': img,
-                'score': sug['score']
-            })
-        
-        return jsonify({'success': True, 'suggestions': enriched})
-        
-    except Exception as e:
-        print(f"Suggest Substitutes API Error: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
 @pantry_bp.route('/api/analyze-ingredient', methods=['POST'])
 @login_required
 @admin_required
@@ -361,35 +260,26 @@ def get_ingredient_details_api(id):
 @login_required
 @admin_required
 def delete_ingredient_api(id):
+    """Delete an ingredient no recipe uses. One that recipe lines use is merged into another instead (the lines move
+    with it); deleting it would leave them without their pantry row. Rows of the retired v1 recipes go with it."""
     try:
         ingredient = db.session.get(Ingredient, id)
         if not ingredient:
             return jsonify({'success': False, 'error': 'Ingredient not found'}), 404
-            
-        # Check usage in recipes
-        if ingredient.recipe_ingredients:
-            force = request.args.get('force') == 'true'
-            if not force:
-                recipes = [ri.recipe.title for ri in ingredient.recipe_ingredients]
-                return jsonify({
-                    'success': False, 
-                    'requires_confirmation': True,
-                    'message': f"Used in {len(recipes)} recipes: {', '.join(recipes)}. Delete anyway?",
-                    'recipes': recipes
-                }), 409
-
-            # Explicitly delete associations if forcing
-            for ri in ingredient.recipe_ingredients:
-                db.session.delete(ri)
-            
+        used = sorted({line.recipe.title for line in ingredient.recipe_lines})
+        if used:
+            return jsonify({'success': False, 'recipes': used,
+                            'error': f"Used in {len(used)} recipes: {', '.join(used)}. Merge it into another ingredient instead."}), 409
+        for ri in list(ingredient.recipe_ingredients):
+            db.session.delete(ri)
         db.session.delete(ingredient)
         db.session.commit()
-        
         return jsonify({'success': True})
-        
-    except Exception as e:
+    except Exception:
         db.session.rollback()
-        return jsonify({'success': False, 'error': str(e)}), 500
+        current_app.logger.exception('Deleting ingredient %s failed', id)
+        return jsonify({'success': False, 'error': 'Could not delete the ingredient.'}), 500
+
 
 @pantry_bp.route('/api/update-ingredient-image', methods=['POST'])
 @login_required
@@ -543,84 +433,6 @@ def add_synonym_api():
         
 
 
-@pantry_bp.route('/api/quick-add-ingredient', methods=['POST'])
-@login_required
-@admin_required
-def quick_add_ingredient_api():
-    try:
-        data = request.get_json()
-        name = data.get('name')
-        
-        if not name:
-            return jsonify({'success': False, 'error': 'Name is required'}), 400
-            
-        # 1. Load Categories via Constraints
-        data_dir = os.path.join(current_app.root_path, 'data', 'constraints')
-        with open(os.path.join(data_dir, 'categories.json'), 'r') as f:
-            category_data = json.load(f)
-            
-        # 2. Analyze
-        analysis = analyze_ingredient_ai(name, category_data)
-        
-        # 3. Generate Unique ID
-        all_ids = db.session.execute(db.select(Ingredient.food_id)).scalars().all()
-        max_id = 0
-        for fid in all_ids:
-             # Ensure we parse only numeric IDs
-             if fid.isdigit():
-                val = int(fid)
-                if val > max_id:
-                    max_id = val
-        
-        new_id_int = max_id + 1
-        new_food_id = f"{new_id_int:06d}"
-        
-        # 4. Create Object (No Image for Quick Add - can regenerate later)
-        new_ing = Ingredient(
-            food_id=new_food_id,
-            name=analysis.get('name', name), # Use analyzed name if available
-            main_category=analysis.get('main_category'),
-            sub_category=analysis.get('sub_category'),
-            default_unit=analysis.get('unit'),
-            average_g_per_unit=analysis.get('average_g_per_unit'),
-            
-            # Nutrition
-            calories_per_100g=analysis.get('calories_per_100g'),
-            protein_per_100g=analysis.get('protein_per_100g'),
-            fat_per_100g=analysis.get('fat_per_100g'),
-            carbs_per_100g=analysis.get('carbs_per_100g'),
-            sugar_per_100g=analysis.get('sugar_per_100g'),
-            fiber_per_100g=analysis.get('fiber_per_100g'),
-            sodium_mg_per_100g=analysis.get('sodium_mg_per_100g'),
-            fat_saturated_per_100g=analysis.get('fat_saturated_per_100g'),
-            kj_per_100g=analysis.get('kj_per_100g'),
-            
-            # Metadata
-            image_prompt=analysis.get('image_prompt'),
-            created_at=datetime.datetime.now().isoformat()
-        )
-        
-        db.session.add(new_ing)
-        db.session.commit()
-        
-        # Update cache/map if needed?
-        # Typically the app gets context from DB on request, 
-        # but generate_recipe_ai uses a "slim_context" passed to it.
-        # We assume the user RE-SUBMITS the generation request, which will fetch fresh context.
-        
-        return jsonify({
-            'success': True, 
-            'ingredient': {
-                'id': new_ing.id,
-                'name': new_ing.name
-            }
-        })
-
-    except Exception as e:
-        db.session.rollback()
-        print(f"Quick Add Error: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
 @pantry_bp.route('/api/update-ingredient-data', methods=['POST'])
 @login_required
 @admin_required
@@ -725,65 +537,8 @@ def set_pending_link(ingredient_id: int):
     ing = db.session.get(Ingredient, ingredient_id)
     if not ing:
         return jsonify({'success': False, 'error': 'Ingredient not found'}), 404
-    session['pending_link_ingredient_id'] = ingredient_id
-    query_url = url_for('generate', query=ing.name)
-    return jsonify({'success': True, 'redirect_url': query_url, 'ingredient_name': ing.name})
-
-
-@pantry_bp.route('/api/recipe/<int:recipe_id>/promote-to-ingredient', methods=['POST'])
-@login_required
-@admin_required
-def promote_recipe_to_ingredient(recipe_id: int):
-    """Direction A: take a recipe and link it to an existing matching ingredient
-    (or create a minimal stub if none exists), then set ingredient.sub_recipe_id."""
-    if not current_user.is_admin:
-        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
-
-    recipe = db.session.get(Recipe, recipe_id)
-    if not recipe:
-        return jsonify({'success': False, 'error': 'Recipe not found'}), 404
-
-    # Try to find an existing ingredient by exact name (case-insensitive)
-    existing = db.session.execute(
-        db.select(Ingredient)
-        .where(db.func.lower(Ingredient.name) == recipe.title.lower())
-        .limit(1)
-    ).scalars().first()
-
-    if existing:
-        existing.sub_recipe_id = recipe_id
-        db.session.commit()
-        return jsonify({
-            'success': True,
-            'action': 'linked',
-            'ingredient_id': existing.id,
-            'ingredient_name': existing.name,
-        })
-
-    # No match — create a minimal stub with category = 'Prepared / Sauce'
-    all_ids = db.session.execute(db.select(Ingredient.food_id)).scalars().all()
-    max_id = max((int(fid) for fid in all_ids if fid.isdigit()), default=0)
-    new_food_id = f"{max_id + 1:06d}"
-
-    stub = Ingredient(
-        food_id=new_food_id,
-        name=recipe.title,
-        main_category='Prepared',
-        sub_category='sauce',
-        default_unit='tbsp',
-        image_url=get_recipe_image_url(recipe) if recipe.image_filename else None,
-        sub_recipe_id=recipe_id,
-        created_at=datetime.datetime.now().isoformat(),
-        status='active',
-    )
-    db.session.add(stub)
-    db.session.commit()
-    return jsonify({
-        'success': True,
-        'action': 'created',
-        'ingredient_id': stub.id,
-        'ingredient_name': stub.name,
-    })
+    session['pending_link_ingredient_id'] = ingredient_id  # routes/recipe_v2_routes.py start() links the recipe made next
+    return jsonify({'success': True, 'redirect_url': url_for('recipe_v2.new_recipe', source=ing.name), 'ingredient_name': ing.name})
 
 
 @pantry_bp.route('/api/merge-ingredients', methods=['POST'])

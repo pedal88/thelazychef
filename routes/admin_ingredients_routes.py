@@ -4,7 +4,7 @@ from __future__ import annotations
 from flask import Blueprint, abort, jsonify, render_template, request
 from flask_login import login_required
 
-from database.models import Ingredient, IngredientEvaluation, RecipeIngredient, db
+from database.models import Ingredient, IngredientEvaluation, db
 from services.storage_service import get_storage_provider
 from utils.decorators import admin_required
 import os
@@ -42,14 +42,14 @@ def dashboard() -> str:
     solid_backgrounds      = request.args.get("solid_backgrounds", "0") == "1"
 
     # ── Build query ─────────────────────────────────────────────────
-    from sqlalchemy.orm import aliased
-    from database.models import RecipeIngredient
-    
+    from database.models import RecipeLine
+
+    # How many recipes use it: the recipes with a line for it
     query = db.session.query(
         Ingredient,
-        db.func.count(RecipeIngredient.id).label('recipe_count')
+        db.func.count(distinct(RecipeLine.recipe_id)).label('recipe_count')
     ).outerjoin(
-        RecipeIngredient, Ingredient.id == RecipeIngredient.ingredient_id
+        RecipeLine, Ingredient.id == RecipeLine.ingredient_id
     ).group_by(
         Ingredient.id
     ).order_by(
@@ -159,6 +159,15 @@ def update_status(ing_id: int):
     })
 
 
+def _recipes_using(ing_id: int) -> int:
+    """How many recipes have a line for the ingredient."""
+    from database.models import RecipeLine
+
+    return db.session.execute(
+        db.select(db.func.count(db.distinct(RecipeLine.recipe_id))).where(RecipeLine.ingredient_id == ing_id)
+    ).scalar_one()
+
+
 @ingredients_bp.route("/api/<int:ing_id>", methods=["DELETE"])
 @login_required
 @admin_required
@@ -172,12 +181,7 @@ def delete_ingredient(ing_id: int):
     if not ing:
         return jsonify({"success": False, "error": "Ingredient not found"}), 404
 
-    # Check for any recipe linkage
-    linked_count: int = db.session.execute(
-        db.select(db.func.count(RecipeIngredient.id)).where(
-            RecipeIngredient.ingredient_id == ing_id
-        )
-    ).scalar_one()
+    linked_count = _recipes_using(ing_id)
 
     if linked_count > 0:
         # Safe archive — do not destroy FK relationships
@@ -190,7 +194,9 @@ def delete_ingredient(ing_id: int):
             "new_status": "inactive",
         })
 
-    # Truly unused — safe to hard delete
+    # Truly unused — safe to hard delete, with the rows of the retired v1 recipes
+    for ri in list(ing.recipe_ingredients):
+        db.session.delete(ri)
     db.session.delete(ing)
     db.session.commit()
     return jsonify({"success": True, "action": "deleted"})
@@ -205,12 +211,7 @@ def inspect_ingredient(ing_id: int):
     if not ing:
         return jsonify({"success": False, "error": "Ingredient not found"}), 404
 
-    # Count recipes using this ingredient
-    recipe_count: int = db.session.execute(
-        db.select(db.func.count(RecipeIngredient.id)).where(
-            RecipeIngredient.ingredient_id == ing_id
-        )
-    ).scalar_one()
+    recipe_count = _recipes_using(ing_id)
 
     return jsonify({
         "success": True,

@@ -1,4 +1,4 @@
-from database.models import db, Ingredient, RecipeIngredient
+from database.models import db, Ingredient, RecipeLine
 from thefuzz import fuzz
 
 def get_suggested_merges(limit=20):
@@ -98,7 +98,8 @@ def get_suggested_merges(limit=20):
         c['winner_image'] = winner.image_filename if hasattr(winner, 'image_filename') and winner.image_filename else ''
         c['loser_image'] = loser.image_filename if hasattr(loser, 'image_filename') and loser.image_filename else ''
         
-        c['winner_count'] = db.session.query(db.func.count(RecipeIngredient.id)).filter(RecipeIngredient.ingredient_id == winner.id).scalar()
-        c['loser_count'] = db.session.query(db.func.count(RecipeIngredient.id)).filter(RecipeIngredient.ingredient_id == loser.id).scalar()
+        # How many recipes use each: the recipes with a line for it
+        c['winner_count'] = db.session.query(db.func.count(db.distinct(RecipeLine.recipe_id))).filter(RecipeLine.ingredient_id == winner.id).scalar()
+        c['loser_count'] = db.session.query(db.func.count(db.distinct(RecipeLine.recipe_id))).filter(RecipeLine.ingredient_id == loser.id).scalar()
 
     return final_list

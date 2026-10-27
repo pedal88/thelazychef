@@ -125,7 +125,7 @@
             return (file.type && file.type.match(/(image|video)\/.*/)) ? true : false;
         },
         inputStyle: "contenteditable",
-        previewClass: "prose prose-slate max-w-none p-4",
+        previewClass: ["prose", "prose-slate", "max-w-none", "p-4"],  // EasyMDE wants the classes as a list
     });
 
     // Global Capture Handler for Drag and Drop

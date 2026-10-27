@@ -6,12 +6,10 @@ maks to ganger, og lagre JSON-resultatet med tokens, kostnad og tid.
 Testsett:
   fasit  De fem rettene fra docs/prototypes/fem-retter.html, generert fra en kort
          beskrivelse gjennom runde 1 (tekst) og runde 2 (strukturering).
-  db     15 godkjente oppskrifter fra databasen, strukturert fra dagens ingredienser
-         og steg. Hentes først med --export-db (krever databasetilgang), så kjøringen
-         kan gjentas uten database.
+  db     15 godkjente oppskrifter fra databasen, strukturert fra ingrediensene og
+         stegene de hadde i v1 (eksportert før v1 ble pensjonert).
 
 Bruk:
-  python scripts/pilot_v2.py --export-db              # henter 15 godkjente oppskrifter
   python scripts/pilot_v2.py --set all                # kjører piloten
   python scripts/pilot_v2.py --set fasit --only carbonara
   python scripts/pilot_v2.py --summary                # skriver tabellene på nytt fra lagrede resultater
@@ -21,7 +19,6 @@ Leser GOOGLE_API_KEY fra miljøet eller .env, som appen. Endrer ikke databasen.
 import argparse
 import json
 import os
-import random
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -226,38 +223,6 @@ def run_one(set_name, key, source=None):
 
 # ---------- database ----------
 
-def export_db(n=15, seed=42):
-    from dotenv import load_dotenv
-    from flask import Flask
-    load_dotenv()
-    from database.db_connector import configure_database
-    from database.models import Recipe, db
-
-    app = Flask(__name__)
-    configure_database(app)
-    db.init_app(app)
-    with app.app_context():
-        recipes = db.session.query(Recipe).filter(Recipe.status == 'approved').order_by(Recipe.id).all()
-        print(f'{len(recipes)} godkjente oppskrifter, velger {min(n, len(recipes))} (frø {seed})')
-        picked = sorted(random.Random(seed).sample(recipes, min(n, len(recipes))), key=lambda r: r.id)
-        out = []
-        for r in picked:
-            steps = sorted(r.instructions, key=lambda s: (s.global_order_index if s.global_order_index is not None else 10_000, s.step_number))
-            out.append({
-                'id': r.id, 'title': r.title, 'servings': r.base_servings,
-                'ingredients': [{'component': i.component, 'amount': i.amount, 'unit': i.unit, 'prep_style': i.prep_style,
-                                 'name': i.ingredient.name if i.ingredient else None,
-                                 'food_id': i.ingredient.food_id if i.ingredient else None} for i in r.ingredients],
-                'steps': [{'component': s.component, 'phase': s.phase, 'step_number': s.step_number,
-                           'global_order_index': s.global_order_index, 'estimated_minutes': s.estimated_minutes,
-                           'text': s.text} for s in steps],
-            })
-    save_json(DB_INPUT, out)
-    print('skrev', os.path.relpath(DB_INPUT, ROOT))
-
-
-# ---------- oppsummering ----------
-
 def load_results():
     out = []
     for set_name in ('fasit', 'db'):
@@ -305,20 +270,17 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--set', choices=['fasit', 'db', 'all'], default=None)
     ap.add_argument('--only', help='kommaseparert liste med nøkler (carbonara, db-42 …)')
-    ap.add_argument('--export-db', action='store_true')
     ap.add_argument('--summary', action='store_true')
     ap.add_argument('--workers', type=int, default=4)
     args = ap.parse_args()
 
-    if args.export_db:
-        export_db()
     if args.set:
         jobs = []
         if args.set in ('fasit', 'all'):
             jobs += [('fasit', k, None) for k in DESCRIPTIONS]
         if args.set in ('db', 'all'):
             if not os.path.exists(DB_INPUT):
-                sys.exit(f'Mangler {os.path.relpath(DB_INPUT, ROOT)}. Kjør med --export-db først.')
+                sys.exit(f'Mangler {os.path.relpath(DB_INPUT, ROOT)}. Den ble eksportert fra v1-oppskriftene, som er pensjonert (scripts/retire_v1.py).')
             jobs += [('db', f"db-{r['id']}", db_source_text(r)) for r in load_json(DB_INPUT)]
         if args.only:
             keep = set(args.only.split(','))

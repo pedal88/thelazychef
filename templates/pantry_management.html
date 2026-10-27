@@ -617,22 +617,16 @@
 
 
 
-    async function deleteIngredient(id, name, force = false) {
-        if (!force && !confirm(`Delete ${name}?`)) return;
-
-        const url = force ? `/api/ingredient/${id}?force=true` : `/api/ingredient/${id}`;
+    // An ingredient recipes use is not deleted: the answer names them and says to merge it instead
+    async function deleteIngredient(id, name) {
+        if (!confirm(`Delete ${name}?`)) return;
 
         try {
-            const response = await fetch(url, { method: 'DELETE' });
+            const response = await fetch(`/api/ingredient/${id}`, { method: 'DELETE' });
             const data = await response.json();
 
             if (response.ok && data.success) {
                 window.location.reload();
-            } else if (data.requires_confirmation) {
-                // Show the specific recipes and ask again
-                if (confirm(data.message)) {
-                    deleteIngredient(id, name, true);
-                }
             } else {
                 alert(`Error: ${data.error || "Failed to delete"}`);
             }

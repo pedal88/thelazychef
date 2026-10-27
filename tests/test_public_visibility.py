@@ -16,8 +16,15 @@ os.environ.setdefault('SECRET_KEY', 'test-secret')
 os.environ.setdefault('GOOGLE_API_KEY', 'test-key')
 os.environ.pop('K_SERVICE', None)
 
+import json  # noqa: E402
+
 from app import app  # noqa: E402
 from database.models import Ingredient, Recipe, Resource, User, db  # noqa: E402
+from services.recipe_v2.store import save_v2  # noqa: E402
+
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+with open(os.path.join(ROOT, 'data', 'pilot_v2', 'fasit', 'carbonara.json'), encoding='utf-8') as f:
+    CARBONARA = json.load(f)
 
 
 class PublicVisibilityTests(unittest.TestCase):
@@ -36,6 +43,7 @@ class PublicVisibilityTests(unittest.TestCase):
             r = Recipe(title=title, status=status, cuisine='Italian', difficulty='Easy',
                        protein_type='Vegetarian', chef_id='gourmet')
             db.session.add(r)
+            save_v2(r, CARBONARA)
             return r
 
         self.approved = recipe('Approved', 'approved')
@@ -73,17 +81,23 @@ class PublicVisibilityTests(unittest.TestCase):
         return self.client.get(url).status_code == 200
 
     def test_recipe_pages_hide_drafts_from_anonymous(self):
-        for path in ('/recipe/{}', '/recipe/{}/kitchen'):
-            self.assertTrue(self._shows_recipe(path.format(self.approved.id)), path)
-            self.assertFalse(self._shows_recipe(path.format(self.draft.id)), path)
+        self.assertTrue(self._shows_recipe(f'/recipe/{self.approved.id}'))
+        self.assertFalse(self._shows_recipe(f'/recipe/{self.draft.id}'))
 
     def test_admin_sees_draft_recipes(self):
         self._login_admin()
         self.assertTrue(self._shows_recipe(f'/recipe/{self.draft.id}'))
-        self.assertTrue(self._shows_recipe(f'/recipe/{self.draft.id}/kitchen'))
 
     def test_missing_recipe_redirects_instead_of_crashing(self):
-        self.assertEqual(self.client.get('/recipe/9999/kitchen').status_code, 302)
+        self.assertEqual(self.client.get('/recipe/9999').status_code, 302)
+
+    def test_a_retired_v1_recipe_is_gone_even_for_admins(self):
+        old = Recipe(title='Old', status='archived', cuisine='', difficulty='', schema_version=1)
+        db.session.add(old)
+        db.session.commit()
+        self._login_admin()
+        self.assertEqual(self.client.get(f'/recipe/{old.id}').status_code, 404)
+        self.assertEqual(self.client.get(f'/api/sub-recipe/{old.id}').status_code, 404)
 
     def test_sub_recipe_api_allows_approved_and_linked_drafts_only(self):
         self.assertEqual(self.client.get(f'/api/sub-recipe/{self.approved.id}').status_code, 200)
