@@ -137,8 +137,22 @@ def run(recipe_id, kind, source, attempt=0, language=None, images=True):
     return True
 
 
+def _symbols(recipe):
+    """The symbol images of the items pantry_fill added for the recipe; a failure leaves them without."""
+    from routes._shared import get_storage
+    from services.recipe_v2 import pantry_fill
+
+    try:
+        pantry_fill.make_symbols(pantry_fill.without_symbol(recipe), get_storage())
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        log.exception('Recipe %s: could not make the symbols of its new pantry items', recipe.id)
+
+
 def run_pantry(recipe_id, images=True, attempt=0):
-    """Fill the pantry for the recipe's unlinked lines and recalculate it (pantry_fill.fill), then queue its images.
+    """Fill the pantry for the recipe's unlinked lines and recalculate it (pantry_fill.fill), make the symbol images
+    of the items it added, then queue the recipe's images.
     Errors raise, so Cloud Tasks tries again, except on the last attempt: then the error is noted on the recipe
     (rule "pantry") and the images are queued anyway."""
     from services.recipe_v2 import pantry_fill
@@ -149,6 +163,7 @@ def run_pantry(recipe_id, images=True, attempt=0):
     try:
         pantry_fill.fill(recipe)
         db.session.commit()
+        _symbols(recipe)
     except Exception as e:
         db.session.rollback()
         log.exception('Recipe %s: pantry failed on attempt %s', recipe_id, attempt + 1)

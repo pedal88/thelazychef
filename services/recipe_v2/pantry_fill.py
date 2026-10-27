@@ -6,7 +6,7 @@ One Claude call sees those lines and the whole pantry, and decides for each line
   alias of that item, so the next recipe with it is linked by the matcher straight away.
 - new: a real product a shopper in Norway buys that the pantry lacks ("lingonberries"). It is added as active, so
   the matcher and the next recipes use it, marked data_source "claude_auto" so it can be found and checked, with its
-  nutrition per 100 g as sold; the symbol image can be made from the ingredient page.
+  nutrition per 100 g as sold. Its symbol image is made after (make_symbols), in the app's style.
 - skip: a pinch of something rare that would not change the nutrition and will not come back, or not a food.
 
 Then the recipe is recalculated (generate.recalculate). Each decision is noted on the recipe (rule "pantry",
@@ -16,6 +16,8 @@ recipe is made (tasks.run_pantry), and from scripts/fill_pantry.py for recipes m
 Every step takes `call` so tests can stand in for Claude.
 """
 import json
+import logging
+import time
 import uuid
 from datetime import datetime
 
@@ -24,6 +26,7 @@ from services.ai_models import RECIPE_V2_EFFORT, RECIPE_V2_MODEL
 from services.recipe_v2 import claude
 from services.recipe_v2.generate import ROOT, env
 
+log = logging.getLogger(__name__)
 RULE = 'pantry'  # the recipe note; information only, never a reason to flag the recipe
 AUTO = 'claude_auto'  # Ingredient.data_source of the items added here
 NUTRIENTS = ('calories', 'protein', 'carbs', 'fat', 'fat_saturated', 'sugar', 'fiber', 'sodium_mg')
@@ -165,6 +168,34 @@ def fill(recipe, call=None):
     recipe.validation_errors = kept + [{'rule': RULE, 'message': n} for n in notes]
     recalculate(recipe)
     return {'notes': notes, 'cost_usd': usage['cost_usd']}
+
+
+def without_symbol(recipe=None):
+    """The items added here that have no symbol image yet: the recipe's, or all of them."""
+    stmt = db.select(Ingredient).where(Ingredient.data_source == AUTO, Ingredient.image_url.is_(None))
+    if recipe is not None:
+        ids = {line.ingredient_id for line in recipe.lines if line.ingredient_id}
+        stmt = stmt.where(Ingredient.id.in_(ids or {0}))
+    return db.session.execute(stmt.order_by(Ingredient.id)).scalars().all()
+
+
+def make_symbols(items, storage, draw=None):
+    """Make the symbol image of each item (services/ingredient_symbols.py), as the ingredient page's "regenerate"
+    does. One that fails is logged and left without; it can be made from the ingredient page. Returns the names
+    made. The caller commits."""
+    from services.ingredient_symbols import generate_symbol, web_image
+
+    draw = draw or generate_symbol
+    made = []
+    for ing in items:
+        try:
+            png, prompt, _meta = draw(ing)
+            ing.image_url = storage.save(web_image(png), f'{ing.food_id}_{int(time.time())}.webp', 'pantry/symbols')
+            ing.image_prompt, ing.has_transparent_image = prompt, False
+            made.append(ing.name)
+        except Exception:
+            log.exception('Pantry item %s: no symbol image', ing.name)
+    return made
 
 
 def needs_filling(recipe_id):
