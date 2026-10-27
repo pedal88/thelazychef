@@ -29,14 +29,15 @@ def configured():
     return bool(os.getenv('TASKS_QUEUE'))
 
 
-def enqueue(recipe_id, kind, source, language=None):
+def enqueue(recipe_id, kind, source, language=None, images=True):
     """Queue the job, or run it now when no queue is configured.
 
-    language is a code (services/recipe_v2/language.py); None: as the idea or source is written."""
+    language is a code (services/recipe_v2/language.py); None: as the idea or source is written.
+    images: queue the image job when the recipe is made (see run)."""
     if not configured():
-        run(recipe_id, kind, source, attempt=MAX_ATTEMPTS - 1, language=language)
+        run(recipe_id, kind, source, attempt=MAX_ATTEMPTS - 1, language=language, images=images)
         return
-    _queue(TASK_PATH.format(id=recipe_id), {'kind': kind, 'source': source, 'language': language})
+    _queue(TASK_PATH.format(id=recipe_id), {'kind': kind, 'source': source, 'language': language, 'images': images})
 
 
 def enqueue_images(recipe_id):
@@ -80,11 +81,13 @@ def verified(auth_header):
     return claims.get('email') == os.environ.get('TASKS_SERVICE_ACCOUNT') and claims.get('email_verified', False)
 
 
-def run(recipe_id, kind, source, attempt=0, language=None):
+def run(recipe_id, kind, source, attempt=0, language=None, images=True):
     """Make the recipe into the placeholder. Returns True when done (also when the recipe ends up flagged).
 
     Errors raise, so Cloud Tasks tries again, except on the last attempt: then the
-    placeholder becomes a flagged draft with the error, so it never stays "generating"."""
+    placeholder becomes a flagged draft with the error, so it never stays "generating".
+    With images, a recipe that was made gets its image job queued straight after, so it is seen with its picture
+    when it is reviewed. Only with a queue: locally, images are made from the recipe page or the images page."""
     from services.recipe_v2.generate import create_recipe
 
     recipe = db.session.get(Recipe, recipe_id)
@@ -94,7 +97,6 @@ def run(recipe_id, kind, source, attempt=0, language=None):
 
     try:
         create_recipe(kind, source, chef_id=recipe.chef_id, recipe=recipe, language=language)
-        return True
     except SourceError as e:
         # The link cannot be read (blocked, gone, no recipe). Trying again does not help.
         db.session.rollback()
@@ -113,6 +115,13 @@ def run(recipe_id, kind, source, attempt=0, language=None):
         recipe.validation_errors = [{'rule': 'error', 'message': friendly_ai_error(e)}]  # the raw error is logged above
         db.session.commit()
         return True
+    if images and configured():
+        try:
+            enqueue_images(recipe_id)
+        except Exception:
+            # The recipe is made; its image can still be made from the images page
+            log.exception('Recipe %s: could not queue the images', recipe_id)
+    return True
 
 
 def run_images(recipe_id, attempt=0):

@@ -355,7 +355,7 @@ Taco | smart | spicy
         self.assertEqual(request['url'], f'https://app.example/internal/tasks/recipe-v2/{recipe.id}')
         self.assertEqual(request['oidcToken'], {'serviceAccountEmail': QUEUE_ENV['TASKS_SERVICE_ACCOUNT'], 'audience': 'https://app.example'})
         self.assertEqual(json.loads(base64.b64decode(request['body'])),
-                         {'kind': 'idea', 'source': 'Lasagne', 'language': 'nb'})
+                         {'kind': 'idea', 'source': 'Lasagne', 'language': 'nb', 'images': True})
         self.assertEqual(recipe.language, 'nb')
         self.assertEqual(self.client.get(f'/new-recipe/v2/{recipe.id}/status').get_json()['status'], 'generating')
 
@@ -368,10 +368,52 @@ Taco | smart | spicy
         self.assertEqual(self.client.post(url, json=body).status_code, 401)
         with mock.patch.dict(os.environ, QUEUE_ENV):
             self.assertEqual(self.client.post(url, json=body, headers={'Authorization': 'Bearer forged'}).status_code, 401)
-            with mock.patch.object(tasks, 'verified', return_value=True), mock.patch.object(claude, 'call', fake_claude()):
+            with mock.patch.object(tasks, 'verified', return_value=True), mock.patch.object(claude, 'call', fake_claude()), \
+                    mock.patch.object(tasks, 'enqueue_images') as queued:
                 res = self.client.post(url, json=body, headers={'Authorization': 'Bearer ok'})
         self.assertEqual(res.status_code, 200)
         self.assertEqual(db.session.get(Recipe, recipe.id).status, 'draft')
+        queued.assert_called_once_with(recipe.id)  # a task from before the option gets its images too
+
+    def test_a_made_recipe_queues_its_images_unless_asked_not_to(self):
+        def placeholder():
+            recipe = Recipe(title='x', cuisine='', difficulty='', status='generating', schema_version=2)
+            db.session.add(recipe)
+            db.session.commit()
+            return recipe.id
+
+        with mock.patch.dict(os.environ, QUEUE_ENV), mock.patch.object(tasks, 'enqueue_images') as queued:
+            with mock.patch.object(claude, 'call', fake_claude()):
+                first = placeholder()
+                self.assertTrue(tasks.run(first, 'idea', 'Spaghetti carbonara'))
+            with mock.patch.object(claude, 'call', fake_claude()):
+                self.assertTrue(tasks.run(placeholder(), 'idea', 'Spaghetti carbonara', images=False))
+            # A queue that will not take the image job leaves the recipe made
+            queued.side_effect = RuntimeError('queue down')
+            with mock.patch.object(claude, 'call', fake_claude()):
+                third = placeholder()
+                self.assertTrue(tasks.run(third, 'idea', 'Spaghetti carbonara'))
+        self.assertEqual([c.args for c in queued.call_args_list], [(first,), (third,)])
+        self.assertEqual(db.session.get(Recipe, third).status, 'draft')
+        self.assertTrue(db.session.get(Recipe, third).steps)
+        # Without a queue (locally) no images are made on their own
+        with mock.patch.object(tasks, 'enqueue_images') as local, mock.patch.object(claude, 'call', fake_claude()):
+            tasks.run(placeholder(), 'idea', 'Spaghetti carbonara')
+        local.assert_not_called()
+
+    def test_the_forms_make_images_unless_skipped(self):
+        self.login()
+        new = self.client.get('/new-recipe/v2').get_data(as_text=True)
+        self.assertIn('name="no_images" value="1">', new)  # not ticked
+        ran = []
+        with mock.patch.object(tasks, 'enqueue', lambda *a, **kw: ran.append(kw['images'])):
+            self.client.post('/new-recipe/v2', data={'source': 'Lasagne'})
+            self.client.post('/new-recipe/v2', data={'source': 'Lasagne', 'no_images': '1'})
+            self.client.post('/new-recipe/v2/batch', data={'lines': 'Pasta for two', 'action': 'make'})
+            self.client.post('/new-recipe/v2/batch', data={'lines': 'Pizza for two', 'action': 'make', 'no_images': '1'})
+        self.assertEqual(ran, [True, False, True, False])
+        checked = self.client.post('/new-recipe/v2/batch', data={'lines': 'Soup for two', 'action': 'check'}).get_data(as_text=True)
+        self.assertIn('with the images', checked)
 
     def test_the_task_endpoint_makes_versions(self):
         recipe = Recipe(title='x', cuisine='', difficulty='', status='generating', schema_version=2)

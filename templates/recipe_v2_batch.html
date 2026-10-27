@@ -36,10 +36,11 @@ Pasta med tomatsaus og linser, for 4 | | vegetarian, kid</pre>
       {% for code, name in languages.items() %}<option value="{{ code }}"{% if code == language %} selected{% endif %}>{{ name }}</option>{% endfor %}
     </select>
     <label class="again"><input type="checkbox" name="again" value="1"{% if again %} checked{% endif %}> Make lines again that were made before</label>
+    <label class="again"><input type="checkbox" name="no_images" value="1"{% if not images %} checked{% endif %}> Skip the images (they can be made later under Admin → Images for recipes)</label>
     <div class="batch-go">
       <button type="submit" name="action" value="check" class="go{{ ' quiet' if rows and todo }}">Check the lines</button>
       {% if rows and todo %}<button type="submit" name="action" value="make" class="go">Make {{ todo }} recipe{{ 's' if todo != 1 }}</button>
-      <span class="hint">About {{ '%.2f'|format(cost[0]) }}–{{ '%.2f'|format(cost[1]) }} USD with Claude, images not included. They are made one after another in the background; you can leave the page.</span>{% endif %}
+      <span class="hint">About {{ '%.2f'|format(cost[0]) }}–{{ '%.2f'|format(cost[1]) }} USD{{ ' with the images' if images else ' with Claude, images not included' }}. They are made one after another in the background; you can leave the page.</span>{% endif %}
     </div>
   </form>
 

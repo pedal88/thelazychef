@@ -23,10 +23,11 @@ class SiteMenuTests(unittest.TestCase):
         self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
         html = self.client.get('/collections').get_data(as_text=True)  # a page with no tabs of its own
         # The top bar and the phone menu, from the same list
-        for text in ('Saved', 'Made', 'Cook next', 'Recipe Mirror', 'Many recipes at once', 'Notes on recipes', 'New article'):
+        for text in ('Saved', 'Made', 'Cook next', 'Recipe Mirror', 'Many recipes at once', 'Images for recipes', 'Notes on recipes',
+                     'New article'):
             self.assertEqual(html.count(f'{text}</a>'), 2, text)
         self.assertIn('Log out', html)
-        # The Discover page has its own header and a slide-over menu: the same items again
+        # Discover has the same menu
         discover = self.client.get('/').get_data(as_text=True)
         self.assertEqual(discover.count('Many recipes at once</a>'), 2)
 

@@ -32,6 +32,7 @@
     <select id="language" name="language">
       {% for code, name in languages.items() %}<option value="{{ code }}"{% if code == language %} selected{% endif %}>{{ name }}</option>{% endfor %}
     </select>
+    <label style="display:inline-flex;gap:8px;align-items:center;font-size:15px"><input type="checkbox" name="no_images" value="1"{% if not images %} checked{% endif %}> Skip the images</label>
     {% if error %}<p class="formerror" role="alert">{{ error }}</p>{% endif %}
     <button type="submit" class="go">Make the recipe</button>
   </form>
