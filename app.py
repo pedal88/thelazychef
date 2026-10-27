@@ -12,7 +12,7 @@ from flask_login import LoginManager
 import markdown
 from database.db_connector import configure_database
 # The models are re-exported here: many scripts do "from app import app, db, Recipe, ..."
-from database.models import db, Ingredient, Recipe, Instruction, RecipeIngredient, RecipeMealType, RecipeDiet, User, Resource, resource_relations, Chef, UserRecipeInteraction, RecipeEvaluation, RecipeCollection, CollectionItem, UserQueue, UserLink, ConceptVisual, VisualStyleGuide
+from database.models import db, Ingredient, Recipe, RecipeMealType, RecipeDiet, User, Resource, resource_relations, Chef, UserRecipeInteraction, RecipeEvaluation, RecipeCollection, CollectionItem, UserQueue, UserLink, ConceptVisual, VisualStyleGuide
 from services.storage_service import get_storage_provider
 from services.recipe_v2 import states
 from routes._shared import DIFFICULTY_LABELS, EQUIPMENT_STYLES, OVERVIEW_LAYOUTS, chosen_overview, IMAGE_STYLES, chosen_equipment_style, dish_images, equipment_image, get_recipe_image_url, get_image_url, icon, notes_text
@@ -99,15 +99,6 @@ def difficulty_label(level):
     return DIFFICULTY_LABELS.get(level, level or '')
 
 
-@app.template_filter('get_protein_category')
-def get_protein_category(protein_name):
-    """Finds the Tier 1 category for a given protein name."""
-    if not protein_name: return None
-    from ai_engine import protein_data
-    for category in protein_data:
-        if protein_name in category['examples']:
-            return category['category']
-    return "Other"
 @app.context_processor
 def utility_processor():
     def update_query_params(**kwargs):

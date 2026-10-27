@@ -2,10 +2,10 @@
 
 Admin only, next to today's New Recipe until the old generation goes in step 8.
 """
-from flask import Blueprint, abort, flash, jsonify, redirect, render_template, request, url_for
+from flask import Blueprint, abort, flash, jsonify, redirect, render_template, request, session, url_for
 from flask_login import login_required
 
-from database.models import Recipe, db
+from database.models import Ingredient, Recipe, db
 from services.chef_service import get_chefs
 from services.recipe_v2 import batch, generate, tasks
 from services.recipe_v2.persona import SETTINGS, age_stages
@@ -33,6 +33,13 @@ def start(source, kind, chef_id, chosen, age, language):
                     source_type={'idea': 'description', 'text': 'text', 'web': 'web', 'video': 'video'}[kind], source_input=source[:500],
                     settings=(chosen or None) if kind == 'idea' else None, age_from_months=age if kind == 'idea' else None)
     db.session.add(recipe)
+    db.session.flush()
+    # An ingredient that is itself a recipe (a stock, a spice mix): the recipe made after "Make a recipe for it"
+    # (pantry_routes.set_pending_link) becomes its sub-recipe
+    pending = session.pop('pending_link_ingredient_id', None)
+    ingredient = db.session.get(Ingredient, int(pending)) if pending else None
+    if ingredient is not None:
+        ingredient.sub_recipe_id = recipe.id
     db.session.commit()
     try:
         tasks.enqueue(recipe.id, kind, source, language)
@@ -49,7 +56,7 @@ def start(source, kind, chef_id, chosen, age, language):
 def new_recipe():
     chefs = get_chefs()
     if request.method == 'GET':
-        return render_template('recipe_v2_new.html', error=None, source='', chefs=chefs, chef_id='', languages=LANGUAGES,
+        return render_template('recipe_v2_new.html', error=None, source=request.args.get('source', ''), chefs=chefs, chef_id='', languages=LANGUAGES,
                                language=DEFAULT_LANGUAGE, settings=SETTINGS, chosen=[], stages=age_stages()['stages'], age=None)
     source = (request.form.get('source') or '').strip()
     chef_id = request.form.get('chef_id') or None

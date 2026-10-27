@@ -114,19 +114,6 @@
 </th>
 {% endmacro %}
 
-{% macro colored_score(score_val) %}
-{% if score_val and score_val != '-' and score_val != 'None' %}
-{% set s = score_val | float | int %}
-<span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset
-        {% if s < 80 %}bg-red-50 text-red-700 ring-red-600/10
-        {% elif s <= 90 %}bg-orange-50 text-orange-700 ring-orange-600/20
-        {% else %}bg-green-50 text-green-700 ring-green-600/20{% endif %}">
-    {{ s }}
-</span>
-{% else %}
--
-{% endif %}
-{% endmacro %}
 
 
 {% block title %}Recipes Management - The Lazy Chef{% endblock %}
@@ -175,7 +162,7 @@
         <div class="sm:flex sm:items-center">
             <div class="sm:flex-auto">
                 <h1 class="text-base font-semibold leading-6 text-gray-900">Recipes Management</h1>
-                <p class="mt-2 text-sm text-gray-700">Master dashboard for categorization, nutrition, and QA scoring.
+                <p class="mt-2 text-sm text-gray-700">Master dashboard for categorization and nutrition.
                 </p>
             </div>
 
@@ -191,23 +178,12 @@
                     data-view="nut">
                     Nutrition
                 </button>
-                <button type="button"
-                    class="view-toggle px-3 py-1.5 text-sm font-medium rounded-md text-gray-500 hover:text-gray-900 hover:bg-white transition-all"
-                    data-view="qa">
-                    QA Scoring
-                </button>
             </div>
         </div>
 
         <!-- Action Bar -->
         <div class="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div class="flex flex-wrap items-center gap-3">
-                <button id="score-selected-btn"
-                    class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-                    onclick="bulkScoreSelected()">Score Selected</button>
-                <button id="score-all-btn"
-                    class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-                    onclick="bulkScoreAll()">Score All Unscored</button>
                 <button id="delete-selected-btn"
                     class="inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold text-red-600 shadow-sm ring-1 ring-inset ring-red-300 hover:bg-red-50"
                     onclick="bulkDeleteAdmin()">Delete Selected</button>
@@ -295,29 +271,11 @@
                                         class="col-nut hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
                                         Sugar (g)</th>
 
-                                    <!-- QA Columns (Hidden initially) -->
-                                    {{ sortable_th('QA Score', 'total_score', 'col-qa col-cat py-3.5 px-3 text-left
-                                    text-xs font-semibold text-gray-900') }}
-                                    {{ sortable_th('Name Fit', 'score_name', 'col-qa hidden py-3.5 px-3 text-left
-                                    text-xs font-semibold text-gray-900') }}
-                                    {{ sortable_th('Ing. Match', 'score_ingredients', 'col-qa hidden py-3.5 px-3
-                                    text-left text-xs font-semibold text-gray-900') }}
-                                    {{ sortable_th('Components', 'score_components', 'col-qa hidden py-3.5 px-3
-                                    text-left text-xs font-semibold text-gray-900') }}
-                                    {{ sortable_th('Amounts', 'score_amounts', 'col-qa hidden py-3.5 px-3 text-left
-                                    text-xs font-semibold text-gray-900') }}
-                                    {{ sortable_th('Steps', 'score_steps', 'col-qa hidden py-3.5 px-3 text-left text-xs
-                                    font-semibold text-gray-900') }}
-                                    <th scope="col"
-                                        class="col-qa hidden py-3.5 px-3 text-left text-xs font-semibold text-gray-900">
-                                        Image</th>
-
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 bg-white">
                                 {% for recipe in recipes %}
-                                <tr class="hover:bg-gray-50 recipe-row" data-recipe-id="{{ recipe.id }}"
-                                    data-has-score="{{ 'true' if recipe.evaluation else 'false' }}">
+                                <tr class="hover:bg-gray-50 recipe-row" data-recipe-id="{{ recipe.id }}">
                                     <td class="relative px-3 sm:w-12 sm:px-6">
                                         <input
                                             class="recipe-row-cb absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600 sm:left-6"
@@ -383,37 +341,6 @@
                                                     d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                                             </svg>
                                         </button>
-                                        <!-- View QA Reasoning -->
-                                        {% if recipe.evaluation %}
-                                        <button class="text-blue-500 hover:text-blue-700 transition-colors inline-block"
-                                            onclick="openQaReport(this)" title="View QA Report Reasoning"
-                                            data-qa-title="{{ recipe.title | escape }}"
-                                            data-qa-score="{{ recipe.evaluation.total_score | int }}"
-                                            data-qa-details="{{ recipe.evaluation.evaluation_details | tojson | forceescape }}"
-                                            data-qa-s-name="{{ recipe.evaluation.score_name }}"
-                                            data-qa-s-ingredients="{{ recipe.evaluation.score_ingredients }}"
-                                            data-qa-s-components="{{ recipe.evaluation.score_components }}"
-                                            data-qa-s-amounts="{{ recipe.evaluation.score_amounts }}"
-                                            data-qa-s-steps="{{ recipe.evaluation.score_steps }}"
-                                            data-qa-s-image="{{ recipe.evaluation.score_image }}">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-                                            </svg>
-                                        </button>
-                                        {% endif %}
-                                        <!-- Regenerate QA Score -->
-                                        <button
-                                            class="col-qa hidden text-purple-600 hover:text-purple-900 transition-colors inline-block"
-                                            onclick="runSingleScore('{{ recipe.id }}', this)"
-                                            title="Regenerate QA Score">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-                                            </svg>
-                                        </button>
                                     </td>
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                                         <select
@@ -467,49 +394,6 @@
                                         recipe.total_fiber | int if recipe.total_fiber else 0 }}</td>
                                     <td class="col-nut hidden whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{
                                         recipe.total_sugar | int if recipe.total_sugar else 0 }}</td>
-
-                                    <!-- QA -->
-                                    <td class="col-qa col-cat whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                        {% if recipe.evaluation %}
-                                        <span class="cursor-pointer inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset
-                                                {% if recipe.evaluation.total_score|int < 80 %}bg-red-50 text-red-700 ring-red-600/10
-                                                {% elif recipe.evaluation.total_score|int <= 90 %}bg-orange-50 text-orange-700 ring-orange-600/20
-                                                {% else %}bg-green-50 text-green-700 ring-green-600/20{% endif %}"
-                                            onclick="openQaReport(this)" data-qa-title="{{ recipe.title | escape }}"
-                                            data-qa-score="{{ recipe.evaluation.total_score | int }}"
-                                            data-qa-details="{{ recipe.evaluation.evaluation_details | tojson | forceescape }}"
-                                            data-qa-s-name="{{ recipe.evaluation.score_name }}"
-                                            data-qa-s-ingredients="{{ recipe.evaluation.score_ingredients }}"
-                                            data-qa-s-components="{{ recipe.evaluation.score_components }}"
-                                            data-qa-s-amounts="{{ recipe.evaluation.score_amounts }}"
-                                            data-qa-s-steps="{{ recipe.evaluation.score_steps }}"
-                                            data-qa-s-image="{{ recipe.evaluation.score_image }}">
-                                            {{ recipe.evaluation.total_score | int }}
-                                        </span>
-                                        {% else %}
-                                        <button
-                                            class="rounded bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-                                            onclick="runSingleScore('{{ recipe.id }}', this)">Run QA</button>
-                                        {% endif %}
-                                    </td>
-                                    <td class="col-qa hidden whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{
-                                        colored_score(recipe.evaluation.score_name) if recipe.evaluation else '-' }}
-                                    </td>
-                                    <td class="col-qa hidden whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{
-                                        colored_score(recipe.evaluation.score_ingredients) if recipe.evaluation else '-'
-                                        }}</td>
-                                    <td class="col-qa hidden whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{
-                                        colored_score(recipe.evaluation.score_components) if recipe.evaluation else '-'
-                                        }}</td>
-                                    <td class="col-qa hidden whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{
-                                        colored_score(recipe.evaluation.score_amounts) if recipe.evaluation else '-' }}
-                                    </td>
-                                    <td class="col-qa hidden whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{
-                                        colored_score(recipe.evaluation.score_steps) if recipe.evaluation else '-' }}
-                                    </td>
-                                    <td class="col-qa hidden whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{
-                                        colored_score(recipe.evaluation.score_image) if recipe.evaluation else '-' }}
-                                    </td>
 
                                 </tr>
                                 {% endfor %}
@@ -565,52 +449,6 @@
 <!-- Render Inspector Modal -->
 {{ inspector.recipe_inspector_modal() }}
 
-<!-- Custom Tailwind QA Reasoning Modal -->
-<div id="qa-report-modal" class="relative z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
-    <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
-        <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-            <div
-                class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-xl sm:p-6">
-                <!-- Close cross -->
-                <div class="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
-                    <button type="button" onclick="closeQaReport()"
-                        class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none">
-                        <span class="sr-only">Close</span>
-                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-
-                <div class="sm:flex sm:items-start">
-                    <div
-                        class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 sm:mx-0 sm:h-10 sm:w-10">
-                        <svg class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                    </div>
-                    <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-                        <h3 class="text-lg font-semibold leading-6 text-gray-900" id="qa-modal-title">QA Report
-                            Reasoning</h3>
-                        <div class="mt-2 text-sm text-gray-700">
-                            <p id="qa-modal-score" class="font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200">
-                                Total Score: -</p>
-                            <ul id="qa-modal-list" class="list-none space-y-2"></ul>
-                        </div>
-                    </div>
-                </div>
-                <!-- Action bar bottom -->
-                <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-                    <button type="button" onclick="closeQaReport()"
-                        class="mt-3 inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 sm:mt-0 sm:w-auto">Dismiss</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 {% block scripts %}
@@ -627,70 +465,10 @@
             btn.classList.remove('text-gray-500');
 
             const view = btn.dataset.view;
-            document.querySelectorAll('.col-cat, .col-nut, .col-qa').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.col-cat, .col-nut').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll(`.col-${view}`).forEach(el => el.classList.remove('hidden'));
         });
     });
-
-    // 2. QA Modal Logic
-    function openQaReport(btn) {
-        let details = {};
-        try {
-            const parser = new DOMParser();
-            const decodedStr = parser.parseFromString(btn.dataset.qaDetails, "text/html").documentElement.textContent;
-            details = JSON.parse(decodedStr);
-        } catch (e) {
-            console.error("Could not parse QA Details JSON", e);
-        }
-
-        document.getElementById('qa-modal-title').innerText = "QA Report: " + btn.dataset.qaTitle;
-        const scoreEl = document.getElementById('qa-modal-score');
-        const score = parseInt(btn.dataset.qaScore, 10);
-        scoreEl.innerText = "Total Score: " + score + " / 100";
-
-        // Reset text colours
-        scoreEl.classList.remove('text-red-700', 'text-yellow-600', 'text-orange-600', 'text-green-700');
-        if (score < 80) scoreEl.classList.add('text-red-700');
-        else if (score <= 90) scoreEl.classList.add('text-orange-600');
-        else scoreEl.classList.add('text-green-700');
-
-        let listStr = "";
-        const mapping = [
-            { label: 'Name Fit', keys: ['reasoning_name', 'name_fit'], scoreKey: 'qaSName' },
-            { label: 'Ingredient Match', keys: ['reasoning_ingredients', 'ingredient_fit'], scoreKey: 'qaSIngredients' },
-            { label: 'Components', keys: ['reasoning_components', 'component_logic'], scoreKey: 'qaSComponents' },
-            { label: 'Amounts', keys: ['reasoning_amounts', 'amounts'], scoreKey: 'qaSAmounts' },
-            { label: 'Steps Clarity', keys: ['reasoning_steps', 'step_clarity'], scoreKey: 'qaSSteps' },
-            { label: 'Image Quality', keys: ['reasoning_image', 'image_logic'], scoreKey: 'qaSImage' }
-        ];
-
-        for (const item of mapping) {
-            let val = details[item.keys[0]] || details[item.keys[1]];
-            let score = btn.dataset[item.scoreKey];
-            let scoreStr = '';
-            if (score && score !== 'None') {
-                let badgeClass = 'bg-green-50 text-green-700 ring-green-600/20';
-                const scoreInt = parseInt(score, 10);
-                if (scoreInt < 80) badgeClass = 'bg-red-50 text-red-700 ring-red-600/10';
-                else if (scoreInt <= 90) badgeClass = 'bg-orange-50 text-orange-700 ring-orange-600/20';
-
-                scoreStr = ` <span class="ml-2 inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${badgeClass}">${scoreInt}/100</span>`;
-            }
-
-            if (val) {
-                listStr += "<li><strong class='text-gray-900'>" + item.label + "</strong>" + scoreStr + "<p class='mt-1 text-gray-600'>" + val + "</p></li>";
-            }
-        }
-        document.getElementById('qa-modal-list').innerHTML = listStr;
-        document.getElementById('qa-report-modal').classList.remove('hidden');
-    }
-
-    function closeQaReport() {
-        document.getElementById('qa-report-modal').classList.add('hidden');
-    }
-
-    // 3. Selection & Bulk Action Admin
-    const selectedRecipeIds = new Set();
 
     function toggleAllRecipes(masterCb) {
         const cbs = document.querySelectorAll('.recipe-row-cb');
@@ -799,53 +577,11 @@
         }
     });
 
-    // 5. Recipe QA Actions
-    async function runBulkScore(ids, btnEl, actionText) {
-        if (ids.length === 0) return alert("No recipes selected for scoring.");
-        btnEl.disabled = true;
-        const origText = btnEl.innerText;
-        btnEl.innerText = actionText + "...";
-
-        for (const id of ids) {
-            try { await fetch(`/admin/recipes/${id}/evaluate`, { method: 'POST' }); }
-            catch (e) { console.error('Error on ', id, e); }
-        }
-        window.location.reload();
-    }
-
-    function bulkScoreSelected() {
-        runBulkScore(Array.from(selectedRecipeIds), document.getElementById('score-selected-btn'), 'Scoring');
-    }
-
-    function bulkScoreAll() {
-        const ids = [];
-        document.querySelectorAll('tr[data-has-score="false"]').forEach(tr => {
-            ids.push(tr.dataset.recipeId);
-        });
-        runBulkScore(ids, document.getElementById('score-all-btn'), 'Scoring');
-    }
-
-    async function runSingleScore(id, btn) {
-        btn.disabled = true;
-        btn.innerText = "Running...";
-        try {
-            const res = await fetch(`/admin/recipes/${id}/evaluate`, { method: 'POST' });
-            if (res.ok) window.location.reload();
-            else { alert("Failed to score."); btn.innerText = "Run QA"; btn.disabled = false; }
-        } catch (e) {
-            alert("Error");
-            btn.innerText = "Run QA";
-            btn.disabled = false;
-        }
-    }
 </script>
 
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Init TableSort on the main table
-        new Tablesort(document.querySelector('.min-w-full'));
-
         // Search & Filter
         const searchInput = document.getElementById('recipeSearch');
         if (searchInput) {

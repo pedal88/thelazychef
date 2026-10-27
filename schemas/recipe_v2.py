@@ -1,7 +1,6 @@
 """Gemini response schema for recipe model v2 (docs/RECIPE_MODEL_V2.md).
 
-Same style as RecipeSchema in ai_engine.py: TypedDicts passed as
-`response_schema`. Scope is phase 0/2: components, ingredient lines and
+TypedDicts passed as `response_schema`. Scope is phase 0/2: components, ingredient lines and
 steps as a graph. Not included: mise elements (phase 3), `waits` (derived from
 setup steps on the same cookware), `{sN}` references and `output_label`.
 """

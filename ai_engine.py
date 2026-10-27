@@ -1,10 +1,8 @@
 import os
 import re
 import json
-import uuid
 import typing_extensions as typing # For TypedDict compatibility
 from pathlib import Path
-from thefuzz import process as fuzz_process
 from dotenv import load_dotenv
 from google.genai import types
 from jinja2 import Environment, FileSystemLoader
@@ -29,51 +27,6 @@ client = gemini_client()
 # --- Pydantic/TypedDict Schema Definitions ---
 # Using TypedDict as requested for Gemini response_schema
 
-class Ingredient(typing.TypedDict):
-    name: str
-    amount: float
-    unit: str
-    gram_weight_estimate: float
-    pantry_id: typing.NotRequired[str]  # Optional: Pre-resolved pantry food_id from LLM
-
-class IngredientGroup(typing.TypedDict):
-    component: str
-    ingredients: list[Ingredient]
-
-class Instruction(typing.TypedDict):
-    step_number: int
-    phase: str # 'Prep', 'Cook', 'Serve'
-    text: str
-    estimated_minutes: int
-    global_order_index: int
-
-class ComponentSchema(typing.TypedDict):
-    name: str # e.g., "The Steak", "Garlic Butter Sauce", "Main Dish"
-    steps: list[Instruction]
-
-class RecipeSchema(typing.TypedDict):
-    title: str
-    cuisine: str
-    diet: list[str]  # All diets that apply (e.g. ["vegan", "gluten-free"])
-    difficulty: str
-    protein_type: str
-    meal_types: list[str]
-    servings: int
-    chef_id: str
-    # Numeric metadata (Critical for App Compatibility)
-    cleanup_factor: int 
-    taste_level: int
-    prep_time_mins: int
-    
-    ingredient_groups: list[IngredientGroup]
-    components: list[ComponentSchema]  # CHANGED: From instructions to components
-    chef_note: str
-    
-    # Safe Failure Flags (Optional)
-    is_valid_recipe: typing.NotRequired[bool]
-    error_reason: typing.NotRequired[str]
-    hero_image_prompt: typing.NotRequired[str]
-
 class IngredientAnalysisSchema(typing.TypedDict):
     name: str # The standardized name
     main_category: str
@@ -94,28 +47,6 @@ class IngredientAnalysisSchema(typing.TypedDict):
 
 # --- Helper Classes for Application Compatibility ---
 # The app expects object access (recipe.title), not dict access (recipe['title'])
-class RecipeObj:
-    def __init__(self, **entries):
-        self.__dict__.update(entries)
-        # Handle nested objects for dot access
-        if 'ingredient_groups' in entries:
-            self.ingredient_groups = [
-                RecipeObj(**g) if isinstance(g, dict) else g 
-                for g in entries['ingredient_groups']
-            ]
-            for group in self.ingredient_groups:
-                if hasattr(group, 'ingredients'):
-                    group.ingredients = [RecipeObj(**i) if isinstance(i, dict) else i for i in group.ingredients]
-        
-        # Handle NEW nested components
-        if 'components' in entries:
-            self.components = [RecipeObj(**c) if isinstance(c, dict) else c for c in entries['components']]
-            for comp in self.components:
-                if hasattr(comp, 'steps'):
-                    comp.steps = [RecipeObj(**s) if isinstance(s, dict) else s for s in comp.steps]
-
-# --- Data Loading (Retaining Pantry/Chef Context) ---
-
 def load_json(path):
     with open(path, 'r') as f:
         return json.load(f)
@@ -125,12 +56,6 @@ def load_json(path):
 # set_pantry_memory(); aliases live in the ingredient_alias table.
 pantry_map = {}
 
-
-# --- RESTORED EXPORTS FOR APP COMPATIBILITY ---
-try:
-    protein_data = load_json("data/constraints/main_protein.json")['protein_types']
-except Exception:
-    protein_data = []
 
 def load_controlled_vocabularies() -> dict:
     """
@@ -227,65 +152,6 @@ def load_controlled_vocabularies() -> dict:
         print(f"⚠️ Warning: Error loading controlled vocabularies: {e}")
         return vocab
 
-def generate_recipe_from_web_text(text: str, source_url: str = "User Input", slim_context: list[dict] = None) -> RecipeObj:
-    """
-    Generates a recipe from raw text (e.g. from a website extract or manual paste).
-    Sends full pantry context (with food_ids) so the LLM can pre-resolve
-    ingredient matches via the pantry_id field.
-    """
-    if slim_context:
-        set_pantry_memory(slim_context)
-        pantry_str = json.dumps(slim_context)
-    else:
-        # Fallback to name-only list from static map
-        pantry_str = json.dumps([{"n": k, "i": v} for k, v in pantry_map.items()])
-    
-    # Load Controlled Vocabularies
-    vocab = load_controlled_vocabularies()
-    
-    # Initialize basic user constraints - for web/video extraction we assume neutral constraints
-    # unless extracted, but the prompt handles classification.
-    # We pass an empty dict for strict constraints unless valid metadata is passed in.
-    user_constraints = {}
-
-    # Use Jinja2 Template
-    try:
-        template = env.get_template('recipe_text/web_extraction.jinja2')
-        prompt = template.render(
-            source_url=source_url,
-            pantry_context=pantry_str,
-            raw_text=text,
-            vocab=vocab,
-            user_constraints=user_constraints
-        )
-
-    except Exception as e:
-        print(f"ERROR: Failed to render web_extraction template: {e}")
-        raise ValueError(f"Template rendering failed: {e}")
-    
-    print(f"DEBUG: Generating from Web Text via {GEMINI_TEXT} (with pantry IDs)")
-    response = client.models.generate_content(
-        model=GEMINI_TEXT,
-        contents=prompt,
-        config=types.GenerateContentConfig(
-            response_mime_type="application/json",
-            response_schema=RecipeSchema
-        )
-    )
-
-    try:
-        if response.parsed:
-             return RecipeObj(**response.parsed)
-
-        data = json.loads(response.text)
-        return RecipeObj(**data)
-    except Exception as e:
-        print(f"ERROR: Web Generation failed. Raw output: {response.text[:200]}")
-        raise ValueError(f"AI Generation failed: {e}")
-
-# Fuzzy matching threshold — scores below this are rejected.
-# 85 works well for food names: "Lrg Eggs" → "Whole Eggs" (88), 
-# but "Salt" ≠ "Unsalted Butter" (45).
 FUZZY_MATCH_THRESHOLD = 90  # per word, see _match_score
 
 # Cooking qualifiers to strip before fuzzy matching.
@@ -447,52 +313,6 @@ def get_pantry_id(name: str):
     print(f"⚠️  No match for '{name}' (normalized: '{n_clean}') — threshold: {FUZZY_MATCH_THRESHOLD}")
     return None
 
-def get_top_pantry_suggestions(name: str, top_n: int = 3) -> list[dict]:
-    """
-    Returns the top N fuzzy matches from pantry_map for a given ingredient name.
-    Unlike get_pantry_id (which returns only the best match above threshold),
-    this returns multiple ranked suggestions with scores — useful for
-    showing substitute candidates in the UI.
-    
-    Returns: [{"name": str, "food_id": str, "score": int}, ...]
-    """
-    if not name or not pantry_map:
-        return []
-    
-    from thefuzz import fuzz as fuzz_scorer
-    
-    n_lower = name.strip().lower()
-    n_clean = normalize_ingredient_name(name)
-    pantry_keys = list(pantry_map.keys())
-    
-    # Collect candidates from both raw and normalized names, both scorers
-    candidates = {}  # key → best_score
-    
-    queries = [n_lower]
-    if n_clean and n_clean != n_lower:
-        queries.append(n_clean)
-    
-    for query in queries:
-        # WRatio matches
-        results_wr = fuzz_process.extract(query, pantry_keys, limit=top_n * 2)
-        for matched_key, score in results_wr:
-            if matched_key not in candidates or score > candidates[matched_key]:
-                candidates[matched_key] = score
-        
-        # token_set_ratio matches
-        results_tsr = fuzz_process.extract(query, pantry_keys, scorer=fuzz_scorer.token_set_ratio, limit=top_n * 2)
-        for matched_key, score in results_tsr:
-            if matched_key not in candidates or score > candidates[matched_key]:
-                candidates[matched_key] = score
-    
-    # Sort by score descending, take top N
-    sorted_candidates = sorted(candidates.items(), key=lambda x: x[1], reverse=True)[:top_n]
-    
-    return [
-        {"name": key, "food_id": pantry_map[key], "score": score}
-        for key, score in sorted_candidates
-    ]
-
 def set_pantry_memory(slim_context):
     """
     Rebuilds pantry_map from DB ingredients via slim_context.
@@ -557,182 +377,6 @@ def set_pantry_memory(slim_context):
     total = added_staple + added_standard
     print(f"📦 set_pantry_memory: {total} items ({added_staple} staples + {added_standard} standard active), skipped {skipped} duplicates/imports")
 
-# --- Core Generation Function ---
-def generate_recipe_ai(
-    query: str, 
-    slim_context: list[dict] = None, 
-    chef_id: str = "gourmet",
-    target_diet: str = None,
-    target_cuisine: str = None,
-    target_method: str = None,
-    target_protein: str = None
-) -> RecipeObj:
-    
-    if slim_context:
-        set_pantry_memory(slim_context)
-        pantry_str = json.dumps(slim_context)
-    else:
-        pantry_str = "[]"
-
-    # Chef Context
-    chef_context = f"You are acting as the Chef ID: {chef_id}."
-
-    # Load Vocabularies
-    vocab = load_controlled_vocabularies()
-
-    # Build User Constraints Dictionary for Template Injection
-    user_constraints = {
-        "diet": target_diet,
-        "cuisine": target_cuisine,
-        "cooking_method": target_method,
-        "protein": target_protein
-    }
-    
-    # Load Template
-    try:
-        template = env.get_template('recipe_text/recipe_generation.jinja2')
-        prompt = template.render(
-            chef_context=chef_context,
-            query=query,
-            pantry_context=pantry_str,
-            vocab=vocab,
-            user_constraints=user_constraints
-        )
-    except Exception as e:
-        print(f"Error loading prompt template: {e}")
-        raise ValueError(f"Template rendering failed: {e}")
-
-
-    print(f"DEBUG: Using model {GEMINI_TEXT} with few-shot prompt")
-    
-    response = client.models.generate_content(
-        model=GEMINI_TEXT,
-        contents=prompt,
-        config=types.GenerateContentConfig(
-            response_mime_type="application/json",
-            response_schema=RecipeSchema
-        )
-    )
-
-    # === CRITICAL DEBUG LOGGING ===
-    print("\n" + "="*80)
-    print("RAW AI RESPONSE (Full JSON):")
-    print("="*80)
-    print(response.text)
-    print("="*80 + "\n")
-    
-    # Parse and count instructions
-    try:
-        parsed_data = response.parsed if response.parsed else json.loads(response.text)
-        instruction_count = len(parsed_data.get('instructions', []))
-        print(f"🔍 INSTRUCTION COUNT IN AI RESPONSE: {instruction_count}")
-        for idx, instr in enumerate(parsed_data.get('instructions', []), 1):
-            print(f"  Step {idx}: [{instr.get('phase')}] {instr.get('text', '')[:60]}...")
-        print("="*80 + "\n")
-    except Exception as debug_err:
-        print(f"⚠️  Debug parsing failed: {debug_err}")
-    
-    # Normalization Helper
-    def normalize_recipe_data(data_dict):
-        # 1. Component Mismatch Fix (Single Component)
-        # If there is exactly 1 component and 1 ingredient group, force them to match.
-        # Priority is given to the Component Name (from instructions).
-        if 'components' in data_dict and 'ingredient_groups' in data_dict:
-            comps = data_dict['components']
-            ings = data_dict['ingredient_groups']
-            
-            if isinstance(comps, list) and isinstance(ings, list):
-                if len(comps) == 1 and len(ings) == 1:
-                    # Check for mismatch
-                    c_name = comps[0].get('name')
-                    i_name = ings[0].get('component')
-                    
-                    if c_name and i_name and c_name != i_name:
-                        print(f"🔧 Normalizing Component Mismatch: Ingredients '{i_name}' -> '{c_name}'")
-                        ings[0]['component'] = c_name
-        return data_dict
-
-    # Original logic
-    try:
-        if response.parsed:
-             # Convert Dict to Object for App Compatibility
-             data = response.parsed
-             if isinstance(data, dict):
-                 data = normalize_recipe_data(data)
-             return RecipeObj(**data)
-        
-        # Fallback if parsed is empty (rare with native schema)
-        data = json.loads(response.text)
-        data = normalize_recipe_data(data)
-        return RecipeObj(**data)
-
-    except Exception as e:
-        print(f"ERROR: Generation failed. Raw output: {response.text[:200]}")
-        raise ValueError(f"AI Generation failed: {e}")
-
-# --- Video Generation (Retained for Safety) ---
-def generate_recipe_from_video(video_path: str, caption: str, slim_context: list[dict] = None, chef_id: str = "gourmet"):
-    """
-    Generates a structured recipe from a video file (TikTok/Reel).
-    Sends full pantry context so the LLM can pre-resolve ingredient IDs.
-    """
-    if slim_context:
-        set_pantry_memory(slim_context)
-        pantry_str = json.dumps(slim_context)
-    else:
-        pantry_str = json.dumps([{"n": k, "i": v} for k, v in pantry_map.items()])
-
-    print(f"🎬 Uploading video to Gemini: {video_path}")
-    file_ref = client.files.upload(file=video_path)
-    
-    import time
-    while True:
-        file_info = client.files.get(name=file_ref.name)
-        if file_info.state == "ACTIVE":
-            break
-        elif file_info.state == "FAILED":
-            raise ValueError("Video processing failed")
-        time.sleep(2)
-
-    # Load Controlled Vocabularies
-    vocab = load_controlled_vocabularies()
-    user_constraints = {} # Videos are extraction tasks, usually no pre-constraints
-
-    try:
-        template = env.get_template('recipe_text/video_extraction.jinja2')
-        prompt = template.render(
-            caption=caption,
-            chef_id=chef_id,
-            pantry_context=pantry_str,
-            vocab=vocab,
-            user_constraints=user_constraints
-        )
-    except Exception as e:
-        print(f"ERROR: Failed to render video_extraction template: {e}")
-        raise ValueError(f"Template rendering failed: {e}")
-    
-    print(f"DEBUG: Generating from Video via {GEMINI_TEXT} (with pantry IDs)")
-    
-    response = client.models.generate_content(
-        model=GEMINI_TEXT,
-        contents=[file_ref, prompt],
-        config=types.GenerateContentConfig(
-            response_mime_type="application/json",
-            response_schema=RecipeSchema
-        )
-    )
-    
-    
-    recipe_dict = response.parsed if response.parsed else json.loads(response.text)
-    
-    # Check if the AI explicitly flagged this as NOT a recipe
-    if recipe_dict.get('is_valid_recipe') is False:
-        reason = recipe_dict.get('error_reason', 'The provided media does not appear to contain a recipe.')
-        raise ValueError(f"AI rejected extraction: {reason}")
-        
-    return RecipeObj(**recipe_dict)
-
-# --- Ingredient Analysis ---
 def analyze_ingredient_ai(prompt: str, valid_categories: dict) -> dict:
     
     print(f"DEBUG: Analyzing ingredient '{prompt}' via {GEMINI_TEXT}")
@@ -831,5 +475,3 @@ def extract_nutrients_from_text(raw_text: str, ingredient_name: str = "") -> dic
     except Exception as e:
         print(f"ERROR: Nutrient extraction failed: {e}")
         raise ValueError(f"Nutrient extraction failed: {e}")
-class HookGenerationSchema(typing.TypedDict):
-    hook_text: str

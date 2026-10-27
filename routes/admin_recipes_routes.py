@@ -1,4 +1,4 @@
-"""Admin Recipes Blueprint: recipe management, QA evaluation, status, cloning, deletion and bulk generation."""
+"""Admin Recipes Blueprint: recipe management, status and deletion."""
 from urllib.parse import urlencode
 
 from flask import jsonify, render_template, request
@@ -10,7 +10,6 @@ from ai_engine import load_controlled_vocabularies
 from database.models import (
     Recipe,
     RecipeDiet,
-    RecipeEvaluation,
     RecipeMealType,
     db,
 )
@@ -49,13 +48,7 @@ def admin_recipes_management():
     difficulty_options = vocab.get('difficulties', [])
     status_options = ['draft', 'approved', 'rejected', 'archived']
 
-    # Base query — LEFT JOIN so recipes with no evaluation still appear
-    # Ensure optimal DB queries for diets and evaluations
-    stmt = db.select(Recipe).outerjoin(Recipe.evaluation).options(
-        joinedload(Recipe.diets),
-        joinedload(Recipe.evaluation),
-        joinedload(Recipe.meal_types)
-    )
+    stmt = db.select(Recipe).options(joinedload(Recipe.diets), joinedload(Recipe.meal_types))
 
     if search_term:
         stmt = stmt.where(
@@ -87,13 +80,6 @@ def admin_recipes_management():
         'title': Recipe.title,
         'cuisine': Recipe.cuisine,
         'difficulty': Recipe.difficulty,
-        'total_score': RecipeEvaluation.total_score,
-        'score_name': RecipeEvaluation.score_name,
-        'score_ingredients': RecipeEvaluation.score_ingredients,
-        'score_components': RecipeEvaluation.score_components,
-        'score_amounts': RecipeEvaluation.score_amounts,
-        'score_steps': RecipeEvaluation.score_steps,
-        'score_image': RecipeEvaluation.score_image,
         'total_calories': Recipe.total_calories,
         'total_protein': Recipe.total_protein,
         'total_fat': Recipe.total_fat,
@@ -127,25 +113,12 @@ def admin_recipes_management():
         urlencode=lambda args: urlencode(args, doseq=True)
     )
 
-@admin_recipes_bp.route('/admin/recipes/<int:recipe_id>/evaluate', methods=['POST'])
-@login_required
-@admin_required
-def evaluate_recipe_api(recipe_id):
-    from services.evaluation_service import evaluate_recipe
-    try:
-        result = evaluate_recipe(recipe_id)
-        return jsonify(result)
-    except Exception as e:
-        print(f"Error evaluating recipe: {e}")
-        return jsonify({'status': 'error', 'error': str(e)}), 500
-
-
 @admin_recipes_bp.route('/admin/recipes/<int:recipe_id>/status', methods=['POST'])
 @login_required
 @admin_required
 def update_recipe_status(recipe_id: int):
     """Async endpoint to update a recipe's publishing status."""
-    VALID_STATUSES = {'draft', 'approved', 'rejected'}
+    VALID_STATUSES = {'draft', 'approved', 'rejected', 'archived'}
     try:
         data = request.get_json()
         new_status = data.get('status', '').strip().lower()
@@ -165,38 +138,6 @@ def update_recipe_status(recipe_id: int):
         db.session.rollback()
         print(f"Status update error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
-
-@admin_recipes_bp.route('/admin/api/recipes/<int:recipe_id>/clone', methods=['POST'])
-@login_required
-@admin_required
-def clone_recipe_api(recipe_id: int):
-    """Admin endpoint to deep-clone a recipe with ingredient overrides."""
-    from services.recipe_service import clone_recipe
-    try:
-        data = request.get_json()
-        if not data:
-            return jsonify({'success': False, 'error': 'No JSON payload provided'}), 400
-            
-        new_title = data.get('new_title')
-        if not new_title:
-            return jsonify({'success': False, 'error': 'new_title is required'}), 400
-            
-        ingredient_overrides = data.get('ingredient_overrides', {})
-        
-        # Perform the deep clone using our new Python utility
-        new_recipe_id = clone_recipe(recipe_id, new_title, ingredient_overrides, db.session)
-        
-        return jsonify({
-            'success': True, 
-            'new_recipe_id': new_recipe_id,
-            'message': 'Recipe cloned successfully!'
-        })
-
-    except Exception as e:
-        db.session.rollback()
-        print(f"Error cloning recipe: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
 
 @admin_recipes_bp.route('/api/delete-recipe/<int:recipe_id>', methods=['DELETE'])
 @login_required

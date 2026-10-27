@@ -1,29 +1,26 @@
-"""Recipes Blueprint: landing page, recipe library, recipe detail and kitchen mode, recipe JSON APIs and public collections."""
+"""Recipes Blueprint: landing page, recipe library, the recipe page, recipe JSON APIs and public collections."""
 import json
 import os
 
 from flask import abort, current_app, flash, jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import or_
-from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy.orm import selectinload
 
 from database.models import (
     Ingredient,
-    Instruction,
     Recipe,
     RecipeCollection,
     RecipeDiet,
-    RecipeIngredient,
     RecipeLine,
     RecipeMealType,
     UserRecipeInteraction,
     db,
 )
 from routes._flat import FlatBlueprint
-from routes._shared import DIFFICULTY_LABELS, get_recipe_image_url, get_storage, load_json_option, viewer_is_admin
+from routes._shared import DIFFICULTY_LABELS, get_recipe_image_url, load_json_option, viewer_is_admin
 from services.chef_service import get_chefs
 from services.recipe_v2.derive import HEAT_LABELS
-from utils.decorators import admin_required
 
 recipes_bp = FlatBlueprint("recipes", __name__)
 
@@ -161,10 +158,7 @@ def recipes_list():
     if selected_proteins:
         clauses = []
         for p in selected_proteins:
-            clauses.append(Recipe.ingredients.any(
-                RecipeIngredient.ingredient.has(Ingredient.name.ilike(f'%{p}%'))
-            ))
-            # v2 recipes: the derived main protein, or any line with that ingredient
+            # the derived main protein, or any line with that ingredient
             clauses.append(Recipe.protein_type == p)
             clauses.append(Recipe.lines.any(RecipeLine.ingredient.has(Ingredient.name.ilike(f'%{p}%'))))
         if clauses:
@@ -216,72 +210,44 @@ def recipes_list():
                          selected_heat_sources=selected_heat_sources)
 
 
+def _v2_lines_and_steps(recipe):
+    """The recipe's lines and its steps in source order, as plain data: each step's text with its {iN} written as the
+    ingredient's name. For the inspector and the sub-recipe viewer."""
+    from services.recipe_v2.view import PLACEHOLDER
+
+    names = {line.local_id: line.name for line in recipe.lines}
+    lines = [{'id': line.id, 'name': line.name, 'prep_style': line.prep_style, 'amount': line.amount, 'unit': line.unit,
+              'gram_weight': line.gram_weight, 'component': line.component.name if line.component else None,
+              'food_id': line.ingredient.food_id if line.ingredient else None,
+              'category': line.ingredient.main_category if line.ingredient else None,
+              'image_url': line.ingredient.image_url if line.ingredient else None} for line in recipe.lines]
+    steps = [{'step': n, 'phase': step.phase, 'short': step.short,
+              'text': PLACEHOLDER.sub(lambda m: names.get(m.group(1), m.group(0)), step.text or ''),
+              'component': step.component.name if step.component else None}
+             for n, step in enumerate(recipe.steps, 1)]
+    return lines, steps
+
+
 @recipes_bp.route('/api/recipe/<int:recipe_id>', methods=['GET'])
 @login_required
 def get_recipe_json(recipe_id):
+    """A recipe as data for the inspector (components/modals/recipe_inspector.html). Admins only."""
     if not current_user.is_admin:
         return jsonify({'success': False, 'error': 'Unauthorized'}), 403
-    
     recipe = db.session.get(Recipe, recipe_id)
-    if not recipe:
+    if not recipe or recipe.schema_version != 2:
         return jsonify({'success': False, 'error': 'Recipe not found'}), 404
-        
-    try:
-        # Construct JSON
-        data = {
-            'id': recipe.id,
-            'title': recipe.title,
-            'cuisine': recipe.cuisine,
-            'diets': recipe.diets_list,
-            'difficulty': recipe.difficulty,
-            'protein_type': recipe.protein_type,
-            'meal_types': recipe.meal_types_list,
-            'chef_id': recipe.chef_id or 'gourmet',
-            'taste_level': recipe.taste_level,
-            'prep_time_mins': recipe.prep_time_mins,
-            'cleanup_factor': recipe.cleanup_factor,
-            'image_filename': recipe.image_filename,
-            'nutrition': {
-                'calories': recipe.total_calories,
-                'protein': recipe.total_protein,
-                'carbs': recipe.total_carbs,
-                'fat': recipe.total_fat,
-                'sugar': recipe.total_sugar,
-                'fiber': recipe.total_fiber
-            },
-            'ingredients': [],
-            'instructions': []
-        }
-        
-        # Serialize Ingredients
-        for ri in recipe.ingredients:
-            data['ingredients'].append({
-                'id': ri.id,
-                'name': ri.ingredient.name,
-                'prep_style': ri.prep_style,
-                'amount': ri.amount,
-                'unit': ri.unit,
-                'gram_weight': ri.gram_weight,
-                'component': ri.component,
-                'food_id': ri.ingredient.food_id,
-                'category': ri.ingredient.main_category
-            })
-            
-        # Serialize Instructions
-        sorted_instructions = sorted(recipe.instructions, key=lambda x: x.step_number)
-        for step in sorted_instructions:
-            data['instructions'].append({
-                'step': step.step_number,
-                'phase': step.phase,
-                'text': step.text,
-                'component': step.component
-            })
-            
-        return jsonify({'success': True, 'recipe': data})
-        
-    except Exception as e:
-        print(f"Error serializing recipe {recipe_id}: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+    lines, steps = _v2_lines_and_steps(recipe)
+    return jsonify({'success': True, 'recipe': {
+        'id': recipe.id, 'title': recipe.title, 'cuisine': recipe.cuisine, 'diets': recipe.diets_list,
+        'difficulty': recipe.difficulty, 'protein_type': recipe.protein_type, 'meal_types': recipe.meal_types_list,
+        'chef_id': recipe.chef_id, 'status': recipe.status, 'prep_time_mins': recipe.prep_time_mins,
+        'image_filename': recipe.image_filename,
+        'nutrition': {'calories': recipe.total_calories, 'protein': recipe.total_protein, 'carbs': recipe.total_carbs,
+                      'fat': recipe.total_fat, 'sugar': recipe.total_sugar, 'fiber': recipe.total_fiber},
+        'ingredients': lines, 'instructions': steps,
+    }})
+
 
 @recipes_bp.route('/api/sub-recipe/<int:recipe_id>', methods=['GET'])
 def get_sub_recipe(recipe_id):
@@ -292,52 +258,30 @@ def get_sub_recipe(recipe_id):
     linked = recipe is not None and db.session.execute(
         db.select(Ingredient.id).where(Ingredient.sub_recipe_id == recipe.id).limit(1)
     ).first() is not None
-    if not recipe or (recipe.status != 'approved' and not linked and not viewer_is_admin()):
+    if not recipe or recipe.schema_version != 2 or (recipe.status != 'approved' and not linked and not viewer_is_admin()):
         return jsonify({'success': False, 'error': 'Sub-recipe not found'}), 404
 
-    # Build image URL helper (reuse existing context function)
-    image_url = get_recipe_image_url(recipe) if recipe.image_filename else None
-
-    # Ingredients grouped by component
-    components: dict[str, list] = {}
-    for ri in recipe.ingredients:
-        comp = ri.component or 'Main'
-        if comp not in components:
-            components[comp] = []
-        components[comp].append({
-            'name': ri.ingredient.name,
-            'amount': ri.amount,
-            'unit': ri.unit,
-            'gram_weight': ri.gram_weight,
-            'image_url': ri.ingredient.image_url or None,
-        })
-
-    # Instructions grouped by component, sorted by step_number
-    steps_by_comp: dict[str, list] = {}
-    sorted_steps = sorted(recipe.instructions, key=lambda s: (s.component or '', s.step_number))
-    for step in sorted_steps:
-        comp = step.component or 'Main'
-        if comp not in steps_by_comp:
-            steps_by_comp[comp] = []
-        steps_by_comp[comp].append({
-            'step': step.step_number,
-            'phase': step.phase,
-            'text': step.text,
-        })
-
+    lines, steps = _v2_lines_and_steps(recipe)
+    components, steps_by_comp = {}, {}
+    for line in lines:
+        components.setdefault(line['component'] or 'Main', []).append(
+            {k: line[k] for k in ('name', 'amount', 'unit', 'gram_weight', 'image_url')})
+    for step in steps:
+        steps_by_comp.setdefault(step['component'] or 'Main', []).append({k: step[k] for k in ('step', 'phase', 'text')})
     return jsonify({
         'success': True,
         'recipe': {
             'id': recipe.id,
             'title': recipe.title,
             'cuisine': recipe.cuisine,
-            'image_url': image_url,
+            'image_url': get_recipe_image_url(recipe) if recipe.image_filename else None,
             'base_servings': recipe.base_servings,
             'components': list(components.keys()),
             'ingredients_by_component': components,
             'steps_by_component': steps_by_comp,
         }
     })
+
 
 @recipes_bp.route('/api/search-recipes', methods=['GET'])
 @login_required
@@ -369,168 +313,19 @@ def recipe_detail(recipe_id):
         flash("Recipe not found.", "error")
         return redirect(url_for('discover'))
 
-    # Recipe model v2: the graph has its own page (overview and step list).
-    if recipe.schema_version == 2:
-        from services.recipe_v2.view import page
-        view = page(recipe, servings=request.args.get('servings', type=int), plan=request.args.get('plan', 'calm'))
-        admin = {}
-        if viewer_is_admin():
-            # The dish and all its versions by chef personas, and the chefs that can make one
-            root = recipe.base_recipe or recipe
-            admin = {'family': [root] + sorted(root.versions, key=lambda r: r.id), 'chefs': get_chefs()}
-        # One page: the overview, and prep and cooking together (#prep, #cook)
-        return render_template('recipe_v2_make.html', recipe=recipe, v=view, admin=admin)
+    # The old recipes (model v1) are retired: archived, and their page is gone (scripts/retire_v1.py)
+    if recipe.schema_version != 2:
+        abort(404)
+    from services.recipe_v2.view import page
+    view = page(recipe, servings=request.args.get('servings', type=int), plan=request.args.get('plan', 'calm'))
+    admin = {}
+    if viewer_is_admin():
+        # The dish and all its versions by chef personas, and the chefs that can make one
+        root = recipe.base_recipe or recipe
+        admin = {'family': [root] + sorted(root.versions, key=lambda r: r.id), 'chefs': get_chefs()}
+    # One page: the overview, and prep and cooking together (#prep, #cook)
+    return render_template('recipe_v2_make.html', recipe=recipe, v=view, admin=admin)
 
-    # The ingredients with their pantry rows in two queries, not one per ingredient
-    db.session.execute(db.select(Recipe).where(Recipe.id == recipe_id).options(
-        selectinload(Recipe.ingredients).selectinload(RecipeIngredient.ingredient))).scalars().all()
-
-    # Group instructions by phase for display
-    instructions = Instruction.query.filter_by(recipe_id=recipe_id).order_by(Instruction.component, Instruction.phase, Instruction.step_number).all()
-    
-    steps_by_phase = {
-        'Prep': [i for i in instructions if i.phase == 'Prep'],
-        'Cook': [i for i in instructions if i.phase == 'Cook'],
-        'Serve': [i for i in instructions if i.phase == 'Serve']
-    }
-    
-    # NEW: Group instructions by component for multi-component display
-    from itertools import groupby
-    steps_by_component = []
-    for component_name, steps in groupby(instructions, key=lambda x: x.component):
-        steps_by_component.append((component_name, list(steps)))
-    
-    # Group ingredients by component
-    ingredients_by_component = {}
-    for recipe_ing in recipe.ingredients:
-        comp = recipe_ing.component
-        if comp not in ingredients_by_component:
-            ingredients_by_component[comp] = []
-        ingredients_by_component[comp].append(recipe_ing)
-    
-    # DEFENSIVE: Reconcile mismatched component names
-    # If ingredient components don't match instruction components,
-    # ingredients become invisible in the template. Fix by redistributing.
-    instruction_comp_names = {name for name, _ in steps_by_component}
-    ingredient_comp_names = set(ingredients_by_component.keys())
-    orphaned_comps = ingredient_comp_names - instruction_comp_names
-    
-    if orphaned_comps:
-        print(f"⚠️  Component name mismatch for recipe {recipe_id}:")
-        print(f"   Instruction components: {instruction_comp_names}")
-        print(f"   Ingredient components:  {ingredient_comp_names}")
-        print(f"   Orphaned:               {orphaned_comps}")
-        
-        # Collect all orphaned ingredients
-        orphaned_ingredients = []
-        for comp in orphaned_comps:
-            orphaned_ingredients.extend(ingredients_by_component.pop(comp))
-        
-        if len(steps_by_component) == 1:
-            comp_names = [name for name, _ in steps_by_component]
-            ingredients_by_component[comp_names[0]] = orphaned_ingredients
-        elif len(steps_by_component) > 1:
-            comp_names = [name for name, _ in steps_by_component]
-            per_comp = max(1, len(orphaned_ingredients) // len(comp_names))
-            for idx, comp_name in enumerate(comp_names):
-                start = idx * per_comp
-                end = start + per_comp if idx < len(comp_names) - 1 else len(orphaned_ingredients)
-                ingredients_by_component[comp_name] = orphaned_ingredients[start:end]
-        else:
-            # Some matched, some didn't — attach orphans to "Other Ingredients"
-            ingredients_by_component["Other Ingredients"] = orphaned_ingredients
-            # Also add a pseudo-component for display if not already in steps
-            if not any(name == "Other Ingredients" for name, _ in steps_by_component):
-                steps_by_component.append(("Other Ingredients", []))
-    # NEW: Chronological Sequence (Parallel Dashboard)
-    has_chronological_data = False
-    chrono_steps = []
-    component_meta = {}
-    
-    if len(instructions) > 0:
-        has_chronological_data = all(i.global_order_index is not None for i in instructions)
-        if has_chronological_data:
-            chrono_steps = sorted(instructions, key=lambda x: x.global_order_index)
-            
-            # Phase 1: Backend metadata for sandbox Views
-            unique_components = []
-            for step in chrono_steps:
-                if step.component not in unique_components:
-                    unique_components.append(step.component)
-                    
-            themes = [
-                {'color': 'bg-blue-50 text-blue-800', 'border': 'border-blue-200', 'indent': 'ml-0 md:ml-0'},
-                {'color': 'bg-rose-50 text-rose-800', 'border': 'border-rose-200', 'indent': 'ml-4 md:ml-12'},
-                {'color': 'bg-emerald-50 text-emerald-800', 'border': 'border-emerald-200', 'indent': 'ml-8 md:ml-24'},
-                {'color': 'bg-amber-50 text-amber-800', 'border': 'border-amber-200', 'indent': 'ml-12 md:ml-36'},
-                {'color': 'bg-purple-50 text-purple-800', 'border': 'border-purple-200', 'indent': 'ml-16 md:ml-48'},
-            ]
-            
-            for index, comp in enumerate(unique_components):
-                if index < len(themes):
-                    component_meta[comp] = themes[index]
-                else:
-                    component_meta[comp] = themes[-1]
-
-    # ------------------------------------------------------------------ #
-    # SMART SUBSTITUTION ENGINE                                            #
-    # For each ingredient that has a sub_category, find up to 3 alts from #
-    # the same sub_category (excluding itself), sorted staples-first.     #
-    # Also ask Gemini for a one-sentence Chef's Tip per ingredient.       #
-    # ------------------------------------------------------------------ #
-    substitutes: dict[int, dict] = {}  # keyed by RecipeIngredient.id
-
-    # All candidates in one query, grouped by sub-category here (it was one query per ingredient)
-    sub_categories = {ri.ingredient.sub_category for ri in recipe.ingredients if ri.ingredient and ri.ingredient.sub_category}
-    by_sub_category: dict[str, list] = {}
-    if sub_categories:
-        for cand in db.session.execute(
-            db.select(Ingredient)
-            .where(Ingredient.sub_category.in_(sub_categories), Ingredient.status == 'active')
-            .order_by(Ingredient.is_staple.desc(), Ingredient.name.asc())
-        ).scalars():
-            by_sub_category.setdefault(cand.sub_category, []).append(cand)
-
-    for ri in recipe.ingredients:
-        ing = ri.ingredient
-        if not ing or not ing.sub_category:
-            continue
-
-        alts = [c for c in by_sub_category.get(ing.sub_category, []) if c.id != ing.id][:3]
-        if not alts:
-            continue
-
-        substitutes[ri.id] = {
-            'original': ing,
-            'alts': alts,
-        }
-
-    # Load current user's interaction for the feedback drawer
-    user_interaction = None
-    if current_user.is_authenticated:
-        user_interaction = db.session.execute(
-            db.select(UserRecipeInteraction).where(
-                UserRecipeInteraction.user_id == current_user.id,
-                UserRecipeInteraction.recipe_id == recipe_id,
-            )
-        ).scalars().first()
-
-    # Check if any ingredient already points to this recipe as a sub-recipe
-    linked_ingredient = db.session.execute(
-        db.select(Ingredient).where(Ingredient.sub_recipe_id == recipe_id)
-    ).scalars().first()
-
-    return render_template('recipe.html',
-                            recipe=recipe,
-                            steps_by_phase=steps_by_phase,
-                            ingredients_by_component=ingredients_by_component,
-                            steps_by_component=steps_by_component,
-                            has_chronological_data=has_chronological_data,
-                            chrono_steps=chrono_steps,
-                            component_meta=component_meta,
-                            substitutes=substitutes,
-                            user_interaction=user_interaction,
-                            linked_ingredient=linked_ingredient)
 
 # The addresses of the tabs the recipe page had until 27.10.2026, kept for links already shared: they open the recipe
 # page at its part, Prep with the bowls and Cook with the steps (static/js/steps.js).
@@ -567,98 +362,6 @@ def recipe_print(recipe_id):
     return render_template('recipe_print.html', recipe=recipe, v=view, orient=orient,
                            autoprint=request.args.get('auto') != '0')
 
-
-@recipes_bp.route('/recipe/<int:recipe_id>/swap-image', methods=['POST'])
-@login_required
-@admin_required
-def swap_recipe_image(recipe_id):
-    """Swaps the AI generated image with the source video thumbnail (if available)."""
-    recipe = db.session.get(Recipe, recipe_id)
-    if not recipe or not recipe.source_image_filename:
-        return jsonify({"success": False, "error": "No source thumbnail available for this recipe."}), 400
-        
-    temp = recipe.image_filename
-    recipe.image_filename = recipe.source_image_filename
-    recipe.source_image_filename = temp
-    db.session.commit()
-    
-    return jsonify({"success": True, "new_image": get_recipe_image_url(recipe)})
-
-
-@recipes_bp.route('/recipe/<int:recipe_id>/kitchen')
-def recipe_kitchen_mode(recipe_id):
-    """A highly isolated, 1-screen landscape view for cooking on tablets."""
-    query = db.select(Recipe).where(Recipe.id == recipe_id).options(
-        joinedload(Recipe.ingredients).joinedload(RecipeIngredient.ingredient),
-        joinedload(Recipe.instructions)
-    )
-    recipe = db.session.execute(query).unique().scalar_one_or_none()
-
-    if not recipe or (recipe.status != 'approved' and not viewer_is_admin()):
-        flash("Recipe not found.", "error")
-        return redirect(url_for('discover'))
-
-    return render_template('kitchen_mode.html', recipe=recipe)
-
-@recipes_bp.route('/api/recipe/<int:recipe_id>/generate-components', methods=['POST'])
-@login_required
-@admin_required
-def generate_component_images(recipe_id):
-    recipe = db.session.get(Recipe, recipe_id)
-    if not recipe:
-        return jsonify({'success': False, 'error': 'Recipe not found'}), 404
-        
-    try:
-        from io import BytesIO
-        import uuid
-        
-        # Ensure dictionary exists
-        if recipe.component_images is None:
-            recipe.component_images = {}
-            
-        new_images = dict(recipe.component_images)
-        components = {i.component for i in recipe.instructions if i.component}
-        
-        from services.photographer_service import generate_actual_image
-        
-        generated_count = 0
-        for comp in components:
-            if comp not in new_images:
-                prompt_text = f"A clean, minimalist 4k product photo of just {comp} alone, explicitly isolated on a pure solid white background. Strictly NO other components, NO distracting plates or utensils, NO background clutter, highly appetizing."
-                try:
-                    images = generate_actual_image(prompt_text, number_of_images=1)
-                    if images and len(images) > 0:
-                        img = images[0]
-                        filename = f"comp_{recipe_id}_{uuid.uuid4().hex[:8]}.png"
-                        
-                        img_byte_arr = BytesIO()
-                        img.save(img_byte_arr, format='PNG')
-                        
-                        # Save directly to recipes folder
-                        get_storage().save(img_byte_arr.getvalue(), filename, "recipes")
-                        
-                        new_images[comp] = filename
-                        generated_count += 1
-                except Exception as e:
-                    print(f"Failed to generate image for component {comp}: {e}")
-                    
-        if generated_count > 0:
-            recipe.component_images = new_images
-            from sqlalchemy.orm.attributes import flag_modified
-            flag_modified(recipe, "component_images")
-            db.session.commit()
-            
-        return jsonify({'success': True, 'generated': generated_count})
-        
-    except Exception as e:
-        print(f"Gen Error in generate-components: {e}")
-        db.session.rollback()
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-
-# ---------------------------------------------------------------------------
-# Public Collection Routes
-# ---------------------------------------------------------------------------
 
 @recipes_bp.route('/collections')
 def collections_index():

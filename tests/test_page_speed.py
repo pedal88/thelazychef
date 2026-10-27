@@ -1,5 +1,5 @@
-"""Pages stay fast: a v2 recipe is loaded in a handful of queries, Overview, Prep and Cook share one built
-recipe (services/recipe_v2/view.page), and the recipe list does not query once per card."""
+"""Pages stay fast: a v2 recipe is loaded in a handful of queries, the next visit reuses the built recipe
+(services/recipe_v2/view.page), and the recipe list does not query once per card."""
 import os
 import sys
 import unittest
@@ -10,7 +10,7 @@ sys.path.append(ROOT)
 
 from tests import test_recipe_v2_view as view_tests  # noqa: E402  (sets the test environment)
 from sqlalchemy import event  # noqa: E402
-from database.models import Ingredient, Recipe, RecipeDiet, RecipeIngredient, db  # noqa: E402
+from database.models import Recipe, RecipeDiet, db  # noqa: E402
 
 
 class PageSpeedTests(unittest.TestCase):
@@ -57,22 +57,6 @@ class PageSpeedTests(unittest.TestCase):
             db.session.add(r)
         db.session.commit()
         self.assertEqual(list_queries(), few)
-
-    def test_an_old_recipe_does_not_query_per_ingredient(self):
-        def v1_with(n):
-            r = Recipe(title=f'Old dish {n}', cuisine='', difficulty='', status='approved', schema_version=1)
-            db.session.add(r)
-            for k in range(n):
-                ing = Ingredient(food_id=f'T{n}-{k}', name=f'thing {n} {k}', status='active', default_unit='g',
-                                 main_category='vegetables', sub_category=f'sub {k % 3}')
-                db.session.add(ing)
-                db.session.flush()
-                db.session.add(RecipeIngredient(recipe_id=r.id, ingredient_id=ing.id, amount=1, unit='g'))
-            db.session.commit()
-            with self.queries() as seen:
-                self.assertEqual(self.client.get(f'/recipe/{r.id}').status_code, 200)
-            return len(seen)
-        self.assertEqual(v1_with(3), v1_with(12))
 
 
 if __name__ == '__main__':
