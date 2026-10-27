@@ -60,6 +60,61 @@ def get_recipe_image_url(recipe):
         return url_for('static', filename='recipes/' + recipe.image_filename)
 
 
+# The site menu: one list for the top bar, the phone menu and the menu on the Discover page
+# (components/site_menu.html). A group: (label, who, items); an item: (label, endpoint, url arguments, icon, who), or
+# None for a line between items. who: 'all', 'user' (signed in) or 'admin'. A group with one item is a plain link.
+MENU = [
+    ('Discover', 'all', [('Discover recipes', 'discover', {}, 'search', 'all'),
+                         ('Galaxy map', 'explore_galaxy', {}, 'galaxy', 'all')]),
+    ('Recipes', 'all', [('All recipes', 'recipes_list', {}, 'book', 'all'),
+                        ('Collections', 'collections_index', {}, 'folders', 'all'),
+                        None,
+                        ('Saved', 'saved_recipes_view', {}, 'heart', 'user'),
+                        ('Made', 'recipes_list', {'view': 'made'}, 'check', 'user'),
+                        ('Cook next', 'queue.next_recipes_view', {}, 'pot', 'user'),
+                        ('Recipe Mirror', 'mirror_hub', {}, 'mirror', 'user')]),
+    ('Ingredients', 'all', [('All ingredients', 'pantry_management', {}, 'carrot', 'all'),
+                            ('Ingredient galaxy', 'explore_ingredient_galaxy', {}, 'galaxy', 'all')]),
+    ('Learn', 'all', [('Learn', 'resources_list', {}, 'library', 'all')]),
+    ('Admin', 'admin', [('New recipe', 'new_recipe', {}, 'pot', 'admin'),
+                        ('Many recipes at once', 'recipe_v2.batch_new', {}, 'list', 'admin'),
+                        ('New ingredient', 'new_ingredient_view', {}, 'carrot', 'admin'),
+                        None,
+                        ('Recipes', 'admin_recipes_management', {}, 'clipboard', 'admin'),
+                        ('Notes on recipes', 'notes.overview', {}, 'file-plus', 'admin'),
+                        ('Ingredients', 'ingredients_mgmt.dashboard', {}, 'package', 'admin'),
+                        ('Chefs', 'chefs_list', {}, 'chef', 'admin'),
+                        None,
+                        ('Collections', 'collections.collections_list', {}, 'folders', 'admin'),
+                        ('Articles', 'admin_resources_list', {}, 'library', 'admin'),
+                        ('New article', 'admin_resource_new', {}, 'file-plus', 'admin')]),
+]
+
+
+def site_menu():
+    """The menu for the person looking: [{'label', 'items': [{'label', 'url', 'icon'} or None]}], without what they
+    may not see and without a line at the start or end of a group, or two in a row."""
+    user = current_user.is_authenticated
+    admin = user and getattr(current_user, 'is_admin', False)
+    sees = {'all': True, 'user': user, 'admin': admin}
+    out = []
+    for label, who, items in MENU:
+        if not sees[who]:
+            continue
+        shown = []
+        for item in items:
+            if item is None:
+                if shown and shown[-1] is not None:
+                    shown.append(None)
+            elif sees[item[4]]:
+                shown.append({'label': item[0], 'url': url_for(item[1], **item[2]), 'icon': item[3]})
+        while shown and shown[-1] is None:
+            shown.pop()
+        if shown:
+            out.append({'label': label, 'items': shown})
+    return out
+
+
 def icon(name, label=None, cls=''):
     """A line icon from static/icons/icons.svg. Without a label it is decoration and hidden from screen readers."""
     src = url_for('static', filename='icons/icons.svg')

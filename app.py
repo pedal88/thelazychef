@@ -15,7 +15,7 @@ from database.db_connector import configure_database
 from database.models import db, Ingredient, Recipe, RecipeMealType, RecipeDiet, User, Resource, resource_relations, Chef, UserRecipeInteraction, RecipeCollection, CollectionItem, UserQueue, UserLink, ConceptVisual, VisualStyleGuide
 from services.storage_service import get_storage_provider
 from services.recipe_v2 import states
-from routes._shared import DIFFICULTY_LABELS, EQUIPMENT_STYLES, OVERVIEW_LAYOUTS, chosen_overview, IMAGE_STYLES, chosen_equipment_style, dish_images, equipment_image, get_recipe_image_url, get_image_url, icon, notes_text
+from routes._shared import DIFFICULTY_LABELS, EQUIPMENT_STYLES, OVERVIEW_LAYOUTS, chosen_overview, IMAGE_STYLES, chosen_equipment_style, dish_images, equipment_image, get_recipe_image_url, get_image_url, icon, notes_text, site_menu
 
 
 app = Flask(__name__)
@@ -113,6 +113,7 @@ def utility_processor():
 app.add_template_global(get_recipe_image_url)
 app.add_template_global(get_image_url)
 app.add_template_global(icon)
+app.add_template_global(site_menu)
 app.add_template_global(dish_images)
 app.add_template_global(IMAGE_STYLES, 'IMAGE_STYLES')
 app.add_template_global(EQUIPMENT_STYLES, 'EQUIPMENT_STYLES')
