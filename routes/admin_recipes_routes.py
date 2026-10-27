@@ -47,7 +47,7 @@ def admin_recipes_management():
     meal_type_options = vocab.get('meal_types', [])
     protein_options = vocab.get('proteins', [])
     difficulty_options = vocab.get('difficulties', [])
-    status_options = ['draft', 'approved', 'rejected']
+    status_options = ['draft', 'approved', 'rejected', 'archived']
 
     # Base query — LEFT JOIN so recipes with no evaluation still appear
     # Ensure optimal DB queries for diets and evaluations
@@ -74,6 +74,8 @@ def admin_recipes_management():
         stmt = stmt.where(Recipe.difficulty.in_(selected_difficulties))
     if selected_statuses:
         stmt = stmt.where(Recipe.status.in_(selected_statuses))
+    else:  # the retired v1 recipes (scripts/retire_v1.py) only when asked for
+        stmt = stmt.where(Recipe.status != 'archived')
     if selected_diets:
         stmt = stmt.where(Recipe.diets.any(RecipeDiet.diet.in_(selected_diets)))
     if selected_meal_types:
