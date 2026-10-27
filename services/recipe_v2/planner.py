@@ -6,12 +6,17 @@ same plans as the prototype for 25 recipes (scripts/make_planner_golden.mjs).
 
 Times are minutes from the start. The plan is built backwards from serving:
 each step is placed as late as its successors allow, the cook works on one
-active step at a time, and exclusive equipment (the oven) holds one thing.
+active step at a time, and exclusive equipment (the oven) holds one thing, or as many as its capacity (an air
+fryer with two drawers holds two).
 Three strategies, decided by the user (RECIPE_VISUALIZATIONS.md 9.12):
 
     calm  prep before cooking, but prep that can wait is done while something stands (default)
     prep  everything that needs no heat is done before the first cook step
     jit   every step as late as possible: shortest, busiest
+
+The capacity comes from the equipment catalog (data/constraints/equipment.json, "capacity", 1 when left out). A
+kitchen, {equipment id: capacity}, overrides it for one plan: the user's own kitchen (one drawer, or two ovens),
+when there is such a setting.
 
 Waiting for equipment is not stored. A step waits for the setup step on the
 same cookware (preheat the oven), and with several, for the one at the same
@@ -47,6 +52,7 @@ class Step:
     eq: str | None = None  # the cookware, when the step happens on or in one
     temp: int | None = None
     excl: bool = False  # the cookware holds one thing at a time (oven)
+    cap: int = 1  # or this many at a time (an air fryer with two drawers)
     waits: list = field(default_factory=list)
 
     @property
@@ -54,10 +60,12 @@ class Step:
         return self.active + self.passive
 
 
-def steps_from_v2(v2):
-    """The recipe's steps as planner steps, with the waits for setup steps derived."""
+def steps_from_v2(v2, kitchen=None):
+    """The recipe's steps as planner steps, with the waits for setup steps derived. kitchen: {equipment id: capacity}
+    over the catalog's."""
     raw = v2.get('steps') or []
     cat = _equipment()
+    kitchen = kitchen or {}
 
     def prep_of(s):  # gets equipment ready: setup, or a step with no ingredients and no inputs ("line the tin")
         return s.get('setup') or (not s.get('uses') and not s.get('after'))
@@ -79,7 +87,8 @@ def steps_from_v2(v2):
         step = Step(id=s['local_id'], phase=s['phase'], after=list(s.get('after') or []), uses=list(s.get('uses') or []),
                     active=s.get('active_minutes') or 0, passive=s.get('passive_minutes') or 0,
                     hold=s.get('holds_minutes'), setup=bool(s.get('setup')), eq=q if pot else None,
-                    temp=s.get('temp_c'), excl=bool(pot and info.get('exclusive') and not s.get('setup')))
+                    temp=s.get('temp_c'), excl=bool(pot and info.get('exclusive') and not s.get('setup')),
+                    cap=max(1, int(kitchen.get(q, info.get('capacity', 1)))))
         w = pot and not prep_of(s) and setup_for(s)
         if w and w not in step.after:
             step.waits = [w]
@@ -100,14 +109,30 @@ def _fit(busy, eqb, r, s):
                     r = y - s.passive
                     moved = True
                     break
-        if not moved and s.excl:
+        if not moved and s.excl and s.cap == 1:
             a, b = r, r + s.active + s.passive
             for x, y in eqb.get(s.eq, []):
                 if a < y and x < b:
                     r = y
                     moved = True
                     break
+        elif not moved and s.excl:  # room for cap things at once: move only where it would be one too many
+            a, b = r, r + s.active + s.passive
+            over = [(x, y) for x, y in eqb.get(s.eq, []) if a < y and x < b]
+            if _peak(over, a, b) >= s.cap:
+                r = min(y for _, y in over)
+                moved = True
     return r
+
+
+def _peak(intervals, a, b):
+    """The most of the intervals that are under way at once between a and b."""
+    edges = sorted([(max(x, a), 1) for x, _ in intervals] + [(min(y, b), -1) for _, y in intervals], key=lambda e: (e[0], e[1]))
+    n = top = 0
+    for _, d in edges:
+        n += d
+        top = max(top, n)
+    return top
 
 
 def schedule(steps, mode='calm'):
@@ -249,6 +274,7 @@ def schedule(steps, mode='calm'):
             'over': over, 'cook_start': first('cook'), 'serve_start': first('serve'), 'A': sum(s.active for s in steps)}
 
 
-def plan_v2(v2, mode='calm'):
-    """Plan a recipe in v2 JSON (services/recipe_v2/store.to_v2)."""
-    return schedule(steps_from_v2(v2), mode)
+def plan_v2(v2, mode='calm', kitchen=None):
+    """Plan a recipe in v2 JSON (services/recipe_v2/store.to_v2). kitchen: {equipment id: capacity}, the user's own
+    over the catalog's (an air fryer with one drawer: {'airfryer': 1})."""
+    return schedule(steps_from_v2(v2, kitchen), mode)
