@@ -22,7 +22,7 @@ IDEA_MAX = 200  # longer input, or input over several lines, is a pasted recipe
 
 def kind_of(source):
     if is_link(source):
-        return 'web'
+        return 'video' if is_video(source) else 'web'
     return 'text' if len(source) > IDEA_MAX or '\n' in source.strip() else 'idea'
 
 
@@ -30,7 +30,7 @@ def start(source, kind, chef_id, chosen, age, language):
     """Save the placeholder recipe (status "generating") and queue the job that writes it. Settings and the baby's
     age go with an idea only; a pasted recipe or a link is kept as it is. Returns the recipe."""
     recipe = Recipe(title=source.splitlines()[0][:120], cuisine='', difficulty='', status='generating', schema_version=2, chef_id=chef_id, language=language,
-                    source_type={'idea': 'description', 'text': 'text', 'web': 'web'}[kind], source_input=source[:500],
+                    source_type={'idea': 'description', 'text': 'text', 'web': 'web', 'video': 'video'}[kind], source_input=source[:500],
                     settings=(chosen or None) if kind == 'idea' else None, age_from_months=age if kind == 'idea' else None)
     db.session.add(recipe)
     db.session.commit()
@@ -64,12 +64,7 @@ def new_recipe():
         return render_template('recipe_v2_new.html', error='Write an idea or paste a recipe.', source=source,
                                chefs=chefs, chef_id=chef_id or '', languages=LANGUAGES, language=language,
                                settings=SETTINGS, chosen=chosen, stages=age_stages()['stages'], age=age), 400
-    kind = kind_of(source)
-    if kind == 'web' and is_video(source):
-        return render_template('recipe_v2_new.html', source=source, chefs=chefs, chef_id=chef_id or '', languages=LANGUAGES,
-                               language=language, settings=SETTINGS, chosen=chosen, stages=age_stages()['stages'], age=age,
-                               error='Video links are not supported here yet. Use the old importer, or paste the recipe text.'), 400
-    recipe = start(source, kind, chef_id, chosen, age, language)
+    recipe = start(source, kind_of(source), chef_id, chosen, age, language)
     return redirect(url_for('recipe_v2.generating', recipe_id=recipe.id))
 
 

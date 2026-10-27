@@ -52,7 +52,7 @@ Pasta med tomatsaus og linser, for 4 | | vegetarian, kid</pre>
       {% for r in rows %}
       <tr class="{{ 'bad' if r.error else 'made' if r.made and not again else 'ok' }}">
         <td class="n">{{ r.no }}</td>
-        <td>{{ r.source }}{% if r.kind == 'web' %} <span class="hint">(a recipe page, kept as it is)</span>{% endif %}</td>
+        <td>{{ r.source }}{% if r.kind == 'web' %} <span class="hint">(a recipe page, kept as it is)</span>{% elif r.kind == 'video' %} <span class="hint">(a video, written down and kept as it is)</span>{% endif %}</td>
         <td>{{ r.chef.name if r.chef else '–' }}</td>
         <td>{% for k in r.settings %}{{ settings[k][0] }}{% if k == 'baby' and r.age %} {{ r.age }} mo+{% endif %}{{ ', ' if not loop.last }}{% else %}–{% endfor %}</td>
         <td class="st">{% if r.error %}{{ r.error }}{% elif r.made and not again %}Made before: <a href="{{ url_for('recipe_detail', recipe_id=r.made) }}">recipe {{ r.made }}</a>, skipped{% elif r.made %}Made before (<a href="{{ url_for('recipe_detail', recipe_id=r.made) }}">{{ r.made }}</a>), made again{% else %}Ready{% endif %}</td>

@@ -306,11 +306,11 @@ Taco | smart | spicy
     def test_the_front_page_sends_ideas_links_and_text_to_v2(self):
         self.login()
         page = self.client.get('/new-recipe').get_data(as_text=True)
-        self.assertEqual(page.count('action="/new-recipe/v2"'), 3)
-        self.assertIn('action="/generate/video"', page)  # video stays on the old importer
+        self.assertEqual(page.count('action="/new-recipe/v2"'), 4)  # the idea, a video, a web page and pasted text
+        self.assertNotIn('/generate/video', page)
         self.assertIn('id="chef-none"', page)
         self.assertIn('<option value="en" selected>English</option>', page)
-        self.assertEqual(page.count('class="language-copy" value="en"'), 2)
+        self.assertEqual(page.count('class="language-copy" value="en"'), 3)
         # A prompt to copy for an AI that writes the one-line idea
         self.assertIn('Copy a prompt for your AI', page)
         self.assertIn('one line of at most 200 characters', page)

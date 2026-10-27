@@ -25,7 +25,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 MAX_RETRIES = 2
 # Hand-made reference recipes shown to the model as examples of correct output.
 EXAMPLES = ('carbonara', 'lasagne')
-SOURCE_TYPES = {'idea': 'description', 'text': 'text', 'web': 'web', 'version': 'version'}  # recipe.source_type, as the old generation uses it
+SOURCE_TYPES = {'idea': 'description', 'text': 'text', 'web': 'web', 'video': 'video', 'version': 'version'}  # recipe.source_type
 
 env = Environment(loader=FileSystemLoader(os.path.join(ROOT, 'data', 'prompts')))
 
@@ -78,7 +78,7 @@ def structure_prompt(source):
 def write_text(kind, source, language=None, call=None, chef=None):
     """Round 1. kind 'idea' writes a recipe from a short idea, as the chef persona if there is one; 'text'
     tidies a pasted recipe; 'web' reads the recipe at the link
-    (services/recipe_v2/sources.py) and tidies it. A pasted or linked recipe is kept as it is, whatever the persona.
+    (services/recipe_v2/sources.py) and tidies it; 'video' has the video watched and written down, then tidies that. A pasted or linked recipe is kept as it is, whatever the persona.
     'version' rewrites a saved recipe, given as text (view.as_text), as the chef persona.
     language is a code from services/recipe_v2/language.py. None writes in the language of the idea or the source;
     a version keeps the base recipe's language."""
@@ -88,6 +88,11 @@ def write_text(kind, source, language=None, call=None, chef=None):
 
         page, _ = fetch_recipe_text(source)
         prompt = env.get_template('recipe_v2/normalize.jinja2').render(kind='a web page', source=page, language=language)
+    elif kind == 'video':
+        from services.recipe_v2.sources import fetch_video_text
+
+        prompt = env.get_template('recipe_v2/normalize.jinja2').render(kind='what a cooking video shows, written down',
+                                                                       source=fetch_video_text(source), language=language)
     elif kind == 'idea':
         prompt = env.get_template('recipe_v2/idea.jinja2').render(idea=source, language=language,
                                                                   persona=persona.prompt_block(chef))
