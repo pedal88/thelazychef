@@ -162,6 +162,14 @@
                     <label class="block"><span class="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Max carbs per serving (g)</span>
                         <input type="number" min="0" step="5" class="rule-carbs w-full rounded-lg p-2 border border-slate-200" value="{{ r.max_carbs_per_serving if r.max_carbs_per_serving is not none else '' }}">
                         <span class="block text-xs text-slate-400 mt-1">Checked when the recipe has nutrition.</span></label>
+                    <label class="block"><span class="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Max hands-on minutes</span>
+                        <input type="number" min="5" step="5" class="rule-active w-full rounded-lg p-2 border border-slate-200" value="{{ r.max_active_minutes or '' }}"></label>
+                    <label class="block"><span class="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Max ingredients</span>
+                        <input type="number" min="1" step="1" class="rule-ingredients w-full rounded-lg p-2 border border-slate-200" value="{{ r.max_ingredients or '' }}">
+                        <span class="block text-xs text-slate-400 mt-1">Besides salt, pepper, oil, water, sugar and flour.</span></label>
+                    <label class="block"><span class="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Max outside the foundation pantry</span>
+                        <input type="number" min="0" step="1" class="rule-extra w-full rounded-lg p-2 border border-slate-200" value="{{ r.max_extra if r.max_extra is not none else '' }}">
+                        <span class="block text-xs text-slate-400 mt-1">Ingredients not in the 100 basics.</span></label>
                     <fieldset><legend class="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Difficulty</legend>
                         {% for d in ['Simplistic', 'Moderate', 'Elevated'] %}<label class="mr-3 whitespace-nowrap"><input type="checkbox" class="rule-difficulty" value="{{ d }}"{% if d in r.difficulties %} checked{% endif %}> {{ d|difficulty_label }}</label>{% endfor %}
                     </fieldset>
@@ -437,6 +445,9 @@
                 max_cleanup: num('.rule-cleanup'),
                 max_spice: num('.rule-spice'),
                 max_carbs_per_serving: num('.rule-carbs'),
+                max_active_minutes: num('.rule-active'),
+                max_ingredients: num('.rule-ingredients'),
+                max_extra: num('.rule-extra'),
                 diet: card.querySelector('.rule-diet').value || null,
                 difficulties: Array.from(card.querySelectorAll('.rule-difficulty:checked')).map(c => c.value)
             };

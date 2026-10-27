@@ -102,6 +102,11 @@ def update_chefs(chefs: list[dict]) -> list[str]:
                 setattr(chef, field, data[field])
         for field in JSON_FIELDS:
             if field in data:
-                setattr(chef, field, json.dumps(data[field]))
+                value = data[field]
+                if field == 'constraints' and isinstance(value, dict):
+                    # The rules the editor sends go over the stored ones; rules it has no field for (forms,
+                    # ready_made) are kept, not wiped by a save
+                    value = {**_load(chef.constraints, {}), **value}
+                setattr(chef, field, json.dumps(value))
     db.session.commit()
     return []
