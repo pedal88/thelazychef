@@ -363,6 +363,10 @@
                                                     d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m4.656-4.656a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" />
                                             </svg>
                                         </button>
+                                        <!-- Another name for it: recipe lines with that name match it (Recalculate links them) -->
+                                        <button type="button" class="ml-3 text-gray-400 hover:text-indigo-700 transition-colors text-xs font-semibold"
+                                            data-alias-food="{{ ing.food_id }}" data-alias-name="{{ ing.name }}" data-aliases="{{ ing.aliases|join(', ') }}"
+                                            title="Add another name (alias)">+ alias</button>
                                         <!-- Delete / archive -->
                                         <button onclick="deleteIngredient({{ ing.id }}, '{{ ing.name|e }}')"
                                             class="ml-3 text-red-400 hover:text-red-700 transition-colors"
@@ -936,6 +940,27 @@
     }
 
     // ── Delete / Archive ──────────────────────────────────────────
+    // Another name for an ingredient: lines with that name match it, now and on Recalculate
+    document.addEventListener('click', async (e) => {
+        const btn = e.target.closest('[data-alias-food]');
+        if (!btn) return;
+        const known = btn.dataset.aliases ? `\nIt already has: ${btn.dataset.aliases}` : '';
+        const name = prompt(`Another name for "${btn.dataset.aliasName}" (for example "frozen chopped spinach"):${known}`);
+        if (!name || !name.trim()) return;
+        try {
+            const res = await fetch('/api/add-synonym', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name.trim(), food_id: btn.dataset.aliasFood }),
+            });
+            const data = await res.json();
+            if (!data.success) return alert(`Could not add it: ${data.error || res.statusText}`);
+            btn.dataset.aliases = [btn.dataset.aliases, name.trim()].filter(Boolean).join(', ');
+            alert(data.added ? `"${name.trim()}" now finds ${btn.dataset.aliasName}.` : `"${name.trim()}" already finds an ingredient.`);
+        } catch (err) {
+            alert('Could not add it. Check the connection and try again.');
+        }
+    });
+
     async function deleteIngredient(id, name) {
         if (!confirm(`Delete "${name}"?\n\n• Used in recipes → archived as 'inactive'\n• Unused → permanently deleted`)) return;
         try {

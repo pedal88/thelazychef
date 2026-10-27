@@ -139,6 +139,22 @@ def update_recipe_status(recipe_id: int):
         print(f"Status update error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@admin_recipes_bp.route('/admin/recipes/<int:recipe_id>/cuisine', methods=['POST'])
+@login_required
+@admin_required
+def update_recipe_cuisine(recipe_id: int):
+    """Change a recipe's cuisine to one in the controlled vocabulary (Recipes Management)."""
+    cuisine = ((request.get_json(silent=True) or {}).get('cuisine') or '').strip()
+    if cuisine not in load_controlled_vocabularies().get('cuisines', []):
+        return jsonify({'success': False, 'error': 'Unknown cuisine'}), 400
+    recipe = db.session.get(Recipe, recipe_id)
+    if not recipe:
+        return jsonify({'success': False, 'error': 'Recipe not found'}), 404
+    recipe.cuisine = cuisine
+    db.session.commit()
+    return jsonify({'success': True, 'cuisine': recipe.cuisine})
+
+
 @admin_recipes_bp.route('/api/delete-recipe/<int:recipe_id>', methods=['DELETE'])
 @login_required
 @admin_required

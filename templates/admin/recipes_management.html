@@ -356,8 +356,12 @@
                                     </td>
 
                                     <!-- Cat -->
-                                    <td class="col-cat whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{
-                                        recipe.cuisine }}</td>
+                                    <td class="col-cat whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                        <select class="recipe-cuisine-dropdown rounded-md border-0 py-1 pl-2 pr-7 text-sm ring-1 ring-inset ring-gray-200"
+                                            data-recipe-id="{{ recipe.id }}" data-prev="{{ recipe.cuisine or '' }}" aria-label="Cuisine of {{ recipe.title }}">
+                                            {% if recipe.cuisine not in cuisine_options %}<option value="{{ recipe.cuisine or '' }}" selected>{{ recipe.cuisine or '–' }}</option>{% endif %}
+                                            {% for c in cuisine_options %}<option value="{{ c }}"{% if c == recipe.cuisine %} selected{% endif %}>{{ c }}</option>{% endfor %}
+                                        </select></td>
                                     <td class="col-cat px-3 py-4 text-sm text-gray-500 max-w-xs truncate">
                                         <div class="flex flex-wrap gap-1">
                                             {% for diet in recipe.diets_list %}
@@ -541,6 +545,29 @@
 
     document.querySelectorAll('.recipe-status-dropdown').forEach(select => {
         applyStatusStyle(select, select.value);
+    });
+
+    // Cuisine: saved at once, like the status
+    document.addEventListener('change', async function (e) {
+        if (!e.target.classList.contains('recipe-cuisine-dropdown')) return;
+        const select = e.target;
+        select.disabled = true;
+        try {
+            const res = await fetch(`/admin/recipes/${select.dataset.recipeId}/cuisine`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cuisine: select.value })
+            });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.error);
+            select.dataset.prev = select.value;
+            select.classList.add('ring-2', 'ring-green-500');
+            setTimeout(() => { select.classList.remove('ring-2', 'ring-green-500'); }, 1200);
+        } catch (err) {
+            alert('Could not change the cuisine: ' + err.message);
+            select.value = select.dataset.prev;
+        } finally {
+            select.disabled = false;
+        }
     });
 
     document.addEventListener('change', async function (e) {
