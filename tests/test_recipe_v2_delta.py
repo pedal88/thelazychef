@@ -81,10 +81,9 @@ class DeltaPageTests(unittest.TestCase):
                              view_tests.RecipeV2ViewTests.page)
 
     def test_cooking_mode_shows_the_delta_and_the_overview_prints_it(self):
-        _, overview = self.page('carbonara')
-        self.assertIn(f'/recipe/{self.ids["carbonara"]}/print?orient=landscape', overview)
-        status, html = self.page('carbonara', '/cook')
+        status, html = self.page('carbonara')
         self.assertEqual(status, 200)
+        self.assertIn(f'/recipe/{self.ids["carbonara"]}/print?orient=landscape', html)
         self.assertIn('class="delta"', html)
         self.assertIn('data-tick="s8"', html)
         self.assertIn('js/delta.js', html)

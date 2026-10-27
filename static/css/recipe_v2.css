@@ -102,53 +102,15 @@
 .rv2 .recalc { display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap; margin-bottom: var(--space-4); }
 .rv2 .recalc button { min-height: var(--tap); padding: 0 var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-pill); background: var(--color-paper); font: 600 15px/1 var(--font-sans); cursor: pointer; }
 .rv2 .recalc button:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
-.rv2 .next { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-4); margin: 0 0 var(--space-4); }
-.rv2 .next .go { display: inline-flex; align-items: center; text-decoration: none; }
-
-/* Overview, Prep, Cook: the same centred top on all three pages (components/recipe_head.html).
-   Between them the browser keeps the top in place and fades the page under it. */
-@view-transition { navigation: auto; }
-@media (prefers-reduced-motion: reduce) { @view-transition { navigation: none; } }
-.rv2 .rhead { text-align: center; margin: 0 0 var(--space-6); view-transition-name: recipe-head; }
-.rv2 .rhead .back { justify-content: center; }
-.rv2 .rhead h1 { margin: 0 0 var(--space-4); }
-.rv2 .flowbar { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--color-line); border-radius: var(--radius-pill); background: var(--color-paper); }
-.rv2 .flowbar a { display: inline-flex; align-items: center; min-height: 40px; padding: 0 var(--space-4); border-radius: var(--radius-pill); color: var(--color-muted); font-weight: 600; font-size: 15px; text-decoration: none; }
-.rv2 .flowbar a:hover { color: var(--color-ink); }
-.rv2 .flowbar a[aria-current="page"] { background: var(--color-ink); color: var(--color-paper); }
-.rv2 .flowbar a:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 
 /* The dish image and the parts (services/recipe_v2/images.py) */
-.rv2 .hero { margin: 0 0 var(--space-4); }
-.rv2 .hero img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius); background: var(--color-soft); }
 .rv2 .part-images { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: var(--space-3); margin: 0 0 var(--space-4); }
 .rv2 .part-images figure { margin: 0; text-align: center; }
 .rv2 .part-images img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-sm); background: var(--color-soft); }
 .rv2 .part-images figcaption { font-size: 14px; margin-top: var(--space-1); }
-.rv2 .printline { margin: var(--space-4) 0 0; }
 
 
-/* Overview (templates/recipe_v2.html): the ingredients in a column of their own on wide screens */
-.rv2.ov { max-width: 680px; }
-.ov-grid { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "ings" "bottom"; gap: 0 var(--space-8); }
-.ov-top { grid-area: top; min-width: 0; }
-.ov-ings { grid-area: ings; min-width: 0; margin-top: var(--space-6); }
-.ov-bottom { grid-area: bottom; min-width: 0; }
-@media (min-width: 1000px) {
-  .rv2.ov { max-width: 1120px; }
-  .ov-grid { grid-template-columns: 360px minmax(0, 1fr); grid-template-rows: auto 1fr; grid-template-areas: "ings top" "ings bottom"; align-items: start; }
-  .ov-ings { margin-top: 0; position: sticky; top: var(--space-4); max-height: calc(100vh - var(--space-8)); overflow: auto; padding-right: var(--space-2); }
-}
-.ov .source { margin-top: var(--space-4); }
-
-/* The facts, with a quiet menu for servings, plan, the facts about the dish and nutrition */
-.factbar { display: flex; gap: var(--space-2); align-items: stretch; position: relative; margin-bottom: var(--space-4); }
-.factbar .facts { flex: 1; margin-bottom: 0; }
-.more summary { list-style: none; cursor: pointer; height: 100%; min-height: var(--tap); width: var(--tap); display: grid; place-items: center;
-  border-radius: var(--radius-sm); color: var(--color-muted); }
-.more summary::-webkit-details-marker { display: none; }
-.more summary:hover, .more[open] summary { background: var(--color-soft); color: var(--color-ink); }
-.more summary:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+/* The facts about the dish and nutrition, in the overview's sheet (components/overview_layouts.html more_sheet) */
 .more-panel { position: absolute; right: 0; top: calc(100% + var(--space-2)); z-index: 20; width: min(380px, 100%); display: grid; gap: var(--space-3);
   background: var(--color-paper); border: 1px solid var(--color-line); border-radius: var(--radius); padding: var(--space-4);
   box-shadow: 0 12px 32px rgb(0 0 0 / .12); font-size: 15px; }
@@ -160,7 +122,7 @@
 .more-panel .nutrition th { padding-right: var(--space-3); }
 .more-panel p { margin: 0; }
 
-/* The ingredient list on Overview: one line each, the amount first */
+/* The ingredient list on the overview: one line each, the amount first */
 .ilist { list-style: none; margin: 0; padding: 0; }
 .ilist li { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: var(--space-2); padding: 1px 0; font-size: 15px; line-height: 1.3; }
 .ilist .amt { font: 600 14px var(--font-mono); white-space: nowrap; }

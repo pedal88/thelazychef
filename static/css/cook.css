@@ -1,100 +1,20 @@
-/* Cooking mode (templates/recipe_v2_cook.html), from the phone prototype (RECIPE_VISUALIZATIONS.md 9.15).
-   Colours, fonts and sizes from tokens.css; tiles and the flow links come from ready.css. */
-.rv2.cook { max-width: 640px; padding-bottom: 96px; }
+/* What the cooking screen (templates/recipe_v2_make.html) keeps from the old cooking mode page (removed 27.10.2026):
+   the running timers and the timeline (components/whole_dish.html). Colours, fonts and sizes from tokens.css. */
+/* The cook-phase steps carry the class cook (components/step_list.html), so these reach their buttons too */
 .cook [hidden] { display: none !important; }
 .cook button { font: inherit; color: inherit; cursor: pointer; }
 .cook button:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 
-/* Where you are and what is standing; stays under the site header while you scroll */
-.status { position: sticky; top: 64px; z-index: 4; background: var(--color-paper); margin-inline: calc(-1 * var(--space-4)); padding: var(--space-2) var(--space-4) 10px; border-bottom: 1px solid var(--color-line); }
-.prog { display: flex; gap: 3px; margin: 0 0 var(--space-2); }
-.prog i { flex: 1; height: 5px; border-radius: 3px; background: var(--color-line); }
-.prog i.prep.on { background: var(--color-prep); }
-.prog i.cook.on { background: var(--color-cook); }
-.prog i.serve.on { background: var(--color-serve); }
-.prog i.cur { outline: 2px solid var(--color-ink); outline-offset: 1px; }
-.now { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center; font-size: 14px; }
-.now .lbl { font: 500 11px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--color-muted); }
-.now .runs { display: contents; }
-.now .muted { color: var(--color-muted); }
+/* A running timer, red and pulsing when the time is up (static/js/steps.js) */
 .tm { display: inline-flex; align-items: center; gap: 6px; border-radius: var(--radius-pill); padding: 4px 10px; background: var(--color-cook-soft); color: var(--color-cook-ink); border: 0; font-size: 14px; font-variant-numeric: tabular-nums; }
 .tm.fin { background: var(--color-danger); color: var(--color-paper); animation: cookpulse 1s infinite; }
 @keyframes cookpulse { 50% { opacity: .6; } }
 @media (prefers-reduced-motion: reduce) { .tm.fin { animation: none; } }
-.runbox { display: grid; gap: 4px; margin-top: var(--space-2); padding: 10px 12px; border-radius: 12px; background: var(--color-soft); font-size: 15px; }
-
-/* The card */
-.card { border-radius: 22px; padding: 18px 18px 16px; margin: 14px 0 0; background: var(--color-prep-soft); color: var(--color-prep-ink); touch-action: pan-y; }
-.card.cook { background: var(--color-cook-soft); color: var(--color-cook-ink); }
-.card.serve { background: var(--color-serve-soft); color: var(--color-serve-ink); }
-.card .meta { font: 500 12px/1.45 var(--font-mono); letter-spacing: .04em; text-transform: uppercase; }
-.card .while { display: inline-block; margin-top: 6px; font-size: 13px; font-weight: 600; background: color-mix(in srgb, currentColor 12%, transparent); border-radius: var(--radius-pill); padding: 3px 10px; }
-.card h2 { font: 600 30px/1.1 var(--font-serif); margin: 10px 0 8px; color: var(--color-ink); hyphens: auto; }
-.card .eqline { font-size: 15px; font-weight: 600; margin: 0 0 var(--space-2); }
-.card .txt { font-size: 20px; line-height: 1.5; margin: 0 0 12px; color: var(--color-ink); }
-.waitbox { margin: var(--space-2) 0 0; border-radius: 12px; padding: var(--space-2) 12px; background: var(--color-paper); color: var(--color-danger); font-weight: 600; font-size: 15px; border: 1.5px solid var(--color-danger); }
-.needs { display: flex; flex-wrap: wrap; gap: 12px var(--space-2); align-items: flex-start; background: color-mix(in srgb, var(--color-paper) 70%, transparent); border-radius: 16px; padding: 10px; margin: 0 0 12px; color: var(--color-ink); }
-.needs .eyebrow { flex-basis: 100%; }
-.needbowl, .needres { display: flex; gap: var(--space-2); align-items: flex-start; flex-basis: 100%; font-size: 15px; }
-.needbowl em, .needres em { display: block; font-style: normal; font-size: 13px; color: var(--color-muted); }
-.needbowl .mini { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 2px; }
-.needbowl .bno { flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--color-ink); color: var(--color-paper); font: 600 14px/1 var(--font-sans); }
-.needres .arrow { display: inline-grid; place-items: center; width: 28px; height: 24px; font-weight: 700; }
-.donebox { border-top: 1px solid color-mix(in srgb, currentColor 25%, transparent); padding-top: 10px; font-size: 16px; color: var(--color-ink); }
-.donebox b { display: block; font: 500 11px/1.4 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--color-muted); }
-.passbox { margin-top: 12px; font-size: 15px; color: var(--color-ink); border-top: 1px solid color-mix(in srgb, currentColor 25%, transparent); padding-top: 10px; }
-.swipehint { text-align: center; font-size: 13px; color: var(--color-muted); margin: 10px 0 0; }
-.finished { margin-top: var(--space-6); text-align: center; }
-.finished h2 { font: 600 34px/1.1 var(--font-serif); margin: var(--space-2) 0; }
-.finished .reset, .cook .reset { min-height: var(--tap); padding: 0 var(--space-4); background: none; border: 0; color: var(--color-muted); text-decoration: underline; }
-
-/* All the steps */
-.skiprow { display: flex; gap: 10px; align-items: center; margin-top: 14px; font-size: 14px; min-height: var(--tap); }
-.skiprow input { width: 22px; height: 22px; accent-color: var(--color-prep); }
-.steplist { list-style: none; margin: var(--space-2) 0 0; padding: 0; }
-.steplist li { border-bottom: 1px solid var(--color-line); }
-.steplist li button { all: unset; box-sizing: border-box; cursor: pointer; display: grid; grid-template-columns: 30px 1fr; gap: 10px; width: 100%; padding: 12px 0; }
-.steplist li button:focus-visible { outline: 2px solid var(--color-accent); }
-.steplist .n { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; font: 600 13px/1 var(--font-sans); background: var(--color-prep-soft); color: var(--color-prep-ink); }
-.steplist li.cook .n { background: var(--color-cook-soft); color: var(--color-cook-ink); }
-.steplist li.serve .n { background: var(--color-serve-soft); color: var(--color-serve-ink); }
-.steplist li.past { opacity: .5; }
-.steplist li.cur { background: var(--color-soft); }
-.steplist .m { font: 500 12px/1.4 var(--font-mono); color: var(--color-muted); text-transform: uppercase; letter-spacing: .04em; }
-.steplist p { margin: 2px 0 0; font-size: 16px; }
-
-/* The buttons at the bottom, under the thumb */
-.bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; background: color-mix(in srgb, var(--color-paper) 92%, transparent); backdrop-filter: blur(8px); border-top: 1px solid var(--color-line); padding: 10px var(--space-4) calc(10px + env(safe-area-inset-bottom, 0px)); }
-.bar-in { max-width: 608px; margin: 0 auto; display: flex; align-items: center; gap: var(--space-2); }
-/* Small and quiet: the card is what you look at, the buttons only move you on. Still a full finger's height. */
-.btn { border: 1px solid var(--color-line); background: var(--color-paper); border-radius: var(--radius-pill); min-height: var(--tap); padding: 0 var(--space-4); font-weight: 600; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 6px; }
-.btn:disabled { opacity: .4; cursor: default; }
-.btn.sq { width: var(--tap); flex: none; padding: 0; }
-.btn.sq.txt { width: auto; padding: 0 var(--space-3); font-size: 14px; }
-.btn.primary { flex: none; margin-left: auto; background: var(--color-soft); color: var(--color-ink); border-color: var(--color-line-strong); }
-.btn.primary.prep { background: var(--color-prep-soft); color: var(--color-prep-ink); border-color: var(--color-prep); }
-.btn.primary.cook { background: var(--color-cook-soft); color: var(--color-cook-ink); border-color: var(--color-cook); }
-.btn.primary.serve { background: var(--color-serve-soft); color: var(--color-serve-ink); border-color: var(--color-serve); }
-
-/* The whole dish: timeline, metro map and river delta. Beside the card on a large screen in landscape;
-   on a phone a sheet over the page, opened from "Whole dish" in the status bar. */
-.cook-side { display: none; }
-.cook-side.open { display: block; position: fixed; inset: 0; z-index: 150; /* above the site header (100) */ overflow: auto; overscroll-behavior: contain; background: var(--color-paper);
-  padding-block: calc(12px + env(safe-area-inset-top, 0px)) calc(24px + env(safe-area-inset-bottom, 0px));
-  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
-html.whole-open { overflow: hidden; }
-.whole-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); margin-bottom: var(--space-3); }
-.wtabs { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 3px; border: 1px solid var(--color-line); border-radius: var(--radius-pill); background: var(--color-paper); }
-.wtabs button { border: 0; background: none; border-radius: var(--radius-pill); padding: 6px var(--space-3); min-height: 36px; font-size: 14px; font-weight: 600; color: var(--color-muted); }
-.wtabs button[aria-selected="true"] { background: var(--color-ink); color: var(--color-paper); }
-.whole-close { width: var(--tap); height: var(--tap); display: grid; place-items: center; border: 1px solid var(--color-line); border-radius: 50%; background: var(--color-paper); }
-.whole-open { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; border: 1px solid var(--color-line); border-radius: var(--radius-pill); background: var(--color-paper); padding: 4px 12px; min-height: 32px; font-size: 14px; font-weight: 600; }
-.wpanel .hint { margin: 0 0 var(--space-2); }
 
 /* Timeline (whole.timeline): one row per step; solid is your work, hatched stands on its own, dotted waits to be used */
-.tl-row.ph-prep, .m-st.ph-prep { --ph: var(--color-prep); }
-.tl-row.ph-cook, .m-st.ph-cook { --ph: var(--color-cook); }
-.tl-row.ph-serve, .m-st.ph-serve { --ph: var(--color-serve); }
+.tl-row.ph-prep { --ph: var(--color-prep); }
+.tl-row.ph-cook { --ph: var(--color-cook); }
+.tl-row.ph-serve { --ph: var(--color-serve); }
 .tl-scroll { overflow-x: auto; }
 .tl { --lw: 150px; position: relative; padding-top: 12px; min-width: 360px; }
 .tl-row { display: grid; grid-template-columns: var(--lw) 1fr; align-items: center; min-height: 26px; border-bottom: 1px solid var(--color-soft); }
@@ -130,47 +50,5 @@ html.whole-open { overflow: hidden; }
 .lg.h { border: 1.5px dotted var(--ph); }
 @media (prefers-reduced-motion: reduce) { .nowline { transition: none; } }
 
-/* Metro map (whole.metro): each part of the dish is a line; open rings are prep, filled are cooking */
-.mv-key { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--color-muted); margin-bottom: var(--space-2); }
-.mv-key span { display: inline-flex; align-items: center; gap: 6px; }
-.mv-key i { width: 18px; height: 5px; border-radius: 3px; }
-.mv-svg { width: 100%; height: auto; display: block; font-family: var(--font-sans); }
-.mv-row rect { fill: transparent; }
-.mv-row.cur rect { fill: var(--color-soft); stroke: var(--color-line-strong); }
-.mv-row.cur .mv-lbl { font-weight: 700; }
-.mv-min { font: 11px var(--font-mono); fill: var(--color-muted); }
-.mv-lbl { font-size: 13px; fill: var(--color-ink); }
-.mv-no { font: 500 11px var(--font-mono); fill: var(--color-muted); }
-.m-line { fill: none; stroke-width: 5; stroke-linecap: round; }
+/* The parts of the dish, a colour each (the metro map's lines, components/whole_dish.html metro_map) */
 .lane-0 { --lane: rgb(var(--serve-600)); } .lane-1 { --lane: rgb(var(--accent-600)); } .lane-2 { --lane: rgb(var(--prep-600)); } .lane-3 { --lane: rgb(var(--warning-600)); }
-.m-line.lane-0, .m-line.lane-1, .m-line.lane-2, .m-line.lane-3 { stroke: var(--lane); }
-.mv-key i.lane-0, .mv-key i.lane-1, .mv-key i.lane-2, .mv-key i.lane-3 { background: var(--lane); }
-.m-st { fill: var(--color-paper); stroke: var(--ph); stroke-width: 3; }
-.m-st.ph-cook { fill: var(--ph); }
-.m-st.ph-serve { fill: var(--color-ink); stroke: var(--color-ink); }
-.m-st.cur { stroke: var(--color-danger); stroke-width: 4; }
-
-/* The large screen in landscape: the whole dish beside the card */
-@media (min-width: 1024px) and (orientation: landscape) {
-  .rv2.cook { max-width: 1320px; }
-  .cook-cols { display: grid; grid-template-columns: minmax(0, 620px) minmax(0, 1fr); gap: var(--space-8); align-items: start; }
-  .cook-side, .cook-side.open { display: block; position: sticky; top: 80px; inset: auto; z-index: auto; padding: 0; max-height: calc(100vh - 180px); overflow: auto; overscroll-behavior: contain; background: none; }
-  .whole-open, .whole-close { display: none; }
-  html.whole-open { overflow: auto; }
-  .bar-in { max-width: 1288px; }
-  /* Full screen: the chosen view over the whole window */
-  .whole-head .whole-full { display: grid; }
-  .cook-side.full { position: fixed; inset: 0; z-index: 150; max-height: none; overflow: auto; background: var(--color-paper);
-    padding-block: calc(16px + env(safe-area-inset-top, 0px)) calc(24px + env(safe-area-inset-bottom, 0px));
-    padding-left: max(24px, env(safe-area-inset-left, 0px)); padding-right: max(24px, env(safe-area-inset-right, 0px)); }
-  .cook-side.full .whole-close { display: grid; }
-  .cook-side.full .whole-full { display: none; }
-  .cook-side.full .tl { --lw: 220px; }
-  .cook-side.full .tl-row { min-height: 32px; }
-  .cook-side.full .tl-l { font-size: 14px; }
-  .cook-side.full .mv-svg { height: calc(100vh - 170px); width: auto; max-width: 100%; margin: 0 auto; }
-}
-.whole-full { display: none; place-items: center; width: var(--tap); height: var(--tap); margin-left: auto; border: 1px solid var(--color-line); border-radius: 50%; background: var(--color-paper); }
-html.whole-fullscreen { overflow: hidden; }
-.cook-side .g2-node.cur { background: color-mix(in srgb, var(--color-serve) 8%, transparent); border-radius: 16px; box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-serve) 8%, transparent); }
-.cook-side .fx-seg.cur .mn-v { text-decoration: underline; text-decoration-color: var(--color-serve); text-decoration-thickness: 3px; text-underline-offset: 4px; }

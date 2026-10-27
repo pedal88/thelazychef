@@ -101,17 +101,6 @@ def chosen_image_style():
     return style if admin and style in IMAGE_STYLES else None
 
 
-# Flow trial (temporary, 23.10.2026): the recipe as three tabs (Overview, Prep, Cook) or as Overview and one page
-# with prep and cooking together (/recipe/<id>/make). Cookie flow, admins only; everyone else gets the tabs.
-FLOWS = {'tabs': 'Tabs', 'one': 'One page'}
-
-
-def chosen_flow():
-    style = request.cookies.get('flow')
-    admin = current_user.is_authenticated and getattr(current_user, 'is_admin', False)
-    return style if admin and style in FLOWS else 'tabs'
-
-
 # Overview layout trial (temporary): how the overview of the one-page flow is laid out to fit one screen. "poster"
 # (A) has the image over half the screen beside the ingredients; "compact" (C) a plate at the top and the ingredients
 # in columns under it. The first layout ("now") was dropped 25.10.2026. Cookie overview_layout, admins only.

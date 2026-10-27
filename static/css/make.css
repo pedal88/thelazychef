@@ -4,7 +4,6 @@
 
 /* Cooking: nothing but the steps */
 html.cooking body > header, html.cooking body > footer { display: none !important; }
-html.cooking .make .rhead { display: none; }
 html.cooking .rv2.make { padding-top: 0; }
 .rv2 .cookmode { margin-top: 0; padding: 52px 0 84px; /* clear of the floating controls at the top and the bottom */ }
 .cookmode[hidden] { display: none; }
@@ -98,7 +97,7 @@ html.cooking body .trialbar { bottom: calc(14px + env(safe-area-inset-bottom, 0p
 
 /* The views the menu shows instead of the list; the next step is marked, and a tap on a step opens its card */
 .vpanel { margin-top: var(--space-3); }
-.vpanel:not([data-panel="steps"]) :is(.tl-row, .mv-row, .m-st, .fx-seg) { cursor: pointer; }
+.vpanel:not([data-panel="steps"]) :is(.tl-row, .fx-seg) { cursor: pointer; }
 .step-sheet { border: 0; border-radius: 18px; padding: 14px 10px 10px; width: min(600px, calc(100vw - 20px)); max-height: 85vh; overflow: auto;
   background: var(--color-paper); color: var(--color-ink); box-shadow: 0 20px 60px rgb(0 0 0 / .25); }
 .step-sheet::backdrop { background: rgb(0 0 0 / .35); }

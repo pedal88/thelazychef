@@ -1,11 +1,12 @@
 {% extends "base.html" %}
-{# The whole recipe on one page, as two screens (a trial for admins: Flow "One page" in the admin chip;
-   RECIPE_VISUALIZATIONS.md 9.17). The overview: the dish and the ingredients on one screen, laid out as A (poster)
-   or C (compact), Overview in the admin chip (components/overview_layouts.html). Cooking (#cook): only the steps, without the site's top bar and footer and
-   without bars of its own; small floating controls in the corners: back at the top left, the running timers at
-   the top right, and at the bottom right the choice of view (steps, timeline, metro map, river delta) and the
-   bowls, which share their ticks with the steps they stand for. The browser's back button goes back to the overview too. Served at /recipe/<id>; Prep, Cook and /make
-   lead here (components/step_list.html, static/js/steps.js). #}
+{# The recipe page of a v2 recipe (chosen over the three tabs 27.10.2026; RECIPE_VISUALIZATIONS.md 9.17): one page,
+   two screens. The overview: the dish and the ingredients on one screen, laid out as A (poster) or C (compact),
+   Overview in the admin chip (components/overview_layouts.html). Cooking (#cook): only the steps, without the site's
+   top bar and footer and without bars of its own; small floating controls in the corners: back at the top left, the
+   running timers at the top right, and at the bottom right the choice of view (steps, timeline, metro map, river
+   delta) and the bowls, which share their ticks with the steps they stand for. The browser's back button goes back
+   to the overview too. Served at /recipe/<id>; the old /prep, /cook and /make lead here (#prep opens the bowls)
+   (components/step_list.html, static/js/steps.js). A recipe with no steps yet is only its overview. #}
 {% from "components/recipe_head.html" import recipe_head with context %}
 {% from "components/prep_board.html" import prep_body with context %}
 {% from "components/step_list.html" import step_list, view_menu, details_button, bowls_button with context %}
@@ -45,6 +46,8 @@
 
   {% if ovl == 'compact' %}{{ compact() }}{% else %}{{ poster() }}{% endif %}
 
+  {# A recipe with no steps yet (a draft whose structuring failed) is only its overview #}
+  {% if v.ready %}
   {# Cooking: the steps over the whole screen #}
   <section class="cookmode" id="cook" aria-label="Cooking" hidden>
     {# No bars: small floating controls in the corners, so the steps have the whole screen #}
@@ -69,6 +72,7 @@
     {% if r.bowls %}<div class="meter" aria-hidden="true"><span></span></div>{% endif %}
     <div class="sheet-fit" data-fit><div class="fit-in">{{ prep_body(links=True) }}</div></div>
   </dialog>
+  {% endif %}
   {{ more_sheet() }}
 </article>
 <script>

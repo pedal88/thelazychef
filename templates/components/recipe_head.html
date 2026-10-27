@@ -1,19 +1,6 @@
-{# The top of the three pages of a v2 recipe: the title and Overview · Prep · Cook. The same on all three,
-   centred, so it stays put while the page changes under it (a view transition in recipe_v2.css). #}
+{# The admin chip on a v2 recipe page (the title and the way back are part of the overview layouts). #}
 {% from "components/recipe_notes.html" import notes_part with context %}
 {% macro recipe_head(recipe, v, current) %}
-{% set args = {'recipe_id': recipe.id, 'servings': v.servings, 'plan': v.plan} %}
-<header class="rhead">
-  <a class="back" href="{{ url_for('recipes_list') }}">← All recipes</a>
-  <h1>{{ v.title }}</h1>
-  {% if v.ready and chosen_flow() != 'one' %}{# the one-page flow (an admin trial) has no tabs #}
-  <nav class="flowbar" aria-label="Making the dish">
-    {%- for key, label, endpoint in [('overview', 'Overview', 'recipe_detail'), ('ready', 'Prep', 'recipe_prep'), ('cook', 'Cook', 'recipe_cook')] -%}
-    <a href="{{ url_for(endpoint, **args) }}"{% if key == current %} aria-current="page"{% endif %}>{{ label }}</a>
-    {%- endfor -%}
-  </nav>
-  {% endif %}
-</header>
 {% if current_user.is_authenticated and current_user.is_admin %}{{ trial_bar(recipe, caller() if caller is defined else '', {'ready': 'prep'}.get(current, current)) }}{% endif %}
 {% endmacro %}
 
@@ -33,10 +20,6 @@
   <div class="tgroup" data-img-switch><span class="tlabel">Images</span>
     {%- for key, label in IMAGE_STYLES.items() %}<button type="button" data-img="{{ key }}" aria-pressed="{{ 'true' if key == imgs.style else 'false' }}">{{ label }}</button>{% endfor -%}
   </div>
-  <div class="tgroup" data-flow-switch><span class="tlabel">Flow</span>
-    {%- for key, label in FLOWS.items() %}<button type="button" data-flow="{{ key }}" aria-pressed="{{ 'true' if key == chosen_flow() else 'false' }}">{{ label }}</button>{% endfor -%}
-  </div>
-  {% if chosen_flow() == 'one' %}
   <div class="tgroup" data-ov-switch><span class="tlabel">Overview</span>
     {%- for key, label in OVERVIEW_LAYOUTS.items() %}<button type="button" data-ov="{{ key }}" aria-pressed="{{ 'true' if key == chosen_overview() else 'false' }}">{{ label }}</button>{% endfor -%}
   </div>
@@ -45,7 +28,6 @@
   {# The river delta's trial on this device (static/js/steps.js); temporary: every step on the drawing #}
   <div class="tgroup" data-dlx-switch><span class="tlabel">Delta</span><button type="button" data-dlx="steps" aria-pressed="false">All steps</button></div>
   <div class="tgroup" data-dltap-switch><span class="tlabel">Tap</span><button type="button" data-dltap="1" aria-pressed="true">1 Number ticks</button><button type="button" data-dltap="2" aria-pressed="false">2 Done in card</button></div>
-  {% endif %}
   <div class="tgroup" data-eq-switch><span class="tlabel">Tools</span>
     {%- for key, label in EQUIPMENT_STYLES.items() %}<button type="button" data-eq="{{ key }}" aria-pressed="{{ 'true' if key == chosen_equipment_style() else 'false' }}">{{ label }}</button>{% endfor -%}
   </div>

@@ -31,7 +31,8 @@
 {%- endmacro %}
 
 {% macro start_button() -%}
-<a class="go ovl-go" href="#cook" data-cook-open>Start cooking →</a>
+{% if v.ready %}<a class="go ovl-go" href="#cook" data-cook-open>Start cooking →</a>
+{% else %}<p class="hint">No steps yet.</p>{% endif %}
 {%- endmacro %}
 
 {% macro ingredients(imgs) -%}

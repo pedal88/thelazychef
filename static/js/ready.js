@@ -1,4 +1,4 @@
-/* Prep (templates/recipe_v2_ready.html): one tap marks a bowl (on its number), a tile, a task or a piece of equipment
+/* The bowls board (components/prep_board.html on the recipe page's Bowls sheet): one tap marks a bowl (on its number), a tile, a task or a piece of equipment
    as ready; a tap elsewhere on a bowl opens it.
    The ticks are kept on this device, per recipe. Only the bowls count towards the meter: they are what you make.
    On the one-page flow (templates/recipe_v2_make.html) a bowl that prep steps fill (data-steps) has no tick of its

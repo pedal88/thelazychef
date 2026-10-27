@@ -94,22 +94,19 @@ class GetReadyPageTests(unittest.TestCase):
     setUp, tearDown, page = (view_tests.RecipeV2ViewTests.setUp, view_tests.RecipeV2ViewTests.tearDown,
                              view_tests.RecipeV2ViewTests.page)
 
-    def get(self, name, **args):
-        res = self.client.get(f'/recipe/{self.ids[name]}/prep', query_string=args)
-        return res.status_code, res.get_data(as_text=True)
-
-    def test_the_overview_links_to_prep(self):
+    def test_the_bowls_button_says_how_many_bowls(self):
         _, html = self.page('carbonara', servings=6)
-        self.assertIn(f'/recipe/{self.ids["carbonara"]}/prep?servings=6&amp;plan=calm', html)
-        self.assertIn('3 bowls to fill', html)
+        self.assertIn('<span data-bowl-count>0/3</span>', html)
 
-    def test_the_page_shows_bowls_tiles_and_equipment(self):
-        status, html = self.get('carbonara', servings=6)
+    def test_the_bowls_sheet_shows_bowls_tiles_and_equipment(self):
+        status, html = self.page('carbonara', servings=6)
         self.assertEqual(status, 200)
-        for text in ('Prep', 'Pisk eggeblandingen', 'Take out', 'You probably have', 'Equipment', 'data-tick="b:',
-                     '600 g', 'js/ready.js', '0 of 3 bowls ready'):
-            self.assertIn(text, html)
-        self.assertIn('https://example.com/spaghetti.webp', html)
+        sheet = html[html.index('id="sheet-bowls"'):]
+        for text in ('Pisk eggeblandingen', 'Take out', 'You probably have', 'Equipment', 'data-tick="b:',
+                     '600 g', '0 of 3 bowls ready'):
+            self.assertIn(text, sheet)
+        self.assertIn('js/ready.js', html)
+        self.assertIn('https://example.com/spaghetti.webp', sheet)
 
     def test_take_out_is_one_list_in_kitchen_groups(self):
         takeout = build(db.session.get(Recipe, self.ids['lasagne']))['ready']['takeout']
@@ -132,18 +129,19 @@ class GetReadyPageTests(unittest.TestCase):
         self.assertEqual((tile['cut'], tile['state'], tile['mark']), (None, '', None))
         self.assertIsInstance(line, RecipeLine)
 
-    def test_the_first_address_still_works(self):
-        res = self.client.get(f'/recipe/{self.ids["carbonara"]}/get-ready')
-        self.assertEqual(res.status_code, 200)
-        self.assertIn('aria-current="page">Prep', res.get_data(as_text=True))
+    def test_the_old_addresses_open_the_page_at_prep(self):
+        rid = self.ids['carbonara']
+        for path in ('/prep', '/get-ready'):
+            res = self.client.get(f'/recipe/{rid}{path}', query_string={'servings': 6})
+            self.assertEqual(res.status_code, 302)
+            self.assertTrue(res.headers['Location'].endswith(f'/recipe/{rid}?servings=6#prep'), res.headers['Location'])
 
     def test_drafts_only_for_admins(self):
-        self.assertEqual(self.get('lasagne')[0], 302)
+        self.assertEqual(self.page('lasagne')[0], 302)
         self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
-        status, html = self.get('lasagne')
+        status, html = self.page('lasagne')
         self.assertEqual(status, 200)
         self.assertIn('Later, while:', html)
-
 
 if __name__ == '__main__':
     unittest.main()
