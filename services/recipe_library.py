@@ -6,7 +6,9 @@ filter. Saved, Made and Cook next show the very recipe the person saved, so they
 
 Two queries for a page: one for the ids of everything that matches (small rows), one for the recipes on the page.
 """
+import json
 from dataclasses import dataclass, field
+from pathlib import Path
 
 from sqlalchemy import func, or_
 from sqlalchemy.orm import selectinload
@@ -22,13 +24,16 @@ from database.models import (
     UserRecipeInteraction,
     db,
 )
+from services.recipe_v2.derive import HEAT_LABELS
 
 PAGE = 48
+DATA = Path(__file__).resolve().parent.parent / 'data'
 
 # Total time (Recipe.prep_time_mins, the planner's start to table) -> (at least, at most) minutes
 TIMES = {'20': (None, 20), '30': (None, 30), '45': (None, 45), 'long': (46, None)}
 TIME_LABELS = {'20': 'Up to 20 min', '30': 'Up to 30 min', '45': 'Up to 45 min', 'long': 'Over 45 min'}
 SORT_LABELS = {'new': 'Newest', 'quick': 'Quickest', 'active': 'Least hands-on'}
+SPICE_LABELS = {'0': 'Mild', '1': 'A little heat', '2': 'Hot', '3': 'Very hot'}  # Recipe.spice_level
 
 # The hands-on minutes: the cook's time at the steps, what the planner calls A (services/recipe_v2/planner.py)
 ACTIVE = (db.select(func.coalesce(func.sum(RecipeStep.active_minutes), 0))
@@ -45,6 +50,7 @@ class Filters:
     difficulties: list = field(default_factory=list)
     proteins: list = field(default_factory=list)
     heat_sources: list = field(default_factory=list)
+    spice: list = field(default_factory=list)  # levels as text, '0'-'3'
     time: str = ''
     q: str = ''
 
@@ -72,6 +78,9 @@ def _filtered(stmt, f):
             for p in f.proteins)))
     if f.heat_sources:
         stmt = stmt.where(Recipe.heat_source.in_(f.heat_sources))
+    levels = [int(x) for x in f.spice if x in SPICE_LABELS]
+    if levels:
+        stmt = stmt.where(func.coalesce(Recipe.spice_level, 0).in_(levels))
     if f.time in TIMES:
         low, high = TIMES[f.time]
         if low is not None:
@@ -84,6 +93,40 @@ def _filtered(stmt, f):
                               Recipe.lines.any(RecipeLine.name.icontains(q, autoescape=True)),
                               Recipe.lines.any(RecipeLine.ingredient.has(Ingredient.name.icontains(q, autoescape=True)))))
     return stmt
+
+
+def _catalog(path, key):
+    return json.loads((DATA / path).read_text(encoding='utf-8'))[key]
+
+
+def from_args(args, difficulty_labels=None):
+    """The person's choices in the address (request.args) -> (Filters, the chip groups for the page).
+    difficulty_labels: stored difficulty -> what readers see (routes/_shared.DIFFICULTY_LABELS).
+    A group: {'key' (the parameter), 'label', 'options': [(value, label, chosen)], 'single', 'more'} where single is
+    one choice (radio) and more puts it behind More filters. Protein is chosen by group (Poultry, Seafood, ...) and
+    filters on the group's labels (data/constraints/main_protein.json)."""
+    proteins = {p['category']: p['examples'] for p in _catalog('constraints/main_protein.json', 'protein_types')}
+    groups = [
+        ('time', 'Time', TIME_LABELS, True, False),
+        ('heat_source', 'Cooked in', HEAT_LABELS, False, False),
+        ('protein', 'Protein', {c: c for c in proteins}, False, False),
+        ('diet', 'Diet', {d: d.capitalize() for d in sorted(_catalog('constraints/diets.json', 'diets'))}, False, False),
+        ('cuisine', 'Cuisine', {c: c for c in sorted(_catalog('post_processing/cuisines.json', 'cuisines'))}, False, True),
+        ('meal_type', 'Meal type', {m: m for m in dict.fromkeys(_catalog('constraints/meal_types.json', 'meal_types'))},
+         False, True),
+        ('difficulty', 'Difficulty', {d: (difficulty_labels or {}).get(d, d) for d in _catalog('constraints/difficulty.json', 'difficulty')},
+         False, True),
+        ('spice', 'Heat', SPICE_LABELS, False, True),
+    ]
+    chosen = {key: [v for v in args.getlist(key) if v in options] for key, _, options, _, _ in groups}
+    filters = Filters(cuisines=chosen['cuisine'], diets=chosen['diet'], meal_types=chosen['meal_type'],
+                      difficulties=chosen['difficulty'], heat_sources=chosen['heat_source'], spice=chosen['spice'],
+                      proteins=[e for c in chosen['protein'] for e in proteins[c]],
+                      time=(chosen['time'] or [''])[0], q=args.get('q', '').strip())
+    shown = [{'key': key, 'label': label, 'single': single, 'more': more,
+              'options': [(v, text, v in chosen[key]) for v, text in options.items()]}
+             for key, label, options, single, more in groups]
+    return filters, shown
 
 
 def _ordered(stmt, view, sort):
