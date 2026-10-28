@@ -1,6 +1,6 @@
 {
   "_doc": "The symbol of each main ingredient category (data/constraints/categories.json) in the ingredient galaxy: a small still life of three typical things, drawn with the ingredient symbol prompt (services/ingredient_symbols.category_symbol) and kept in concept_visual (concept_type ingredient_category). Made with scripts/category_symbols.py. A sub category has no own image: it shows the symbol of its most used ingredient (routes/explore_routes.py).",
-  "form": "Show the three side by side and slightly overlapping, as one small group, all the same size, nothing else.",
+  "form": "Show the three side by side and slightly overlapping, as one small group, all the same size, nothing else. No circle, frame, border or badge around them: they stand free on the white background.",
   "looks": {
     "alcoholic beverages": "a dark wine bottle, a brown beer bottle and a small glass of clear spirit",
     "bakery and bread": "a round loaf of bread, a baguette and a folded flatbread",
@@ -16,7 +16,7 @@
     "nuts and seeds": "three small heaps: almonds, walnuts and sunflower seeds",
     "sauces and condiments": "a small glass jar of red tomato sauce, a jar of yellow mustard and a small bottle of soy sauce",
     "spices and herbs": "three small heaps of ground spices in red, yellow and brown, with a sprig of fresh green herb",
-    "vegetables": "a carrot, a head of broccoli and a red bell pepper",
+    "vegetables": "a carrot with its green top, a red tomato and a leek, lying side by side",
     "other": "a small heap of mixed dried foods: a few beans, a few grains and a few seeds"
   }
 }
