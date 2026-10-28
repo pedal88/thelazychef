@@ -15,4 +15,4 @@ Every migration runs against the **production database** when it is merged (the 
 - **Dropping or rewriting data needs Pål's yes, and a backup first** (the command is in `docs/OPERATIONS.md`). Say
   so at the top of the PR.
 - Recent history: the v1 recipe tables were dropped in `e8b4d2f6a1c3`, the taxonomy cleanup is `b3d7e9f1a2c4`, and
-  `recipe_line.cut` was dropped in `c5e8a1d3f9b2`.
+  `recipe_line.cut` was dropped in `c5e8a1d3f9b2`, Learn and collections in `e2b6d4f8a1c3`.
