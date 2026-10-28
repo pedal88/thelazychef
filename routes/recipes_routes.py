@@ -1,4 +1,4 @@
-"""Recipes Blueprint: landing page, recipe library, the recipe page, recipe JSON APIs and public collections."""
+"""Recipes Blueprint: landing page, recipe library, the recipe page, recipe JSON APIs."""
 from flask import abort, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import or_
@@ -7,7 +7,6 @@ from sqlalchemy.orm import selectinload
 from database.models import (
     Ingredient,
     Recipe,
-    RecipeCollection,
     RecipeDiet,
     RecipeLine,
     RecipeMealType,
@@ -343,43 +342,3 @@ def recipe_print(recipe_id):
     orient = 'landscape' if request.args.get('orient') == 'landscape' else 'portrait'
     return render_template('recipe_print.html', recipe=recipe, v=view, orient=orient,
                            autoprint=request.args.get('auto') != '0')
-
-
-@recipes_bp.route('/collections')
-def collections_index():
-    """Public index of all published collections, with their approved recipes pre-loaded."""
-    raw = (
-        db.session.execute(
-            db.select(RecipeCollection)
-            .where(RecipeCollection.is_published.is_(True))
-            .order_by(RecipeCollection.created_at.desc())
-        )
-        .scalars()
-        .all()
-    )
-    # Build (collection, [recipe, ...]) pairs — filter approved at route level
-    rows = [
-        (col, [item.recipe for item in col.items if item.recipe.status == 'approved'])
-        for col in raw
-    ]
-    return render_template('collections_index.html', rows=rows)
-
-
-@recipes_bp.route('/collections/<slug>')
-def collection_detail(slug: str):
-    """Public detail page for a single published collection."""
-    collection = db.session.execute(
-        db.select(RecipeCollection).where(RecipeCollection.slug == slug)
-    ).scalar_one_or_none()
-
-    if not collection or not collection.is_published:
-        abort(404)
-
-    # Filter only approved recipes at the route level (belt-and-suspenders)
-    recipes = [
-        item.recipe
-        for item in collection.items
-        if item.recipe.status == 'approved'
-    ]
-
-    return render_template('collection_detail.html', collection=collection, recipes=recipes)

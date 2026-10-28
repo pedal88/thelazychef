@@ -66,7 +66,6 @@ MENU = [
     ('Discover', 'all', [('Discover recipes', 'discover', {}, 'search', 'all'),
                          ('Galaxy map', 'explore_galaxy', {}, 'galaxy', 'all')]),
     ('Recipes', 'all', [('All recipes', 'recipes_list', {}, 'book', 'all'),
-                        ('Collections', 'collections_index', {}, 'folders', 'all'),
                         None,
                         ('Saved', 'saved_recipes_view', {}, 'heart', 'user'),
                         ('Made', 'recipes_list', {'view': 'made'}, 'check', 'user'),
@@ -74,7 +73,6 @@ MENU = [
                         ('Recipe Mirror', 'mirror_hub', {}, 'mirror', 'user')]),
     ('Ingredients', 'all', [('All ingredients', 'pantry_management', {}, 'carrot', 'all'),
                             ('Ingredient galaxy', 'explore_ingredient_galaxy', {}, 'galaxy', 'all')]),
-    ('Learn', 'all', [('Learn', 'resources_list', {}, 'library', 'all')]),
     ('Admin', 'admin', [('New recipe', 'new_recipe', {}, 'pot', 'admin'),
                         ('Many recipes at once', 'recipe_v2.batch_new', {}, 'list', 'admin'),
                         ('Images for recipes', 'recipe_v2.batch_images', {}, 'image', 'admin'),
@@ -83,11 +81,7 @@ MENU = [
                         ('Recipes', 'admin_recipes_management', {}, 'clipboard', 'admin'),
                         ('Notes on recipes', 'notes.overview', {}, 'file-plus', 'admin'),
                         ('Ingredients', 'ingredients_mgmt.dashboard', {}, 'package', 'admin'),
-                        ('Chefs', 'chefs_list', {}, 'chef', 'admin'),
-                        None,
-                        ('Collections', 'collections.collections_list', {}, 'folders', 'admin'),
-                        ('Articles', 'admin_resources_list', {}, 'library', 'admin'),
-                        ('New article', 'admin_resource_new', {}, 'file-plus', 'admin')]),
+                        ('Chefs', 'chefs_list', {}, 'chef', 'admin')]),
 ]
 
 

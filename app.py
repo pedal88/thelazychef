@@ -9,10 +9,9 @@ print(f"--- CONFIG DEBUG: DB_BACKEND={os.getenv('DB_BACKEND', 'local')} ---")
 from flask import Flask, request, url_for
 from flask_migrate import Migrate
 from flask_login import LoginManager
-import markdown
 from database.db_connector import configure_database
 # The models are re-exported here: many scripts do "from app import app, db, Recipe, ..."
-from database.models import db, Ingredient, Recipe, RecipeMealType, RecipeDiet, User, Resource, resource_relations, Chef, UserRecipeInteraction, RecipeCollection, CollectionItem, UserQueue, UserLink, ConceptVisual, VisualStyleGuide
+from database.models import db, Ingredient, Recipe, RecipeMealType, RecipeDiet, User, Chef, UserRecipeInteraction, UserQueue, UserLink, ConceptVisual, VisualStyleGuide
 from services.storage_service import get_storage_provider
 from services.recipe_v2 import states
 from routes._shared import DIFFICULTY_LABELS, EQUIPMENT_STYLES, OVERVIEW_LAYOUTS, chosen_overview, IMAGE_STYLES, chosen_equipment_style, dish_images, equipment_image, get_recipe_image_url, get_image_url, icon, notes_text, site_menu
@@ -23,21 +22,11 @@ app.config['MAX_CONTENT_LENGTH'] = 20 * 1024 * 1024 # 20MB limit
 
 # Register Blueprints
 
-from routes.admin_collections_routes import collections_bp
-app.register_blueprint(collections_bp)
-
 from routes.admin_ingredients_routes import ingredients_bp
 app.register_blueprint(ingredients_bp)
 
 from routes.queue_routes import queue_bp
 app.register_blueprint(queue_bp)
-
-from utils.markdown_extensions import VideoExtension
-
-@app.template_filter('markdown')
-def parse_markdown(text):
-    if not text: return ""
-    return markdown.markdown(text, extensions=['tables', VideoExtension()])
 
 @app.template_filter('parse_chef_dna')
 def parse_chef_dna(prompt):
@@ -149,9 +138,6 @@ app.register_blueprint(mirror_bp)
 
 from routes.explore_routes import explore_bp
 app.register_blueprint(explore_bp)
-
-from routes.resources_routes import resources_bp
-app.register_blueprint(resources_bp)
 
 from routes.admin_chefs_routes import admin_chefs_bp
 app.register_blueprint(admin_chefs_bp)

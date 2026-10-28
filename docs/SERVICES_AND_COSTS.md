@@ -48,8 +48,8 @@ Without `TASKS_QUEUE` (local runs) the generation runs inside the request and th
 
 - Web pages and video: `requests` + BeautifulSoup for recipe links, `yt_dlp` (and ffmpeg in the image) for videos
   (`services/recipe_v2/sources.py`, `services/social_media_service.py`).
-- Front-end from CDNs: Tailwind (`cdn.tailwindcss.com`, `templates/base.html`), D3 v7 (the galaxies), Font Awesome
-  (cdnjs), EasyMDE (unpkg, the article editor), ECharts (jsdelivr, ingredients admin), Google Fonts.
+- Front-end from CDNs: Tailwind (`cdn.tailwindcss.com`, `templates/base.html`), D3 v7 (the galaxies),
+  ECharts (jsdelivr, ingredients admin), Google Fonts.
 - Stock photos from images.unsplash.com only as backgrounds on two admin pages (`index.html`, `new_ingredient.html`).
   Never as a stand-in for a dish: Discover shows only recipes with their own image.
 

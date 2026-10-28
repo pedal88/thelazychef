@@ -19,7 +19,7 @@ os.environ.pop('K_SERVICE', None)
 
 from app import app  # noqa: E402
 from database.models import (  # noqa: E402
-    CollectionItem, Ingredient, IngredientAlias, Recipe, RecipeCollection, RecipeDiet,
+    Ingredient, IngredientAlias, Recipe, RecipeDiet,
     RecipeLine, RecipeMealType, User, UserQueue,
     UserRecipeInteraction, db,
 )
@@ -66,13 +66,10 @@ class DataIntegrityTests(unittest.TestCase):
         db.session.add(user)
         recipe = self._recipe()
         onion = self._ingredient('onion')
-        collection = RecipeCollection(title='Weeknight', slug='weeknight')
-        db.session.add(collection)
         db.session.flush()
         db.session.add_all([
             RecipeMealType(recipe_id=recipe.id, meal_type='Dinner'),
             RecipeDiet(recipe_id=recipe.id, diet='vegetarian'),
-            CollectionItem(collection_id=collection.id, recipe_id=recipe.id),
             UserQueue(user_id=user.id, recipe_id=recipe.id),
             UserRecipeInteraction(user_id=user.id, recipe_id=recipe.id, status='favorite'),
         ])
@@ -82,8 +79,7 @@ class DataIntegrityTests(unittest.TestCase):
         self.assertEqual(delete_recipes([recipe.id]), 1)
 
         self.assertIsNone(db.session.get(Recipe, recipe.id))
-        for model in (RecipeMealType, RecipeDiet, CollectionItem,
-                      UserQueue, UserRecipeInteraction):
+        for model in (RecipeMealType, RecipeDiet, UserQueue, UserRecipeInteraction):
             self.assertEqual(_count(model, recipe_id=recipe.id), 0, model.__name__)
         self.assertIsNone(db.session.get(Ingredient, stock.id).sub_recipe_id)
         self.assertIsNotNone(db.session.get(Ingredient, onion.id))
