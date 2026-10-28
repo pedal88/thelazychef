@@ -41,7 +41,7 @@
             </div>
 
             {# ---------- Filter Form: open on a wide screen; on a phone behind "Filters", unless one is in use ---------- #}
-            {% set filtering = request.args|select('in', ['cuisine', 'diet', 'meal_type', 'protein_type', 'difficulty', 'heat_source'])|list %}
+            {% set filtering = request.args|select('in', ['cuisine', 'diet', 'meal_type', 'protein_type', 'difficulty', 'heat_source'])|list + (['q'] if q else []) + (['time'] if time_choice else []) %}
             <details class="lib-filters" data-filters{% if filtering %} open{% endif %}>
             <summary class="lib-filters-sum">{{ icon('list') }} Filters{% if filtering %} · {{ filtering|length }} in use{% endif %}</summary>
             <script>if (matchMedia('(min-width: 768px)').matches) document.currentScript.parentElement.open = true;</script>
@@ -50,6 +50,21 @@
                 {# Preserve view + style via hidden inputs so Apply Filters doesn't lose context #}
                 <input type="hidden" name="view" value="{{ current_view }}">
                 <input type="hidden" name="style" value="{{ view_style }}">
+
+                {# Search, total time and order (services/recipe_library.py); the order is All's, the other lists keep theirs #}
+                <div class="lib-search">
+                    <label class="lib-q">{{ icon('search') }}<input type="search" name="q" value="{{ q }}"
+                        placeholder="Search dishes or ingredients" aria-label="Search dishes or ingredients"></label>
+                    <select name="time" aria-label="Total time">
+                        <option value="">Any time</option>
+                        {% for key, label in time_labels.items() %}<option value="{{ key }}"{% if key == time_choice %} selected{% endif %}>{{ label }}</option>{% endfor %}
+                    </select>
+                    {% if current_view == 'discover' %}
+                    <select name="sort" aria-label="Order">
+                        {% for key, label in sort_labels.items() %}<option value="{{ key }}"{% if key == sort %} selected{% endif %}>{{ label }}</option>{% endfor %}
+                    </select>
+                    {% endif %}
+                </div>
 
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5 items-end">
 
@@ -193,6 +208,7 @@
             </script>
 
             {# ---------- Recipe Content Area ---------- #}
+            {% if recipes %}<p class="lib-count">{{ total }} {{ 'dish' if total == 1 else 'dishes' }}</p>{% endif %}
             {% if not recipes %}
             {# Nothing here yet: an icon, a line, what to do and the way on (static/css/library.css) #}
             {% set empties = {'saved': ('heart', 'No saved recipes yet', 'Tap the heart on a recipe to keep it here.', 'Find recipes'),
@@ -344,6 +360,8 @@
                 {% endfor %}
             </div>
             {% endif %}
+
+            {% if more_url %}<p class="lib-more"><a class="lib-go" href="{{ more_url }}">Show more</a></p>{% endif %}
 
         </div>{# /max-w-7xl #}
     </div>{# /bg-white #}

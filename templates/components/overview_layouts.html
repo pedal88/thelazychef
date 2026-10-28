@@ -6,7 +6,8 @@
    A, poster: the image over half the screen with the title on it, the ingredients beside it (under it when the
    screen stands up). C, compact: a small plate with the image, the title, the times and the servings, a row of
    actions, and the ingredients in columns under it. The ingredients are shown as large as fits the screen
-   (static/js/overview_fit.js). Import with context. #}
+   (static/js/overview_fit.js). The other versions of the dish by chef personas are a chip and a part of the sheet.
+   Import with context. #}
 {% from "components/dish_info.html" import ingredient_list, dish_facts, servings_stepper with context %}
 
 {% macro corner_buttons() -%}
@@ -26,6 +27,7 @@
 <div class="ovl-chips">
   {% if has_parts(imgs) %}<button type="button" class="chip" data-sheet="sheet-more" data-jump="more-parts">Parts · {{ imgs.parts|length if imgs.parts else v.parts|length }}</button>{% endif %}
   {% if v.chef_note %}<button type="button" class="chip" data-sheet="sheet-more" data-jump="more-chef">From the chef</button>{% endif %}
+  {% if versions %}<button type="button" class="chip" data-sheet="sheet-more" data-jump="more-versions">Versions · {{ versions|length }}</button>{% endif %}
   <button type="button" class="chip" data-sheet="sheet-more" data-jump="more-facts">Facts &amp; nutrition</button>
 </div>
 {%- endmacro %}
@@ -40,6 +42,16 @@
   <div class="sec-head"><h2 id="ings-h">Ingredients</h2><span class="eyebrow">{{ v.shopping|length }} items</span></div>
   <div class="ovl-cols">{{ ingredient_list() }}</div>
 </section>
+{%- endmacro %}
+
+{# The dish by other chef personas (versions from recipe_detail: the approved ones, this one included) #}
+{% macro version_list() -%}
+<ul class="ovl-versions">
+  {% for r in versions %}
+  <li>{% if r.id == recipe.id %}<b aria-current="page">{{ r.title }}</b>{% else %}<a href="{{ url_for('recipe_detail', recipe_id=r.id) }}">{{ r.title }}</a>{% endif %}
+    <span class="eyebrow">{{ 'Version' if r.base_recipe_id else 'Original' }}{{ ' by ' ~ r.chef.name if r.chef }}</span></li>
+  {% endfor %}
+</ul>
 {%- endmacro %}
 
 {# A: the poster #}
@@ -112,6 +124,7 @@
       </section>
       {% elif v.parts|length > 1 %}<section><h2 class="eyebrow">The parts</h2><p class="parts">{% for p in v.parts %}<span>{{ p }}</span>{% endfor %}</p></section>
       {% endif %}
+      {% if versions %}<section><h2 class="eyebrow">Versions</h2>{{ version_list() }}</section>{% endif %}
       {% if v.chef_note %}
       <section><h2 class="eyebrow">From the chef</h2><p class="cc-note">{{ v.chef_note }}</p>
         <button type="button" class="cc-more" data-sheet="sheet-more" data-jump="more-chef">Read all</button></section>
@@ -136,6 +149,7 @@
   {% endif %}
   {% if v.time_strip %}<section id="more-time"><h3 class="eyebrow">Time</h3>{{ time_strip() }}</section>{% endif %}
   {% if v.equipment %}<section id="more-tools"><h3 class="eyebrow">Equipment</h3>{{ equipment_grid() }}</section>{% endif %}
+  {% if versions %}<section id="more-versions"><h3 class="eyebrow">Versions</h3>{{ version_list() }}</section>{% endif %}
   {% if v.chef_note %}<section id="more-chef"><h3 class="eyebrow">From the chef</h3><p class="note">{{ v.chef_note }}</p></section>{% endif %}
   <section id="more-facts" class="more-panel">{{ dish_facts('recipe_detail', with_servings=False) }}</section>
   {% if recipe.source_type in ('web', 'video') and recipe.source_input %}<p class="hint source">Based on <a href="{{ recipe.source_input }}" rel="noopener nofollow" target="_blank">{{ recipe.source_input.split('/')[2] }}</a></p>{% endif %}

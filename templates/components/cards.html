@@ -1,6 +1,8 @@
 {# A recipe in a list (the recipe list, Mirror): the dish, what kind and how long, its name, and what it suits.
    static/css/library.css. The heart and the queue button keep the hooks base.html's scripts use (favorite-btn with
-   its path filled when saved, queue-btn, addToQueue); the admin's tick selects it for bulk actions. #}
+   its path filled when saved, queue-btn, addToQueue); the admin's tick selects it for bulk actions. The library
+   (services/recipe_library.py) also gives active_mins, the hands-on part of the total time, and version_count, the
+   approved versions of the dish by chef personas. #}
 {% macro recipe_preview_card(recipe, id, show_inspector=False) %}
 {% set tags = (recipe.settings or [])|map('replace', '_', ' ')|list + recipe.diets_list %}
 <a href="{{ url_for('recipe_detail', recipe_id=id) }}" class="rcard group">
@@ -35,10 +37,12 @@
     <div class="rcard-body">
         <p class="rcard-meta">
             {% if recipe.cuisine %}<span>{{ recipe.cuisine }}</span>{% endif %}
-            {% if recipe.prep_time_mins %}<span>{{ recipe.prep_time_mins }} min</span>{% endif %}
+            {% if recipe.prep_time_mins %}{% set hands = recipe.active_mins if recipe.active_mins and recipe.active_mins < recipe.prep_time_mins else none %}
+            <span title="{{ recipe.prep_time_mins }} min from start to table{{ ', ' ~ hands ~ ' of them hands-on' if hands }}">{{ recipe.prep_time_mins }} min{{ ', ' ~ hands ~ ' active' if hands }}</span>{% endif %}
             {% if recipe.difficulty %}<span>{{ recipe.difficulty|difficulty_label }}</span>{% endif %}
         </p>
         <h3>{{ recipe.title }}</h3>
+        {% if recipe.version_count and recipe.version_count > 1 %}<p class="rcard-versions">{{ icon('chef') }}{{ recipe.version_count }} versions</p>{% endif %}
         {% if tags %}<p class="rcard-tags">{% for t in tags|unique %}<span>{{ t|capitalize }}</span>{% endfor %}</p>{% endif %}
     </div>
 </a>
