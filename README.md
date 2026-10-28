@@ -1,87 +1,49 @@
-# The Lazy Chef 🍳
+# The Lazy Chef
 
-> **Turn a craving, a link or a video into a complete, photographed recipe — built from real ingredients.**
+An AI recipe app for home cooks in Norway: turn an idea, a link, a video or pasted text into a complete recipe with
+its steps planned, its ingredients matched to a curated pantry, its nutrition and its pictures.
 
-The Lazy Chef is an AI recipe platform. Google Gemini writes structured recipes in the voice of a chef persona, every ingredient is matched against a curated ingredient database (with nutrition data), and Google Imagen produces a photo of the finished dish. An admin back office handles quality control, curation and content production (social images, podcasts, videos).
+Live at <https://thelazychef.app>.
 
----
-
-## 🌟 Core Features
+## What it does
 
 **For cooks**
-*   **Discover & browse** approved recipes, filter by cuisine, diet, difficulty, protein and meal type.
-*   **Kitchen mode**: step-by-step cooking view.
-*   **Favorites, "I made this" feedback and a personal queue** (requires an account).
-*   **Collections** and interactive **recipe/ingredient "galaxy" graphs**.
+- Discover dishes one at a time, browse and filter the recipe list (cuisine, diet, protein, meal type, time),
+  collections, and two galaxies that map the recipes and the pantry.
+- One recipe page with the overview, the prep (what to set out, in bowls) and the cooking steps, with timers, a
+  timeline and a drawing of the whole dish. Servings scale everything.
+- Favorites, "made it", a Cook next queue, and Recipe Mirror (the recipes two people both like).
 
 **For admins**
-*   **Recipe generation** from an idea, a web page, pasted text, or a TikTok/Instagram video.
-*   **Ingredient database**: nutrition, synonyms, merging, vector embeddings and AI-generated ingredient images.
-*   **Missing-ingredient resolution**: when the AI uses an ingredient that isn't in the database, a human maps, substitutes or creates it.
-*   **Quality control**: AI evaluator scores recipes; recipes move from `draft` to `approved`.
+- New Recipe and Many recipes at once: Claude writes the recipe in the voice of a chef persona (The Classicist,
+  The Smart Cook, The Minimalist) with settings such as low carb, kid-friendly or baby food, and structures it as a
+  graph of components, ingredient lines and steps (recipe model v2).
+- In the background the app links every line to the pantry (adding what is missing), works out nutrition and
+  derived facts (time, main protein, clean-up), and draws the dish and its parts. Each image is checked by a vision
+  model.
+- Recipe and ingredient management, chef personas, notes on recipes, collections and articles.
 
-## 🚀 How It Works
+## How it is built
 
-1.  **Ask**: an admin enters an idea ("something spicy with chicken"), a URL, text or a video link.
-2.  **Write**: Gemini generates a structured recipe, constrained by the ingredient database, the chef persona and fixed vocabularies (diets, cuisines, …).
-3.  **Validate**: each ingredient is matched to the database; unmatched ones go to a resolution screen.
-4.  **Save**: the recipe, steps and gram-weighted ingredients are stored and nutrition is calculated.
-5.  **Photograph**: Imagen generates the dish photo from a visual brief.
-6.  **Publish**: after review, the recipe is approved and appears on the site.
+Flask with Jinja templates and Tailwind, SQLAlchemy and Alembic, on Google Cloud Run with Postgres (Cloud SQL), files
+in Cloud Storage, and background jobs in Cloud Tasks. Recipes are written by Claude (Anthropic API); images, video
+reading and ingredient analysis use Gemini.
 
-See [docs/README_TECHNICAL.md](docs/README_TECHNICAL.md) for the architecture.
+- `CLAUDE.md`: the map of the code and the rules for changing it (start here, also as a person).
+- `docs/SERVICES_AND_COSTS.md`: external services, configuration and what costs money.
+- `docs/OPERATIONS.md`: deploy, migrations, production data and scripts.
+- `docs/README_TOP_COMMANDS.md`: everyday commands.
+- `docs/RECIPE_MODEL_V2.md` (Norwegian): the recipe model and why it is so; `docs/RECIPE_VISUALIZATIONS.md`
+  (Norwegian): the recipe views and the decisions behind them.
 
-## ⚡ Quick Start (local)
-
-### Prerequisites
-*   **Python 3.13** (the pinned requirements don't install on older versions)
-*   A Google Gemini API key ([AI Studio](https://aistudio.google.com/apikey))
-*   `ffmpeg` (only needed for video import)
-
-### Setup
+## Run it locally
 
 ```bash
-git clone https://github.com/pedal88/thelazychef.git
-cd thelazychef
-
-python3.13 -m venv venv
-source venv/bin/activate
+python3.13 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
-
-cp .env.example .env   # then fill in GOOGLE_API_KEY (and optionally SECRET_KEY)
-
-python scripts/seed_admin.py --email you@example.com   # creates kitchen.db (SQLite) + an admin user
-python app.py                                          # http://127.0.0.1:8000
+cp .env.example .env        # fill in GOOGLE_API_KEY, and ANTHROPIC_API_KEY to generate recipes
+python app.py               # http://127.0.0.1:8000
 ```
 
-*   The local database starts empty (no ingredients or recipes).
-*   Alembic migrations (`flask db upgrade`) target production Postgres; some use Postgres-only features (pgvector), so locally the tables are created with `db.create_all()` instead.
-*   Set `FLASK_DEBUG=1` in `.env` for auto-reload and debug pages.
-
-### Tests
-
-```bash
-python -m pytest tests/
-```
-
-The smoke tests (`tests/test_smoke.py`) check that every page loads and that write/admin routes reject anonymous and non-admin users. They run in CI on every pull request.
-
-## ☁️ Deployment
-
-Merging to `main` deploys automatically to Google Cloud Run via GitHub Actions. See [docs/README_DEPLOY.md](docs/README_DEPLOY.md).
-
-## 📚 Documentation
-
-| Doc | Contents |
-|---|---|
-| [README_TECHNICAL.md](docs/README_TECHNICAL.md) | Architecture, components, data model, configuration |
-| [README_DEPLOY.md](docs/README_DEPLOY.md) | CI/CD pipeline, secrets, production infrastructure |
-| [README_TOP_COMMANDS.md](docs/README_TOP_COMMANDS.md) | Everyday commands |
-| [PROMPT_ENGINEERING_GUIDE.md](docs/PROMPT_ENGINEERING_GUIDE.md) | How the prompt templates are assembled |
-| [PROMPT_LAB.md](docs/PROMPT_LAB.md) | Compare prompt variants side by side and score them |
-| [INGREDIENT_IMAGES.md](docs/INGREDIENT_IMAGES.md) | Ingredient image pipeline |
-
-`docs/README_CLOUD_DEPLOYMENT.md` holds historical notes from the original manual deployment.
-
----
-*Built with Flask, Tailwind CSS, Google Gemini and Imagen.*
+Without a database setting it uses SQLite and `static/` for files. `docs/README_TOP_COMMANDS.md` shows how to get a
+local database with the pantry and a few recipes.

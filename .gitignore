@@ -50,3 +50,7 @@ logs/
 *.tar.gz
 *.log
 *_dump.json
+
+# Claude Code: only the project skills are shared; local settings, launch configs and screenshots are not
+.claude/*
+!.claude/skills/

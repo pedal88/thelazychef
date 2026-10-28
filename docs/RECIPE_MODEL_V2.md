@@ -75,7 +75,7 @@ Vi går fra dagens listemodell (ingredienser og steg som fritekst) til en grafmo
 
 ### Barnetabeller
 
-Nye tabeller erstatter `recipe_ingredient` og `instruction`: `recipe_component`, `recipe_line`, `recipe_step` og `recipe_step_after` (migrering `ce7d5aeeecf0`, steg 7b). De gamle beholdes bare til de gamle oppskriftene er slettet, og fjernes deretter sammen med koden som leser dem.
+Nye tabeller erstatter `recipe_ingredient` og `instruction`: `recipe_component`, `recipe_line`, `recipe_step` og `recipe_step_after` (migrering `ce7d5aeeecf0`, steg 7b). De gamle oppskriftene ble arkivert 27.10.2026 (`scripts/retire_v1.py`), og de gamle tabellene og koden er slettet (migrering `e8b4d2f6a1c3`); `recipe_line.cut` ble fjernet 28.10.2026 (`c5e8a1d3f9b2`).
 
 **Komponent** (`component`): `id`, `recipe_id`, `local_id` (`c1`), `name`, `sort_order`, `image_filename`.
 
@@ -181,7 +181,7 @@ Gjennomført 19.10.2026 (kjøring `pantry-20261019-1349`, migrering `0d4f84fc82e
 
 `tier` er en stige med fire trinn, der hvert trinn er en delmengde av det neste: **staple** ⊂ **foundation** ⊂ **core** ⊂ **long_tail**.
 
-- **Nivå 1, basisvarer (`staple`):** det vi antar at alle brukere alltid har: vann, salt, sort pepper, nøytral olje, olivenolje, sukker og hvetemel (migrering `a3d7f2c9e1b6`). Oppskriftssidene viser dem under «You probably have», ikke på handlelisten, og Gjør klart viser dem som én rad med navn. `is_staple` er den gamle markeringen som v1-genereringen leser; v2 bruker `tier`.
+- **Nivå 1, basisvarer (`staple`):** det vi antar at alle brukere alltid har: vann, salt, sort pepper, nøytral olje, olivenolje, sukker og hvetemel (migrering `a3d7f2c9e1b6`). Oppskriftssidene viser dem under «You probably have», ikke på handlelisten, og Gjør klart viser dem som én rad med navn. `is_staple` er den gamle markeringen fra v1; v2 bruker `tier`.
 - **Nivå 2, grunnlager (`foundation`):** et grunnlag på tvers av kategorier som gjør det mulig å lage svært mange retter, og som oppskriftene gjenbruker. Størrelsen er ikke bestemt (40–120 varer). Prinsippene:
   - **Standardvalg, ikke regel.** Der retten gir et reelt valg (hvilken del av kyllingen, hvilken løk, hvilken ost), bruker genereringen varen i grunnlageret: kyllingfilet er standard for kylling. Ingrediensen som gjør retten til det den er, byttes aldri (lårfilet i en langtidskokt gryte, fiskesaus i pad thai). Avvik fra standarden får en kort begrunnelse som admin ser. Dette holder vedtaket over om at pantryet ikke skal bøye oppskriftene.
   - **Standardvarianten** er den av variantene til en grunnvare (`base_ingredient_id`) som ligger i grunnlageret. Det trengs ikke noe eget felt.
@@ -308,7 +308,7 @@ Promptene er filer i repoet (Jinja), redigeres i Claude Code og versjoneres i gi
 
 ## 9. Næring
 
-Tallene per 100 g kommer i dag fra Edamam, med AI-anslag der Edamam ikke fant ingrediensen (`scripts/backfill_nutrition_full.py`). `ingredient.data_source` sier hvilken. De trenger ikke være helt riktige fra start, men modellen skal gjøre det mulig å legge inn riktige tall:
+Tallene per 100 g kommer fra Claude med USDA-verdier (`scripts/ingredient_nutrition.py`, og pantry-jobben for nye varer, `services/recipe_v2/pantry_fill.py`); Edamam er avsluttet. `ingredient.data_source` sier hvor tallene kommer fra (`claude_auto` for varer pantry-jobben har lagt inn). De trenger ikke være helt riktige fra start, men modellen skal gjøre det mulig å legge inn riktige tall:
 
 - `data_source` beholdes, og vi legger til en markering for verifiserte tall som overstyrer kilden.
 - Enhetstabell og tetthet kommer i v2-bygget, fordi gram trengs for næring og skalering.
@@ -336,12 +336,17 @@ Tallene per 100 g kommer i dag fra Edamam, med AI-anslag der Edamam ikke fant in
 | 5 | Fase 0b med Claude | **Gjennomført 19.10.2026** (PR #61). Opus 5.5 med effort `low` for runde 1 og 2: 23 av 24 gyldige i første forsøk, 29 sekunder og ca. 0,07 USD per strukturering, og alltid pantry-ID. Sonnet trengte flere nye forsøk, Gemini er tre ganger tregere. Ni promptendringer til bygget. Se `docs/pilot/RECIPE_V2_PILOT_0B.md` |
 | 6 | Stil på ingredienssymboler | **Ferdig 18.10.2026** (PR #57–#59). Stil satt etter fem lab-runder, 654 symboler laget, gjennomgått og rullet ut med en datamigrering som kan rulles tilbake. Avsnitt 10 |
 | 7a | Mobil og stor skjerm | **Nesten ferdig 19.10.2026:** telefonflyten er satt etter tre runder (`docs/prototypes/telefon.html`, `RECIPE_VISUALIZATIONS.md` 9.15). Gjenstår: lage mat med den på telefonen. Før bygget, i prototypen. Hvilke visninger som finnes på telefon og på stor skjerm, hvordan de fungerer i en smal skjerm, og hvordan man går mellom stegene mens man lager mat. Telefonen er førstevalget, stor skjerm brukes til planlegging og oversikt. Avsnitt 13 |
-| 7b | v2-bygget, tynn skive | Én oppskrift hele veien i produksjon: input-feltet, begge rundene som bakgrunnsjobb, de nye tabellene og én visning på oppskriftssiden, bygget på design-tokens med dagens uttrykk. Finner integrasjonsproblemene (Cloud Tasks, planleggeren i Python, databasemodellen) mens de er billige |
-| 7c | v2-bygget, i bredden | Gjenstående pantry-feil (avsnitt 5), resten av tabellene (former, enheter, tetthet, allergener og grunnvare), alle kildeadapterne, resten av visningene, næring og redigering |
+| 7b | v2-bygget, tynn skive | **Ferdig.** Én oppskrift hele veien i produksjon: input-feltet, begge rundene som bakgrunnsjobb, de nye tabellene og én visning på oppskriftssiden, bygget på design-tokens med dagens uttrykk. Finner integrasjonsproblemene (Cloud Tasks, planleggeren i Python, databasemodellen) mens de er billige |
+| 7c | v2-bygget, i bredden | **Stort sett ferdig 28.10.2026.** Gjenstående pantry-feil (avsnitt 5), resten av tabellene (former, enheter, tetthet, allergener og grunnvare), alle kildeadapterne, resten av visningene, næring og redigering |
 | 7d | Helhetlig uttrykk | Etter den tynne skiven og før steg 9, gjerne parallelt med 7c og 8: palett, typografi, avstander, symboler, logo og merkevare, og en stilguide-side som viser tokens og komponenter rett fra koden. Gjøres med ekte oppskrifter foran seg. Avsnitt 13 |
-| 8 | Nygenerering | De relevante oppskriftene lages på nytt. De gamle arkiveres, og gamle tabeller og kode slettes når resultatet er godkjent |
-| 9 | Bilder av retter og komponenter | Avsnitt 10 |
+| 8 | Nygenerering | **Ferdig 27.10.2026:** v1 arkivert, tabellene og koden slettet, rettkatalogen laget i v2. De relevante oppskriftene lages på nytt. De gamle arkiveres, og gamle tabeller og kode slettes når resultatet er godkjent |
+| 9 | Bilder av retter og komponenter | **Ferdig:** lages automatisk etter genereringen fra 27.10.2026 (Cloud Tasks), med bildekontroll. Avsnitt 10 |
 | 10 | Fase 3 | Mise en place |
+
+Siden planen (oktober 2026): én oppskriftsside i stedet for faner, pantry-jobben som fyller registeret selv etter
+genereringen (`services/recipe_v2/pantry_fill.py`), ett designspråk på sidene brukerne ser, galakser med egne
+symboler, og en taksonomi med fisk etter type, fond og eddik (migrering `b3d7e9f1a2c4`). Tjenester og kostnader:
+`docs/SERVICES_AND_COSTS.md`; drift: `docs/OPERATIONS.md`.
 
 ## 12. Senere
 
