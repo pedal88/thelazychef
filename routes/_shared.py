@@ -161,6 +161,19 @@ def chosen_overview():
     return style if style in OVERVIEW_LAYOUTS else 'poster'
 
 
+# Recipe list layout trial (temporary): how /recipes lays out its filters. "today" is the chips over the list; the
+# trials share a compact head, a wider grid and the cards' actions in the card: "pills" a row of dropdowns, "rail" a
+# sidebar, "drawer" search, shortcuts and the rest in a drawer. Cookie library_layout, admins only.
+LIBRARY_LAYOUTS = {'today': 'Today', 'pills': '1 Dropdowns', 'rail': '2 Sidebar', 'drawer': '3 Drawer'}
+
+
+def chosen_library():
+    """The admin's chosen layout for the recipe list; today's for everyone else."""
+    style = request.cookies.get('library_layout')
+    admin = current_user.is_authenticated and getattr(current_user, 'is_admin', False)
+    return style if admin and style in LIBRARY_LAYOUTS else 'today'
+
+
 # Equipment symbol trial (temporary): the same, for the equipment symbols (data/constraints/equipment.json "image" is
 # the realistic set, "image_variants" the others). Cookie equipment_images, admins only; everyone else gets the default.
 EQUIPMENT_STYLES = {'realistic': 'Realistic', 'painted': 'Painted', 'line_tint': 'Line'}

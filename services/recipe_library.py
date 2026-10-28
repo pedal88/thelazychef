@@ -131,6 +131,26 @@ def from_args(args, difficulty_labels=None):
     return filters, shown
 
 
+# The shortcuts over the list in the drawer layout (trial): (parameter, value, label), the choices people make most
+QUICK = [('time', '30', 'Under 30 min'), ('diet', 'vegetarian', 'Vegetarian'), ('protein', 'Seafood', 'Seafood'),
+         ('heat_source', 'oven', 'Oven'), ('meal_type', 'One-Pot', 'One-pot'), ('meal_type', 'Weeknight', 'Weeknight')]
+SINGLE = {'time'}  # parameters with one value
+
+
+def quick(args):
+    """The shortcuts for the address args: [(label, the args with it switched, on)]. Switching a single-value
+    parameter replaces its value; the page starts from the top again (no shown)."""
+    out = []
+    for key, value, label in QUICK:
+        on = value in args.getlist(key)
+        new = args.copy()
+        new.pop('shown', None)
+        rest = [v for v in args.getlist(key) if v != value and key not in SINGLE]
+        new.setlist(key, rest if on else rest + [value])
+        out.append((label, new, on))
+    return out
+
+
 def _ordered(stmt, view, sort):
     if view == 'saved':
         return stmt.order_by(UserRecipeInteraction.is_super_like.desc(), UserRecipeInteraction.timestamp.desc())

@@ -3,9 +3,9 @@ from flask import abort, flash, jsonify, redirect, render_template, request, url
 from flask_login import current_user, login_required
 from database.models import Ingredient, Recipe, db
 from routes._flat import FlatBlueprint
-from routes._shared import DIFFICULTY_LABELS, get_recipe_image_url, viewer_is_admin
+from routes._shared import DIFFICULTY_LABELS, chosen_library, get_recipe_image_url, viewer_is_admin
 from services.chef_service import get_chefs
-from services.recipe_library import PAGE, SORT_LABELS, from_args, recipe_page
+from services.recipe_library import PAGE, SORT_LABELS, from_args, quick, recipe_page
 
 recipes_bp = FlatBlueprint("recipes", __name__)
 
@@ -30,9 +30,12 @@ def recipes_list():
                        user=current_user if current_user.is_authenticated else None)
     more_url = url_for('recipes_list', **{**request.args.to_dict(flat=False), 'shown': shown + PAGE}) if page.more else None
     in_use = sum(1 for g in groups for _, _, on in g['options'] if on) + bool(filters.q)
+    layout = chosen_library()  # the layout trial, admins only (routes/_shared.py)
+    shortcuts = [(label, url_for('recipes_list', **args.to_dict(flat=False)), on) for label, args, on in quick(request.args)]
     return render_template('recipes_list.html', recipes=page.recipes, total=page.total, more_url=more_url,
                            current_view=view_mode, groups=groups, q=filters.q, sort=sort, sort_labels=SORT_LABELS,
-                           in_use=in_use, more_open=any(on for g in groups if g['more'] for _, _, on in g['options']))
+                           in_use=in_use, more_open=any(on for g in groups if g['more'] for _, _, on in g['options']),
+                           layout=layout, shortcuts=shortcuts)
 
 
 def _v2_lines_and_steps(recipe):
