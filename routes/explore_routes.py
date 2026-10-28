@@ -11,22 +11,27 @@ from routes._shared import get_recipe_image_url
 
 explore_bp = FlatBlueprint("explore", __name__)
 
-graph_metadata_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'constraints', 'graph_metadata.json')
-try:
-    with open(graph_metadata_path, 'r') as f:
-        GRAPH_METADATA = json.load(f)
-except Exception as e:
-    print(f"Warning: Could not load graph metadata: {e}")
-    GRAPH_METADATA = {"cuisines": {}, "proteins": {}}
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-def get_node_image(group_type, name):
-    if group_type == 'cuisine':
-        code = (GRAPH_METADATA.get('cuisines', {}).get(name) or GRAPH_METADATA.get('retired_cuisines', {}).get(name)
-                or GRAPH_METADATA.get('cuisines', {}).get('Other', 'un'))
-        return f"https://flagcdn.com/w80/{code}.png"
-    elif group_type == 'protein':
-        return GRAPH_METADATA.get('proteins', {}).get(name) or GRAPH_METADATA.get('proteins', {}).get('Other')
-    return None
+
+def _symbols():
+    """The symbols of the recipe galaxy's planets, in the style of the ingredient symbols:
+    {'cuisine': {name: url}, 'protein': {label: url}}.
+
+    A cuisine shows the dish made for it (concept_visual "cuisine", scripts/category_symbols.py --kind cuisine).
+    A protein shows the symbol of a typical pantry ingredient (main_protein.json "symbol_from"), unless
+    concept_visual "main_protein" has one for it."""
+    visuals = {(v.concept_type, v.concept_name): v.image_url for v in db.session.execute(
+        db.select(ConceptVisual).where(ConceptVisual.concept_type.in_(('cuisine', 'main_protein')),
+                                       ConceptVisual.image_url.is_not(None))).scalars()}
+    with open(os.path.join(ROOT, 'data', 'constraints', 'main_protein.json'), encoding='utf-8') as f:
+        symbol_from = json.load(f).get('symbol_from', {})
+    wanted = {name for names in symbol_from.values() for name in names}
+    pictured = dict(db.session.execute(db.select(db.func.lower(Ingredient.name), Ingredient.image_url).where(
+        db.func.lower(Ingredient.name).in_(wanted), Ingredient.status == 'active', Ingredient.image_url.is_not(None))).all())
+    protein = {label: next((pictured[n] for n in names if n in pictured), None) for label, names in symbol_from.items()}
+    protein.update({name: url for (kind, name), url in visuals.items() if kind == 'main_protein'})
+    return {'cuisine': {name: url for (kind, name), url in visuals.items() if kind == 'cuisine'}, 'protein': protein}
 
 
 @explore_bp.route('/explore/galaxy')
@@ -37,10 +42,12 @@ def explore_galaxy():
 
 @explore_bp.route('/api/graph/galaxy', methods=['GET'])
 def get_global_galaxy_graph():
-    """Returns nodes and links for ALL approved recipes linked to their cuisines & proteins."""
+    """Every approved recipe, linked to its cuisine and its main protein (services/recipe_v2/derive.main_protein).
+    The planets show the symbols from _symbols()."""
     recipes = db.session.execute(
         db.select(Recipe).where(Recipe.status == 'approved')
     ).scalars().all()
+    symbols = _symbols()
     
     nodes_dict = {}
     links = []
@@ -66,7 +73,7 @@ def get_global_galaxy_graph():
             if c_id not in nodes_dict:
                 nodes_dict[c_id] = {
                     'id': c_id, 'name': c_attr, 'group': 'cuisine',
-                    'image': get_node_image('cuisine', c_attr)
+                    'image': symbols['cuisine'].get(c_attr)
                 }
             links.append({'source': rec_id, 'target': c_id, 'weight': 1.0})
             
@@ -76,7 +83,7 @@ def get_global_galaxy_graph():
             if p_id not in nodes_dict:
                 nodes_dict[p_id] = {
                     'id': p_id, 'name': p_attr, 'group': 'protein',
-                    'image': get_node_image('protein', p_attr)
+                    'image': symbols['protein'].get(p_attr)
                 }
             links.append({'source': rec_id, 'target': p_id, 'weight': 1.0})
 
@@ -162,19 +169,20 @@ def get_orbital_graph(recipe_id):
     
     c_attr = target.cuisine
     p_attr = target.protein_type
-    
+    symbols = _symbols()
+
     # 2. Add Attribute Nodes (Planets)
     if c_attr:
         nodes.append({
             'id': f"attr_cuisine_{c_attr}", 'name': c_attr, 'group': 'cuisine',
-            'image': get_node_image('cuisine', c_attr)
+            'image': symbols['cuisine'].get(c_attr)
         })
         links.append({'source': f"attr_cuisine_{c_attr}", 'target': f"recipe_{target.id}", 'weight': 5.0}) 
         
     if p_attr:
         nodes.append({
             'id': f"attr_protein_{p_attr}", 'name': p_attr, 'group': 'protein',
-            'image': get_node_image('protein', p_attr)
+            'image': symbols['protein'].get(p_attr)
         })
         links.append({'source': f"attr_protein_{p_attr}", 'target': f"recipe_{target.id}", 'weight': 5.0}) 
 

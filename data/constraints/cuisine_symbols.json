@@ -1,0 +1,20 @@
+{
+  "_doc": "The symbol of each cuisine (graph_metadata.json) in the recipe galaxy: a dish or two things the kitchen is known for, drawn with the ingredient symbol prompt (services/ingredient_symbols.concept_symbol) and kept in concept_visual (concept_type cuisine). Not flags: Nordic, Middle Eastern and Eastern European are regions, and a dish says more than a country. Made with scripts/category_symbols.py --kind cuisine.",
+  "form": "Show it as served, small and simple, with nothing under or around it: no plate, board, cutlery or garnish beyond what is named. No circle, frame, border or badge: it stands free on the white background.",
+  "looks": {
+    "Nordic": "three brown Norwegian meatballs in brown gravy with a spoonful of red lingonberries beside them",
+    "Italian": "a small twirl of spaghetti in red tomato sauce with one green basil leaf",
+    "Mexican": "two folded soft tacos filled with minced meat, lettuce and salsa",
+    "American": "a cheeseburger with lettuce, tomato and melted cheese in a sesame bun",
+    "Indian": "a piece of naan bread beside a small heap of orange butter chicken curry",
+    "Thai": "a small heap of pad thai noodles with shrimp, crushed peanuts and a lime wedge",
+    "Chinese": "three pleated steamed dumplings",
+    "Middle Eastern": "three falafel balls on a round pita bread with a spoonful of hummus",
+    "Japanese": "two pieces of salmon nigiri sushi and one maki roll",
+    "French": "a golden croissant beside a wedge of brie",
+    "Greek": "a wedge of white feta with three black olives and a slice of cucumber",
+    "Korean": "a small heap of red napa cabbage kimchi",
+    "Eastern European": "three half-moon pierogi dumplings with a spoonful of sour cream",
+    "Other": "a lemon, a garlic bulb and a sprig of fresh herbs"
+  }
+}

@@ -1,0 +1,49 @@
+/* The recipe and ingredient galaxies (templates/explore_galaxy.html, explore_ingredient_galaxy.html) in the language
+   of the recipe pages (static/css/library.css): tokens only. */
+body { overflow: hidden; }
+.gx { position: relative; width: 100%; height: calc(100vh - 64px); background: var(--color-soft); }
+.gx-map { width: 100%; height: 100%; cursor: grab; }
+.gx-map:active { cursor: grabbing; }
+.gx-top { position: absolute; inset: 0 0 auto 0; padding: var(--space-4); display: flex; justify-content: space-between;
+  align-items: flex-start; gap: var(--space-4); z-index: 10; pointer-events: none; }
+.gx-panel { pointer-events: auto; background: color-mix(in srgb, var(--color-paper) 92%, transparent); backdrop-filter: blur(8px);
+  border: 1px solid var(--color-line); border-radius: var(--radius); padding: var(--space-4); }
+.gx-head { width: min(360px, 100%); display: grid; gap: var(--space-2); }
+.gx-head h1 { margin: 0; font: 600 26px/1.15 var(--font-serif); color: var(--color-ink); }
+.gx-head p { margin: 0; color: var(--color-muted); font-size: 14px; }
+.gx-search { position: relative; }
+.gx-search input { width: 100%; min-height: 40px; padding: 0 var(--space-3); border: 1px solid var(--color-line); border-radius: var(--radius-pill);
+  background: var(--color-paper); color: var(--color-ink); font: 400 14px var(--font-sans); }
+.gx-search input:focus { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+.gx-drop { position: absolute; top: calc(100% + 6px); left: 0; right: 0; max-height: 260px; overflow-y: auto; z-index: 20;
+  background: var(--color-paper); border: 1px solid var(--color-line); border-radius: var(--radius); box-shadow: 0 10px 30px rgb(0 0 0 / .08); }
+.gx-drop[hidden] { display: none; }
+.gx-hit { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-3); cursor: pointer; color: var(--color-ink); font-size: 14px; }
+.gx-hit + .gx-hit { border-top: 1px solid var(--color-line); }
+.gx-hit:hover { background: var(--color-soft); }
+.gx-hit img, .gx-hit .gx-noimg { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--color-line); object-fit: cover; flex: none; }
+.gx-noimg { display: grid; place-items: center; color: var(--color-muted); background: var(--color-soft); }
+.gx-noimg .icon { width: 16px; height: 16px; }
+.gx-none { padding: var(--space-4); color: var(--color-muted); font-size: 14px; text-align: center; }
+.gx-btns { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.gx-btns button { min-height: 34px; padding: 0 var(--space-3); border: 1px solid var(--color-line); border-radius: var(--radius-pill);
+  background: var(--color-paper); color: var(--color-ink); font: 600 13px var(--font-sans); cursor: pointer; }
+.gx-btns button:hover { border-color: var(--color-ink); }
+.gx-legend { display: grid; gap: var(--space-2); font-size: 13px; color: var(--color-ink); }
+.gx-legend .lib-eyebrow { margin-bottom: 2px; }
+.gx-legend span { display: inline-flex; align-items: center; gap: var(--space-2); }
+.gx-legend i { display: inline-block; border-radius: 50%; background: var(--color-paper); border: 2px solid var(--color-line-strong); }
+.gx-legend .m { width: 18px; height: 18px; border-color: var(--color-ink); }
+.gx-legend .s { width: 14px; height: 14px; border-color: var(--color-muted); }
+.gx-legend .i { width: 10px; height: 10px; }
+.gx-loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--color-muted);
+  font: 500 12px/1.3 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; }
+@media (max-width: 767px) { .gx-legend-panel, .gx-head p:not(.lib-eyebrow) { display: none; } .gx-head h1 { font-size: 22px; } }
+
+/* The recipe galaxy's map settings, behind "Adjust" */
+.gx-adjust { display: grid; gap: var(--space-2); font-size: 12px; color: var(--color-muted); }
+.gx-adjust[hidden] { display: none; }
+.gx-adjust label { display: grid; gap: 2px; }
+.gx-adjust label span { display: flex; justify-content: space-between; }
+.gx-adjust input[type=range] { width: 100%; accent-color: var(--color-accent); }
+.gx-btns button[aria-pressed="true"] { background: var(--color-ink); color: var(--color-paper); border-color: var(--color-ink); }

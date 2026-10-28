@@ -1,205 +1,47 @@
 {% extends "base.html" %}
 
-{% block title %}Flavor Galaxy Explorer{% endblock %}
+{% block title %}Recipe galaxy{% endblock %}
 
 {% block head %}
 <script src="https://d3js.org/d3.v7.min.js"></script>
-<style>
-    /* Remove body scroll since we want a full screen map under the navbar */
-    body {
-        overflow: hidden;
-    }
-
-    .link {
-        transition: stroke-opacity 0.2s;
-    }
-
-    .node circle {
-        transition: r 0.2s, fill 0.2s;
-    }
-
-    /* Thin scrollbar for settings panel */
-    .galaxy-scroll::-webkit-scrollbar {
-        width: 4px;
-    }
-
-    .galaxy-scroll::-webkit-scrollbar-track {
-        background: transparent;
-    }
-
-    .galaxy-scroll::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 4px;
-    }
-
-    .galaxy-scroll {
-        scrollbar-width: thin;
-        scrollbar-color: #cbd5e1 transparent;
-    }
-
-    /* Apple-like neutral light-mode glows */
-    .glow-recipe {
-        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-    }
-
-    .glow-cuisine {
-        filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.08));
-    }
-
-    .glow-protein {
-        filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.08));
-    }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/galaxy.css') }}">
 {% endblock %}
 
 {% block content %}
-<!-- Use a wrapper that takes remaining height minus navbar -->
-<div class="relative w-full" style="height: calc(100vh - 64px);">
-
-    <!-- UI Overlay (Fixed inside the wrapper) -->
-    <div class="absolute top-0 left-0 right-0 p-4 flex justify-between items-start z-10 pointer-events-none">
-
-        <!-- Left: Branding & Search -->
-        <div
-            class="pointer-events-auto w-full max-w-sm space-y-2 max-h-[calc(100vh-80px)] overflow-y-auto galaxy-scroll">
-            <div class="bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl p-3 shadow-sm">
-                <h1 class="text-xl font-semibold text-slate-900 tracking-tight mb-0.5 flex items-center gap-2">
-                    Flavor Galaxy
-                </h1>
-                <p class="text-xs text-slate-500 mb-2">Explore the culinary universe.</p>
-                <div class="relative">
-                    <input type="text" id="search-input" placeholder="Search a recipe to locate..."
-                        class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-3 pr-3 text-sm text-slate-900 focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 placeholder-slate-400">
-                    <div id="search-dropdown"
-                        class="hidden absolute top-full mt-2 w-full bg-white border border-slate-200 rounded-xl max-h-64 overflow-y-auto shadow-xl z-20">
-                    </div>
-                </div>
+<div class="gx">
+    <div class="gx-top">
+        <div class="gx-panel gx-head">
+            <p class="lib-eyebrow">Discover</p>
+            <h1>Recipe galaxy</h1>
+            <p>Every recipe, around the kitchen it comes from and what it is made with.</p>
+            <div class="gx-search">
+                <input type="text" id="search-input" placeholder="Find a recipe" aria-label="Find a recipe">
+                <div id="search-dropdown" class="gx-drop" hidden></div>
             </div>
-
-            <div
-                class="bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl p-1.5 shadow-sm inline-flex flex-col gap-0.5">
-                <button id="btn-recenter"
-                    class="flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-xl px-3 py-1.5 text-xs font-medium">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                    Center Map
-                </button>
-                <button id="btn-physics"
-                    class="flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-xl px-3 py-1.5 text-xs font-medium">
-                    <svg class="w-3.5 h-3.5" id="icon-pause" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span id="label-physics">Pause Physics</span>
-                </button>
-                <button id="btn-settings"
-                    class="flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-xl px-3 py-1.5 text-xs font-medium">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
-                        </path>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    </svg>
-                    Mechanics
-                </button>
+            <div class="gx-btns">
+                <button type="button" id="btn-recenter">Center</button>
+                <button type="button" id="btn-physics"><span id="label-physics">Pause</span></button>
+                <button type="button" id="btn-settings" aria-pressed="false" aria-controls="settings-panel">Adjust</button>
             </div>
-
-            <!-- Settings Panel -->
-            <div id="settings-panel"
-                class="hidden bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl p-3 shadow-sm text-sm space-y-1.5 transition-all">
-                <h3 class="font-semibold text-slate-800 border-b border-slate-100 pb-1 text-xs">Galaxy Mechanics</h3>
-
-                <div>
-                    <label class="flex justify-between text-[11px] text-slate-500">
-                        <span>Center Gravity</span> <span id="val-gravity">0.015</span>
-                    </label>
-                    <input type="range" id="slide-gravity" min="0" max="0.1" step="0.005" value="0.015"
-                        class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer">
-                </div>
-                <div>
-                    <label class="flex justify-between text-[11px] text-slate-500">
-                        <span>Repel Force</span> <span id="val-repel">-150</span>
-                    </label>
-                    <input type="range" id="slide-repel" min="-500" max="-10" step="10" value="-150"
-                        class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer">
-                </div>
-                <div>
-                    <label class="flex justify-between text-[11px] text-slate-500">
-                        <span>Link Distance</span> <span id="val-link-dist">1.0x</span>
-                    </label>
-                    <input type="range" id="slide-link-dist" min="0.2" max="3.0" step="0.1" value="1.0"
-                        class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer">
-                </div>
-                <div>
-                    <label class="flex justify-between text-[11px] text-slate-500">
-                        <span>Node Size</span> <span id="val-node-size">1.0x</span>
-                    </label>
-                    <input type="range" id="slide-node-size" min="0.2" max="3.0" step="0.1" value="1.0"
-                        class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer">
-                </div>
-                <div>
-                    <label class="flex justify-between text-[11px] text-slate-500">
-                        <span>Link Thickness</span> <span id="val-link-thick">1.5x</span>
-                    </label>
-                    <input type="range" id="slide-link-thick" min="0.1" max="5.0" step="0.1" value="1.5"
-                        class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer">
-                </div>
-                <div>
-                    <label class="flex justify-between text-[11px] text-slate-500">
-                        <span>Text Fade</span> <span id="val-zoom-fade">0.3</span>
-                    </label>
-                    <input type="range" id="slide-zoom-fade" min="0.0" max="1.0" step="0.05" value="0.3"
-                        class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer">
-                </div>
-
-                <h3 class="font-semibold text-slate-800 border-b border-slate-100 pb-1 pt-1 text-xs">Node Images</h3>
-                <label class="flex items-center justify-between cursor-pointer">
-                    <span class="text-[11px] text-slate-500">Cuisine Flags</span>
-                    <input type="checkbox" id="toggle-cuisine-img" checked
-                        class="w-8 h-4 bg-slate-200 rounded-full appearance-none relative cursor-pointer checked:bg-amber-500
-                               after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-3 after:h-3 after:bg-white after:rounded-full after:transition-transform checked:after:translate-x-4">
-                </label>
-                <label class="flex items-center justify-between cursor-pointer">
-                    <span class="text-[11px] text-slate-500">Protein Icons</span>
-                    <input type="checkbox" id="toggle-protein-img" checked
-                        class="w-8 h-4 bg-slate-200 rounded-full appearance-none relative cursor-pointer checked:bg-rose-500
-                               after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-3 after:h-3 after:bg-white after:rounded-full after:transition-transform checked:after:translate-x-4">
-                </label>
+            <div id="settings-panel" class="gx-adjust" hidden>
+            <label><span>Pull to the centre<b id="val-gravity">0.015</b></span><input type="range" id="slide-gravity" min="0" max="0.1" step="0.005" value="0.015"></label>
+            <label><span>Push apart<b id="val-repel">-150</b></span><input type="range" id="slide-repel" min="-500" max="-10" step="10" value="-150"></label>
+            <label><span>Line length<b id="val-link-dist">1.0x</b></span><input type="range" id="slide-link-dist" min="0.2" max="3.0" step="0.1" value="1.0"></label>
+            <label><span>Size<b id="val-node-size">1.0x</b></span><input type="range" id="slide-node-size" min="0.2" max="3.0" step="0.1" value="1.0"></label>
+            <label><span>Line thickness<b id="val-link-thick">1.5x</b></span><input type="range" id="slide-link-thick" min="0.1" max="5.0" step="0.1" value="1.5"></label>
+            <label><span>Names fade at<b id="val-zoom-fade">0.3</b></span><input type="range" id="slide-zoom-fade" min="0.0" max="1.0" step="0.05" value="0.3"></label>
             </div>
         </div>
-
-        <!-- Right: Legend -->
-        <div
-            class="pointer-events-auto bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl p-4 shadow-sm text-xs w-48">
-            <h3 class="font-semibold text-slate-400 mb-3 uppercase tracking-wider text-[10px]">Legend</h3>
-            <div class="space-y-3">
-                <div class="flex items-center gap-3">
-                    <span class="w-3.5 h-3.5 rounded-full bg-slate-800 shadow-sm border-2 border-amber-500"></span>
-                    <span class="text-slate-600 font-medium">Cuisine</span>
-                </div>
-                <div class="flex items-center gap-3">
-                    <span class="w-3.5 h-3.5 rounded-full bg-slate-400 shadow-sm border-2 border-rose-500"></span>
-                    <span class="text-slate-600 font-medium">Protein Type</span>
-                </div>
-                <div class="flex items-center gap-3">
-                    <span class="w-3.5 h-3.5 rounded-full bg-white shadow-sm border-2 border-blue-500"></span>
-                    <span class="text-slate-600 font-medium">Recipe</span>
-                </div>
-            </div>
+        <div class="gx-panel gx-legend gx-legend-panel">
+            <p class="lib-eyebrow">Legend</p>
+            <span><i class="m"></i>Cuisine</span>
+            <span><i class="s"></i>Main protein</span>
+            <span><i class="i"></i>Recipe</span>
         </div>
     </div>
-
-    <!-- Graph Container -->
-    <div id="galaxy-container" class="w-full h-full bg-slate-50 relative cursor-grab active:cursor-grabbing">
-        <div id="loading"
-            class="absolute inset-0 flex items-center justify-center text-slate-400 text-sm font-medium animate-pulse">
-            Mapping connections...
-        </div>
+    <div id="galaxy-container" class="gx-map">
+        <div id="loading" class="gx-loading">Mapping the recipes…</div>
     </div>
-
 </div>
 
 <script>
@@ -219,28 +61,20 @@
             linkDist: 1.0,
             nodeSize: 1.0,
             linkThick: 1.5,
-            fadeStart: 0.3,
-            showCuisineImages: true,
-            showProteinImages: true
+            fadeStart: 0.3
         };
 
-        // Apple-like neutral colors
-        const colorMap = {
-            'cuisine': '#1e293b', // slate-800
-            'protein': '#94a3b8', // slate-400
-            'recipe': '#ffffff'   // white
-        };
+        // Colours from the design tokens (static/css/tokens.css)
+        const css = getComputedStyle(document.documentElement);
+        const T = n => css.getPropertyValue(n).trim();
+        const C = { paper: T('--color-paper'), ink: T('--color-ink'), muted: T('--color-muted'), line: T('--color-line'),
+                    strong: T('--color-line-strong'), accent: T('--color-accent') };
+        const strokeOf = d => d.group === 'cuisine' ? C.ink : d.group === 'protein' ? C.muted : C.strong;
 
         const radiusMap = {
-            'cuisine': 40,
-            'protein': 28,
-            'recipe': 14
-        };
-
-        const glowMap = {
-            'cuisine': 'glow-cuisine',
-            'protein': 'glow-protein',
-            'recipe': 'glow-recipe'
+            'cuisine': 44,
+            'protein': 30,
+            'recipe': 16
         };
 
         fetch('/api/graph/galaxy')
@@ -310,8 +144,8 @@
                 .force('y', d3.forceY(height / 2).strength(() => cfg.gravity));
 
             const link = g.append('g')
-                .attr('stroke', '#cbd5e1') // slate-300 connecting lines
-                .attr('stroke-opacity', 0.6)
+                .attr('stroke', C.line)
+                .attr('stroke-opacity', 0.9)
                 .selectAll('line')
                 .data(linksData)
                 .join('line')
@@ -336,14 +170,9 @@
             // Base circles
             nodeGroup.append('circle')
                 .attr('r', d => radiusMap[d.group] * cfg.nodeSize) // Node Size 
-                .attr('fill', d => colorMap[d.group])
-                .attr('class', d => glowMap[d.group])
-                .attr('stroke', d => {
-                    if (d.group === 'cuisine') return '#f59e0b';
-                    if (d.group === 'protein') return '#f43f5e';
-                    return '#3b82f6';
-                })
-                .attr('stroke-width', 2);
+                .attr('fill', C.paper)
+                .attr('stroke', strokeOf)
+                .attr('stroke-width', d => d.group === 'recipe' ? 1.5 : 2);
 
             // Images logic (applies to any node with an image)
             nodeGroup.filter(d => d.image)
@@ -354,23 +183,19 @@
                 .attr('width', d => (radiusMap[d.group] * cfg.nodeSize) * 2)
                 .attr('height', d => (radiusMap[d.group] * cfg.nodeSize) * 2)
                 .attr('clip-path', d => `circle(${radiusMap[d.group] * cfg.nodeSize}px at ${radiusMap[d.group] * cfg.nodeSize}px ${radiusMap[d.group] * cfg.nodeSize}px)`)
-                .style('display', d => {
-                    if (d.group === 'cuisine' && !cfg.showCuisineImages) return 'none';
-                    if (d.group === 'protein' && !cfg.showProteinImages) return 'none';
-                    return null;
-                });
+                .attr('preserveAspectRatio', 'xMidYMid slice');
 
             // Text configuration
             nodeGroup.append('text')
                 .attr('dy', d => (radiusMap[d.group] * cfg.nodeSize) + 16)
                 .attr('text-anchor', 'middle')
                 .text(d => d.name)
-                .attr('fill', '#475569') // slate-600 text
-                .style('font-size', d => d.group === 'recipe' ? '12px' : '14px')
+                .attr('fill', d => d.group === 'recipe' ? C.muted : C.ink)
+                .style('font-family', d => d.group === 'cuisine' ? T('--font-serif') : T('--font-sans'))
+                .style('font-size', d => d.group === 'cuisine' ? '16px' : d.group === 'protein' ? '13px' : '12px')
                 .style('font-weight', d => d.group === 'recipe' ? '500' : '600')
-                .style('font-family', 'Inter, sans-serif')
                 .style('pointer-events', 'none')
-                .style('text-shadow', '0 2px 4px rgba(255,255,255,0.8)'); // white shadow for readability
+                .style('paint-order', 'stroke').style('stroke', C.paper).style('stroke-width', '3px');
 
             nodeGroup.on('mouseover', function (event, d) {
                 nodeGroup.style('opacity', 0.2);
@@ -379,7 +204,7 @@
                 const connected = new Set([d.id]);
                 link.filter(l => l.source.id === d.id || l.target.id === d.id)
                     .style('stroke-opacity', 1)
-                    .style('stroke', '#64748b') // slate-500 hover stroke
+                    .style('stroke', C.muted)
                     .each(l => {
                         connected.add(l.source.id);
                         connected.add(l.target.id);
@@ -388,23 +213,15 @@
                 nodeGroup.filter(n => connected.has(n.id))
                     .style('opacity', 1)
                     .select('circle')
-                    .attr('stroke', d => {
-                        if (d.group === 'cuisine') return '#fbbf24';
-                        if (d.group === 'protein') return '#fb7185';
-                        return '#60a5fa';
-                    });
+                    .attr('stroke', C.accent);
 
                 d3.select(this).raise();
             })
                 .on('mouseout', function () {
                     nodeGroup.style('opacity', 1)
                         .select('circle')
-                        .attr('stroke', d => {
-                            if (d.group === 'cuisine') return '#f59e0b';
-                            if (d.group === 'protein') return '#f43f5e';
-                            return '#3b82f6';
-                        });
-                    link.style('stroke-opacity', 0.6).style('stroke', '#cbd5e1');
+                        .attr('stroke', strokeOf);
+                    link.style('stroke-opacity', 0.9).style('stroke', C.line);
                 });
 
             simulation.on('tick', () => {
@@ -426,9 +243,10 @@
 
         function initSettings() {
             // UI Toggle
-            document.getElementById('btn-settings').addEventListener('click', () => {
+            document.getElementById('btn-settings').addEventListener('click', (e) => {
                 const panel = document.getElementById('settings-panel');
-                panel.classList.toggle('hidden');
+                panel.hidden = !panel.hidden;
+                e.currentTarget.setAttribute('aria-pressed', String(!panel.hidden));
             });
 
             // Sliders bindings
@@ -501,33 +319,6 @@
                 });
             }, false);
 
-            // 7. Cuisine image toggle
-            document.getElementById('toggle-cuisine-img').addEventListener('change', (e) => {
-                cfg.showCuisineImages = e.target.checked;
-                refreshNodeImages();
-            });
-
-            // 8. Protein image toggle
-            document.getElementById('toggle-protein-img').addEventListener('change', (e) => {
-                cfg.showProteinImages = e.target.checked;
-                refreshNodeImages();
-            });
-        }
-
-        function refreshNodeImages() {
-            // Toggle image visibility per group
-            g.selectAll('.node image').style('display', d => {
-                if (d.group === 'cuisine' && !cfg.showCuisineImages) return 'none';
-                if (d.group === 'protein' && !cfg.showProteinImages) return 'none';
-                return null;
-            });
-
-            // Reset circle fill: show flat color when images are hidden
-            g.selectAll('.node circle').attr('fill', d => {
-                if (d.group === 'cuisine' && !cfg.showCuisineImages) return colorMap['cuisine'];
-                if (d.group === 'protein' && !cfg.showProteinImages) return colorMap['protein'];
-                return d.image ? colorMap[d.group] : colorMap[d.group];
-            });
         }
 
         function dragstarted(event, d) {
@@ -556,12 +347,10 @@
             physicsEnabled = !physicsEnabled;
             if (physicsEnabled) {
                 simulation.alpha(0.1).restart();
-                document.getElementById('label-physics').textContent = 'Pause Physics';
-                document.getElementById('icon-pause').innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />';
+                document.getElementById('label-physics').textContent = 'Pause';
             } else {
                 simulation.stop();
-                document.getElementById('label-physics').textContent = 'Resume Physics';
-                document.getElementById('icon-pause').innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />';
+                document.getElementById('label-physics').textContent = 'Resume';
             }
         });
 
@@ -574,38 +363,43 @@
                 const q = e.target.value.toLowerCase();
                 drop.innerHTML = '';
                 if (q.length < 2) {
-                    drop.classList.add('hidden');
+                    drop.hidden = true;
                     return;
                 }
 
                 const recipes = nodesData.filter(n => n.group === 'recipe' && n.name.toLowerCase().includes(q)).slice(0, 10);
 
                 if (recipes.length === 0) {
-                    drop.innerHTML = '<div class="p-4 text-sm text-slate-500 text-center">No recipes found.</div>';
+                    drop.innerHTML = '<div class="gx-none">No recipe by that name.</div>';
                 } else {
                     recipes.forEach(r => {
                         const div = document.createElement('div');
-                        div.className = 'p-3 hover:bg-slate-50 cursor-pointer text-sm text-slate-700 border-b border-slate-100 last:border-0 flex items-center gap-3 transition-colors';
-
-                        const imgHTML = r.image
-                            ? `<img src="${r.image}" class="w-8 h-8 rounded-full border border-slate-200 object-cover shadow-sm">`
-                            : `<div class="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 text-xs shadow-sm">🍳</div>`;
-
-                        div.innerHTML = `${imgHTML} <span class="font-medium truncate">${r.name}</span>`;
+                        div.className = 'gx-hit';
+                        if (r.image) {
+                            const img = document.createElement('img');
+                            img.src = r.image;
+                            img.alt = '';
+                            div.appendChild(img);
+                        } else {
+                            div.insertAdjacentHTML('beforeend', '<span class="gx-noimg">{{ icon("utensils") }}</span>');
+                        }
+                        const label = document.createElement('span');
+                        label.textContent = r.name;
+                        div.appendChild(label);
                         div.onclick = () => {
                             teleportTo(r);
                             input.value = r.name;
-                            drop.classList.add('hidden');
+                            drop.hidden = true;
                         };
                         drop.appendChild(div);
                     });
                 }
-                drop.classList.remove('hidden');
+                drop.hidden = false;
             });
 
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('#search-input') && !e.target.closest('#search-dropdown')) {
-                    drop.classList.add('hidden');
+                    drop.hidden = true;
                 }
             });
         }
@@ -624,10 +418,10 @@
             g.selectAll('.node').filter(n => n.id === node.id)
                 .select('circle')
                 .transition().duration(200)
-                .attr('stroke', '#f97316') // orange-500 pulse
+                .attr('stroke', C.accent)
                 .attr('stroke-width', 4)
                 .transition().duration(2000)
-                .attr('stroke', '#cbd5e1')
+                .attr('stroke', strokeOf)
                 .attr('stroke-width', 1.5);
         }
 
