@@ -1,21 +1,11 @@
 """Recipes Blueprint: landing page, recipe library, the recipe page, recipe JSON APIs."""
-from flask import abort, flash, jsonify, redirect, render_template, request, url_for
+from flask import abort, flash, jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
-from sqlalchemy import or_
-from sqlalchemy.orm import selectinload
-
-from database.models import (
-    Ingredient,
-    Recipe,
-    RecipeDiet,
-    RecipeLine,
-    RecipeMealType,
-    UserRecipeInteraction,
-    db,
-)
+from database.models import Ingredient, Recipe, db
 from routes._flat import FlatBlueprint
 from routes._shared import DIFFICULTY_LABELS, get_recipe_image_url, load_json_option, viewer_is_admin
 from services.chef_service import get_chefs
+from services.recipe_library import PAGE, SORT_LABELS, TIME_LABELS, Filters, recipe_page
 from services.recipe_v2.derive import HEAT_LABELS
 
 recipes_bp = FlatBlueprint("recipes", __name__)
@@ -67,111 +57,40 @@ def recipes_list():
     heat_source_options = list(HEAT_LABELS)
     selected_heat_sources = request.args.getlist('heat_source')
 
-    # 3. Handle View Mode & Base Query
+    # 3. Which list, and grid or table (kept in the session)
     view_mode = request.args.get('view', 'discover')
-    
-    # Session Persistence for View Style
+    if view_mode not in ('saved', 'made', 'next') or not current_user.is_authenticated:
+        view_mode = 'discover'
     if 'style' in request.args:
-        from flask import session
         session['view_style'] = request.args.get('style')
-        
-    # Get current style from session or default to grid
-    from flask import session
     view_style = session.get('view_style', 'grid')
 
-    if view_mode == 'saved' and current_user.is_authenticated:
-        # Base query for Saved Recipes
-        stmt = (
-            db.select(Recipe, UserRecipeInteraction)
-            .join(UserRecipeInteraction)
-            .where(
-                UserRecipeInteraction.user_id == current_user.id,
-                UserRecipeInteraction.status == 'favorite',
-                Recipe.status == 'approved'
-            )
-            .order_by(
-                UserRecipeInteraction.is_super_like.desc(),
-                UserRecipeInteraction.timestamp.desc()
-            )
-        )
-    elif view_mode == 'made' and current_user.is_authenticated:
-        # Base query for Made recipes
-        stmt = (
-            db.select(Recipe, UserRecipeInteraction)
-            .join(UserRecipeInteraction)
-            .where(
-                UserRecipeInteraction.user_id == current_user.id,
-                UserRecipeInteraction.is_made == True,
-                Recipe.status == 'approved'
-            )
-            .order_by(UserRecipeInteraction.timestamp.desc())
-        )
-    elif view_mode == 'next' and current_user.is_authenticated:
-        # Base query for Queue
-        from database.models import UserQueue
-        stmt = (
-            db.select(Recipe, UserQueue)
-            .join(UserQueue)
-            .where(
-                UserQueue.user_id == current_user.id,
-                Recipe.status == 'approved'
-            )
-            .order_by(UserQueue.position.asc())
-        )
-    else:
-        # Default Discover query
-        view_mode = 'discover'
-        stmt = db.select(Recipe).where(Recipe.status == 'approved').order_by(Recipe.id.desc())
+    # 4. The recipes (services/recipe_library.py). The form sends every option of a list when none is unticked:
+    # that does not filter, so recipes without a tag still show.
+    def chosen(selected, options):
+        return [] if set(options) <= set(selected) else selected
 
-    # 4. Apply Filters — only when the user has chosen a STRICT SUBSET of the available options.
-    # The default "select all" state should not restrict results at all.
-    # Using .any() with a full option list would exclude recipes that have NO tags,
-    # which is incorrect for newly added recipes that lack meal_types or diets.
-    if selected_cuisines and len(selected_cuisines) < len(cuisine_options):
-        stmt = stmt.where(Recipe.cuisine.in_(selected_cuisines))
+    sort = request.args.get('sort', 'new')
+    time_choice = request.args.get('time', '')
+    q = request.args.get('q', '').strip()
+    shown = max(request.args.get('shown', PAGE, type=int) or PAGE, PAGE)
+    filters = Filters(cuisines=chosen(selected_cuisines, cuisine_options), diets=chosen(selected_diets, diet_options),
+                      meal_types=chosen(selected_meal_types, meal_type_options), difficulties=selected_difficulties,
+                      proteins=selected_proteins, heat_sources=chosen(selected_heat_sources, heat_source_options),
+                      time=time_choice, q=q)
+    page = recipe_page(view_mode, filters, sort=sort, shown=shown,
+                       user=current_user if current_user.is_authenticated else None)
+    more_url = url_for('recipes_list', **{**request.args.to_dict(flat=False), 'shown': shown + PAGE}) if page.more else None
 
-    if selected_diets and len(selected_diets) < len(diet_options):
-        stmt = stmt.where(Recipe.diets.any(RecipeDiet.diet.in_(selected_diets)))
-
-    if selected_difficulties:
-        stmt = stmt.where(Recipe.difficulty.in_(selected_difficulties))
-
-    if selected_proteins:
-        clauses = []
-        for p in selected_proteins:
-            # the derived main protein, or any line with that ingredient
-            clauses.append(Recipe.protein_type == p)
-            clauses.append(Recipe.lines.any(RecipeLine.ingredient.has(Ingredient.name.ilike(f'%{p}%'))))
-        if clauses:
-             stmt = stmt.where(or_(*clauses))
-
-    if selected_heat_sources and len(selected_heat_sources) < len(heat_source_options):
-        stmt = stmt.where(Recipe.heat_source.in_(selected_heat_sources))
-
-    if selected_meal_types and len(selected_meal_types) < len(meal_type_options):
-        stmt = stmt.where(Recipe.meal_types.any(RecipeMealType.meal_type.in_(selected_meal_types)))
-
-    # Fetch results, with each card's diets and meal types in one query each rather than one per card
-    results = db.session.execute(stmt.options(selectinload(Recipe.diets), selectinload(Recipe.meal_types))).all()
-    
-    recipes = []
-    if view_mode in ['saved', 'made', 'next']:
-        for item in results:
-            r = item[0]
-            # Attach interaction data to recipe object for template
-            if view_mode in ('saved', 'made'):
-                interaction = item[1]
-                r.is_super_liked = getattr(interaction, 'is_super_like', False)
-                r.interaction = interaction
-            elif view_mode == 'next':
-                queue_item = item[1]
-                r.queue_position = queue_item.position
-            recipes.append(r)
-    else:
-        recipes = [item[0] for item in results]
-
-    return render_template('recipes_list.html', 
-                         recipes=recipes,
+    return render_template('recipes_list.html',
+                         recipes=page.recipes,
+                         total=page.total,
+                         more_url=more_url,
+                         q=q,
+                         time_choice=time_choice,
+                         time_labels=TIME_LABELS,
+                         sort=sort,
+                         sort_labels=SORT_LABELS,
                          current_view=view_mode,
                          view_style=view_style,
                          cuisine_options=sorted(cuisine_options),
@@ -299,13 +218,17 @@ def recipe_detail(recipe_id):
         abort(404)
     from services.recipe_v2.view import page
     view = page(recipe, servings=request.args.get('servings', type=int), plan=request.args.get('plan', 'calm'))
+    # The dish and all its versions by chef personas; visitors see the approved ones, when there is more than one
+    root = recipe.base_recipe or recipe
+    family = [root] + sorted(root.versions, key=lambda r: r.id)
+    versions = [r for r in family if r.status == 'approved' or r.id == recipe.id]
     admin = {}
     if viewer_is_admin():
-        # The dish and all its versions by chef personas, and the chefs that can make one
-        root = recipe.base_recipe or recipe
-        admin = {'family': [root] + sorted(root.versions, key=lambda r: r.id), 'chefs': get_chefs()}
+        # and the chefs that can make one
+        admin = {'family': family, 'chefs': get_chefs()}
     # One page: the overview, and prep and cooking together (#prep, #cook)
-    return render_template('recipe_v2_make.html', recipe=recipe, v=view, admin=admin)
+    return render_template('recipe_v2_make.html', recipe=recipe, v=view, admin=admin,
+                           versions=versions if len(versions) > 1 else [])
 
 
 # The addresses of the tabs the recipe page had until 27.10.2026, kept for links already shared: they open the recipe
