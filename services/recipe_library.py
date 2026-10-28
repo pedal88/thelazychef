@@ -1,4 +1,5 @@
-"""The recipe library (/recipes): which recipes a list shows, filtered, searched, sorted and a page at a time.
+"""The recipe library (/recipes): which recipes a list shows, filtered, searched, sorted and a page at a time; and
+Discover's stack (feed_ids), one dish at a time.
 
 A dish and its versions by chef personas (Recipe.base_recipe_id) are one card in All: the base recipe when it is
 approved and matches, else the first version that matches, so a vegetarian version still shows under a vegetarian
@@ -7,11 +8,12 @@ filter. Saved, Made and Cook next show the very recipe the person saved, so they
 Two queries for a page: one for the ids of everything that matches (small rows), one for the recipes on the page.
 """
 import json
+import random
 from dataclasses import dataclass, field
 from pathlib import Path
 
 from sqlalchemy import func, or_
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import aliased, selectinload
 
 from database.models import (
     Ingredient,
@@ -143,7 +145,7 @@ def _ordered(stmt, view, sort):
     return stmt.order_by(Recipe.id.desc())
 
 
-def _one_per_dish(rows):
+def one_per_dish(rows):
     """[(id, family, base_recipe_id)] in list order -> the ids to show, one per dish, in the order of the one shown."""
     first, chosen = {}, {}
     for i, (rid, family, base) in enumerate(rows):
@@ -151,6 +153,28 @@ def _one_per_dish(rows):
         if base is None:  # the base recipe itself matches
             chosen[family] = (i, rid)
     return [rid for _, rid in sorted(chosen.get(fam, pos) for fam, pos in first.items())]
+
+
+def feed_ids(user=None, limit=10, rng=random):
+    """Discover's stack: up to limit dishes in random order, one recipe each, approved and with a dish image.
+    A signed-in person gets the dishes they have not saved or passed yet, in any version; when there are none left,
+    the ones they passed, again."""
+    pictured = (db.select(Recipe.id, FAMILY, Recipe.base_recipe_id)
+                .where(Recipe.status == 'approved', Recipe.image_filename.isnot(None)).order_by(Recipe.id))
+    if user is None:
+        rows = db.session.execute(pictured).all()
+    else:
+        other = aliased(Recipe)  # its own name, so the subquery is not tied to the outer recipe
+        seen = (db.select(func.coalesce(other.base_recipe_id, other.id))
+                .join(UserRecipeInteraction, UserRecipeInteraction.recipe_id == other.id)
+                .where(UserRecipeInteraction.user_id == user.id))
+        rows = db.session.execute(pictured.where(FAMILY.not_in(seen))).all()
+        if not rows:
+            passed = db.select(UserRecipeInteraction.recipe_id).where(UserRecipeInteraction.user_id == user.id,
+                                                                       UserRecipeInteraction.status == 'pass')
+            rows = db.session.execute(pictured.where(Recipe.id.in_(passed))).all()
+    ids = one_per_dish(rows)
+    return rng.sample(ids, min(limit, len(ids)))
 
 
 def versions_count(recipes):
@@ -178,7 +202,7 @@ def recipe_page(view, f, sort='new', shown=PAGE, user=None):
     elif view == 'next':
         stmt = stmt.join(UserQueue).where(UserQueue.user_id == user.id)
     rows = db.session.execute(_ordered(_filtered(stmt, f), view, sort)).all()
-    ids = _one_per_dish(rows) if view == 'discover' else [r[0] for r in rows]
+    ids = one_per_dish(rows) if view == 'discover' else [r[0] for r in rows]
 
     on_page = ids[:max(shown, 1)]
     by_id = {r.id: (r, active) for r, active in db.session.execute(

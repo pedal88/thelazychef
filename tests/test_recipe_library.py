@@ -19,7 +19,7 @@ from app import app  # noqa: E402
 from database.models import Recipe, RecipeDiet, User, UserRecipeInteraction, db  # noqa: E402
 from werkzeug.datastructures import MultiDict  # noqa: E402
 
-from services.recipe_library import Filters, from_args, recipe_page  # noqa: E402
+from services.recipe_library import Filters, feed_ids, from_args, recipe_page  # noqa: E402
 from services.recipe_v2.store import save_v2  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -157,6 +157,36 @@ class RecipeLibraryTests(unittest.TestCase):
         self.assertIn('Clear all', html)
         for gone in ('Table', 'bulk-action-bar', 'recipe-select-cb', 'inspectorModal'):
             self.assertNotIn(gone, html)
+
+    def pictured(self, title, **kw):
+        r = self.recipe(title, **kw)
+        r.image_filename = f'{title}.webp'
+        db.session.commit()
+        return r
+
+    def test_discover_shows_a_dish_once(self):
+        root = self.pictured('Carbonara')
+        for n in range(3):
+            self.pictured(f'Carbonara {n}', base=root)
+        other = self.pictured('Lasagne')
+        shown = [r['id'] for r in self.client.get('/api/feed/recipes').get_json()['recipes']]
+        self.assertCountEqual(shown, [root.id, other.id])  # the base recipe stands for its versions
+
+        root.image_filename = None  # without a picture a version stands in
+        db.session.commit()
+        self.assertEqual(len(feed_ids()), 2)
+        self.assertNotIn(root.id, feed_ids())
+
+    def test_discover_skips_dishes_seen_in_any_version(self):
+        root = self.pictured('Carbonara')
+        version = self.pictured('Carbonara by the gourmet', base=root)
+        other = self.pictured('Lasagne')
+        db.session.add(UserRecipeInteraction(user_id=self.user.id, recipe_id=version.id, status='pass'))
+        db.session.commit()
+        self.assertEqual(feed_ids(self.user), [other.id])
+        db.session.add(UserRecipeInteraction(user_id=self.user.id, recipe_id=other.id, status='favorite'))
+        db.session.commit()
+        self.assertEqual(feed_ids(self.user), [version.id])  # all seen: the passed ones again
 
     def test_the_recipe_page_shows_the_approved_versions(self):
         root = self.recipe('Carbonara')

@@ -5,12 +5,12 @@ import uuid
 
 from flask import jsonify, redirect, request, url_for
 from flask_login import current_user, login_required
-from sqlalchemy import func
 from sqlalchemy.orm.attributes import flag_modified
 
 from database.models import Recipe, UserRecipeInteraction, db
 from routes._flat import FlatBlueprint
 from routes._shared import DIFFICULTY_LABELS, get_recipe_image_url, get_storage
+from services.recipe_library import feed_ids
 
 interactions_bp = FlatBlueprint("interactions", __name__)
 
@@ -61,42 +61,13 @@ def toggle_favorite_recipe(recipe_id):
 
 @interactions_bp.route('/api/feed/recipes', methods=['GET'])
 def get_feed_recipes():
-    """Returns a list of random recipes for the feed (Tinder-style): approved recipes with a dish image only, so
-    Discover never shows a dish without its picture."""
+    """Discover's cards (Tinder-style): random dishes with a dish image, one recipe per dish and its chef-persona
+    versions (services/recipe_library.feed_ids), so Discover never shows a dish without its picture or twice."""
     limit = 10
-    shown = (Recipe.status == 'approved', Recipe.image_filename.isnot(None))
-    
-    if current_user.is_authenticated:
-        # Priority 1: Exclude recipes user has interacted with (new ones only)
-        subq_all = db.select(UserRecipeInteraction.recipe_id).where(UserRecipeInteraction.user_id == current_user.id)
-        stmt = (
-            db.select(Recipe)
-            .where(*shown)  # Public guard
-            .where(Recipe.id.not_in(subq_all))
-            .order_by(func.random())
-            .limit(limit)
-        )
-        recipes = db.session.execute(stmt).scalars().all()
-        
-        # Priority 2: If we've seen everything, shuffle through the "no" stack
-        if not recipes:
-            subq_pass = db.select(UserRecipeInteraction.recipe_id).where(
-                UserRecipeInteraction.user_id == current_user.id,
-                UserRecipeInteraction.status == 'pass'
-            )
-            stmt = (
-                db.select(Recipe)
-                .where(*shown)
-                .where(Recipe.id.in_(subq_pass))
-                .order_by(func.random())
-                .limit(limit)
-            )
-            recipes = db.session.execute(stmt).scalars().all()
-    else:
-        # Anonymous: Random selection of approved only
-        stmt = db.select(Recipe).where(*shown).order_by(func.random()).limit(limit)
-        recipes = db.session.execute(stmt).scalars().all()
-    
+    ids = feed_ids(current_user if current_user.is_authenticated else None, limit)
+    by_id = {r.id: r for r in db.session.execute(db.select(Recipe).where(Recipe.id.in_(ids))).scalars()}
+    recipes = [by_id[i] for i in ids]
+
     data = []
     for r in recipes:
         data.append({
