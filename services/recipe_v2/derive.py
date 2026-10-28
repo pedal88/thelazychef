@@ -40,6 +40,10 @@ MEAT_LABELS = {'beef': 'Beef', 'chicken': 'Chicken', 'poultry': 'Chicken', 'lamb
 OTHER_PROTEINS = (('tofu', 'Tofu'), ('tempeh', 'Tempeh'), ('seitan', 'Seitan'), ('halloumi', 'Halloumi'),
                   ('lentil', 'Lentils'), ('chickpea', 'Legumes'), ('bean', 'Beans'), ('egg', 'Eggs'))
 ANIMAL = ('meat', 'fish and seafood')
+# Cured meat and fish used for flavour: bacon in a quiche or on pancakes is not what the dish is. They count at half
+# their weight against eggs and plant proteins, and never against other meat or fish.
+ACCENT = ('bacon', 'pancetta', 'guanciale', 'lardon', 'chorizo', 'prosciutto', 'salami', 'pepperoni', 'anchov')
+NO_PROTEIN = 'Vegetarian'  # a dish of vegetables, grains or cheese, with no meat, fish or other protein
 
 # Tags in data/constraints/meal_types.json that the app sets, never the model.
 DERIVED_TAGS = ('One-Pot', 'Freezer Friendly', 'Slow Cooker', 'Baby Food')
@@ -95,22 +99,30 @@ def cleanup_factor(v2):
 
 
 def main_protein(lines):
-    """Label of the heaviest meat or fish line, else of the heaviest plant or egg protein, else None."""
+    """Label of the heaviest meat or fish line; else of the heaviest egg or plant protein, with cured meat used for
+    flavour (ACCENT) at half its weight; else NO_PROTEIN when some line is in the pantry; else None. The labels are
+    the protein filter's (data/constraints/main_protein.json)."""
     best = {}  # kind -> (grams, label)
+    linked = False
     for line in lines:
         ing = line.ingredient
         if ing is None:
             continue
+        linked = True
         grams = line.gram_weight or 0
+        name = (ing.name or '').lower()
         if ing.main_category in ANIMAL:
             label = MEAT_LABELS.get((ing.sub_category or '').lower(), 'Other')
-            kind = 'animal'
+            kind = 'other' if any(word in name for word in ACCENT) else 'animal'
+            if kind == 'other':
+                grams /= 2
         else:
-            label = next((lab for word, lab in OTHER_PROTEINS if word in ing.name.lower()), None)
+            label = next((lab for word, lab in OTHER_PROTEINS if word in name), None)
             kind = 'other'
         if label and grams >= best.get(kind, (-1, None))[0]:
             best[kind] = (grams, label)
-    return (best.get('animal') or best.get('other') or (0, None))[1]
+    found = (best.get('animal') or best.get('other') or (0, None))[1]
+    return found or (NO_PROTEIN if linked else None)
 
 
 def apply(recipe, v2):

@@ -39,21 +39,30 @@ def generate_symbol(ingredient) -> tuple[bytes, str, dict]:
     return png, prompt, meta
 
 
-def category_symbol(main_category: str) -> tuple[bytes, str, dict]:
-    """Return (PNG bytes, prompt, meta) for a main ingredient category: three typical things in the same style
-    (data/constraints/category_symbols.json). The things are the "name" the prompt shows, so its rule of showing
-    only that still holds."""
+SPECS = {'ingredient_category': 'category_symbols.json', 'cuisine': 'cuisine_symbols.json'}
+
+
+def concept_symbol(kind: str, name: str) -> tuple[bytes, str, dict]:
+    """Return (PNG bytes, prompt, meta) for a concept in the same style as the ingredient symbols: a main ingredient
+    category (three typical things) or a cuisine (a dish it is known for). What to show is in the kind's file in
+    data/constraints (SPECS); it is the "name" the prompt shows, so the prompt's rule of showing only that still
+    holds."""
     import json
     import os
 
-    path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'constraints',
-                        'category_symbols.json')
+    path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'constraints', SPECS[kind])
     with open(path, encoding='utf-8') as f:
         spec = json.load(f)
-    looks = spec['looks'].get(main_category)
+    looks = spec['looks'].get(name)
     if not looks:
-        raise KeyError(f'No looks for the category {main_category!r} in category_symbols.json')
-    return generate_symbol({'name': looks, 'main_category': main_category, 'sub_category': '', 'image_form': spec['form']})
+        raise KeyError(f'No looks for {name!r} in {SPECS[kind]}')
+    main = name if kind == 'ingredient_category' else ''
+    return generate_symbol({'name': looks, 'main_category': main, 'sub_category': '', 'image_form': spec['form']})
+
+
+def category_symbol(main_category: str) -> tuple[bytes, str, dict]:
+    """The symbol of a main ingredient category (concept_symbol)."""
+    return concept_symbol('ingredient_category', main_category)
 
 
 def web_image(png: bytes, size: int = WEB_SIZE) -> bytes:

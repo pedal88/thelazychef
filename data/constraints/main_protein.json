@@ -1,4 +1,5 @@
 {
+    "_doc": "The protein labels (services/recipe_v2/derive.main_protein writes them; the recipe list filters on the examples) and, in symbol_from, the pantry ingredients whose symbol stands for each label in the recipe galaxy: the first that is active and has a symbol is used.",
     "protein_types": [
         {
             "category": "Poultry",
@@ -13,7 +14,8 @@
             "examples": [
                 "Beef",
                 "Pork",
-                "Lamb"
+                "Lamb",
+                "Game"
             ]
         },
         {
@@ -32,7 +34,8 @@
                 "Beans",
                 "Lentils",
                 "Eggs",
-                "Halloumi"
+                "Halloumi",
+                "Vegetarian"
             ]
         },
         {
@@ -44,5 +47,74 @@
                 "Seitan"
             ]
         }
-    ]
+    ],
+    "symbol_from": {
+        "Chicken": [
+            "chicken breast"
+        ],
+        "Turkey": [
+            "turkey filet",
+            "turkey breast"
+        ],
+        "Duck": [
+            "duck breast"
+        ],
+        "Beef": [
+            "beef sirloin",
+            "ground beef"
+        ],
+        "Pork": [
+            "pork loin chops",
+            "pork loin"
+        ],
+        "Lamb": [
+            "lamb chops",
+            "leg of lamb"
+        ],
+        "Game": [
+            "reindeer loin"
+        ],
+        "Salmon": [
+            "salmon fillet"
+        ],
+        "White Fish": [
+            "cod"
+        ],
+        "Shrimp": [
+            "shrimps"
+        ],
+        "Shellfish": [
+            "lobster",
+            "mussels"
+        ],
+        "Tofu": [
+            "tofu"
+        ],
+        "Tempeh": [
+            "tempeh"
+        ],
+        "Seitan": [
+            "seitan"
+        ],
+        "Halloumi": [
+            "halloumi"
+        ],
+        "Lentils": [
+            "red lentils",
+            "lentils"
+        ],
+        "Legumes": [
+            "chickpeas"
+        ],
+        "Beans": [
+            "kidney beans",
+            "black beans"
+        ],
+        "Eggs": [
+            "eggs"
+        ],
+        "Vegetarian": [
+            "broccoli"
+        ]
+    }
 }
