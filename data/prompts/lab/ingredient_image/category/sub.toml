@@ -74,6 +74,7 @@ default = ""
 "leafy greens" = "Show one head or a small bunch."
 "legumes & pulses" = "Show a small heap of them."
 "mushrooms" = "Show two or three whole ones."
+"sea vegetables" = "Show a few dried sheets or a small heap, as sold."
 "vegetables" = "Show it whole and fresh, as bought."
 
 # Nuts, seeds, spices
@@ -88,6 +89,8 @@ default = ""
 "asian-style sauces" = "Show one glass bottle with a cork stopper and the sauce visible."
 "vinaigrettes & salad dressings" = "Show one glass bottle with a cork stopper and the contents visible."
 "other sauces & condiments" = "Show one small glass jar with the sauce visible."   # mostly thick; vinegars have their own form
+"stocks & broths" = "Show one small glass jar with the stock visible, or the cube unwrapped when it is a cube."
+"vinegars" = "Show one glass bottle of it."
 "savory condiments" = "Show one small glass jar with the contents visible."
 "cream & cheese sauces" = "Show one small glass jar with the sauce visible."
 "dips & dipping sauces" = "Show one small glass jar with the contents visible."

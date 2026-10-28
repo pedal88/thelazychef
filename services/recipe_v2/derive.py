@@ -34,8 +34,13 @@ VESSELS = {'airfryer', 'grill_pan', 'saucepan', 'large_pot', 'wide_pot', 'dutch_
 
 # Main protein: pantry sub_category -> the label the protein filter uses (data/constraints/main_protein.json).
 MEAT_LABELS = {'beef': 'Beef', 'chicken': 'Chicken', 'poultry': 'Chicken', 'lamb': 'Lamb', 'goat': 'Lamb', 'pork': 'Pork',
-               'sausages': 'Pork', 'reindeer': 'Game', 'game': 'Game', 'salmon': 'Salmon', 'fish': 'White Fish',
-               'shrimps': 'Shrimp', 'scampi': 'Shrimp', 'lobster': 'Shellfish', 'shellfish': 'Shellfish'}
+               'sausages': 'Pork', 'reindeer': 'Game', 'game': 'Game', 'white fish': 'White Fish', 'oily fish': 'Oily Fish',
+               'shellfish': 'Shellfish',
+               # the fish sub categories before the taxonomy cleanup (migration b3d7e9f1a2c4)
+               'salmon': 'Salmon', 'fish': 'White Fish', 'shrimps': 'Shrimp', 'scampi': 'Shrimp', 'lobster': 'Shellfish'}
+# Within a fish kind, the label the filter knows best: salmon is Salmon, shrimp and scampi are Shrimp
+FISH_NAMES = (('oily fish', 'salmon', 'Salmon'), ('shellfish', 'shrimp', 'Shrimp'), ('shellfish', 'scampi', 'Shrimp'),
+              ('shellfish', 'prawn', 'Shrimp'))
 # Plant and egg proteins, by name. Only used when there is no meat or fish.
 OTHER_PROTEINS = (('tofu', 'Tofu'), ('tempeh', 'Tempeh'), ('seitan', 'Seitan'), ('halloumi', 'Halloumi'),
                   ('lentil', 'Lentils'), ('chickpea', 'Legumes'), ('bean', 'Beans'), ('egg', 'Eggs'))
@@ -112,7 +117,9 @@ def main_protein(lines):
         grams = line.gram_weight or 0
         name = (ing.name or '').lower()
         if ing.main_category in ANIMAL:
-            label = MEAT_LABELS.get((ing.sub_category or '').lower(), 'Other')
+            sub = (ing.sub_category or '').lower()
+            label = next((lab for s, word, lab in FISH_NAMES if s == sub and word in name), None) \
+                or MEAT_LABELS.get(sub, 'Other')
             kind = 'other' if any(word in name for word in ACCENT) else 'animal'
             if kind == 'other':
                 grams /= 2

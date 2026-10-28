@@ -70,11 +70,8 @@
             "speciality & flavored oils"
         ],
         "fish and seafood": [
-            "fish",
-            "salmon",
-            "lobster",
-            "scampi",
-            "shrimps",
+            "white fish",
+            "oily fish",
             "shellfish"
         ],
         "fruit and fruit products": [
@@ -82,7 +79,6 @@
             "citrus fruits",
             "dried fruits",
             "grapes",
-            "juices",
             "melons",
             "pome fruits",
             "stone fruits",
@@ -103,7 +99,8 @@
             "coffee and coffee drinks",
             "soft drinks & sodas",
             "tea",
-            "water"
+            "water",
+            "juices"
         ],
         "nuts and seeds": [
             "nuts",
@@ -121,7 +118,9 @@
             "spreads",
             "sweet condiments & spreads",
             "tomato-based sauces",
-            "vinaigrettes & salad dressings"
+            "vinaigrettes & salad dressings",
+            "stocks & broths",
+            "vinegars"
         ],
         "spices and herbs": [
             "dried herbs",
@@ -140,7 +139,8 @@
             "podded vegetables",
             "root vegetables",
             "squash & gourds",
-            "stalk vegetables"
+            "stalk vegetables",
+            "sea vegetables"
         ],
         "other": [
             "other"

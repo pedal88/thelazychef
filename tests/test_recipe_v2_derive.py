@@ -72,6 +72,14 @@ def test_bacon_is_flavour_and_a_dish_without_protein_is_vegetarian():
     assert derive.main_protein([line('onion', 'vegetables', 'onions', 200)]) == 'Vegetarian'
 
 
+def test_fish_by_kind_keeps_the_labels_people_filter_on():
+    assert derive.main_protein([line('salmon fillet', 'fish and seafood', 'oily fish', 300)]) == 'Salmon'
+    assert derive.main_protein([line('mackerel', 'fish and seafood', 'oily fish', 300)]) == 'Oily Fish'
+    assert derive.main_protein([line('cod', 'fish and seafood', 'white fish', 300)]) == 'White Fish'
+    assert derive.main_protein([line('shrimps', 'fish and seafood', 'shellfish', 300)]) == 'Shrimp'
+    assert derive.main_protein([line('mussels', 'fish and seafood', 'shellfish', 300)]) == 'Shellfish'
+
+
 def test_every_protein_label_can_be_filtered_on():
     """The labels main_protein writes are the recipe list's protein filter and the galaxy's protein planets."""
     import json
@@ -80,4 +88,5 @@ def test_every_protein_label_can_be_filtered_on():
                            'main_protein.json'), encoding='utf-8') as f:
         options = {e for c in json.load(f)['protein_types'] for e in c['examples']}
     labels = set(derive.MEAT_LABELS.values()) | {lab for _, lab in derive.OTHER_PROTEINS} | {derive.NO_PROTEIN}
+    labels |= {lab for _, _, lab in derive.FISH_NAMES}
     assert labels <= options, labels - options

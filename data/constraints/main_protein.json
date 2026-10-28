@@ -22,6 +22,7 @@
             "category": "Seafood",
             "examples": [
                 "Salmon",
+                "Oily Fish",
                 "White Fish",
                 "Shrimp",
                 "Shellfish"
@@ -115,6 +116,11 @@
         ],
         "Vegetarian": [
             "broccoli"
+        ],
+        "Oily Fish": [
+            "mackerel",
+            "herring",
+            "salmon fillet"
         ]
     }
 }
