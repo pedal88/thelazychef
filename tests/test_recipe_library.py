@@ -17,7 +17,9 @@ import json  # noqa: E402
 
 from app import app  # noqa: E402
 from database.models import Recipe, RecipeDiet, User, UserRecipeInteraction, db  # noqa: E402
-from services.recipe_library import Filters, recipe_page  # noqa: E402
+from werkzeug.datastructures import MultiDict  # noqa: E402
+
+from services.recipe_library import Filters, from_args, recipe_page  # noqa: E402
 from services.recipe_v2.store import save_v2  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -117,7 +119,7 @@ class RecipeLibraryTests(unittest.TestCase):
 
         self.client.post('/login', data={'email': 'cook@test', 'password': 'pw'})
         html = self.client.get('/recipes').get_data(as_text=True)
-        self.assertIn('data-is-made="true"', html)
+        self.assertIn(f'data-made="{made.id}" aria-pressed="true"', html)
 
     def test_the_list_page_with_search_and_more(self):
         for n in range(3):
@@ -126,6 +128,35 @@ class RecipeLibraryTests(unittest.TestCase):
         self.assertIn('3 dishes', html)
         self.assertNotIn('Show more', html)
         self.assertEqual(self.client.get('/recipes?shown=abc').status_code, 200)
+
+    def test_chips_from_the_address(self):
+        f, groups = from_args(MultiDict([('protein', 'Seafood'), ('diet', 'vegan'), ('diet', 'martian'),
+                                         ('time', '30'), ('spice', '0'), ('q', ' pasta ')]))
+        self.assertIn('Salmon', f.proteins)  # a protein group filters on its labels
+        self.assertEqual((f.diets, f.time, f.spice, f.q), (['vegan'], '30', ['0'], 'pasta'))  # unknown values dropped
+        by_key = {g['key']: g for g in groups}
+        self.assertTrue(by_key['time']['single'])
+        self.assertTrue(by_key['cuisine']['more'])
+        self.assertIn(('Seafood', 'Seafood', True), by_key['protein']['options'])
+        self.assertEqual(from_args(MultiDict())[0], Filters())  # nothing chosen filters nothing
+
+    def test_heat_filter_counts_unknown_as_mild(self):
+        hot = self.recipe('Vindaloo')
+        hot.spice_level = 3
+        mild = self.recipe('Porridge')
+        mild.spice_level = None
+        db.session.commit()
+        self.assertEqual(self.titles(f=Filters(spice=['3'])), ['Vindaloo'])
+        self.assertEqual(self.titles(f=Filters(spice=['0'])), ['Porridge'])
+
+    def test_the_list_has_chips_and_no_table_or_bulk_delete(self):
+        self.recipe('Dish')
+        html = self.client.get('/recipes?diet=vegan').get_data(as_text=True)
+        self.assertIn('name="diet" value="vegan" checked', html)
+        self.assertIn('1 in use', html)
+        self.assertIn('Clear all', html)
+        for gone in ('Table', 'bulk-action-bar', 'recipe-select-cb', 'inspectorModal'):
+            self.assertNotIn(gone, html)
 
     def test_the_recipe_page_shows_the_approved_versions(self):
         root = self.recipe('Carbonara')

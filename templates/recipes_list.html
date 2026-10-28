@@ -1,743 +1,151 @@
 {% extends "base.html" %}
-{% import "components/typography.html" as type %}
 {% import "components/cards.html" as card with context %}
 {% import "components/modals/recipe_inspector.html" as inspector %}
 
 {% block title %}
-{% if current_view == 'saved' %}My Cookbook{% elif current_view == 'made' %}Made Recipes{% elif current_view == 'next' %}Cook Next{% else %}Recipe Library{% endif %}
+{% if current_view == 'saved' %}Saved{% elif current_view == 'made' %}Made{% elif current_view == 'next' %}Cook next{% else %}All recipes{% endif %}
 - The Lazy Chef
 {% endblock %}
 
+{# One group of filter chips (services/recipe_library.from_args): checkboxes, or radios with Any first #}
+{% macro chip_group(g) %}
+<fieldset class="lib-chips">
+    <legend>{{ g.label }}</legend>
+    <div class="lib-chip-row">
+        {% if g.single %}
+        <label class="lib-chip"><input type="radio" name="{{ g.key }}" value=""{% if not g.options|selectattr(2)|list %} checked{% endif %}><span>Any</span></label>
+        {% endif %}
+        {% for value, text, on in g.options %}
+        <label class="lib-chip"><input type="{{ 'radio' if g.single else 'checkbox' }}" name="{{ g.key }}" value="{{ value }}"{% if on %} checked{% endif %}><span>{{ text }}</span></label>
+        {% endfor %}
+    </div>
+</fieldset>
+{% endmacro %}
+
 {% block content %}
+{% set admin = current_user.is_authenticated and current_user.is_admin %}
 
+{# The head: which list, its name and a line about it (static/css/library.css) #}
+{% set heads = {'saved': ('Your recipes', 'Saved', 'The recipes you have saved.'),
+                'made': ('Your recipes', 'Made', 'The recipes you have cooked.'),
+                'next': ('Your recipes', 'Cook next', 'What you plan to cook, in the order you added it.')} %}
+{% set eyebrow, title, line = heads.get(current_view, ('Recipes', 'All recipes', 'Every dish in The Lazy Chef. Filter by what you feel like.')) %}
+<header class="lib-head">
+    <p class="eyebrow">{{ eyebrow }}</p>
+    <h1>{{ title }}</h1>
+    <p class="lib-sub">{{ line }}</p>
+</header>
 
-    {# The head: which list, its name and a line about it (static/css/library.css) #}
-    {% set heads = {'saved': ('Your recipes', 'Saved', 'The recipes you have saved.'),
-                    'made': ('Your recipes', 'Made', 'The recipes you have cooked.'),
-                    'next': ('Your recipes', 'Cook next', 'What you plan to cook, in the order you added it.')} %}
-    {% set eyebrow, title, line = heads.get(current_view, ('Recipes', 'All recipes', 'Every dish in The Lazy Chef. Filter by what you feel like.')) %}
-    <header class="lib-head">
-        <p class="eyebrow">{{ eyebrow }}</p>
-        <h1>{{ title }}</h1>
-        <p class="lib-sub">{{ line }}</p>
-    </header>
-
-    <div class="pb-12">
-        <div class="mx-auto px-6" style="max-width: 1180px">
-
-            {# Which list, and grid or table #}
-            <div class="lib-bar mt-2">
-                <nav class="lib-tabs" aria-label="Which recipes">
-                    {% for key, label, ic, signed_in in [('discover', 'All', 'book', False), ('saved', 'Saved', 'heart', True), ('made', 'Made', 'check', True), ('next', 'Cook next', 'pot', True)] %}
-                    {% if not signed_in or current_user.is_authenticated %}
-                    <a href="{{ url_for('recipes_list', view=key, style=view_style) }}"{% if key == current_view %} aria-current="page"{% endif %}>{{ icon(ic) }}{{ label }}</a>
-                    {% endif %}
-                    {% endfor %}
-                </nav>
-                <nav class="lib-tabs" aria-label="How to show them">
-                    <a href="{{ url_for('recipes_list', view=current_view, style='grid') }}"{% if view_style == 'grid' %} aria-current="page"{% endif %}>Grid</a>
-                    <a href="{{ url_for('recipes_list', view=current_view, style='table') }}"{% if view_style == 'table' %} aria-current="page"{% endif %}>{{ icon('list') }}Table</a>
-                </nav>
-            </div>
-
-            {# ---------- Filter Form: open on a wide screen; on a phone behind "Filters", unless one is in use ---------- #}
-            {% set filtering = request.args|select('in', ['cuisine', 'diet', 'meal_type', 'protein_type', 'difficulty', 'heat_source'])|list + (['q'] if q else []) + (['time'] if time_choice else []) %}
-            <details class="lib-filters" data-filters{% if filtering %} open{% endif %}>
-            <summary class="lib-filters-sum">{{ icon('list') }} Filters{% if filtering %} · {{ filtering|length }} in use{% endif %}</summary>
-            <script>if (matchMedia('(min-width: 768px)').matches) document.currentScript.parentElement.open = true;</script>
-            <form method="GET" action="{{ url_for('recipes_list') }}" id="filterForm"
-                class="mt-4 mb-8 bg-white rounded-2xl p-6 border border-slate-200">
-                {# Preserve view + style via hidden inputs so Apply Filters doesn't lose context #}
-                <input type="hidden" name="view" value="{{ current_view }}">
-                <input type="hidden" name="style" value="{{ view_style }}">
-
-                {# Search, total time and order (services/recipe_library.py); the order is All's, the other lists keep theirs #}
-                <div class="lib-search">
-                    <label class="lib-q">{{ icon('search') }}<input type="search" name="q" value="{{ q }}"
-                        placeholder="Search dishes or ingredients" aria-label="Search dishes or ingredients"></label>
-                    <select name="time" aria-label="Total time">
-                        <option value="">Any time</option>
-                        {% for key, label in time_labels.items() %}<option value="{{ key }}"{% if key == time_choice %} selected{% endif %}>{{ label }}</option>{% endfor %}
-                    </select>
-                    {% if current_view == 'discover' %}
-                    <select name="sort" aria-label="Order">
-                        {% for key, label in sort_labels.items() %}<option value="{{ key }}"{% if key == sort %} selected{% endif %}>{{ label }}</option>{% endfor %}
-                    </select>
-                    {% endif %}
-                </div>
-
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5 items-end">
-
-                    {# Multi-Select Dropdown Macro #}
-                    {% macro multi_select_dropdown(id, label, options, selected_values, labels=none) %}
-                    <div class="relative group dropdown-container" id="container-{{ id }}">
-                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">{{ label
-                            }}</label>
-
-                        <button type="button" onclick="toggleDropdown('{{ id }}')"
-                            class="relative w-full cursor-default rounded-full bg-white py-2 pl-4 pr-10 text-left text-sm text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm sm:leading-6">
-                            <span class="block truncate" id="display-{{ id }}">
-                                {% if selected_values|length == options|length %}
-                                All {{ label }}s
-                                {% elif selected_values|length > 0 %}
-                                {{ selected_values|length }} Selected
-                                {% else %}
-                                Select {{ label }}
-                                {% endif %}
-                            </span>
-                            <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                                <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor"
-                                    aria-hidden="true">
-                                    <path fill-rule="evenodd"
-                                        d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                            </span>
-                        </button>
-
-                        <div id="dropdown-{{ id }}"
-                            class="hidden absolute z-30 mt-1 max-h-80 w-full rounded-md bg-white text-base shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm flex flex-col overflow-hidden">
-
-                            <div class="p-2 border-b border-gray-100 bg-gray-50">
-                                <input type="text" placeholder="Search {{ label }}..."
-                                    onkeyup="filterOptions('{{ id }}', this.value)"
-                                    class="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-xs">
-                            </div>
-
-                            <div
-                                class="flex justify-between px-3 py-2 text-xs font-medium text-indigo-600 border-b border-gray-100 bg-white">
-                                <span onclick="selectAll('{{ id }}')"
-                                    class="cursor-pointer hover:underline hover:text-indigo-800">Select All</span>
-                                <span onclick="selectNone('{{ id }}')"
-                                    class="cursor-pointer hover:underline text-gray-500 hover:text-indigo-600">None</span>
-                            </div>
-
-                            <div class="overflow-y-auto flex-1 p-1">
-                                {% for option in options %}
-                                <label
-                                    class="relative flex cursor-pointer select-none py-2 pl-3 pr-9 hover:bg-gray-50 rounded-sm">
-                                    <input type="checkbox" name="{{ id }}" value="{{ option }}" {% if option in
-                                        selected_values %}checked{% endif %} class="peer sr-only"
-                                        onchange="updateDisplay('{{ id }}', '{{ label }}s', {{ options|length }})">
-                                    <span
-                                        class="absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600 opacity-0 peer-checked:opacity-100 transition-opacity">
-                                        <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd"
-                                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                clip-rule="evenodd" />
-                                        </svg>
-                                    </span>
-                                    <span
-                                        class="ml-6 block truncate font-normal text-gray-900 peer-checked:font-medium peer-checked:text-indigo-900">
-                                        {{ labels[option] if labels and option in labels else option|title }}
-                                    </span>
-                                </label>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                    {% endmacro %}
-
-                    {{ multi_select_dropdown('cuisine', 'Cuisine', cuisine_options, selected_cuisines) }}
-                    {{ multi_select_dropdown('diet', 'Diet', diet_options, selected_diets) }}
-                    {{ multi_select_dropdown('meal_type', 'Meal Type', meal_type_options, selected_meal_types) }}
-                    {{ multi_select_dropdown('protein_type', 'Protein', protein_options, selected_proteins) }}
-                    {{ multi_select_dropdown('difficulty', 'Difficulty', difficulty_options, selected_difficulties, difficulty_labels) }}
-                    {{ multi_select_dropdown('heat_source', 'Cooked in', heat_source_options, selected_heat_sources, heat_source_labels) }}
-                </div>
-
-                <div class="mt-6 flex justify-end gap-3 border-t border-gray-200 pt-4">
-                    <a href="{{ url_for('recipes_list', view=current_view, style=view_style) }}"
-                        class="rounded-full bg-white px-5 py-2 text-sm font-semibold text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">
-                        Clear Filters
-                    </a>
-                    <button type="submit"
-                        class="rounded-full bg-indigo-600 px-8 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-colors">
-                        Apply Filters
-                    </button>
-                </div>
-            </form>
-            </details>
-
-            {# ---------- Dropdown JS ---------- #}
-            <script>
-                function toggleDropdown(id) {
-                    document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
-                        if (el.id !== `dropdown-${id}`) el.classList.add('hidden');
-                    });
-                    document.getElementById(`dropdown-${id}`).classList.toggle('hidden');
-                }
-
-                function selectAll(id) {
-                    const inputs = document.getElementById(`dropdown-${id}`).querySelectorAll('input[type="checkbox"]');
-                    inputs.forEach(i => i.checked = true);
-                    const label = id === 'meal_type' ? 'Meal Types' : id.charAt(0).toUpperCase() + id.slice(1) + 's';
-                    updateDisplay(id, label, inputs.length);
-                }
-
-                function selectNone(id) {
-                    const inputs = document.getElementById(`dropdown-${id}`).querySelectorAll('input[type="checkbox"]');
-                    inputs.forEach(i => i.checked = false);
-                    const label = id === 'meal_type' ? 'Meal Types' : id.charAt(0).toUpperCase() + id.slice(1) + 's';
-                    updateDisplay(id, label, inputs.length);
-                }
-
-                function updateDisplay(id, labelName, totalOptions) {
-                    const inputs = document.getElementById(`dropdown-${id}`).querySelectorAll('input[type="checkbox"]:checked');
-                    const count = inputs.length;
-                    const display = document.getElementById(`display-${id}`);
-                    if (count === totalOptions) display.innerText = `All ${labelName}`;
-                    else if (count > 0) display.innerText = `${count} Selected`;
-                    else display.innerText = `Select ${labelName}`;
-                }
-
-                document.addEventListener('click', function (e) {
-                    if (!e.target.closest('.dropdown-container')) {
-                        document.querySelectorAll('[id^="dropdown-"]').forEach(el => el.classList.add('hidden'));
-                    }
-                });
-
-                function filterOptions(id, query) {
-                    const lowerQuery = query.toLowerCase();
-                    document.getElementById(`dropdown-${id}`).querySelectorAll('label').forEach(opt => {
-                        const matches = opt.innerText.toLowerCase().includes(lowerQuery);
-                        opt.classList.toggle('hidden', !matches);
-                        opt.classList.toggle('flex', matches);
-                    });
-                }
-            </script>
-
-            {# ---------- Recipe Content Area ---------- #}
-            {% if recipes %}<p class="lib-count">{{ total }} {{ 'dish' if total == 1 else 'dishes' }}</p>{% endif %}
-            {% if not recipes %}
-            {# Nothing here yet: an icon, a line, what to do and the way on (static/css/library.css) #}
-            {% set empties = {'saved': ('heart', 'No saved recipes yet', 'Tap the heart on a recipe to keep it here.', 'Find recipes'),
-                              'made': ('check', 'Nothing cooked yet', 'Mark a recipe as made after you cook it, and it shows up here.', 'Find recipes'),
-                              'next': ('pot', 'Nothing to cook next', 'Tap the pot on a recipe to put it in your queue.', 'Find recipes')} %}
-            {% set ic, line, hint, go = empties.get(current_view, ('search', 'No recipes match your filters', 'Try fewer filters, or clear them.', 'Clear filters')) %}
-            <div class="lib-empty">
-                <span class="lib-empty-ic">{{ icon(ic) }}</span>
-                <h3>{{ line }}</h3>
-                <p>{{ hint }}</p>
-                <a class="lib-go" href="{{ url_for('recipes_list', view='discover') }}">{{ go }}</a>
-            </div>
-
-            {% elif view_style == 'table' %}
-            {# ---------- Table View ---------- #}
-            <div class="mt-6 flow-root">
-                <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                    <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                        <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                            <table class="min-w-full divide-y divide-gray-300">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th
-                                            class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
-                                            Recipe</th>
-                                        <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Cuisine
-                                        </th>
-                                        <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Difficulty
-                                        </th>
-                                        <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Diets</th>
-                                        {% if current_user.is_authenticated %}
-                                        <th class="px-3 py-3.5 text-center text-sm font-semibold text-gray-900">Made?
-                                        </th>
-                                        {% endif %}
-                                        <th
-                                            class="relative py-3.5 pl-3 pr-4 sm:pr-6 text-right text-sm font-semibold text-gray-900">
-                                            Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-200 bg-white">
-                                    {% for recipe in recipes %}
-                                    <tr class="hover:bg-gray-50 transition-colors">
-                                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
-                                            <div class="flex items-center gap-3">
-                                                {% if recipe.image_filename %}
-                                                <img class="h-10 w-10 rounded-full object-cover flex-shrink-0"
-                                                    src="{{ get_recipe_image_url(recipe) }}" alt="">
-                                                {% else %}
-                                                <span
-                                                    class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 flex-shrink-0 text-orange-600">{{ icon('utensils') }}</span>
-                                                {% endif %}
-                                                <div>
-                                                    <a href="/recipe/{{ recipe.id }}"
-                                                        class="font-medium text-gray-900 hover:text-indigo-600">{{
-                                                        recipe.title }}</a>
-                                                    {% if recipe.is_super_liked %}<span class="text-blue-500 ml-1"
-                                                        title="Super Liked">★</span>{% endif %}
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ recipe.cuisine
-                                            }}
-                                        </td>
-                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                            <span
-                                                class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">{{
-                                                recipe.difficulty|difficulty_label }}</span>
-                                        </td>
-                                        <td class="px-3 py-4 text-sm text-gray-500 max-w-xs truncate">{{
-                                            recipe.diets_list|join(', ') }}</td>
-                                        {% if current_user.is_authenticated %}
-                                        <td class="px-3 py-4 text-center">
-                                            <button type="button" onclick="toggleMade({{ recipe.id }}, this)"
-                                                class="made-btn inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium border transition-all
-                                                   {% if recipe.interaction and recipe.interaction.is_made %}bg-green-50 text-green-700 border-green-300{% else %}bg-gray-50 text-gray-500 border-gray-200 hover:bg-green-50 hover:text-green-700 hover:border-green-300{% endif %}"
-                                                data-recipe-id="{{ recipe.id }}"
-                                                data-is-made="{{ 'true' if recipe.interaction and recipe.interaction.is_made else 'false' }}">
-                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
-                                                    stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2" d="M5 13l4 4L19 7" />
-                                                </svg>
-                                                Made it
-                                            </button>
-                                        </td>
-                                        {% endif %}
-                                        <td
-                                            class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                                            <div class="flex items-center justify-end gap-3">
-                                                {% if current_user.is_authenticated %}
-                                                <button type="button"
-                                                    onclick="openFeedbackDrawer({{ recipe.id }}, '{{ recipe.title|e }}')"
-                                                    class="text-gray-400 hover:text-indigo-600 transition-colors"
-                                                    title="Leave Feedback">
-                                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24"
-                                                        stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                                    </svg>
-                                                </button>
-                                                {% endif %}
-                                                <a href="/recipe/{{ recipe.id }}"
-                                                    class="text-indigo-600 hover:text-indigo-900">View</a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {% else %}
-            {# ---------- Grid View ---------- #}
-            <div class="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-8">
-                {% for recipe in recipes %}
-                <div class="group relative flex flex-col">
-                    {{ card.recipe_preview_card(recipe, recipe.id, show_inspector=True) }}
-
-                    {# Made + Feedback row — only for logged-in users #}
-                    {% if current_user.is_authenticated %}
-                    <div class="mt-2 flex items-center justify-between gap-2 px-1">
-                        <button type="button" onclick="toggleMade({{ recipe.id }}, this)"
-                            class="made-btn flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium border transition-all
-                               {% if recipe.interaction and recipe.interaction.is_made %}bg-green-50 text-green-700 border-green-300{% else %}bg-gray-50 text-gray-500 border-gray-200 hover:bg-green-50 hover:text-green-700 hover:border-green-300{% endif %}"
-                            data-recipe-id="{{ recipe.id }}"
-                            data-is-made="{{ 'true' if recipe.interaction and recipe.interaction.is_made else 'false' }}">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M5 13l4 4L19 7" />
-                            </svg>
-                            Made it
-                        </button>
-
-                        <button type="button" onclick="openFeedbackDrawer({{ recipe.id }}, '{{ recipe.title|e }}')"
-                            class="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium border border-gray-200 bg-gray-50 text-gray-500 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-300 transition-all">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                            </svg>
-                            Feedback
-                        </button>
-                    </div>
-                    {% endif %}
-                </div>
-                {% endfor %}
-            </div>
+<div class="lib-wrap">
+    <div class="lib-bar">
+        <nav class="lib-tabs" aria-label="Which recipes">
+            {% for key, label, ic, signed_in in [('discover', 'All', 'book', False), ('saved', 'Saved', 'heart', True), ('made', 'Made', 'check', True), ('next', 'Cook next', 'pot', True)] %}
+            {% if not signed_in or current_user.is_authenticated %}
+            <a href="{{ url_for('recipes_list', view=key) }}"{% if key == current_view %} aria-current="page"{% endif %}>{{ icon(ic) }}{{ label }}</a>
             {% endif %}
-
-            {% if more_url %}<p class="lib-more"><a class="lib-go" href="{{ more_url }}">Show more</a></p>{% endif %}
-
-        </div>{# /max-w-7xl #}
-    </div>{# /bg-white #}
-
-    {# ---------- Inspector Modal ---------- #}
-    {{ inspector.recipe_inspector_modal() }}
-
-    {# ---------- Feedback Drawer ---------- #}
-    {% if current_user.is_authenticated %}
-    <div id="feedback-drawer-backdrop" class="fixed inset-0 bg-black/40 z-40 hidden transition-opacity"
-        onclick="closeFeedbackDrawer()"></div>
-
-    <aside id="feedback-drawer"
-        class="fixed inset-y-0 right-0 z-50 w-full sm:w-[420px] bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
-
-        {# Header #}
-        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-            <div>
-                <h2 class="text-lg font-semibold text-gray-900">Leave Feedback</h2>
-                <p id="feedback-recipe-title" class="text-sm text-gray-500 truncate max-w-xs"></p>
-            </div>
-            <button onclick="closeFeedbackDrawer()"
-                class="p-2 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
-
-        {# Scrollable body #}
-        <form id="feedback-form" class="flex-1 overflow-y-auto px-6 py-6 space-y-6" onsubmit="submitFeedback(event)">
-            <input type="hidden" id="feedback-recipe-id" name="recipe_id" value="">
-
-            {# Star Rating #}
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Your Rating</label>
-                <div class="flex gap-2" id="star-container">
-                    {% for i in range(1, 6) %}
-                    <button type="button" data-value="{{ i }}" onclick="setRating({{ i }})"
-                        class="star-btn text-3xl text-gray-300 hover:text-yellow-400 transition-colors leading-none cursor-pointer">★</button>
-                    {% endfor %}
-                </div>
-                <input type="hidden" id="feedback-rating" name="rating" value="">
-            </div>
-
-            {# Comment #}
-            <div>
-                <label for="feedback-comment" class="block text-sm font-medium text-gray-700 mb-2">Comment <span
-                        class="text-gray-400 font-normal">(optional)</span></label>
-                <textarea id="feedback-comment" name="comment" rows="4"
-                    placeholder="How did it turn out? Any tweaks you'd recommend?"
-                    class="block w-full rounded-xl border-0 py-3 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm resize-none"></textarea>
-            </div>
-
-            {# Photo Upload #}
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Photos <span
-                        class="text-gray-400 font-normal">(up to 5)</span></label>
-                <label for="feedback-photos"
-                    class="group flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer bg-gray-50 hover:bg-indigo-50 hover:border-indigo-400 transition-colors">
-                    <svg class="w-8 h-8 text-gray-400 group-hover:text-indigo-500 mb-2 transition-colors" fill="none"
-                        viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                            d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-                    </svg>
-                    <span class="text-sm text-gray-500 group-hover:text-indigo-600">Click to upload or drag &
-                        drop</span>
-                    <span class="text-xs text-gray-400 mt-0.5">JPG, PNG, WEBP, HEIC up to 20MB</span>
-                </label>
-                <input id="feedback-photos" name="photos" type="file" accept="image/*,.heic,.heif" multiple
-                    class="sr-only" onchange="previewPhotos(this)">
-                <div id="photo-preview" class="mt-3 flex flex-wrap gap-2"></div>
-            </div>
-
-            {# Previously Saved Photos #}
-            <div id="saved-photos-section" class="hidden">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Previously Uploaded</label>
-                <div id="saved-photos-grid" class="flex flex-wrap gap-2"></div>
-                <p class="mt-1 text-xs text-gray-400">New uploads will be added to these.</p>
-            </div>
-
-            {# Status message #}
-            <div id="feedback-status" class="hidden rounded-lg px-4 py-3 text-sm"></div>
-        </form>
-
-        {# Footer #}
-        <div class="px-6 py-4 border-t border-gray-100 flex gap-3">
-            <button type="button" onclick="closeFeedbackDrawer()"
-                class="flex-1 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">
-                Cancel
-            </button>
-            <button type="submit" form="feedback-form"
-                class="flex-1 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition-colors disabled:opacity-60"
-                id="feedback-submit-btn">
-                Save Feedback
-            </button>
-        </div>
-    </aside>
-
-    <script>
-        // ── Feedback Drawer ──────────────────────────────────────────────────────
-
-        async function openFeedbackDrawer(recipeId, recipeTitle) {
-            // Set identity
-            document.getElementById('feedback-recipe-id').value = recipeId;
-            document.getElementById('feedback-recipe-title').textContent = recipeTitle;
-
-            // Reset form to clean state first
-            resetFeedbackDrawer();
-
-            // Open immediately so user sees it loading
-            document.getElementById('feedback-drawer').classList.remove('translate-x-full');
-            document.getElementById('feedback-drawer-backdrop').classList.remove('hidden');
-            document.body.classList.add('overflow-hidden');
-
-            // Fetch existing interaction data
-            try {
-                const resp = await fetch(`/api/interactions/recipe/${recipeId}`);
-                const data = await resp.json();
-
-                // Pre-populate star rating
-                if (data.rating) {
-                    setRating(data.rating);
-                }
-
-                // Pre-populate comment
-                if (data.comment) {
-                    document.getElementById('feedback-comment').value = data.comment;
-                }
-
-                // Show previously saved photos
-                const photos = data.user_photos || [];
-                keptPhotoUrls = [...photos]; // Track which URLs to keep
-                renderSavedPhotos(keptPhotoUrls);
-            } catch (err) {
-                console.error('Could not load existing feedback', err);
-            }
-        }
-
-        function resetFeedbackDrawer() {
-            setRating(0);
-            document.getElementById('feedback-comment').value = '';
-            document.getElementById('photo-preview').innerHTML = '';
-            document.getElementById('feedback-photos').value = '';
-            document.getElementById('feedback-status').classList.add('hidden');
-            document.getElementById('saved-photos-section').classList.add('hidden');
-            document.getElementById('saved-photos-grid').innerHTML = '';
-            keptPhotoUrls = [];
-            const submitBtn = document.getElementById('feedback-submit-btn');
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Save Feedback';
-        }
-
-        // Track which existing photos survive (not deleted by user)
-        let keptPhotoUrls = [];
-
-        function renderSavedPhotos(urls) {
-            const savedSection = document.getElementById('saved-photos-section');
-            const savedGrid = document.getElementById('saved-photos-grid');
-            savedGrid.innerHTML = '';
-
-            if (urls.length > 0) {
-                savedSection.classList.remove('hidden');
-                urls.forEach((url, idx) => {
-                    const wrapper = document.createElement('div');
-                    wrapper.className = 'relative group';
-
-                    // Thumbnail
-                    const img = document.createElement('img');
-                    img.src = url;
-                    img.className = 'h-20 w-20 object-cover rounded-lg border border-gray-200 shadow-sm cursor-pointer';
-                    img.title = 'Click to view full size';
-                    img.onclick = () => window.open(url, '_blank');
-
-                    // Delete button (visible on hover)
-                    const del = document.createElement('button');
-                    del.type = 'button';
-                    del.className = [
-                        'absolute -top-2 -right-2 z-10',
-                        'w-6 h-6 rounded-full',
-                        'bg-red-500 hover:bg-red-600 text-white',
-                        'flex items-center justify-center',
-                        'opacity-0 group-hover:opacity-100 transition-opacity duration-150',
-                        'shadow-md'
-                    ].join(' ');
-                    del.title = 'Remove photo';
-                    del.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>';
-                    del.onclick = () => {
-                        keptPhotoUrls.splice(idx, 1);
-                        renderSavedPhotos(keptPhotoUrls); // Re-render with updated list
-                    };
-
-                    wrapper.appendChild(img);
-                    wrapper.appendChild(del);
-                    savedGrid.appendChild(wrapper);
-                });
-            } else {
-                savedSection.classList.add('hidden');
-            }
-        }
-
-        function closeFeedbackDrawer() {
-            document.getElementById('feedback-drawer').classList.add('translate-x-full');
-            document.getElementById('feedback-drawer-backdrop').classList.add('hidden');
-            document.body.classList.remove('overflow-hidden');
-        }
-
-        // ── Star Rating ──────────────────────────────────────────────────────────
-
-        let currentRating = 0;
-
-        function setRating(val) {
-            currentRating = val;
-            document.getElementById('feedback-rating').value = val || '';
-            document.querySelectorAll('.star-btn').forEach((btn, idx) => {
-                btn.classList.toggle('text-yellow-400', idx < val);
-                btn.classList.toggle('text-gray-300', idx >= val);
-            });
-        }
-
-        // Hover preview
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.star-btn').forEach((btn, idx) => {
-                btn.addEventListener('mouseenter', () => {
-                    document.querySelectorAll('.star-btn').forEach((b, i) => {
-                        b.classList.toggle('text-yellow-400', i <= idx);
-                        b.classList.toggle('text-gray-300', i > idx);
-                    });
-                });
-                btn.addEventListener('mouseleave', () => setRating(currentRating));
-            });
-        });
-
-        // ── Photo Preview (new uploads) ──────────────────────────────────────────
-
-        function previewPhotos(input) {
-            const preview = document.getElementById('photo-preview');
-            preview.innerHTML = '';
-            const files = Array.from(input.files).slice(0, 5);
-            files.forEach(file => {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.className = 'h-20 w-20 object-cover rounded-lg border border-indigo-200 shadow-sm ring-2 ring-indigo-300';
-                    img.title = file.name;
-                    preview.appendChild(img);
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-
-        // ── Submit Feedback ──────────────────────────────────────────────────────
-
-        async function submitFeedback(e) {
-            e.preventDefault();
-            const recipeId = document.getElementById('feedback-recipe-id').value;
-            const form = document.getElementById('feedback-form');
-            const statusEl = document.getElementById('feedback-status');
-            const submitBtn = document.getElementById('feedback-submit-btn');
-
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Saving…';
-
-            const formData = new FormData(form);
-            // Tell backend which previously saved photo URLs to keep (i.e., not deleted)
-            formData.set('keep_photos', JSON.stringify(keptPhotoUrls));
-
-            try {
-                const resp = await fetch(`/api/interactions/recipe/${recipeId}/feedback`, {
-                    method: 'POST',
-                    body: formData,
-                });
-                const data = await resp.json();
-                if (data.success) {
-                    statusEl.textContent = '✓ Feedback saved!';
-                    statusEl.className = 'rounded-lg px-4 py-3 text-sm bg-green-50 text-green-700 border border-green-200';
-                    statusEl.classList.remove('hidden');
-                    setTimeout(closeFeedbackDrawer, 1500);
-                } else {
-                    throw new Error('Server returned an error');
-                }
-            } catch (err) {
-                statusEl.textContent = 'Something went wrong. Please try again.';
-                statusEl.className = 'rounded-lg px-4 py-3 text-sm bg-red-50 text-red-700 border border-red-200';
-                statusEl.classList.remove('hidden');
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Save Feedback';
-            }
-        }
-
-        // ── Toggle Made ──────────────────────────────────────────────────────────
-
-        async function toggleMade(recipeId, btn) {
-            try {
-                const resp = await fetch(`/api/interactions/recipe/${recipeId}/made`, { method: 'PATCH' });
-                const data = await resp.json();
-                if (data.success) {
-                    const isMade = data.is_made;
-                    btn.dataset.isMade = isMade ? 'true' : 'false';
-                    if (isMade) {
-                        btn.classList.add('bg-green-50', 'text-green-700', 'border-green-300');
-                        btn.classList.remove('bg-gray-50', 'text-gray-500', 'border-gray-200');
-                    } else {
-                        btn.classList.remove('bg-green-50', 'text-green-700', 'border-green-300');
-                        btn.classList.add('bg-gray-50', 'text-gray-500', 'border-gray-200');
-                    }
-                }
-            } catch (err) {
-                console.error('Failed to toggle made status', err);
-            }
-        }
-    </script>
-    {% endif %}
-
-    {# ---------- Bulk Actions Toolbar (Admin Only) ---------- #}
-    {% if current_user.is_authenticated and current_user.is_admin %}
-    <div id="bulk-action-bar"
-        class="fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] py-4 transform translate-y-full transition-transform duration-300 z-50 flex items-center justify-between pointer-events-none data-[visible=true]:translate-y-0 data-[visible=true]:pointer-events-auto">
-        <div class="max-w-7xl mx-auto w-full flex items-center justify-between px-6 lg:px-8">
-            <div class="flex items-center gap-4">
-                <span class="text-sm font-semibold text-gray-700" id="selection-count">0 Selected</span>
-                <button onclick="clearSelection()"
-                    class="text-sm text-gray-500 hover:text-gray-900 underline">Cancel</button>
-            </div>
-            <button type="button" onclick="bulkDeleteRecipes()"
-                class="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 transition-colors">
-                Delete Selected
-            </button>
-        </div>
+            {% endfor %}
+        </nav>
     </div>
 
-    <script>
-        const selectedRecipeIds = new Set();
-        const bulkActionBar = document.getElementById('bulk-action-bar');
-        const selectionCount = document.getElementById('selection-count');
+    {# Search, order and the chips. A change shows the recipes at once (static/js/library.js); the button is for
+       when scripts do not run. On a phone the chips are behind Filters, open when one is in use. #}
+    <form class="lib-form" method="GET" action="{{ url_for('recipes_list') }}" data-lib-form>
+        {% if current_view != 'discover' %}<input type="hidden" name="view" value="{{ current_view }}">{% endif %}
+        <div class="lib-search">
+            <label class="lib-q">{{ icon('search') }}<input type="search" name="q" value="{{ q }}"
+                placeholder="Search dishes or ingredients" aria-label="Search dishes or ingredients"></label>
+            {% if current_view == 'discover' %}
+            <select name="sort" aria-label="Order">
+                {% for key, label in sort_labels.items() %}<option value="{{ key }}"{% if key == sort %} selected{% endif %}>{{ label }}</option>{% endfor %}
+            </select>
+            {% endif %}
+        </div>
 
-        function toggleRecipeSelection(checkbox, id) {
-            if (checkbox.checked) selectedRecipeIds.add(id);
-            else selectedRecipeIds.delete(id);
-            updateBulkUI();
-        }
+        <details class="lib-filters" data-filters{% if in_use %} open{% endif %}>
+            <summary class="lib-filters-sum">{{ icon('list') }} Filters{% if in_use %} · {{ in_use }} in use{% endif %}</summary>
+            <script>if (matchMedia('(min-width: 768px)').matches) document.currentScript.parentElement.open = true;</script>
+            <div class="lib-filter-body">
+                {% for g in groups if not g.more %}{{ chip_group(g) }}{% endfor %}
+                <details class="lib-more-filters"{% if more_open %} open{% endif %}>
+                    <summary>{{ icon('chevron-down') }}More filters</summary>
+                    {% for g in groups if g.more %}{{ chip_group(g) }}{% endfor %}
+                </details>
+                <div class="lib-filter-acts">
+                    {% if in_use %}<a href="{{ url_for('recipes_list', view=current_view if current_view != 'discover' else none) }}">Clear all</a>{% endif %}
+                    <button type="submit" class="lib-apply">Show recipes</button>
+                </div>
+            </div>
+        </details>
+    </form>
 
-        function updateBulkUI() {
-            if (selectedRecipeIds.size > 0) {
-                bulkActionBar.setAttribute('data-visible', 'true');
-                selectionCount.textContent = `${selectedRecipeIds.size} Selected`;
-            } else {
-                bulkActionBar.setAttribute('data-visible', 'false');
-            }
-        }
-
-        function clearSelection() {
-            selectedRecipeIds.clear();
-            document.querySelectorAll('.recipe-select-cb').forEach(cb => cb.checked = false);
-            updateBulkUI();
-        }
-
-        async function bulkDeleteRecipes() {
-            if (!confirm(`Are you sure you want to delete ${selectedRecipeIds.size} recipes? This cannot be undone.`)) return;
-            try {
-                const response = await fetch('/api/delete-recipes/bulk', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ recipe_ids: Array.from(selectedRecipeIds).map(Number) })
-                });
-                const data = await response.json();
-                if (data.success) window.location.reload();
-                else alert('Error: ' + data.error);
-            } catch (e) {
-                alert('Request failed');
-                console.error(e);
-            }
-        }
-    </script>
+    {% if not recipes %}
+    {# Nothing here: an icon, a line, what to do and the way on #}
+    {% set empties = {'saved': ('heart', 'No saved recipes yet', 'Tap the heart on a recipe to keep it here.', 'Find recipes'),
+                      'made': ('check', 'Nothing cooked yet', 'Mark a recipe as made after you cook it, and it shows up here.', 'Find recipes'),
+                      'next': ('pot', 'Nothing to cook next', 'Tap the pot on a recipe to put it in your queue.', 'Find recipes')} %}
+    {% set ic, line, hint, go = empties.get(current_view, ('search', 'No recipes yet', 'New dishes are on their way.', 'Discover')) %}
+    {% if in_use %}{% set ic, line, hint, go = ('search', 'No recipes match', 'Try fewer filters, or clear them.', 'Clear filters') %}{% endif %}
+    <div class="lib-empty">
+        <span class="lib-empty-ic">{{ icon(ic) }}</span>
+        <h3>{{ line }}</h3>
+        <p>{{ hint }}</p>
+        <a class="lib-go" href="{{ url_for('recipes_list', view=current_view) if in_use else url_for('recipes_list') }}">{{ go }}</a>
+    </div>
+    {% else %}
+    <p class="lib-count">{{ total }} {{ 'dish' if total == 1 else 'dishes' }}</p>
+    <div class="lib-grid">
+        {% for recipe in recipes %}
+        <div class="lib-item">
+            {{ card.recipe_preview_card(recipe, recipe.id, show_inspector=admin) }}
+            {% if current_user.is_authenticated %}
+            {% set made = recipe.interaction and recipe.interaction.is_made %}
+            <div class="lib-acts">
+                <button type="button" class="lib-act" data-made="{{ recipe.id }}" aria-pressed="{{ 'true' if made else 'false' }}">{{ icon('check') }}Made it</button>
+                <button type="button" class="lib-act" data-feedback="{{ recipe.id }}" data-title="{{ recipe.title }}">{{ icon('message') }}Feedback</button>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% if more_url %}<p class="lib-more"><a class="lib-go" href="{{ more_url }}">Show more</a></p>{% endif %}
     {% endif %}
+</div>
 
+{% if admin %}{{ inspector.recipe_inspector_modal() }}{% endif %}
 
+{% if current_user.is_authenticated %}
+{# Feedback on a recipe: stars, a comment and photos (/api/interactions/recipe/<id>/feedback); a drawer from the
+   right, the whole screen on a phone #}
+<dialog class="fb" id="feedback" aria-labelledby="fb-h">
+    <form class="fb-form" data-fb-form>
+        <div class="fb-head">
+            <div><h2 id="fb-h">How did it go?</h2><p class="fb-recipe" data-fb-title></p></div>
+            <button type="button" class="fb-x" data-fb-close aria-label="Close">{{ icon('close') }}</button>
+        </div>
+        <div class="fb-body">
+            <fieldset class="fb-stars">
+                <legend>Your rating</legend>
+                {% for i in range(1, 6) %}
+                <label><input type="radio" name="rating" value="{{ i }}"><span class="sr-only">{{ i }} of 5</span>{{ icon('star') }}</label>
+                {% endfor %}
+            </fieldset>
+            <label class="fb-field"><span>Comment <i>(optional)</i></span>
+                <textarea name="comment" rows="4" placeholder="How did it turn out? Anything you would change?"></textarea></label>
+            <div class="fb-field">
+                <span>Photos <i>(up to 5)</i></span>
+                <label class="fb-drop">{{ icon('image') }}<b>Add photos</b><small>JPG, PNG, WEBP or HEIC, up to 20 MB</small>
+                    <input type="file" name="photos" accept="image/*,.heic,.heif" multiple class="sr-only" data-fb-photos></label>
+                <div class="fb-thumbs" data-fb-new></div>
+                <div class="fb-thumbs" data-fb-kept></div>
+            </div>
+            <p class="fb-status" data-fb-status role="status" hidden></p>
+        </div>
+        <div class="fb-foot">
+            <button type="button" class="fb-cancel" data-fb-close>Cancel</button>
+            <button type="submit" class="fb-save">Save</button>
+        </div>
+    </form>
+</dialog>
+{% endif %}
+<script src="{{ url_for('static', filename='js/library.js') }}" defer></script>
 {% endblock %}

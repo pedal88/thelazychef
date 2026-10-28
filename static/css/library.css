@@ -36,8 +36,6 @@
 .rcard-acts .favorite-btn:hover, .rcard-acts .favorite-btn.text-red-500 { color: var(--color-danger); }
 .rcard-acts .queue-btn.text-orange-500 { color: var(--color-accent); }  /* in the queue (addToQueue in base.html) */
 .rcard-acts .icon { width: 18px; height: 18px; }
-.rcard-pick { position: absolute; bottom: var(--space-2); left: var(--space-2); z-index: 2; }
-.rcard-pick input { width: 20px; height: 20px; cursor: pointer; accent-color: var(--color-accent); }
 .rcard-star { position: absolute; top: var(--space-2); left: var(--space-2); z-index: 2; padding: 3px 10px; border-radius: var(--radius-pill);
   background: var(--color-serve); color: var(--color-paper); font: 600 11px/1.6 var(--font-sans); }
 .rcard-body { display: flex; flex-direction: column; gap: var(--space-2); flex: 1; padding: var(--space-4) var(--space-4) var(--space-4); }
@@ -106,15 +104,112 @@
 .disc-save:hover { border-color: var(--color-accent); filter: brightness(.95); }
 @media (prefers-reduced-motion: reduce) { .dcard { transition: opacity .2s; } }
 
-/* The recipe list's search, time and order, its count and Show more (templates/recipes_list.html) */
-.lib-search { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-bottom: var(--space-4); }
-.lib-search select, .lib-q { min-height: 40px; border: 1px solid var(--color-line); border-radius: var(--radius-pill);
-  background: var(--color-paper); color: var(--color-ink); font-size: 14px; }
-.lib-search select { padding: 0 var(--space-4); }
+/* The recipe list (templates/recipes_list.html): search and order, the filter chips, the cards with Made and
+   Feedback under them, Show more, and the feedback drawer */
+.lib-wrap { max-width: 1180px; margin: 0 auto; padding: 0 var(--space-6) 64px; }
+@media (max-width: 480px) {
+  .lib-wrap { padding: 0 var(--space-4) 48px; }
+  .lib-wrap .lib-tabs { flex-wrap: nowrap; }  /* the four lists on one line */
+  .lib-wrap .lib-tabs a { padding: 0 10px; gap: 4px; }
+}
+.lib-form { margin-top: var(--space-4); }
+.lib-search { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.lib-search select, .lib-q { min-height: var(--tap); border: 1px solid var(--color-line); border-radius: var(--radius-pill);
+  background: var(--color-paper); color: var(--color-ink); font-size: 15px; }
+.lib-search select { padding: 0 var(--space-4); cursor: pointer; }
 .lib-q { display: flex; flex: 1 1 260px; align-items: center; gap: var(--space-2); padding: 0 var(--space-4); }
 .lib-q .icon { width: 16px; height: 16px; color: var(--color-muted); }
 .lib-q input { flex: 1; min-width: 0; border: 0; background: none; color: inherit; font: inherit; outline: none; }
 .lib-q:focus-within, .lib-search select:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }
-.lib-count { margin: var(--space-4) 0 0; font: 500 12px/1.3 var(--font-mono); letter-spacing: .06em; text-transform: uppercase;
+
+.lib-filter-body { display: grid; gap: var(--space-4); margin-top: var(--space-4); padding: var(--space-4) 0;
+  border-top: 1px solid var(--color-line); border-bottom: 1px solid var(--color-line); }
+.lib-chips { display: grid; grid-template-columns: 104px 1fr; align-items: start; gap: var(--space-3); margin: 0; padding: 0; border: 0; min-width: 0; }
+.lib-chips legend { float: left; padding: 9px 0 0; font: 500 11px/1.3 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--color-muted); }
+@media (max-width: 640px) { .lib-chips { grid-template-columns: 1fr; gap: var(--space-2); } .lib-chips legend { padding: 0; } }
+.lib-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.lib-chip { position: relative; display: inline-flex; }
+.lib-chip input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.lib-chip span { display: inline-flex; align-items: center; min-height: 36px; padding: 0 14px; border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill); background: var(--color-paper); color: var(--color-ink); font-size: 14px; cursor: pointer; user-select: none; }
+.lib-chip span:hover { border-color: var(--color-line-strong); }
+.lib-chip input:checked + span { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-paper); }
+.lib-chip input:focus-visible + span { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.lib-more-filters { display: grid; gap: var(--space-4); }
+.lib-more-filters > summary { display: inline-flex; align-items: center; gap: 6px; width: max-content; min-height: 36px; color: var(--color-ink);
+  font: 600 14px/1 var(--font-sans); cursor: pointer; list-style: none; }
+.lib-more-filters > summary::-webkit-details-marker { display: none; }
+.lib-more-filters > summary .icon { width: 16px; height: 16px; transition: transform .2s; }
+.lib-more-filters[open] > summary .icon { transform: rotate(180deg); }
+.lib-more-filters[open] { gap: var(--space-4); }
+.lib-filter-acts { display: flex; justify-content: flex-end; align-items: center; gap: var(--space-4); }
+.lib-filter-acts a { color: var(--color-muted); font-size: 14px; }
+.lib-filter-acts a:hover { color: var(--color-ink); }
+.lib-apply { min-height: 40px; padding: 0 var(--space-6); border: 0; border-radius: var(--radius-pill); background: var(--color-ink);
+  color: var(--color-paper); font: 600 14px/1 var(--font-sans); cursor: pointer; }
+.lib-form.is-live .lib-apply { display: none; }  /* a change shows the recipes at once (static/js/library.js) */
+.lib-form.is-live .lib-filter-acts:not(:has(a)) { display: none; }
+
+.lib-count { margin: var(--space-6) 0 var(--space-4); font: 500 12px/1.3 var(--font-mono); letter-spacing: .06em; text-transform: uppercase;
   color: var(--color-muted); }
+.lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-8) var(--space-6); }
+.lib-item { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.lib-item .rcard { flex: 1; }
+.lib-acts { display: flex; gap: var(--space-2); }
+.lib-act { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill); background: var(--color-paper); color: var(--color-muted); font: 500 13px/1 var(--font-sans); cursor: pointer; }
+.lib-act .icon { width: 15px; height: 15px; }
+.lib-act:hover { color: var(--color-ink); border-color: var(--color-line-strong); }
+.lib-act[aria-pressed="true"] { background: var(--color-serve-soft); border-color: var(--color-serve); color: var(--color-serve-ink); }
+.lib-act:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 .lib-more { display: flex; justify-content: center; margin: var(--space-8) 0 0; }
+
+/* The feedback drawer: from the right on a wide screen, the whole screen on a phone */
+.fb { width: min(440px, 100vw); max-width: 100vw; height: 100dvh; max-height: 100dvh; margin: 0 0 0 auto; padding: 0; border: 0;
+  border-left: 1px solid var(--color-line); background: var(--color-paper); color: var(--color-ink); }
+.fb::backdrop { background: rgb(0 0 0 / .35); }
+.fb-form { display: flex; flex-direction: column; height: 100%; }
+.fb-head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-4); padding: var(--space-6);
+  border-bottom: 1px solid var(--color-line); }
+.fb-head h2 { margin: 0; font: 600 24px/1.2 var(--font-serif); }
+.fb-recipe { margin: 4px 0 0; color: var(--color-muted); font-size: 14px; }
+.fb-x { display: grid; place-items: center; width: var(--tap); height: var(--tap); margin: -10px -10px 0 0; border: 0; border-radius: 50%;
+  background: none; color: var(--color-muted); cursor: pointer; }
+.fb-x:hover { color: var(--color-ink); background: var(--color-soft); }
+.fb-body { flex: 1; overflow-y: auto; display: grid; align-content: start; gap: var(--space-6); padding: var(--space-6); }
+.fb-stars { display: flex; gap: 4px; margin: 0; padding: 0; border: 0; }
+.fb-stars legend, .fb-field > span { display: block; margin-bottom: var(--space-2); font: 500 11px/1.3 var(--font-mono);
+  letter-spacing: .06em; text-transform: uppercase; color: var(--color-muted); }
+.fb-field > span i { font-style: normal; text-transform: none; letter-spacing: 0; }
+.fb-stars label { position: relative; display: grid; place-items: center; width: var(--tap); height: var(--tap); cursor: pointer;
+  color: var(--color-line-strong); }
+.fb-stars input { position: absolute; opacity: 0; }
+.fb-stars .icon { width: 30px; height: 30px; }
+.fb-stars label.on { color: var(--color-accent); }
+.fb-stars label.on .icon { fill: currentColor; }
+.fb-stars input:focus-visible ~ .icon { outline: 2px solid var(--color-accent); outline-offset: 2px; border-radius: 4px; }
+.fb-field { display: block; }
+.fb-field textarea { width: 100%; padding: var(--space-3) var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-sm);
+  background: var(--color-paper); color: inherit; font: inherit; resize: vertical; }
+.fb-field textarea:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+.fb-drop { display: grid; justify-items: center; gap: 4px; padding: var(--space-6); border: 1px dashed var(--color-line-strong);
+  border-radius: var(--radius); background: var(--color-soft); color: var(--color-muted); text-align: center; cursor: pointer; }
+.fb-drop:hover, .fb-drop:focus-within { border-color: var(--color-accent); color: var(--color-ink); }
+.fb-drop .icon { width: 26px; height: 26px; }
+.fb-drop b { color: var(--color-ink); font-weight: 600; }
+.fb-drop small { font-size: 12px; }
+.fb-thumbs { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
+.fb-thumbs:empty { display: none; }
+.fb-thumb { position: relative; }
+.fb-thumb img { display: block; width: 76px; height: 76px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--color-line); }
+.fb-thumb button { position: absolute; top: -8px; right: -8px; display: grid; place-items: center; width: 26px; height: 26px; border: 1px solid var(--color-line);
+  border-radius: 50%; background: var(--color-paper); color: var(--color-ink); cursor: pointer; }
+.fb-thumb button .icon { width: 14px; height: 14px; }
+.fb-status { margin: 0; padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); font-size: 14px;
+  background: var(--color-serve-soft); color: var(--color-serve-ink); }
+.fb-status.is-error { background: var(--color-cook-soft); color: var(--color-danger); }
+.fb-foot { display: flex; gap: var(--space-3); padding: var(--space-4) var(--space-6); border-top: 1px solid var(--color-line); }
+.fb-foot button { flex: 1; min-height: var(--tap); border-radius: var(--radius-pill); font: 600 15px/1 var(--font-sans); cursor: pointer; }
+.fb-cancel { border: 1px solid var(--color-line); background: var(--color-paper); color: var(--color-ink); }
+.fb-save { border: 0; background: var(--color-accent); color: var(--color-paper); }
+.fb-save:disabled { opacity: .6; cursor: default; }

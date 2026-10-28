@@ -1,12 +1,11 @@
 """Recipes Blueprint: landing page, recipe library, the recipe page, recipe JSON APIs."""
-from flask import abort, flash, jsonify, redirect, render_template, request, session, url_for
+from flask import abort, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from database.models import Ingredient, Recipe, db
 from routes._flat import FlatBlueprint
-from routes._shared import DIFFICULTY_LABELS, get_recipe_image_url, load_json_option, viewer_is_admin
+from routes._shared import DIFFICULTY_LABELS, get_recipe_image_url, viewer_is_admin
 from services.chef_service import get_chefs
-from services.recipe_library import PAGE, SORT_LABELS, TIME_LABELS, Filters, recipe_page
-from services.recipe_v2.derive import HEAT_LABELS
+from services.recipe_library import PAGE, SORT_LABELS, from_args, recipe_page
 
 recipes_bp = FlatBlueprint("recipes", __name__)
 
@@ -19,95 +18,21 @@ def discover():
 
 @recipes_bp.route('/recipes')
 def recipes_list():
-    # 1. Load Filter Data Options
-    # Use global load_json_option helper
-
-    cuisine_options = load_json_option('post_processing/cuisines.json', 'cuisines')
-    diet_options = load_json_option('constraints/diets.json', 'diets')
-    difficulty_options = load_json_option('constraints/difficulty.json', 'difficulty')
-    
-    # Protein Types (List of Dicts -> List of Strings)
-    pt_data = load_json_option('constraints/main_protein.json', 'protein_types')
-    protein_options = []
-    for p in pt_data:
-        if 'examples' in p:
-            protein_options.extend(p['examples'])
-    protein_options = sorted(list(set(protein_options)))
-    
-    # Meal types: one list, in the order of the file
-    meal_type_options = list(dict.fromkeys(load_json_option('constraints/meal_types.json', 'meal_types')))
-
-    # 2. Handle Query Params (multi-select)
-    # Default to ALL options if not specified (First load behavior)
-    selected_cuisines = request.args.getlist('cuisine')
-    if not selected_cuisines and 'cuisine' not in request.args:
-        selected_cuisines = cuisine_options
-        
-    selected_diets = request.args.getlist('diet')
-    if not selected_diets and 'diet' not in request.args:
-        selected_diets = diet_options
-
-    selected_meal_types = request.args.getlist('meal_type')
-    if not selected_meal_types and 'meal_type' not in request.args:
-        selected_meal_types = meal_type_options
-    
-    selected_difficulties = request.args.getlist('difficulty')
-    selected_proteins = request.args.getlist('protein_type')
-    # What the dish is finished in (v2, services/recipe_v2/derive.py). Only filters when chosen.
-    heat_source_options = list(HEAT_LABELS)
-    selected_heat_sources = request.args.getlist('heat_source')
-
-    # 3. Which list, and grid or table (kept in the session)
+    """All recipes, or the person's Saved, Made and Cook next: chips to filter, search, an order and a page at a time
+    (services/recipe_library.py)."""
     view_mode = request.args.get('view', 'discover')
     if view_mode not in ('saved', 'made', 'next') or not current_user.is_authenticated:
         view_mode = 'discover'
-    if 'style' in request.args:
-        session['view_style'] = request.args.get('style')
-    view_style = session.get('view_style', 'grid')
-
-    # 4. The recipes (services/recipe_library.py). The form sends every option of a list when none is unticked:
-    # that does not filter, so recipes without a tag still show.
-    def chosen(selected, options):
-        return [] if set(options) <= set(selected) else selected
-
+    filters, groups = from_args(request.args, DIFFICULTY_LABELS)
     sort = request.args.get('sort', 'new')
-    time_choice = request.args.get('time', '')
-    q = request.args.get('q', '').strip()
     shown = max(request.args.get('shown', PAGE, type=int) or PAGE, PAGE)
-    filters = Filters(cuisines=chosen(selected_cuisines, cuisine_options), diets=chosen(selected_diets, diet_options),
-                      meal_types=chosen(selected_meal_types, meal_type_options), difficulties=selected_difficulties,
-                      proteins=selected_proteins, heat_sources=chosen(selected_heat_sources, heat_source_options),
-                      time=time_choice, q=q)
     page = recipe_page(view_mode, filters, sort=sort, shown=shown,
                        user=current_user if current_user.is_authenticated else None)
     more_url = url_for('recipes_list', **{**request.args.to_dict(flat=False), 'shown': shown + PAGE}) if page.more else None
-
-    return render_template('recipes_list.html',
-                         recipes=page.recipes,
-                         total=page.total,
-                         more_url=more_url,
-                         q=q,
-                         time_choice=time_choice,
-                         time_labels=TIME_LABELS,
-                         sort=sort,
-                         sort_labels=SORT_LABELS,
-                         current_view=view_mode,
-                         view_style=view_style,
-                         cuisine_options=sorted(cuisine_options),
-                         diet_options=sorted(diet_options),
-                         difficulty_options=difficulty_options,
-                         protein_options=sorted(protein_options),
-                         meal_type_options=meal_type_options,
-                         # Selected State
-                         selected_cuisines=selected_cuisines,
-                         selected_diets=selected_diets,
-                         selected_meal_types=selected_meal_types,
-                         selected_difficulties=selected_difficulties,
-                         selected_proteins=selected_proteins,
-                         difficulty_labels=DIFFICULTY_LABELS,
-                         heat_source_options=heat_source_options,
-                         heat_source_labels=HEAT_LABELS,
-                         selected_heat_sources=selected_heat_sources)
+    in_use = sum(1 for g in groups for _, _, on in g['options'] if on) + bool(filters.q)
+    return render_template('recipes_list.html', recipes=page.recipes, total=page.total, more_url=more_url,
+                           current_view=view_mode, groups=groups, q=filters.q, sort=sort, sort_labels=SORT_LABELS,
+                           in_use=in_use, more_open=any(on for g in groups if g['more'] for _, _, on in g['options']))
 
 
 def _v2_lines_and_steps(recipe):
