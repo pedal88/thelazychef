@@ -142,8 +142,32 @@ def toggle_made(recipe_id):
         db.session.add(interaction)
 
     interaction.is_made = not interaction.is_made
+    if interaction.is_made and not interaction.made_count:
+        interaction.made_count, interaction.last_made_at = 1, datetime.datetime.utcnow()
     db.session.commit()
     return jsonify({'success': True, 'is_made': interaction.is_made})
+
+
+# Saving again soon after (the steps unticked and ticked off again, Save pressed twice) is the same meal
+SAME_MEAL = datetime.timedelta(hours=3)
+
+
+@interactions_bp.route('/api/interactions/recipe/<int:recipe_id>/cooked', methods=['POST'])
+@login_required
+def mark_cooked(recipe_id):
+    """I made this, from the celebration after the last step: marks the recipe as made and counts the time."""
+    db.get_or_404(Recipe, recipe_id)
+    interaction = db.session.get(UserRecipeInteraction, (current_user.id, recipe_id))
+    if not interaction:
+        interaction = UserRecipeInteraction(user_id=current_user.id, recipe_id=recipe_id, status='pass',
+                                            is_super_like=False, made_count=0)
+        db.session.add(interaction)
+    now = datetime.datetime.utcnow()
+    if not interaction.last_made_at or now - interaction.last_made_at > SAME_MEAL or not interaction.made_count:
+        interaction.made_count = (interaction.made_count or 0) + 1
+    interaction.is_made, interaction.last_made_at = True, now
+    db.session.commit()
+    return jsonify({'success': True, 'made_count': interaction.made_count})
 
 
 @interactions_bp.route('/api/interactions/recipe/<int:recipe_id>/feedback', methods=['POST'])
@@ -255,6 +279,8 @@ def get_interaction(recipe_id):
             'comment': None,
             'user_photos': [],
             'is_made': False,
+            'made_count': 0,
+            'last_made_at': None,
         })
     return jsonify({
         'exists': True,
@@ -262,6 +288,8 @@ def get_interaction(recipe_id):
         'comment': interaction.comment or '',
         'user_photos': interaction.user_photos or [],
         'is_made': interaction.is_made,
+        'made_count': interaction.made_count or 0,
+        'last_made_at': interaction.last_made_at.isoformat() if interaction.last_made_at else None,
         'is_super_like': interaction.is_super_like,
     })
 
