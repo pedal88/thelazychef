@@ -33,7 +33,7 @@ One page, `recipe_v2_make.html`, from `services/recipe_v2/view.page`: the overvi
 
 ## Other pages
 
-`landing.html` (Discover), `recipes_list.html`, `collections_index.html` / `collection_detail.html`,
+`landing.html` (Discover), `recipes_list.html`,
 `explore_galaxy.html` / `explore_ingredient_galaxy.html`, `recipe_v2_new.html` / `recipe_v2_batch*.html` (admin:
 making recipes), `admin/` (management pages, still mostly plain Tailwind), `recipe_print.html`.
 

@@ -12,12 +12,6 @@ class Base(DeclarativeBase):
 
 db = SQLAlchemy(model_class=Base)
 
-# Association table for linking resources to each other
-resource_relations = db.Table('resource_relations',
-    db.Column('source_id', db.Integer, db.ForeignKey('resource.id', ondelete='CASCADE'), primary_key=True),
-    db.Column('related_id', db.Integer, db.ForeignKey('resource.id', ondelete='CASCADE'), primary_key=True)
-)
-
 # Association table for User Favorites - DEPRECATED (Replaced by UserRecipeInteraction)
 # user_favorite_recipes = db.Table('user_favorite_recipes',
 #     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
@@ -61,51 +55,6 @@ class VisualStyleGuide(db.Model):
     base_wrapper: Mapped[str] = mapped_column(Text, nullable=False)
     negative_prompt: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     remove_background: Mapped[bool] = mapped_column(Boolean, default=False, server_default='0')
-
-
-class Resource(db.Model):
-    __tablename__ = 'resource'
-    id = db.Column(db.Integer, primary_key=True)
-    slug = db.Column(db.String(100), unique=True, nullable=False, index=True)
-    title = db.Column(db.String(200), nullable=False)
-    summary = db.Column(db.String(500))
-    content_markdown = db.Column(db.Text)  # Stores the raw markdown
-    image_filename = db.Column(db.String(255))
-    
-    # 1. Tag Column (User Choice: 1)
-    tags = db.Column(db.String(255))
-    
-    # Status (Draft vs Published)
-    status = db.Column(db.String(20), default='draft', index=True)
-    
-    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
-
-    # 2. Smart Linking (User Choice: 2B)
-    related_resources = db.relationship(
-        'Resource',
-        secondary=resource_relations,
-        primaryjoin=(resource_relations.c.source_id == id),
-        secondaryjoin=(resource_relations.c.related_id == id),
-        backref=db.backref('related_to', lazy='dynamic'),
-        lazy='dynamic'
-    )
-
-    def get_tag_list(self):
-        """Helper to split tags string into a list"""
-        if self.tags:
-            return [t.strip() for t in self.tags.split(',') if t.strip()]
-        return []
-
-    @property
-    def meta(self):
-        return {'read_time': self.calculate_read_time()}
-
-    def calculate_read_time(self):
-        if not self.content_markdown:
-             return 1
-        word_count = len(self.content_markdown.split())
-        return max(1, round(word_count / 200))
 
 
 class Ingredient(db.Model):
@@ -183,13 +132,6 @@ class Ingredient(db.Model):
         "Recipe",
         foreign_keys=[sub_recipe_id],
         primaryjoin="Ingredient.sub_recipe_id == Recipe.id",
-    )
-
-    # Knowledge Factory: link to the auto-generated "Official Deep Dive" article
-    primary_resource_id: Mapped[Optional[int]] = mapped_column(ForeignKey("resource.id", ondelete='SET NULL'), nullable=True)
-    primary_resource: Mapped[Optional["Resource"]] = relationship(
-        "Resource",
-        foreign_keys=[primary_resource_id],
     )
 
     @validates('name')
@@ -351,13 +293,6 @@ class Recipe(db.Model):
     total_calcium_mg: Mapped[float] = mapped_column(Float, nullable=True)
     total_potassium_mg: Mapped[float] = mapped_column(Float, nullable=True)
     
-    # Knowledge Factory: link to the auto-generated "Official Deep Dive" article
-    primary_resource_id: Mapped[Optional[int]] = mapped_column(ForeignKey("resource.id", ondelete='SET NULL'), nullable=True)
-    primary_resource: Mapped[Optional["Resource"]] = relationship(
-        "Resource",
-        foreign_keys=[primary_resource_id],
-    )
-
     components: Mapped[list["RecipeComponent"]] = relationship(back_populates="recipe", cascade="all, delete-orphan", order_by="RecipeComponent.sort_order")
     steps: Mapped[list["RecipeStep"]] = relationship(back_populates="recipe", cascade="all, delete-orphan", order_by="RecipeStep.sort_order")
     lines: Mapped[list["RecipeLine"]] = relationship(back_populates="recipe", cascade="all, delete-orphan", order_by="RecipeLine.sort_order")
@@ -375,7 +310,6 @@ class Recipe(db.Model):
         return [rd.diet for rd in self.diets]
 
     interactions: Mapped[list["UserRecipeInteraction"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
-    collections: Mapped[list["CollectionItem"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
     queue_items: Mapped[list["UserQueue"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
     notes: Mapped[list["RecipeNote"]] = relationship(back_populates="recipe", cascade="all, delete-orphan", order_by="RecipeNote.id")
 
@@ -513,51 +447,6 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
-
-
-# ---------------------------------------------------------------------------
-# Curated Collections
-# ---------------------------------------------------------------------------
-
-class RecipeCollection(db.Model):
-    """An editorial grouping of recipes (e.g. 'Summer BBQ Favourites')."""
-    __tablename__ = 'recipe_collection'
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    title: Mapped[str] = mapped_column(String(150), nullable=False)
-    slug: Mapped[str] = mapped_column(String(150), unique=True, index=True, nullable=False)
-    description: Mapped[str] = mapped_column(Text, nullable=True)
-    image_filename: Mapped[str] = mapped_column(String(255), nullable=True)
-    is_published: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)
-
-    items: Mapped[list["CollectionItem"]] = relationship(
-        back_populates="collection",
-        cascade="all, delete-orphan",
-    )
-
-    @property
-    def approved_recipes(self) -> list["Recipe"]:
-        """Convenience accessor: only recipes with status='approved'."""
-        return [item.recipe for item in self.items if item.recipe.status == 'approved']
-
-
-class CollectionItem(db.Model):
-    """Association object linking a Recipe to a RecipeCollection."""
-    __tablename__ = 'collection_item'
-
-    collection_id: Mapped[int] = mapped_column(
-        ForeignKey('recipe_collection.id', ondelete='CASCADE'), primary_key=True
-    )
-    recipe_id: Mapped[int] = mapped_column(
-        ForeignKey('recipe.id', ondelete='CASCADE'), primary_key=True
-    )
-    added_at: Mapped[datetime.datetime] = mapped_column(
-        DateTime, default=datetime.datetime.utcnow, nullable=False
-    )
-
-    collection: Mapped["RecipeCollection"] = relationship(back_populates="items")
-    recipe: Mapped["Recipe"] = relationship(back_populates="collections")
 
 
 # ---------------------------------------------------------------------------

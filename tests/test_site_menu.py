@@ -14,17 +14,17 @@ class SiteMenuTests(unittest.TestCase):
 
     def test_visitors_see_the_public_menu_and_sign_up(self):
         html = self.client.get('/recipes').get_data(as_text=True)
-        for text in ('Discover recipes', 'All recipes', 'Collections', 'All ingredients', 'href="/learn"', 'Sign up', 'Log in'):
+        for text in ('Discover recipes', 'All recipes', 'All ingredients', 'Sign up', 'Log in'):
             self.assertIn(text, html)
-        for text in ('Saved', 'Cook next', 'New recipe', 'Many recipes at once', 'Become a Chef', 'Get Started'):
+        for text in ('Saved', 'Cook next', 'New recipe', 'Many recipes at once', 'Become a Chef', 'Get Started', 'Collections', 'Learn'):
             self.assertNotIn(text, html)
 
     def test_admins_see_everything_in_every_menu(self):
         self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
-        html = self.client.get('/collections').get_data(as_text=True)  # a page with no tabs of its own
+        html = self.client.get('/explore/galaxy').get_data(as_text=True)  # a page with no tabs of its own
         # The top bar and the phone menu, from the same list
         for text in ('Saved', 'Made', 'Cook next', 'Recipe Mirror', 'Many recipes at once', 'Images for recipes', 'Notes on recipes',
-                     'New article'):
+                     'Chefs'):
             self.assertEqual(html.count(f'{text}</a>'), 2, text)
         self.assertIn('Log out', html)
         # Discover has the same menu
@@ -41,9 +41,9 @@ class SiteMenuTests(unittest.TestCase):
         self.assertIn('Cook next</a>', html)
         self.assertNotIn('New recipe</a>', html)
 
-    def test_learn_has_both_addresses(self):
-        self.assertEqual(self.client.get('/learn').status_code, 200)
-        self.assertEqual(self.client.get('/become-a-chef').status_code, 200)
+    def test_learn_and_collections_are_gone(self):
+        for url in ('/learn', '/become-a-chef', '/collections', '/admin/collections/', '/admin/resources'):
+            self.assertEqual(self.client.get(url).status_code, 404, url)
 
 
 if __name__ == '__main__':

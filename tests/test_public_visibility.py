@@ -1,7 +1,6 @@
 """Anonymous visitors see only published content; admins see everything.
 
-Drafts, pending or inactive ingredients and unpublished articles must not
-leak through the public pages and JSON endpoints.
+Drafts and pending or inactive ingredients must not leak through the public pages and JSON endpoints.
 """
 import os
 import sys
@@ -19,7 +18,7 @@ os.environ.pop('K_SERVICE', None)
 import json  # noqa: E402
 
 from app import app  # noqa: E402
-from database.models import Ingredient, Recipe, Resource, User, db  # noqa: E402
+from database.models import Ingredient, Recipe, User, db  # noqa: E402
 from services.recipe_v2.store import save_v2  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -61,10 +60,6 @@ class PublicVisibilityTests(unittest.TestCase):
         self.pending = ingredient('onion pending', 'pending')
         self.inactive = ingredient('onion inactive', 'inactive')
 
-        db.session.add_all([
-            Resource(title='Published', slug='published', status='published', content_markdown='x'),
-            Resource(title='Draft article', slug='draft-article', status='draft', content_markdown='x'),
-        ])
         db.session.commit()
         self.client = app.test_client()
 
@@ -116,12 +111,6 @@ class PublicVisibilityTests(unittest.TestCase):
         self.assertEqual(self.client.get(f'/api/sub-recipe/{self.approved.id}').status_code, 200)
         self.assertEqual(self.client.get(f'/api/sub-recipe/{self.linked_draft.id}').status_code, 200)
         self.assertEqual(self.client.get(f'/api/sub-recipe/{self.draft.id}').status_code, 404)
-
-    def test_unpublished_article_hidden_from_anonymous(self):
-        self.assertEqual(self.client.get('/become-a-chef/published').status_code, 200)
-        self.assertEqual(self.client.get('/become-a-chef/draft-article').status_code, 302)
-        self._login_admin()
-        self.assertEqual(self.client.get('/become-a-chef/draft-article').status_code, 200)
 
     def test_ingredient_endpoints_show_only_active_to_anonymous(self):
         page = self.client.get('/ingredients').get_data(as_text=True)

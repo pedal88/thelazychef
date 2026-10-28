@@ -9,7 +9,7 @@ Live at <https://thelazychef.app>.
 
 **For cooks**
 - Discover dishes one at a time, browse and filter the recipe list (cuisine, diet, protein, meal type, time),
-  collections, and two galaxies that map the recipes and the pantry.
+  and two galaxies that map the recipes and the pantry.
 - One recipe page with the overview, the prep (what to set out, in bowls) and the cooking steps, with timers, a
   timeline and a drawing of the whole dish. Servings scale everything.
 - Favorites, "made it", a Cook next queue, and Recipe Mirror (the recipes two people both like).
@@ -21,7 +21,7 @@ Live at <https://thelazychef.app>.
 - In the background the app links every line to the pantry (adding what is missing), works out nutrition and
   derived facts (time, main protein, clean-up), and draws the dish and its parts. Each image is checked by a vision
   model.
-- Recipe and ingredient management, chef personas, notes on recipes, collections and articles.
+- Recipe and ingredient management, chef personas, notes on recipes.
 
 ## How it is built
 
