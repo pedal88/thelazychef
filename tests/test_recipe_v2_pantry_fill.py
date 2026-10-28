@@ -31,7 +31,7 @@ with open(os.path.join(ROOT, 'data', 'pilot_v2', 'fasit', 'carbonara.json'), enc
 
 PECORINO = {'name': 'pecorino romano', 'main_category': 'dairy and egg', 'sub_category': 'cheese', 'default_unit': 'g',
             'average_g_per_unit': 0, 'calories': 387, 'protein': 32, 'carbs': 3.6, 'fat': 27, 'fat_saturated': 17,
-            'sugar': 0.8, 'fiber': 0, 'sodium_mg': 1200}
+            'sugar': 0.8, 'fiber': 0, 'sodium_mg': 1200, 'looks': 'pale wedge of hard sheep cheese'}
 
 
 def answer(decisions, seen=None):
@@ -92,6 +92,7 @@ class PantryFillTests(unittest.TestCase):
         cheese = db.session.execute(db.select(Ingredient).where(Ingredient.name == 'pecorino romano')).scalar_one()
         self.assertEqual((cheese.status, cheese.data_source, cheese.calories_per_100g), ('active', 'claude_auto', 387))
         self.assertTrue(cheese.food_id.startswith('auto-'))
+        self.assertEqual(cheese.image_notes, 'pale wedge of hard sheep cheese')  # for the symbol prompt
         self.assertEqual({line.ingredient_id for line in self.lines('pecorino romano')}, {cheese.id})
         # Skipped and unknown stay unlinked
         self.assertIsNone(self.lines('vann')[0].ingredient_id)

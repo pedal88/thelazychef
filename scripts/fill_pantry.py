@@ -16,6 +16,11 @@ for new recipes). It saves to the bucket, so it needs GOOGLE_API_KEY (Gemini), S
 GCS_BUCKET_NAME and Google application default credentials (gcloud auth application-default login).
 
     ... GOOGLE_API_KEY=... STORAGE_BACKEND=gcs GCS_BUCKET_NAME=thelazychef-assets ./venv/bin/python -m scripts.fill_pantry --symbols
+
+--looks "flatbrød=thin rectangular crispbread sheets, stacked" (with the same environment as --symbols) sets how
+one pantry item looks (image_notes, which the symbol prompt uses) and makes its symbol again.
+
+    ... -m scripts.fill_pantry --looks "flatbrød=thin rectangular crispbread sheets, stacked, pale brown"
 """
 import argparse
 import getpass
@@ -39,9 +44,13 @@ def main():
     ap.add_argument('--ids', help='recipe ids: 337-360 or 337,340')
     ap.add_argument('--apply', action='store_true', help='save; without it the decisions are only printed')
     ap.add_argument('--symbols', action='store_true', help='make the missing symbol images of the items added here')
+    ap.add_argument('--looks', help='"name=how it looks": set the image notes of one item and make its symbol again')
     args = ap.parse_args()
-    if not args.ids and not args.symbols:
-        ap.error('give --ids or --symbols')
+    if not args.ids and not args.symbols and not args.looks:
+        ap.error('give --ids, --symbols or --looks')
+    if args.looks and '=' not in args.looks:
+        ap.error('--looks takes "name=how it looks"')
+    args.symbols = args.symbols or bool(args.looks)
 
     if os.getenv('DB_BACKEND', 'local').lower() == 'cloudsql' and not os.getenv('DB_PASS'):
         os.environ['DB_PASS'] = getpass.getpass('Database password (not shown, not stored): ')
@@ -50,11 +59,26 @@ def main():
     os.environ.setdefault('GOOGLE_API_KEY', 'not-used')  # app.py wants one; without --symbols nothing calls Google
 
     from app import app, db
-    from database.models import Recipe
+    from database.models import Ingredient, Recipe
     from services.recipe_v2 import pantry_fill
     from services.recipe_v2.generate import recalculate
 
     with app.app_context():
+        if args.looks:
+            from routes._shared import get_storage
+            from services.ingredient_service import normalize_alias
+
+            name, looks = (x.strip() for x in args.looks.split('=', 1))
+            ing = db.session.execute(db.select(Ingredient).where(db.func.lower(Ingredient.name) == normalize_alias(name))
+                                     ).scalars().first()
+            if ing is None:
+                print(f'No pantry item called {name!r}')
+                return
+            ing.image_notes = looks
+            made = pantry_fill.make_symbols([ing], get_storage())
+            db.session.commit()
+            print(f'{ing.name}: image notes set; ' + (f'new symbol {ing.image_url}' if made else 'the symbol failed, see above'))
+            return
         if args.symbols:
             from routes._shared import get_storage
 
