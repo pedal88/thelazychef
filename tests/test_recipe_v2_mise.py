@@ -121,7 +121,7 @@ class GetReadyPageTests(unittest.TestCase):
         from database.models import RecipeLine
         recipe = db.session.get(Recipe, self.ids['carbonara'])
         line = next(ln for ln in recipe.lines if 'guanciale' in ln.name)
-        line.state, line.cut, line.prep_style = None, None, None  # "Skjær guancialen" is method slice, but the line says nothing
+        line.state, line.prep_style = None, None  # "Skjær guancialen" is method slice, but the line says nothing
         recipe.language = 'nb'
         db.session.commit()
         bowls = build(db.session.get(Recipe, self.ids['carbonara']))['ready']['bowls']

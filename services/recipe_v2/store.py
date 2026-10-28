@@ -86,12 +86,12 @@ def to_v2(recipe: Recipe) -> dict:
         'components': [{'local_id': c.local_id, 'name': c.name} for c in recipe.components],
         'ingredients': [drop_none({
             'local_id': i.local_id, 'component_id': i.component.local_id, 'name': i.name, 'amount': i.amount,
-            'unit': i.unit, 'prep_style': i.prep_style, 'state': i.state, 'grade': i.grade,  # not the old cut: see below
+            'unit': i.unit, 'prep_style': i.prep_style, 'state': i.state, 'grade': i.grade,
             'variety': i.variety, 'gram_weight_estimate': i.gram_weight,
             'pantry_id': i.ingredient.food_id if i.ingredient else None,
         }) for i in recipe.lines],  # The state is the line's only state. The old cut column, from before the state
-                                     # catalog, was converted where it was right (scripts/convert_states.py); where it
-                                     # was not (salt "chopped" by its step), it must not show.
+                                     # catalog, was converted where it was right (scripts/convert_states.py) and then
+                                     # dropped (migration c5e8a1d3f9b2).
         'steps': [drop_none({
             'local_id': s.local_id, 'component_id': s.component.local_id,
             'uses': [i.local_id for i in sorted(s.lines, key=lambda i: i.sort_order)],

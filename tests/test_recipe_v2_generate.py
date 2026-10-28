@@ -108,7 +108,7 @@ class GenerateTests(unittest.TestCase):
         self.assertGreater(saved.prep_time_mins, 0)
         self.assertEqual(saved.steps[0].verb, answer['steps'][0]['verb'])
         line = next(line for line in saved.lines if line.local_id == cut_line['local_id'])
-        self.assertEqual((line.state, line.grade, line.variety, line.cut), ('grate', 'fine', 'Romano', None))
+        self.assertEqual((line.state, line.grade, line.variety), ('grate', 'fine', 'Romano'))
         # The catalogs are in the prompt, and the schema only allows their values
         system, schema = fake.requests[1]['system'], fake.requests[1]['schema']
         for text in ('STATE CATALOG: chop (chopped / hakket; grades: fine, coarse)', 'CUISINE LIST: Nordic (Norwegian first', 'DIFFICULTY LIST: Simplistic', 'MEAL TYPE LIST: Breakfast', '20b. verb'):

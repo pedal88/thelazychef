@@ -68,7 +68,7 @@ def main():
         recipes = q("""SELECT coalesce(schema_version, 1) AS version, coalesce(language, '?') AS language, status,
                               coalesce(cuisine, '') AS cuisine, count(*) AS n
                        FROM recipe GROUP BY 1, 2, 3, 4""")
-        lines = q("""SELECT l.name, l.prep_style, l.cut, coalesce(r.language, '?') AS language,
+        lines = q("""SELECT l.name, l.prep_style, NULL AS cut, coalesce(r.language, '?') AS language,
                             i.name AS pantry_name, i.main_category, i.sub_category
                      FROM recipe_line l JOIN recipe r ON r.id = l.recipe_id
                      LEFT JOIN ingredient i ON i.id = l.ingredient_id""")
