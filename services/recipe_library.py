@@ -10,6 +10,7 @@ Two queries for a page: one for the ids of everything that matches (small rows),
 import json
 import random
 from dataclasses import dataclass, field
+from functools import lru_cache
 from pathlib import Path
 
 from sqlalchemy import func, or_
@@ -97,6 +98,7 @@ def _filtered(stmt, f):
     return stmt
 
 
+@lru_cache(maxsize=None)
 def _catalog(path, key):
     return json.loads((DATA / path).read_text(encoding='utf-8'))[key]
 
@@ -137,11 +139,28 @@ QUICK = [('time', '30', 'Under 30 min'), ('diet', 'vegetarian', 'Vegetarian'), (
 SINGLE = {'time'}  # parameters with one value
 
 
-def quick(args):
-    """The shortcuts for the address args: [(label, the args with it switched, on)]. Switching a single-value
-    parameter replaces its value; the page starts from the top again (no shown)."""
+def for_the_day(day):
+    """Shortcuts that fit the date (tweak "smart"): the season's occasion, then weeknight or weekend."""
     out = []
-    for key, value, label in QUICK:
+    if day.month == 12:
+        out.append(('meal_type', 'Christmas', 'Christmas'))
+    elif day.month == 5 and day.day <= 17:
+        out.append(('meal_type', '17th of May', '17th of May'))
+    elif day.month in (3, 4):
+        out.append(('meal_type', 'Easter', 'Easter'))
+    elif day.month in (6, 7, 8):
+        out.append(('meal_type', 'Summer BBQ', 'Summer BBQ'))
+    out.append(('meal_type', 'Weekend', 'Weekend') if day.weekday() >= 4 else ('meal_type', 'Weeknight', 'Weeknight'))
+    return out
+
+
+def quick(args, day=None):
+    """The shortcuts for the address args: [(label, the args with it switched, on)]. Switching a single-value
+    parameter replaces its value; the page starts from the top again (no shown). With day, the shortcuts for that
+    day come first, in place of Weeknight."""
+    items = QUICK if day is None else for_the_day(day) + [q for q in QUICK if q[1] != 'Weeknight']
+    out = []
+    for key, value, label in items:
         on = value in args.getlist(key)
         new = args.copy()
         new.pop('shown', None)
@@ -208,10 +227,8 @@ def versions_count(recipes):
     return dict(rows)
 
 
-def recipe_page(view, f, sort='new', shown=PAGE, user=None):
-    """The recipes a list shows: view is 'discover' (All), 'saved', 'made' or 'next' (the last three need user).
-    shown is how many cards to show from the start (Show more adds a page). Each recipe gets active_mins,
-    version_count (approved recipes in its dish, 1 when alone) and, for a signed-in user, interaction and is_super_liked."""
+def matching_ids(view, f, sort='new', user=None):
+    """The ids of the cards a list shows, in order: in All one per dish."""
     stmt = db.select(Recipe.id, FAMILY, Recipe.base_recipe_id).where(Recipe.status == 'approved')
     if view == 'saved':
         stmt = stmt.join(UserRecipeInteraction).where(UserRecipeInteraction.user_id == user.id,
@@ -222,8 +239,34 @@ def recipe_page(view, f, sort='new', shown=PAGE, user=None):
     elif view == 'next':
         stmt = stmt.join(UserQueue).where(UserQueue.user_id == user.id)
     rows = db.session.execute(_ordered(_filtered(stmt, f), view, sort)).all()
-    ids = one_per_dish(rows) if view == 'discover' else [r[0] for r in rows]
+    return one_per_dish(rows) if view == 'discover' else [r[0] for r in rows]
 
+
+def counts(view, args, user=None):
+    """For the drawer (layout trial, tweak "count"): how many cards the choices in args give, and the choices not
+    made yet that would give none ([key, value]). One query per choice: fine for a catalog of hundreds."""
+    f, groups = from_args(args)
+    total = len(matching_ids(view, f, user=user))
+    empty = []
+    for g in groups:
+        for value, _, on in g['options']:
+            if on:
+                continue
+            alt = args.copy()
+            if g['single']:
+                alt.setlist(g['key'], [value])
+            else:
+                alt.add(g['key'], value)
+            if not matching_ids(view, from_args(alt)[0], user=user):
+                empty.append([g['key'], value])
+    return {'total': total, 'empty': empty}
+
+
+def recipe_page(view, f, sort='new', shown=PAGE, user=None):
+    """The recipes a list shows: view is 'discover' (All), 'saved', 'made' or 'next' (the last three need user).
+    shown is how many cards to show from the start (Show more adds a page). Each recipe gets active_mins,
+    version_count (approved recipes in its dish, 1 when alone) and, for a signed-in user, interaction and is_super_liked."""
+    ids = matching_ids(view, f, sort, user)
     on_page = ids[:max(shown, 1)]
     by_id = {r.id: (r, active) for r, active in db.session.execute(
         db.select(Recipe, ACTIVE).where(Recipe.id.in_(on_page))

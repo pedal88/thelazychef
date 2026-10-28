@@ -1,11 +1,14 @@
 """Recipes Blueprint: landing page, recipe library, the recipe page, recipe JSON APIs."""
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
 from flask import abort, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from database.models import Ingredient, Recipe, db
 from routes._flat import FlatBlueprint
-from routes._shared import DIFFICULTY_LABELS, chosen_library, get_recipe_image_url, viewer_is_admin
+from routes._shared import DIFFICULTY_LABELS, chosen_library, chosen_tweaks, get_recipe_image_url, viewer_is_admin
 from services.chef_service import get_chefs
-from services.recipe_library import PAGE, SORT_LABELS, from_args, quick, recipe_page
+from services.recipe_library import PAGE, SORT_LABELS, counts, from_args, quick, recipe_page
 
 recipes_bp = FlatBlueprint("recipes", __name__)
 
@@ -31,11 +34,36 @@ def recipes_list():
     more_url = url_for('recipes_list', **{**request.args.to_dict(flat=False), 'shown': shown + PAGE}) if page.more else None
     in_use = sum(1 for g in groups for _, _, on in g['options'] if on) + bool(filters.q)
     layout = chosen_library()  # the layout trial, admins only (routes/_shared.py)
-    shortcuts = [(label, url_for('recipes_list', **args.to_dict(flat=False)), on) for label, args, on in quick(request.args)]
+    tweaks = chosen_tweaks() if layout == 'drawer' else set()
+    day = datetime.now(ZoneInfo('Europe/Oslo')).date() if 'smart' in tweaks else None
+    shortcuts = [(label, url_for('recipes_list', **args.to_dict(flat=False)), on)
+                 for label, args, on in quick(request.args, day)]
+    # The choices in use, each with the address without it (tweak "active")
+    active = []
+    for g in groups:
+        for value, text, on in g['options']:
+            if on:
+                rest = request.args.copy()
+                rest.pop('shown', None)
+                rest.setlist(g['key'], [v for v in request.args.getlist(g['key']) if v != value])
+                active.append((text, url_for('recipes_list', **rest.to_dict(flat=False))))
     return render_template('recipes_list.html', recipes=page.recipes, total=page.total, more_url=more_url,
                            current_view=view_mode, groups=groups, q=filters.q, sort=sort, sort_labels=SORT_LABELS,
                            in_use=in_use, more_open=any(on for g in groups if g['more'] for _, _, on in g['options']),
-                           layout=layout, shortcuts=shortcuts)
+                           layout=layout, shortcuts=shortcuts, tweaks=tweaks, active=active)
+
+
+@recipes_bp.route('/api/recipes/count')
+def recipes_count():
+    """How many cards the choices in the address give, and the choices that would give none: the filter drawer's
+    live count (layout trial, tweak "count"). Read only, approved recipes only; for admins while it is a trial, as
+    it costs a query per choice."""
+    if not viewer_is_admin():
+        abort(403)
+    view = request.args.get('view', 'discover')
+    if view not in ('saved', 'made', 'next') or not current_user.is_authenticated:
+        view = 'discover'
+    return jsonify(counts(view, request.args, current_user if current_user.is_authenticated else None))
 
 
 def _v2_lines_and_steps(recipe):

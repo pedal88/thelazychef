@@ -174,6 +174,20 @@ def chosen_library():
     return style if admin and style in LIBRARY_LAYOUTS else 'today'
 
 
+# Tweaks to the drawer layout (temporary), each on or off in the admin chip; all on until an admin switches one off.
+# Cookie library_tweaks: the ones on, joined with '-'.
+LIBRARY_TWEAKS = {'active': 'Active chips', 'count': 'Live count', 'calm': 'Calm cards', 'instant': 'Instant search',
+                  'smart': 'Day shortcuts'}
+
+
+def chosen_tweaks():
+    """The drawer tweaks the admin has on (all when they have not chosen); none for everyone else."""
+    if not (current_user.is_authenticated and getattr(current_user, 'is_admin', False)):
+        return set()
+    raw = request.cookies.get('library_tweaks')
+    return set(LIBRARY_TWEAKS) if raw is None else set(raw.split('-')) & set(LIBRARY_TWEAKS)
+
+
 # Equipment symbol trial (temporary): the same, for the equipment symbols (data/constraints/equipment.json "image" is
 # the realistic set, "image_variants" the others). Cookie equipment_images, admins only; everyone else gets the default.
 EQUIPMENT_STYLES = {'realistic': 'Realistic', 'painted': 'Painted', 'line_tint': 'Line'}

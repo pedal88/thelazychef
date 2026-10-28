@@ -36,9 +36,9 @@
     </div>
     <div class="rcard-body">
         <p class="rcard-meta">
-            {% if recipe.cuisine %}<span>{{ recipe.cuisine }}</span>{% endif %}
+            {% if recipe.cuisine %}<span class="rcard-cuisine">{{ recipe.cuisine }}</span>{% endif %}
             {% if recipe.prep_time_mins %}{% set hands = recipe.active_mins if recipe.active_mins and recipe.active_mins < recipe.prep_time_mins else none %}
-            <span title="{{ recipe.prep_time_mins }} min from start to table{{ ', ' ~ hands ~ ' of them hands-on' if hands }}">{{ recipe.prep_time_mins }} min{{ ', ' ~ hands ~ ' active' if hands }}</span>{% endif %}
+            <span class="rcard-time" title="{{ recipe.prep_time_mins }} min from start to table{{ ', ' ~ hands ~ ' of them hands-on' if hands }}">{{ recipe.prep_time_mins }} min{% if hands %}<i class="rcard-hands">, {{ hands }} active</i>{% endif %}</span>{% endif %}
             {% if recipe.difficulty %}<span>{{ recipe.difficulty|difficulty_label }}</span>{% endif %}
         </p>
         <h3>{{ recipe.title }}</h3>
