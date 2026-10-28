@@ -25,6 +25,9 @@ Et gjennomgående mål er å skille tydelig mellom **prep** (forberedelse: kutte
 
 ## 2. Dagens datamodell (kort)
 
+> **Historisk (28.10.2026):** dette avsnittet beskriver v1-modellen slik den var da dokumentet ble skrevet. v1 er
+> fjernet; modellen i dag er v2 (`docs/RECIPE_MODEL_V2.md`, `services/recipe_v2/CLAUDE.md`). Avsnitt 9 er det som gjelder.
+
 Se `ai_engine.py` (`Ingredient`, `IngredientGroup`, `Instruction`, `ComponentSchema`, `RecipeSchema`) og `process_recipe_workflow`.
 
 - `recipe`: én rad per oppskrift. `prep_time_mins` gjelder hele oppskriften. `base_servings` er standard 4.
@@ -968,7 +971,7 @@ Pål lener mot å samle prep og koking i én fane, med ingrediensene og fakta om
 3. **Cook** (oransje): kokemodus slik den er, ett steg om gangen med tidtakere, stegliste og hele retten. Prep-steg som planen legger i en ventetid, kommer der de hører hjemme, i grønt. Bunnlinjen vises først når kokingen er på skjermen.
 4. **Knapper:** «Ingredients» (listen fra Overview) og «Servings and facts» (porsjoner, plan, fakta, næring) som ark.
 
-Delene deles med Gjør klart og Lag mat (`components/prep_board.html`, `components/cook_flow.html`, `components/dish_info.html`), så de tre sidene ikke glir fra hverandre mens prøven pågår.
+Delene deles med Gjør klart og Lag mat (`components/prep_board.html`, `components/step_list.html` (tidligere `cook_flow.html`), `components/dish_info.html`), så de tre sidene ikke glir fra hverandre mens prøven pågår.
 
 **Med Overview (23.10.2026, Pål):** Overview er nå også på samme side, så hele oppskriften er én side på `/recipe/<id>` og fanene er borte. Øverst det Overview viser (bilde, tid, porsjoner, ☰-menyen, kokkens notat), så Get ready og Cook. Stor skjerm: ingredienslisten i egen kolonne til venstre ved siden av retten og Get ready; kokingen under i full bredde. Telefon: én kolonne, med «Start ↓» forbi ingredienslisten. Ingredienslisten er også et ark fra Cook. Porsjoner byttes i ☰-menyen og laster siden på nytt (ikke umiddelbart som på Overview, fordi bordet og stegene også har mengder). `/prep`, `/cook` og `/make` leder hit (`#prep`, `#cook`). Valgt framfor faser som bytter på plass (fanene i forkledning) og en topp som krymper og blir stående (kan legges på senere om bildet er i veien under kokingen).
 
