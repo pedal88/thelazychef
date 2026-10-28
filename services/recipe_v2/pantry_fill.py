@@ -6,7 +6,8 @@ One Claude call sees those lines and the whole pantry, and decides for each line
   alias of that item, so the next recipe with it is linked by the matcher straight away.
 - new: a real product a shopper in Norway buys that the pantry lacks ("lingonberries"). It is added as active, so
   the matcher and the next recipes use it, marked data_source "claude_auto" so it can be found and checked, with its
-  nutrition per 100 g as sold. Its symbol image is made after (make_symbols), in the app's style.
+  nutrition per 100 g as sold and how it looks in the shop (image_notes, so the symbol shows flatbrød as thin
+  sheets and not as a round flatbread). Its symbol image is made after (make_symbols), in the app's style.
 - skip: a pinch of something rare that would not change the nutrition and will not come back, or not a food.
 
 Then the recipe is recalculated (generate.recalculate). Each decision is noted on the recipe (rule "pantry",
@@ -41,8 +42,8 @@ def schema():
     """The answer: one decision per line, in the order given."""
     num = {'type': 'number'}
     new = {'type': 'object', 'additionalProperties': False,
-           'required': ['name', 'main_category', 'sub_category', 'default_unit', 'average_g_per_unit', *NUTRIENTS],
-           'properties': {'name': {'type': 'string'}, 'main_category': {'type': 'string'},
+           'required': ['name', 'main_category', 'sub_category', 'default_unit', 'average_g_per_unit', 'looks', *NUTRIENTS],
+           'properties': {'name': {'type': 'string'}, 'main_category': {'type': 'string'}, 'looks': {'type': 'string'},
                           'sub_category': {'type': 'string'}, 'default_unit': {'type': 'string', 'enum': ['g', 'ml']},
                           'average_g_per_unit': num, **{n: num for n in NUTRIENTS}}}
     line = {'type': 'object', 'additionalProperties': False,
@@ -113,7 +114,8 @@ def _create(new):
         data_source=AUTO, created_at=datetime.now().isoformat(), calories_per_100g=kcal,
         kj_per_100g=round(kcal * 4.184, 1), protein_per_100g=new['protein'], carbs_per_100g=new['carbs'],
         fat_per_100g=new['fat'], fat_saturated_per_100g=new['fat_saturated'], sugar_per_100g=new['sugar'],
-        fiber_per_100g=new['fiber'], sodium_mg_per_100g=new['sodium_mg'])
+        fiber_per_100g=new['fiber'], sodium_mg_per_100g=new['sodium_mg'],
+        image_notes=(new.get('looks') or '').strip() or None)  # the symbol prompt adds it (ingredient_symbols)
     db.session.add(ing)
     db.session.flush()
     return ing
