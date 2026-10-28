@@ -1,0 +1,22 @@
+{
+  "_doc": "The symbol of each main ingredient category (data/constraints/categories.json) in the ingredient galaxy: a small still life of three typical things, drawn with the ingredient symbol prompt (services/ingredient_symbols.category_symbol) and kept in concept_visual (concept_type ingredient_category). Made with scripts/category_symbols.py. A sub category has no own image: it shows the symbol of its most used ingredient (routes/explore_routes.py).",
+  "form": "Show the three side by side and slightly overlapping, as one small group, all the same size, nothing else.",
+  "looks": {
+    "alcoholic beverages": "a dark wine bottle, a brown beer bottle and a small glass of clear spirit",
+    "bakery and bread": "a round loaf of bread, a baguette and a folded flatbread",
+    "baking ingredients": "a small open paper bag of white flour, a small heap of white sugar and a block of fresh yeast",
+    "canned and preserved": "two plain metal tins without labels and a glass jar of pickled cucumbers",
+    "cereal grains and pasta": "a small heap of white rice, a bundle of dry spaghetti and a few dry penne",
+    "dairy and egg": "a glass of milk, a wedge of yellow cheese and two brown eggs",
+    "fats and oils": "a glass bottle of golden oil and a block of butter",
+    "fish and seafood": "a whole raw fish, a raw salmon fillet and two pink shrimps",
+    "fruit and fruit products": "a red apple, a yellow banana and a small bunch of green grapes",
+    "meat": "a raw steak, a raw chicken drumstick and a raw sausage",
+    "non-alcoholic beverages": "a glass of orange juice, a cup of black coffee and a glass of water",
+    "nuts and seeds": "three small heaps: almonds, walnuts and sunflower seeds",
+    "sauces and condiments": "a small glass jar of red tomato sauce, a jar of yellow mustard and a small bottle of soy sauce",
+    "spices and herbs": "three small heaps of ground spices in red, yellow and brown, with a sprig of fresh green herb",
+    "vegetables": "a carrot, a head of broccoli and a red bell pepper",
+    "other": "a small heap of mixed dried foods: a few beans, a few grains and a few seeds"
+  }
+}

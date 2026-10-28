@@ -39,6 +39,23 @@ def generate_symbol(ingredient) -> tuple[bytes, str, dict]:
     return png, prompt, meta
 
 
+def category_symbol(main_category: str) -> tuple[bytes, str, dict]:
+    """Return (PNG bytes, prompt, meta) for a main ingredient category: three typical things in the same style
+    (data/constraints/category_symbols.json). The things are the "name" the prompt shows, so its rule of showing
+    only that still holds."""
+    import json
+    import os
+
+    path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'constraints',
+                        'category_symbols.json')
+    with open(path, encoding='utf-8') as f:
+        spec = json.load(f)
+    looks = spec['looks'].get(main_category)
+    if not looks:
+        raise KeyError(f'No looks for the category {main_category!r} in category_symbols.json')
+    return generate_symbol({'name': looks, 'main_category': main_category, 'sub_category': '', 'image_form': spec['form']})
+
+
 def web_image(png: bytes, size: int = WEB_SIZE) -> bytes:
     """A small WebP for the app: the generated PNGs are about 700 KB each."""
     from PIL import Image
