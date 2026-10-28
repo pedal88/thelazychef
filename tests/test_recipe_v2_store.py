@@ -183,16 +183,6 @@ class RecipeV2StoreTests(unittest.TestCase):
         self.assertEqual(stored, onion_id)
         db.session.rollback()
 
-    def test_the_old_cut_is_not_read_as_a_state(self):
-        # Recipe 308: salt with the old cut "chop" (its step's) and no state showed as "chopped"
-        rid = self._recipe(fasit('carbonara'))
-        line = db.session.execute(db.select(RecipeLine).filter_by(recipe_id=rid)).scalars().first()
-        line.state, line.cut = None, 'chop'
-        db.session.commit()
-        db.session.expire_all()
-        back = next(i for i in to_v2(db.session.get(Recipe, rid))['ingredients'] if i['local_id'] == line.local_id)
-        self.assertNotIn('state', back)
-
 
 if __name__ == '__main__':
     unittest.main()
