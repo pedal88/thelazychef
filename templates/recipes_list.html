@@ -22,45 +22,92 @@
 </fieldset>
 {% endmacro %}
 
+{# What a group has chosen, for a pill: "Diet", "Time: Up to 30 min", "Diet · 2" #}
+{% macro chosen_label(g) -%}
+{% set on = g.options|selectattr(2)|map(attribute=1)|list %}{{ g.label }}{% if on|length == 1 %}: {{ on[0] }}{% elif on %} · {{ on|length }}{% endif %}
+{%- endmacro %}
+
+{# Search and, in All, the order #}
+{% macro search_row() %}
+<div class="lib-search">
+    <label class="lib-q">{{ icon('search') }}<input type="search" name="q" value="{{ q }}"
+        placeholder="Search dishes or ingredients" aria-label="Search dishes or ingredients"></label>
+    {{ caller() if caller is defined }}
+    {% if current_view == 'discover' %}
+    <select name="sort" aria-label="Order">
+        {% for key, label in sort_labels.items() %}<option value="{{ key }}"{% if key == sort %} selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro view_tabs() %}
+<nav class="lib-tabs" aria-label="Which recipes">
+    {% for key, label, ic, signed_in in [('discover', 'All', 'book', False), ('saved', 'Saved', 'heart', True), ('made', 'Made', 'check', True), ('next', 'Cook next', 'pot', True)] %}
+    {% if not signed_in or current_user.is_authenticated %}
+    <a href="{{ url_for('recipes_list', view=key) }}"{% if key == current_view %} aria-current="page"{% endif %}>{{ icon(ic) }}{{ label }}</a>
+    {% endif %}
+    {% endfor %}
+</nav>
+{% endmacro %}
+
+{% macro clear_url() %}{{ url_for('recipes_list', view=current_view if current_view != 'discover' else none) }}{% endmacro %}
+
+{# The cards, or what to do when there are none. in_card: Made it and Feedback on the card (the trials), else in a
+   row under it #}
+{% macro results(in_card=False) %}
+{% if not recipes %}
+{% set empties = {'saved': ('heart', 'No saved recipes yet', 'Tap the heart on a recipe to keep it here.', 'Find recipes'),
+                  'made': ('check', 'Nothing cooked yet', 'Mark a recipe as made after you cook it, and it shows up here.', 'Find recipes'),
+                  'next': ('pot', 'Nothing to cook next', 'Tap the pot on a recipe to put it in your queue.', 'Find recipes')} %}
+{% set ic, line, hint, go = empties.get(current_view, ('search', 'No recipes yet', 'New dishes are on their way.', 'Discover')) %}
+{% if in_use %}{% set ic, line, hint, go = ('search', 'No recipes match', 'Try fewer filters, or clear them.', 'Clear filters') %}{% endif %}
+<div class="lib-empty">
+    <span class="lib-empty-ic">{{ icon(ic) }}</span>
+    <h3>{{ line }}</h3>
+    <p>{{ hint }}</p>
+    <a class="lib-go" href="{{ clear_url() if in_use else url_for('recipes_list') }}">{{ go }}</a>
+</div>
+{% else %}
+{% if not in_card %}<p class="lib-count">{{ total }} {{ 'dish' if total == 1 else 'dishes' }}</p>{% endif %}
+<div class="lib-grid">
+    {% for recipe in recipes %}
+    <div class="lib-item">
+        {{ card.recipe_preview_card(recipe, recipe.id, show_inspector=current_user.is_authenticated and current_user.is_admin, acts=in_card) }}
+        {% if current_user.is_authenticated and not in_card %}
+        {% set made = recipe.interaction and recipe.interaction.is_made %}
+        <div class="lib-acts">
+            <button type="button" class="lib-act" data-made="{{ recipe.id }}" aria-pressed="{{ 'true' if made else 'false' }}">{{ icon('check') }}Made it</button>
+            <button type="button" class="lib-act" data-feedback="{{ recipe.id }}" data-title="{{ recipe.title }}">{{ icon('message') }}Feedback</button>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% if more_url %}<p class="lib-more"><a class="lib-go" href="{{ more_url }}">Show more</a></p>{% endif %}
+{% endif %}
+{% endmacro %}
+
 {% block content %}
 {% set admin = current_user.is_authenticated and current_user.is_admin %}
-
-{# The head: which list, its name and a line about it (static/css/library.css) #}
 {% set heads = {'saved': ('Your recipes', 'Saved', 'The recipes you have saved.'),
                 'made': ('Your recipes', 'Made', 'The recipes you have cooked.'),
                 'next': ('Your recipes', 'Cook next', 'What you plan to cook, in the order you added it.')} %}
 {% set eyebrow, title, line = heads.get(current_view, ('Recipes', 'All recipes', 'Every dish in The Lazy Chef. Filter by what you feel like.')) %}
+
+{% if layout == 'today' %}
+{# Today: the head, the lists, search and order, and the chips over the cards (on a phone behind Filters) #}
 <header class="lib-head">
     <p class="eyebrow">{{ eyebrow }}</p>
     <h1>{{ title }}</h1>
     <p class="lib-sub">{{ line }}</p>
 </header>
-
 <div class="lib-wrap">
-    <div class="lib-bar">
-        <nav class="lib-tabs" aria-label="Which recipes">
-            {% for key, label, ic, signed_in in [('discover', 'All', 'book', False), ('saved', 'Saved', 'heart', True), ('made', 'Made', 'check', True), ('next', 'Cook next', 'pot', True)] %}
-            {% if not signed_in or current_user.is_authenticated %}
-            <a href="{{ url_for('recipes_list', view=key) }}"{% if key == current_view %} aria-current="page"{% endif %}>{{ icon(ic) }}{{ label }}</a>
-            {% endif %}
-            {% endfor %}
-        </nav>
-    </div>
-
-    {# Search, order and the chips. A change shows the recipes at once (static/js/library.js); the button is for
-       when scripts do not run. On a phone the chips are behind Filters, open when one is in use. #}
+    <div class="lib-bar">{{ view_tabs() }}</div>
+    {# A change shows the recipes at once (static/js/library.js); the button is for when scripts do not run #}
     <form class="lib-form" method="GET" action="{{ url_for('recipes_list') }}" data-lib-form>
         {% if current_view != 'discover' %}<input type="hidden" name="view" value="{{ current_view }}">{% endif %}
-        <div class="lib-search">
-            <label class="lib-q">{{ icon('search') }}<input type="search" name="q" value="{{ q }}"
-                placeholder="Search dishes or ingredients" aria-label="Search dishes or ingredients"></label>
-            {% if current_view == 'discover' %}
-            <select name="sort" aria-label="Order">
-                {% for key, label in sort_labels.items() %}<option value="{{ key }}"{% if key == sort %} selected{% endif %}>{{ label }}</option>{% endfor %}
-            </select>
-            {% endif %}
-        </div>
-
+        {{ search_row() }}
         <details class="lib-filters" data-filters{% if in_use %} open{% endif %}>
             <summary class="lib-filters-sum">{{ icon('list') }} Filters{% if in_use %} · {{ in_use }} in use{% endif %}</summary>
             <script>if (matchMedia('(min-width: 768px)').matches) document.currentScript.parentElement.open = true;</script>
@@ -71,47 +118,106 @@
                     {% for g in groups if g.more %}{{ chip_group(g) }}{% endfor %}
                 </details>
                 <div class="lib-filter-acts">
-                    {% if in_use %}<a href="{{ url_for('recipes_list', view=current_view if current_view != 'discover' else none) }}">Clear all</a>{% endif %}
+                    {% if in_use %}<a href="{{ clear_url() }}">Clear all</a>{% endif %}
                     <button type="submit" class="lib-apply">Show recipes</button>
                 </div>
             </div>
         </details>
     </form>
-
-    {% if not recipes %}
-    {# Nothing here: an icon, a line, what to do and the way on #}
-    {% set empties = {'saved': ('heart', 'No saved recipes yet', 'Tap the heart on a recipe to keep it here.', 'Find recipes'),
-                      'made': ('check', 'Nothing cooked yet', 'Mark a recipe as made after you cook it, and it shows up here.', 'Find recipes'),
-                      'next': ('pot', 'Nothing to cook next', 'Tap the pot on a recipe to put it in your queue.', 'Find recipes')} %}
-    {% set ic, line, hint, go = empties.get(current_view, ('search', 'No recipes yet', 'New dishes are on their way.', 'Discover')) %}
-    {% if in_use %}{% set ic, line, hint, go = ('search', 'No recipes match', 'Try fewer filters, or clear them.', 'Clear filters') %}{% endif %}
-    <div class="lib-empty">
-        <span class="lib-empty-ic">{{ icon(ic) }}</span>
-        <h3>{{ line }}</h3>
-        <p>{{ hint }}</p>
-        <a class="lib-go" href="{{ url_for('recipes_list', view=current_view) if in_use else url_for('recipes_list') }}">{{ go }}</a>
-    </div>
-    {% else %}
-    <p class="lib-count">{{ total }} {{ 'dish' if total == 1 else 'dishes' }}</p>
-    <div class="lib-grid">
-        {% for recipe in recipes %}
-        <div class="lib-item">
-            {{ card.recipe_preview_card(recipe, recipe.id, show_inspector=admin) }}
-            {% if current_user.is_authenticated %}
-            {% set made = recipe.interaction and recipe.interaction.is_made %}
-            <div class="lib-acts">
-                <button type="button" class="lib-act" data-made="{{ recipe.id }}" aria-pressed="{{ 'true' if made else 'false' }}">{{ icon('check') }}Made it</button>
-                <button type="button" class="lib-act" data-feedback="{{ recipe.id }}" data-title="{{ recipe.title }}">{{ icon('message') }}Feedback</button>
-            </div>
-            {% endif %}
-        </div>
-        {% endfor %}
-    </div>
-    {% if more_url %}<p class="lib-more"><a class="lib-go" href="{{ more_url }}">Show more</a></p>{% endif %}
-    {% endif %}
+    {{ results() }}
 </div>
 
-{% if admin %}{{ inspector.recipe_inspector_modal() }}{% endif %}
+{% else %}
+{# The layout trial (admins, routes/_shared.LIBRARY_LAYOUTS): one line for the head, a toolbar that stays under the
+   site's bar, a wider grid and the cards' actions on the card. Only how the filters are shown differs. #}
+{% set filters_in_use = in_use - (1 if q else 0) %}
+<div class="lv" data-layout="{{ layout }}">
+    <div class="lv-head">
+        <h1>{{ title }} <span class="lv-count">{{ total }}</span></h1>
+        {% if current_user.is_authenticated %}{{ view_tabs() }}{% endif %}
+    </div>
+    <form class="lib-form lv-form" method="GET" action="{{ url_for('recipes_list') }}" data-lib-form>
+        {% if current_view != 'discover' %}<input type="hidden" name="view" value="{{ current_view }}">{% endif %}
+
+        {% if layout == 'pills' %}
+        {# 1: a row of dropdowns, one per group; a pill shows what it has chosen and applies when it closes #}
+        <div class="lv-tools">
+            {{ search_row() }}
+            <div class="lv-pills">
+                {% for g in groups %}
+                {% set on = g.options|selectattr(2)|list %}
+                <details class="lv-pill" data-lv-pill>
+                    <summary{% if on %} class="is-on"{% endif %}>{{ chosen_label(g) }}{{ icon('chevron-down') }}</summary>
+                    <div class="lv-pop">{{ chip_group(g) }}</div>
+                </details>
+                {% endfor %}
+                {% if in_use %}<a class="lv-clear" href="{{ clear_url() }}">Clear all</a>{% endif %}
+                <button type="submit" class="lib-apply">Show recipes</button>
+            </div>
+        </div>
+        {{ results(in_card=True) }}
+
+        {% elif layout == 'rail' %}
+        {# 2: the filters in a column beside the cards; under 1024 px behind Filters, as today #}
+        <div class="lv-cols">
+            <details class="lv-rail" data-filters{% if in_use %} open{% endif %}>
+                <summary class="lib-filters-sum">{{ icon('list') }} Filters{% if filters_in_use %} · {{ filters_in_use }} in use{% endif %}</summary>
+                <script>if (matchMedia('(min-width: 1024px)').matches) document.currentScript.parentElement.open = true;</script>
+                <div class="lv-rail-body">
+                    {% for g in groups %}{{ chip_group(g) }}{% endfor %}
+                    <div class="lib-filter-acts">
+                        {% if in_use %}<a href="{{ clear_url() }}">Clear all</a>{% endif %}
+                        <button type="submit" class="lib-apply">Show recipes</button>
+                    </div>
+                </div>
+            </details>
+            <div class="lv-main">
+                <div class="lv-tools">{{ search_row() }}</div>
+                {{ results(in_card=True) }}
+            </div>
+        </div>
+
+        {% else %}
+        {# 3: search, Filters and the order on one line, the shortcuts under it; the rest in a drawer that applies
+           when you press its button #}
+        <div class="lv-tools">
+            {% call search_row() %}
+            <button type="button" class="lv-filters-btn{% if filters_in_use %} is-on{% endif %}" data-lv-open>{{ icon('list') }}Filters{% if filters_in_use %} <b>{{ filters_in_use }}</b>{% endif %}</button>
+            {% endcall %}
+            <nav class="lv-quick" aria-label="Shortcuts">
+                {% for label, url, on in shortcuts %}<a href="{{ url }}" class="lib-chip-link"{% if on %} aria-current="true"{% endif %}>{{ label }}</a>{% endfor %}
+                {% if filters_in_use %}<a class="lv-clear" href="{{ clear_url() }}">Clear all</a>{% endif %}
+            </nav>
+        </div>
+        <dialog class="fb lv-drawer" id="lv-drawer" aria-labelledby="lv-drawer-h" data-lv-drawer>
+            <div class="fb-form">
+                <div class="fb-head"><div><h2 id="lv-drawer-h">Filters</h2></div>
+                    <button type="button" class="fb-x" data-lv-close aria-label="Close">{{ icon('close') }}</button></div>
+                <div class="fb-body">{% for g in groups %}{{ chip_group(g) }}{% endfor %}</div>
+                <div class="fb-foot">
+                    <a class="fb-cancel lv-drawer-clear" href="{{ clear_url() }}">Clear all</a>
+                    <button type="submit" class="fb-save">Show recipes</button>
+                </div>
+            </div>
+        </dialog>
+        {{ results(in_card=True) }}
+        {% endif %}
+    </form>
+</div>
+{% endif %}
+
+{% if admin %}
+{{ inspector.recipe_inspector_modal() }}
+{# The layout trial switch, in the admin chip's look (static/css/themes.css); base.html sets the cookie #}
+<details class="trialbar" data-trial>
+    <summary aria-label="Admin: recipe list layout"><span class="tdot"></span>Admin <span class="tstate">{{ LIBRARY_LAYOUTS[layout] }}</span></summary>
+    <div class="tpanel">
+        <div class="tgroup" data-lib-switch><span class="tlabel">Layout</span>
+            {%- for key, label in LIBRARY_LAYOUTS.items() %}<button type="button" data-lib="{{ key }}" aria-pressed="{{ 'true' if key == layout else 'false' }}">{{ label }}</button>{% endfor -%}
+        </div>
+    </div>
+</details>
+{% endif %}
 
 {% if current_user.is_authenticated %}
 {# Feedback on a recipe: stars, a comment and photos (/api/interactions/recipe/<id>/feedback); a drawer from the

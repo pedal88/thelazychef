@@ -3,7 +3,8 @@
    its path filled when saved, queue-btn, addToQueue). The library
    (services/recipe_library.py) also gives active_mins, the hands-on part of the total time, and version_count, the
    approved versions of the dish by chef personas. #}
-{% macro recipe_preview_card(recipe, id, show_inspector=False) %}
+{# acts: Made it and Feedback as buttons on the image too (the recipe list's layout trial, static/js/library.js) #}
+{% macro recipe_preview_card(recipe, id, show_inspector=False, acts=False) %}
 {% set tags = (recipe.settings or [])|map('replace', '_', ' ')|list + recipe.diets_list %}
 <a href="{{ url_for('recipe_detail', recipe_id=id) }}" class="rcard group">
     <div class="rcard-img">
@@ -25,6 +26,11 @@
             </button>
             <button type="button" class="queue-btn text-slate-400" data-recipe-id="{{ recipe.id }}" title="Cook next" aria-label="Cook next"
                 onclick="event.preventDefault(); event.stopPropagation(); addToQueue({{ recipe.id }}, this)">{{ icon('pot') }}</button>
+            {% if acts %}
+            <button type="button" class="made-act" data-made="{{ recipe.id }}" aria-pressed="{{ 'true' if recipe.interaction and recipe.interaction.is_made else 'false' }}"
+                title="Made it" aria-label="Made it">{{ icon('check') }}</button>
+            <button type="button" data-feedback="{{ recipe.id }}" data-title="{{ recipe.title }}" title="Feedback" aria-label="Feedback">{{ icon('message') }}</button>
+            {% endif %}
             {% endif %}
         </span>
     </div>

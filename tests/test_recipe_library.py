@@ -19,7 +19,7 @@ from app import app  # noqa: E402
 from database.models import Recipe, RecipeDiet, User, UserRecipeInteraction, db  # noqa: E402
 from werkzeug.datastructures import MultiDict  # noqa: E402
 
-from services.recipe_library import Filters, feed_ids, from_args, recipe_page  # noqa: E402
+from services.recipe_library import Filters, feed_ids, from_args, quick, recipe_page  # noqa: E402
 from services.recipe_v2.store import save_v2  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -187,6 +187,36 @@ class RecipeLibraryTests(unittest.TestCase):
         db.session.add(UserRecipeInteraction(user_id=self.user.id, recipe_id=other.id, status='favorite'))
         db.session.commit()
         self.assertEqual(feed_ids(self.user), [version.id])  # all seen: the passed ones again
+
+    def test_shortcuts_switch_one_choice(self):
+        links = {label: (args, on) for label, args, on in quick(MultiDict([('diet', 'vegan'), ('time', '45'), ('shown', '96')]))}
+        args, on = links['Vegetarian']
+        self.assertFalse(on)
+        self.assertEqual(args.getlist('diet'), ['vegan', 'vegetarian'])
+        self.assertNotIn('shown', args)  # back to the first page
+        self.assertEqual(links['Under 30 min'][0].getlist('time'), ['30'])  # one time at a time
+        args, on = dict((l, (a, o)) for l, a, o in quick(MultiDict([('diet', 'vegetarian')])))['Vegetarian']
+        self.assertTrue(on)
+        self.assertEqual(args.getlist('diet'), [])
+
+    def test_admins_can_switch_the_list_layout(self):
+        self.recipe('Dish')
+        admin = User(email='admin@test', is_admin=True)
+        admin.set_password('pw')
+        db.session.add(admin)
+        db.session.commit()
+        self.client.set_cookie('library_layout', 'drawer')
+        self.client.post('/login', data={'email': 'cook@test', 'password': 'pw'})
+        self.assertNotIn('lv-drawer', self.client.get('/recipes').get_data(as_text=True))  # not for other people
+        self.client.get('/logout')
+        self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
+        for layout, mark in (('pills', 'data-lv-pill'), ('rail', 'lv-rail'), ('drawer', 'data-lv-drawer'), ('today', 'lib-head')):
+            self.client.set_cookie('library_layout', layout)
+            html = self.client.get('/recipes?diet=vegan&q=dish').get_data(as_text=True)
+            self.assertIn(mark, html, layout)
+            self.assertIn('data-lib-switch', html)
+        self.client.set_cookie('library_layout', 'drawer')
+        self.assertIn('Under 30 min', self.client.get('/recipes').get_data(as_text=True))
 
     def test_the_recipe_page_shows_the_approved_versions(self):
         root = self.recipe('Carbonara')

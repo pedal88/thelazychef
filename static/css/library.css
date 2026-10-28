@@ -213,3 +213,79 @@
 .fb-cancel { border: 1px solid var(--color-line); background: var(--color-paper); color: var(--color-ink); }
 .fb-save { border: 0; background: var(--color-accent); color: var(--color-paper); }
 .fb-save:disabled { opacity: .6; cursor: default; }
+
+/* The recipe list's layout trial (admins, routes/_shared.LIBRARY_LAYOUTS): one line for the head, a toolbar that
+   stays under the site's bar, a wider grid with lower cards, and Made it and Feedback on the card. The layouts
+   (.lv[data-layout]: pills, rail, drawer) differ only in how the filters are shown. */
+.lv { max-width: 1600px; margin: 0 auto; padding: var(--space-6) var(--space-6) 64px; }
+@media (max-width: 480px) { .lv { padding: var(--space-4) var(--space-4) 48px; } }
+.lv-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.lv-head h1 { margin: 0; font: 600 clamp(24px, 2.6vw, 32px)/1.15 var(--font-serif); color: var(--color-ink); }
+.lv-count { margin-left: 4px; font: 500 13px/1 var(--font-mono); letter-spacing: .04em; color: var(--color-muted); vertical-align: middle; }
+@media (max-width: 480px) { .lv-head .lib-tabs { flex-wrap: nowrap; } .lv-head .lib-tabs a { padding: 0 10px; gap: 4px; } }
+@media (max-width: 400px) { .lv-head .lib-tabs .icon { display: none; } }
+.lv-form { margin: 0; }
+.lv-tools { position: sticky; top: 64px; z-index: 20; display: grid; gap: var(--space-3); margin-top: var(--space-3);
+  padding: var(--space-3) 0; background: var(--color-paper); border-bottom: 1px solid var(--color-line); }
+.lv .lib-grid { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: var(--space-6) var(--space-4); margin-top: var(--space-4); }
+.lv .rcard-body { gap: 6px; padding: var(--space-3); }
+.lv .rcard h3 { font-size: 18px; }
+.lv .rcard-tags { max-height: 30px; overflow: hidden; }  /* one line */
+.lv .rcard-acts { gap: 4px; }
+.lv .rcard-acts button { width: 32px; height: 32px; }
+.lv .rcard-acts .icon { width: 16px; height: 16px; }
+.rcard-acts .made-act[aria-pressed="true"] { color: var(--color-serve); }
+.lv-clear { color: var(--color-muted); font-size: 14px; white-space: nowrap; }
+.lv-clear:hover { color: var(--color-ink); }
+
+/* 1: a row of dropdowns */
+.lv-pills { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.lv-pill { position: relative; }
+.lv-pill > summary { display: inline-flex; align-items: center; gap: 4px; min-height: 36px; padding: 0 10px 0 14px; border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill); background: var(--color-paper); color: var(--color-ink); font-size: 14px; cursor: pointer; list-style: none; user-select: none; }
+.lv-pill > summary::-webkit-details-marker { display: none; }
+.lv-pill > summary:hover { border-color: var(--color-line-strong); }
+.lv-pill > summary .icon { width: 14px; height: 14px; color: var(--color-muted); transition: transform .2s; }
+.lv-pill[open] > summary .icon { transform: rotate(180deg); }
+.lv-pill > summary.is-on { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-paper); }
+.lv-pill > summary.is-on .icon { color: inherit; }
+.lv-pop { position: absolute; top: calc(100% + 6px); left: 0; z-index: 30; width: max-content; max-width: min(440px, 90vw); padding: var(--space-4);
+  background: var(--color-paper); border: 1px solid var(--color-line); border-radius: var(--radius); box-shadow: 0 12px 32px rgb(0 0 0 / .12); }
+.lv-pop .lib-chips { grid-template-columns: 1fr; }
+.lv-pop legend { display: none; }  /* the pill names it */
+@media (max-width: 640px) {
+  .lv-pop { position: fixed; top: auto; left: var(--space-3); right: var(--space-3); bottom: var(--space-3); width: auto; max-width: none;
+    max-height: 60vh; overflow: auto; }
+}
+
+/* 2: a column of filters beside the cards; under 1024 px behind Filters */
+.lv-cols { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); margin-top: var(--space-3); }
+.lv-rail > .lib-filters-sum { display: inline-flex; margin-top: 0; }
+.lv-rail-body { display: grid; gap: var(--space-6); padding: var(--space-4) 0; }
+.lv-rail .lib-chips { grid-template-columns: 1fr; gap: var(--space-2); }
+.lv-rail .lib-chips legend { padding: 0; }
+.lv-rail .lib-chip span { min-height: 32px; padding: 0 11px; font-size: 13px; }
+.lv-main .lv-tools { margin-top: 0; }
+@media (min-width: 1024px) {
+  .lv-cols { grid-template-columns: 232px minmax(0, 1fr); gap: var(--space-8); }
+  .lv-rail > .lib-filters-sum { display: none; }
+  .lv-rail-body { position: sticky; top: 80px; max-height: calc(100vh - 96px); overflow: auto; padding: var(--space-3) var(--space-2) var(--space-3) 0; }
+}
+
+/* 3: search, Filters and the order on one line, shortcuts under it, the rest in a drawer */
+.lv-filters-btn { display: inline-flex; align-items: center; gap: 6px; min-height: var(--tap); padding: 0 var(--space-4); border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill); background: var(--color-paper); color: var(--color-ink); font: 600 14px/1 var(--font-sans); cursor: pointer; }
+.lv-filters-btn:hover { border-color: var(--color-line-strong); }
+.lv-filters-btn .icon { width: 16px; height: 16px; }
+.lv-filters-btn b { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: var(--radius-pill);
+  background: var(--color-ink); color: var(--color-paper); font-size: 12px; }
+.lv-quick { display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.lv-quick::-webkit-scrollbar { display: none; }
+.lib-chip-link { flex: none; display: inline-flex; align-items: center; min-height: 34px; padding: 0 14px; border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill); background: var(--color-paper); color: var(--color-ink); font-size: 14px; text-decoration: none; white-space: nowrap; }
+.lib-chip-link:hover { border-color: var(--color-line-strong); }
+.lib-chip-link[aria-current] { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-paper); }
+.lv-drawer .fb-body { gap: var(--space-6); }
+.lv-drawer .lib-chips { grid-template-columns: 1fr; gap: var(--space-2); }
+.lv-drawer .lib-chips legend { padding: 0; }
+.lv-drawer-clear { display: inline-grid; place-items: center; text-decoration: none; }
