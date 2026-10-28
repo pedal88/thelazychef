@@ -1,0 +1,21 @@
+{# The fields of feedback on a recipe: stars, a comment and photos, saved to /api/interactions/recipe/<id>/feedback
+   by static/js/feedback.js. In the recipe list's drawer (recipes_list.html) and the celebration after the last step
+   (recipe_v2_make.html). Styles: .fb-* in static/css/library.css. #}
+{% macro feedback_fields(comment_hint='How did it turn out? Anything you would change?') -%}
+<fieldset class="fb-stars">
+    <legend>Your rating</legend>
+    {% for i in range(1, 6) %}
+    <label><input type="radio" name="rating" value="{{ i }}"><span class="sr-only">{{ i }} of 5</span>{{ icon('star') }}</label>
+    {% endfor %}
+</fieldset>
+<label class="fb-field"><span>Comment <i>(optional)</i></span>
+    <textarea name="comment" rows="3" placeholder="{{ comment_hint }}"></textarea></label>
+<div class="fb-field">
+    <span>Photos <i>(up to 5)</i></span>
+    <label class="fb-drop">{{ icon('image') }}<b>Add photos</b><small>JPG, PNG, WEBP or HEIC, up to 20 MB</small>
+        <input type="file" name="photos" accept="image/*,.heic,.heif" multiple class="sr-only" data-fb-photos></label>
+    <div class="fb-thumbs" data-fb-new></div>
+    <div class="fb-thumbs" data-fb-kept></div>
+</div>
+<p class="fb-status" data-fb-status role="status" hidden></p>
+{%- endmacro %}

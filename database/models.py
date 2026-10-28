@@ -32,6 +32,9 @@ class UserRecipeInteraction(db.Model):
     rating: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     comment: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     user_photos: Mapped[list] = mapped_column(JSON, default=list, server_default='[]')
+    # How often the user has made it, saved from the celebration after the last step (routes/interactions_routes.py)
+    made_count: Mapped[int] = mapped_column(Integer, default=0, server_default='0', nullable=False)
+    last_made_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime, nullable=True)
 
     user: Mapped["User"] = relationship(back_populates="interactions")
     recipe: Mapped["Recipe"] = relationship(back_populates="interactions")

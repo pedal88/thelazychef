@@ -167,3 +167,57 @@ html.cooking body .trialbar { bottom: calc(14px + env(safe-area-inset-bottom, 0p
   .sheet-bowls:has(.sheet-go) .sheet-fit { padding-bottom: 72px; }
 }
 @media (min-width: 1000px) { .sheet { padding: var(--space-4) var(--space-8); } }
+
+/* The celebration when the last step is ticked off (#sheet-done, static/js/done.js): a card in the middle on a wide
+   screen, a sheet from the bottom on a phone. The dish on top with a burst of confetti; the feedback fields are the
+   recipe list's (.fb-*, static/css/library.css) */
+.done-sheet { width: min(520px, calc(100vw - 32px)); max-width: 100vw; max-height: min(92dvh, 860px); padding: 0; border: 0; border-radius: 22px;
+  background: var(--color-paper); color: var(--color-ink); box-shadow: 0 24px 70px rgb(0 0 0 / .3); overflow: hidden; }
+.done-sheet[open] { display: flex; animation: done-in .35s cubic-bezier(.2, .9, .3, 1.2); }
+.done-sheet::backdrop { background: rgb(0 0 0 / .45); }
+@keyframes done-in { from { transform: translateY(30px) scale(.96); opacity: 0; } }
+.done-form { display: flex; flex-direction: column; width: 100%; min-height: 0; }
+.done-hero { position: relative; flex: none; height: clamp(120px, 28dvh, 240px); background: var(--color-serve-soft); }
+.done-hero img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }
+.done-hero.no-img { height: 72px; }
+.done-x { position: absolute; top: 10px; right: 10px; display: grid; place-items: center; width: var(--tap); height: var(--tap); border: 0; border-radius: 50%;
+  background: color-mix(in srgb, var(--color-paper) 88%, transparent); color: var(--color-ink); cursor: pointer; }
+.done-burst { position: absolute; left: 50%; bottom: 0; width: 0; height: 0; pointer-events: none; }
+.done-burst i { position: absolute; left: 0; top: 0; width: 8px; height: 12px; border-radius: 2px; opacity: 0;
+  animation: done-bit 1.5s var(--d, 0s) cubic-bezier(.15, .7, .35, 1) forwards; }
+.done-burst i:nth-child(3n) { width: 7px; height: 7px; border-radius: 50%; }
+@keyframes done-bit {
+  0% { transform: translate(0, 0) rotate(0); opacity: 1; }
+  55% { opacity: 1; }
+  100% { transform: translate(var(--x), calc(var(--y) + 140px)) rotate(var(--r)); opacity: 0; }
+}
+.done-body { flex: 1; min-height: 0; overflow-y: auto; display: grid; align-content: start; gap: var(--space-6); padding: var(--space-6); }
+.done-eyebrow { display: flex; align-items: center; gap: var(--space-2); margin: 0 0 calc(-1 * var(--space-3)); font: 500 11px/1.3 var(--font-mono);
+  letter-spacing: .06em; text-transform: uppercase; color: var(--color-serve-ink); }
+.done-tick { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--color-serve); color: var(--color-paper);
+  animation: done-pop .5s .15s both cubic-bezier(.2, .9, .3, 1.6); }
+.done-tick .icon { width: 14px; height: 14px; stroke-width: 3; }
+@keyframes done-pop { from { transform: scale(0); } }
+.done-body h2 { margin: 0; font: 600 30px/1.15 var(--font-serif); }
+.done-sub { margin: calc(-1 * var(--space-3)) 0 0; color: var(--color-muted); font-size: 15px; }
+.done-made { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border: 1px solid var(--color-line);
+  border-radius: var(--radius); cursor: pointer; }
+.done-made input { position: absolute; opacity: 0; }
+.done-box { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border: 2px solid var(--color-line-strong); border-radius: 8px; color: transparent; }
+.done-box .icon { width: 18px; height: 18px; stroke-width: 3; }
+.done-made:has(input:checked) { border-color: var(--color-serve); background: var(--color-serve-soft); }
+.done-made input:checked + .done-box { border-color: var(--color-serve); background: var(--color-serve); color: var(--color-paper); }
+.done-made input:focus-visible + .done-box { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.done-made b { display: block; font-weight: 600; }
+.done-made small { display: block; color: var(--color-muted); font-size: 13px; }
+.done-login { margin: 0; color: var(--color-muted); }
+.done-login a { color: var(--color-ink); font-weight: 600; }
+.done-sheet .fb-foot { flex: none; }
+@media (max-width: 600px) {
+  .done-sheet { width: 100vw; max-height: 94dvh; margin: auto 0 0; border-radius: 22px 22px 0 0; }
+  .done-sheet[open] { animation-name: done-up; }
+  .done-body { padding: var(--space-4) var(--space-4) var(--space-6); }
+  .done-sheet .fb-foot { padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom)); }
+}
+@keyframes done-up { from { transform: translateY(100%); } }
+@media (prefers-reduced-motion: reduce) { .done-sheet[open], .done-tick { animation: none; } }
