@@ -1,111 +1,79 @@
 {% extends "base.html" %}
 
-{% block title %}Ingredient Galaxy Builder{% endblock %}
+{% block title %}Ingredient galaxy{% endblock %}
 
 {% block head %}
 <script src="https://d3js.org/d3.v7.min.js"></script>
 <style>
-    /* Remove body scroll since we want a full screen map under the navbar */
-    body {
-        overflow: hidden;
-    }
-
-    .link {
-        transition: stroke-opacity 0.2s;
-    }
-
-    .node circle {
-        transition: r 0.2s, fill 0.2s;
-    }
-
-    .galaxy-scroll::-webkit-scrollbar {
-        width: 4px;
-    }
-
-    .galaxy-scroll::-webkit-scrollbar-track {
-        background: transparent;
-    }
-
-    .galaxy-scroll::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 4px;
-    }
-
-    .galaxy-scroll {
-        scrollbar-width: thin;
-        scrollbar-color: #cbd5e1 transparent;
-    }
-
-    /* Removed heavy CSS drop-shadow filters to optimize rendering for large graphs */
+    /* The ingredient galaxy in the language of the recipe pages (static/css/library.css): tokens only */
+    body { overflow: hidden; }
+    .gx { position: relative; width: 100%; height: calc(100vh - 64px); background: var(--color-soft); }
+    .gx-map { width: 100%; height: 100%; cursor: grab; }
+    .gx-map:active { cursor: grabbing; }
+    .gx-top { position: absolute; inset: 0 0 auto 0; padding: var(--space-4); display: flex; justify-content: space-between;
+      align-items: flex-start; gap: var(--space-4); z-index: 10; pointer-events: none; }
+    .gx-panel { pointer-events: auto; background: color-mix(in srgb, var(--color-paper) 92%, transparent); backdrop-filter: blur(8px);
+      border: 1px solid var(--color-line); border-radius: var(--radius); padding: var(--space-4); }
+    .gx-head { width: min(360px, 100%); display: grid; gap: var(--space-2); }
+    .gx-head h1 { margin: 0; font: 600 26px/1.15 var(--font-serif); color: var(--color-ink); }
+    .gx-head p { margin: 0; color: var(--color-muted); font-size: 14px; }
+    .gx-search { position: relative; }
+    .gx-search input { width: 100%; min-height: 40px; padding: 0 var(--space-3); border: 1px solid var(--color-line); border-radius: var(--radius-pill);
+      background: var(--color-paper); color: var(--color-ink); font: 400 14px var(--font-sans); }
+    .gx-search input:focus { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+    .gx-drop { position: absolute; top: calc(100% + 6px); left: 0; right: 0; max-height: 260px; overflow-y: auto; z-index: 20;
+      background: var(--color-paper); border: 1px solid var(--color-line); border-radius: var(--radius); box-shadow: 0 10px 30px rgb(0 0 0 / .08); }
+    .gx-drop[hidden] { display: none; }
+    .gx-hit { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-3); cursor: pointer; color: var(--color-ink); font-size: 14px; }
+    .gx-hit + .gx-hit { border-top: 1px solid var(--color-line); }
+    .gx-hit:hover { background: var(--color-soft); }
+    .gx-hit img, .gx-hit .gx-noimg { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--color-line); object-fit: cover; flex: none; }
+    .gx-noimg { display: grid; place-items: center; color: var(--color-muted); background: var(--color-soft); }
+    .gx-noimg .icon { width: 16px; height: 16px; }
+    .gx-none { padding: var(--space-4); color: var(--color-muted); font-size: 14px; text-align: center; }
+    .gx-btns { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+    .gx-btns button { min-height: 34px; padding: 0 var(--space-3); border: 1px solid var(--color-line); border-radius: var(--radius-pill);
+      background: var(--color-paper); color: var(--color-ink); font: 600 13px var(--font-sans); cursor: pointer; }
+    .gx-btns button:hover { border-color: var(--color-ink); }
+    .gx-legend { display: grid; gap: var(--space-2); font-size: 13px; color: var(--color-ink); }
+    .gx-legend .lib-eyebrow { margin-bottom: 2px; }
+    .gx-legend span { display: inline-flex; align-items: center; gap: var(--space-2); }
+    .gx-legend i { display: inline-block; border-radius: 50%; background: var(--color-paper); border: 2px solid var(--color-line-strong); }
+    .gx-legend .m { width: 18px; height: 18px; border-color: var(--color-ink); }
+    .gx-legend .s { width: 14px; height: 14px; border-color: var(--color-muted); }
+    .gx-legend .i { width: 10px; height: 10px; }
+    .gx-loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--color-muted);
+      font: 500 12px/1.3 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; }
+    @media (max-width: 767px) { .gx-legend-panel, .gx-head p:not(.lib-eyebrow) { display: none; } .gx-head h1 { font-size: 22px; } }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="relative w-full" style="height: calc(100vh - 64px);">
-
-    <div class="absolute top-0 left-0 right-0 p-4 flex justify-between items-start z-10 pointer-events-none">
-
-        <!-- Left: Branding & Search -->
-        <div class="pointer-events-auto w-full max-w-sm space-y-2 max-h-[calc(100vh-80px)] overflow-y-auto galaxy-scroll">
-            <div class="bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl p-3 shadow-sm">
-                <h1 class="text-xl font-semibold text-slate-900 tracking-tight mb-0.5 flex items-center gap-2">
-                    Ingredient Galaxy
-                </h1>
-                <p class="text-xs text-slate-500 mb-2">Explore the pantry network.</p>
-                <div class="relative">
-                    <input type="text" id="search-input" placeholder="Search an ingredient..."
-                        class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-3 pr-3 text-sm text-slate-900 focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 placeholder-slate-400">
-                    <div id="search-dropdown"
-                        class="hidden absolute top-full mt-2 w-full bg-white border border-slate-200 rounded-xl max-h-64 overflow-y-auto shadow-xl z-20">
-                    </div>
-                </div>
+<div class="gx">
+    <div class="gx-top">
+        <div class="gx-panel gx-head">
+            <p class="lib-eyebrow">Ingredients</p>
+            <h1>Ingredient galaxy</h1>
+            <p>Every ingredient in the pantry, around its kind and its group.</p>
+            <div class="gx-search">
+                <input type="text" id="search-input" placeholder="Find an ingredient" aria-label="Find an ingredient">
+                <div id="search-dropdown" class="gx-drop" hidden></div>
             </div>
-
-            <div class="bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl p-1.5 shadow-sm inline-flex flex-col gap-0.5">
-                <button id="btn-recenter"
-                    class="flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-xl px-3 py-1.5 text-xs font-medium">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                    Center Map
-                </button>
-                <button id="btn-physics"
-                    class="flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-xl px-3 py-1.5 text-xs font-medium">
-                    <svg class="w-3.5 h-3.5" id="icon-pause" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span id="label-physics">Pause Physics</span>
-                </button>
+            <div class="gx-btns">
+                <button type="button" id="btn-recenter">Center</button>
+                <button type="button" id="btn-physics"><span id="label-physics">Pause</span></button>
             </div>
         </div>
-
-        <!-- Right: Legend -->
-        <div class="pointer-events-auto bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl p-4 shadow-sm text-xs w-48">
-            <h3 class="font-semibold text-slate-400 mb-3 uppercase tracking-wider text-[10px]">Legend</h3>
-            <div class="space-y-3">
-                <div class="flex items-center gap-3">
-                    <span class="w-3.5 h-3.5 rounded-full bg-slate-700 shadow-sm border-2 border-slate-900"></span>
-                    <span class="text-slate-600 font-medium">Main Category</span>
-                </div>
-                <div class="flex items-center gap-3">
-                    <span class="w-3.5 h-3.5 rounded-full bg-slate-400 shadow-sm border-2 border-slate-600"></span>
-                    <span class="text-slate-600 font-medium">Sub Category</span>
-                </div>
-                <div class="flex items-center gap-3">
-                    <span class="w-3.5 h-3.5 rounded-full bg-indigo-500 shadow-sm border-2 border-indigo-200"></span>
-                    <span class="text-slate-600 font-medium">Ingredient</span>
-                </div>
-            </div>
+        <div class="gx-panel gx-legend gx-legend-panel">
+            <p class="lib-eyebrow">Legend</p>
+            <span><i class="m"></i>Group</span>
+            <span><i class="s"></i>Kind</span>
+            <span><i class="i"></i>Ingredient</span>
         </div>
     </div>
-
-    <!-- Graph Container -->
-    <div id="galaxy-container" class="w-full h-full bg-slate-50 relative cursor-grab active:cursor-grabbing">
-        <div id="loading" class="absolute inset-0 flex items-center justify-center text-slate-400 text-sm font-medium animate-pulse">
-            Mapping connections...
-        </div>
+    <div id="galaxy-container" class="gx-map">
+        <div id="loading" class="gx-loading">Mapping the pantry…</div>
     </div>
-
 </div>
 
 <script>
@@ -127,15 +95,16 @@
             fadeStart: 0.3
         };
 
-        const colorMap = {
-            'main_cat': '#334155', // slate-700
-            'sub_cat': '#94a3b8', // slate-400
-            'ingredient': '#6366f1' // indigo-500
-        };
+        // Colours from the design tokens (static/css/tokens.css)
+        const css = getComputedStyle(document.documentElement);
+        const T = n => css.getPropertyValue(n).trim();
+        const C = { paper: T('--color-paper'), ink: T('--color-ink'), muted: T('--color-muted'), line: T('--color-line'),
+                    strong: T('--color-line-strong'), accent: T('--color-accent') };
+        const strokeOf = d => d.group === 'main_cat' ? C.ink : d.group === 'sub_cat' ? C.muted : C.strong;
 
         const radiusMap = {
-            'main_cat': 40,
-            'sub_cat': 28,
+            'main_cat': 44,
+            'sub_cat': 30,
             'ingredient': 18
         };
 
@@ -189,8 +158,8 @@
                 .force('y', d3.forceY(height / 2).strength(() => cfg.gravity));
 
             const link = g.append('g')
-                .attr('stroke', '#cbd5e1')
-                .attr('stroke-opacity', 0.6)
+                .attr('stroke', C.line)
+                .attr('stroke-opacity', 0.9)
                 .selectAll('line')
                 .data(linksData)
                 .join('line')
@@ -209,13 +178,9 @@
 
             nodeGroup.append('circle')
                 .attr('r', d => radiusMap[d.group] * cfg.nodeSize)
-                .attr('fill', d => colorMap[d.group])
-                .attr('stroke', d => {
-                    if (d.group === 'main_cat') return '#0f172a';
-                    if (d.group === 'sub_cat') return '#475569';
-                    return '#e0e7ff';
-                })
-                .attr('stroke-width', 2);
+                .attr('fill', C.paper)
+                .attr('stroke', strokeOf)
+                .attr('stroke-width', d => d.group === 'ingredient' ? 1.5 : 2);
 
             nodeGroup.filter(d => d.image)
                 .append('image')
@@ -230,10 +195,11 @@
                 .attr('dy', d => (radiusMap[d.group] * cfg.nodeSize) + 16)
                 .attr('text-anchor', 'middle')
                 .text(d => d.name)
-                .attr('fill', '#475569')
-                .style('font-size', d => d.group === 'ingredient' ? '12px' : '14px')
+                .attr('fill', d => d.group === 'ingredient' ? C.muted : C.ink)
+                .style('font-family', d => d.group === 'main_cat' ? T('--font-serif') : T('--font-sans'))
+                .style('font-size', d => d.group === 'main_cat' ? '16px' : d.group === 'sub_cat' ? '13px' : '12px')
                 .style('font-weight', d => d.group === 'ingredient' ? '500' : '600')
-                .style('text-shadow', '0 2px 4px rgba(255,255,255,0.8)');
+                .style('paint-order', 'stroke').style('stroke', C.paper).style('stroke-width', '3px');
 
             nodeGroup.on('mouseover', function (event, d) {
                 nodeGroup.style('opacity', 0.2);
@@ -242,7 +208,7 @@
                 const connected = new Set([d.id]);
                 link.filter(l => l.source.id === d.id || l.target.id === d.id)
                     .style('stroke-opacity', 1)
-                    .style('stroke', '#64748b')
+                    .style('stroke', C.muted)
                     .each(l => {
                         connected.add(l.source.id);
                         connected.add(l.target.id);
@@ -251,18 +217,14 @@
                 nodeGroup.filter(n => connected.has(n.id))
                     .style('opacity', 1)
                     .select('circle')
-                    .attr('stroke', '#fbbf24');
+                    .attr('stroke', C.accent);
 
                 d3.select(this).raise();
             }).on('mouseout', function () {
                 nodeGroup.style('opacity', 1)
                     .select('circle')
-                    .attr('stroke', d => {
-                        if (d.group === 'main_cat') return '#0f172a';
-                        if (d.group === 'sub_cat') return '#475569';
-                        return '#e0e7ff';
-                    });
-                link.style('stroke-opacity', 0.6).style('stroke', '#cbd5e1');
+                    .attr('stroke', strokeOf);
+                link.style('stroke-opacity', 0.9).style('stroke', C.line);
             });
 
             simulation.on('tick', () => {
@@ -304,12 +266,10 @@
             physicsEnabled = !physicsEnabled;
             if (physicsEnabled) {
                 simulation.alpha(0.1).restart();
-                document.getElementById('label-physics').textContent = 'Pause Physics';
-                document.getElementById('icon-pause').innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />';
+                document.getElementById('label-physics').textContent = 'Pause';
             } else {
                 simulation.stop();
-                document.getElementById('label-physics').textContent = 'Resume Physics';
-                document.getElementById('icon-pause').innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />';
+                document.getElementById('label-physics').textContent = 'Resume';
             }
         });
 
@@ -321,43 +281,49 @@
                 const q = e.target.value.toLowerCase();
                 drop.innerHTML = '';
                 if (q.length < 2) {
-                    drop.classList.add('hidden');
+                    drop.hidden = true;
                     return;
                 }
 
                 const ings = nodesData.filter(n => n.group === 'ingredient' && n.name.toLowerCase().includes(q)).slice(0, 10);
 
                 if (ings.length === 0) {
-                    drop.innerHTML = '<div class="p-4 text-sm text-slate-500 text-center">No ingredients found.</div>';
+                    drop.innerHTML = '<div class="gx-none">No ingredient by that name.</div>';
                 } else {
                     ings.forEach(r => {
                         const div = document.createElement('div');
-                        div.className = 'p-3 hover:bg-slate-50 cursor-pointer text-sm text-slate-700 border-b border-slate-100 last:border-0 flex items-center gap-3 transition-colors';
+                        div.className = 'gx-hit';
 
                         let parsedImg = r.image;
                         if(parsedImg && !parsedImg.startsWith('http')) {
                             parsedImg = '/' + ('static/' + parsedImg).replace('//', '/');
                         }
 
-                        const imgHTML = parsedImg 
-                            ? `<img src="${parsedImg}" class="w-8 h-8 rounded-full border border-slate-200 object-cover shadow-sm">`
-                            : `<div class="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 text-xs shadow-sm">🥦</div>`;
-
-                        div.innerHTML = `${imgHTML} <span class="font-medium truncate">${r.name}</span>`;
+                        if (parsedImg) {
+                            const img = document.createElement('img');
+                            img.src = parsedImg;
+                            img.alt = '';
+                            div.appendChild(img);
+                        } else {
+                            div.insertAdjacentHTML('beforeend', '<span class="gx-noimg">{{ icon("carrot") }}</span>');
+                        }
+                        const label = document.createElement('span');
+                        label.textContent = r.name;
+                        div.appendChild(label);
                         div.onclick = () => {
                             teleportTo(r);
                             input.value = r.name;
-                            drop.classList.add('hidden');
+                            drop.hidden = true;
                         };
                         drop.appendChild(div);
                     });
                 }
-                drop.classList.remove('hidden');
+                drop.hidden = false;
             });
 
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('#search-input') && !e.target.closest('#search-dropdown')) {
-                    drop.classList.add('hidden');
+                    drop.hidden = true;
                 }
             });
         }
@@ -376,11 +342,11 @@
             g.selectAll('.node').filter(n => n.id === node.id)
                 .select('circle')
                 .transition().duration(200)
-                .attr('stroke', '#f97316')
+                .attr('stroke', C.accent)
                 .attr('stroke-width', 4)
                 .transition().duration(2000)
-                .attr('stroke', '#e0e7ff')
-                .attr('stroke-width', 2);
+                .attr('stroke', strokeOf)
+                .attr('stroke-width', 1.5);
         }
 
         window.addEventListener('resize', () => {

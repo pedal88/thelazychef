@@ -5,7 +5,7 @@ import os
 from flask import jsonify, render_template, url_for
 from sqlalchemy import or_
 
-from database.models import Ingredient, Recipe, db
+from database.models import ConceptVisual, Ingredient, Recipe, RecipeLine, db
 from routes._flat import FlatBlueprint
 from routes._shared import get_recipe_image_url
 
@@ -88,48 +88,59 @@ def explore_ingredient_galaxy():
     from services.concept_visual_service import get_concept_images_dict
     return render_template('explore_ingredient_galaxy.html', concept_visuals=get_concept_images_dict())
 
+def _clean(text):
+    """A category name as one plain string: some were saved with non-breaking spaces ("canned\xa0fish")."""
+    return ' '.join((text or '').replace('\xa0', ' ').split())
+
+
 @explore_bp.route('/api/graph/ingredient-galaxy', methods=['GET'])
 def get_global_ingredient_galaxy_graph():
-    """Returns nodes and links for ingredients linked to main and sub categories."""
-    ingredients = db.session.execute(
-        db.select(Ingredient).where(Ingredient.status == 'active')
-    ).scalars().all()
-    
-    nodes_dict = {}
-    links = []
-    
+    """Active ingredients linked to their sub category, and that to its main category (Ingredient.main_category and
+    sub_category, two text columns checked against data/constraints/categories.json).
+
+    A main category shows its own symbol (concept_visual "ingredient_category", made by scripts/category_symbols.py).
+    A sub category shows the symbol of its most used ingredient in approved recipes, unless concept_visual
+    "ingredient_subcategory" has one for it. A sub category is one node per main category, as it is stored: "juices"
+    under fruit and under drinks are two. Each ingredient carries "uses", the number of approved recipes with it."""
+    ingredients = db.session.execute(db.select(Ingredient).where(Ingredient.status == 'active')).scalars().all()
+    uses = dict(db.session.execute(
+        db.select(RecipeLine.ingredient_id, db.func.count(db.distinct(RecipeLine.recipe_id)))
+        .join(Recipe, Recipe.id == RecipeLine.recipe_id).where(Recipe.status == 'approved')
+        .group_by(RecipeLine.ingredient_id)).all())
+    symbols = {(v.concept_type, v.concept_name): v.image_url for v in db.session.execute(
+        db.select(ConceptVisual).where(ConceptVisual.concept_type.in_(('ingredient_category', 'ingredient_subcategory')),
+                                       ConceptVisual.image_url.is_not(None))).scalars()}
+
+    nodes, links, members = {}, [], {}
     for i in ingredients:
         ing_id = f"ing_{i.id}"
-        nodes_dict[ing_id] = {
-            'id': ing_id,
-            'name': i.name,
-            'group': 'ingredient',
-            'image': i.image_url if i.image_url else None
-        }
-        
-        main_cat = i.main_category or "Uncategorized"
-        sub_cat = i.sub_category or "General"
-        
+        nodes[ing_id] = {'id': ing_id, 'name': i.name, 'group': 'ingredient', 'image': i.image_url or None,
+                         'uses': uses.get(i.id, 0)}
+        main_cat = _clean(i.main_category) or 'Uncategorized'
+        sub_cat = _clean(i.sub_category) or 'General'
         m_id = f"main_{main_cat}"
-        if m_id not in nodes_dict:
-            nodes_dict[m_id] = {
-                'id': m_id, 'name': main_cat, 'group': 'main_cat'
-            }
-            
-        # Add a sub-category node only if it differs from the main category
-        # Sometimes sub_category empty, default to "General"
-        if sub_cat and main_cat != sub_cat:
-            s_id = f"sub_{sub_cat}"
-            if s_id not in nodes_dict:
-                nodes_dict[s_id] = {
-                    'id': s_id, 'name': sub_cat, 'group': 'sub_cat'
-                }
-            links.append({'source': s_id, 'target': m_id, 'weight': 2.0})
+        if m_id not in nodes:
+            nodes[m_id] = {'id': m_id, 'name': main_cat, 'group': 'main_cat',
+                           'image': symbols.get(('ingredient_category', main_cat))}
+        if main_cat != sub_cat:
+            s_id = f"sub_{main_cat}|{sub_cat}"
+            if s_id not in nodes:
+                nodes[s_id] = {'id': s_id, 'name': sub_cat, 'group': 'sub_cat',
+                               'image': symbols.get(('ingredient_subcategory', sub_cat))}
+                links.append({'source': s_id, 'target': m_id, 'weight': 2.0})
+            members.setdefault(s_id, []).append(nodes[ing_id])
             links.append({'source': ing_id, 'target': s_id, 'weight': 1.0})
         else:
             links.append({'source': ing_id, 'target': m_id, 'weight': 1.0})
 
-    return jsonify({'nodes': list(nodes_dict.values()), 'links': links})
+    # A sub category without its own symbol shows its most used ingredient that has one
+    for s_id, items in members.items():
+        if not nodes[s_id]['image']:
+            pictured = sorted((n for n in items if n['image']), key=lambda n: (-n['uses'], n['name']))
+            nodes[s_id]['image'] = pictured[0]['image'] if pictured else None
+        nodes[s_id]['uses'] = sum(n['uses'] for n in items)
+    return jsonify({'nodes': list(nodes.values()), 'links': links})
+
 
 @explore_bp.route('/api/graph/orbital/<int:recipe_id>', methods=['GET'])
 def get_orbital_graph(recipe_id):
