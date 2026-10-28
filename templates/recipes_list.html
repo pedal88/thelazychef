@@ -132,12 +132,12 @@
 {# The layout trial (admins, routes/_shared.LIBRARY_LAYOUTS): one line for the head, a toolbar that stays under the
    site's bar, a wider grid and the cards' actions on the card. Only how the filters are shown differs. #}
 {% set filters_in_use = in_use - (1 if q else 0) %}
-<div class="lv" data-layout="{{ layout }}">
+<div class="lv{% for t in tweaks|sort %} tw-{{ t }}{% endfor %}" data-layout="{{ layout }}">
     <div class="lv-head">
-        <h1>{{ title }} <span class="lv-count">{{ total }}</span></h1>
+        <h1>{{ title }} <span class="lv-count" data-lv-swap="total">{{ total }}</span></h1>
         {% if current_user.is_authenticated %}{{ view_tabs() }}{% endif %}
     </div>
-    <form class="lib-form lv-form" method="GET" action="{{ url_for('recipes_list') }}" data-lib-form>
+    <form class="lib-form lv-form" method="GET" action="{{ url_for('recipes_list') }}" data-lib-form{% if 'instant' in tweaks %} data-instant{% endif %}>
         {% if current_view != 'discover' %}<input type="hidden" name="view" value="{{ current_view }}">{% endif %}
 
         {% if layout == 'pills' %}
@@ -180,28 +180,36 @@
 
         {% else %}
         {# 3: search, Filters and the order on one line, the shortcuts under it; the rest in a drawer that applies
-           when you press its button #}
+           when you press its button. The admins' tweaks (routes/_shared.LIBRARY_TWEAKS): active, the choices in use
+           first in the row, each with an x; count, the drawer counts the cards as you choose and dims the choices
+           that give none; calm, quieter cards; instant, the list follows the search as you type (data-lv-swap is
+           what it replaces); smart, shortcuts for the day and season. #}
         <div class="lv-tools">
             {% call search_row() %}
             <button type="button" class="lv-filters-btn{% if filters_in_use %} is-on{% endif %}" data-lv-open>{{ icon('list') }}Filters{% if filters_in_use %} <b>{{ filters_in_use }}</b>{% endif %}</button>
             {% endcall %}
-            <nav class="lv-quick" aria-label="Shortcuts">
+            <nav class="lv-quick" aria-label="Shortcuts" data-lv-swap="quick">
+                {% if 'active' in tweaks %}
+                {% for text, url in active %}<a href="{{ url }}" class="lib-chip-link is-active" aria-label="Remove {{ text }}">{{ text }}{{ icon('close') }}</a>{% endfor %}
+                {% for label, url, on in shortcuts if not on %}<a href="{{ url }}" class="lib-chip-link">{{ label }}</a>{% endfor %}
+                {% else %}
                 {% for label, url, on in shortcuts %}<a href="{{ url }}" class="lib-chip-link"{% if on %} aria-current="true"{% endif %}>{{ label }}</a>{% endfor %}
+                {% endif %}
                 {% if filters_in_use %}<a class="lv-clear" href="{{ clear_url() }}">Clear all</a>{% endif %}
             </nav>
         </div>
-        <dialog class="fb lv-drawer" id="lv-drawer" aria-labelledby="lv-drawer-h" data-lv-drawer>
+        <dialog class="fb lv-drawer" id="lv-drawer" aria-labelledby="lv-drawer-h" data-lv-drawer{% if 'count' in tweaks %} data-count="{{ url_for('recipes_count') }}"{% endif %}>
             <div class="fb-form">
                 <div class="fb-head"><div><h2 id="lv-drawer-h">Filters</h2></div>
                     <button type="button" class="fb-x" data-lv-close aria-label="Close">{{ icon('close') }}</button></div>
                 <div class="fb-body">{% for g in groups %}{{ chip_group(g) }}{% endfor %}</div>
                 <div class="fb-foot">
                     <a class="fb-cancel lv-drawer-clear" href="{{ clear_url() }}">Clear all</a>
-                    <button type="submit" class="fb-save">Show recipes</button>
+                    <button type="submit" class="fb-save">Show {% if 'count' in tweaks %}<span data-lv-n>{{ total }} {{ 'recipe' if total == 1 else 'recipes' }}</span>{% else %}recipes{% endif %}</button>
                 </div>
             </div>
         </dialog>
-        {{ results(in_card=True) }}
+        <div data-lv-swap="results">{{ results(in_card=True) }}</div>
         {% endif %}
     </form>
 </div>
@@ -216,6 +224,11 @@
         <div class="tgroup" data-lib-switch><span class="tlabel">Layout</span>
             {%- for key, label in LIBRARY_LAYOUTS.items() %}<button type="button" data-lib="{{ key }}" aria-pressed="{{ 'true' if key == layout else 'false' }}">{{ label }}</button>{% endfor -%}
         </div>
+        {% if layout == 'drawer' %}
+        <div class="tgroup" data-tw-switch><span class="tlabel">Tweaks</span>
+            {%- for key, label in LIBRARY_TWEAKS.items() %}<button type="button" data-tw="{{ key }}" aria-pressed="{{ 'true' if key in tweaks else 'false' }}">{{ label }}</button>{% endfor -%}
+        </div>
+        {% endif %}
     </div>
 </details>
 {% endif %}

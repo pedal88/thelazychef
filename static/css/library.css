@@ -289,3 +289,21 @@
 .lv-drawer .lib-chips { grid-template-columns: 1fr; gap: var(--space-2); }
 .lv-drawer .lib-chips legend { padding: 0; }
 .lv-drawer-clear { display: inline-grid; place-items: center; text-decoration: none; }
+.rcard-hands { font-style: normal; }
+
+/* The drawer layout's tweaks (admins, routes/_shared.LIBRARY_TWEAKS; .lv.tw-*) */
+/* active: the choices in use first in the shortcut row, each with an x to remove it */
+.lib-chip-link.is-active { gap: 6px; padding-right: 10px; background: var(--color-ink); border-color: var(--color-ink); color: var(--color-paper); }
+.lib-chip-link.is-active .icon { width: 14px; height: 14px; }
+/* count: a choice that would give no cards */
+.lib-chip.is-empty span { opacity: .4; cursor: default; }
+.lib-chip.is-empty span:hover { border-color: var(--color-line); }
+/* calm: the time and difficulty only, no tags, and the buttons on the image when the pointer is over the card */
+.tw-calm .rcard-cuisine, .tw-calm .rcard-hands, .tw-calm .rcard-tags { display: none; }
+.tw-calm .rcard-meta .rcard-time::before { content: none; margin: 0; }
+@media (hover: hover) {
+  .tw-calm .rcard-acts { opacity: 0; transition: opacity .15s; }
+  .tw-calm .rcard:hover .rcard-acts, .tw-calm .rcard:focus-within .rcard-acts, .tw-calm .rcard-acts:has([aria-pressed="true"]) { opacity: 1; }
+}
+/* instant: the list fades while the search loads */
+.lv [data-lv-swap="results"][aria-busy="true"] { opacity: .5; transition: opacity .15s; }
