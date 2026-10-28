@@ -19,8 +19,9 @@ def _symbols():
     {'cuisine': {name: url}, 'protein': {label: url}}.
 
     A cuisine shows the dish made for it (concept_visual "cuisine", scripts/category_symbols.py --kind cuisine).
-    A protein shows the symbol of a typical pantry ingredient (main_protein.json "symbol_from"), unless
-    concept_visual "main_protein" has one for it."""
+    A protein shows the symbol of a typical pantry ingredient (main_protein.json "symbol_from"), so it is in the
+    same style; concept_visual "main_protein" only fills in where no such ingredient has a symbol (older images of
+    another style are kept there)."""
     visuals = {(v.concept_type, v.concept_name): v.image_url for v in db.session.execute(
         db.select(ConceptVisual).where(ConceptVisual.concept_type.in_(('cuisine', 'main_protein')),
                                        ConceptVisual.image_url.is_not(None))).scalars()}
@@ -29,8 +30,9 @@ def _symbols():
     wanted = {name for names in symbol_from.values() for name in names}
     pictured = dict(db.session.execute(db.select(db.func.lower(Ingredient.name), Ingredient.image_url).where(
         db.func.lower(Ingredient.name).in_(wanted), Ingredient.status == 'active', Ingredient.image_url.is_not(None))).all())
-    protein = {label: next((pictured[n] for n in names if n in pictured), None) for label, names in symbol_from.items()}
-    protein.update({name: url for (kind, name), url in visuals.items() if kind == 'main_protein'})
+    protein = {name: url for (kind, name), url in visuals.items() if kind == 'main_protein'}
+    protein.update({label: url for label, names in symbol_from.items()
+                    if (url := next((pictured[n] for n in names if n in pictured), None))})
     return {'cuisine': {name: url for (kind, name), url in visuals.items() if kind == 'cuisine'}, 'protein': protein}
 
 

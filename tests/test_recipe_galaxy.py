@@ -27,11 +27,13 @@ class RecipeGalaxyTests(unittest.TestCase):
             Ingredient(food_id='2', name='Lamb chops', status='active', image_url='https://b/lamb.webp'),
             Ingredient(food_id='3', name='eggs', status='pending', image_url='https://b/eggs.webp'),
             ConceptVisual(concept_type='cuisine', concept_name='Italian', image_url='https://b/italian.webp'),
-            ConceptVisual(concept_type='main_protein', concept_name='Lamb', image_url='https://b/own-lamb.webp'),
+            ConceptVisual(concept_type='main_protein', concept_name='Lamb', image_url='https://b/old-lamb.png'),
+            ConceptVisual(concept_type='main_protein', concept_name='Duck', image_url='https://b/duck.png'),
         ])
         for title, cuisine, protein, status in [('Chicken pasta', 'Italian', 'Chicken', 'approved'),
                                                 ('Lamb stew', 'Nordic', 'Lamb', 'approved'),
                                                 ('Shakshuka', 'Middle Eastern', 'Eggs', 'approved'),
+                                                ('Duck breast', 'French', 'Duck', 'approved'),
                                                 ('Draft', 'Thai', 'Salmon', 'draft')]:
             db.session.add(Recipe(title=title, cuisine=cuisine, difficulty='Simplistic', status=status, protein_type=protein))
         db.session.commit()
@@ -47,9 +49,11 @@ class RecipeGalaxyTests(unittest.TestCase):
         nodes = {n['id']: n for n in data['nodes']}
         self.assertEqual(nodes['attr_cuisine_Italian']['image'], 'https://b/italian.webp')
         self.assertIsNone(nodes['attr_cuisine_Nordic']['image'])  # not made yet: a plain planet, never a flag
-        # A protein shows a typical pantry ingredient (main_protein.json symbol_from), its own symbol when it has one
+        # A protein shows a typical pantry ingredient (main_protein.json symbol_from), in the same style; an older
+        # concept image only where no such ingredient has a symbol
         self.assertEqual(nodes['attr_protein_Chicken']['image'], 'https://b/chicken.webp')
-        self.assertEqual(nodes['attr_protein_Lamb']['image'], 'https://b/own-lamb.webp')
+        self.assertEqual(nodes['attr_protein_Lamb']['image'], 'https://b/lamb.webp')
+        self.assertEqual(nodes['attr_protein_Duck']['image'], 'https://b/duck.png')
         self.assertIsNone(nodes['attr_protein_Eggs']['image'])  # the eggs item is pending
         self.assertNotIn('attr_cuisine_Thai', nodes)  # drafts are not in the galaxy
         text = self.client.get('/api/graph/galaxy').get_data(as_text=True)
