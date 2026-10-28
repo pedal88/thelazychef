@@ -159,8 +159,7 @@
       + [...lb.map(b => `<button type="button" data-sheet="sheet-bowls" data-jump="${esc(b.closest('.later').id)}">Bowl ${esc(b.querySelector('.bno').dataset.no)}: ${esc(b.querySelector('.bowl-h b').textContent)}</button>`),
         ...look.map(x => `<button type="button" data-tip-look="${esc(x.id)}">${esc(byId[x.id].dataset.label)}</button> <span>${x.minutes} min</span>`)].join(' · ');
     const main = q('[data-sc-done]'), alt = q('[data-sc-alt]');
-    main.hidden = !row;
-    main.innerHTML = peek ? esc(back.textContent) : 'Done <span aria-hidden="true">→</span> next step';
+    main.innerHTML = !row ? 'How did it go?' : peek ? esc(back.textContent) : 'Done <span aria-hidden="true">→</span> next step';
     alt.hidden = !peek;
     if (peek) alt.textContent = done.has(id) ? `Untick step ${num(row)}` : `Mark step ${num(row)} as done`;
   }
@@ -168,7 +167,7 @@
   function cardDone(sp) {
     if (sp.pick) { sp.pick = null; splitRender(); return; }
     const id = nextId();
-    if (id) tick(byId[id]);
+    if (id) tick(byId[id]); else finished();
   }
   // Its small button, on a look at another step: tick that step off, or back on, and go back
   function cardAlt(sp) {
@@ -395,12 +394,20 @@
     if (i >= 0) st.done.splice(i, 1);
     else {
       opened.delete(id);
+      if (!st.done.length) st.started = Date.now();  // for how long the cooking took, in the celebration
       st.done.push(id);
       // The water has boiled once the pasta is in: a step that used what was standing ends its timer
       const used = (row.dataset.after || '').split(' ');
       st.runs = st.runs.filter(r => !used.includes(r.step));
     }
     render();
+    if (i < 0 && st.done.length === rows.length) finished();
+  }
+
+  /* The last step ticked off: the celebration (static/js/done.js) opens, told how long the cooking took */
+  function finished() {
+    const min = st.started ? Math.round((Date.now() - st.started) / 60e3) : null;
+    page.dispatchEvent(new CustomEvent('steps:finished', { detail: { minutes: min !== null && min < 6 * 60 ? min : null } }));
   }
 
   function start(row) {
@@ -592,7 +599,7 @@
       if (sp && getComputedStyle(sp.card).display !== 'none') { sp.pick = id === nextId() ? null : id; splitRender(); } else showStep(id);
       return;
     }
-    if (t.closest('[data-steps-reset]')) { st = { done: [], runs: [] }; opened.clear(); render(); return; }
+    if (t.closest('[data-steps-reset]')) { st = { done: [], runs: [] }; opened.clear(); render(); if (t.closest('dialog')) startCooking(); return; }
     const fold = t.closest('[data-side-fold]');
     if (fold) { const sp = splits.find(x => x.card.contains(fold)); sp.folded = !sp.folded; splitRender(); return; }
     // A step in a view, or in the list beside the card, when the card is shown: shown beside it. In the delta a

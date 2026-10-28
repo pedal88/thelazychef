@@ -12,6 +12,7 @@
 {% from "components/step_list.html" import step_list, view_menu, details_button, bowls_button with context %}
 {% from "components/admin_tools.html" import admin_tools with context %}
 {% from "components/overview_layouts.html" import poster, compact, more_sheet with context %}
+{% from "components/feedback_fields.html" import feedback_fields with context %}
 
 {% block title %}{{ v.title }} - The Lazy Chef{% endblock %}
 
@@ -32,6 +33,8 @@
 <script src="{{ url_for('static', filename='js/ready.js') }}" defer></script>
 <script src="{{ url_for('static', filename='js/kitchen.js') }}" defer></script>
 <script src="{{ url_for('static', filename='js/steps.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/feedback.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/done.js') }}" defer></script>
 <script src="{{ url_for('static', filename='js/delta.js') }}" defer></script>
 <script src="{{ url_for('static', filename='js/servings.js') }}" defer></script>
 <script src="{{ url_for('static', filename='js/overview_fit.js') }}" defer></script>
@@ -71,6 +74,37 @@
       <button type="button" class="sheet-x" data-sheet-close aria-label="Close">{{ icon('close') }}</button></div>
     {% if r.bowls %}<div class="meter" aria-hidden="true"><span></span></div>{% endif %}
     <div class="sheet-fit" data-fit><div class="fit-in">{{ prep_body(links=True) }}</div></div>
+  </dialog>
+
+  {# The celebration when the last step is ticked off (static/js/done.js): the dish, how long it took, and for a
+     signed-in cook "I made this" (counted, /api/interactions/recipe/<id>/cooked), stars, a comment and photos.
+     Opens once when the steps are done; the step card's "How did it go?" opens it again. #}
+  {% set done_img = dish_images(recipe).dish %}
+  <dialog class="done-sheet" id="sheet-done" aria-labelledby="done-h">
+    <form class="done-form" data-done-form>
+      <div class="done-hero{% if not done_img %} no-img{% endif %}">
+        {% if done_img %}<img src="{{ done_img }}" alt="" width="1200" height="900">{% endif %}
+        <div class="done-burst" data-done-burst aria-hidden="true"></div>
+        <button type="button" class="done-x" data-sheet-close aria-label="Close">{{ icon('close') }}</button>
+      </div>
+      <div class="done-body">
+        <p class="done-eyebrow"><span class="done-tick">{{ icon('check') }}</span>All {{ v.steps|length }} steps done</p>
+        <h2 id="done-h">Enjoy your meal!</h2>
+        <p class="done-sub" data-done-sub data-title="{{ v.title }}" data-plan="{{ v.total_min }}">You made {{ v.title }}.</p>
+        {% if current_user.is_authenticated %}
+        <label class="done-made"><input type="checkbox" name="made" checked data-done-made><span class="done-box">{{ icon('check') }}</span>
+          <span><b>I made this</b><small data-done-count>It goes in your Made list.</small></span></label>
+        {{ feedback_fields('How did it turn out? Anything you would change next time?') }}
+        {% else %}
+        <p class="done-login"><a href="{{ url_for('login', next=request.path) }}">Log in</a> to keep it in your Made list, rate it and remember what you would change.</p>
+        {% endif %}
+      </div>
+      <div class="fb-foot">
+        <button type="button" class="fb-cancel" data-steps-reset>Cook it again</button>
+        {% if current_user.is_authenticated %}<button type="submit" class="fb-save" data-done-save>Save</button>
+        {% else %}<button type="button" class="fb-save" data-sheet-close>Close</button>{% endif %}
+      </div>
+    </form>
   </dialog>
   {% endif %}
   {{ more_sheet() }}

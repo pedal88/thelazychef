@@ -1,5 +1,5 @@
 /* The recipe list (templates/recipes_list.html): a chip or the order shows the recipes at once, "Made it" toggles,
-   and the feedback drawer (stars, a comment and photos) saves to /api/interactions/recipe/<id>/feedback. */
+   and the feedback drawer (stars, a comment and photos, static/js/feedback.js). */
 (function () {
   'use strict';
 
@@ -19,9 +19,6 @@
     });
   }
 
-  const sprite = (document.querySelector('svg.icon use') || { getAttribute: () => '' }).getAttribute('href').split('#')[0];
-  const icon = name => `<svg class="icon" aria-hidden="true" focusable="false"><use href="${sprite}#i-${name}"/></svg>`;
-
   // Made it
   document.addEventListener('click', async e => {
     const btn = e.target.closest('[data-made]');
@@ -40,83 +37,18 @@
 
   // Feedback
   const dialog = document.getElementById('feedback');
-  if (!dialog) return;
+  if (!dialog || !window.Feedback) return;
   const fbForm = dialog.querySelector('[data-fb-form]');
-  const stars = [...dialog.querySelectorAll('.fb-stars label')];
-  const photos = dialog.querySelector('[data-fb-photos]');
-  const fresh = dialog.querySelector('[data-fb-new]');
-  const keptBox = dialog.querySelector('[data-fb-kept]');
-  const status = dialog.querySelector('[data-fb-status]');
+  const fb = window.Feedback.attach(fbForm);
   const save = dialog.querySelector('.fb-save');
-  let recipeId = null;
-  let kept = [];  // photos saved before that are to stay
 
-  function paint(n) {
-    stars.forEach((label, i) => label.classList.toggle('on', i < n));
-  }
-  const rating = () => Number((fbForm.querySelector('input[name=rating]:checked') || {}).value || 0);
-  stars.forEach((label, i) => {
-    label.addEventListener('mouseenter', () => paint(i + 1));
-    label.addEventListener('mouseleave', () => paint(rating()));
-  });
-  fbForm.addEventListener('change', e => { if (e.target.name === 'rating') paint(rating()); });
-
-  function thumb(src, onRemove) {
-    const box = document.createElement('div');
-    box.className = 'fb-thumb';
-    const img = document.createElement('img');
-    img.src = src;
-    img.alt = '';
-    box.append(img);
-    if (onRemove) {
-      const x = document.createElement('button');
-      x.type = 'button';
-      x.setAttribute('aria-label', 'Remove the photo');
-      x.innerHTML = icon('close');
-      x.addEventListener('click', onRemove);
-      box.append(x);
-    }
-    return box;
-  }
-  function showKept() {
-    keptBox.replaceChildren(...kept.map((url, i) => thumb(url, () => { kept.splice(i, 1); showKept(); })));
-  }
-  photos.addEventListener('change', () => {
-    fresh.replaceChildren(...[...photos.files].slice(0, 5).map(f => thumb(URL.createObjectURL(f))));
-  });
-
-  function say(text, error) {
-    status.textContent = text;
-    status.classList.toggle('is-error', !!error);
-    status.hidden = false;
-  }
-
-  document.addEventListener('click', async e => {
+  document.addEventListener('click', e => {
     const btn = e.target.closest('[data-feedback]');
     if (!btn) return;
-    recipeId = btn.dataset.feedback;
-    fbForm.reset();
-    paint(0);
-    fresh.replaceChildren();
-    kept = [];
-    showKept();
-    status.hidden = true;
     save.disabled = false;
     dialog.querySelector('[data-fb-title]').textContent = btn.dataset.title;
     dialog.showModal();
-    try {
-      const data = await (await fetch(`/api/interactions/recipe/${recipeId}`)).json();
-      if (data.rating) {
-        const r = fbForm.querySelector(`input[name=rating][value="${data.rating}"]`);
-        if (r) r.checked = true;
-        paint(data.rating);
-      }
-      if (data.comment) fbForm.elements.comment.value = data.comment;
-      kept = [...(data.user_photos || [])];
-      showKept();
-    } catch (err) {
-      console.error('Could not load the feedback', err);
-    }
+    fb.open(btn.dataset.feedback);
   });
 
   dialog.querySelectorAll('[data-fb-close]').forEach(b => b.addEventListener('click', () => dialog.close()));
@@ -125,15 +57,12 @@
   fbForm.addEventListener('submit', async e => {
     e.preventDefault();
     save.disabled = true;
-    const body = new FormData(fbForm);
-    body.set('keep_photos', JSON.stringify(kept));
     try {
-      const data = await (await fetch(`/api/interactions/recipe/${recipeId}/feedback`, { method: 'POST', body })).json();
-      if (!data.success) throw new Error('not saved');
-      say('Saved. Thank you.');
+      await fb.save();
+      fb.say('Saved. Thank you.');
       setTimeout(() => dialog.close(), 1200);
     } catch (err) {
-      say('Something went wrong. Please try again.', true);
+      fb.say('Something went wrong. Please try again.', true);
       save.disabled = false;
     }
   });
