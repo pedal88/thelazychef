@@ -162,3 +162,13 @@ def test_a_state_written_as_a_note_and_an_empty_verb_are_warnings():
     result = validate_recipe_v2(r)
     assert result['valid']
     assert {'note_is_state', 'generic_verb'} <= {w['code'] for w in result['warnings']}
+
+
+def test_us_measures_in_free_text_are_a_warning():
+    r = load('brownies')
+    step(r, 's1')['text'] = 'Preheat the oven to 350°F.'
+    r['chef_note'] = 'Use a 9" pan.'
+    result = validate_recipe_v2(r)
+    assert result['valid']  # a warning, not an error
+    found = [w['message'] for w in result['warnings'] if w['code'] == 'us_measure']
+    assert len(found) == 2 and '350°F' in found[0] and '9"' in found[1]

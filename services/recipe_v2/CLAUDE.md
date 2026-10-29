@@ -38,8 +38,10 @@ then `refresh`. Run it on saved recipes after changing derive, nutrition or the 
   drawing), `groups.py` (kitchen groups for the ingredient list), `read.py`.
 - Amounts and temperatures are written in the reader's measuring system, metric or US (`services/measures.py`, the
   `units` cookie read by `routes/_shared.unit_system()`). Only the display converts: the stored recipe, `gram_weight`,
-  nutrition, the planner and Prep's rules read the stored units. Measures inside free text ("175 °C" in a step) are
-  not converted yet.
+  nutrition, the planner and Prep's rules read the stored units. Measures in free text (a step's text, short and
+  done_when, the chef's note, the yield) are converted by `measures.localize_text` when written metric as number,
+  space, unit ("200 °C", "3 cm", "2 dl"; structuring prompt rule 8b). What it cannot convert gives the validator
+  warning `us_measure`; `scripts/units_report.py` lists it in the saved recipes. Tins sized in cm have `name_us`.
 - `states.py` is the state catalog (`data/constraints/states.json`): what is done to an ingredient before it goes in.
 
 ## Rules that are easy to break

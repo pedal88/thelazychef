@@ -20,6 +20,7 @@ and a printed summary that can be pasted back.
 | `ingredient_nutrition` | Nutrition for active ingredients that have none (Claude, USDA values) |
 | `pantry_review` | Review the pantry against the core definition (`docs/RECIPE_MODEL_V2.md`) |
 | `report_ingredient_states` | Read-only report of states, verbs, methods and the pantry |
+| `units_report` | Read-only report of the measures in the recipes' free text that the US view cannot convert |
 | `social_render` | Photograph a TikTok or Instagram post's slides from the site, with a caption draft (`docs/SOCIAL.md`) |
 | `local_db` | A local SQLite database with the pantry and five example recipes (`docs/README_TOP_COMMANDS.md`) |
 | `generate_v2` | Make one v2 recipe from the command line |

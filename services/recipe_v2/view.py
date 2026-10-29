@@ -15,7 +15,7 @@ from functools import lru_cache
 from markupsafe import Markup, escape
 
 from database.models import Ingredient, Recipe, RecipeLine, RecipeStep, db
-from services.measures import DEFAULT, fmt_amount, frac, temp  # noqa: F401 (frac: the tests import it from here)
+from services.measures import DEFAULT, fmt_amount, frac, localize_text, temp  # noqa: F401 (frac: the tests import it)
 from services.recipe_v2 import delta, groups, mise, nutrition, states, whole
 from services.recipe_v2.derive import HEAT_LABELS, heat_steps
 from services.recipe_v2.persona import SETTINGS, age_label
@@ -41,7 +41,6 @@ def _catalogs():
 
     eq = load('equipment.json')
     return {
-        'equipment': {e['id']: e.get('name_en') or e['name'] for e in eq['equipment']},
         'equipment_items': {e['id']: e for e in eq['equipment']},
         'modes': {m['id']: m.get('name_en') or m['name'] for m in eq['modes']},
     }
@@ -69,7 +68,12 @@ def count_of(line, factor=1.0):
     return int(round(n)) if abs(n - round(n)) < 0.01 and 1 <= round(n) <= 12 else None
 
 
-def equipment_list(ids, cat=None):
+def equipment_name(e, system=DEFAULT):
+    """An equipment item's name for the reader: name_us for a tin sized in cm ("9-inch springform"), else the English one."""
+    return (system == 'us' and e.get('name_us')) or e.get('name_en') or e['name']
+
+
+def equipment_list(ids, cat=None, system=DEFAULT):
     """The equipment the dish needs, in the order it is first used, as {id, name, image, special}: supplies
     (foil, plates) left out, and an item shown as another (same_as) listed once, as that one."""
     items = (cat or _catalogs())['equipment_items']
@@ -79,7 +83,7 @@ def equipment_list(ids, cat=None):
         if e.get('kind') == 'supply':
             continue
         e = items.get(e.get('same_as')) or e
-        out.setdefault(e['id'], {'id': e['id'], 'name': e.get('name_en') or e['name'], 'image': e.get('image'),
+        out.setdefault(e['id'], {'id': e['id'], 'name': equipment_name(e, system), 'image': e.get('image'),
                                  'images': e.get('image_variants') or {}, 'special': e.get('level') == 'special'})
     return list(out.values())
 
@@ -107,7 +111,7 @@ def equipment_text(s, system=DEFAULT):
     q = (s.get('equipment') or [None])[0]
     if not q:
         return ''
-    bits = [cat['equipment'].get(q, q)]
+    bits = [equipment_name(cat['equipment_items'][q], system) if q in cat['equipment_items'] else q]
     if s.get('temp_c'):
         bits.append(temp(s['temp_c'], system))
     if s.get('mode'):
@@ -190,6 +194,10 @@ def build(recipe, servings=None, plan='calm', system=DEFAULT):
     """Everything the v2 recipe template needs, with amounts and temperatures in the reader's measuring system
     (services/measures.py: 'metric' or 'us')."""
     v2 = to_v2(recipe)
+    # The measures in the steps' own words ("200 °C", "3 cm") too, before anything reads them: the step list,
+    # Prep's jobs, the timeline, the metro map and the delta
+    for st in v2['steps']:
+        st.update({k: localize_text(st[k], system) for k in ('text', 'short', 'done_when') if st.get(k)})
     plan = plan if plan in MODES else 'calm'
     base = recipe.base_servings or 4
     scalable = not recipe.yield_text
@@ -281,13 +289,13 @@ def build(recipe, servings=None, plan='calm', system=DEFAULT):
             first_use.setdefault(q, len(first_use))
     cat = _catalogs()
     return {
-        'title': recipe.title, 'servings': servings, 'scalable': scalable, 'yield_text': recipe.yield_text,
+        'title': recipe.title, 'servings': servings, 'scalable': scalable, 'yield_text': localize_text(recipe.yield_text, system),
         'units': system,
         'total': duration(sch['T']), 'total_min': sch['T'], 'active': duration(sch['A']), 'plan': plan, 'plans': PLAN_NAMES,
         'plan_hint': PLAN_HINTS[plan], 'parts': [c['name'] for c in v2['components']],
-        'shopping': shop, 'shop_groups': groups.grouped(shop), 'equipment': equipment_list(first_use, cat), 'steps': steps,
+        'shopping': shop, 'shop_groups': groups.grouped(shop), 'equipment': equipment_list(first_use, cat, system), 'steps': steps,
         'heat_on': heat_on, 'time_strip': time_strip(steps, sch['T']),
-        'chef_note': recipe.chef_note, 'missing': sum(1 for s in shop if s['missing']),
+        'chef_note': localize_text(recipe.chef_note, system), 'missing': sum(1 for s in shop if s['missing']),
         'errors': [e for e in recipe.validation_errors or [] if e.get('rule') not in ('persona', 'image')],
         'image_notes': [e['message'] for e in recipe.validation_errors or [] if e.get('rule') == 'image'],
         'persona_notes': [e['message'] for e in recipe.validation_errors or [] if e.get('rule') == 'persona'],

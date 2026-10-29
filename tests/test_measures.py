@@ -5,7 +5,7 @@ import unittest
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from services.measures import degrees, fmt_amount, frac, system_of, temp  # noqa: E402
+from services.measures import degrees, fmt_amount, frac, localize_text, system_of, temp, unconverted  # noqa: E402
 
 
 class MetricTests(unittest.TestCase):
@@ -79,6 +79,43 @@ class TemperatureTests(unittest.TestCase):
         self.assertEqual(temp(220), '220 °C')
         self.assertEqual(temp(220, 'us'), '425 °F')
         self.assertEqual(temp(None, 'us'), '')
+
+
+class FreeTextTests(unittest.TestCase):
+    def us(self, text):
+        return localize_text(text, 'us')
+
+    def test_temperatures(self):
+        self.assertEqual(self.us('Sett ovnen på 175 °C over- og undervarme.'), 'Sett ovnen på 350 °F over- og undervarme.')
+        self.assertEqual(self.us('60–70 °C i kjernen'), '140–160 °F i kjernen')
+        self.assertEqual(self.us('Heat to 200°C'), 'Heat to 400 °F')
+        self.assertEqual(self.us('Bake at 350 °F'), 'Bake at 350 °F')
+        self.assertEqual(localize_text('Bake at 350 °F', 'metric'), 'Bake at 175 °C')  # a US source, for a metric reader
+
+    def test_lengths(self):
+        self.assertEqual(self.us('biter på 3 cm'), 'biter på 1¼ in')
+        self.assertEqual(self.us('staver på ca. 1 cm'), 'staver på ca. ½ in')
+        self.assertEqual(self.us('skiver på 5 mm'), 'skiver på ¼ in')
+        self.assertEqual(self.us('en form på 20 × 20 cm'), 'en form på 8 × 8 in')
+        self.assertEqual(self.us('a 24 cm springform'), 'a 9 in springform')
+        self.assertEqual(self.us('1–2 cm thick'), '½–¾ in thick')
+
+    def test_amounts(self):
+        self.assertEqual(self.us('Øs opp 2 dl av vannet'), 'Øs opp ¾ cup av vannet')
+        self.assertEqual(self.us('1,5 dl melk og 400 g kjøtt'), '⅔ cup melk og 14 oz kjøtt')
+        self.assertEqual(self.us('2–3 dl vann'), '¾–1¼ cups vann')
+        self.assertEqual(self.us('500 gram mel'), '1 lb mel')
+        self.assertEqual(self.us('2 liter vann'), '8⅓ cups vann')
+
+    def test_what_is_left_alone(self):
+        for text in ('Kok i 10 min', 'Snu 2 ganger', 'Tilsett {i3} og {i4}', 'Kok 5–6 minutter', '', None):
+            self.assertEqual(self.us(text), text)
+        self.assertEqual(localize_text('Sett ovnen på 200 °C, 3 cm, 2 dl'), 'Sett ovnen på 200 °C, 3 cm, 2 dl')
+
+    def test_unconverted_finds_us_measures(self):
+        self.assertEqual(unconverted('Add 2 cups flour, bake at 350°F in a 9" pan, or 200°'), ['2 cups', '350°F', '9"', '200°'])
+        self.assertEqual(unconverted('Sett ovnen på 200 °C og hell i 2 dl'), [])
+        self.assertEqual(unconverted(None), [])
 
 
 class SystemTests(unittest.TestCase):
