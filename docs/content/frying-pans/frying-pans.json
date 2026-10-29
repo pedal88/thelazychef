@@ -134,7 +134,7 @@
         "text": "Dishes cooked in a frying pan or a wok.",
         "filter": {"heat_source": "pan"},
         "sort": "new",
-        "limit": 6,
+        "limit": 5,
         "more": true
       }
     }

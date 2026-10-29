@@ -54,8 +54,10 @@ What Claude makes, pasted in Admin -> Pages -> Import. It becomes a draft versio
 }
 ```
 
-The pilot guide is the example to start from: `docs/content/frying-pans/` holds its package (`frying-pans.json`)
-and its five images; `tests/test_content.py` keeps it valid as the block kinds change.
+The pilot guide is the example to start from: `docs/content/frying-pans/` holds its package in English
+(`frying-pans.json`) and Norwegian (`frying-pans.no.json`) and its five images. `docs/content/home.json` is the home
+page as published. `tests/test_content.py` keeps them valid as the block kinds change. The database is what is shown:
+when a page is changed in Admin -> Pages, update its file here in the same round.
 
 - `slug`: lower case words joined by `-`; it is the page's address and identity (a package with the same slug is a
   new version of that page).

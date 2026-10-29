@@ -286,6 +286,21 @@ class ContentTests(unittest.TestCase):
         html = self.client.get('/guides/frying-pans').get_data(as_text=True)
         for part in ('Five pans, the same six questions', 'The heat store', 'What are you cooking?', 'Looking after them'):
             self.assertIn(part, html)
+        # The Norwegian version: the same images, its own words
+        with open(os.path.join(folder, 'frying-pans.no.json'), encoding='utf-8') as f:
+            norsk = json.load(f)
+        self.assertEqual(check_blocks(norsk['blocks'], norsk['slug']), [])
+        publish(save_version(norsk))
+        db.session.commit()
+        self.assertIn('Hva skal du lage?', self.client.get('/guides/frying-pans?lang=no').get_data(as_text=True))
+        self.assertIn('What are you cooking?', self.client.get('/guides/frying-pans').get_data(as_text=True))
+        # The home page in docs/content points at the guide
+        with open(os.path.join(ROOT, 'docs', 'content', 'home.json'), encoding='utf-8') as f:
+            home = json.load(f)
+        self.assertEqual(check_blocks(home['blocks'], home['slug']), [])
+        publish(save_version(home))
+        db.session.commit()
+        self.assertIn('href="/guides/frying-pans"', self.client.get('/').get_data(as_text=True))
 
 
 if __name__ == '__main__':

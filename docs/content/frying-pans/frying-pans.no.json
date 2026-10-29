@@ -1,0 +1,142 @@
+{
+  "slug": "frying-pans",
+  "kind": "guide",
+  "lang": "no",
+  "title": "Hvilken stekepanne? Fem typer, side om side",
+  "summary": "Støpejern, karbonstål, rustfritt stål, non-stick og keramisk: hva hver av dem er god til, og hva du gir opp.",
+  "hero_image": null,
+  "note": "Norsk versjon av pilotguiden",
+  "blocks": [
+    {
+      "kind": "text",
+      "settings": {
+        "markdown": "Ingen panne er best til alt. En tung panne holder på varmen når kaldt kjøtt legges i, men bruker lang tid på å kjøle seg ned. En panne med belegg lar egget gli av, men liker ikke høy varme og slites ut. De fleste kjøkken klarer seg godt med to: én som tåler mye varme, og én som maten ikke fester seg til.\n\nUnder finner du de fem vanligste typene, vurdert på de samme seks tingene, og deretter en rask måte å velge panne til jobben du står foran."
+      }
+    },
+    {
+      "kind": "compare",
+      "settings": {
+        "title": "Fem panner, de samme seks spørsmålene",
+        "text": "Poeng fra 1 til 5, sammenliknet med hverandre. Flere poeng er alltid bedre for deg som kokk: på lett vedlikehold betyr 5 minst arbeid.",
+        "layout": "cards",
+        "scale": 5,
+        "criteria": [
+          {"key": "heat", "label": "Holder varmen"},
+          {"key": "response", "label": "Reagerer raskt"},
+          {"key": "release", "label": "Maten slipper"},
+          {"key": "high_heat", "label": "Tåler høy varme"},
+          {"key": "care", "label": "Lett vedlikehold"},
+          {"key": "lasts", "label": "Varer lenge"}
+        ],
+        "facts": [
+          {"key": "induction", "label": "Induksjon"},
+          {"key": "best", "label": "Best til"}
+        ],
+        "items": [
+          {
+            "name": "Støpejern", "tag": "Varmemagasinet", "image": "cast-iron.svg",
+            "scores": {"heat": 5, "response": 2, "release": 3, "high_heat": 5, "care": 2, "lasts": 5},
+            "facts": {"induction": "Ja", "best": "Biff, poteter, retter som går i ovnen"},
+            "pick": "du steker mye kjøtt og vil ha én panne som varer livet ut.",
+            "avoid": "du vil ha noe lett, eller vasker alt i maskin."
+          },
+          {
+            "name": "Karbonstål", "tag": "Kokkens arbeidshest", "image": "carbon-steel.svg",
+            "scores": {"heat": 4, "response": 4, "release": 3, "high_heat": 5, "care": 2, "lasts": 5},
+            "facts": {"induction": "Ja", "best": "Wok, biff, egg når pannen er godt innbrent"},
+            "pick": "du vil ha støpejernets steking i en lettere panne som reagerer raskere.",
+            "avoid": "du lager mye med tomat, vin eller sitron."
+          },
+          {
+            "name": "Rustfritt stål", "tag": "Den robuste allrounderen", "image": "stainless-steel.svg",
+            "scores": {"heat": 3, "response": 4, "release": 1, "high_heat": 5, "care": 5, "lasts": 5},
+            "facts": {"induction": "Som regel", "best": "Pannesaus, brunning, syrlige retter"},
+            "pick": "du lager pannesaus og vil ha en panne som tåler oppvaskmaskin.",
+            "avoid": "du mest steker egg og fisk."
+          },
+          {
+            "name": "Non-stick", "tag": "Spesialisten på egg", "image": "non-stick.svg",
+            "scores": {"heat": 2, "response": 4, "release": 5, "high_heat": 2, "care": 4, "lasts": 1},
+            "facts": {"induction": "Avhenger av bunnen", "best": "Egg, omelett, pannekaker"},
+            "pick": "frokost og skånsom steking er det du lager oftest.",
+            "avoid": "du vil steke på full varme, eller vil unngå PFAS."
+          },
+          {
+            "name": "Keramisk belegg", "tag": "Non-stick uten PFAS", "image": "ceramic.svg",
+            "scores": {"heat": 2, "response": 4, "release": 4, "high_heat": 3, "care": 4, "lasts": 1},
+            "facts": {"induction": "Avhenger av bunnen", "best": "Fisk, grønnsaker, middels varme"},
+            "pick": "du vil at maten skal slippe uten PTFE, og godtar kortere levetid.",
+            "avoid": "du forventer at belegget holder i mange år."
+          }
+        ],
+        "note": "Non-stick betyr her et PTFE-belegg (ofte solgt som Teflon). Keramiske belegg er fri for PFAS, men mister slippeevnen raskere."
+      }
+    },
+    {
+      "kind": "task_picker",
+      "settings": {
+        "title": "Hva skal du lage?",
+        "text": "Velg oppgaven, så ser du pannen som gjør jobben best, og hva du gir opp ved å velge den.",
+        "tasks": [
+          {
+            "label": "Biff og kraftig steking", "hint": "Skorpe, høy varme",
+            "answer": "Støpejern",
+            "why": "Den tunge pannen holder på varmen når kaldt kjøtt legges i, så temperaturen faller lite og skorpen blir jevn.",
+            "tip": "Varm den i 5 til 10 minutter på middels til høy varme før kjøttet legges i.",
+            "cost": "Tung å løfte, og den må tørkes og smøres med litt olje etter vask.",
+            "alt": "Karbonstål", "alt_why": "nesten like god skorpe, og lettere"
+          },
+          {
+            "label": "Egg og omelett", "hint": "Skånsomt, lite fett",
+            "answer": "Non-stick",
+            "why": "Ingenting setter seg fast, selv på lav varme med en dråpe smør. Det er akkurat det egg trenger.",
+            "tip": "Hold deg på lav til middels varme, og bruk redskap i tre eller silikon.",
+            "cost": "Belegget slites og må byttes etter noen år. Det tåler ikke høy varme.",
+            "alt": "Keramisk belegg", "alt_why": "fritt for PFAS, men mister slippeevnen raskere"
+          },
+          {
+            "label": "Pannesaus og brunning", "hint": "Stekerest, vin, tomat",
+            "answer": "Rustfritt stål",
+            "why": "Stekeresten som setter seg i bunnen er starten på sausen, og stålet tåler syren i vin og tomat uten å smitte av på smaken.",
+            "tip": "Hell i vin eller kraft mens pannen er varm, og skrap løs stekeresten.",
+            "cost": "Maten fester seg hvis pannen ikke er varm nok, eller hvis du snur for tidlig.",
+            "alt": "Støpejern", "alt_why": "bruner også godt, men liker ikke lang koking med syre"
+          },
+          {
+            "label": "Wok og rask høy varme", "hint": "Grønnsaker, nudler",
+            "answer": "Karbonstål",
+            "why": "Den reagerer raskt når du skrur varmen opp og ned, tåler full varme og blir glattere jo mer du bruker den.",
+            "tip": "Brenn den inn med et tynt lag olje før første bruk, og vask den uten såpe.",
+            "cost": "Den ruster hvis den blir stående våt, og syrlige retter misfarger den.",
+            "alt": "Rustfritt stål", "alt_why": "tåler varmen, men maten fester seg lettere"
+          },
+          {
+            "label": "Fisk med skinn", "hint": "Sprøtt skinn, mør fisk",
+            "answer": "Keramisk belegg",
+            "why": "Skinnet slipper uten mye fett, og belegget er fritt for PFAS.",
+            "tip": "Middels varme. La skinnet ligge til det slipper av seg selv.",
+            "cost": "Den mister slippeevnen raskere enn de andre, særlig ved høy varme.",
+            "alt": "Non-stick", "alt_why": "slipper enda lettere, og varer lenger"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "text",
+      "settings": {
+        "markdown": "## Slik tar du vare på dem\n\n- **Støpejern og karbonstål:** vask med varmt vann og børste, tørk på platen og smør inn med noen dråper olje. Litt såpe av og til skader ikke, men oppvaskmaskinen gjør det.\n- **Rustfritt stål:** alt går, også oppvaskmaskin. Fastbrent mat løsner etter litt bløtlegging, eller med en grøt av natron og vann.\n- **Non-stick og keramisk:** ikke redskap i metall, ikke full varme på tom panne, og vask for hånd. Når maten begynner å feste seg, er belegget slitt ut."
+      }
+    },
+    {
+      "kind": "recipes",
+      "settings": {
+        "title": "Sett en panne i arbeid",
+        "text": "Retter som lages i stekepanne eller wok.",
+        "filter": {"heat_source": "pan"},
+        "sort": "new",
+        "limit": 5,
+        "more": true
+      }
+    }
+  ]
+}
