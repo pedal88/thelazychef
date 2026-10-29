@@ -182,8 +182,9 @@ class FunnelTests(unittest.TestCase):
         db.session.flush()
         refresh(recipe)
         db.session.commit()
-        with mock.patch.dict(os.environ, {'APP_BASE_URL': 'https://thelazychef.app/'}):
-            html = self.client.get(f'/recipe/{recipe.id}').get_data(as_text=True)
+        # Behind Cloud Run the app sees http on the public host; APP_BASE_URL is Cloud Run's own address
+        with mock.patch.dict(os.environ, {'APP_BASE_URL': 'https://lazy-chef-app.run.app'}):
+            html = self.client.get(f'/recipe/{recipe.id}', base_url='http://thelazychef.app').get_data(as_text=True)
         self.assertIn(f'<meta property="og:title" content="{recipe.title}">', html)
         self.assertIn(f'<meta property="og:url" content="https://thelazychef.app/recipe/{recipe.id}">', html)
         self.assertIn('<meta property="og:image" content="https://thelazychef.app/static/recipes/carbonara.png">', html)
