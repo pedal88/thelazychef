@@ -6,9 +6,15 @@ they are shown: metric shows the metric units as stored and converts US units (c
 US converts weights to oz and lb, volumes to tsp, tbsp and cups, and °C to °F. Spoons and the countable and
 approximate units (clove, pinch) are the same in both, except a length of ginger or cinnamon in cm, which is
 inches in US.
+
+Free text (a step's text, done_when and short, the chef's note, the yield) is written metric, as number, space,
+unit ("200 °C", "3 cm", "20 × 30 cm", "2 dl"; the structuring prompt asks for it), and localize_text converts those
+measures for a US reader. unconverted() finds what it cannot convert (cups or °F in the text, degrees with no
+scale), for the validator's warning us_measure and scripts/units_report.py.
 """
 import json
 import os
+import re
 from functools import lru_cache
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -116,3 +122,69 @@ def temp(c, system=DEFAULT):
     if c is None:
         return ''
     return f"{degrees(c, system)} {'°F' if system == 'us' else '°C'}"
+
+
+def _num(text):
+    return float(text.replace(',', '.'))
+
+
+def inches(cm):
+    """A length in inches as US recipes write it: quarters for a cut ("1¼"), whole inches for a tin ("9")."""
+    i = cm / INCH
+    return str(round(i)) if i >= 4 else _quarters(max(i, 0.25))
+
+
+NUM = r'\d+(?:[.,]\d+)?'
+DASH = r'\s*[–-]\s*'
+TEMP = re.compile(rf'(?P<a>{NUM})(?:{DASH}(?P<b>{NUM}))?\s*°\s*(?P<u>[CF])\b')
+LENGTH = re.compile(rf'(?P<a>{NUM})(?:{DASH}(?P<b>{NUM}))?(?:\s*[×x]\s*(?P<c>{NUM}))?\s*(?P<u>cm|mm)\b')
+AMOUNT = re.compile(rf'(?P<a>{NUM})(?:{DASH}(?P<b>{NUM}))?\s*(?P<u>kg|grams?|gram|g|ml|cl|dl|liters?|litres?|l)\b')
+WRITTEN = {'gram': 'g', 'grams': 'g', 'liter': 'l', 'liters': 'l', 'litre': 'l', 'litres': 'l'}
+US_TEXT = re.compile(rf'{NUM}\s*(?:°\s*F\b|(?:cups?|oz|ounces?|lbs?|pounds?|inch(?:es)?|quarts?|pints?|sticks?)\b|["”])'
+                     rf'|{NUM}\s*°(?!\s*[CF])', re.I)
+
+
+def _temps(m, system):
+    c_to_f = system == 'us' and m['u'] == 'C'
+    if not c_to_f and not (system != 'us' and m['u'] == 'F'):
+        return m[0]
+    conv = (lambda v: degrees(v, 'us')) if c_to_f else (lambda v: int(round((v - 32) * 5 / 9 / 5) * 5))
+    nums = [conv(_num(m[k])) for k in ('a', 'b') if m[k]]
+    return '–'.join(map(str, nums)) + (' °F' if c_to_f else ' °C')
+
+
+def _lengths(m):
+    mm = m['u'] == 'mm'
+    nums = [inches(_num(m[k]) / (10 if mm else 1)) for k in ('a', 'b', 'c') if m[k]]
+    if m['c']:
+        return f'{nums[0]} × {nums[-1]} in'
+    return '–'.join(nums) + ' in'
+
+
+def _amounts(m):
+    unit = WRITTEN.get(m['u'].lower(), m['u'])
+    if not m['b']:
+        return fmt_amount(_num(m['a']), unit, 'us')
+    low, high = fmt_amount(_num(m['a']), unit, 'us'), fmt_amount(_num(m['b']), unit, 'us')
+    n_low, _, u_low = low.partition(' ')
+    n_high, _, u_high = high.partition(' ')
+    return f'{n_low}–{high}' if u_low.rstrip('s') == u_high.rstrip('s') else f'{low}–{high}'
+
+
+def localize_text(text, system=DEFAULT):
+    """Free text with its measures in the reader's system: "Sett ovnen på 200 °C" -> "Sett ovnen på 400 °F",
+    "biter på 3 cm" -> "biter på 1¼ in", "2 dl" -> "¾ cup". Metric leaves the text as written, except °F, which
+    becomes °C. Placeholders ({i3}) are left alone: their amounts come from fmt_amount."""
+    if not text:
+        return text
+    text = TEMP.sub(lambda m: _temps(m, system), text)
+    if system != 'us':
+        return text
+    text = LENGTH.sub(_lengths, text)
+    return AMOUNT.sub(_amounts, text)
+
+
+def unconverted(text):
+    """The measures in free text that localize_text cannot convert: US units ("2 cups", "350°F", '9"') and degrees
+    with no scale ("200°"). The text should be metric (the structuring prompt)."""
+    return [m.group(0).strip() for m in US_TEXT.finditer(text or '')]

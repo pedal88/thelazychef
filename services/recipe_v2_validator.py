@@ -13,6 +13,8 @@ import os
 import re
 from functools import lru_cache
 
+from services.measures import unconverted
+
 CONSTRAINTS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'constraints')
 
 PHASES = ('prep', 'cook', 'serve')
@@ -265,6 +267,11 @@ def validate_recipe_v2(recipe, catalogs=None):
         if EACH.search(s.get('text') or ''):
             warn('each_total', f'{sid}.text puts "each"/"hver" next to an amount, but {{iN}} is the total. '
                                f'Write "divide {{i4}} between the burgers" instead.')
+        for key in ('text', 'short', 'done_when'):
+            found = unconverted(s.get(key))
+            if found:
+                warn('us_measure', f'{sid}.{key} has measures the app cannot convert: {", ".join(found)}. Write them '
+                                   f'metric, as "200 °C", "3 cm", "2 dl", "400 g".')
         if TIME_WORDS.search(s.get('text') or ''):
             warn('time_words', f'{sid}.text contains time words ("mens", "meanwhile"). Say what to do, not when.')
         if (s.get('active_minutes') or 0) + (s.get('passive_minutes') or 0) <= 0:
@@ -307,6 +314,10 @@ def validate_recipe_v2(recipe, catalogs=None):
         err(7, f"spice_level is {recipe.get('spice_level')!r}, must be 0, 1, 2 or 3.")
     if recipe.get('keeps_days') is not None and not 0 <= recipe['keeps_days'] <= 14:
         warn('keeps_days', f"keeps_days is {recipe['keeps_days']}; leftovers rarely keep more than a week or two.")
+    for key in ('chef_note', 'yield_text'):
+        found = unconverted(recipe.get(key))
+        if found:
+            warn('us_measure', f'{key} has measures the app cannot convert: {", ".join(found)}. Write them metric.')
 
     return {
         'valid': not errors,

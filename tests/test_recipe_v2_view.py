@@ -87,6 +87,8 @@ class RecipeV2ViewTests(unittest.TestCase):
         _, html = self.page('carbonara')
         self.assertIn('<b class="amt">14 oz</b> spaghetti', html)  # 400 g
         self.assertIn('data-units="us" aria-pressed="true"', html)  # the switch in the menu
+        self.assertIn('staver på ca. ½ in', html)  # the step's own words too (1 cm)
+        self.assertIn('Øs opp ¾ cup av vannet', html)  # 2 dl
         self.client.set_cookie('units', 'metric')
         _, html = self.page('carbonara')
         self.assertIn('<b class="amt">400 g</b> spaghetti', html)  # not the cached US page
@@ -131,6 +133,13 @@ class EquipmentListTests(unittest.TestCase):
         self.assertEqual([e['id'] for e in items], ['wide_pot', 'bowl', 'sous_vide', 'unknown_thing'])
         self.assertTrue(next(e for e in items if e['id'] == 'sous_vide')['special'])
         self.assertEqual(items[0]['name'], 'Wide pot')
+
+    def test_tins_have_us_names(self):
+        from services.recipe_v2.view import equipment_list, equipment_text
+        self.assertEqual(equipment_list(['springform_24'])[0]['name'], '24 cm springform')
+        self.assertEqual(equipment_list(['springform_24'], system='us')[0]['name'], '9-inch springform')
+        step = {'equipment': ['form_20x20'], 'temp_c': 175}
+        self.assertEqual(equipment_text(step, 'us').split(', ')[:2], ['8-inch square pan', '350 °F'])
 
 
 if __name__ == '__main__':
