@@ -1,7 +1,7 @@
 """Recipes Blueprint: landing page, recipe library, the recipe page, recipe JSON APIs."""
 from flask import abort, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
-from database.models import Ingredient, Recipe, db
+from database.models import Ingredient, Recipe, UserQueue, UserRecipeInteraction, db
 from routes._flat import FlatBlueprint
 from routes._shared import DIFFICULTY_LABELS, get_recipe_image_url, unit_system, viewer_is_admin
 from services.chef_service import get_chefs
@@ -185,8 +185,15 @@ def recipe_detail(recipe_id):
     if viewer_is_admin():
         # and the chefs that can make one
         admin = {'family': family, 'chefs': get_chefs()}
+    # Saved and Cook next, for the two buttons on the overview
+    mine = None
+    if current_user.is_authenticated:
+        mark = db.session.get(UserRecipeInteraction, (current_user.id, recipe.id))
+        mine = {'saved': bool(mark and mark.status == 'favorite'),
+                'queued': db.session.execute(db.select(UserQueue.id).where(
+                    UserQueue.user_id == current_user.id, UserQueue.recipe_id == recipe.id)).first() is not None}
     # One page: the overview, and prep and cooking together (#prep, #cook)
-    return render_template('recipe_v2_make.html', recipe=recipe, v=view, admin=admin,
+    return render_template('recipe_v2_make.html', recipe=recipe, v=view, admin=admin, mine=mine,
                            versions=versions if len(versions) > 1 else [])
 
 

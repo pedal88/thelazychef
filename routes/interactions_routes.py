@@ -37,9 +37,12 @@ def toggle_favorite_recipe(recipe_id):
 
     if interaction:
         if interaction.status == 'favorite':
-            # Toggle OFF: Remove the favorite status (delete interaction to allow re-discovery or set to pass?)
-            # For now, deleting the interaction is safest for toggle behavior on list view
-            db.session.delete(interaction)
+            # Toggle OFF. The row also holds Made, the rating, the comment and the photos: keep it when it has any
+            # of them (as seen, "pass"), and delete it only when saving was all it held
+            if interaction.is_made or interaction.rating or interaction.comment or interaction.user_photos or interaction.made_count:
+                interaction.status, interaction.is_super_like = 'pass', False
+            else:
+                db.session.delete(interaction)
             status = 'removed'
         else:
             # Update to favorite

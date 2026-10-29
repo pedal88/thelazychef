@@ -188,3 +188,18 @@ html.site-menu:not(.cooking) body:has(.make.has-ovl) .trialbar { top: 76px; }
 .ovl-versions a, .ovl-versions b { font: 600 16px/1.3 var(--font-serif); color: var(--color-ink); }
 .ovl-versions a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
 .ovl-versions a:hover { color: var(--color-accent); }
+
+/* Saved and Cook next for a signed-in cook (save_buttons): on the poster's image under the times, in the compact
+   layout under its actions. A pressed one is filled. */
+.ovl-mine { display: flex; flex-wrap: wrap; gap: 8px; margin-top: var(--space-3); }
+.ovl-tog { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 16px; border-radius: var(--radius-pill);
+  border: 1px solid var(--color-line); background: var(--color-paper); color: var(--color-ink); font: 600 14px/1 var(--font-sans); cursor: pointer; }
+.ovl-tog .icon { width: 17px; height: 17px; }
+.ovl-tog:hover { border-color: var(--color-line-strong); }
+.ovl-tog:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.ovl-tog[aria-pressed="true"] { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-paper); }
+.ovl-tog[data-mine="save"][aria-pressed="true"] .icon { fill: currentColor; }
+.ovl-tog:disabled { opacity: .7; cursor: default; }
+/* On the poster's photo: light pills that read on the dark fade */
+.pp-img:not(.no-img) .ovl-tog:not([aria-pressed="true"]) { background: rgb(255 255 255 / .92); border-color: transparent; color: #121513; }
+.pp-img:not(.no-img) .ovl-tog[aria-pressed="true"] { background: var(--color-accent); border-color: var(--color-accent); color: #fff; }
