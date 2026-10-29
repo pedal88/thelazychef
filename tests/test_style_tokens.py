@@ -45,9 +45,11 @@ class LookTrialTests(unittest.TestCase):
                     self.assertRegex(block, rf'--{name}-{step}: \d+ \d+ \d+;', f'{look} {name}-{step}')
             for var in ('--font-sans', '--font-serif', '--paper', '--icon-stroke', '--color-cook'):
                 self.assertIn(var + ':', block, look)
-        base = read('templates', 'base.html')
-        for look in 'cdef':
-            self.assertIn(f"{look}: 'family=", base)  # its fonts are loaded
+        # its fonts are loaded, from the one list base.html and the social slides read (routes/_shared.LOOK_FONTS)
+        from routes._shared import LOOK_FONTS
+        self.assertEqual(sorted(LOOK_FONTS), list('cdef'))
+        self.assertTrue(all(fonts.startswith('family=') for fonts in LOOK_FONTS.values()))
+        self.assertIn('LOOK_FONTS|tojson', read('templates', 'base.html'))
 
 
 class IconTests(unittest.TestCase):

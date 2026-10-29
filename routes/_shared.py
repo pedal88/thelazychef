@@ -161,6 +161,17 @@ def load_json_option(filename, key):
 
 # Image trial (temporary): the style of the dish and part images an admin has switched to (a cookie set by the
 # switch on the recipe pages). Visitors and the recipe cards always get the recipe's own images.
+# Style trial (temporary, static/css/themes.css): the four looks from the style sheet and their Google Fonts, read by
+# base.html's look switch and by the social slides (?look=)
+LOOK_FONTS = {
+    'c': 'family=IBM+Plex+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400;500;600;700;800',
+    'd': 'family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700'
+         '&family=IBM+Plex+Mono:wght@400;500',
+    'e': 'family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500',
+    'f': 'family=IBM+Plex+Mono:wght@400;500&family=Shippori+Mincho:wght@500;600;700'
+         '&family=Zen+Kaku+Gothic+New:wght@400;500;700',
+}
+
 IMAGE_STYLES = {'cutout': 'White', 'editorial': 'Angled', 'overhead': 'From above', 'illustrated': 'Illustrated'}
 
 
