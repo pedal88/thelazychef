@@ -61,11 +61,14 @@ def get_recipe_image_url(recipe):
 
 
 def absolute_url(url):
-    """A whole address for a path, for links read outside the site (Open Graph on shared links): from APP_BASE_URL in
-    production, where Cloud Run's proxy would otherwise make it http, else from the request. Whole URLs pass through."""
+    """A whole address for a path, for links read outside the site (Open Graph on shared links), on the host the
+    visitor used (thelazychef.app, not APP_BASE_URL, which is Cloud Run's own address for Cloud Tasks). https unless
+    it runs on this machine, as public_url. Whole URLs pass through."""
     if not url or url.startswith(('http://', 'https://')):
         return url
-    base = os.environ.get('APP_BASE_URL') or request.url_root
+    base = request.url_root
+    if request.host.split(':')[0] not in ('localhost', '127.0.0.1'):
+        base = base.replace('http://', 'https://', 1)
     return base.rstrip('/') + '/' + url.lstrip('/')
 
 
