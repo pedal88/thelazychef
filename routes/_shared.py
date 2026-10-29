@@ -89,6 +89,7 @@ MENU = [
                         None,
                         ('Recipes', 'admin_recipes_management', {}, 'clipboard', 'admin'),
                         ('Notes on recipes', 'notes.overview', {}, 'file-plus', 'admin'),
+                        ('Pages', 'content.admin_pages', {}, 'book', 'admin'),
                         ('Ingredients', 'ingredients_mgmt.dashboard', {}, 'package', 'admin'),
                         ('Chefs', 'chefs_list', {}, 'chef', 'admin'),
                         ('Funnel', 'funnel.dashboard', {}, 'list', 'admin')]),

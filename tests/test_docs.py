@@ -10,7 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DOCS = ([p for p in ROOT.rglob('CLAUDE.md') if 'venv' not in p.parts and 'node_modules' not in p.parts]
         + [ROOT / 'README.md', ROOT / 'docs' / 'OPERATIONS.md', ROOT / 'docs' / 'SERVICES_AND_COSTS.md',
-           ROOT / 'docs' / 'README_TOP_COMMANDS.md']
+           ROOT / 'docs' / 'README_TOP_COMMANDS.md', ROOT / 'docs' / 'CONTENT.md']
         + list((ROOT / '.claude' / 'skills').glob('*/SKILL.md')))
 FILE = re.compile(r'`([A-Za-z0-9_./-]+\.(?:py|md|json|html|css|js|mjs|yaml|toml|jinja2|txt|sh|svg))`')
 SKIP_PARTS = {'venv', '.git', 'node_modules', '__pycache__'}

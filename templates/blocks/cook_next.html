@@ -1,0 +1,6 @@
+{# The Cook next queue (services/content/blocks.CookNext), as a row of cards: one line that scrolls sideways on a phone, a grid on a wide screen #}
+{% import "components/cards.html" as card with context %}
+{% include 'blocks/_row_head.html' %}
+<div class="rrow">
+  {% for recipe in b.data.recipes %}<div class="rrow-item">{{ card.recipe_preview_card(recipe, recipe.id) }}</div>{% endfor %}
+</div>

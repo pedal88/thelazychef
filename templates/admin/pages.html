@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{# Admin -> Pages (routes/content_routes.py, docs/CONTENT.md): the pages made of blocks, importing a content package
+   from Claude as a draft, and the interactives (self-contained HTML) the "interactive" block shows. #}
+{% block title %}Pages - The Lazy Chef{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+  <div class="flex flex-wrap items-center gap-3">
+    <h1 class="font-serif text-2xl font-bold text-slate-900">Pages</h1>
+    {% if not has_home %}
+    <form method="post" action="{{ url_for('content.admin_make_home') }}" class="ml-auto">
+      <button type="submit" class="px-3 py-1.5 rounded-full bg-orange-600 text-white text-sm font-semibold hover:bg-orange-700">Make the home page</button>
+    </form>
+    {% endif %}
+  </div>
+
+  {% if rows %}
+  <ul class="divide-y divide-slate-200 rounded-xl border border-slate-200 bg-white">
+    {% for r in rows %}
+    <li class="p-4 flex flex-wrap items-center gap-3">
+      <a href="{{ url_for('content.admin_page', page_id=r.page.id) }}" class="font-semibold text-slate-900 hover:text-orange-600">{{ r.page.slug }}</a>
+      <span class="text-xs text-slate-500">{{ r.page.kind }}</span>
+      <span class="ml-auto flex flex-wrap gap-2 text-xs">
+        {% for l in r.langs %}
+        <a href="{{ url_for('content.admin_page', page_id=r.page.id, lang=l.lang) }}" class="px-2.5 py-1 rounded-full border {{ 'border-green-300 bg-green-50 text-green-800' if l.live else 'border-slate-300 text-slate-600' }}">
+          {{ l.lang }} · v{{ l.latest.version }}{% if l.live %}, live v{{ l.live.version }}{% else %}, draft{% endif %}</a>
+        {% endfor %}
+      </span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="text-slate-500">No pages yet. Make the home page, or import a content package.</p>
+  {% endif %}
+
+  <section class="rounded-xl border border-slate-200 bg-white p-4 space-y-3">
+    <h2 class="font-semibold text-slate-900">Import a content package</h2>
+    <p class="text-sm text-slate-600">The JSON Claude makes: slug, kind, lang, title, summary, blocks. It is saved as a new draft version of that page; nothing is shown to visitors until you publish it. Block kinds: {{ kinds|join(', ') }} (docs/CONTENT.md).</p>
+    <form method="post" action="{{ url_for('content.admin_import') }}" class="space-y-3">
+      <textarea name="package" rows="10" class="w-full font-mono text-xs rounded-lg border border-slate-300 p-3" placeholder='{"slug": "cast-iron-pans", "kind": "guide", "lang": "en", "title": "…", "blocks": […]}'></textarea>
+      <button type="submit" class="px-3 py-1.5 rounded-full bg-slate-900 text-white text-sm font-semibold">Save as draft</button>
+    </form>
+  </section>
+
+  <section class="rounded-xl border border-slate-200 bg-white p-4 space-y-3">
+    <h2 class="font-semibold text-slate-900">Interactives</h2>
+    <p class="text-sm text-slate-600">A self-contained HTML page (everything inline, or from cdnjs and the like), shown by an "interactive" block in a sandboxed frame. It cannot use the app's cookies or local storage. For one-offs: a format wanted twice becomes a block kind.</p>
+    {% if embeds %}
+    <ul class="text-sm divide-y divide-slate-100">
+      {% for e in embeds %}
+      <li class="py-2 flex flex-wrap gap-3"><a href="{{ url_for('content.embed', embed_id=e.id) }}" target="_blank" rel="noopener" class="font-medium text-slate-900 hover:text-orange-600">{{ e.title }}</a>
+        <code class="text-xs text-slate-500">{{ e.id }}</code></li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    <form method="post" action="{{ url_for('content.admin_embed_upload') }}" enctype="multipart/form-data" class="space-y-3">
+      <input name="title" required placeholder="Title" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+      <input type="file" name="file" accept=".html,text/html" class="text-sm">
+      <textarea name="html" rows="4" class="w-full font-mono text-xs rounded-lg border border-slate-300 p-3" placeholder="…or paste the HTML"></textarea>
+      <button type="submit" class="px-3 py-1.5 rounded-full bg-slate-900 text-white text-sm font-semibold">Upload</button>
+    </form>
+  </section>
+</div>
+{% endblock %}

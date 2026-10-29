@@ -1,0 +1,10 @@
+{# Ways into the app or to other pages, as tiles (services/content/blocks.Links) #}
+{% include 'blocks/_row_head.html' %}
+<ul class="tiles">
+  {% for t in b.data.tiles %}
+  <li><a class="tile" href="{{ t.url }}">
+    {% if t.image %}<img class="tile-img" src="{{ t.image }}" alt="" loading="lazy">{% else %}<span class="tile-ic">{{ icon(t.icon or 'book') }}</span>{% endif %}
+    <span class="tile-body"><b>{{ t.title }}</b>{% if t.text %}<span>{{ t.text }}</span>{% endif %}</span>
+  </a></li>
+  {% endfor %}
+</ul>

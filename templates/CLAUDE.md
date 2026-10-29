@@ -36,6 +36,12 @@ One page, `recipe_v2_make.html`, from `services/recipe_v2/view.page`: the overvi
   list's drawer: `components/feedback_fields.html` and `static/js/feedback.js`.
 - `docs/prototypes/*.html` are the prototypes the views were built from; they are not served by the app.
 
+## Pages made of blocks
+
+The home page and the guides: `page.html` renders a page's blocks, each `blocks/<kind>.html`, styled in
+`static/css/content.css` with `static/js/content.js` (Carry on cooking, the frames of interactives). The kinds and how
+content is made: `docs/CONTENT.md`.
+
 ## Other pages
 
 `landing.html` (Discover), `recipes_list.html`,

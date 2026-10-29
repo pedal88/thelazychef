@@ -7,7 +7,7 @@ visits per ref code and day. Only adds a table and empty columns; users from bef
 Downgrade drops the table and the three columns.
 
 Revision ID: d5f1a8c3e7b2
-Revises: a7c2e9d4b1f6
+Revises: b8d3f1a6c2e9
 Create Date: 2026-10-29
 """
 from alembic import op
@@ -15,7 +15,7 @@ import sqlalchemy as sa
 
 
 revision = 'd5f1a8c3e7b2'
-down_revision = 'a7c2e9d4b1f6'
+down_revision = 'b8d3f1a6c2e9'
 branch_labels = None
 depends_on = None
 

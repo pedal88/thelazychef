@@ -15,6 +15,7 @@ Folders with more to know have their own `CLAUDE.md`, loaded when you work there
 - `routes/`: every route, as Flask blueprints. `routes/_shared.py` holds shared helpers (`get_storage()`, the site
   menu, `icon()`); route modules must not import from `app`.
 - `services/recipe_v2/`: the recipe model: generation, the pantry job, the planner, nutrition, the views.
+  `services/content/`: the home page and guides, pages made of blocks (`docs/CONTENT.md`).
   `services/`: the rest (AI models in `ai_models.py`, image generation, ingredient symbols, storage, chefs).
 - `ai_engine.py`: pantry matching (names to pantry items) and Gemini ingredient analysis.
 - `database/models.py`: SQLAlchemy models; `database/db_connector.py` (`DB_BACKEND=local` → SQLite, `cloudsql` →
@@ -26,6 +27,7 @@ Folders with more to know have their own `CLAUDE.md`, loaded when you work there
 
 ## Documentation
 
+- `docs/CONTENT.md`: the home page and guides: block kinds, the content package Claude writes, publishing.
 - `docs/SERVICES_AND_COSTS.md`: every external service and API, the environment variables, the background jobs,
   and what costs money. Read it before adding a service, a variable or a paid call, and update it in the same PR.
 - `docs/OPERATIONS.md`: deploy pipeline, Trivy, migrations, backups, and running scripts against production.

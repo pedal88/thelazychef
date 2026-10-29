@@ -167,6 +167,9 @@ app.register_blueprint(chefs_bp)
 from routes.recipe_notes_routes import notes_bp
 app.register_blueprint(notes_bp)
 
+from routes.content_routes import content_bp
+app.register_blueprint(content_bp)
+
 from routes.funnel_routes import funnel_bp
 app.register_blueprint(funnel_bp)
 

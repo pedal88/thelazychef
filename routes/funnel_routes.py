@@ -17,11 +17,11 @@ def keep_ref():
 
 
 # The short addresses on the posts and in the TikTok bio, which has no link: thelazychef.app/tiktok, /ig, and /tiktok/3
-# for one post (the code tiktok-3). They keep the code and open Discover.
+# for one post (the code tiktok-3). They keep the code and open the home page.
 def _short_link(channel, code):
     if not current_user.is_authenticated:
         funnel.remember(f'{channel}-{code}' if code else channel)
-    return redirect(url_for('discover'))
+    return redirect(url_for('content.home'))
 
 
 # The last route listed is registered first and is the address; the shorter alias above it redirects there.

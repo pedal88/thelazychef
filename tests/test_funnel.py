@@ -53,10 +53,10 @@ class FunnelTests(unittest.TestCase):
 
     # The ref code
 
-    def test_a_short_address_keeps_its_code_counts_the_visit_and_opens_discover(self):
+    def test_a_short_address_keeps_its_code_counts_the_visit_and_opens_the_home_page(self):
         response = self.client.get('/tiktok/3')
         self.assertEqual(response.status_code, 302)
-        self.assertTrue(response.location.endswith('/'))
+        self.assertEqual(response.location, '/')
         with self.client.session_transaction() as session:
             self.assertEqual(session['ref'], 'tiktok-3')
         self.assertEqual(self.visits(), {('tiktok-3', 1)})

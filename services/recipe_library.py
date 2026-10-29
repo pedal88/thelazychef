@@ -210,9 +210,11 @@ def versions_count(recipes):
     return dict(rows)
 
 
-def matching_ids(view, f, sort='new', user=None):
-    """The ids of the cards a list shows, in order: in All one per dish."""
+def matching_ids(view, f, sort='new', user=None, pictured=False):
+    """The ids of the cards a list shows, in order: in All one per dish. pictured: only recipes with a dish image."""
     stmt = db.select(Recipe.id, FAMILY, Recipe.base_recipe_id).where(Recipe.status == 'approved')
+    if pictured:
+        stmt = stmt.where(Recipe.image_filename.isnot(None))
     if view == 'saved':
         stmt = stmt.join(UserRecipeInteraction).where(UserRecipeInteraction.user_id == user.id,
                                                       UserRecipeInteraction.status == 'favorite')
@@ -245,22 +247,30 @@ def counts(view, args, user=None):
     return {'total': total, 'empty': empty}
 
 
-def recipe_page(view, f, sort='new', shown=PAGE, user=None):
+def recipe_page(view, f, sort='new', shown=PAGE, user=None, pictured=False):
     """The recipes a list shows: view is 'discover' (All), 'saved', 'made' or 'next' (the last three need user).
     shown is how many cards to show from the start (Show more adds a page). Each recipe gets active_mins,
     version_count (approved recipes in its dish, 1 when alone) and, for a signed-in user, interaction and is_super_liked."""
-    ids = matching_ids(view, f, sort, user)
+    ids = matching_ids(view, f, sort, user, pictured)
     on_page = ids[:max(shown, 1)]
+    return Page(recipes=cards(on_page, user, versions=view == 'discover'), total=len(ids), more=len(ids) > len(on_page))
+
+
+def cards(on_page, user=None, versions=True):
+    """The recipes with these ids, in this order, ready for the card (components/cards.html): active_mins,
+    version_count (when versions) and, for a signed-in user, interaction and is_super_liked. Ids not found are left out."""
     by_id = {r.id: (r, active) for r, active in db.session.execute(
         db.select(Recipe, ACTIVE).where(Recipe.id.in_(on_page))
         .options(selectinload(Recipe.diets), selectinload(Recipe.meal_types))).tuples()} if on_page else {}
     recipes = []
     for rid in on_page:
+        if rid not in by_id:
+            continue
         r, active = by_id[rid]
         r.active_mins = active
         recipes.append(r)
 
-    counts = versions_count(recipes) if view == 'discover' else {}
+    counts = versions_count(recipes) if versions else {}
     marks = {}
     if user is not None and recipes:
         marks = {i.recipe_id: i for i in db.session.execute(
@@ -270,4 +280,4 @@ def recipe_page(view, f, sort='new', shown=PAGE, user=None):
         r.version_count = counts.get(r.base_recipe_id or r.id, 1)
         r.interaction = marks.get(r.id)
         r.is_super_liked = bool(r.interaction and r.interaction.is_super_like)
-    return Page(recipes=recipes, total=len(ids), more=len(ids) > len(on_page))
+    return recipes

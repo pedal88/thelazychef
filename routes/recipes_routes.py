@@ -10,7 +10,7 @@ from services.recipe_library import PAGE, SORT_LABELS, counts, from_args, quick,
 recipes_bp = FlatBlueprint("recipes", __name__)
 
 
-@recipes_bp.route('/')
+@recipes_bp.route('/discover')
 def discover():
     """One dish at a time to save or pass on; the cards come from /api/feed/recipes."""
     return render_template('landing.html')
