@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+{# One slide of a TikTok or Instagram post (routes/social_routes.py, services/social.py, docs/SOCIAL.md), drawn at
+   the post's size and photographed by scripts/social_render.py. Not part of the site: no menu, no scripts. #}
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<title>{{ fmt }} {{ n }}/{{ slides }} - The Lazy Chef</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/social.css') }}">
+</head>
+<body>
+{% set s = slide %}
+<main class="slide size-{{ size }} kind-{{ s.kind }}" style="width:{{ width }}px; height:{{ height }}px">
+
+{% macro tile(t, labels=true) -%}
+<figure class="tile">
+  <div class="sym">{% if t.img %}<img src="{{ t.img }}" alt="">{% else %}<i>{{ t.name[:1]|upper }}</i>{% endif %}</div>
+  {%- if labels %}<figcaption>{% if t.amount %}<b>{{ t.amount }}</b>{% endif %}<span>{{ t.name }}</span></figcaption>{% endif %}
+</figure>
+{%- endmacro %}
+
+{% macro grid(tiles, cols, labels=true) -%}
+<div class="grid" style="--cols:{{ cols }}">
+  {% for t in tiles %}{{ tile(t, labels) }}{% endfor %}
+</div>
+{%- endmacro %}
+
+{% if s.kind in ('cover', 'dish') %}
+  <p class="eyebrow">{{ s.eyebrow }}</p>
+  <h1 class="title">{{ s.title }}</h1>
+  {% if s.image %}<div class="hero"><img src="{{ s.image }}" alt=""></div>
+  {% else %}<div class="hero tiles">{% for t in s.tiles[:12] if t.img %}<img src="{{ t.img }}" alt="">{% endfor %}</div>{% endif %}
+  <p class="facts"><span>{{ s.total }}</span><span>{{ s.count }} ingredients</span>{% if s.parts|length > 1 %}<span>{{ s.parts|length }} parts</span>{% endif %}</p>
+
+{% elif s.kind == 'map' %}
+  {% set m, k, pad = s.map, s.k, s.pad %}
+  <h2 class="head">{{ s.title }}</h2>
+  <p class="key">{% for l in m.lanes %}<span class="lane-{{ l.n }}"><i></i>{{ l.name }}</span>{% endfor %}<span class="down">Down is time: {{ s.total }}</span></p>
+  <div class="map" style="height:{{ (m.height + 2 * pad) * k }}px">
+    <svg width="{{ (m.width + 2 * pad) * k }}" height="{{ (m.height + 2 * pad) * k }}"
+         viewBox="{{ -pad }} {{ -pad }} {{ m.width + 2 * pad }} {{ m.height + 2 * pad }}" aria-hidden="true">
+      {% for p in m.paths %}<path class="line lane-{{ m.lanes[p.lane].n }}" d="{{ p.d }}"></path>{% endfor %}
+      {%- for st in m.stations %}
+        {%- if st.merge %}<rect class="merge" x="{{ st.x0 - 9 }}" y="{{ st.y - 9 }}" width="{{ st.x1 - st.x0 + 18 }}" height="18" rx="9"></rect>
+        {%- elif st.final %}<circle class="final" cx="{{ st.x }}" cy="{{ st.y }}" r="12"></circle><circle class="dot" cx="{{ st.x }}" cy="{{ st.y }}" r="4.5"></circle>
+        {%- else %}<circle class="stop lane-{{ m.lanes[st.lane].n }}" cx="{{ st.x }}" cy="{{ st.y }}" r="7.5"></circle>{% endif %}
+      {%- endfor %}
+    </svg>
+    <ol class="names{{ ' every' if s.every }}" style="left:{{ (m.width + 2 * pad) * k + 28 }}px">
+      {% for l in s.labels %}<li class="{{ 'part lane-' ~ l.lane if l.part }}{{ ' final' if l.final }}" style="top:{{ l.y }}px">{% if not l.part %}<span class="ph ph-{{ l.phase }}"></span>{% endif %}{{ l.text }}{% if l.time %} <small>{{ l.time }}</small>{% endif %}</li>{% endfor %}
+    </ol>
+  </div>
+
+{% elif s.kind == 'ingredients' %}
+  <h2 class="head">{{ s.title }}</h2>
+  {{ grid(s.tiles, s.cols) }}
+  {% if s.staples %}<p class="note">Plus what you probably have: {{ s.staples|join(', ') }}</p>{% endif %}
+
+{% elif s.kind == 'collage' %}
+  <p class="eyebrow">{{ s.count }} ingredients</p>
+  <h1 class="title">{{ s.title }}</h1>
+  {{ grid(s.tiles, s.cols, labels=false) }}
+  <p class="note big">Can you tell the dish from the ingredients?</p>
+
+{% elif s.kind == 'steps' %}
+  <h2 class="head">{{ s.title }}</h2>
+  <p class="legend"><span class="ph-prep">prep</span><span class="ph-cook">cook</span><span class="ph-serve">serve</span></p>
+  <ol class="steps">
+    {% for st in s.steps %}<li><b class="no ph-{{ st.phase }}">{{ st.no }}</b><span>{{ st.short }}</span><small>{{ st.duration }}</small></li>{% endfor %}
+  </ol>
+  {% if s.more %}<p class="note">And {{ s.more }} more in the recipe.</p>{% endif %}
+
+{% elif s.kind == 'pantry_cover' %}
+  <p class="eyebrow">Save this for your next big shop</p>
+  <h1 class="title">The {{ s.count }}-ingredient pantry</h1>
+  <p class="sub">The 100 most used cover {{ s.share }}% of what goes into dinner</p>
+  {{ grid(s.tiles, s.cols, labels=false) }}
+
+{% elif s.kind == 'pantry' %}
+  {% for g in s.groups %}
+  <section class="group">
+    <h3>{{ g.label }}</h3>
+    <div class="row">{% for t in g['items'] %}{{ tile(t) }}{% endfor %}</div>
+  </section>
+  {% endfor %}
+
+{% elif s.kind == 'coverage' %}
+  <h2 class="head">How far a small pantry goes</h2>
+  <div class="bars">
+    {% for label, share in s.rows %}
+    <div class="bar"><span class="label">{{ label }}</span><span class="track"><i style="width:{{ share }}%"></i></span><b>{{ share }}%</b></div>
+    {% endfor %}
+  </div>
+  <p class="note">Share of all the ingredient lines in {{ s.sample }}.</p>
+
+{% elif s.kind == 'end' %}
+  <div class="end">
+    <img class="mark" src="{{ url_for('static', filename='brand/mark.svg') }}" alt="">
+    <p class="line">{{ s.line }}</p>
+    <p class="address">{{ address }}</p>
+    <p class="note">{{ 'Link in bio' if size == 'ig' else 'Type it in your browser' }}</p>
+  </div>
+{% endif %}
+
+<footer class="foot">
+  <span><img src="{{ url_for('static', filename='brand/mark.svg') }}" alt="">The Lazy Chef</span>
+  <span>{{ n }} / {{ slides }}</span>
+</footer>
+</main>
+</body>
+</html>

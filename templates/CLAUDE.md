@@ -46,6 +46,7 @@ content is made: `docs/CONTENT.md`.
 
 `landing.html` (Discover), `recipes_list.html`,
 `explore_galaxy.html` / `explore_ingredient_galaxy.html`, `recipe_v2_new.html` / `recipe_v2_batch*.html` (admin:
-making recipes), `admin/` (management pages, still mostly plain Tailwind), `recipe_print.html`.
+making recipes), `admin/` (management pages, still mostly plain Tailwind), `recipe_print.html`, `social/slide.html` (one
+slide of a TikTok or Instagram post, `static/css/social.css`; `docs/SOCIAL.md`).
 
 Check a visual change in the browser on desktop and at phone width (375 px, no sideways scroll) before calling it done.
