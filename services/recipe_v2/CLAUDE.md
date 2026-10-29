@@ -36,6 +36,10 @@ then `refresh`. Run it on saved recipes after changing derive, nutrition or the 
   `data/constraints/equipment.json` (the air fryer has two drawers) and can be overridden per kitchen.
 - `mise.py` (Prep: what to set out, the bowls), `whole.py` (timeline and metro map), `delta.py` (the river delta
   drawing), `groups.py` (kitchen groups for the ingredient list), `read.py`.
+- Amounts and temperatures are written in the reader's measuring system, metric or US (`services/measures.py`, the
+  `units` cookie read by `routes/_shared.unit_system()`). Only the display converts: the stored recipe, `gram_weight`,
+  nutrition, the planner and Prep's rules read the stored units. Measures inside free text ("175 °C" in a step) are
+  not converted yet.
 - `states.py` is the state catalog (`data/constraints/states.json`): what is done to an ingredient before it goes in.
 
 ## Rules that are easy to break

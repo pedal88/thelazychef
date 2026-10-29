@@ -13,8 +13,9 @@ from database.db_connector import configure_database
 # The models are re-exported here: many scripts do "from app import app, db, Recipe, ..."
 from database.models import db, Ingredient, Recipe, RecipeMealType, RecipeDiet, User, Chef, UserRecipeInteraction, UserQueue, UserLink, ConceptVisual, VisualStyleGuide
 from services.storage_service import get_storage_provider
+from services.measures import SYSTEMS
 from services.recipe_v2 import states
-from routes._shared import DIFFICULTY_LABELS, EQUIPMENT_STYLES, OVERVIEW_LAYOUTS, chosen_overview, IMAGE_STYLES, chosen_equipment_style, dish_images, equipment_image, get_recipe_image_url, get_image_url, icon, notes_text, site_menu
+from routes._shared import DIFFICULTY_LABELS, EQUIPMENT_STYLES, OVERVIEW_LAYOUTS, chosen_overview, IMAGE_STYLES, chosen_equipment_style, dish_images, equipment_image, get_recipe_image_url, get_image_url, icon, notes_text, site_menu, unit_system
 
 
 app = Flask(__name__)
@@ -103,6 +104,8 @@ app.add_template_global(get_recipe_image_url)
 app.add_template_global(get_image_url)
 app.add_template_global(icon)
 app.add_template_global(site_menu)
+app.add_template_global(unit_system)  # the reader's measuring system, for the switch in the menu
+app.add_template_global(SYSTEMS, 'UNIT_SYSTEMS')
 app.add_template_global(dish_images)
 app.add_template_global(IMAGE_STYLES, 'IMAGE_STYLES')
 app.add_template_global(EQUIPMENT_STYLES, 'EQUIPMENT_STYLES')

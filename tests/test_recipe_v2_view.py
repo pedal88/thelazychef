@@ -79,8 +79,20 @@ class RecipeV2ViewTests(unittest.TestCase):
         self.assertIn('name="servings" value="6"', html)
         self.assertIn('servings=6&amp;plan=prep', html)  # the plan links keep the servings
         # The amounts for 6
-        self.assertIn('data-amounts=\'[[600.0, "g"]]\'', html)
+        self.assertIn('<b class="amt">600 g</b> spaghetti', html)
         self.assertIn('600 g spaghetti', html[html.index('id="cook"'):])
+
+    def test_us_units_follow_the_cookie(self):
+        self.client.set_cookie('units', 'us')
+        _, html = self.page('carbonara')
+        self.assertIn('<b class="amt">14 oz</b> spaghetti', html)  # 400 g
+        self.assertIn('data-units="us" aria-pressed="true"', html)  # the switch in the menu
+        self.client.set_cookie('units', 'metric')
+        _, html = self.page('carbonara')
+        self.assertIn('<b class="amt">400 g</b> spaghetti', html)  # not the cached US page
+        self.client.set_cookie('units', 'imperial')  # anything else is metric
+        _, html = self.page('carbonara')
+        self.assertIn('<b class="amt">400 g</b> spaghetti', html)
 
     def test_the_state_follows_the_ingredient_in_cook_steps(self):
         _, html = self.page('tikka')

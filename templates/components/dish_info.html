@@ -12,15 +12,15 @@
     <h3 class="shop-group">{{ g.label }}</h3>
     <ul class="ilist">
       {% for item in g['items'] %}
-      <li>{{ ing_pic(item, 36) }}<span class="line"><b class="amt" data-amounts='{{ item.raw|tojson }}'>{{ item.amount }}</b> {{ item.name }}{% if item.note %}<small>{{ item.note }}</small>{% endif %}{% if item.missing and recipe.status != 'approved' %}<small class="missing">Not in the pantry</small>{% endif %}</span></li>
+      <li>{{ ing_pic(item, 36) }}<span class="line"><b class="amt">{{ item.amount }}</b> {{ item.name }}{% if item.note %}<small>{{ item.note }}</small>{% endif %}{% if item.missing and recipe.status != 'approved' %}<small class="missing">Not in the pantry</small>{% endif %}</span></li>
       {% endfor %}
     </ul>
     {% endfor %}
 {%- endmacro %}
 
 {% macro servings_stepper(endpoint) -%}
-{# The servings: a number to type, or − and +. On Overview the amounts change at once (static/js/servings.js);
-   elsewhere, and without JavaScript, the form loads the page for that many servings. #}
+{# The servings: a number to type, or − and +; the form loads the page for that many servings (static/js/servings.js),
+   so every amount is written by the server in the reader's measuring system. #}
 <form class="stepper" method="get" action="{{ url_for(endpoint, recipe_id=recipe.id) }}" data-servings-form>
   <input type="hidden" name="plan" value="{{ v.plan }}">
   <button type="button" data-step="-1" aria-label="Fewer servings">−</button>

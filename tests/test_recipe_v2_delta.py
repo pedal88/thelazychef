@@ -12,11 +12,11 @@ from services.recipe_v2 import delta  # noqa: E402
 from services.recipe_v2.planner import plan_v2  # noqa: E402
 
 
-def drawing(name):
+def drawing(name, system='metric'):
     v2 = view_tests.fasit(name)
     lines = {i['local_id']: {'name': i['name'], 'img': None, 'amount': '', 'prep': '', 'cut': i.get('cut')}
              for i in v2['ingredients']}
-    return v2, delta.build(v2, plan_v2(v2, 'calm')['order'], lines)
+    return v2, delta.build(v2, plan_v2(v2, 'calm')['order'], lines, system)
 
 
 def node(d, sid):
@@ -58,6 +58,8 @@ class DeltaModelTests(unittest.TestCase):
         bake = node(d, 's8')
         self.assertEqual([s['label'] for s in bake['chain']], ['legg', 'stek lasagnen', 'hvil'])
         self.assertEqual(bake['notes'], ['forvarm ovnen 200°'])
+        _, d = drawing('lasagne', 'us')
+        self.assertEqual(node(d, 's8')['notes'], ['forvarm ovnen 400°'])  # in °F for a US reader
 
     def test_a_long_side_branch_is_started_first(self):
         _, d = drawing('tikka')
