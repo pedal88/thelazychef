@@ -19,7 +19,7 @@ from app import app  # noqa: E402
 from database.models import Recipe, RecipeDiet, User, UserRecipeInteraction, db  # noqa: E402
 from werkzeug.datastructures import MultiDict  # noqa: E402
 
-from services.recipe_library import Filters, counts, feed_ids, for_the_day, from_args, quick, recipe_page  # noqa: E402
+from services.recipe_library import Filters, counts, feed_ids, from_args, quick, recipe_page  # noqa: E402
 from services.recipe_v2.store import save_v2  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -125,7 +125,7 @@ class RecipeLibraryTests(unittest.TestCase):
         for n in range(3):
             self.recipe(f'Dish {n}')
         html = self.client.get('/recipes?q=dish&time=30&sort=quick').get_data(as_text=True)
-        self.assertIn('3 dishes', html)
+        self.assertIn('data-lv-swap="total">3<', html)
         self.assertNotIn('Show more', html)
         self.assertEqual(self.client.get('/recipes?shown=abc').status_code, 200)
 
@@ -149,14 +149,23 @@ class RecipeLibraryTests(unittest.TestCase):
         self.assertEqual(self.titles(f=Filters(spice=['3'])), ['Vindaloo'])
         self.assertEqual(self.titles(f=Filters(spice=['0'])), ['Porridge'])
 
-    def test_the_list_has_chips_and_no_table_or_bulk_delete(self):
+    def test_one_bar_with_the_choices_in_use_and_the_order_in_the_drawer(self):
         self.recipe('Dish')
-        html = self.client.get('/recipes?diet=vegan').get_data(as_text=True)
+        html = self.client.get('/recipes?diet=vegan&sort=quick').get_data(as_text=True)
         self.assertIn('name="diet" value="vegan" checked', html)
-        self.assertIn('1 in use', html)
+        self.assertIn('name="sort" value="quick" checked', html)  # the order is in the drawer
+        self.assertIn('Remove Vegan', html)  # what is in use, each with an x
+        self.assertIn('Remove Quickest', html)
+        self.assertIn('Filters <b>1</b>', html)  # the order is not a filter
         self.assertIn('Clear all', html)
-        for gone in ('Table', 'bulk-action-bar', 'recipe-select-cb', 'inspectorModal'):
-            self.assertNotIn(gone, html)
+        for gone in ('lib-tabs', 'data-lbar-views', 'bulk-action-bar', 'recipe-select-cb', 'inspectorModal', 'data-lib-switch'):
+            self.assertNotIn(gone, html)  # one list for visitors: no switcher
+
+        self.client.post('/login', data={'email': 'cook@test', 'password': 'pw'})
+        html = self.client.get('/recipes?view=saved&sort=quick').get_data(as_text=True)
+        self.assertIn('data-lbar-views', html)  # the title opens the other lists
+        self.assertIn('<h1>Saved</h1>', html)
+        self.assertNotIn('name="sort"', html)  # Saved keeps its own order
 
     def pictured(self, title, **kw):
         r = self.recipe(title, **kw)
@@ -199,32 +208,6 @@ class RecipeLibraryTests(unittest.TestCase):
         self.assertTrue(on)
         self.assertEqual(args.getlist('diet'), [])
 
-    def test_admins_can_switch_the_list_layout(self):
-        self.recipe('Dish')
-        admin = User(email='admin@test', is_admin=True)
-        admin.set_password('pw')
-        db.session.add(admin)
-        db.session.commit()
-        self.client.set_cookie('library_layout', 'drawer')
-        self.client.post('/login', data={'email': 'cook@test', 'password': 'pw'})
-        self.assertNotIn('lv-drawer', self.client.get('/recipes').get_data(as_text=True))  # not for other people
-        self.client.get('/logout')
-        self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
-        for layout, mark in (('pills', 'data-lv-pill'), ('rail', 'lv-rail'), ('drawer', 'data-lv-drawer'), ('today', 'lib-head')):
-            self.client.set_cookie('library_layout', layout)
-            html = self.client.get('/recipes?diet=vegan&q=dish').get_data(as_text=True)
-            self.assertIn(mark, html, layout)
-            self.assertIn('data-lib-switch', html)
-        self.client.set_cookie('library_layout', 'drawer')
-        self.assertIn('Under 30 min', self.client.get('/recipes').get_data(as_text=True))
-
-    def admin(self):
-        admin = User(email='admin@test', is_admin=True)
-        admin.set_password('pw')
-        db.session.add(admin)
-        db.session.commit()
-        self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
-
     def test_the_drawer_counts_and_finds_empty_choices(self):
         quick_dish = self.recipe('Quick', minutes=15)
         quick_dish.heat_source = 'pan'
@@ -236,34 +219,7 @@ class RecipeLibraryTests(unittest.TestCase):
         self.assertNotIn(['heat_source', 'pan'], got['empty'])
         self.assertNotIn(['time', '20'], got['empty'])  # already chosen
 
-        self.assertEqual(self.client.get('/api/recipes/count').status_code, 403)  # admins only, as a trial
-        self.admin()
         self.assertEqual(self.client.get('/api/recipes/count?time=20').get_json()['total'], 1)
-
-    def test_shortcuts_for_the_day(self):
-        from datetime import date
-        labels = lambda day: [label for _, _, label in for_the_day(day)]  # noqa: E731
-        self.assertEqual(labels(date(2026, 12, 15)), ['Christmas', 'Weeknight'])  # a Tuesday
-        self.assertEqual(labels(date(2026, 7, 3)), ['Summer BBQ', 'Weekend'])  # a Friday
-        self.assertEqual(labels(date(2026, 10, 28)), ['Weeknight'])
-        shown = [label for label, _, _ in quick(MultiDict(), date(2026, 10, 31))]
-        self.assertEqual(shown[0], 'Weekend')
-        self.assertNotIn('Weeknight', shown)
-
-    def test_admins_switch_the_drawer_tweaks(self):
-        self.recipe('Dish', diets=('vegan',))
-        self.admin()
-        self.client.set_cookie('library_layout', 'drawer')
-        html = self.client.get('/recipes?diet=vegan').get_data(as_text=True)  # all on until switched off
-        for mark in ('tw-active', 'tw-calm', 'data-instant', 'data-count=', 'Remove Vegan', 'data-tw-switch'):
-            self.assertIn(mark, html)
-        self.client.set_cookie('library_tweaks', 'calm')
-        html = self.client.get('/recipes?diet=vegan').get_data(as_text=True)
-        self.assertIn('tw-calm', html)
-        for mark in ('tw-active', 'data-instant', 'data-count=', 'Remove Vegan'):
-            self.assertNotIn(mark, html)
-        self.client.set_cookie('library_layout', 'pills')  # the tweaks are the drawer's
-        self.assertNotIn('tw-calm', self.client.get('/recipes').get_data(as_text=True))
 
     def test_the_recipe_page_shows_the_approved_versions(self):
         root = self.recipe('Carbonara')

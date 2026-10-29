@@ -62,21 +62,6 @@
                     location.reload();
                     return;
                 }
-                var lib = e.target.closest && e.target.closest('[data-lib-switch] [data-lib]');
-                if (lib) {  // the recipe list layout trial, the same way
-                    document.cookie = 'library_layout=' + lib.getAttribute('data-lib') + '; path=/; max-age=31536000; samesite=lax';
-                    location.reload();
-                    return;
-                }
-                var tw = e.target.closest && e.target.closest('[data-tw-switch] [data-tw]');
-                if (tw) {  // the drawer tweaks: each on or off, the ones on in a cookie
-                    tw.setAttribute('aria-pressed', String(tw.getAttribute('aria-pressed') !== 'true'));
-                    var on = [].map.call(document.querySelectorAll('[data-tw-switch] [data-tw][aria-pressed="true"]'),
-                        function (b) { return b.getAttribute('data-tw'); });
-                    document.cookie = 'library_tweaks=' + on.join('-') + '; path=/; max-age=31536000; samesite=lax';
-                    location.reload();
-                    return;
-                }
                 var eq = e.target.closest && e.target.closest('[data-eq-switch] [data-eq]');
                 if (eq) {  // the equipment symbol trial, the same way
                     document.cookie = 'equipment_images=' + eq.getAttribute('data-eq') + '; path=/; max-age=31536000; samesite=lax';
