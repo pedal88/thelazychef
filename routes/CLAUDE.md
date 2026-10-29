@@ -13,7 +13,7 @@
 | Page | Route | Template |
 |---|---|---|
 | Discover (front page) | `recipes_routes.discover` `/` | `landing.html`, cards from `/api/feed/recipes` (approved recipes with an image only, one per dish: `recipe_library.feed_ids`) |
-| Recipe list, Saved, Made, Cook next | `recipes_list` `/recipes` | `recipes_list.html`; which recipes, one card per dish with its versions, search, time and pages: `services/recipe_library.py` |
+| Recipe list, Saved, Made, Cook next | `recipes_list` `/recipes` | `recipes_list.html`; which recipes, one card per dish with its versions, search, time and pages: `services/recipe_library.py`; the filter drawer's live count: `/api/recipes/count` |
 | The recipe page | `recipe_detail` `/recipe/<id>` | `recipe_v2_make.html` (overview, `#prep`, `#cook` on one page; `/prep`, `/cook`, `/make` redirect there) |
 | Galaxies | `explore_routes` `/explore/galaxy`, `/explore/ingredient-galaxy` | `explore_*.html`, data from `/api/graph/*` |
 | Ingredients, chefs | `pantry_routes`, `chefs_routes` | |

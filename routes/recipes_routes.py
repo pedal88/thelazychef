@@ -1,12 +1,9 @@
 """Recipes Blueprint: landing page, recipe library, the recipe page, recipe JSON APIs."""
-from datetime import datetime
-from zoneinfo import ZoneInfo
-
 from flask import abort, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from database.models import Ingredient, Recipe, db
 from routes._flat import FlatBlueprint
-from routes._shared import DIFFICULTY_LABELS, chosen_library, chosen_tweaks, get_recipe_image_url, viewer_is_admin
+from routes._shared import DIFFICULTY_LABELS, get_recipe_image_url, viewer_is_admin
 from services.chef_service import get_chefs
 from services.recipe_library import PAGE, SORT_LABELS, counts, from_args, quick, recipe_page
 
@@ -19,47 +16,52 @@ def discover():
     return render_template('landing.html')
 
 
+# The lists the title switches between: (view, title, needs a signed-in person)
+VIEWS = [('discover', 'All recipes', False), ('saved', 'Saved', True), ('made', 'Made', True), ('next', 'Cook next', True)]
+
+
 @recipes_bp.route('/recipes')
 def recipes_list():
-    """All recipes, or the person's Saved, Made and Cook next: chips to filter, search, an order and a page at a time
-    (services/recipe_library.py)."""
+    """All recipes, or the person's Saved, Made and Cook next: one bar with the list, search, shortcuts and the filter
+    drawer (with the order), and the cards a page at a time (services/recipe_library.py)."""
     view_mode = request.args.get('view', 'discover')
     if view_mode not in ('saved', 'made', 'next') or not current_user.is_authenticated:
         view_mode = 'discover'
     filters, groups = from_args(request.args, DIFFICULTY_LABELS)
-    sort = request.args.get('sort', 'new')
+    sort = request.args.get('sort', 'new') if view_mode == 'discover' else 'new'
+    if sort not in SORT_LABELS:
+        sort = 'new'
     shown = max(request.args.get('shown', PAGE, type=int) or PAGE, PAGE)
     page = recipe_page(view_mode, filters, sort=sort, shown=shown,
                        user=current_user if current_user.is_authenticated else None)
     more_url = url_for('recipes_list', **{**request.args.to_dict(flat=False), 'shown': shown + PAGE}) if page.more else None
-    in_use = sum(1 for g in groups for _, _, on in g['options'] if on) + bool(filters.q)
-    layout = chosen_library()  # the layout trial, admins only (routes/_shared.py)
-    tweaks = chosen_tweaks() if layout == 'drawer' else set()
-    day = datetime.now(ZoneInfo('Europe/Oslo')).date() if 'smart' in tweaks else None
-    shortcuts = [(label, url_for('recipes_list', **args.to_dict(flat=False)), on)
-                 for label, args, on in quick(request.args, day)]
-    # The choices in use, each with the address without it (tweak "active")
-    active = []
-    for g in groups:
-        for value, text, on in g['options']:
-            if on:
-                rest = request.args.copy()
-                rest.pop('shown', None)
-                rest.setlist(g['key'], [v for v in request.args.getlist(g['key']) if v != value])
-                active.append((text, url_for('recipes_list', **rest.to_dict(flat=False))))
+
+    def without(key, value):
+        rest = request.args.copy()
+        rest.pop('shown', None)
+        rest.setlist(key, [v for v in request.args.getlist(key) if v != value])
+        return url_for('recipes_list', **rest.to_dict(flat=False))
+
+    # The choices in use, each with the address without it; the order too when it is not the newest first
+    active = [(text, without(g['key'], value)) for g in groups for value, text, on in g['options'] if on]
+    if sort != 'new':
+        active.insert(0, (SORT_LABELS[sort], without('sort', sort)))
+    # In All the drawer starts with the order: one choice, no Any
+    order = ({'key': 'sort', 'label': 'Order', 'single': True, 'any': False,
+              'options': [(key, label, key == sort) for key, label in SORT_LABELS.items()]}
+             if view_mode == 'discover' else None)
+    shortcuts = [(label, url_for('recipes_list', **args.to_dict(flat=False)), on) for label, args, on in quick(request.args)]
+    views = [(key, label) for key, label, signed_in in VIEWS if current_user.is_authenticated or not signed_in]
     return render_template('recipes_list.html', recipes=page.recipes, total=page.total, more_url=more_url,
-                           current_view=view_mode, groups=groups, q=filters.q, sort=sort, sort_labels=SORT_LABELS,
-                           in_use=in_use, more_open=any(on for g in groups if g['more'] for _, _, on in g['options']),
-                           layout=layout, shortcuts=shortcuts, tweaks=tweaks, active=active)
+                           current_view=view_mode, views=views, title=dict(views)[view_mode], groups=groups,
+                           order=order, q=filters.q, active=active, shortcuts=shortcuts,
+                           in_use=len(active) - (1 if sort != 'new' else 0))
 
 
 @recipes_bp.route('/api/recipes/count')
 def recipes_count():
     """How many cards the choices in the address give, and the choices that would give none: the filter drawer's
-    live count (layout trial, tweak "count"). Read only, approved recipes only; for admins while it is a trial, as
-    it costs a query per choice."""
-    if not viewer_is_admin():
-        abort(403)
+    live count. Read only, approved recipes only; a query per choice (services/recipe_library.counts)."""
     view = request.args.get('view', 'discover')
     if view not in ('saved', 'made', 'next') or not current_user.is_authenticated:
         view = 'discover'

@@ -8,9 +8,9 @@ share one look: paper surfaces, thin lines, mono labels, serif titles, and line 
 - `static/css/tokens.css`: colours, fonts, spacing, radius (`--color-ink`, `--color-paper`, `--color-accent`,
   `--font-serif`, `--space-4`, …), including dark mode. Use the tokens, not Tailwind colour classes or hex values.
 - `static/css/library.css`: the parts the browsing pages share: `lib-head` (page head with eyebrow, serif title and a
-  line), `lib-tabs`, `rcard` (the recipe card), `lib-empty`, `lib-go`, Discover's card stack (`dcard`), and the
-  recipe list's filter chips (`lib-chip`), Made and Feedback (`lib-act`) and feedback drawer (`fb`, `static/js/library.js`).
-  Loaded on every page by `base.html`.
+  line), `rcard` (the recipe card), `lib-empty`, `lib-go`, Discover's card stack (`dcard`), and the recipe list's bar
+  (`lbar`: the title that switches list, search, shortcuts, Filters), its filter drawer (`lib-drawer`, `lib-chip`) and
+  the feedback drawer (`fb`); the list's script is `static/js/library.js`. Loaded on every page by `base.html`.
 - `static/css/galaxy.css`: both galaxies (`/explore/*`).
 - `static/icons/icons.svg`: the line icon sprite (Lucide). In templates `{{ icon('pot') }}`
   (`routes/_shared.icon`); add a symbol to the sprite to add an icon. No emoji in the interface.

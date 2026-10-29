@@ -1,32 +1,24 @@
-/* The recipe list (templates/recipes_list.html): a chip or the order shows the recipes at once, "Made it" toggles,
-   and the feedback drawer (stars, a comment and photos, static/js/feedback.js). In the admins' layout trial the
-   dropdowns apply when they close and the filter drawer with its button; the drawer's tweaks count as you choose
-   and search as you type. */
+/* The recipe list (templates/recipes_list.html): the bar takes the top bar's paper once it sticks, the title opens
+   the other lists, the search follows your typing, the filter drawer counts the cards as you choose and applies with
+   its button, "Made it" toggles, and the feedback drawer (stars, a comment and photos, static/js/feedback.js). */
 (function () {
   'use strict';
 
-  // Filters: a change loads the list for it; empty choices are left out of the address
   const form = document.querySelector('[data-lib-form]');
   if (form) {
-    form.classList.add('is-live');
-    form.addEventListener('change', e => {
-      const t = e.target;
-      if (!t.matches('input[type=checkbox], input[type=radio], select')) return;
-      if (t.closest('[data-lv-drawer]')) return;  // the drawer applies with its button
-      const pill = t.closest('[data-lv-pill]');
-      if (pill && t.type === 'checkbox') { pill.dataset.changed = '1'; return; }  // applies when the pill closes
-      form.requestSubmit();
-    });
+    // The bar is in the page's colour until it sticks under the top bar (a mark just above it scrolls out of view)
+    const mark = document.querySelector('[data-lbar-mark]');
+    if (mark && 'IntersectionObserver' in window) {
+      new IntersectionObserver(([e]) => form.classList.toggle('is-stuck', !e.isIntersecting),
+        { rootMargin: '-64px 0px 0px 0px' }).observe(mark);
+    }
 
-    // Layout trial 1: one dropdown open at a time; it closes on a click outside, and applies what changed
-    const pills = [...form.querySelectorAll('[data-lv-pill]')];
-    pills.forEach(p => p.addEventListener('toggle', () => {
-      if (p.open) pills.forEach(o => { if (o !== p) o.open = false; });
-      else if (p.dataset.changed) form.requestSubmit();
-    }));
-    document.addEventListener('click', e => {
-      if (!e.target.closest('[data-lv-pill]')) pills.forEach(p => { p.open = false; });
-    });
+    // The list switcher under the title closes on a click outside it or on Escape
+    const views = form.querySelector('[data-lbar-views]');
+    if (views) {
+      document.addEventListener('click', e => { if (!views.contains(e.target)) views.open = false; });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') views.open = false; });
+    }
 
     // The choices as an address, without the empty ones and the default order
     const params = () => {
@@ -35,10 +27,10 @@
       return p;
     };
 
-    // Layout trial 3: the drawer with the filters
+    // The filter drawer
     const drawer = form.querySelector('[data-lv-drawer]');
     if (drawer) {
-      // Tweak "count": the button counts the cards as you choose, and choices that would give none are dimmed
+      // The button counts the cards as you choose, and choices that would give none are dimmed
       let counting = 0;
       const recount = async () => {
         if (!drawer.dataset.count) return;
@@ -63,9 +55,9 @@
       drawer.addEventListener('click', e => { if (e.target === drawer) drawer.close(); });  // the backdrop
     }
 
-    // Tweak "instant": the list follows the search as you type, without loading the page (the parts marked
-    // data-lv-swap are taken from the new page)
-    if ('instant' in form.dataset) {
+    // The list follows the search as you type, without loading the page (the parts marked data-lv-swap are taken
+    // from the new page)
+    {
       const box = form.querySelector('input[name=q]');
       let timer = null;
       let asked = 0;

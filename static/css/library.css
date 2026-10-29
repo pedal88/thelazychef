@@ -1,22 +1,12 @@
-/* The pages people browse recipes on (the recipe list and its tabs, Discover) in the language of the recipe
-   page (static/css/recipe_v2.css): tokens only (tokens.css), small mono labels, serif titles, quiet surfaces, thin
-   lines and the line icons. Loaded on every page by base.html; everything is under lib- and rcard. */
+/* The pages people browse recipes on (the recipe list, Discover) in the language of the recipe page
+   (static/css/recipe_v2.css): tokens only (tokens.css), small mono labels, serif titles, quiet surfaces, thin lines
+   and the line icons. Loaded on every page by base.html. */
 
 /* The head of a page: what it is (a small label), its name, and a line about it */
 .lib-head { max-width: 1180px; margin: 0 auto; padding: var(--space-8) var(--space-6) var(--space-4); }
 .lib-head .eyebrow, .lib-eyebrow { font: 500 12px/1.3 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--color-muted); margin: 0; }
 .lib-head h1 { font: 600 clamp(30px, 4vw, 44px)/1.1 var(--font-serif); color: var(--color-ink); margin: var(--space-2) 0 var(--space-2); }
 .lib-head p.lib-sub { margin: 0; color: var(--color-muted); font-size: 16px; max-width: 60ch; }
-
-/* Tabs and switches: one rounded bar, the chosen one in ink (as the recipe page's segmented controls) */
-.lib-bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-3); }
-.lib-tabs { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 3px; border: 1px solid var(--color-line); border-radius: var(--radius-pill);
-  background: var(--color-paper); }
-.lib-tabs a { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 var(--space-4); border-radius: var(--radius-pill);
-  color: var(--color-muted); font: 600 14px/1 var(--font-sans); text-decoration: none; }
-.lib-tabs a:hover { color: var(--color-ink); }
-.lib-tabs a[aria-current="page"] { background: var(--color-ink); color: var(--color-paper); }
-.lib-tabs .icon { width: 16px; height: 16px; }
 
 /* A recipe card: the dish, what kind of dish and how long, its name, and what it suits */
 .rcard { display: flex; flex-direction: column; height: 100%; overflow: hidden; text-decoration: none; color: var(--color-ink);
@@ -63,14 +53,6 @@
   background: var(--color-accent); color: var(--color-paper); font: 600 15px/1 var(--font-sans); text-decoration: none; }
 .lib-go:hover { filter: brightness(.95); }
 
-/* The recipe list's filters: behind a button on a phone, always open on a wide screen */
-.lib-filters-sum { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; margin-top: var(--space-3); padding: 0 var(--space-4);
-  border: 1px solid var(--color-line); border-radius: var(--radius-pill); background: var(--color-paper); color: var(--color-ink);
-  font: 600 14px/1 var(--font-sans); cursor: pointer; list-style: none; }
-.lib-filters-sum::-webkit-details-marker { display: none; }
-.lib-filters-sum .icon { width: 16px; height: 16px; }
-@media (min-width: 768px) { .lib-filters-sum { display: none; } }
-
 /* Discover: the recipe card one at a time, the next two peeking out below, and two buttons to save or pass */
 .disc-head { text-align: center; padding-bottom: var(--space-2); }
 .disc-head p.lib-sub { margin: 0 auto; }
@@ -104,29 +86,68 @@
 .disc-save:hover { border-color: var(--color-accent); filter: brightness(.95); }
 @media (prefers-reduced-motion: reduce) { .dcard { transition: opacity .2s; } }
 
-/* The recipe list (templates/recipes_list.html): search and order, the filter chips, the cards with Made and
-   Feedback under them, Show more, and the feedback drawer */
-.lib-wrap { max-width: 1180px; margin: 0 auto; padding: 0 var(--space-6) 64px; }
-@media (max-width: 480px) {
-  .lib-wrap { padding: 0 var(--space-4) 48px; }
-  .lib-wrap .lib-tabs { flex-wrap: nowrap; }  /* the four lists on one line */
-  .lib-wrap .lib-tabs a { padding: 0 10px; gap: 4px; }
+/* The recipe list (templates/recipes_list.html). One bar under the site's top bar: the list (the title opens the
+   others), search, the shortcuts with the choices in use first, and Filters, which opens a drawer with the order and
+   every choice. In the page's colour, so it is part of the page; once it sticks under the top bar it takes the top
+   bar's paper and a soft shadow (static/js/library.js sets is-stuck). One row on a wide screen, two or three on a
+   phone. The cards under it are quiet: time and difficulty, the buttons when the pointer is over the card. */
+.lbar-mark { height: 1px; margin-bottom: -1px; }  /* just above the bar: when it scrolls under the top bar, the bar sticks */
+.lbar { position: sticky; top: 64px; z-index: 30; background: var(--color-soft); transition: background .15s, box-shadow .15s; }
+.lbar.is-stuck { background: var(--color-paper); box-shadow: 0 1px 0 var(--color-line), 0 8px 24px rgb(0 0 0 / .06); }
+.lbar-in { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "title title" "q filters" "quick quick";
+  align-items: center; gap: var(--space-3); max-width: 1600px; margin: 0 auto; padding: var(--space-4) var(--space-4) var(--space-3); }
+/* On a phone the title row slides under the top bar when the bar sticks, so only search and the shortcuts stay */
+@media (max-width: 699px) { .lbar { top: 20px; } }  /* the title row (about 45 px) under the 64 px top bar */
+@media (min-width: 700px) {
+  .lbar-in { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "title q filters" "quick quick quick";
+    column-gap: var(--space-4); padding: var(--space-4) var(--space-6) var(--space-3); }
 }
-.lib-form { margin-top: var(--space-4); }
-.lib-search { display: flex; flex-wrap: wrap; gap: var(--space-3); }
-.lib-search select, .lib-q { min-height: var(--tap); border: 1px solid var(--color-line); border-radius: var(--radius-pill);
-  background: var(--color-paper); color: var(--color-ink); font-size: 15px; }
-.lib-search select { padding: 0 var(--space-4); cursor: pointer; }
-.lib-q { display: flex; flex: 1 1 260px; align-items: center; gap: var(--space-2); padding: 0 var(--space-4); }
+@media (min-width: 1200px) {
+  .lbar-in { grid-template-columns: auto minmax(220px, 380px) minmax(0, 1fr) auto; grid-template-areas: "title q quick filters"; }
+}
+.lbar-title { grid-area: title; position: relative; min-width: 0; display: flex; align-items: baseline; gap: 8px; }
+.lbar-title h1 { margin: 0; font: 600 clamp(22px, 2.2vw, 28px)/1.15 var(--font-serif); color: var(--color-ink); white-space: nowrap; }
+.lbar-count { font: 500 13px/1 var(--font-mono); letter-spacing: .04em; color: var(--color-muted); }
+.lbar-views > summary { display: flex; align-items: baseline; gap: 8px; cursor: pointer; list-style: none; border-radius: var(--radius-sm); }
+.lbar-views > summary::-webkit-details-marker { display: none; }
+.lbar-views > summary .icon { width: 18px; height: 18px; align-self: center; color: var(--color-muted); transition: transform .2s; }
+.lbar-views[open] > summary .icon { transform: rotate(180deg); }
+.lbar-views > summary:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 4px; }
+.lbar-menu { position: absolute; top: calc(100% + 8px); left: 0; z-index: 40; display: grid; min-width: 200px; padding: 6px;
+  background: var(--color-paper); border: 1px solid var(--color-line); border-radius: var(--radius); box-shadow: 0 12px 32px rgb(0 0 0 / .12); }
+.lbar-menu a { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 12px; border-radius: var(--radius-sm);
+  color: var(--color-ink); font-size: 15px; text-decoration: none; }
+.lbar-menu a .icon { width: 16px; height: 16px; color: var(--color-muted); }
+.lbar-menu a:hover { background: var(--color-soft); }
+.lbar-menu a[aria-current="page"] { font-weight: 600; }
+.lib-q { grid-area: q; display: flex; align-items: center; gap: var(--space-2); min-height: var(--tap); padding: 0 var(--space-4);
+  border: 1px solid var(--color-line); border-radius: var(--radius-pill); background: var(--color-paper); color: var(--color-ink); font-size: 15px; }
 .lib-q .icon { width: 16px; height: 16px; color: var(--color-muted); }
 .lib-q input { flex: 1; min-width: 0; border: 0; background: none; color: inherit; font: inherit; outline: none; }
-.lib-q:focus-within, .lib-search select:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+.lib-q:focus-within { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+.lbar-quick { grid-area: quick; display: flex; align-items: center; gap: 6px; min-width: 0; overflow-x: auto; scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent); }
+.lbar-quick::-webkit-scrollbar { display: none; }
+.lbar-quick > :last-child { margin-right: 24px; }  /* clear of the fade */
+.lib-chip-link { flex: none; display: inline-flex; align-items: center; min-height: 34px; padding: 0 14px; border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill); background: var(--color-paper); color: var(--color-ink); font-size: 14px; text-decoration: none; white-space: nowrap; }
+.lib-chip-link:hover { border-color: var(--color-line-strong); }
+.lib-chip-link.is-active { gap: 6px; padding-right: 10px; background: var(--color-ink); border-color: var(--color-ink); color: var(--color-paper); }
+.lib-chip-link.is-active .icon { width: 14px; height: 14px; }
+.lbar-clear { flex: none; color: var(--color-muted); font-size: 14px; white-space: nowrap; }
+.lbar-clear:hover { color: var(--color-ink); }
+.lbar-filters { grid-area: filters; display: inline-flex; align-items: center; gap: 6px; min-height: var(--tap); padding: 0 var(--space-4);
+  border: 1px solid var(--color-line); border-radius: var(--radius-pill); background: var(--color-paper); color: var(--color-ink);
+  font: 600 14px/1 var(--font-sans); cursor: pointer; }
+.lbar-filters:hover { border-color: var(--color-line-strong); }
+.lbar-filters .icon { width: 16px; height: 16px; }
+.lbar-filters b { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: var(--radius-pill);
+  background: var(--color-ink); color: var(--color-paper); font-size: 12px; }
 
-.lib-filter-body { display: grid; gap: var(--space-4); margin-top: var(--space-4); padding: var(--space-4) 0;
-  border-top: 1px solid var(--color-line); border-bottom: 1px solid var(--color-line); }
-.lib-chips { display: grid; grid-template-columns: 104px 1fr; align-items: start; gap: var(--space-3); margin: 0; padding: 0; border: 0; min-width: 0; }
-.lib-chips legend { float: left; padding: 9px 0 0; font: 500 11px/1.3 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--color-muted); }
-@media (max-width: 640px) { .lib-chips { grid-template-columns: 1fr; gap: var(--space-2); } .lib-chips legend { padding: 0; } }
+/* The filter drawer: the order, then every group of chips; a choice that would give no cards is dimmed */
+.lib-drawer .fb-body { gap: var(--space-6); }
+.lib-chips { display: grid; gap: var(--space-2); margin: 0; padding: 0; border: 0; min-width: 0; }
+.lib-chips legend { padding: 0; margin-bottom: var(--space-2); font: 500 11px/1.3 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--color-muted); }
 .lib-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
 .lib-chip { position: relative; display: inline-flex; }
 .lib-chip input { position: absolute; opacity: 0; width: 1px; height: 1px; }
@@ -135,33 +156,30 @@
 .lib-chip span:hover { border-color: var(--color-line-strong); }
 .lib-chip input:checked + span { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-paper); }
 .lib-chip input:focus-visible + span { outline: 2px solid var(--color-accent); outline-offset: 2px; }
-.lib-more-filters { display: grid; gap: var(--space-4); }
-.lib-more-filters > summary { display: inline-flex; align-items: center; gap: 6px; width: max-content; min-height: 36px; color: var(--color-ink);
-  font: 600 14px/1 var(--font-sans); cursor: pointer; list-style: none; }
-.lib-more-filters > summary::-webkit-details-marker { display: none; }
-.lib-more-filters > summary .icon { width: 16px; height: 16px; transition: transform .2s; }
-.lib-more-filters[open] > summary .icon { transform: rotate(180deg); }
-.lib-more-filters[open] { gap: var(--space-4); }
-.lib-filter-acts { display: flex; justify-content: flex-end; align-items: center; gap: var(--space-4); }
-.lib-filter-acts a { color: var(--color-muted); font-size: 14px; }
-.lib-filter-acts a:hover { color: var(--color-ink); }
-.lib-apply { min-height: 40px; padding: 0 var(--space-6); border: 0; border-radius: var(--radius-pill); background: var(--color-ink);
-  color: var(--color-paper); font: 600 14px/1 var(--font-sans); cursor: pointer; }
-.lib-form.is-live .lib-apply { display: none; }  /* a change shows the recipes at once (static/js/library.js) */
-.lib-form.is-live .lib-filter-acts:not(:has(a)) { display: none; }
+.lib-chip.is-empty span { opacity: .4; cursor: default; }
+.lib-chip.is-empty span:hover { border-color: var(--color-line); }
+.lib-drawer-clear { display: inline-grid; place-items: center; text-decoration: none; }
 
-.lib-count { margin: var(--space-6) 0 var(--space-4); font: 500 12px/1.3 var(--font-mono); letter-spacing: .06em; text-transform: uppercase;
-  color: var(--color-muted); }
-.lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-8) var(--space-6); }
-.lib-item { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+/* The cards */
+.lv { max-width: 1600px; margin: 0 auto; padding: var(--space-2) var(--space-6) 64px; }
+@media (max-width: 699px) { .lv { padding: var(--space-2) var(--space-4) 48px; } }
+.lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: var(--space-6) var(--space-4); }
+.lib-item { display: flex; flex-direction: column; min-width: 0; }
 .lib-item .rcard { flex: 1; }
-.lib-acts { display: flex; gap: var(--space-2); }
-.lib-act { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border: 1px solid var(--color-line);
-  border-radius: var(--radius-pill); background: var(--color-paper); color: var(--color-muted); font: 500 13px/1 var(--font-sans); cursor: pointer; }
-.lib-act .icon { width: 15px; height: 15px; }
-.lib-act:hover { color: var(--color-ink); border-color: var(--color-line-strong); }
-.lib-act[aria-pressed="true"] { background: var(--color-serve-soft); border-color: var(--color-serve); color: var(--color-serve-ink); }
-.lib-act:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.lv .rcard-body { gap: 6px; padding: var(--space-3); }
+.lv .rcard h3 { font-size: 18px; }
+.lv .rcard-acts { gap: 4px; }
+.lv .rcard-acts button { width: 32px; height: 32px; }
+.lv .rcard-acts .icon { width: 16px; height: 16px; }
+.rcard-acts .made-act[aria-pressed="true"] { color: var(--color-serve); }
+.rcard-hands { font-style: normal; }
+.lv .rcard-cuisine, .lv .rcard-hands, .lv .rcard-tags { display: none; }  /* time and difficulty only */
+.lv .rcard-meta .rcard-time::before { content: none; margin: 0; }
+@media (hover: hover) {
+  .lv .rcard-acts { opacity: 0; transition: opacity .15s; }
+  .lv .rcard:hover .rcard-acts, .lv .rcard:focus-within .rcard-acts, .lv .rcard-acts:has([aria-pressed="true"]) { opacity: 1; }
+}
+.lv [data-lv-swap="results"][aria-busy="true"] { opacity: .5; transition: opacity .15s; }  /* the search loading */
 .lib-more { display: flex; justify-content: center; margin: var(--space-8) 0 0; }
 
 /* The feedback drawer: from the right on a wide screen, the whole screen on a phone */
@@ -213,97 +231,3 @@
 .fb-cancel { border: 1px solid var(--color-line); background: var(--color-paper); color: var(--color-ink); }
 .fb-save { border: 0; background: var(--color-accent); color: var(--color-paper); }
 .fb-save:disabled { opacity: .6; cursor: default; }
-
-/* The recipe list's layout trial (admins, routes/_shared.LIBRARY_LAYOUTS): one line for the head, a toolbar that
-   stays under the site's bar, a wider grid with lower cards, and Made it and Feedback on the card. The layouts
-   (.lv[data-layout]: pills, rail, drawer) differ only in how the filters are shown. */
-.lv { max-width: 1600px; margin: 0 auto; padding: var(--space-6) var(--space-6) 64px; }
-@media (max-width: 480px) { .lv { padding: var(--space-4) var(--space-4) 48px; } }
-.lv-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); }
-.lv-head h1 { margin: 0; font: 600 clamp(24px, 2.6vw, 32px)/1.15 var(--font-serif); color: var(--color-ink); }
-.lv-count { margin-left: 4px; font: 500 13px/1 var(--font-mono); letter-spacing: .04em; color: var(--color-muted); vertical-align: middle; }
-@media (max-width: 480px) { .lv-head .lib-tabs { flex-wrap: nowrap; } .lv-head .lib-tabs a { padding: 0 10px; gap: 4px; } }
-@media (max-width: 400px) { .lv-head .lib-tabs .icon { display: none; } }
-.lv-form { margin: 0; }
-.lv-tools { position: sticky; top: 64px; z-index: 20; display: grid; gap: var(--space-3); margin-top: var(--space-3);
-  padding: var(--space-3) 0; background: var(--color-paper); border-bottom: 1px solid var(--color-line); }
-.lv .lib-grid { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: var(--space-6) var(--space-4); margin-top: var(--space-4); }
-.lv .rcard-body { gap: 6px; padding: var(--space-3); }
-.lv .rcard h3 { font-size: 18px; }
-.lv .rcard-tags { max-height: 30px; overflow: hidden; }  /* one line */
-.lv .rcard-acts { gap: 4px; }
-.lv .rcard-acts button { width: 32px; height: 32px; }
-.lv .rcard-acts .icon { width: 16px; height: 16px; }
-.rcard-acts .made-act[aria-pressed="true"] { color: var(--color-serve); }
-.lv-clear { color: var(--color-muted); font-size: 14px; white-space: nowrap; }
-.lv-clear:hover { color: var(--color-ink); }
-
-/* 1: a row of dropdowns */
-.lv-pills { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.lv-pill { position: relative; }
-.lv-pill > summary { display: inline-flex; align-items: center; gap: 4px; min-height: 36px; padding: 0 10px 0 14px; border: 1px solid var(--color-line);
-  border-radius: var(--radius-pill); background: var(--color-paper); color: var(--color-ink); font-size: 14px; cursor: pointer; list-style: none; user-select: none; }
-.lv-pill > summary::-webkit-details-marker { display: none; }
-.lv-pill > summary:hover { border-color: var(--color-line-strong); }
-.lv-pill > summary .icon { width: 14px; height: 14px; color: var(--color-muted); transition: transform .2s; }
-.lv-pill[open] > summary .icon { transform: rotate(180deg); }
-.lv-pill > summary.is-on { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-paper); }
-.lv-pill > summary.is-on .icon { color: inherit; }
-.lv-pop { position: absolute; top: calc(100% + 6px); left: 0; z-index: 30; width: max-content; max-width: min(440px, 90vw); padding: var(--space-4);
-  background: var(--color-paper); border: 1px solid var(--color-line); border-radius: var(--radius); box-shadow: 0 12px 32px rgb(0 0 0 / .12); }
-.lv-pop .lib-chips { grid-template-columns: 1fr; }
-.lv-pop legend { display: none; }  /* the pill names it */
-@media (max-width: 640px) {
-  .lv-pop { position: fixed; top: auto; left: var(--space-3); right: var(--space-3); bottom: var(--space-3); width: auto; max-width: none;
-    max-height: 60vh; overflow: auto; }
-}
-
-/* 2: a column of filters beside the cards; under 1024 px behind Filters */
-.lv-cols { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); margin-top: var(--space-3); }
-.lv-rail > .lib-filters-sum { display: inline-flex; margin-top: 0; }
-.lv-rail-body { display: grid; gap: var(--space-6); padding: var(--space-4) 0; }
-.lv-rail .lib-chips { grid-template-columns: 1fr; gap: var(--space-2); }
-.lv-rail .lib-chips legend { padding: 0; }
-.lv-rail .lib-chip span { min-height: 32px; padding: 0 11px; font-size: 13px; }
-.lv-main .lv-tools { margin-top: 0; }
-@media (min-width: 1024px) {
-  .lv-cols { grid-template-columns: 232px minmax(0, 1fr); gap: var(--space-8); }
-  .lv-rail > .lib-filters-sum { display: none; }
-  .lv-rail-body { position: sticky; top: 80px; max-height: calc(100vh - 96px); overflow: auto; padding: var(--space-3) var(--space-2) var(--space-3) 0; }
-}
-
-/* 3: search, Filters and the order on one line, shortcuts under it, the rest in a drawer */
-.lv-filters-btn { display: inline-flex; align-items: center; gap: 6px; min-height: var(--tap); padding: 0 var(--space-4); border: 1px solid var(--color-line);
-  border-radius: var(--radius-pill); background: var(--color-paper); color: var(--color-ink); font: 600 14px/1 var(--font-sans); cursor: pointer; }
-.lv-filters-btn:hover { border-color: var(--color-line-strong); }
-.lv-filters-btn .icon { width: 16px; height: 16px; }
-.lv-filters-btn b { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: var(--radius-pill);
-  background: var(--color-ink); color: var(--color-paper); font-size: 12px; }
-.lv-quick { display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none; }
-.lv-quick::-webkit-scrollbar { display: none; }
-.lib-chip-link { flex: none; display: inline-flex; align-items: center; min-height: 34px; padding: 0 14px; border: 1px solid var(--color-line);
-  border-radius: var(--radius-pill); background: var(--color-paper); color: var(--color-ink); font-size: 14px; text-decoration: none; white-space: nowrap; }
-.lib-chip-link:hover { border-color: var(--color-line-strong); }
-.lib-chip-link[aria-current] { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-paper); }
-.lv-drawer .fb-body { gap: var(--space-6); }
-.lv-drawer .lib-chips { grid-template-columns: 1fr; gap: var(--space-2); }
-.lv-drawer .lib-chips legend { padding: 0; }
-.lv-drawer-clear { display: inline-grid; place-items: center; text-decoration: none; }
-.rcard-hands { font-style: normal; }
-
-/* The drawer layout's tweaks (admins, routes/_shared.LIBRARY_TWEAKS; .lv.tw-*) */
-/* active: the choices in use first in the shortcut row, each with an x to remove it */
-.lib-chip-link.is-active { gap: 6px; padding-right: 10px; background: var(--color-ink); border-color: var(--color-ink); color: var(--color-paper); }
-.lib-chip-link.is-active .icon { width: 14px; height: 14px; }
-/* count: a choice that would give no cards */
-.lib-chip.is-empty span { opacity: .4; cursor: default; }
-.lib-chip.is-empty span:hover { border-color: var(--color-line); }
-/* calm: the time and difficulty only, no tags, and the buttons on the image when the pointer is over the card */
-.tw-calm .rcard-cuisine, .tw-calm .rcard-hands, .tw-calm .rcard-tags { display: none; }
-.tw-calm .rcard-meta .rcard-time::before { content: none; margin: 0; }
-@media (hover: hover) {
-  .tw-calm .rcard-acts { opacity: 0; transition: opacity .15s; }
-  .tw-calm .rcard:hover .rcard-acts, .tw-calm .rcard:focus-within .rcard-acts, .tw-calm .rcard-acts:has([aria-pressed="true"]) { opacity: 1; }
-}
-/* instant: the list fades while the search loads */
-.lv [data-lv-swap="results"][aria-busy="true"] { opacity: .5; transition: opacity .15s; }

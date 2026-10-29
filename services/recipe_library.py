@@ -133,34 +133,17 @@ def from_args(args, difficulty_labels=None):
     return filters, shown
 
 
-# The shortcuts over the list in the drawer layout (trial): (parameter, value, label), the choices people make most
+# The shortcuts over the list: (parameter, value, label), the choices people make most
 QUICK = [('time', '30', 'Under 30 min'), ('diet', 'vegetarian', 'Vegetarian'), ('protein', 'Seafood', 'Seafood'),
          ('heat_source', 'oven', 'Oven'), ('meal_type', 'One-Pot', 'One-pot'), ('meal_type', 'Weeknight', 'Weeknight')]
 SINGLE = {'time'}  # parameters with one value
 
 
-def for_the_day(day):
-    """Shortcuts that fit the date (tweak "smart"): the season's occasion, then weeknight or weekend."""
-    out = []
-    if day.month == 12:
-        out.append(('meal_type', 'Christmas', 'Christmas'))
-    elif day.month == 5 and day.day <= 17:
-        out.append(('meal_type', '17th of May', '17th of May'))
-    elif day.month in (3, 4):
-        out.append(('meal_type', 'Easter', 'Easter'))
-    elif day.month in (6, 7, 8):
-        out.append(('meal_type', 'Summer BBQ', 'Summer BBQ'))
-    out.append(('meal_type', 'Weekend', 'Weekend') if day.weekday() >= 4 else ('meal_type', 'Weeknight', 'Weeknight'))
-    return out
-
-
-def quick(args, day=None):
+def quick(args):
     """The shortcuts for the address args: [(label, the args with it switched, on)]. Switching a single-value
-    parameter replaces its value; the page starts from the top again (no shown). With day, the shortcuts for that
-    day come first, in place of Weeknight."""
-    items = QUICK if day is None else for_the_day(day) + [q for q in QUICK if q[1] != 'Weeknight']
+    parameter replaces its value; the page starts from the top again (no shown)."""
     out = []
-    for key, value, label in items:
+    for key, value, label in QUICK:
         on = value in args.getlist(key)
         new = args.copy()
         new.pop('shown', None)
@@ -243,8 +226,8 @@ def matching_ids(view, f, sort='new', user=None):
 
 
 def counts(view, args, user=None):
-    """For the drawer (layout trial, tweak "count"): how many cards the choices in args give, and the choices not
-    made yet that would give none ([key, value]). One query per choice: fine for a catalog of hundreds."""
+    """For the filter drawer: how many cards the choices in args give, and the choices not made yet that would give
+    none ([key, value]). One query per choice: fine for a catalog of hundreds."""
     f, groups = from_args(args)
     total = len(matching_ids(view, f, user=user))
     empty = []
