@@ -13,6 +13,13 @@ Each is a test for the first weeks; the Funnel page (`/admin/funnel`) says which
 | `map`: Dinner as a subway map | the dish, the metro map, what you need, the steps in one list, the address | the recipe page's view (`services/recipe_v2/view.page`) |
 | `grid`: Everything in a dish | every ingredient as a symbol, then with amounts, then the dish, the address | the shopping list |
 | `pantry`: The foundation pantry | the foundation by kitchen group, how far it goes, the address | the pantry tiers `staple` and `foundation` |
+| `week`: One shop, five dinners | the five dishes and how many things to buy, the shopping list (×3 = in three dinners), the week, each day, the address | five recipes picked across the site (below) |
+
+The week (`services/social_week.py`, `/social/week`) is the five approved dinners with a dish image and at most 40
+minutes of work that together need the fewest things to buy, staples left out. Fewest alone gives five near-copies of
+one stir-fry, so no two may share more than 40% of their ingredients, no protein (`recipe.protein_type`) may come more
+than twice, and there must be at least three. It is found greedily from each recipe and improved by swaps, so the same
+recipes always give the same week. `?ids=` (`--ids`) sets the five, in that order, instead.
 
 The pantry post's numbers are the share of ingredient lines the staples, the 60 and the 100 most used cover in 272
 dishes home cooks make (`scripts/foundation_sample.py`, 22.10.2026). They are about ingredients, not dinners: the
@@ -33,6 +40,7 @@ python -m scripts.social_render map 345 --size tt --code 1      # recipe 345 as 
 python -m scripts.social_render grid 345 --size ig --code 2
 python -m scripts.social_render pantry --size tt --code 3
 python -m scripts.social_render map 345 --look d                 # in look D from the style trial
+python -m scripts.social_render week --size tt --code 4          # one shop, five dinners: the site picks the five
 ```
 
 `--look c|d|e|f` (`?look=` on the pages) draws the slides in one of the style trial's looks (`static/css/themes.css`,

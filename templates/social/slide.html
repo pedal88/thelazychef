@@ -19,7 +19,9 @@
 {% macro tile(t, labels=true) -%}
 <figure class="tile">
   <div class="sym">{% if t.img %}<img src="{{ t.img }}" alt="">{% else %}<i>{{ t.name[:1]|upper }}</i>{% endif %}</div>
-  {%- if labels %}<figcaption>{% if t.amount %}<b>{{ t.amount }}</b>{% endif %}<span>{{ t.name }}</span></figcaption>{% endif %}
+  {%- if t.times and t.times > 1 %}<span class="times">×{{ t.times }}</span>{% endif %}
+  {%- if labels %}<figcaption>{% if t.amount %}<b>{{ t.amount }}</b>{% endif %}<span>{{ t.name }}</span>
+    {%- if t.also %}<em>also {{ t.also|join(', ')|lower }}</em>{% endif %}</figcaption>{% endif %}
 </figure>
 {%- endmacro %}
 
@@ -96,6 +98,34 @@
     {% endfor %}
   </div>
   <p class="note">Share of all the ingredient lines in {{ s.sample }}.</p>
+
+{% elif s.kind == 'week_cover' %}
+  <p class="eyebrow">One shop, five dinners</p>
+  <h1 class="title">Buy {{ s.count }} things. Make {{ s.days|length }} dinners.</h1>
+  <div class="dishes">{% for d in s.days %}<img src="{{ d.image }}" alt="">{% endfor %}</div>
+  <p class="facts"><span>{{ s.lines }} ingredients, {{ s.count }} to buy</span><span>{{ s.fastest }}–{{ s.slowest }} min each</span></p>
+
+{% elif s.kind == 'shop' %}
+  <h2 class="head">{{ s.title }}</h2>
+  {{ grid(s.tiles, s.cols) }}
+  <p class="note">×3 means it goes into three of the dinners.{% if s.staples %} Plus what you probably have: {{ s.staples|join(', ') }}{% endif %}</p>
+
+{% elif s.kind == 'week' %}
+  <h2 class="head">{{ s.title }}</h2>
+  <div class="week">
+    {% for d in s.days %}
+    <div class="wday"><span class="d">{{ d.day }}</span>{% if d.image %}<img class="dish" src="{{ d.image }}" alt="">{% else %}<i class="dish"></i>{% endif %}
+      <div><b>{{ d.title }}</b><small>{{ d.total }}</small>
+        <p class="syms">{% for t in d.tiles[:12] if t.img %}<img class="{{ 'shared' if t.shared }}" src="{{ t.img }}" alt="">{% endfor %}</p></div></div>
+    {% endfor %}
+  </div>
+  <p class="note">Ringed: bought once, used again.</p>
+
+{% elif s.kind == 'day' %}
+  <p class="eyebrow">{{ s.day }} · {{ s.total }}</p>
+  <h1 class="title">{{ s.title }}</h1>
+  <div class="hero{{ ' small' if s.many }}">{% if s.image %}<img src="{{ s.image }}" alt="">{% endif %}</div>
+  {{ grid(s.tiles, s.cols) }}
 
 {% elif s.kind == 'end' %}
   <div class="end">
