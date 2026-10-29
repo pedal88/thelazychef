@@ -1,0 +1,108 @@
+/* The slides of TikTok and Instagram posts (templates/social/slide.html, docs/SOCIAL.md): a fixed-size page on the
+   cream of the metro-map mark, serif titles, the ingredient symbols large. Sizes are in pixels of the 1080-wide image. */
+:root {
+  --sl-paper: rgb(var(--accent-50));
+  --sl-ink: var(--color-ink);
+  --sl-muted: rgb(var(--neutral-500));
+  --sl-line: rgb(var(--accent-200));
+  /* The parts' line colours, as on the recipe page's metro map (cook_views.css) */
+  --lane-0: #0f766e; --lane-1: #7c3aed; --lane-2: #be185d; --lane-3: #475569;
+}
+html, body { margin: 0; background: var(--sl-paper); }
+.slide {
+  box-sizing: border-box; position: relative; overflow: hidden; display: flex; flex-direction: column;
+  padding: 96px 84px 150px; background: var(--sl-paper); color: var(--sl-ink); font-family: var(--font-sans);
+}
+.size-tt { padding-top: 200px; padding-bottom: 300px; }  /* TikTok lays its own buttons and text over the edges */
+
+.eyebrow { margin: 0 0 18px; font: 600 30px/1.2 var(--font-mono); letter-spacing: .08em; text-transform: uppercase;
+  color: var(--color-accent); }
+.title { margin: 0; font: 700 84px/1.04 var(--font-serif); letter-spacing: -.01em; }
+.head { margin: 0 0 36px; font: 700 68px/1.05 var(--font-serif); }
+.sub { margin: 24px 0 0; font: 400 44px/1.2 var(--font-serif); }
+.note { margin: 32px 0 0; font-size: 32px; line-height: 1.35; color: var(--sl-muted); }
+.note.big { font-size: 40px; color: var(--sl-ink); }
+
+/* The dish */
+.hero { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; margin: 24px -40px; }
+.hero img { max-width: 100%; max-height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+.hero.tiles { flex-wrap: wrap; align-content: center; gap: 0; margin: 24px 0; }
+.hero.tiles img { width: 25%; mix-blend-mode: multiply; }
+.facts { display: flex; gap: 18px; flex-wrap: wrap; margin: 0; }
+.facts span { padding: 14px 28px; border-radius: var(--radius-pill); background: var(--color-paper);
+  border: 2px solid var(--sl-line); font: 600 34px/1 var(--font-sans); }
+
+/* The ingredient symbols: white images, the white made invisible against the cream */
+.grid { display: grid; grid-template-columns: repeat(var(--cols), 1fr); gap: 20px; align-content: center; flex: 1; }
+.tile { margin: 0; display: flex; flex-direction: column; align-items: center; text-align: center; min-width: 0; }
+.sym { width: 100%; aspect-ratio: 1; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.sym img { width: 125%; height: 125%; object-fit: contain; mix-blend-mode: multiply; }
+.sym i { width: 56%; aspect-ratio: 1; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  border: 3px solid var(--sl-line); font: 600 44px/1 var(--font-serif); font-style: normal; color: var(--sl-muted); }
+.tile figcaption { margin-top: 6px; display: flex; flex-direction: column; gap: 2px; font-size: 26px; line-height: 1.15; }
+.tile figcaption b { font-size: 28px; }
+.tile figcaption span { color: var(--sl-muted); overflow-wrap: anywhere; }
+.kind-collage .grid, .kind-pantry_cover .grid { margin-top: 40px; }
+
+/* The metro map: the drawing scaled up, the names beside it */
+.key { display: flex; flex-wrap: wrap; gap: 14px 32px; margin: -12px 0 28px; font: 600 32px/1.2 var(--font-sans); }
+.key .down { font-weight: 400; color: var(--sl-muted); }
+.key span { display: inline-flex; align-items: center; gap: 12px; }
+.key i { width: 44px; height: 12px; border-radius: 6px; background: var(--lane); }
+.lane-0 { --lane: var(--lane-0); } .lane-1 { --lane: var(--lane-1); }
+.lane-2 { --lane: var(--lane-2); } .lane-3 { --lane: var(--lane-3); }
+.map { position: relative; }
+.map svg { display: block; }
+.map .line { fill: none; stroke: var(--lane); stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; }
+.map .stop { fill: var(--color-paper); stroke: var(--lane); stroke-width: 4; }
+.map .merge { fill: var(--color-paper); stroke: var(--sl-ink); stroke-width: 4; }
+.map .final { fill: var(--color-paper); stroke: var(--sl-ink); stroke-width: 5; }
+.map .dot { fill: var(--sl-ink); }
+.names { position: absolute; top: 0; right: 0; margin: 0; padding: 0; list-style: none; }
+.names li { position: absolute; left: 0; right: 0; transform: translateY(-50%); display: flex; align-items: center;
+  gap: 14px; font: 600 36px/1.1 var(--font-sans); white-space: nowrap; }
+.names.every li { font-size: 32px; }
+.names li.part { color: var(--lane); font: 700 40px/1.1 var(--font-serif); }
+.names li small { font-weight: 400; font-size: 26px; color: var(--sl-muted); }
+.names li.final { font: 700 44px/1.1 var(--font-serif); }
+.ph { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+.ph-prep { --ph: var(--color-prep); } .ph-cook { --ph: var(--color-cook); } .ph-serve { --ph: var(--color-serve); }
+.ph { background: var(--ph); }
+
+/* The steps in one list */
+.steps { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 20px; }
+.steps li { display: grid; grid-template-columns: 60px 1fr auto; align-items: center; gap: 24px;
+  font: 600 36px/1.15 var(--font-sans); }
+.steps .no { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: var(--ph); color: var(--color-paper); font-size: 30px; }
+.steps small { font: 400 30px/1 var(--font-sans); color: var(--sl-muted); }
+.legend { display: flex; gap: 28px; margin: -16px 0 32px; font: 600 26px/1 var(--font-mono); text-transform: uppercase; }
+.legend span { display: inline-flex; align-items: center; gap: 10px; color: var(--ph); }
+.legend span::before { content: ''; width: 18px; height: 18px; border-radius: 50%; background: var(--ph); }
+
+/* The foundation pantry */
+.group + .group { margin-top: 30px; }
+.group h3 { margin: 0 0 12px; font: 600 28px/1 var(--font-mono); letter-spacing: .06em; text-transform: uppercase;
+  color: var(--color-accent); }
+.group .row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px 14px; }  /* PANTRY_COLS */
+.group .tile figcaption { font-size: 21px; }
+.bars { display: flex; flex-direction: column; gap: 48px; margin-top: 40px; }
+.bar { display: grid; grid-template-columns: 1fr auto; gap: 14px 24px; align-items: center; }
+.bar .label { grid-column: 1 / -1; font: 600 36px/1.1 var(--font-sans); }
+.bar .track { height: 56px; border-radius: 28px; background: var(--sl-line); overflow: hidden; }
+.bar .track i { display: block; height: 100%; background: var(--color-accent); border-radius: 28px; }
+.bar b { font: 700 56px/1 var(--font-serif); }
+
+/* The address */
+.end { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.end .mark { width: 300px; height: 300px; border-radius: 50%; }
+.end .line { margin: 56px 0 0; font: 700 60px/1.12 var(--font-serif); }
+.end .address { margin: 48px 0 0; padding: 26px 44px; border-radius: var(--radius-pill); background: var(--color-accent);
+  color: var(--color-paper); font: 700 50px/1 var(--font-sans); }
+.end .note { margin-top: 24px; }
+
+.foot { position: absolute; left: 84px; right: 84px; bottom: 56px; display: flex; justify-content: space-between;
+  align-items: center; font: 600 26px/1 var(--font-sans); color: var(--sl-muted); }
+.size-tt .foot { bottom: 160px; }
+.foot span { display: inline-flex; align-items: center; gap: 14px; }
+.foot img { width: 48px; height: 48px; border-radius: 50%; }
