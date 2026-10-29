@@ -16,7 +16,7 @@
 <div class="pg pg-{{ page.kind }}" lang="{{ text.lang }}">
   {% if page.kind != 'home' %}
   <header class="pg-head">
-    {% if text.hero_image %}<img class="pg-hero" src="{{ text.hero_image }}" alt="">{% endif %}
+    {% if hero %}<img class="pg-hero" src="{{ hero }}" alt="">{% endif %}
     <p class="eyebrow">Guide</p>
     <h1>{{ text.title }}</h1>
     {% if text.summary %}<p class="pg-sum">{{ text.summary }}</p>{% endif %}

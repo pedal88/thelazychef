@@ -1,0 +1,142 @@
+{
+  "slug": "frying-pans",
+  "kind": "guide",
+  "lang": "en",
+  "title": "Which frying pan? Five kinds, side by side",
+  "summary": "Cast iron, carbon steel, stainless steel, non-stick and ceramic: what each one does well, and what you give up.",
+  "hero_image": null,
+  "note": "The pilot guide, from the frying pan trial in Claude Design",
+  "blocks": [
+    {
+      "kind": "text",
+      "settings": {
+        "markdown": "No pan is best at everything. A heavy pan holds its heat when cold meat goes in, but is slow to cool down. A coated pan lets an egg slide off, but does not like high heat and wears out. Most kitchens do well with two: one that can take a lot of heat, and one that food does not stick to.\n\nBelow are the five common kinds, scored on the same six things, then a quick way to pick one for the job in front of you."
+      }
+    },
+    {
+      "kind": "compare",
+      "settings": {
+        "title": "Five pans, the same six questions",
+        "text": "Scores from 1 to 5, compared with each other. More is always better for you as a cook: for easy care, 5 is the least work.",
+        "layout": "cards",
+        "scale": 5,
+        "criteria": [
+          {"key": "heat", "label": "Holds heat"},
+          {"key": "response", "label": "Responds fast"},
+          {"key": "release", "label": "Food lets go"},
+          {"key": "high_heat", "label": "Takes high heat"},
+          {"key": "care", "label": "Easy care"},
+          {"key": "lasts", "label": "Lasts"}
+        ],
+        "facts": [
+          {"key": "induction", "label": "Induction"},
+          {"key": "best", "label": "Best for"}
+        ],
+        "items": [
+          {
+            "name": "Cast iron", "tag": "The heat store", "image": "cast-iron.svg",
+            "scores": {"heat": 5, "response": 2, "release": 3, "high_heat": 5, "care": 2, "lasts": 5},
+            "facts": {"induction": "Yes", "best": "Steak, potatoes, dishes that finish in the oven"},
+            "pick": "you sear a lot of meat and want one pan that lasts a lifetime.",
+            "avoid": "you want something light, or wash everything in the dishwasher."
+          },
+          {
+            "name": "Carbon steel", "tag": "The chef's workhorse", "image": "carbon-steel.svg",
+            "scores": {"heat": 4, "response": 4, "release": 3, "high_heat": 5, "care": 2, "lasts": 5},
+            "facts": {"induction": "Yes", "best": "Stir-fries, steak, eggs once it is well seasoned"},
+            "pick": "you want the searing of cast iron with a lighter pan that answers faster.",
+            "avoid": "you cook a lot with tomato, wine or lemon."
+          },
+          {
+            "name": "Stainless steel", "tag": "The tough all-rounder", "image": "stainless-steel.svg",
+            "scores": {"heat": 3, "response": 4, "release": 1, "high_heat": 5, "care": 5, "lasts": 5},
+            "facts": {"induction": "Usually", "best": "Pan sauces, browning, acidic dishes"},
+            "pick": "you make pan sauces and want a pan that goes in the dishwasher.",
+            "avoid": "you mostly fry eggs and fish."
+          },
+          {
+            "name": "Non-stick", "tag": "The egg specialist", "image": "non-stick.svg",
+            "scores": {"heat": 2, "response": 4, "release": 5, "high_heat": 2, "care": 4, "lasts": 1},
+            "facts": {"induction": "Depends on the base", "best": "Eggs, omelettes, pancakes"},
+            "pick": "breakfast and gentle frying are what you cook most.",
+            "avoid": "you want to fry on full heat, or want to avoid PFAS."
+          },
+          {
+            "name": "Ceramic coating", "tag": "Non-stick without PFAS", "image": "ceramic.svg",
+            "scores": {"heat": 2, "response": 4, "release": 4, "high_heat": 3, "care": 4, "lasts": 1},
+            "facts": {"induction": "Depends on the base", "best": "Fish, vegetables, medium heat"},
+            "pick": "you want food to slide off without PTFE, and accept a shorter life.",
+            "avoid": "you expect the coating to last for many years."
+          }
+        ],
+        "note": "Non-stick here means a PTFE coating (often sold as Teflon). Ceramic coatings are free of PFAS but lose their non-stick sooner."
+      }
+    },
+    {
+      "kind": "task_picker",
+      "settings": {
+        "title": "What are you cooking?",
+        "text": "Pick the job, and see the pan that does it best and what you give up by choosing it.",
+        "tasks": [
+          {
+            "label": "Steak and hard searing", "hint": "A crust, high heat",
+            "answer": "Cast iron",
+            "why": "The heavy pan holds its heat when cold meat goes in, so the temperature drops little and the crust browns evenly.",
+            "tip": "Heat it for 5 to 10 minutes on medium-high before the meat goes in.",
+            "cost": "Heavy to lift, and it must be dried and wiped with a little oil after washing.",
+            "alt": "Carbon steel", "alt_why": "almost as good a crust, and lighter"
+          },
+          {
+            "label": "Eggs and omelettes", "hint": "Gentle, little fat",
+            "answer": "Non-stick",
+            "why": "Nothing sticks, even on low heat with a drop of butter, which is just what eggs need.",
+            "tip": "Stay on low to medium heat, and use wooden or silicone tools.",
+            "cost": "The coating wears and needs replacing after a few years. It does not take high heat.",
+            "alt": "Ceramic coating", "alt_why": "free of PFAS, but loses its non-stick sooner"
+          },
+          {
+            "label": "Pan sauces and browning", "hint": "Fond, wine, tomato",
+            "answer": "Stainless steel",
+            "why": "The browned bits left on the bottom are the start of the sauce, and steel takes the acid of wine and tomato without tasting of it.",
+            "tip": "Pour in wine or stock while the pan is hot, and scrape the bits loose.",
+            "cost": "Food sticks if the pan is not hot enough, or if you turn it too soon.",
+            "alt": "Cast iron", "alt_why": "browns well too, but does not like long cooking with acid"
+          },
+          {
+            "label": "Stir-fries and fast high heat", "hint": "Vegetables, noodles",
+            "answer": "Carbon steel",
+            "why": "It answers fast when you turn the heat up or down, takes full heat, and gets slicker the more you use it.",
+            "tip": "Season it with a thin layer of oil before the first use, and wash it without soap.",
+            "cost": "It rusts if left wet, and acidic dishes discolour it.",
+            "alt": "Stainless steel", "alt_why": "takes the heat, but food sticks more easily"
+          },
+          {
+            "label": "Fish with the skin on", "hint": "Crisp skin, tender fish",
+            "answer": "Ceramic coating",
+            "why": "The skin lets go without much fat, and the coating is free of PFAS.",
+            "tip": "Medium heat. Leave the skin until it lets go by itself.",
+            "cost": "It loses its non-stick sooner than the others, especially at high heat.",
+            "alt": "Non-stick", "alt_why": "lets go even more easily, and lasts longer"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "text",
+      "settings": {
+        "markdown": "## Looking after them\n\n- **Cast iron and carbon steel:** wash with hot water and a brush, dry on the hob, and wipe with a few drops of oil. A little soap now and then does no harm; the dishwasher does.\n- **Stainless steel:** anything goes, dishwasher included. Burnt-on bits come off after a soak, or with a paste of baking soda.\n- **Non-stick and ceramic:** no metal tools, no full heat on an empty pan, and wash by hand. When food starts to stick, the coating is worn out."
+      }
+    },
+    {
+      "kind": "recipes",
+      "settings": {
+        "title": "Put a pan to work",
+        "text": "Dishes cooked in a frying pan or a wok.",
+        "filter": {"heat_source": "pan"},
+        "sort": "new",
+        "limit": 6,
+        "more": true
+      }
+    }
+  ]
+}
