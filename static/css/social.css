@@ -93,6 +93,27 @@ html, body { margin: 0; background: var(--sl-paper); }
 .bar .track i { display: block; height: 100%; background: var(--color-accent); border-radius: 28px; }
 .bar b { font: 700 56px/1 var(--font-serif); }
 
+/* One shop, five dinners: how many of the dinners a thing goes into, the five dishes, the week */
+.tile { position: relative; }
+.tile .times { position: absolute; top: 0; right: 4%; min-width: 46px; height: 46px; padding: 0 8px; box-sizing: border-box;
+  border-radius: 23px; background: var(--color-accent); color: var(--color-paper); font: 700 26px/46px var(--font-sans); }
+.tile figcaption em { font-style: normal; font-weight: 600; color: var(--color-accent); }
+.dishes { flex: 1; min-height: 0; display: flex; flex-wrap: wrap; justify-content: center; align-content: center;
+  margin: 20px -40px; }
+.dishes img { width: 33%; mix-blend-mode: multiply; }
+.week { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+.wday { display: grid; grid-template-columns: 84px 150px 1fr; align-items: center; gap: 20px; padding: 10px 0;
+  border-bottom: 2px solid var(--sl-line); }
+.wday .d { font: 700 30px/1 var(--font-mono); text-transform: uppercase; color: var(--color-accent); }
+.wday .dish { width: 150px; height: 150px; object-fit: contain; mix-blend-mode: multiply; }
+.wday b { display: block; font: 700 34px/1.1 var(--font-serif); }
+.wday small { font-size: 26px; color: var(--sl-muted); }
+.syms { display: flex; flex-wrap: wrap; gap: 4px; margin: 8px 0 0; }
+.syms img { width: 46px; height: 46px; object-fit: contain; mix-blend-mode: multiply; border-radius: 50%; }
+.syms img.shared { box-shadow: 0 0 0 3px var(--color-accent); }
+.kind-day .hero { flex: 0 1 46%; }
+.kind-day .hero.small { flex-basis: 24%; }
+
 /* The address */
 .end { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
 .end .mark { width: 300px; height: 300px; border-radius: 50%; }

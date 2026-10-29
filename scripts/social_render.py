@@ -4,6 +4,8 @@
     python -m scripts.social_render grid 345 --size tt --code 2    # Everything in a dish, for TikTok
     python -m scripts.social_render pantry --size tt --code 3      # The foundation pantry
     python -m scripts.social_render map 345 --look d               # in look D from the style trial (c, d, e, f)
+    python -m scripts.social_render week --size tt --code 4        # One shop, five dinners (the site picks the five)
+    python -m scripts.social_render week --ids 320,324,334,341,353 # ... or these five, in this order
 
 Reads the public slide pages (/social/…) from production by default, or --base http://127.0.0.1:8000 for a local app,
 and takes each picture with headless Chrome (--chrome, or $CHROME; the macOS path by default). Nothing is written to
@@ -38,14 +40,15 @@ SIZES = {'ig': (1080, 1350), 'tt': (1080, 1920)}
 
 
 def page_url(base, fmt, recipe, **args):
-    path = '/social/pantry' if fmt == 'pantry' else f'/social/recipe/{recipe}/{fmt}'
+    path = f'/social/{fmt}' if fmt in ('pantry', 'week') else f'/social/recipe/{recipe}/{fmt}'
     return f'{base.rstrip("/")}{path}?{urllib.parse.urlencode({k: v for k, v in args.items() if v})}'
 
 
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument('format', choices=['map', 'grid', 'pantry'])
-    p.add_argument('recipe', nargs='?', type=int, help='the recipe id (not for pantry)')
+    p.add_argument('format', choices=['map', 'grid', 'pantry', 'week'])
+    p.add_argument('recipe', nargs='?', type=int, help='the recipe id (map and grid only)')
+    p.add_argument('--ids', help='week: the five recipe ids, comma separated, instead of the ones the site picks')
     p.add_argument('--size', choices=sorted(SIZES), default='ig')
     p.add_argument('--code', help="the post's code in the address, e.g. 3 for thelazychef.app/tiktok/3")
     p.add_argument('--look', choices=['c', 'd', 'e', 'f'], help="a look from the style trial; today's by default")
@@ -53,15 +56,16 @@ def main():
     p.add_argument('--chrome', default=os.environ.get('CHROME', CHROME))
     p.add_argument('--out', type=Path, default=Path.home() / 'promptlab-runs' / 'social')
     args = p.parse_args()
-    if (args.format == 'pantry') == (args.recipe is not None):
-        p.error('give a recipe id for map and grid, and none for pantry')
+    if (args.format in ('pantry', 'week')) == (args.recipe is not None):
+        p.error('give a recipe id for map and grid, and none for pantry and week')
 
-    first = page_url(args.base, args.format, args.recipe, size=args.size, code=args.code, look=args.look, slide=1)
+    query = {'size': args.size, 'code': args.code, 'look': args.look, 'ids': args.ids}
+    first = page_url(args.base, args.format, args.recipe, **query, slide=1)
     context = tls()
     with urllib.request.urlopen(first, context=context) as response:
         count = int(response.headers['X-Slides'])
-    with urllib.request.urlopen(page_url(args.base, args.format, args.recipe, size=args.size, code=args.code,
-                                         caption=1), context=context) as response:
+    with urllib.request.urlopen(page_url(args.base, args.format, args.recipe, **query, caption=1),
+                                context=context) as response:
         caption = response.read().decode('utf-8')
 
     name = '-'.join(str(x) for x in (datetime.date.today().isoformat(), args.format, args.recipe, args.size, args.code,
@@ -72,7 +76,7 @@ def main():
     width, height = SIZES[args.size]
     for n in range(1, count + 1):
         target = folder / f'{n:02d}.png'
-        url = page_url(args.base, args.format, args.recipe, size=args.size, code=args.code, look=args.look, slide=n)
+        url = page_url(args.base, args.format, args.recipe, **query, slide=n)
         # virtual-time-budget lets the fonts and the symbols load before the picture is taken
         subprocess.run([args.chrome, '--headless', '--disable-gpu', '--hide-scrollbars',
                         '--force-device-scale-factor=1', f'--window-size={width},{height}',

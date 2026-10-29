@@ -1,11 +1,13 @@
 """Posts for TikTok and Instagram, drawn from the recipes themselves (docs/SOCIAL.md).
 
 A post is a carousel of slides: one page per slide at /social/…?slide=n, which scripts/social_render.py photographs.
-Three formats, the tests for the first weeks:
+The formats, tests for the first weeks:
 
 - map: "Dinner as a subway map": the dish, its metro map, what you need, the steps in one list, the address.
 - grid: "Everything in a dish": every ingredient as a symbol (guess the dinner), then with amounts, then the dish.
 - pantry: "The foundation pantry": the foundation by kitchen group, and how much of what goes into dinner it covers.
+- week: "One shop, five dinners": five dinners that share their shopping, the list, the week, each day
+  (services/social_week.py).
 
 Two sizes: ig (1080 × 1350, Instagram's tallest carousel) and tt (1080 × 1920, TikTok's photo mode). The last slide
 gives the short address for the platform (thelazychef.app/ig or /tiktok, with the post's code), so a visit that came
@@ -19,7 +21,8 @@ FORMATS = {'map': 'Dinner as a subway map', 'grid': 'Everything in a dish'}
 ADDRESS = {'ig': 'thelazychef.app/ig', 'tt': 'thelazychef.app/tiktok'}
 HASHTAGS = {'map': '#recipe #dinnerideas #easyrecipes #mealprep #cooking',
             'grid': '#recipe #ingredients #dinnerideas #easyrecipes #cooking',
-            'pantry': '#pantry #pantrystaples #cookingtips #mealplanning #cooking'}
+            'pantry': '#pantry #pantrystaples #cookingtips #mealplanning #cooking',
+            'week': '#mealplan #mealprep #groceryhaul #dinnerideas #easyrecipes'}
 
 # How much of cooking the foundation pantry covers: the share of ingredient lines in 272 dishes Norwegian home cooks
 # make, in 13 cuisines weighted by how often they are made (scripts/foundation_sample.py, RECIPE_MODEL_V2.md
@@ -171,10 +174,13 @@ def pantry_slides(size='ig'):
     return slides
 
 
-def caption(fmt, size, code=None, title=None, count=None):
+def caption(fmt, size, code=None, title=None, count=None, titles=()):
     """A first draft of the post's text, to edit before posting."""
     where = address(size, code)
-    if fmt == 'pantry':
+    if fmt == 'week':
+        lines = [f'Buy {count} things, make five dinners: ' + ', '.join(titles) + '. Save it for your next shop.',
+                 '', f'All five recipes, with timers: {where}']
+    elif fmt == 'pantry':
         lines = [f'The {count} ingredients behind most dinners: the 100 most used cover 84% of what goes into them. '
                  'Save this for your next big shop.',
                  '', f'Full recipes that show what you need beyond these: {where}']
