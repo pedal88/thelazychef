@@ -123,6 +123,19 @@
 </article>
 <script>
   (function () {
+    // Saved and Cook next on the overview (components/overview_layouts.html, save_buttons): each a toggle
+    var mineUrl = { save: '/api/recipes/{{ recipe.id }}/favorite', queue: '/api/queue/add/{{ recipe.id }}' };
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-mine]');
+      if (!btn) return;
+      var label = btn.querySelector('span'), was = btn.getAttribute('aria-pressed') === 'true';
+      var show = function (on) { btn.setAttribute('aria-pressed', on ? 'true' : 'false'); label.textContent = on ? label.dataset.on : label.dataset.off; };
+      show(!was);  // at once; put back if the server says otherwise
+      btn.disabled = true;
+      fetch(mineUrl[btn.dataset.mine], { method: 'POST' }).then(function (r) { return r.json(); }).then(function (d) {
+        show(d.status === 'added' || d.action === 'added');
+      }).catch(function () { show(was); }).then(function () { btn.disabled = false; });
+    });
     // The sheets: the bowls, and the rest about the dish
     document.addEventListener('click', function (e) {
       var open = e.target.closest('[data-sheet]');

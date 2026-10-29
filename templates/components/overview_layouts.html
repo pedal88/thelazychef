@@ -15,6 +15,17 @@
 <button type="button" class="fab ovl-menu" data-site-menu aria-expanded="false" aria-label="Show the site menu">{{ icon('menu') }}</button>
 {%- endmacro %}
 
+{# Saved and Cook next on the first screen, for a signed-in cook (mine from routes/recipes_routes.recipe_detail);
+   the script in recipe_v2_make.html toggles them #}
+{% macro save_buttons() -%}
+{% if mine %}
+<div class="ovl-mine">
+  <button type="button" class="ovl-tog" data-mine="save" aria-pressed="{{ 'true' if mine.saved else 'false' }}">{{ icon('heart') }}<span data-on="Saved" data-off="Save">{{ 'Saved' if mine.saved else 'Save' }}</span></button>
+  <button type="button" class="ovl-tog" data-mine="queue" aria-pressed="{{ 'true' if mine.queued else 'false' }}">{{ icon('pot') }}<span data-on="In Cook next" data-off="Cook next">{{ 'In Cook next' if mine.queued else 'Cook next' }}</span></button>
+</div>
+{% endif %}
+{%- endmacro %}
+
 {% macro servings_part() -%}
 {% if v.scalable %}<div class="ovl-serv"><span class="eyebrow">Servings</span>{{ servings_stepper('recipe_detail') }}</div>
 {% else %}<div class="ovl-serv"><span class="eyebrow">Makes</span> <b>{{ v.yield_text }}</b></div>{% endif %}
@@ -64,6 +75,7 @@
     <figcaption>
       <h1>{{ v.title }}</h1>
       <p class="pp-times"><span><b>{{ v.total }}</b> total</span><span><b>{{ v.active }}</b> active</span><span><b>{{ v.steps|length }}</b> steps</span></p>
+      {{ save_buttons() }}
     </figcaption>
   </figure>
   <div class="pp-side">
@@ -111,6 +123,7 @@
         {% if v.ready %}<button type="button" class="cc-btn" data-sheet="sheet-bowls">{{ icon('salad') }} Bowls{% if v.ready.bowls %} · {{ v.ready.bowls|length }}{% endif %}</button>{% endif %}
         <button type="button" class="cc-btn" data-sheet="sheet-more" data-jump="more-top" aria-label="More about the dish">⋯ More</button>
       </div>
+      {{ save_buttons() }}
     </div>
   </div>
   <div class="cc-body">
