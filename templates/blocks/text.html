@@ -1,0 +1,2 @@
+{# Text: cleaned Markdown (services/content/blocks.Text); "intro" is the big opening of a page #}
+<div class="{{ 'blk-intro' if b.data.style == 'intro' else 'blk-prose' }}">{{ b.data.html|safe }}</div>

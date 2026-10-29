@@ -1,0 +1,8 @@
+{# The heading of a row: its title, a line under it and "See all" at the right #}
+{% if b.data.title or b.data.more %}
+<div class="row-h">
+  {% if b.data.title %}<h2>{{ b.data.title }}</h2>{% endif %}
+  {% if b.data.more %}<a class="row-more" href="{{ b.data.more }}">See all <span aria-hidden="true">→</span></a>{% endif %}
+</div>
+{% endif %}
+{% if b.data.text %}<p class="row-text">{{ b.data.text }}</p>{% endif %}

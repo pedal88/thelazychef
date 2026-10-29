@@ -1,0 +1,8 @@
+{# A one-off interactive made with Claude (services/content/blocks.Interactive): its HTML in a sandboxed frame from
+   /content/interactive/<id>, as tall as its page says (static/js/content.js) #}
+<figure class="embed">
+  <iframe src="{{ b.data.src }}" title="{{ b.data.title }}" data-embed="{{ b.data.id }}" loading="lazy"
+    sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer"
+    style="height: {{ b.data.height }}px"></iframe>
+  {% if b.data.caption %}<figcaption>{{ b.data.caption }}</figcaption>{% endif %}
+</figure>

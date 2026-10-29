@@ -512,3 +512,51 @@ class UserLink(db.Model):
 # TikTok Source Sidecar
 # ---------------------------------------------------------------------------
 
+
+
+# ---------------------------------------------------------------------------
+# Content: pages made of blocks (services/content, docs/CONTENT.md). The home page is one; guides come next.
+# Claude writes the content, Pål previews and publishes it in Admin -> Pages.
+# ---------------------------------------------------------------------------
+
+class Page(db.Model):
+    """A page made of blocks. Its text lives in PageText, one row per version per language."""
+    __tablename__ = 'page'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    slug: Mapped[str] = mapped_column(String(120), unique=True, index=True, nullable=False)
+    kind: Mapped[str] = mapped_column(String(20), nullable=False, default='guide')  # 'home', 'guide', 'landing'
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+
+    texts: Mapped[list["PageText"]] = relationship(back_populates="page", cascade="all, delete-orphan",
+                                                   order_by="PageText.version")
+
+
+class PageText(db.Model):
+    """One version of a page in one language: title, summary, hero image and the blocks, a JSON list of
+    {"kind", "settings", "audience"}. Every save is a new version, so any earlier one can be published again.
+    What visitors see is the newest version with published_at set."""
+    __tablename__ = 'page_text'
+    __table_args__ = (UniqueConstraint('page_id', 'lang', 'version', name='uq_page_text_version'),)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    page_id: Mapped[int] = mapped_column(ForeignKey("page.id", ondelete='CASCADE'), nullable=False, index=True)
+    lang: Mapped[str] = mapped_column(String(5), nullable=False, default='en')
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    summary: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    hero_image: Mapped[Optional[str]] = mapped_column(String(300), nullable=True)
+    blocks: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
+    note: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)  # what changed in this version
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+    published_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime, nullable=True)
+
+    page: Mapped["Page"] = relationship(back_populates="texts")
+
+
+class PageEmbed(db.Model):
+    """A self-contained HTML page for a one-off interactive (made with Claude), shown by the "interactive" block in a
+    sandboxed frame. Served from /content/embed/<id> with a sandbox policy, so it never runs with the app's rights."""
+    __tablename__ = 'page_embed'
+    id: Mapped[str] = mapped_column(String(32), primary_key=True)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    html: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow, nullable=False)
