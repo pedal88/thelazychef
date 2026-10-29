@@ -42,6 +42,18 @@
     </form>
   </section>
 
+
+  <section class="rounded-xl border border-slate-200 bg-white p-4 space-y-3">
+    <h2 class="font-semibold text-slate-900">Images</h2>
+    <p class="text-sm text-slate-600">The package names images by file name ("cast-iron.svg"); upload them here under the page's slug. The same name again replaces the image.</p>
+    
+    <form method="post" action="{{ url_for('content.admin_images') }}" enctype="multipart/form-data" class="flex flex-wrap items-center gap-3">
+      <input name="slug" required placeholder="slug, e.g. frying-pans" class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm">
+      <input type="file" name="images" multiple accept=".svg,.png,.jpg,.jpeg,.webp,.gif" class="text-sm">
+      <button type="submit" class="px-3 py-1.5 rounded-full bg-slate-900 text-white text-sm font-semibold">Upload</button>
+    </form>
+  </section>
+
   <section class="rounded-xl border border-slate-200 bg-white p-4 space-y-3">
     <h2 class="font-semibold text-slate-900">Interactives</h2>
     <p class="text-sm text-slate-600">A self-contained HTML page (everything inline, or from cdnjs and the like), shown by an "interactive" block in a sandboxed frame. It cannot use the app's cookies or local storage. For one-offs: a format wanted twice becomes a block kind.</p>

@@ -140,6 +140,15 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
+    {# What a shared link shows on TikTok, Instagram, Messenger and the like; the recipe page fills in its own #}
+    {% block og %}
+    <meta property="og:site_name" content="The Lazy Chef">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="The Lazy Chef">
+    <meta property="og:description" content="Recipes you can see. Every dinner drawn as a map: prep, cook, serve.">
+    <meta property="og:image" content="{{ absolute_url(url_for('static', filename='brand/share.png')) }}">
+    <meta name="twitter:card" content="summary_large_image">
+    {% endblock %}
     {% block head %}{% endblock %}
 </head>
 

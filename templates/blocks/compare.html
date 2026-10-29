@@ -1,0 +1,43 @@
+{# Things compared on the same criteria (services/content/blocks.Compare). Cards: a card per item with bars, side by
+   side on a wide screen and swiped on a phone. Table: one table with dots on a wide screen, the cards on a phone. #}
+{% set d = b.data %}
+{% include 'blocks/_row_head.html' %}
+{% if d.layout == 'table' %}
+<div class="cmp-table-wrap">
+  <table class="cmp-table">
+    <thead><tr><th scope="col"><span class="sr-only">Item</span></th>
+      {% for c in d.criteria %}<th scope="col">{{ c.label }}</th>{% endfor %}
+      {% for f in d.facts %}<th scope="col">{{ f.label }}</th>{% endfor %}</tr></thead>
+    <tbody>
+      {% for i in d.rows %}
+      <tr><th scope="row"><b>{{ i.name }}</b>{% if i.tag %}<span>{{ i.tag }}</span>{% endif %}</th>
+        {% for s in i.scores %}<td><span class="dots" role="img" aria-label="{{ s.label }}: {{ s.n }} of {{ d.scale }}">{% for k in range(d.scale) %}<i class="{{ 'on' if k < s.n }}"></i>{% endfor %}</span></td>{% endfor %}
+        {% for f in i.facts %}<td>{{ f.value or '' }}</td>{% endfor %}</tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+<ul class="cmp-cards{{ ' cmp-phone-only' if d.layout == 'table' }}">
+  {% for i in d.rows %}
+  <li class="cmp-card">
+    {% if i.image %}<div class="cmp-img"><img src="{{ i.image }}" alt="" loading="lazy"></div>{% endif %}
+    <div class="cmp-name"><h3>{{ i.name }}</h3>{% if i.tag %}<p>{{ i.tag }}</p>{% endif %}</div>
+    <dl class="cmp-bars">
+      {% for s in i.scores %}
+      <div><dt>{{ s.label }}</dt><dd><span class="n">{{ s.n }}/{{ d.scale }}</span><span class="bar" aria-hidden="true"><span style="width: {{ s.pct }}%"></span></span></dd></div>
+      {% endfor %}
+    </dl>
+    {% if i.facts|selectattr('value')|list %}
+    <dl class="cmp-facts">{% for f in i.facts if f.value %}<div><dt>{{ f.label }}</dt><dd>{{ f.value }}</dd></div>{% endfor %}</dl>
+    {% endif %}
+    {% if i.pick or i.avoid %}
+    <dl class="cmp-when">
+      {% if i.pick %}<div class="pick"><dt>Pick it if</dt><dd>{{ i.pick }}</dd></div>{% endif %}
+      {% if i.avoid %}<div><dt>Skip it if</dt><dd>{{ i.avoid }}</dd></div>{% endif %}
+    </dl>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% if d.note %}<p class="cmp-note">{{ d.note }}</p>{% endif %}

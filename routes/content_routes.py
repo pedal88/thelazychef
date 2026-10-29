@@ -7,9 +7,11 @@ from flask import Blueprint, abort, flash, make_response, redirect, render_templ
 from flask_login import current_user
 
 from database.models import Page, PageEmbed, PageText, db
+from routes._shared import get_storage
+from services.content import assets
 from services.content.blocks import KINDS, page_url
-from services.content.pages import (DEFAULT_LANG, HOME, LANGS, ContentError, default_home, find_page, latest_text,
-                                    live_text, package_of, publish, render_blocks, save_version, unpublish)
+from services.content.pages import (DEFAULT_LANG, HOME, LANGS, SLUG, ContentError, default_home, find_page,
+                                    latest_text, live_text, package_of, publish, render_blocks, save_version, unpublish)
 from utils.decorators import admin_required
 
 content_bp = Blueprint('content', __name__)
@@ -31,7 +33,7 @@ def _user():
 
 def _render(page, text, lang, preview=None):
     return render_template('page.html', page=page, text=text, lang=lang, preview=preview,
-                           blocks=render_blocks(text, _user(), lang))
+                           hero=assets.resolve(page.slug, text.hero_image), blocks=render_blocks(text, _user(), lang))
 
 
 @content_bp.route('/')
@@ -127,7 +129,7 @@ def admin_page(page_id):
     latest = texts[0] if texts else None
     package = json.dumps(package_of(latest), indent=2, ensure_ascii=False) if latest else ''
     return render_template('admin/page_edit.html', page=found, lang=lang, langs=LANGS, texts=texts, latest=latest,
-                           package=package, url=page_url(found))
+                           package=package, url=page_url(found), images=assets.of_page(found.slug))
 
 
 @content_bp.route('/admin/pages/<int:page_id>/save', methods=['POST'])
@@ -173,6 +175,28 @@ def admin_unpublish(page_id):
     db.session.commit()
     flash(f'"{found.slug}" ({LANGS.get(lang, lang)}) is no longer shown to visitors.', 'success')
     return redirect(url_for('content.admin_page', page_id=page_id, lang=lang))
+
+
+@content_bp.route('/admin/pages/images', methods=['POST'])
+@admin_required
+def admin_images():
+    """Images for a page, by its slug (the page need not exist yet): each keeps its file name, which the package uses."""
+    slug = request.form.get('slug', '').strip()
+    files = [f for f in request.files.getlist('images') if f and f.filename]
+    if not SLUG.match(slug) or not files:
+        flash('Give the page\'s slug and choose one or more images.', 'error')
+        return redirect(request.referrer or url_for('content.admin_pages'))
+    saved = []
+    for f in files:
+        try:
+            saved.append(assets.save(slug, f.filename, f.read(), get_storage()).name)
+        except ValueError as e:
+            flash(str(e), 'error')
+    db.session.commit()
+    if saved:
+        flash(f'Uploaded for "{slug}": {", ".join(saved)}', 'success')
+    page = find_page(slug)
+    return redirect(url_for('content.admin_page', page_id=page.id) if page else url_for('content.admin_pages'))
 
 
 @content_bp.route('/admin/embeds', methods=['POST'])

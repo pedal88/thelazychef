@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 100" width="220" height="100" fill="none" stroke="#2B2F2C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Stainless steel pan: nearly straight walls, a layered base and a long tube handle">
+<path d="M140 41 L208 29 Q216 28 216 34 Q216 40 208 41 L140 52" fill="#EEF0F2"></path>
+<ellipse cx="205" cy="35" rx="5" ry="2" fill="#FFFFFF" transform="rotate(-9 205 35)"></ellipse>
+<path d="M18 46 A62 18 0 0 0 142 46 L138 78 A58 13 0 0 1 22 78 Z" fill="#E9ECEF"></path>
+<path d="M21 72 A58 13 0 0 0 139 72" stroke-width="1.6"></path>
+<ellipse cx="80" cy="46" rx="62" ry="18" fill="#F4F6F7"></ellipse>
+<ellipse cx="80" cy="47" rx="57" ry="15.5" fill="#FBFCFC"></ellipse>
+<path d="M52 64 L54 84" stroke="#FFFFFF" stroke-width="4"></path>
+</svg>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 100" width="220" height="100" fill="none" stroke="#2B2F2C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Non-stick pan: dark coating, a metal ring at the joint and a plastic handle with a hanging hole">
+<path d="M139 42 L156 41 L156 52 L139 53" fill="#E6E8EA"></path>
+<path d="M156 39 L206 35 Q214 35 214 44 Q214 53 206 53 L156 55 Z" fill="#B7B9BC"></path>
+<circle cx="205" cy="44" r="3.5" fill="#FFFFFF"></circle>
+<path d="M18 46 A62 18 0 0 0 142 46 L132 74 A52 12 0 0 1 28 74 Z" fill="#C9CBCE"></path>
+<ellipse cx="80" cy="46" rx="62" ry="18" fill="#DCDEE0"></ellipse>
+<ellipse cx="80" cy="47" rx="57" ry="15.5" fill="#9FA2A6"></ellipse>
+<ellipse cx="80" cy="47" rx="34" ry="8" stroke="#B9BCBF" stroke-width="1.6"></ellipse>
+</svg>

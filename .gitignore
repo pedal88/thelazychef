@@ -19,6 +19,7 @@ venv/
 
 # Generated Content (Keep folder, ignore files)
 static/recipes/*
+static/content/
 !static/recipes/.gitkeep
 
 static/pantry/*

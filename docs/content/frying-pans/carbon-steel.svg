@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 100" width="220" height="100" fill="none" stroke="#2B2F2C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Carbon steel pan: thin, flared walls, a seasoned base and a long flat riveted handle">
+<path d="M136 41 L212 18 L215 24 L139 50 Z" fill="#DDE0E3"></path>
+<path d="M18 46 A62 18 0 0 0 142 46 L126 72 A46 11 0 0 1 34 72 Z" fill="#D5D8DC"></path>
+<ellipse cx="80" cy="46" rx="62" ry="18" fill="#E7E9EC"></ellipse>
+<ellipse cx="80" cy="47" rx="57" ry="15.5" fill="#E2D2C1"></ellipse>
+<ellipse cx="80" cy="49" rx="30" ry="7.5" fill="#CDB7A0" stroke-width="1.6"></ellipse>
+<circle cx="132" cy="53" r="2" fill="#2B2F2C" stroke="none"></circle>
+<circle cx="137" cy="51" r="2" fill="#2B2F2C" stroke="none"></circle>
+</svg>

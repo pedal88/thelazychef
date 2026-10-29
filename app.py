@@ -15,7 +15,7 @@ from database.models import db, Ingredient, Recipe, RecipeMealType, RecipeDiet, 
 from services.storage_service import get_storage_provider
 from services.measures import SYSTEMS
 from services.recipe_v2 import states
-from routes._shared import DIFFICULTY_LABELS, EQUIPMENT_STYLES, OVERVIEW_LAYOUTS, chosen_overview, IMAGE_STYLES, chosen_equipment_style, dish_images, equipment_image, get_recipe_image_url, get_image_url, icon, notes_text, site_menu, unit_system
+from routes._shared import DIFFICULTY_LABELS, absolute_url, EQUIPMENT_STYLES, OVERVIEW_LAYOUTS, chosen_overview, IMAGE_STYLES, chosen_equipment_style, dish_images, equipment_image, get_recipe_image_url, get_image_url, icon, notes_text, site_menu, unit_system
 
 
 app = Flask(__name__)
@@ -101,6 +101,7 @@ def utility_processor():
 
 # Also imported from app by services/evaluation_service.py
 app.add_template_global(get_recipe_image_url)
+app.add_template_global(absolute_url)
 app.add_template_global(get_image_url)
 app.add_template_global(icon)
 app.add_template_global(site_menu)
@@ -171,6 +172,9 @@ app.register_blueprint(notes_bp)
 
 from routes.content_routes import content_bp
 app.register_blueprint(content_bp)
+
+from routes.funnel_routes import funnel_bp
+app.register_blueprint(funnel_bp)
 
 
 if __name__ == '__main__':

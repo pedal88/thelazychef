@@ -22,7 +22,9 @@
 
 Admin: `generate_routes` (`/new-recipe`, the form page), `recipe_v2_routes` (`/new-recipe/v2`, batch `/new-recipe/v2/batch`,
 images `/new-recipe/v2/images`, Recalculate), `admin_recipes_routes` (Recipes Management), `admin_ingredients_routes`,
-`admin_chefs_routes`, `recipe_notes_routes`.
+`admin_chefs_routes`, `recipe_notes_routes`, `funnel_routes` (`funnel.*`: the short addresses `/tiktok`, `/ig`,
+`/tiktok/<code>` and `?ref=` on any page, kept per session and counted, and the admin Funnel page `/admin/funnel`;
+`services/funnel.py`).
 
 ## Rules
 

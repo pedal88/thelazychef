@@ -2,7 +2,10 @@
    On the same paper as the recipe list (static/css/library.css: lib-head, rcard). Tokens only (static/css/tokens.css). */
 
 .pg { max-width: 1180px; margin: 0 auto; padding: var(--space-6) var(--space-6) var(--space-8); display: grid; gap: var(--space-8); }
-.pg-guide { max-width: 860px; }
+.pg-guide { max-width: 1180px; }
+/* A guide reads in a column; the comparisons and the task picker use the whole width */
+.pg-guide > :not(.blk-compare):not(.blk-task_picker) { width: 100%; max-width: 812px; justify-self: center; }
+.blk { min-width: 0; }  /* a row that scrolls sideways must not widen the page's grid */
 .blk[hidden] { display: none; }
 .pg-preview { margin: 0; padding: var(--space-2) var(--space-6); background: var(--color-prep-soft); color: var(--color-prep-ink);
   font-size: 14px; text-align: center; }
@@ -19,12 +22,16 @@
 .blk-intro h1, .blk-intro h2 { margin: 0; font: 600 clamp(30px, 4.5vw, 46px)/1.1 var(--font-serif); color: var(--color-ink); }
 .blk-intro p { margin: var(--space-2) 0 0; color: var(--color-muted); font-size: 17px; max-width: 60ch; }
 .blk-prose { max-width: 68ch; font-size: 17px; line-height: 1.65; color: var(--color-ink); }
+.blk-prose p, .blk-prose ul, .blk-prose ol { margin: 0 0 1em; }
+.blk-prose li + li { margin-top: .35em; }
 .blk-prose > :first-child { margin-top: 0; }
 .blk-prose > :last-child { margin-bottom: 0; }
 .blk-prose h2 { font: 600 26px/1.2 var(--font-serif); margin: var(--space-8) 0 var(--space-2); }
 .blk-prose h3 { font: 600 19px/1.3 var(--font-sans); margin: var(--space-6) 0 var(--space-2); }
 .blk-prose a { color: var(--color-accent); }
 .blk-prose ul, .blk-prose ol { padding-left: 1.3em; }
+.blk-prose ul { list-style: disc; }
+.blk-prose ol { list-style: decimal; }
 .blk-prose table { width: 100%; border-collapse: collapse; font-size: 15px; display: block; overflow-x: auto; }
 .blk-prose th, .blk-prose td { padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--color-line); text-align: left; }
 .blk-prose th { font: 500 12px/1.3 var(--font-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--color-muted); }
@@ -93,3 +100,77 @@
 
 @media (max-width: 600px) { .pg { padding: var(--space-4) var(--space-4) var(--space-8); gap: var(--space-6); }
   .rrow { margin: 0 calc(-1 * var(--space-4)); padding: 0 var(--space-4) var(--space-2); } }
+
+/* Compare (templates/blocks/compare.html): cards with bars, or a table with dots */
+.cmp-cards { list-style: none; margin: 0 calc(-1 * var(--space-4)); padding: 0 var(--space-4) var(--space-2); display: grid;
+  grid-auto-flow: column; grid-auto-columns: minmax(250px, 82%); gap: var(--space-3); overflow-x: auto;
+  scroll-snap-type: x mandatory; scrollbar-width: thin; }
+/* A wide screen: side by side, as wide as the page allows (wider than a guide's text); swiped when they do not fit */
+@media (min-width: 700px) {
+  .cmp-cards { grid-auto-columns: minmax(176px, 1fr); margin: 0; padding: 0 0 var(--space-2); }
+  .cmp-phone-only { display: none; }
+  .cmp-name { min-height: 4.6em; }  /* the bars line up across the cards when a name takes two lines */
+}
+.cmp-card { scroll-snap-align: start; display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4);
+  border: 1px solid var(--color-line); border-radius: var(--radius); background: var(--color-soft); }
+.cmp-img { display: grid; place-items: center; height: 104px; padding: var(--space-2); border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm); background: var(--color-paper); }
+.cmp-img img { max-width: 100%; max-height: 92px; }
+.cmp-name h3 { margin: 0; font: 700 20px/1.15 var(--font-serif); color: var(--color-ink); }
+.cmp-name p { margin: 4px 0 0; color: var(--color-muted); font-size: 14px; }
+.cmp-bars, .cmp-facts, .cmp-when { margin: 0; display: grid; gap: var(--space-3); }
+.cmp-bars dt, .cmp-facts dt, .cmp-when dt { font: 500 11px/1.3 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--color-muted); }
+.cmp-bars dd { margin: 4px 0 0; display: grid; gap: 4px; }
+.cmp-bars > div { position: relative; }
+.cmp-bars .n { position: absolute; top: 0; right: 0; font: 500 11px/1.3 var(--font-mono); color: var(--color-ink); font-variant-numeric: tabular-nums; }
+.cmp-bars .bar { display: block; height: 6px; border-radius: 3px; background: var(--color-line); overflow: hidden; }
+.cmp-bars .bar span { display: block; height: 100%; border-radius: 3px; background: var(--color-accent); }
+.cmp-facts dd, .cmp-when dd { margin: 2px 0 0; font-size: 14px; line-height: 1.45; color: var(--color-ink); }
+.cmp-when { margin-top: auto; padding-top: var(--space-4); border-top: 1px solid var(--color-line); }
+.cmp-when .pick dt { color: var(--color-serve-ink); }
+.cmp-note { margin: var(--space-3) 0 0; color: var(--color-muted); font-size: 14px; }
+.cmp-table-wrap { display: none; }
+@media (min-width: 700px) { .cmp-table-wrap { display: block; overflow-x: auto; border: 1px solid var(--color-line); border-radius: var(--radius); background: var(--color-paper); } }
+.cmp-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.cmp-table th, .cmp-table td { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-line); text-align: left; vertical-align: middle; }
+.cmp-table tbody tr:last-child > * { border-bottom: 0; }
+.cmp-table thead th { font: 500 11px/1.3 var(--font-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--color-muted); vertical-align: bottom; }
+.cmp-table tbody th b { display: block; font: 700 17px/1.2 var(--font-serif); color: var(--color-ink); }
+.cmp-table tbody th span { color: var(--color-muted); font-size: 13px; font-weight: 400; }
+.dots { display: inline-flex; gap: 3px; white-space: nowrap; }
+.dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--color-line); }
+.dots i.on { background: var(--color-accent); }
+
+/* Task picker (templates/blocks/task_picker.html): the jobs at the left, the chosen one's answer beside them */
+.tp { display: grid; gap: var(--space-4); }
+@media (min-width: 800px) { .tp { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--space-6); align-items: start; } }
+.tp-jobs { margin: 0; padding: 0; border: 0; display: grid; gap: var(--space-2); }
+@media (max-width: 799px) { .tp-jobs { display: flex; flex-wrap: wrap; } .tp-job small { display: none; } }
+.tp-job { position: relative; display: block; cursor: pointer; }
+.tp-job input { position: absolute; opacity: 0; }
+.tp-job > span { display: grid; gap: 2px; min-height: var(--tap); padding: var(--space-3) var(--space-4); border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm); background: var(--color-paper); color: var(--color-ink); }
+.tp-job small { color: var(--color-muted); font-size: 13px; }
+.tp-job:hover > span { border-color: var(--color-line-strong); }
+.tp-job input:checked + span { border-color: var(--color-accent); background: var(--color-accent); color: var(--color-paper); }
+.tp-job input:checked + span small { color: inherit; opacity: .85; }
+.tp-job input:focus-visible + span { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.tp-answer { display: none; padding: var(--space-6); border: 1px solid var(--color-line); border-radius: var(--radius); background: var(--color-paper); }
+.tp-eyebrow { margin: 0 0 var(--space-1); font: 500 11px/1.3 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--color-muted); }
+.tp-big { margin: 0 0 var(--space-3); font: 700 clamp(30px, 5vw, 44px)/1.05 var(--font-serif); color: var(--color-accent); }
+.tp-why { margin: 0; font-size: 18px; line-height: 1.5; color: var(--color-ink); }
+.tp-two { display: grid; gap: var(--space-3); margin-top: var(--space-4); }
+@media (min-width: 600px) { .tp-two { grid-template-columns: 1fr 1fr; } }
+.tp-two > div { padding: var(--space-4); border-radius: var(--radius-sm); background: var(--color-soft); }
+.tp-two p:last-child { margin: 0; font-size: 15px; line-height: 1.45; }
+.tp-alt { margin: var(--space-4) 0 0; padding-top: var(--space-4); border-top: 1px solid var(--color-line); color: var(--color-muted); }
+.tp-alt b { color: var(--color-ink); }
+/* The chosen job's answer (radio n shows answer n) */
+.tp:has(.tp-jobs input[value="1"]:checked) .tp-answer[data-for="1"],
+.tp:has(.tp-jobs input[value="2"]:checked) .tp-answer[data-for="2"],
+.tp:has(.tp-jobs input[value="3"]:checked) .tp-answer[data-for="3"],
+.tp:has(.tp-jobs input[value="4"]:checked) .tp-answer[data-for="4"],
+.tp:has(.tp-jobs input[value="5"]:checked) .tp-answer[data-for="5"],
+.tp:has(.tp-jobs input[value="6"]:checked) .tp-answer[data-for="6"],
+.tp:has(.tp-jobs input[value="7"]:checked) .tp-answer[data-for="7"],
+.tp:has(.tp-jobs input[value="8"]:checked) .tp-answer[data-for="8"] { display: block; }
