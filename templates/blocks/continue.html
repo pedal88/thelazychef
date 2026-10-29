@@ -1,0 +1,18 @@
+{# The dish you are in the middle of on this device (services/content/blocks.Continue): static/js/content.js fills it
+   in from the ticks static/js/steps.js keeps, and leaves it hidden when there is none #}
+<div class="cont" data-continue hidden>
+  <div class="row-h"><h2>{{ b.data.title or 'Carry on cooking' }}</h2></div>
+  <div class="cont-card">
+    <a class="cont-go" data-cont-link href="#">
+      <span class="cont-img" data-cont-img></span>
+      <span class="cont-body">
+        <b data-cont-title></b>
+        <span class="cont-step" data-cont-step></span>
+        <span class="cont-bar" aria-hidden="true"><span data-cont-bar></span></span>
+        <span class="cont-run" data-cont-run hidden></span>
+      </span>
+      <span class="cont-btn">Carry on <span aria-hidden="true">→</span></span>
+    </a>
+    <button type="button" class="cont-x" data-cont-hide aria-label="Hide this">{{ icon('close') }}</button>
+  </div>
+</div>

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{# A page made of blocks (routes/content_routes.py, services/content, docs/CONTENT.md): the home page and the guides.
+   Each block is templates/blocks/<kind>.html with its data in b.data. An admin's preview of a version has a bar on top. #}
+{% block title %}{{ 'The Lazy Chef' if page.kind == 'home' else text.title ~ ' - The Lazy Chef' }}{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/content.css') }}">
+<script src="{{ url_for('static', filename='js/content.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+{% if preview %}
+<p class="pg-preview">Preview of version {{ preview.version }} ({{ preview.lang }}), {{ 'published' if preview.published_at else 'not published' }}.
+  <a href="{{ url_for('content.admin_page', page_id=page.id, lang=preview.lang) }}">Back to the page</a></p>
+{% endif %}
+<div class="pg pg-{{ page.kind }}" lang="{{ text.lang }}">
+  {% if page.kind != 'home' %}
+  <header class="pg-head">
+    {% if text.hero_image %}<img class="pg-hero" src="{{ text.hero_image }}" alt="">{% endif %}
+    <p class="eyebrow">Guide</p>
+    <h1>{{ text.title }}</h1>
+    {% if text.summary %}<p class="pg-sum">{{ text.summary }}</p>{% endif %}
+  </header>
+  {% endif %}
+  {% for b in blocks %}
+  <section class="blk blk-{{ b.kind }}"{{ " hidden" if b.kind == "continue" }}>{% include 'blocks/' ~ b.kind ~ '.html' %}</section>
+  {% endfor %}
+</div>
+{% endblock %}

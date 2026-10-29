@@ -30,7 +30,15 @@
   try { Object.assign(st, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { /* start afresh */ }
   st.done = (st.done || []).filter(id => byId[id]);
   st.runs = (st.runs || []).filter(r => byId[r.step] && r.end > Date.now() - 3 * 3600e3);
-  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) { /* kept for this visit only */ } };
+  // meta: what the home page's "Carry on cooking" shows (static/js/content.js): the dish, the next step, when you
+  // last ticked or started something here (at)
+  const save = () => {
+    const next = byId[nextId()];
+    st.meta = Object.assign(st.meta || {}, { title: page.dataset.title || '', img: page.dataset.img || '', total: rows.length,
+      next: next ? { n: next.querySelector('.n').dataset.n, label: next.dataset.label } : null });
+    try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) { /* kept for this visit only */ }
+  };
+  const touched = () => { st.meta = Object.assign(st.meta || {}, { at: Date.now() }); };
   const runOf = id => st.runs.find(r => r.step === id);
   const nextId = () => { const done = new Set(st.done), r = rows.find(x => !done.has(x.dataset.st)); return r ? r.dataset.st : null; };
   const opened = new Set();  // steps opened with a tap, for this visit
@@ -391,6 +399,7 @@
 
   function tick(row) {
     const id = row.dataset.st, i = st.done.indexOf(id);
+    touched();
     if (i >= 0) st.done.splice(i, 1);
     else {
       opened.delete(id);
@@ -413,6 +422,7 @@
   function start(row) {
     if (runOf(row.dataset.st)) return;
     st.runs.push({ step: row.dataset.st, label: row.dataset.label, end: Date.now() + row.dataset.passive * 60e3, rang: false });
+    touched();
     render();
   }
 

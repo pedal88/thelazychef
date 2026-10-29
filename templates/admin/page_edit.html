@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{# One page in Admin -> Pages (routes/content_routes.py): its versions in one language, preview and publish any of
+   them, and the newest as a content package to edit and save as a new version. #}
+{% block title %}{{ page.slug }} - Pages - The Lazy Chef{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+  <div class="flex flex-wrap items-center gap-3">
+    <a href="{{ url_for('content.admin_pages') }}" class="text-sm text-slate-500 hover:text-slate-900">← Pages</a>
+    <h1 class="font-serif text-2xl font-bold text-slate-900">{{ page.slug }}</h1>
+    <span class="text-xs text-slate-500">{{ page.kind }}</span>
+    <span class="ml-auto flex gap-2 text-sm">
+      {% for code, name in langs.items() %}
+      <a href="{{ url_for('content.admin_page', page_id=page.id, lang=code) }}" class="px-3 py-1.5 rounded-full {{ 'bg-slate-900 text-white' if code == lang else 'text-slate-600 hover:bg-slate-100' }}">{{ name }}</a>
+      {% endfor %}
+    </span>
+  </div>
+
+  {% if texts %}
+  <ul class="divide-y divide-slate-200 rounded-xl border border-slate-200 bg-white">
+    {% for t in texts %}
+    <li class="p-3 flex flex-wrap items-center gap-3 text-sm">
+      <span class="font-semibold">v{{ t.version }}</span>
+      <span class="text-slate-700">{{ t.title }}</span>
+      <span class="text-xs text-slate-500">{{ t.created_at.strftime('%d.%m %H:%M') }}{{ ' · ' ~ t.note if t.note }}</span>
+      {% if t.published_at %}<span class="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-800 border border-green-200">published {{ t.published_at.strftime('%d.%m %H:%M') }}</span>{% endif %}
+      <span class="ml-auto flex gap-2">
+        <a href="{{ url_for('content.admin_preview', text_id=t.id) }}" class="text-xs px-2.5 py-1 rounded-full border border-slate-300 hover:bg-slate-50">Preview</a>
+        <form method="post" action="{{ url_for('content.admin_publish', text_id=t.id) }}">
+          <button type="submit" class="text-xs px-2.5 py-1 rounded-full {{ 'bg-orange-600 text-white hover:bg-orange-700' if loop.first else 'border border-slate-300 hover:bg-slate-50' }}">{{ 'Publish' if loop.first else 'Publish this again' }}</button>
+        </form>
+      </span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% if texts|selectattr('published_at')|list %}
+  <form method="post" action="{{ url_for('content.admin_unpublish', page_id=page.id) }}" class="text-right">
+    <input type="hidden" name="lang" value="{{ lang }}">
+    <a href="{{ url }}{{ '?lang=' ~ lang if lang != 'en' }}" class="text-sm text-slate-600 hover:text-slate-900 mr-3">Open the live page</a>
+    <button type="submit" class="text-sm text-red-700 hover:underline">Unpublish ({{ langs[lang] }})</button>
+  </form>
+  {% endif %}
+  {% else %}
+  <p class="text-slate-500">No version in {{ langs[lang] }} yet. Import a package with "lang": "{{ lang }}".</p>
+  {% endif %}
+
+  {% if latest %}
+  <section class="rounded-xl border border-slate-200 bg-white p-4 space-y-3">
+    <h2 class="font-semibold text-slate-900">Edit the newest version</h2>
+    <p class="text-sm text-slate-600">Saving makes version {{ latest.version + 1 }}, a draft; publish it above. Add a "note" on what changed.</p>
+    <form method="post" action="{{ url_for('content.admin_save', page_id=page.id) }}" class="space-y-3">
+      <textarea name="package" rows="24" class="w-full font-mono text-xs rounded-lg border border-slate-300 p-3">{{ package }}</textarea>
+      <button type="submit" class="px-3 py-1.5 rounded-full bg-slate-900 text-white text-sm font-semibold">Save as a new version</button>
+    </form>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}
