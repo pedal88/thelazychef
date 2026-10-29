@@ -5,8 +5,9 @@ Fewest alone gives five near-copies of the same stir-fry, so a week also has to 
 
 - no two dinners are nearly the same dish (more than WEEK_SAME of their ingredients in common, by Jaccard),
 - at most WEEK_PER_PROTEIN dinners with the same main protein, and at least WEEK_PROTEINS different ones,
-- every dinner is a weeknight dinner: at most WEEK_HANDS_ON minutes of work (prep_time_mins), with a dish image,
-  one version per dish.
+- every dinner is a weeknight dinner: marked as a WEEK_MEAL and not baby food (age_from_months, or the meal type
+  NOT_FOR_WEEK; the generation marks baby food as dinner too), at most WEEK_HANDS_ON minutes of work
+  (prep_time_mins), with a dish image, one version per dish.
 
 Staples (salt, pepper, oil, sugar, flour, water) are not bought, so they do not count. All combinations of five are too
 many to try in a request (48 recipes give 1.7 million), so the week is found greedily from each recipe in turn, adding
@@ -16,7 +17,7 @@ The same recipes always give the same week.
 import itertools
 from collections import Counter
 
-from database.models import Ingredient, Recipe, RecipeLine, db
+from database.models import Ingredient, Recipe, RecipeLine, RecipeMealType, db
 from services.recipe_library import FAMILY, one_per_dish
 from services.recipe_v2 import mise
 
@@ -25,6 +26,8 @@ WEEK_SAME = 0.4
 WEEK_PER_PROTEIN = 2
 WEEK_PROTEINS = 3
 WEEK_HANDS_ON = 40
+WEEK_MEAL = 'Dinner'
+NOT_FOR_WEEK = 'Baby Food'
 # A day's slide: the room the dish, title and margins leave the tiles; above DAY_MANY tiles the dish gets smaller
 DAY_ROOM = 640
 DAY_ROOM_MANY = 420
@@ -36,6 +39,9 @@ def candidates():
     rows = db.session.execute(
         db.select(Recipe.id, FAMILY, Recipe.base_recipe_id)
         .where(Recipe.status == 'approved', Recipe.schema_version == 2, Recipe.image_filename.isnot(None),
+               Recipe.age_from_months.is_(None),
+               Recipe.id.in_(db.select(RecipeMealType.recipe_id).where(RecipeMealType.meal_type == WEEK_MEAL)),
+               Recipe.id.not_in(db.select(RecipeMealType.recipe_id).where(RecipeMealType.meal_type == NOT_FOR_WEEK)),
                (Recipe.prep_time_mins.is_(None)) | (Recipe.prep_time_mins <= WEEK_HANDS_ON))
         .order_by(Recipe.id)).all()
     ids = one_per_dish(rows)

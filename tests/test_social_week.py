@@ -15,7 +15,7 @@ os.environ.setdefault('GOOGLE_API_KEY', 'test-key')
 os.environ.pop('K_SERVICE', None)
 
 from app import app  # noqa: E402
-from database.models import Recipe, db  # noqa: E402
+from database.models import Recipe, RecipeMealType, db  # noqa: E402
 from services import social_week as week  # noqa: E402
 from services.recipe_v2.generate import refresh  # noqa: E402
 from services.recipe_v2.store import save_v2  # noqa: E402
@@ -77,6 +77,8 @@ class WeekPostTests(unittest.TestCase):
             db.session.flush()
             refresh(recipe)
             recipe.protein_type, recipe.prep_time_mins = protein, 20  # refresh() derives them from the recipe
+            if 'Dinner' not in recipe.meal_types_list:  # what refresh() derived; the week takes dinners only
+                db.session.add(RecipeMealType(recipe_id=recipe.id, meal_type='Dinner'))
             self.ids.append(recipe.id)
         db.session.commit()
         self.client = app.test_client()
@@ -93,6 +95,14 @@ class WeekPostTests(unittest.TestCase):
         db.session.get(Recipe, self.ids[0]).status = 'draft'
         db.session.get(Recipe, self.ids[1]).prep_time_mins = week.WEEK_HANDS_ON + 1
         db.session.get(Recipe, self.ids[2]).image_filename = None
+        db.session.commit()
+        self.assertEqual(sorted(week.candidates()), self.ids[3:])
+
+    def test_candidates_are_dinners_and_not_baby_food(self):
+        db.session.get(Recipe, self.ids[0]).age_from_months = 8
+        db.session.execute(db.delete(RecipeMealType).where(RecipeMealType.recipe_id == self.ids[1]))
+        db.session.add(RecipeMealType(recipe_id=self.ids[1], meal_type='Breakfast'))
+        db.session.add(RecipeMealType(recipe_id=self.ids[2], meal_type='Baby Food'))  # marked dinner as well
         db.session.commit()
         self.assertEqual(sorted(week.candidates()), self.ids[3:])
 
