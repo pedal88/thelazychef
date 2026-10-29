@@ -15,6 +15,7 @@ from functools import lru_cache
 from markupsafe import Markup, escape
 
 from database.models import Ingredient, Recipe, RecipeLine, RecipeStep, db
+from services.measures import DEFAULT, fmt_amount, frac, temp  # noqa: F401 (frac: the tests import it from here)
 from services.recipe_v2 import delta, groups, mise, nutrition, states, whole
 from services.recipe_v2.derive import HEAT_LABELS, heat_steps
 from services.recipe_v2.persona import SETTINGS, age_label
@@ -30,10 +31,6 @@ PLAN_HINTS = {
     'prep': 'Everything that needs no heat is done before the first cook step.',
     'jit': 'Every step as late as possible. Shortest, busiest.',
 }
-# English plurals for the countable units (units.json has Norwegian plurals only).
-UNIT_PLURALS = {'clove': 'cloves', 'pinch': 'pinches', 'can': 'cans', 'handful': 'handfuls', 'slice': 'slices',
-                'sprig': 'sprigs', 'leaf': 'leaves', 'bunch': 'bunches', 'package': 'packages', 'cup': 'cups',
-                'stalk': 'stalks', 'sheet': 'sheets', 'dash': 'dashes', 'drop': 'drops'}
 
 
 @lru_cache(maxsize=1)
@@ -44,45 +41,10 @@ def _catalogs():
 
     eq = load('equipment.json')
     return {
-        'units': {u['id']: u for u in load('units.json')['units']},
         'equipment': {e['id']: e.get('name_en') or e['name'] for e in eq['equipment']},
         'equipment_items': {e['id']: e for e in eq['equipment']},
         'modes': {m['id']: m.get('name_en') or m['name'] for m in eq['modes']},
     }
-
-
-def frac(v):
-    """1.5 -> "1½", 0.25 -> "¼". Kitchen amounts to the nearest quarter or third."""
-    whole = int(v + 1e-9)
-    rem = v - whole
-    marks = [(0, ''), (0.25, '¼'), (1 / 3, '⅓'), (0.5, '½'), (2 / 3, '⅔'), (0.75, '¾'), (1, '')]
-    best = min(marks, key=lambda m: abs(rem - m[0]))
-    if best[0] == 1:
-        whole, best = whole + 1, (0, '')
-    return (str(whole) if whole else '') + best[1] or '0'
-
-
-def fmt_amount(amount, unit):
-    """"400 g", "1½ tbsp", "2 cloves", "3" (pieces have no unit)."""
-    if amount is None:
-        return ''
-    if unit in ('g', 'ml'):
-        n = round(amount / 10) * 10 if amount >= 100 else round(amount / 5) * 5 if amount >= 10 else round(amount, 1)
-        return f'{n:g} {unit}'
-    n = frac(amount)
-    if not unit or unit == 'piece':
-        return n
-    name = (_catalogs()['units'].get(unit) or {}).get('name_en') or unit
-    return f'{n} {UNIT_PLURALS.get(unit, name) if amount > 1 else name}'
-
-
-def unit_names():
-    """{unit: [one, more]} as fmt_amount writes them, for static/js/servings.js."""
-    names = {}
-    for unit, u in _catalogs()['units'].items():
-        one = u.get('name_en') or unit
-        names[unit] = [one, UNIT_PLURALS.get(unit, one)]
-    return names
 
 
 def duration(minutes):
@@ -140,14 +102,14 @@ def time_strip(steps, total):
     return parts
 
 
-def equipment_text(s):
+def equipment_text(s, system=DEFAULT):
     cat = _catalogs()
     q = (s.get('equipment') or [None])[0]
     if not q:
         return ''
     bits = [cat['equipment'].get(q, q)]
     if s.get('temp_c'):
-        bits.append(f"{s['temp_c']} °C")
+        bits.append(temp(s['temp_c'], system))
     if s.get('mode'):
         bits.append(cat['modes'].get(s['mode'], s['mode']))
     return ', '.join(bits)
@@ -166,13 +128,13 @@ def line_state(line, lang='en'):
     return ', '.join(x for x in (states.word(line.get('state') or line.get('cut'), line.get('grade'), lang), line.get('prep_style')) if x)
 
 
-def step_html(s, lines, ingredients, factor, lang='en'):
+def step_html(s, lines, ingredients, factor, lang='en', system=DEFAULT):
     """Step text with each {iN} as a pill: symbol, amount and name. In cook and serve steps the state and note follow in brackets."""
     def pill(m):
         line = lines.get(m.group(1))
         if not line:
             return escape(m.group(0))
-        amount = fmt_amount(line['amount'] * factor if line.get('amount') is not None else None, line.get('unit'))
+        amount = fmt_amount(line['amount'] * factor if line.get('amount') is not None else None, line.get('unit'), system)
         label = f"{amount} {line['name']}".strip()
         out = Markup('<span class="pill" data-l="{lid}">{sym}{label}</span>').format(lid=m.group(1), sym=symbol(ingredients.get(m.group(1)), line['name'], 24), label=label)
         said = line_state(line, lang) if s['phase'] != 'prep' else ''
@@ -195,15 +157,15 @@ def clear_cache():
     _cache.clear()
 
 
-def page(recipe, servings=None, plan='calm'):
+def page(recipe, servings=None, plan='calm', system=DEFAULT):
     """build() for the recipe pages, from the cache when the recipe has not changed."""
-    key = (recipe.id, repr(tuple(getattr(recipe, c.key) for c in Recipe.__table__.columns)), servings, plan)
+    key = (recipe.id, repr(tuple(getattr(recipe, c.key) for c in Recipe.__table__.columns)), servings, plan, system)
     hit = _cache.get(key)
     if hit and time.monotonic() - hit[0] < CACHE_SECONDS:
         _cache.move_to_end(key)
         return hit[1]
     load_graph(recipe)
-    view = build(recipe, servings=servings, plan=plan)
+    view = build(recipe, servings=servings, plan=plan, system=system)
     _cache[key] = (time.monotonic(), view)
     while len(_cache) > CACHE_SIZE:
         _cache.popitem(last=False)
@@ -224,8 +186,9 @@ def load_graph(recipe):
     )).scalars().all()
 
 
-def build(recipe, servings=None, plan='calm'):
-    """Everything the v2 recipe template needs."""
+def build(recipe, servings=None, plan='calm', system=DEFAULT):
+    """Everything the v2 recipe template needs, with amounts and temperatures in the reader's measuring system
+    (services/measures.py: 'metric' or 'us')."""
     v2 = to_v2(recipe)
     plan = plan if plan in MODES else 'calm'
     base = recipe.base_servings or 4
@@ -257,9 +220,7 @@ def build(recipe, servings=None, plan='calm'):
             notes.append('to taste')
         found = pantry.get(e.get('pantry_id'))
         group = groups.group_of(found, mise.staple({'name': e['name'], **({'pantry_tier': found.tier} if found else {})}))
-        shop.append({'name': e['name'], 'amount': ' + '.join(fmt_amount(a['amount'], a['unit']) for a in e['amounts']),
-                     # the amounts for these servings, so the page can scale them at once (static/js/servings.js)
-                     'raw': [[round(a['amount'], 4), a['unit']] for a in e['amounts']],
+        shop.append({'name': e['name'], 'amount': ' + '.join(fmt_amount(a['amount'], a['unit'], system) for a in e['amounts']),
                      'note': ' · '.join(notes), 'symbol': symbol(found, e['name'], 36 if group == 'staples' else 56),
                      'missing': not e.get('pantry_id') or e['pantry_id'] not in pantry, 'group': group,
                      'img': found.image_url if found is not None else None})
@@ -272,9 +233,9 @@ def build(recipe, servings=None, plan='calm'):
         during = steps_by.get(p.get('during')) if p.get('during') else None
         steps.append({
             'n': n, 'id': sid, 'phase': s['phase'], 'short': s['short'], 'component': comps.get(s['component_id'], ''),
-            'duration': step_duration(s), 'equipment': equipment_text(s), 'start': p['start'],
+            'duration': step_duration(s), 'equipment': equipment_text(s, system), 'start': p['start'],
             'while': f"While: {during['short'].lower()}" if during else '',
-            'html': step_html(s, lines, ingredients, factor, recipe.language), 'done_when': s.get('done_when'),
+            'html': step_html(s, lines, ingredients, factor, recipe.language, system), 'done_when': s.get('done_when'),
             'setup': bool(s.get('setup')), 'heat': sid in heated,
         })
     # Where the heat goes on, for the step list of the one-page flow: the first step that heats the food (not
@@ -293,7 +254,7 @@ def build(recipe, servings=None, plan='calm'):
         return i.get('state') or i.get('cut')
     # The river delta: every line as the drawing shows it, with the amount for these servings
     pictured = {lid: {'name': i['name'], 'img': (ingredients.get(lid).image_url if ingredients.get(lid) is not None else None),
-                      'amount': fmt_amount(i['amount'] * factor, i.get('unit')) if i.get('amount') is not None else '',
+                      'amount': fmt_amount(i['amount'] * factor, i.get('unit'), system) if i.get('amount') is not None else '',
                       'prep': i.get('prep_style') or '', 'cut': state_of(lid, i), 'count': count_of(i, factor),
                       'state': line_state({**i, 'state': state_of(lid, i)}, lang),
                       # the state alone in words, for its sign in the delta (the note may say something else: "melne")
@@ -321,7 +282,7 @@ def build(recipe, servings=None, plan='calm'):
     cat = _catalogs()
     return {
         'title': recipe.title, 'servings': servings, 'scalable': scalable, 'yield_text': recipe.yield_text,
-        'unit_names': unit_names(),
+        'units': system,
         'total': duration(sch['T']), 'total_min': sch['T'], 'active': duration(sch['A']), 'plan': plan, 'plans': PLAN_NAMES,
         'plan_hint': PLAN_HINTS[plan], 'parts': [c['name'] for c in v2['components']],
         'shopping': shop, 'shop_groups': groups.grouped(shop), 'equipment': equipment_list(first_use, cat), 'steps': steps,
@@ -331,7 +292,7 @@ def build(recipe, servings=None, plan='calm'):
         'image_notes': [e['message'] for e in recipe.validation_errors or [] if e.get('rule') == 'image'],
         'persona_notes': [e['message'] for e in recipe.validation_errors or [] if e.get('rule') == 'persona'],
         'about': about(recipe),
-        'delta': delta.build(v2, sch['order'], pictured),
+        'delta': delta.build(v2, sch['order'], pictured, system),
         # The whole dish beside cooking mode (services/recipe_v2/whole.py)
         'timeline': whole.timeline(v2, sch, comps) if v2['steps'] else None,
         # The one-page flow's map: a transit map with time down the page

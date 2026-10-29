@@ -120,6 +120,13 @@ def site_menu():
     return out
 
 
+def unit_system():
+    """The reader's measuring system, 'metric' or 'us' (services/measures.py): a cookie set by the switch in the
+    site menu (components/unit_switch.html), so it works for visitors too. Metric when it is not set."""
+    from services.measures import system_of
+    return system_of(request.cookies.get('units'))
+
+
 def icon(name, label=None, cls=''):
     """A line icon from static/icons/icons.svg. Without a label it is decoration and hidden from screen readers."""
     src = url_for('static', filename='icons/icons.svg')

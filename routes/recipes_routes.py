@@ -3,7 +3,7 @@ from flask import abort, flash, jsonify, redirect, render_template, request, url
 from flask_login import current_user, login_required
 from database.models import Ingredient, Recipe, db
 from routes._flat import FlatBlueprint
-from routes._shared import DIFFICULTY_LABELS, get_recipe_image_url, viewer_is_admin
+from routes._shared import DIFFICULTY_LABELS, get_recipe_image_url, unit_system, viewer_is_admin
 from services.chef_service import get_chefs
 from services.recipe_library import PAGE, SORT_LABELS, counts, from_args, quick, recipe_page
 
@@ -175,7 +175,8 @@ def recipe_detail(recipe_id):
     if recipe.schema_version != 2:
         abort(404)
     from services.recipe_v2.view import page
-    view = page(recipe, servings=request.args.get('servings', type=int), plan=request.args.get('plan', 'calm'))
+    view = page(recipe, servings=request.args.get('servings', type=int), plan=request.args.get('plan', 'calm'),
+                system=unit_system())
     # The dish and all its versions by chef personas; visitors see the approved ones, when there is more than one
     root = recipe.base_recipe or recipe
     family = [root] + sorted(root.versions, key=lambda r: r.id)
@@ -217,7 +218,7 @@ def recipe_print(recipe_id):
     if recipe.schema_version != 2:
         return redirect(url_for('recipe_detail', recipe_id=recipe_id))
     from services.recipe_v2.view import page
-    view = page(recipe, servings=request.args.get('servings', type=int))
+    view = page(recipe, servings=request.args.get('servings', type=int), system=unit_system())
     if not view['delta']:
         return redirect(url_for('recipe_detail', recipe_id=recipe_id))
     orient = 'landscape' if request.args.get('orient') == 'landscape' else 'portrait'

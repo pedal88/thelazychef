@@ -14,6 +14,7 @@ scales it to fit and draws the arrows (static/js/delta.js).
 - Numbers are the step numbers of the method list, so step 6 is the same step everywhere. The steps folded away
   are listed on their node ('folded'), for a page that shows every step.
 """
+from services.measures import DEFAULT, degrees
 from services.recipe_v2 import states
 from services.recipe_v2.planner import steps_from_v2
 
@@ -40,11 +41,12 @@ def label(s, has_pics, near):
     return f"{verb or words[0].lower()} {words[-1]}"
 
 
-def build(v2, order, lines):
+def build(v2, order, lines, system=DEFAULT):
     """The delta for a v2 recipe, or None when it has no steps.
 
     order is the planned order of step ids (plan_v2()['order']). lines maps a line's local_id to what the
-    drawing shows for it: {'name', 'img', 'amount', 'prep', 'cut'}."""
+    drawing shows for it: {'name', 'img', 'amount', 'prep', 'cut'}. Temperatures are in the reader's measuring
+    system (°C or °F, services/measures.py)."""
     by = {s['local_id']: s for s in v2.get('steps') or []}
     if not by:
         return None
@@ -199,13 +201,13 @@ def build(v2, order, lines):
             s = by[x]
             segs.append({'id': x, 'no': number[x], 'short': s.get('short') or '',
                          'label': label(s, k == 0 and bool(own), near if k == 0 else []),
-                         'heat': HEAT.get(s.get('mode') or '', 0), 'temp': s.get('temp_c'),
+                         'heat': HEAT.get(s.get('mode') or '', 0), 'temp': degrees(s.get('temp_c'), system),
                          'wait': s.get('passive_minutes') if (s.get('passive_minutes') or 0) >= 5 else None})
         notes, setup = [], []
         for x in steps_here:
             for w in waits.get(x) or []:
                 if w in by:
-                    notes.append(label(by[w], False, []) + (f" {by[w]['temp_c']}°" if by[w].get('temp_c') else ''))
+                    notes.append(label(by[w], False, []) + (f" {degrees(by[w]['temp_c'], system)}°" if by[w].get('temp_c') else ''))
                     setup.append(w)
         # The steps the drawing folds away (a prep step drawn as its ingredients, a setting up the step waits for),
         # for a page that shows every step: number and label, in the order of the method
@@ -219,6 +221,6 @@ def build(v2, order, lines):
             'early': not is_main(sid) and any((by[x].get('passive_minutes') or 0) >= EARLY_MINUTES for x in steps_here),
             'also': [{'no': number[x], 'short': by[x].get('short') or ''} for x in also.get(sid, [])],
             'folded': [{'id': x, 'no': number[x], 'short': by[x].get('short') or '',
-                        'label': label(by[x], False, []) + (f" {by[x]['temp_c']}°" if by[x].get('temp_c') else '')} for x in hidden_here],
+                        'label': label(by[x], False, []) + (f" {degrees(by[x]['temp_c'], system)}°" if by[x].get('temp_c') else '')} for x in hidden_here],
         })
     return {'nodes': out, 'edges': edges, 'max_depth': max(depth.values()), 'leaves': leaves(root)}
