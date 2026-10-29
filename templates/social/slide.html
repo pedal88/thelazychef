@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 {# One slide of a TikTok or Instagram post (routes/social_routes.py, services/social.py, docs/SOCIAL.md), drawn at
    the post's size and photographed by scripts/social_render.py. Not part of the site: no menu, no scripts. #}
-<html lang="en">
+<html lang="en"{% if look %} data-look="{{ look }}"{% endif %}>
 <head>
 <meta charset="utf-8">
 <meta name="robots" content="noindex">
 <title>{{ fmt }} {{ n }}/{{ slides }} - The Lazy Chef</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+{# A look from the style trial (?look=c|d|e|f): its colours and fonts over today's (static/css/themes.css) #}
+{% if look %}<link rel="stylesheet" href="{{ url_for('static', filename='css/themes.css') }}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?{{ LOOK_FONTS[look] }}&display=swap">{% endif %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/social.css') }}">
 </head>
 <body>

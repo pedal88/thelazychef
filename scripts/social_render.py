@@ -3,6 +3,7 @@
     python -m scripts.social_render map 345 --size ig --code 1     # Dinner as a subway map, recipe 345, for Instagram
     python -m scripts.social_render grid 345 --size tt --code 2    # Everything in a dish, for TikTok
     python -m scripts.social_render pantry --size tt --code 3      # The foundation pantry
+    python -m scripts.social_render map 345 --look d               # in look D from the style trial (c, d, e, f)
 
 Reads the public slide pages (/social/…) from production by default, or --base http://127.0.0.1:8000 for a local app,
 and takes each picture with headless Chrome (--chrome, or $CHROME; the macOS path by default). Nothing is written to
@@ -47,6 +48,7 @@ def main():
     p.add_argument('recipe', nargs='?', type=int, help='the recipe id (not for pantry)')
     p.add_argument('--size', choices=sorted(SIZES), default='ig')
     p.add_argument('--code', help="the post's code in the address, e.g. 3 for thelazychef.app/tiktok/3")
+    p.add_argument('--look', choices=['c', 'd', 'e', 'f'], help="a look from the style trial; today's by default")
     p.add_argument('--base', default='https://thelazychef.app')
     p.add_argument('--chrome', default=os.environ.get('CHROME', CHROME))
     p.add_argument('--out', type=Path, default=Path.home() / 'promptlab-runs' / 'social')
@@ -54,7 +56,7 @@ def main():
     if (args.format == 'pantry') == (args.recipe is not None):
         p.error('give a recipe id for map and grid, and none for pantry')
 
-    first = page_url(args.base, args.format, args.recipe, size=args.size, code=args.code, slide=1)
+    first = page_url(args.base, args.format, args.recipe, size=args.size, code=args.code, look=args.look, slide=1)
     context = tls()
     with urllib.request.urlopen(first, context=context) as response:
         count = int(response.headers['X-Slides'])
@@ -62,14 +64,15 @@ def main():
                                          caption=1), context=context) as response:
         caption = response.read().decode('utf-8')
 
-    name = '-'.join(str(x) for x in (datetime.date.today().isoformat(), args.format, args.recipe, args.size, args.code)
+    name = '-'.join(str(x) for x in (datetime.date.today().isoformat(), args.format, args.recipe, args.size, args.code,
+                                     args.look and f'look-{args.look}')
                     if x is not None)
     folder = args.out / name
     folder.mkdir(parents=True, exist_ok=True)
     width, height = SIZES[args.size]
     for n in range(1, count + 1):
         target = folder / f'{n:02d}.png'
-        url = page_url(args.base, args.format, args.recipe, size=args.size, code=args.code, slide=n)
+        url = page_url(args.base, args.format, args.recipe, size=args.size, code=args.code, look=args.look, slide=n)
         # virtual-time-budget lets the fonts and the symbols load before the picture is taken
         subprocess.run([args.chrome, '--headless', '--disable-gpu', '--hide-scrollbars',
                         '--force-device-scale-factor=1', f'--window-size={width},{height}',

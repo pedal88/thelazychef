@@ -3,7 +3,7 @@ scripts/social_render.py. Public like the recipe pages they are drawn from, but 
 from flask import Blueprint, abort, render_template, request
 
 from database.models import Recipe, db
-from routes._shared import dish_images, viewer_is_admin
+from routes._shared import LOOK_FONTS, dish_images, viewer_is_admin
 from services import social
 
 social_bp = Blueprint('social', __name__)
@@ -17,8 +17,8 @@ def _size():
 
 
 def _slide(slides, fmt, title=None, count=None):
-    """The page for ?slide=n (from 1), at ?size=ig or tt, with the post's ?code for the address on the last slide.
-    ?caption=1 gives a first draft of the post's text instead."""
+    """The page for ?slide=n (from 1), at ?size=ig or tt, with the post's ?code for the address on the last slide, in
+    today's look or one of the style trial's (?look=c|d|e|f). ?caption=1 gives a first draft of the post's text."""
     size = _size()
     code = request.args.get('code')
     if request.args.get('caption'):
@@ -28,9 +28,10 @@ def _slide(slides, fmt, title=None, count=None):
     if not 1 <= n <= len(slides):
         abort(404)
     width, height = social.SIZES[size]
+    look = request.args.get('look')
     response = render_template('social/slide.html', slide=slides[n - 1], n=n, slides=len(slides), fmt=fmt,
-                               size=size, width=width, height=height,
-                               address=social.address(size, code))
+                               size=size, width=width, height=height, address=social.address(size, code),
+                               look=look if look in LOOK_FONTS else None)
     return response, 200, {'X-Robots-Tag': 'noindex', 'X-Slides': str(len(slides))}
 
 

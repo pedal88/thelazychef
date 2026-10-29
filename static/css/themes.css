@@ -1,6 +1,7 @@
 /* Style trial (temporary, October 2026): the four directions from the style sheet, to try on real recipes before
    one of them goes into tokens.css. A look is chosen in the admin menu or with ?look=c|d|e|f (?look=today goes
-   back); base.html sets data-look on <html> and loads that look's fonts. Visitors who have not chosen one see
+   back); base.html sets data-look on <html> and loads that look's fonts (routes/_shared.LOOK_FONTS; the social slides
+   take ?look= the same way, docs/SOCIAL.md). Visitors who have not chosen one see
    today's look. When the choice is made, its values move into tokens.css and this file and the switch go.
    The scales are made from each direction's colours: tints towards white, shades towards black. */
 

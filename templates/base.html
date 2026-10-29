@@ -18,12 +18,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/library.css') }}">
     <script>
         (function () {
-            var FONTS = {
-                c: 'family=IBM+Plex+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400;500;600;700;800',
-                d: 'family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500',
-                e: 'family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500',
-                f: 'family=IBM+Plex+Mono:wght@400;500&family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700'
-            };
+            var FONTS = {{ LOOK_FONTS|tojson }};  // routes/_shared.LOOK_FONTS
             var look = null;
             try {
                 var asked = new URLSearchParams(location.search).get('look');

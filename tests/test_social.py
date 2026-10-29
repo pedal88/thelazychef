@@ -83,6 +83,23 @@ class SocialTests(unittest.TestCase):
         self.assertIn(self.recipe.title, html)
         self.assertIn('/static/recipes/tikka.png', html)
 
+    def test_a_slide_can_be_drawn_in_a_look_from_the_style_trial(self):
+        base = f'/social/recipe/{self.recipe.id}/map'
+        html = self.get(base, look='e', slide=1).get_data(as_text=True)
+        self.assertIn('<html lang="en" data-look="e">', html)
+        self.assertIn('/static/css/themes.css', html)
+        self.assertIn('family=Archivo', html)
+        for look in (None, 'z'):
+            with self.subTest(look=look):
+                html = self.get(base, look=look, slide=1).get_data(as_text=True)
+                self.assertIn('<html lang="en">', html)
+                self.assertNotIn('themes.css', html)
+
+    def test_the_site_and_the_slides_read_the_looks_fonts_from_one_place(self):
+        from routes._shared import LOOK_FONTS
+        html = self.client.get('/recipes').get_data(as_text=True)
+        self.assertIn(json.dumps(LOOK_FONTS['d']).replace('&', '\\u0026'), html)
+
     def test_the_last_slide_and_the_caption_give_the_posts_address(self):
         for size, address in (('ig', 'thelazychef.app/ig/4'), ('tt', 'thelazychef.app/tiktok/4')):
             with self.subTest(size=size):

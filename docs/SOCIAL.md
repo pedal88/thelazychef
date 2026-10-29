@@ -32,7 +32,12 @@ The slides are pages at `/social/recipe/<id>/<format>` and `/social/pantry` (`ro
 python -m scripts.social_render map 345 --size tt --code 1      # recipe 345 as a subway map, for TikTok
 python -m scripts.social_render grid 345 --size ig --code 2
 python -m scripts.social_render pantry --size tt --code 3
+python -m scripts.social_render map 345 --look d                 # in look D from the style trial
 ```
+
+`--look c|d|e|f` (`?look=` on the pages) draws the slides in one of the style trial's looks (`static/css/themes.css`,
+the fonts in `routes/_shared.LOOK_FONTS`), to compare the directions on real posts. Post in the look visitors see on
+the site, today's until one is chosen.
 
 It reads production (or `--base http://127.0.0.1:8000`), photographs each slide with headless Chrome and writes the
 PNGs and `caption.txt` to `~/promptlab-runs/social/`, outside the repo. Nothing is written to production and nothing
