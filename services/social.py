@@ -4,7 +4,7 @@ A post is a carousel of slides: one page per slide at /social/…?slide=n, which
 Three formats, the tests for the first weeks:
 
 - map: "Dinner as a subway map": the dish, its metro map, what you need, the steps in one list, the address.
-- grid: "Everything in a …": every ingredient as a symbol, then with amounts, then the dish.
+- grid: "Everything in a dish": every ingredient as a symbol (guess the dinner), then with amounts, then the dish.
 - pantry: "The foundation pantry": the foundation by kitchen group, and how much of what goes into dinner it covers.
 
 Two sizes: ig (1080 × 1350, Instagram's tallest carousel) and tt (1080 × 1920, TikTok's photo mode). The last slide
@@ -112,7 +112,8 @@ def recipe_slides(view, fmt, dish_image, size='ig'):
              **facts}
     if fmt == 'grid':
         return [
-            {'kind': 'collage', 'title': f'Everything in {view["title"]}', 'tiles': tiles, 'count': len(tiles),
+            # The dish is not named before the third slide: the first asks the viewer to guess it
+            {'kind': 'collage', 'title': 'Can you guess the dinner?', 'tiles': tiles, 'count': len(tiles),
              'cols': columns(len(tiles), size, labels=False, room=200)},
             {'kind': 'ingredients', 'title': 'What you need', 'tiles': tiles, 'staples': staples,
              'cols': columns(len(tiles), size)},
@@ -178,7 +179,7 @@ def caption(fmt, size, code=None, title=None, count=None):
                  'Save this for your next big shop.',
                  '', f'Full recipes that show what you need beyond these: {where}']
     elif fmt == 'grid':
-        lines = [f'Everything that goes into {title}. Could you name the dish from the ingredients?',
+        lines = [f'{count} ingredients, one dinner. Guess it before the third picture gives it away.',
                  '', f'The whole recipe, with timers: {where}']
     else:
         lines = [f'{title}, drawn as a subway map. Every line is a part of the dish; where they meet, dinner is ready.',

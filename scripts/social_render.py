@@ -13,6 +13,7 @@ the repo: they hold recipe content. --code is the post's code in the address on 
 import argparse
 import datetime
 import os
+import ssl
 import subprocess
 import sys
 import urllib.parse
@@ -20,6 +21,18 @@ import urllib.request
 from pathlib import Path
 
 CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+
+
+def tls():
+    """certifi's certificates when it is there: python.org's Python on macOS has none of its own until its Install
+    Certificates script has run, and https to the site fails."""
+    try:
+        import certifi
+    except ImportError:
+        return None
+    return ssl.create_default_context(cafile=certifi.where())
+
+
 SIZES = {'ig': (1080, 1350), 'tt': (1080, 1920)}
 
 
@@ -42,10 +55,11 @@ def main():
         p.error('give a recipe id for map and grid, and none for pantry')
 
     first = page_url(args.base, args.format, args.recipe, size=args.size, code=args.code, slide=1)
-    with urllib.request.urlopen(first) as response:
+    context = tls()
+    with urllib.request.urlopen(first, context=context) as response:
         count = int(response.headers['X-Slides'])
     with urllib.request.urlopen(page_url(args.base, args.format, args.recipe, size=args.size, code=args.code,
-                                         caption=1)) as response:
+                                         caption=1), context=context) as response:
         caption = response.read().decode('utf-8')
 
     name = '-'.join(str(x) for x in (datetime.date.today().isoformat(), args.format, args.recipe, args.size, args.code)

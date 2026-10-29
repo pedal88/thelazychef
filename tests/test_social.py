@@ -64,6 +64,16 @@ class SocialTests(unittest.TestCase):
     def test_the_grid_post_goes_symbols_ingredients_dish_address(self):
         self.assertEqual(self.kinds('grid'), ['collage', 'ingredients', 'dish', 'end'])
 
+    def test_the_grid_post_does_not_name_the_dish_before_the_reveal(self):
+        base = f'/social/recipe/{self.recipe.id}/grid'
+        first = self.get(base, slide=1).get_data(as_text=True)
+        self.assertIn('Can you guess the dinner?', first)
+        self.assertNotIn(self.recipe.title, first.split('<main', 1)[1])
+        self.assertIn(self.recipe.title, self.get(base, slide=3).get_data(as_text=True))
+        caption = self.get(base, caption=1).get_data(as_text=True)
+        self.assertNotIn(self.recipe.title, caption)
+        self.assertIn('ingredients, one dinner', caption)
+
     def test_a_slide_is_drawn_at_its_platforms_size_and_kept_out_of_search(self):
         response = self.get(f'/social/recipe/{self.recipe.id}/map', size='tt', slide=1)
         html = response.get_data(as_text=True)

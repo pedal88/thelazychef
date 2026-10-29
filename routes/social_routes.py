@@ -43,7 +43,7 @@ def recipe_post(recipe_id, fmt):
     from services.recipe_v2.view import page
     view = page(recipe)
     slides = social.recipe_slides(view, fmt, dish_images(recipe)['dish'], _size())
-    return _slide(slides, fmt, title=view['title'])
+    return _slide(slides, fmt, title=view['title'], count=slides[0].get('count'))
 
 
 @social_bp.route('/social/pantry')
