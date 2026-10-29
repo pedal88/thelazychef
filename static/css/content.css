@@ -44,14 +44,21 @@
 .row-more:hover { color: var(--color-ink); }
 .row-text { margin: calc(-1 * var(--space-2)) 0 var(--space-4); color: var(--color-muted); }
 
-/* A row of recipe cards: one line that scrolls sideways on a phone, a grid on a wide screen */
+/* A row of recipe cards, always one line. On a phone it scrolls sideways. On a wide screen it shows as many cards as
+   fit at 190 px or more (3, 4 or 5, by the width of the row, not of the window) and leaves out the rest: a row is a
+   taste, "See all" shows them all. So a package can ask for more cards than fit without a card alone on a line. */
+.blk-recipes, .blk-cook_next { container-type: inline-size; }
 .rrow { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(200px, 72%); gap: var(--space-4); overflow-x: auto;
   scroll-snap-type: x mandatory; margin: 0 calc(-1 * var(--space-6)); padding: 0 var(--space-6) var(--space-2); scrollbar-width: none; }
 .rrow::-webkit-scrollbar { display: none; }
 .rrow-item { scroll-snap-align: start; display: flex; }
 .rrow-item .rcard { flex: 1; }
 @media (min-width: 700px) {
-  .rrow { grid-auto-flow: row; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); margin: 0; padding: 0; overflow: visible; }
+  .rrow { --cols: 3; grid-auto-flow: row; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); margin: 0; padding: 0; overflow: visible; }
+  .rrow-item:nth-child(n + 4) { display: none; }
+  /* N cards fit when N x 190 px and the gaps between them do: 4 from 808 px, 5 from 1014 px */
+  @container (min-width: 808px) { .rrow { --cols: 4; } .rrow-item:nth-child(4) { display: flex; } }
+  @container (min-width: 1014px) { .rrow { --cols: 5; } .rrow-item:nth-child(5) { display: flex; } }
 }
 
 /* Carry on cooking */
