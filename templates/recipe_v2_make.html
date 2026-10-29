@@ -16,6 +16,17 @@
 
 {% block title %}{{ v.title }} - The Lazy Chef{% endblock %}
 
+{% block og %}
+{% set image = get_recipe_image_url(recipe) %}
+<meta property="og:site_name" content="The Lazy Chef">
+<meta property="og:type" content="article">
+<meta property="og:title" content="{{ v.title }}">
+<meta property="og:description" content="{{ (v.chef_note or 'A recipe you can see: prep, cook and serve, drawn as a map.')|striptags|truncate(200) }}">
+<meta property="og:url" content="{{ absolute_url(url_for('recipe_detail', recipe_id=recipe.id)) }}">
+<meta property="og:image" content="{{ absolute_url(image or url_for('static', filename='brand/share.png')) }}">
+<meta name="twitter:card" content="summary_large_image">
+{% endblock %}
+
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/recipe_v2.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/ready.css') }}">

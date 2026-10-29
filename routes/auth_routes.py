@@ -4,6 +4,7 @@ from flask_login import current_user, login_user, logout_user
 
 from database.models import User, db
 from routes._flat import FlatBlueprint
+from services import funnel
 
 auth_bp = FlatBlueprint("auth", __name__)
 
@@ -45,8 +46,10 @@ def register():
             flash('Email already registered', 'error')
             return redirect(url_for('register'))
             
-        # Create User
-        new_user = User(email=email, is_admin=False)
+        # Create User, with where they came from (services/funnel.py)
+        source = request.form.get('source')
+        new_user = User(email=email, is_admin=False, signup_ref=funnel.session_ref(),
+                        signup_source=source if source in dict(funnel.SOURCES) else None)
         new_user.set_password(password)
         db.session.add(new_user)
         db.session.commit()
@@ -56,7 +59,7 @@ def register():
         flash('Account created successfully!', 'success')
         return redirect(url_for('recipes_list'))
         
-    return render_template('register.html')
+    return render_template('register.html', sources=funnel.SOURCES)
 
 @auth_bp.route('/logout')
 def logout():
