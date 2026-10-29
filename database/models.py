@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, validates
-from sqlalchemy import String, Integer, Boolean, Text, Float, ForeignKey, DateTime, JSON, UniqueConstraint, false as sa_false, true as sa_true
+from sqlalchemy import String, Integer, Boolean, Text, Float, ForeignKey, Date, DateTime, JSON, UniqueConstraint, false as sa_false, true as sa_true
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
@@ -435,6 +435,11 @@ class User(UserMixin, db.Model):
     email: Mapped[str] = mapped_column(String(150), unique=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(256), nullable=False)
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Where the user came from (services/funnel.py): when they signed up (empty for those before 29.10.2026), the
+    # answer to "How did you find us?" and the first ref code their visit brought (thelazychef.app/tiktok, ?ref=ig-3)
+    created_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime, default=datetime.datetime.utcnow, nullable=True)
+    signup_source: Mapped[Optional[str]] = mapped_column(String(30), nullable=True)
+    signup_ref: Mapped[Optional[str]] = mapped_column(String(60), nullable=True)
 
     # Relationship to interactions
     interactions: Mapped[list["UserRecipeInteraction"]] = relationship(back_populates="user", cascade="all, delete-orphan")
@@ -450,6 +455,18 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+
+class ReferralVisit(db.Model):
+    """Visits that came with a ref code, counted per code and day: the clicks the platforms cannot count for us, since
+    a TikTok bio has no link and people type the address (services/funnel.py). One per browser session, for its
+    first code."""
+    __tablename__ = 'referral_visit'
+    __table_args__ = (UniqueConstraint('ref', 'day', name='uq_referral_visit_day'),)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    ref: Mapped[str] = mapped_column(String(60), nullable=False)
+    day: Mapped[datetime.date] = mapped_column(Date, nullable=False)
+    count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
 
 # ---------------------------------------------------------------------------

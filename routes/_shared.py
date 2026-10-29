@@ -60,6 +60,15 @@ def get_recipe_image_url(recipe):
         return url_for('static', filename='recipes/' + recipe.image_filename)
 
 
+def absolute_url(url):
+    """A whole address for a path, for links read outside the site (Open Graph on shared links): from APP_BASE_URL in
+    production, where Cloud Run's proxy would otherwise make it http, else from the request. Whole URLs pass through."""
+    if not url or url.startswith(('http://', 'https://')):
+        return url
+    base = os.environ.get('APP_BASE_URL') or request.url_root
+    return base.rstrip('/') + '/' + url.lstrip('/')
+
+
 # The site menu: one list for the top bar and the phone menu (components/site_menu.html). A group: (label, who, items); an item: (label, endpoint, url arguments, icon, who), or
 # None for a line between items. who: 'all', 'user' (signed in) or 'admin'. A group with one item is a plain link.
 MENU = [
@@ -81,7 +90,8 @@ MENU = [
                         ('Recipes', 'admin_recipes_management', {}, 'clipboard', 'admin'),
                         ('Notes on recipes', 'notes.overview', {}, 'file-plus', 'admin'),
                         ('Ingredients', 'ingredients_mgmt.dashboard', {}, 'package', 'admin'),
-                        ('Chefs', 'chefs_list', {}, 'chef', 'admin')]),
+                        ('Chefs', 'chefs_list', {}, 'chef', 'admin'),
+                        ('Funnel', 'funnel.dashboard', {}, 'list', 'admin')]),
 ]
 
 

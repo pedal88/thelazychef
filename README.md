@@ -22,6 +22,8 @@ Live at <https://thelazychef.app>.
   derived facts (time, main protein, clean-up), and draws the dish and its parts. Each image is checked by a vision
   model.
 - Recipe and ingredient management, chef personas, notes on recipes.
+- The funnel from TikTok and Instagram: short addresses (`/tiktok`, `/ig`, `/tiktok/3` for one post) and `?ref=`
+  codes, "How did you find us?" at sign-up, and a Funnel page with sign-ups, saves and made recipes per channel.
 
 ## How it is built
 
