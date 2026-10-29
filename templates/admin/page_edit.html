@@ -44,6 +44,18 @@
   <p class="text-slate-500">No version in {{ langs[lang] }} yet. Import a package with "lang": "{{ lang }}".</p>
   {% endif %}
 
+
+  <section class="rounded-xl border border-slate-200 bg-white p-4 space-y-3">
+    <h2 class="font-semibold text-slate-900">Images</h2>
+    <p class="text-sm text-slate-600">The package names images by file name ("cast-iron.svg"); upload them here under the page's slug. The same name again replaces the image.</p>
+    {% if images %}<ul class="flex flex-wrap gap-3">{% for i in images %}<li class="text-xs text-slate-600 text-center"><img src="{{ i.url }}" alt="" class="w-20 h-20 object-contain rounded-lg border border-slate-200 bg-white"><code>{{ i.name }}</code></li>{% endfor %}</ul>{% endif %}
+    <form method="post" action="{{ url_for('content.admin_images') }}" enctype="multipart/form-data" class="flex flex-wrap items-center gap-3">
+      <input type="hidden" name="slug" value="{{ page.slug }}">
+      <input type="file" name="images" multiple accept=".svg,.png,.jpg,.jpeg,.webp,.gif" class="text-sm">
+      <button type="submit" class="px-3 py-1.5 rounded-full bg-slate-900 text-white text-sm font-semibold">Upload</button>
+    </form>
+  </section>
+
   {% if latest %}
   <section class="rounded-xl border border-slate-200 bg-white p-4 space-y-3">
     <h2 class="font-semibold text-slate-900">Edit the newest version</h2>

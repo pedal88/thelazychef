@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 100" width="220" height="100" fill="none" stroke="#2B2F2C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Ceramic coated pan: light inside, coloured outside and a wooden handle">
+<path d="M139 42 L154 41 L154 52 L139 53" fill="#E6E8EA"></path>
+<path d="M154 39 L206 35 Q214 35 214 44 Q214 53 206 53 L154 55 Z" fill="#EAD7C2"></path>
+<path d="M164 45 L202 42.5" stroke-width="1.4"></path>
+<path d="M18 46 A62 18 0 0 0 142 46 L132 74 A52 12 0 0 1 28 74 Z" fill="#CFE6E0"></path>
+<ellipse cx="80" cy="46" rx="62" ry="18" fill="#BFDDD5"></ellipse>
+<ellipse cx="80" cy="47" rx="57" ry="15.5" fill="#FCFAF5"></ellipse>
+</svg>

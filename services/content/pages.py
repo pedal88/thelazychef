@@ -10,7 +10,8 @@ import logging
 import re
 
 from database.models import Page, PageText, db
-from services.content.blocks import AUDIENCES, KINDS
+from services.content import assets
+from services.content.blocks import AUDIENCES, KINDS, Ctx
 
 log = logging.getLogger(__name__)
 LANGS = {'en': 'English', 'no': 'Norsk'}
@@ -51,8 +52,8 @@ def live_text(page, lang=DEFAULT_LANG):
     return None
 
 
-def check_blocks(blocks):
-    """Everything wrong with a list of blocks, as sentences naming the block ("Block 2 (recipes): ...")."""
+def check_blocks(blocks, slug=''):
+    """Everything wrong with a list of blocks on the page slug, as sentences naming the block ("Block 2 (recipes): ...")."""
     if not isinstance(blocks, list):
         return ['blocks must be a list']
     errors = []
@@ -69,7 +70,7 @@ def check_blocks(blocks):
         if not isinstance(settings, dict):
             errors.append(f'{where}: settings must be an object')
             continue
-        errors += [f'{where}: {e}' for e in KINDS[block['kind']].check(settings)]
+        errors += [f'{where}: {e}' for e in KINDS[block['kind']].check(settings, Ctx(slug))]
     return errors
 
 
@@ -88,10 +89,12 @@ def check_package(data):
     for key in ('summary', 'hero_image', 'note'):
         if data.get(key) is not None and not isinstance(data[key], str):
             errors.append(f'{key} must be text')
+    if isinstance(data.get('slug'), str) and isinstance(data.get('hero_image'), str):
+        assets.check(data['slug'], data['hero_image'], 'hero_image', errors)
     unknown = set(data) - {'slug', 'kind', 'lang', 'title', 'summary', 'hero_image', 'note', 'blocks'}
     if unknown:
         errors.append(f'unknown keys: {", ".join(sorted(unknown))}')
-    return errors + check_blocks(data.get('blocks', []))
+    return errors + check_blocks(data.get('blocks', []), data.get('slug', ''))
 
 
 def save_version(data):
@@ -142,18 +145,19 @@ def render_blocks(text, user, lang):
     """The blocks this person sees: [{'kind', 'data'}]. A block for another audience, with nothing to show or that
     fails to load is left out (and a failure logged), so one block never breaks the page."""
     signed_in = user is not None
+    ctx = Ctx(text.page.slug, user, lang)
     out = []
     for n, block in enumerate(text.blocks, 1):
         audience = block.get('audience', 'all')
         if (audience == 'signed_in' and not signed_in) or (audience == 'signed_out' and signed_in):
             continue
         try:
-            data = KINDS[block['kind']].load(block.get('settings', {}), user, lang)
+            data = KINDS[block['kind']].load(block.get('settings', {}), ctx)
         except Exception:
             log.exception('Block %s (%s) on page %s failed to load', n, block.get('kind'), text.page.slug)
             continue
         if data is not None:
-            out.append({'kind': block['kind'], 'data': data})
+            out.append({'kind': block['kind'], 'data': data, 'n': n})
     return out
 
 

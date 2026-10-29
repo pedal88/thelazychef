@@ -2,6 +2,7 @@
 and publishing, what each person sees, the home page and its fallback to Discover, and the sandboxed embeds."""
 import json
 import os
+import shutil
 import sys
 import unittest
 
@@ -52,6 +53,8 @@ class ContentTests(unittest.TestCase):
         db.session.remove()
         db.drop_all()
         self.ctx.pop()
+        for slug in ('cast-iron', 'pans', 'frying-pans'):  # images the tests uploaded (local storage)
+            shutil.rmtree(os.path.join(ROOT, 'static', 'content', slug), ignore_errors=True)
 
     def login(self, email):
         self.client.post('/login', data={'email': email, 'password': 'pw'})
@@ -212,6 +215,77 @@ class ContentTests(unittest.TestCase):
         html = self.client.get('/guides/cast-iron').get_data(as_text=True)
         self.assertIn('sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"', html)
         self.assertIn(f'/content/interactive/{embed.id}', html)
+
+    # --- images, compare and the task picker ---
+
+    def upload(self, slug, *names):
+        from routes._shared import get_storage
+        from services.content import assets
+        for name in names:
+            assets.save(slug, name, b'<svg xmlns="http://www.w3.org/2000/svg"/>', get_storage())
+        db.session.commit()
+
+    def test_images_are_named_per_page(self):
+        from services.content import assets
+        errors = check_blocks([{'kind': 'text', 'settings': {'markdown': '![A pan](pan.svg)'}}], 'cast-iron')
+        self.assertIn('no image "pan.svg" uploaded for "cast-iron"', ' '.join(errors))
+        self.upload('cast-iron', 'pan.svg')
+        first = assets.find('cast-iron', 'pan.svg').url
+        self.assertTrue(first.startswith('/static/content/cast-iron/pan-'))
+        text = save_version(guide(hero_image='pan.svg', blocks=[{'kind': 'text', 'settings': {'markdown': '![A pan](pan.svg)'}}]))
+        self.assertIn(f'src="{first}"', render_blocks(text, None, 'en')[0]['data']['html'])
+        # The same name again: a new address, the name stays
+        from routes._shared import get_storage
+        assets.save('cast-iron', 'pan.svg', b'<svg xmlns="http://www.w3.org/2000/svg" id="2"/>', get_storage())
+        self.assertNotEqual(assets.find('cast-iron', 'pan.svg').url, first)
+        with self.assertRaises(ValueError):
+            assets.save('cast-iron', 'Bad Name.exe', b'x', get_storage())
+
+    def test_compare_checks_every_score(self):
+        settings = {'criteria': [{'key': 'heat', 'label': 'Holds heat'}, {'key': 'care', 'label': 'Easy care'}],
+                    'items': [{'name': 'Cast iron', 'scores': {'heat': 5, 'care': 2}, 'image': 'cast-iron.svg'},
+                              {'name': 'Non-stick', 'scores': {'heat': 6}}]}
+        text = ' '.join(check_blocks([{'kind': 'compare', 'settings': settings}], 'pans'))
+        self.assertIn('Non-stick: scores must give each of heat, care a whole number from 0 to 5', text)
+        self.assertIn('Cast iron: image: no image "cast-iron.svg"', text)
+        self.upload('pans', 'cast-iron.svg')
+        settings['items'][1]['scores'] = {'heat': 2, 'care': 4}
+        self.assertEqual(check_blocks([{'kind': 'compare', 'settings': settings}], 'pans'), [])
+        page = save_version(guide(slug='pans', blocks=[{'kind': 'compare', 'settings': dict(settings, layout='table')}]))
+        data = render_blocks(page, None, 'en')[0]['data']
+        self.assertEqual([s['pct'] for s in data['rows'][0]['scores']], [100, 40])
+        self.assertTrue(data['rows'][0]['image'].startswith('/static/content/pans/cast-iron-'))
+
+    def test_task_picker(self):
+        tasks = [{'label': 'Steak', 'answer': 'Cast iron', 'why': 'It holds heat.'},
+                 {'label': 'Eggs', 'answer': 'Non-stick', 'why': 'They slide off.', 'colour': 'red'}]
+        self.assertIn('task 2 takes label', ' '.join(check_blocks([{'kind': 'task_picker', 'settings': {'tasks': tasks}}])))
+        del tasks[1]['colour']
+        publish(save_version(guide(blocks=[{'kind': 'task_picker', 'settings': {'title': 'What are you cooking?', 'tasks': tasks}}])))
+        db.session.commit()
+        html = self.client.get('/guides/cast-iron').get_data(as_text=True)
+        self.assertIn('name="tp-1" value="1" checked', html)
+        self.assertIn('They slide off.', html)
+
+    def test_the_pilot_guide_is_a_valid_package(self):
+        """docs/content/frying-pans: the example every new guide can start from"""
+        folder = os.path.join(ROOT, 'docs', 'content', 'frying-pans')
+        with open(os.path.join(folder, 'frying-pans.json'), encoding='utf-8') as f:
+            data = json.load(f)
+        images = sorted(n for n in os.listdir(folder) if n.endswith('.svg'))
+        self.assertEqual(images, ['carbon-steel.svg', 'cast-iron.svg', 'ceramic.svg', 'non-stick.svg', 'stainless-steel.svg'])
+        self.assertIn('no image "cast-iron.svg"', ' '.join(check_blocks(data['blocks'], data['slug'])))
+        self.login('admin@test')
+        with self.client as c:
+            from io import BytesIO
+            c.post('/admin/pages/images', data={'slug': 'frying-pans', 'images': [
+                (BytesIO(open(os.path.join(folder, n), 'rb').read()), n) for n in images]}, content_type='multipart/form-data')
+        self.assertEqual(check_blocks(data['blocks'], data['slug']), [])
+        publish(save_version(data))
+        db.session.commit()
+        html = self.client.get('/guides/frying-pans').get_data(as_text=True)
+        for part in ('Five pans, the same six questions', 'The heat store', 'What are you cooking?', 'Looking after them'):
+            self.assertIn(part, html)
 
 
 if __name__ == '__main__':

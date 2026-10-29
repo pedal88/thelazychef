@@ -560,3 +560,16 @@ class PageEmbed(db.Model):
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     html: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+
+
+class ContentAsset(db.Model):
+    """An image a page shows, uploaded in Admin -> Pages under the page's slug and named in its package by file name
+    ("cast-iron.svg"), so Claude can write the package before the images are uploaded (services/content/assets.py).
+    Uploading the same name again replaces it: the file gets a new address, the name stays."""
+    __tablename__ = 'content_asset'
+    __table_args__ = (UniqueConstraint('slug', 'name', name='uq_content_asset_name'),)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    slug: Mapped[str] = mapped_column(String(120), index=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(120), nullable=False)
+    url: Mapped[str] = mapped_column(String(500), nullable=False)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow, nullable=False)

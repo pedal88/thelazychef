@@ -1,0 +1,29 @@
+{# "What are you cooking?" (services/content/blocks.TaskPicker): radio buttons, so it works without script; the
+   chosen job's answer is shown beside the jobs on a wide screen, under them on a phone (static/css/content.css) #}
+{% set d = b.data %}
+{% include 'blocks/_row_head.html' %}
+<div class="tp">
+  <fieldset class="tp-jobs">
+    <legend class="sr-only">{{ d.title or 'Choose what you are cooking' }}</legend>
+    {% for t in d.tasks %}
+    <label class="tp-job"><input type="radio" name="tp-{{ b.n }}" value="{{ loop.index }}" {{ 'checked' if loop.first }}>
+      <span><b>{{ t.label }}</b>{% if t.hint %}<small>{{ t.hint }}</small>{% endif %}</span></label>
+    {% endfor %}
+  </fieldset>
+  <div class="tp-answers">
+    {% for t in d.tasks %}
+    <div class="tp-answer" data-for="{{ loop.index }}" aria-live="polite">
+      <p class="tp-eyebrow">Our pick</p>
+      <p class="tp-big">{{ t.answer }}</p>
+      <p class="tp-why">{{ t.why }}</p>
+      {% if t.tip or t.cost %}
+      <div class="tp-two">
+        {% if t.tip %}<div><p class="tp-eyebrow">Tip</p><p>{{ t.tip }}</p></div>{% endif %}
+        {% if t.cost %}<div><p class="tp-eyebrow">What you give up</p><p>{{ t.cost }}</p></div>{% endif %}
+      </div>
+      {% endif %}
+      {% if t.alt %}<p class="tp-alt"><b>Also good:</b> {{ t.alt }}{% if t.alt_why %}, {{ t.alt_why }}{% endif %}</p>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
