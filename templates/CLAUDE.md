@@ -48,7 +48,7 @@ One page, `recipe_v2_make.html`, from `services/recipe_v2/view.page`: the overvi
   the list.
 - What the cook saved there comes back the next time (`mine` from `recipe_detail`; `components/overview_layouts.html`):
   the note and stars as a card above the ingredients, and a note button among the floating controls while cooking,
-  all of it in the sheet at `#more-mine`. The cook's own photos are not shown until asked for: a quiet "Your photo"
+  all of it in the sheet at `#more-mine`, where Edit opens the feedback fields filled in (`static/js/my_note.js`). The cook's own photos are not shown until asked for: a quiet "Your photo"
   on the AI image (which stays the dish's picture) and in `#more-mine` opens them in `#sheet-photo`; the Made list's
   card has only a small mark.
 - `docs/prototypes/*.html` are the prototypes the views were built from; they are not served by the app.
