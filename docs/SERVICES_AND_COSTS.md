@@ -26,7 +26,7 @@ USDA values, `scripts/ingredient_nutrition.py`).
 | Cloud SQL | Postgres `lazy-chef-db-eu` (europe-north2), with pgvector | `database/db_connector.py` (Cloud SQL Python Connector + pg8000) |
 | Cloud Storage | Bucket `thelazychef-assets`: dish images (`recipes/`), ingredient symbols (`pantry/symbols/`), category and cuisine symbols (`pantry/categories/`, `pantry/cuisines/`) | `services/storage_service.py` (`get_storage()` in routes) |
 | Cloud Tasks | Queue `recipe-generation` (europe-west1): recipe generation, the pantry job and the image job | `services/recipe_v2/tasks.py` (REST calls with google.auth, no client library) |
-| Secret Manager | `GOOGLE_API_KEY`, `ANTHROPIC_API_KEY`, `DB_PASS`, `SECRET_KEY`, mounted into Cloud Run by the deploy | `deploy.yaml` (`--update-secrets`); rotation: `docs/runbooks/ROTATE_SECRETS.md` |
+| Secret Manager | `GOOGLE_API_KEY`, `ANTHROPIC_API_KEY`, `DB_PASS`, `SECRET_KEY`, `CONTENT_API_KEY`, mounted into Cloud Run by the deploy | `deploy.yaml` (`--update-secrets`); rotation: `docs/runbooks/ROTATE_SECRETS.md` |
 | Artifact Registry | Docker images (europe-north2) | `deploy.yaml` |
 | Workload Identity Federation | GitHub Actions authenticates to Google without a key | `deploy.yaml`, `scripts/setup_wif.sh` |
 
@@ -63,6 +63,7 @@ Read by the app (all listed in `.env.example`):
 | `FLASK_DEBUG` | no | Debug mode for `python app.py` |
 | `GOOGLE_API_KEY` | yes (app.py checks it) | Gemini. Scripts that do not call Gemini set a dummy value |
 | `ANTHROPIC_API_KEY` | to generate recipes | Claude |
+| `CONTENT_API_KEY` | for the content API | The key Claude Code sends content drafts with (`/api/content`, `docs/CONTENT.md`); without it the API answers 401 |
 | `DB_BACKEND` | no | `local` (SQLite, default) or `cloudsql` |
 | `DATABASE_URL` | no | Overrides the database URL (tests use `sqlite://`; a local Postgres with `postgresql+pg8000://…`) |
 | `INSTANCE_CONNECTION_NAME`, `DB_USER`, `DB_PASS`, `DB_NAME` | with `cloudsql` | Cloud SQL connection |

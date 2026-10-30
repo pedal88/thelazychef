@@ -36,7 +36,8 @@ to make one. Decided 29.10.2026; the old Learn articles and collections were rem
 
 ## The content package
 
-What Claude makes, pasted in Admin -> Pages -> Import. It becomes a draft version; nothing is shown until published.
+What Claude makes, sent with the content API (below) or pasted in Admin -> Pages -> Import. It becomes a draft
+version; nothing is shown until published.
 
 ```json
 {
@@ -95,13 +96,42 @@ origin: no cookies, no access to the app, and `localStorage` throws (wrap it in 
 the page reports. A Claude Design canvas is not self-contained (it needs its runtime): ask Claude for a standalone HTML
 version of the board.
 
+## The content API
+
+Claude Code sends content to production as drafts with `scripts/content.py`, so nothing is pasted. It calls
+`/api/content` (`routes/content_api_routes.py`) with the key in `CONTENT_API_KEY` (Secret Manager in production; on
+Pål's MacBook in the Keychain item `thelazychef-content-api`). The API makes drafts only: publishing stays a click by
+Pål in Admin -> Pages.
+
+```bash
+python -m scripts.content pages                                     # every page, its versions, which is live
+python -m scripts.content get frying-pans --lang no -o frying-pans.no.json   # the newest version (--live: what is shown)
+python -m scripts.content push docs/content/knives/knives.en.json   # the images next to it, then a draft
+python -m scripts.content interactive board.html --title "Knife picker"     # prints the block to use
+```
+
+`push` uploads the images the package names that lie in its folder, then the package, and prints the preview and
+publish addresses. A refused package prints the reasons. `get` is how Claude starts from what is in the app (Pål may
+have edited a version in Admin -> Pages) rather than from the file in `docs/content/`.
+
+| Endpoint | What |
+|---|---|
+| `GET /api/content/pages` | Every page with its versions per language |
+| `GET /api/content/pages/<slug>?lang=&version=&live=1` | One version as a package, its preview address and the page's images |
+| `POST /api/content/packages` | A package (JSON) -> a draft version |
+| `POST /api/content/pages/<slug>/images` | Images (multipart `images`) for a page |
+| `POST /api/content/interactives` | `{"title", "html"}` -> an embed id and its block |
+
 ## Working on content with Claude
 
 1. Pål says what to make (topic, formats, images).
-2. Claude writes the package and makes its images (and an interactive if one is needed), with ids checked against
-   the app.
-3. Pål uploads the images, imports the package, previews it on a phone and a wide screen, and asks for changes; each round is a new version.
-4. Publish. A Norwegian version is a package with `"lang": "no"`, made from the English one and read before publishing.
+2. Claude writes the package in `docs/content/<slug>/` and makes its images (and an interactive if one is needed),
+   with ids checked against the app, then sends it with `python -m scripts.content push`.
+3. Pål previews the draft on a phone and a wide screen (the address `push` prints) and asks for changes; Claude pushes
+   each round as a new version.
+4. Pål publishes in Admin -> Pages. A Norwegian version is a package with `"lang": "no"`, made from the English one
+   and read before publishing.
+5. Commit the files in `docs/content/` in a PR, so the repo keeps what is shown.
 
-Coming next (not built yet): a way for Claude Code to send a package as a draft without pasting, ingredient and
-equipment links, and "Read more" on recipes.
+Coming next (not built yet): a language switch for visitors and a translation flow, ingredient and equipment links,
+and "Read more" on recipes.
