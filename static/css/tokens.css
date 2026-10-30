@@ -67,6 +67,8 @@
   --color-serve-soft: rgb(var(--serve-50));
   --color-serve-ink: rgb(var(--serve-800));
   --color-pencil: #4b4f49;       /* the hand-drawn river delta */
+  /* The metro map's lines, one per part: on the recipe page (cook_views.css) and the social slides (social.css) */
+  --lane-0: #0f766e; --lane-1: #7c3aed; --lane-2: #be185d; --lane-3: #475569;
 
   /* Icons: the stroke of the line icons (the icon set to come) */
   --icon-stroke: 2;

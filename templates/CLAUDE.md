@@ -15,8 +15,12 @@ share one look: paper surfaces, thin lines, mono labels, serif titles, and line 
 - `static/icons/icons.svg`: the line icon sprite (Lucide). In templates `{{ icon('pot') }}`
   (`routes/_shared.icon`); add a symbol to the sprite to add an icon. No emoji in the interface.
 - `templates/components/`: shared macros. `cards.html` (`recipe_preview_card`), `site_menu.html` (the menu, drawn
-  from `routes/_shared.MENU`), `admin_tools.html` (the floating admin chip on a recipe), `look_switch.html` (the
-  admins' switch between image style trials).
+  from `routes/_shared.MENU`), `admin_tools.html` (the floating admin chip on a recipe), `trial_chip.html` (the admin
+  chip with the style trial's look on every other page, from `base.html`), `look_switch.html` (the look switch in the
+  menu's Admin group).
+- The style trial (`static/css/themes.css`, temporary): a look's colours and fonts, and what makes it more than them
+  (headings, the main button, lines), for every page and the social slides alike. Kept on the device; visitors who
+  have not chosen one see today's look.
 
 ## The recipe page
 

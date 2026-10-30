@@ -3,7 +3,7 @@
 - Blueprints split out of the old `app.py` use `FlatBlueprint` (`_flat.py`) so their endpoint names stay un-prefixed:
   `url_for('recipes_list')`, `url_for('recipe_detail', recipe_id=…)`. Newer areas use a normal `Blueprint` and are
   prefixed: `recipe_v2.*` (New recipe, batch, images, the Cloud Tasks endpoints), `queue.*`, `chefs.*` (the public
-  chef pages), `content.*` (the home page, guides and Admin -> Pages), `ingredients_mgmt.*` (admin ingredients), `notes.*` (admin notes on recipes). All are registered in `app.py`.
+  chef pages), `content.*` (the home page, guides and Admin -> Pages), `content_api.*` (`/api/content`, drafts from Claude Code), `ingredients_mgmt.*` (admin ingredients), `notes.*` (admin notes on recipes). All are registered in `app.py`.
 - Never import from `app` here (circular import). Shared helpers are in `_shared.py`: `get_storage()`,
   `get_recipe_image_url()`, `viewer_is_admin()`, `icon()` (the line icon sprite), and `MENU` / `site_menu()`, the one
   list the top bar and the phone menu are drawn from (add a page to the menu there).
@@ -34,6 +34,8 @@ images `/new-recipe/v2/images`, Recalculate), `admin_recipes_routes` (Recipes Ma
   exceptions (login, register, a read-only search that uses POST).
 - `/internal/tasks/…` (in `recipe_v2_routes.py`) are called by Cloud Tasks, not people: they check the queue's OIDC
   token with `tasks.verified` and return 401 otherwise.
+- `/api/content/…` (`content_api_routes.py`) is for Claude Code, not people: `key_required` checks `CONTENT_API_KEY`
+  and returns 401 otherwise. It makes drafts only; publishing stays in Admin -> Pages.
 - Drafts and pending ingredients must not leak to visitors (`tests/test_public_visibility.py`):
   check `status == 'approved'` or `viewer_is_admin()`.
 - Errors shown to users go through `utils/ai_errors.friendly_ai_error`; never a raw Google or Anthropic message.

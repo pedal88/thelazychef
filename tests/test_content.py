@@ -322,5 +322,79 @@ class ContentTests(unittest.TestCase):
         self.assertIn('href="/guides/frying-pans"', html)
         self.assertIn('href="/guides/knives"', html)
 
+    # --- the content API (routes/content_api_routes.py, scripts/content.py) ---
+
+    def api(self, method, path, key='test-content-key', **kw):
+        headers = {'Authorization': f'Bearer {key}'} if key else {}
+        return self.client.open(f'/api/content{path}', method=method, headers=headers, **kw)
+
+    def with_key(self):
+        os.environ['CONTENT_API_KEY'] = 'test-content-key'
+        self.addCleanup(os.environ.pop, 'CONTENT_API_KEY', None)
+
+    def test_the_api_needs_its_key(self):
+        os.environ.pop('CONTENT_API_KEY', None)
+        self.assertEqual(self.api('GET', '/pages').status_code, 401)  # no key set: the API is off
+        self.with_key()
+        self.assertEqual(self.api('GET', '/pages', key=None).status_code, 401)
+        self.assertEqual(self.api('POST', '/packages', key='wrong', json=guide()).status_code, 401)
+        self.login('admin@test')  # an admin's login is not the key
+        self.assertEqual(self.api('GET', '/pages', key=None).status_code, 401)
+        self.assertEqual(self.api('GET', '/pages').status_code, 200)
+
+    def test_the_api_makes_drafts_and_never_publishes(self):
+        from io import BytesIO
+        self.with_key()
+        package = guide(hero_image='cast-iron.svg')
+        resp = self.api('POST', '/packages', json=package)
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn('no image "cast-iron.svg"', ' '.join(resp.get_json()['errors']))
+        resp = self.api('POST', '/pages/cast-iron/images', content_type='multipart/form-data',
+                        data={'images': [(BytesIO(b'<svg xmlns="http://www.w3.org/2000/svg"/>'), 'cast-iron.svg')]})
+        self.assertEqual(list(resp.get_json()['saved']), ['cast-iron.svg'])
+        resp = self.api('POST', '/packages', json=package)
+        self.assertEqual(resp.status_code, 201)
+        body = resp.get_json()
+        self.assertEqual((body['version'], body['published']), (1, False))
+        self.assertIn('/admin/pages/text/', body['preview'])
+        self.assertEqual(self.client.get('/guides/cast-iron').status_code, 404)  # a draft until Pål publishes it
+        self.assertEqual(self.api('GET', '/pages/cast-iron?live=1').status_code, 404)
+        publish(find_page('cast-iron').texts[0])
+        db.session.commit()
+        self.api('POST', '/packages', json=dict(package, title='Cast iron, again'))
+        got = self.api('GET', '/pages/cast-iron').get_json()
+        self.assertEqual((got['version'], got['package']['title']), (2, 'Cast iron, again'))
+        self.assertEqual(self.api('GET', '/pages/cast-iron?live=1').get_json()['version'], 1)
+        self.assertIn('cast-iron.svg', got['images'])
+        langs = self.api('GET', '/pages').get_json()['pages'][0]['langs']
+        self.assertEqual([(v['version'], v['published']) for v in langs['en']], [(2, False), (1, True)])
+        resp = self.api('POST', '/interactives', json={'title': 'Picker', 'html': '<p>Hi</p>'})
+        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(db.session.get(PageEmbed, resp.get_json()['id']).html, '<p>Hi</p>')
+
+    def test_the_script_pushes_a_package_with_its_images(self):
+        """scripts/content.py push: the images named in the package that lie next to it go first."""
+        import tempfile
+        from unittest import mock
+        from scripts import content as script
+        self.with_key()
+        folder = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, folder)
+        with open(os.path.join(folder, 'cast-iron.svg'), 'w') as f:
+            f.write('<svg xmlns="http://www.w3.org/2000/svg"/>')
+        with open(os.path.join(folder, 'cast-iron.json'), 'w') as f:
+            json.dump(guide(hero_image='cast-iron.svg'), f)
+
+        def request(method, url, headers, timeout, files=None, params=None, json=None):
+            data = {'images': [(f, name) for _, (name, f) in files]} if files else None
+            resp = self.client.open('/' + url.split('://', 1)[1].split('/', 1)[1], method=method, headers=headers,
+                                    data=data, query_string=params, json=json)
+            return mock.Mock(status_code=resp.status_code, json=resp.get_json)
+        with mock.patch.object(script.requests, 'request', request), mock.patch('builtins.print'):
+            script.push(os.path.join(folder, 'cast-iron.json'))
+        text = find_page('cast-iron').texts[0]
+        self.assertEqual((text.hero_image, text.published_at), ('cast-iron.svg', None))
+
+
 if __name__ == '__main__':
     unittest.main()

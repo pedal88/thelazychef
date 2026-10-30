@@ -236,6 +236,8 @@
 
         {% block content %}{% endblock %}
     </main>
+    {# The admins' chip with the style trial, on every page; a recipe page has its own (components/recipe_head.html) #}
+    {% block trial %}{% if current_user.is_authenticated and current_user.is_admin %}{% include "components/trial_chip.html" %}{% endif %}{% endblock %}
 
     <!-- Footer -->
     <footer class="bg-slate-50 border-t border-slate-200 mt-auto print:hidden">

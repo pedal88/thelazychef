@@ -59,6 +59,8 @@ If Python 3.13 isn't available, say so and rely on CI rather than claiming a loc
   `gcloud` writes, scripts with `--apply`) without Pål's explicit approval for that PR or run.** Opening PRs is fine.
 - Migrations run against the production database. Point them out clearly in the PR, and never write one that drops
   or rewrites data without asking; recommend a backup first.
+- Content drafts are the exception: when Pål asks for content (a guide, the home page), Claude Code may send it to
+  production as a draft with `python -m scripts.content push` (`docs/CONTENT.md`). Publishing is always Pål's click.
 - Production scripts run on Pål's other machine (this one usually has no production credentials): give him the whole
   command, with `cd` and `git fetch`/`checkout` of `origin/main` first, as `docs/OPERATIONS.md` shows.
 - Trivy blocks the deploy on fixable HIGH/CRITICAL CVEs: bump the pin in `requirements.txt` to the fixed version and

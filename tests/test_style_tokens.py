@@ -51,6 +51,20 @@ class LookTrialTests(unittest.TestCase):
         self.assertTrue(all(fonts.startswith('family=') for fonts in LOOK_FONTS.values()))
         self.assertIn('LOOK_FONTS|tojson', read('templates', 'base.html'))
 
+    def test_the_site_and_the_posts_share_each_looks_headings_buttons_and_lines(self):
+        themes, social = read('static', 'css', 'themes.css'), read('static', 'css', 'social.css')
+        self.assertNotIn('data-look', social)  # a look's rules are in themes.css only, for the pages and the slides
+        for look in 'cdef':
+            self.assertRegex(themes, r':root\[data-look="%s"\] \{ --look-title-weight: \d+;' % look)
+        for heading in ('.rv2 h1', '.lib-head h1', '.rcard h3', '.pg-head h1', '.gx-head h1', '.slide .title'):
+            self.assertIn(heading, themes)
+        # the metro map's line colours: one set, in the tokens, for the recipe page's map and the slides
+        tokens = read('static', 'css', 'tokens.css')
+        for i in range(4):
+            self.assertRegex(tokens, rf'--lane-{i}: #[0-9a-f]{{6}};')
+        for name in ('social.css', 'cook_views.css'):
+            self.assertNotRegex(read('static', 'css', name), r'--lane(-\d)?:\s*#', name)
+
 
 class IconTests(unittest.TestCase):
     def test_the_sprite_is_valid_and_has_every_icon_the_templates_use(self):

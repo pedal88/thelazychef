@@ -213,7 +213,8 @@ def inches(cm):
     return str(round(i)) if i >= 4 else _quarters(max(i, 0.25))
 
 
-NUM = r'(?:\d+ ?)?[¼½¾⅓⅔⅛]|\d+ \d+/\d+|\d+/\d+|\d+(?:[.,]\d+)?'  # "1½" and "1 1/2" before "1" on its own
+# "1½" and "1 1/2" before "1" on its own; one group, so the alternatives stay inside it wherever NUM is used
+NUM = r'(?:(?:\d+ ?)?[¼½¾⅓⅔⅛]|\d+ \d+/\d+|\d+/\d+|\d+(?:[.,]\d+)?)'
 DASH = r'\s*[–-]\s*'
 TEMP = re.compile(rf'(?P<a>{NUM})(?:{DASH}(?P<b>{NUM}))?\s*°\s*(?P<u>[CF])\b')
 LENGTH = re.compile(rf'(?P<a>{NUM})(?:{DASH}(?P<b>{NUM}))?(?:\s*[×x]\s*(?P<c>{NUM}))?\s*(?P<u>cm|mm)\b')

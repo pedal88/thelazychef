@@ -171,3 +171,32 @@ gh secret delete SECRET_KEY --repo pedal88/thelazychef
 ## Senere bytter
 
 Når alt ligger i Secret Manager, er et bytte enklere: legg til en ny versjon (steg 2), og test den med `generateContent`, og lag en ny revisjon så alle instanser leser `latest` (`gcloud run services update lazy-chef-app --region europe-west1 --update-labels=rotated=ÅÅÅÅ-MM-DD`). For databasepassordet kjøres steg 4 B og C.
+
+## Nøkkelen til innholds-API-et (`CONTENT_API_KEY`)
+
+Claude Code på MacBooken sender guider og forsiden som utkast med denne nøkkelen (`docs/CONTENT.md`, «The content API»). Den ligger i Secret Manager og i Keychain på MacBooken, og vises aldri i terminalen. Uten den svarer API-et 401, og ingenting annet i appen påvirkes.
+
+Første gang, før PR-en som la den til i `deploy.yaml` merges (ellers feiler deployen):
+
+1. Mac mini: lag nøkkelen og gi tjenestekontoen tilgang (`SA` som i steg 3):
+
+   ```bash
+   openssl rand -hex 32 | tr -d '\n' | gcloud secrets create CONTENT_API_KEY --data-file=- --project=thelazychefai-prod
+   gcloud secrets add-iam-policy-binding CONTENT_API_KEY --member=serviceAccount:SA --role=roles/secretmanager.secretAccessor --format='value(etag)' --project=thelazychefai-prod
+   ```
+
+2. Mac mini: kopier den (Universal Clipboard tar den med til MacBooken):
+
+   ```bash
+   gcloud secrets versions access latest --secret=CONTENT_API_KEY --project=thelazychefai-prod | pbcopy
+   ```
+
+3. MacBook: legg den i Keychain. Kommandoen spør etter passordet; lim inn med `Cmd+V`, to ganger:
+
+   ```bash
+   security add-generic-password -a "$USER" -s thelazychef-content-api -w
+   ```
+
+4. Merge PR-en. Etter deployen, på MacBook: `python -m scripts.content pages` skal liste sidene.
+
+Bytte senere: legg til en ny versjon (`openssl rand -hex 32 | tr -d '\n' | gcloud secrets versions add CONTENT_API_KEY --data-file=-`), lag en ny revisjon som under «Senere bytter», og bytt Keychain-oppføringen på MacBooken (`security add-generic-password -U -a "$USER" -s thelazychef-content-api -w`).

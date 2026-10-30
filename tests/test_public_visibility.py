@@ -72,6 +72,15 @@ class PublicVisibilityTests(unittest.TestCase):
     def _login_admin(self):
         self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
 
+    def test_admins_have_the_style_trial_chip_on_every_page_and_one_on_a_recipe(self):
+        self.assertNotIn('class="trialbar"', self.client.get('/recipes').get_data(as_text=True))
+        self._login_admin()
+        for url in ('/', '/recipes', f'/recipe/{self.approved.id}'):
+            with self.subTest(url=url):
+                html = self.client.get(url).get_data(as_text=True)
+                self.assertEqual(html.count('class="trialbar"'), 1)
+                self.assertIn('data-look-switch', html)
+
     def _shows_recipe(self, url):
         return self.client.get(url).status_code == 200
 

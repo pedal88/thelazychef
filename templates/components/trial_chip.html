@@ -1,0 +1,11 @@
+{# The admin chip on every page but a recipe's (that one, with the recipe's own trials, is components/recipe_head.html):
+   the style trial's look, so a look can be tried across the whole site. Admins only; styled in static/css/themes.css,
+   and base.html's script switches the look and keeps the chip open or closed. #}
+<details class="trialbar" data-trial>
+  <summary aria-label="Admin tools and style trial"><span class="tdot"></span>Admin <span class="tstate"><span class="tlook"></span></span></summary>
+  <div class="tpanel">
+  <div class="tgroup" data-look-switch><span class="tlabel">Look</span>
+    {%- for key, label, name in [('today', 'Today', "Today's look"), ('c', 'C', 'C Hvit benk'), ('d', 'D', 'D Safran'), ('e', 'E', 'E Porselen'), ('f', 'F', 'F Washi')] %}<button type="button" data-look="{{ key }}" title="{{ name }}" aria-pressed="false">{{ label }}</button>{% endfor -%}
+  </div>
+  </div>
+</details>
