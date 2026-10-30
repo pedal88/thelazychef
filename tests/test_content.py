@@ -80,13 +80,15 @@ class ContentTests(unittest.TestCase):
             {'kind': 'recipes', 'settings': {'ids': [999]}},
             {'kind': 'recipes', 'settings': {'filter': {'time': '7'}}},
             {'kind': 'links', 'settings': {'items': [{'to': 'page:nowhere'}, {'to': 'admin_recipes_management'}]}},
+            {'kind': 'links', 'settings': {'style': 'carousel', 'items': [{'to': 'discover'}]}},
             {'kind': 'interactive', 'settings': {'embed': 'nope', 'title': 'x'}},
             {'kind': 'video', 'settings': {}},
             {'kind': 'text', 'settings': {'markdown': 'x'}, 'audience': 'everyone'},
         ])
         text = '\n'.join(errors)
         for part in ('no approved recipe with id 999', 'filter time: "7"', 'no page "nowhere"',
-                     'item 2: "to" must be', 'id of an uploaded interactive', 'Block 5: kind must be', 'audience must be'):
+                     'item 2: "to" must be', 'style must be "tiles" or "cards"', 'id of an uploaded interactive',
+                     'Block 6: kind must be', 'audience must be'):
             self.assertIn(part, text)
         with self.assertRaises(ContentError):
             save_version(guide(slug='Not A Slug'))
@@ -292,16 +294,16 @@ class ContentTests(unittest.TestCase):
 
     def test_the_pilot_guide_is_a_valid_package(self):
         """docs/content/frying-pans: the example every new guide can start from"""
-        html, norsk = self._guide('frying-pans', ['carbon-steel.svg', 'cast-iron.svg', 'ceramic.svg', 'non-stick.svg',
-                                                  'stainless-steel.svg'])
+        html, norsk = self._guide('frying-pans', ['carbon-steel.svg', 'cast-iron.svg', 'ceramic.svg', 'cover.svg',
+                                                  'non-stick.svg', 'stainless-steel.svg'])
         for part in ('Five pans, the same six questions', 'The heat store', 'What are you cooking?', 'Looking after them'):
             self.assertIn(part, html)
         self.assertIn('Hva skal du lage?', norsk)
 
     def test_the_knife_guide_is_a_valid_package(self):
         """docs/content/knives: two comparisons (must have, optional), then sharpening as text with its drawings"""
-        html, norsk = self._guide('knives', ['boning-knife.svg', 'bread-knife.svg', 'chefs-knife.svg', 'fillet-knife.svg',
-                                             'honing-steel.svg', 'petty-knife.svg', 'roll-sharpener.svg', 'santoku.svg',
+        html, norsk = self._guide('knives', ['boning-knife.svg', 'bread-knife.svg', 'chefs-knife.svg', 'cover.svg',
+                                             'fillet-knife.svg', 'honing-steel.svg', 'petty-knife.svg', 'roll-sharpener.svg', 'santoku.svg',
                                              'whetstone.svg'])
         for part in ('Must have: the three you need', 'The workhorse', 'Optional: three to add', 'Keeping them sharp',
                      'German or Japanese?'):
@@ -311,7 +313,8 @@ class ContentTests(unittest.TestCase):
 
     def test_the_home_page_points_at_the_guides(self):
         """docs/content/home.json: a tile per published guide"""
-        self._guide('frying-pans', ['carbon-steel.svg', 'cast-iron.svg', 'ceramic.svg', 'non-stick.svg', 'stainless-steel.svg'])
+        self._guide('frying-pans', sorted(n for n in os.listdir(os.path.join(ROOT, 'docs', 'content', 'frying-pans'))
+                                          if n.endswith('.svg')))
         self._guide('knives', sorted(n for n in os.listdir(os.path.join(ROOT, 'docs', 'content', 'knives')) if n.endswith('.svg')))
         with open(os.path.join(ROOT, 'docs', 'content', 'home.json'), encoding='utf-8') as f:
             home = json.load(f)
@@ -321,6 +324,10 @@ class ContentTests(unittest.TestCase):
         html = self.client.get('/').get_data(as_text=True)
         self.assertIn('href="/guides/frying-pans"', html)
         self.assertIn('href="/guides/knives"', html)
+        # as cards, each with its guide's cover drawing and a label
+        self.assertEqual(html.count('class="gcard"'), 2)
+        self.assertIn('Guide · 6 knives', html)
+        self.assertRegex(html, r'class="gcard-img" src="[^"]*knives/cover')
 
     # --- the content API (routes/content_api_routes.py, scripts/content.py) ---
 

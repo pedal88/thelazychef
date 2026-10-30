@@ -5,16 +5,16 @@
   "title": "Tonight",
   "summary": "What to cook tonight.",
   "hero_image": null,
-  "note": "Tiles for the frying pan and knife guides; rows of five, so a wide screen shows one full line",
+  "note": "The guides as cards with their cover drawings; rows of five, so a wide screen shows one full line",
   "blocks": [
     {"kind": "text", "settings": {"style": "intro", "markdown": "# What shall we cook tonight?\n\nPick a dish, get the bowls ready and cook it step by step."}},
     {"kind": "continue", "settings": {"title": "Carry on cooking"}},
     {"kind": "cook_next", "settings": {"title": "Cook next", "limit": 5}, "audience": "signed_in"},
     {"kind": "recipes", "settings": {"title": "Quick tonight", "text": "On the table in 30 minutes or less.", "filter": {"time": "30"}, "sort": "quick", "limit": 5, "more": true}},
     {"kind": "recipes", "settings": {"title": "New dishes", "sort": "new", "limit": 5, "more": true}},
-    {"kind": "links", "settings": {"title": "Guides", "items": [
-      {"to": "page:frying-pans", "text": "Five kinds side by side, and which one for the job in front of you.", "icon": "pot"},
-      {"to": "page:knives", "text": "The three you need, three to add later, and how to keep them sharp.", "icon": "utensils"}
+    {"kind": "links", "settings": {"title": "Guides", "style": "cards", "items": [
+      {"to": "page:frying-pans", "label": "Guide · 5 pans", "text": "Five kinds side by side, and which one for the job in front of you.", "icon": "pot"},
+      {"to": "page:knives", "label": "Guide · 6 knives", "text": "The three you need, three to add later, and how to keep them sharp.", "icon": "utensils"}
     ]}},
     {"kind": "links", "settings": {"title": "Find your way", "items": [
       {"to": "discover"}, {"to": "recipes_list"}, {"to": "explore_galaxy"}, {"to": "explore_ingredient_galaxy"}

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 270" width="480" height="270" fill="none" stroke="#2B2F2C" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="The three knives you need, at the same scale: a chef's knife, a petty knife and a bread knife">
+<rect width="480" height="270" fill="#EEF1EE" stroke="none"></rect>
+<g transform="translate(44 51) scale(1.06)" stroke-width="2.6">
+<path d="M126 10 L26 9.5 Q12 9.5 12 20.5 Q12 31.5 26 31.5 L126 31 Z" fill="#A3A6A1"></path>
+<circle cx="46" cy="20.5" r="2.6" fill="#FFFFFF" stroke-width="1.6"></circle>
+<circle cx="76" cy="20.5" r="2.6" fill="#FFFFFF" stroke-width="1.6"></circle>
+<circle cx="106" cy="20.5" r="2.6" fill="#FFFFFF" stroke-width="1.6"></circle>
+<path d="M126 9 L138 9 L138 37 Q131 37 126 31 Z" fill="#D3D4D0"></path>
+<path d="M138 9 L292 10 Q330 12 350 24 Q300 55 252 56 L150 58 Q140 58 138 52 Z" fill="#E6E7E3"></path>
+<path d="M146 51 L250 49.5 Q300 48.8 338 26" stroke-width="1.4"></path>
+</g>
+<g transform="translate(44 111) scale(1.06)" stroke-width="2.6">
+<path d="M108 15 L24 14.5 Q12 14.5 12 23.5 Q12 32.5 24 32.5 L108 32 Z" fill="#A3A6A1"></path>
+<circle cx="40" cy="23.5" r="2.2" fill="#FFFFFF" stroke-width="1.6"></circle>
+<circle cx="78" cy="23.5" r="2.2" fill="#FFFFFF" stroke-width="1.6"></circle>
+<path d="M108 14 L116 14 L116 36 Q111 36 108 32 Z" fill="#D3D4D0"></path>
+<path d="M116 14 L218 15 Q236 16 246 22 Q222 37 190 38 L124 40 Q117 40 116 36 Z" fill="#E6E7E3"></path>
+<path d="M124 35.5 L190 34 Q218 33.4 238 23" stroke-width="1.4"></path>
+</g>
+<g transform="translate(44 171) scale(1.06)" stroke-width="2.6">
+<path d="M128 11 L26 10.5 Q12 10.5 12 21 Q12 31.5 26 31.5 L128 31 Z" fill="#A3A6A1"></path>
+<path d="M128 9 L346 10 Q358 10.5 358 23 Q358 40 342 40 a4.3 3 0 0 0 -8.6 0 a4.3 3 0 0 0 -8.6 0 a4.3 3 0 0 0 -8.6 0 a4.3 3 0 0 0 -8.6 0 a4.3 3 0 0 0 -8.6 0 a4.3 3 0 0 0 -8.6 0 a4.3 3 0 0 0 -8.6 0 a4.3 3 0 0 0 -8.6 0 a4.3 3 0 0 0 -8.6 0 a4.3 3 0 0 0 -8.6 0 a4.3 3 0 0 0 -8.6 0 a4.3 3 0 0 0 -8.6 0 a4.3 3 0 0 0 -8.6 0 a4.3 3 0 0 0 -8.6 0 a4.3 3 0 0 0 -8.6 0 a4.3 3 0 0 0 -8.6 0 a4.3 3 0 0 0 -8.6 0 a4.3 3 0 0 0 -8.6 0 a4.3 3 0 0 0 -8.6 0 a4.3 3 0 0 0 -8.6 0 a4.3 3 0 0 0 -8.6 0 a4.3 3 0 0 0 -8.6 0 a4.3 3 0 0 0 -8.6 0 a4.3 3 0 0 0 -8.6 0 L134 40 Q128 40 128 34 Z" fill="#E6E7E3"></path>
+</g>
+</svg>

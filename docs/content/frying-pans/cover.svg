@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 270" width="480" height="270" fill="none" stroke="#2B2F2C" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Three frying pans: cast iron, carbon steel and ceramic">
+<rect width="480" height="270" fill="#F5EEE4" stroke="none"></rect>
+<g transform="translate(14 42) scale(0.95)" stroke-width="2.7">
+<path d="M20 42 Q5 40 5 47 Q5 54 20 52" fill="#D3D4D0"></path>
+<path d="M138 39 L196 35 Q207 35 207 44 Q207 53 196 53 L138 53" fill="#D3D4D0"></path>
+<ellipse cx="194" cy="44" rx="5" ry="3.5" fill="#FFFFFF"></ellipse>
+<path d="M18 46 A62 18 0 0 0 142 46 L136 76 A56 13 0 0 1 24 76 Z" fill="#D3D4D0"></path>
+<ellipse cx="80" cy="46" rx="62" ry="18" fill="#E6E7E3"></ellipse>
+<ellipse cx="80" cy="47" rx="54" ry="14" fill="#B9BBB5"></ellipse>
+</g>
+<g transform="translate(244 42) scale(0.95)" stroke-width="2.7">
+<path d="M136 41 L212 18 L215 24 L139 50 Z" fill="#DDE0E3"></path>
+<path d="M18 46 A62 18 0 0 0 142 46 L126 72 A46 11 0 0 1 34 72 Z" fill="#D5D8DC"></path>
+<ellipse cx="80" cy="46" rx="62" ry="18" fill="#E7E9EC"></ellipse>
+<ellipse cx="80" cy="47" rx="57" ry="15.5" fill="#E2D2C1"></ellipse>
+<ellipse cx="80" cy="49" rx="30" ry="7.5" fill="#CDB7A0" stroke-width="1.6"></ellipse>
+<circle cx="132" cy="53" r="2" fill="#2B2F2C" stroke="none"></circle>
+<circle cx="137" cy="51" r="2" fill="#2B2F2C" stroke="none"></circle>
+</g>
+<g transform="translate(128 124) scale(0.95)" stroke-width="2.7">
+<path d="M139 42 L154 41 L154 52 L139 53" fill="#E6E8EA"></path>
+<path d="M154 39 L206 35 Q214 35 214 44 Q214 53 206 53 L154 55 Z" fill="#EAD7C2"></path>
+<path d="M164 45 L202 42.5" stroke-width="1.4"></path>
+<path d="M18 46 A62 18 0 0 0 142 46 L132 74 A52 12 0 0 1 28 74 Z" fill="#CFE6E0"></path>
+<ellipse cx="80" cy="46" rx="62" ry="18" fill="#BFDDD5"></ellipse>
+<ellipse cx="80" cy="47" rx="57" ry="15.5" fill="#FCFAF5"></ellipse>
+</g>
+</svg>
