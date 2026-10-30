@@ -129,6 +129,20 @@ class WeekPostTests(unittest.TestCase):
         self.assertEqual(garlic['also'], ['Tue', 'Wed', 'Thu', 'Fri'])
         self.assertTrue(garlic['shared'])
 
+    def test_one_pantry_item_is_one_thing_to_buy_whatever_the_recipes_call_it(self):
+        names = ['boneless, skinless chicken thighs', 'chicken thighs', 'chicken thighs (skin on)', 'chicken thighs',
+                 'chicken thighs, boned']
+        views = [{'title': f'Dish {i}', 'total': '20 min', 'total_min': 20, 'shop_groups': [
+            {'key': 'meat', 'items': [{'name': name, 'amount': '1', 'img': 'c.webp', 'pantry_id': 'p47'}]},
+            {'key': 'staples', 'items': [{'name': ['ground black pepper', 'black pepper'][i % 2], 'amount': '',
+                                          'img': None, 'pantry_id': 'p9'}]}]} for i, name in enumerate(names)]
+        slides = week.week_slides(views, [None] * 5)
+        shop = slides[1]
+        self.assertEqual([(t['name'], t['times']) for t in shop['tiles']], [('chicken thighs', 5)])
+        self.assertEqual(shop['staples'], ['black pepper'])
+        self.assertEqual(slides[0]['count'], 1)
+        self.assertEqual(slides[3]['tiles'][0]['also'], ['Tue', 'Wed', 'Thu', 'Fri'])
+
     def test_five_chosen_dinners_in_their_order_and_the_caption_names_them(self):
         order = ','.join(str(i) for i in reversed(self.ids))
         first = self.client.get(f'/social/week?ids={order}&slide=4').get_data(as_text=True)

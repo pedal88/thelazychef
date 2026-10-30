@@ -19,7 +19,9 @@ The week (`services/social_week.py`, `/social/week`) is the five approved dinner
 minutes of work that together need the fewest things to buy, staples left out. Fewest alone gives five near-copies of
 one stir-fry, so no two may share more than 40% of their ingredients, no protein (`recipe.protein_type`) may come more
 than twice, and there must be at least three. It is found greedily from each recipe and improved by swaps, so the same
-recipes always give the same week. `?ids=` (`--ids`) sets the five, in that order, instead.
+recipes always give the same week. `?ids=` (`--ids`) sets the five, in that order, instead. On the shopping list one
+pantry item is one thing to buy, under its shortest name, whatever each recipe calls it ("boneless, skinless chicken
+thighs" and "chicken thighs").
 
 The pantry post's numbers are the share of ingredient lines the staples, the 60 and the 100 most used cover in 272
 dishes home cooks make (`scripts/foundation_sample.py`, 22.10.2026). They are about ingredients, not dinners: the

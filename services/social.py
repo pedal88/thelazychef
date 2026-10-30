@@ -58,9 +58,14 @@ def address(size, code=None):
     return f'{base}/{code}' if code else base
 
 
+def buy_key(item):
+    """What makes two shopping lines one thing to buy: the pantry item, else the name as written."""
+    return item.get('pantry_id') or item['name'].lower()
+
+
 def _ingredients(v):
     """The shopping list as tiles, the staples apart: (tiles, staple names)."""
-    tiles = [{'name': s['name'], 'amount': s['amount'], 'img': s['img']}
+    tiles = [{'name': s['name'], 'amount': s['amount'], 'img': s['img'], 'key': buy_key(s)}
              for g in v['shop_groups'] if g['key'] != 'staples' for s in g['items']]
     staples = [s['name'] for g in v['shop_groups'] if g['key'] == 'staples' for s in g['items']]
     return tiles, staples

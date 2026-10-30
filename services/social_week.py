@@ -103,24 +103,31 @@ def pick(c, k=len(WEEK_DAYS)):
 
 def week_slides(views, images, size='ig'):
     """The slides for five recipes' views (services/recipe_v2/view.page) and dish images, in the days' order."""
-    from services.social import _ingredients, columns
+    from services.social import _ingredients, buy_key, columns
     days = []
     for day, view, image in zip(WEEK_DAYS, views, images):
         tiles, staples = _ingredients(view)
         days.append({'day': day, 'title': view['title'], 'total': view['total'], 'total_min': view['total_min'],
                      'image': image, 'tiles': tiles, 'staples': staples})
-    used = Counter(t['name'].lower() for d in days for t in {t['name'].lower(): t for t in d['tiles']}.values())
+    # One thing to buy is one pantry item, whatever each recipe calls it ("chicken thighs", "boneless, skinless
+    # chicken thighs"); the list shows its shortest name
+    used = Counter(k for d in days for k in {t['key'] for t in d['tiles']})
     shop = {}
     for d in days:
         for t in d['tiles']:
-            shop.setdefault(t['name'].lower(), {**t, 'amount': None, 'times': used[t['name'].lower()]})
+            if t['key'] not in shop or len(t['name']) < len(shop[t['key']]['name']):
+                shop[t['key']] = {**t, 'amount': None, 'times': used[t['key']]}
     shop = sorted(shop.values(), key=lambda t: (-t['times'], t['name'].lower()))
     for d in days:
         for t in d['tiles']:
-            t['also'] = [o['day'] for o in days if o is not d and t['name'].lower() in
-                         {x['name'].lower() for x in o['tiles']}]
-            t['shared'] = used[t['name'].lower()] > 1
-    staples = sorted({s for d in days for s in d['staples']})
+            t['also'] = [o['day'] for o in days if o is not d and t['key'] in {x['key'] for x in o['tiles']}]
+            t['shared'] = used[t['key']] > 1
+    staples = {}
+    for view in views:
+        for s in (s for g in view['shop_groups'] if g['key'] == 'staples' for s in g['items']):
+            if buy_key(s) not in staples or len(s['name']) < len(staples[buy_key(s)]):
+                staples[buy_key(s)] = s['name']
+    staples = sorted(set(staples.values()))
     lines = sum(len(d['tiles']) for d in days)
     times = [d['total_min'] for d in days]
     return [

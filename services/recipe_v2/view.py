@@ -231,7 +231,7 @@ def build(recipe, servings=None, plan='calm', system=DEFAULT):
         shop.append({'name': e['name'], 'amount': ' + '.join(fmt_amount(a['amount'], a['unit'], system) for a in e['amounts']),
                      'note': ' · '.join(notes), 'symbol': symbol(found, e['name'], 36 if group == 'staples' else 56),
                      'missing': not e.get('pantry_id') or e['pantry_id'] not in pantry, 'group': group,
-                     'img': found.image_url if found is not None else None})
+                     'img': found.image_url if found is not None else None, 'pantry_id': e.get('pantry_id')})
 
     heated = {x['local_id'] for x in heat_steps(v2)}
     steps = []
