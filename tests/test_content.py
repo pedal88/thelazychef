@@ -353,17 +353,19 @@ class ContentTests(unittest.TestCase):
         self.assertEqual(db.session.get(PageEmbed, resp.get_json()['id']).html, '<p>Hi</p>')
 
     def test_the_script_pushes_a_package_with_its_images(self):
-        """scripts/content.py push: the images named in the package that lie next to it go first."""
+        """scripts/content.py push: the images named in the package or its Markdown that lie next to it go first."""
         import tempfile
         from unittest import mock
         from scripts import content as script
         self.with_key()
         folder = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, folder)
-        with open(os.path.join(folder, 'cast-iron.svg'), 'w') as f:
-            f.write('<svg xmlns="http://www.w3.org/2000/svg"/>')
+        for name in ('cast-iron.svg', 'lid.svg'):
+            with open(os.path.join(folder, name), 'w') as f:
+                f.write('<svg xmlns="http://www.w3.org/2000/svg"/>')
         with open(os.path.join(folder, 'cast-iron.json'), 'w') as f:
-            json.dump(guide(hero_image='cast-iron.svg'), f)
+            json.dump(guide(hero_image='cast-iron.svg', blocks=[
+                {'kind': 'text', 'settings': {'markdown': 'Heavy.\n\n![A lid](lid.svg)'}}]), f)
 
         def request(method, url, headers, timeout, files=None, params=None, json=None):
             data = {'images': [(f, name) for _, (name, f) in files]} if files else None
