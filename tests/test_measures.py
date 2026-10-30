@@ -5,7 +5,8 @@ import unittest
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from services.measures import degrees, fmt_amount, frac, localize_text, system_of, temp, unconverted  # noqa: E402
+from services.measures import (degrees, density, fmt_amount, fmt_total, frac, localize_text, system_of, temp,  # noqa: E402
+                               unconverted)
 
 
 class MetricTests(unittest.TestCase):
@@ -116,6 +117,51 @@ class FreeTextTests(unittest.TestCase):
         self.assertEqual(unconverted('Add 2 cups flour, bake at 350°F in a 9" pan, or 200°'), ['2 cups', '350°F', '9"', '200°'])
         self.assertEqual(unconverted('Sett ovnen på 200 °C og hell i 2 dl'), [])
         self.assertEqual(unconverted(None), [])
+
+
+class Pantry:
+    def __init__(self, name, sub_category=None):
+        self.name, self.sub_category = name, sub_category
+
+
+class VolumeTests(unittest.TestCase):
+    def test_what_us_recipes_measure_by_volume(self):
+        self.assertEqual(density(Pantry('all-purpose flour')), 0.5)
+        self.assertEqual(density(Pantry('brown sugar')), 0.89)
+        self.assertEqual(density(Pantry('unsalted butter')), 0.95)
+        self.assertEqual(density(Pantry('peanut butter')), 1.07)
+        self.assertEqual(density(Pantry('ground cumin', 'ground spices')), 0.5)
+        for name in ('sugar snap peas', 'flour tortillas', 'rice noodles', 'spaghetti', 'chicken thigh'):
+            self.assertIsNone(density(Pantry(name)), name)
+        self.assertIsNone(density(None))
+
+    def test_a_weight_becomes_cups_and_spoons(self):
+        us = lambda g, name, sub=None: fmt_amount(g, 'g', 'us', density(Pantry(name, sub)))  # noqa: E731
+        self.assertEqual(us(250, 'all-purpose flour'), '2 cups')
+        self.assertEqual(us(200, 'white sugar'), '1 cup')
+        self.assertEqual(us(30, 'unsalted butter'), '2 tbsp')
+        self.assertEqual(us(2, 'ground cumin', 'ground spices'), '¾ tsp')
+        self.assertEqual(us(0.05, 'saffron', 'ground spices'), '1 pinch')
+        self.assertEqual(us(400, 'spaghetti'), '14 oz')
+        self.assertEqual(fmt_amount(250, 'g', 'metric', 0.5), '250 g')  # metric keeps the weight
+
+
+class TotalTests(unittest.TestCase):
+    def a(self, *pairs):
+        return [{'amount': n, 'unit': u} for n, u in pairs]
+
+    def test_one_sum_per_kind(self):
+        self.assertEqual(fmt_total(self.a((1, 'dl'), (2, 'tbsp'))), '1⅓ dl')  # in the unit with the largest share
+        self.assertEqual(fmt_total(self.a((1, 'dl'), (2, 'tbsp')), 'us'), '½ cup')
+        self.assertEqual(fmt_total(self.a((1, 'cup'), (1, 'dl'))), '340 ml')  # a US unit's share in ml
+        self.assertEqual(fmt_total(self.a((300, 'g'), (1, 'kg')), 'us'), '2¾ lb')
+        self.assertEqual(fmt_total(self.a((200, 'g'), (1, 'dl')), 'us', 0.5), '2 cups')  # flour weighed and measured
+
+    def test_kinds_and_single_amounts_stay_apart(self):
+        self.assertEqual(fmt_total(self.a((2, 'clove'), (10, 'g'))), '2 cloves + 10 g')
+        self.assertEqual(fmt_total(self.a((1.5, 'tbsp'),)), '1½ tbsp')
+        self.assertEqual(fmt_total(self.a((400, 'g'),), 'us'), '14 oz')
+        self.assertEqual(fmt_total([]), '')
 
 
 class SystemTests(unittest.TestCase):

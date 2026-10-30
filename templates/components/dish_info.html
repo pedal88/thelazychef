@@ -55,6 +55,20 @@
           {% if v.nutrition %}
           <div class="nutrition">
             <p class="eyebrow">Nutrition per serving, approximate</p>
+            {# The label the reader knows: the European one, or for a US reader the US one (its names and order,
+               sodium in mg instead of salt). The grams are the same. #}
+            {% if v.units == 'us' %}
+            <table>
+              <tr><th>Calories</th><td>{{ v.nutrition.kcal }}</td></tr>
+              <tr><th>Total fat</th><td>{{ v.nutrition.fat }} g</td></tr>
+              <tr class="sub"><th>Saturated fat</th><td>{{ v.nutrition.saturated_fat }} g</td></tr>
+              <tr><th>Sodium</th><td>{{ v.nutrition.sodium_mg }} mg</td></tr>
+              <tr><th>Total carbohydrate</th><td>{{ v.nutrition.carbs }} g</td></tr>
+              <tr class="sub"><th>Dietary fiber</th><td>{{ v.nutrition.fiber }} g</td></tr>
+              <tr class="sub"><th>Total sugars</th><td>{{ v.nutrition.sugar }} g</td></tr>
+              <tr><th>Protein</th><td>{{ v.nutrition.protein }} g</td></tr>
+            </table>
+            {% else %}
             <table>
               <tr><th>Energy</th><td>{{ v.nutrition.kcal }} kcal</td></tr>
               <tr><th>Protein</th><td>{{ v.nutrition.protein }} g</td></tr>
@@ -65,6 +79,7 @@
               <tr><th>Fibre</th><td>{{ v.nutrition.fiber }} g</td></tr>
               <tr><th>Salt</th><td>{{ v.nutrition.salt }} g</td></tr>
             </table>
+            {% endif %}
             <p class="hint">From the ingredients as measured; salt and seasoning added to taste are not included.</p>
           </div>
           {% endif %}

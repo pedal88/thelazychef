@@ -1,9 +1,10 @@
-"""Auth Blueprint: login, registration and logout."""
-from flask import flash, redirect, render_template, request, url_for
-from flask_login import current_user, login_user, logout_user
+"""Auth Blueprint: login, registration and logout, and the signed-in user's measuring system."""
+from flask import flash, jsonify, redirect, render_template, request, url_for
+from flask_login import current_user, login_required, login_user, logout_user
 
 from database.models import User, db
 from routes._flat import FlatBlueprint
+from services.measures import SYSTEMS
 from services import funnel
 
 auth_bp = FlatBlueprint("auth", __name__)
@@ -66,3 +67,16 @@ def logout():
     logout_user()
     flash('You have been logged out.', 'info')
     return redirect(url_for('content.home'))
+
+
+@auth_bp.route('/api/me/units', methods=['POST'])
+@login_required
+def set_unit_system():
+    """Keep the measuring system the user chose in the menu (components/unit_switch.html) on the user, so it follows
+    them to other devices. The page sets the cookie itself, for visitors too."""
+    units = (request.get_json(silent=True) or {}).get('units')
+    if units not in SYSTEMS:
+        return jsonify({'error': 'units must be metric or us'}), 400
+    current_user.unit_system = units
+    db.session.commit()
+    return jsonify({'units': units})

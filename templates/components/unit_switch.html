@@ -1,7 +1,9 @@
 {# The measuring system: Metric or US, for amounts and temperatures in the recipes (services/measures.py). Kept in
-   the cookie "units" (unit_system() in routes/_shared.py), which the script in base.html sets before it reloads. #}
+   the cookie "units" (unit_choice() in routes/_shared.py), which the script in base.html sets before it reloads,
+   and for a signed-in user also on the user (/api/me/units). data-units-auto: nobody has chosen yet, so the script
+   picks US once for a browser in a US time zone. #}
 {% macro unit_switch(cls='') %}
-<div class="flex items-center gap-1 {{ cls }}" role="group" aria-label="Units" data-unit-switch>
+<div class="flex items-center gap-1 {{ cls }}" role="group" aria-label="Units" data-unit-switch{{ ' data-units-auto' if not unit_chosen() }}{{ ' data-signed-in' if current_user.is_authenticated }}>
   {%- for key, label in UNIT_SYSTEMS.items() %}
   <button type="button" data-units="{{ key }}" aria-pressed="{{ 'true' if key == unit_system() else 'false' }}"
     class="rounded-full border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-600 hover:border-slate-400 aria-pressed:bg-slate-900 aria-pressed:text-white aria-pressed:border-slate-900">{{ label }}</button>

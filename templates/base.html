@@ -32,6 +32,17 @@
                 link.href = 'https://fonts.googleapis.com/css2?' + FONTS[look] + '&display=swap';
                 document.head.appendChild(link);
             }
+            // Nobody has chosen a measuring system: a browser in a US time zone gets US units, once (a cookie, which the
+            // switch in the menu changes). The recipe page is drawn again in them; other pages have no amounts.
+            document.addEventListener('DOMContentLoaded', function () {
+                if (!document.querySelector('[data-unit-switch][data-units-auto]')) return;
+                var tz = '';
+                try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) { return; }
+                if (!/^(America\/(New_York|Chicago|Denver|Phoenix|Los_Angeles|Anchorage|Juneau|Sitka|Yakutat|Nome|Metlakatla|Adak|Boise|Detroit|Menominee|Indiana\/|Kentucky\/|North_Dakota\/)|Pacific\/Honolulu)/.test(tz)) return;
+                document.cookie = 'units=us; path=/; max-age=31536000; samesite=lax';
+                // only when the cookie stuck, or a browser that blocks cookies would reload for ever
+                if (/^\/recipe\//.test(location.pathname) && /(^|; )units=us/.test(document.cookie)) location.reload();
+            });
             document.addEventListener('DOMContentLoaded', function () {
                 document.querySelectorAll('[data-look-switch] [data-look]').forEach(function (b) {
                     b.setAttribute('aria-pressed', String(b.getAttribute('data-look') === (FONTS[look] ? look : 'today')));
@@ -58,9 +69,12 @@
                     return;
                 }
                 var units = e.target.closest && e.target.closest('[data-unit-switch] [data-units]');
-                if (units) {  // the measuring system (routes/_shared.unit_system), the same way
-                    document.cookie = 'units=' + units.getAttribute('data-units') + '; path=/; max-age=31536000; samesite=lax';
-                    location.reload();
+                if (units) {  // the measuring system (routes/_shared.unit_choice): a cookie, and on the user when signed in
+                    var key = units.getAttribute('data-units');
+                    document.cookie = 'units=' + key + '; path=/; max-age=31536000; samesite=lax';
+                    if (!units.closest('[data-signed-in]')) { location.reload(); return; }
+                    fetch('/api/me/units', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ units: key }) }).catch(function () {}).then(function () { location.reload(); });
                     return;
                 }
                 var eq = e.target.closest && e.target.closest('[data-eq-switch] [data-eq]');

@@ -10,6 +10,7 @@ every migration move ending in the category catalog).
 |---|---|
 | `states.json` | The state catalog: what is done to an ingredient before it goes in (chopped, grated…), with grades, synonyms, the step methods that leave a line in that state, and the drawing signs. Read by `services/recipe_v2/states.py`, the structuring prompt and the validator |
 | `methods.json`, `equipment.json`, `units.json` | Step methods (with `heat`), the equipment bank (role, `exclusive`, `capacity`: the air fryer has 2), units with grams/ml |
+| `us_volume.json` | What US recipes measure by volume although the recipe weighs it (flour, sugar, butter, spices), with grams per ml: rules on the pantry name or sub-category (`services/measures.density`) |
 | `categories.json` | The pantry's main and sub categories, the only allowed values (New ingredient and the pantry job) |
 | `main_protein.json` | The protein labels the recipe filter offers (they must cover what `derive.main_protein` writes) and `symbol_from`, the pantry item whose symbol stands for each label in the galaxy |
 | `graph_metadata.json` | The cuisines (`CUISINES` in `schemas/recipe_v2.py`) with notes for the prompt; retired cuisines |

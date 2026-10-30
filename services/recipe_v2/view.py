@@ -15,7 +15,7 @@ from functools import lru_cache
 from markupsafe import Markup, escape
 
 from database.models import Ingredient, Recipe, RecipeLine, RecipeStep, db
-from services.measures import DEFAULT, fmt_amount, frac, localize_text, temp  # noqa: F401 (frac: the tests import it)
+from services.measures import DEFAULT, density, fmt_amount, fmt_total, frac, localize_text, temp  # noqa: F401 (frac: tests)
 from services.recipe_v2 import delta, groups, mise, nutrition, states, whole
 from services.recipe_v2.derive import HEAT_LABELS, heat_steps
 from services.recipe_v2.persona import SETTINGS, age_label
@@ -138,7 +138,8 @@ def step_html(s, lines, ingredients, factor, lang='en', system=DEFAULT):
         line = lines.get(m.group(1))
         if not line:
             return escape(m.group(0))
-        amount = fmt_amount(line['amount'] * factor if line.get('amount') is not None else None, line.get('unit'), system)
+        amount = fmt_amount(line['amount'] * factor if line.get('amount') is not None else None, line.get('unit'), system,
+                            density(ingredients.get(m.group(1))))
         label = f"{amount} {line['name']}".strip()
         out = Markup('<span class="pill" data-l="{lid}">{sym}{label}</span>').format(lid=m.group(1), sym=symbol(ingredients.get(m.group(1)), line['name'], 24), label=label)
         said = line_state(line, lang) if s['phase'] != 'prep' else ''
@@ -228,7 +229,7 @@ def build(recipe, servings=None, plan='calm', system=DEFAULT):
             notes.append('to taste')
         found = pantry.get(e.get('pantry_id'))
         group = groups.group_of(found, mise.staple({'name': e['name'], **({'pantry_tier': found.tier} if found else {})}))
-        shop.append({'name': e['name'], 'amount': ' + '.join(fmt_amount(a['amount'], a['unit'], system) for a in e['amounts']),
+        shop.append({'name': e['name'], 'amount': fmt_total(e['amounts'], system, density(found)),
                      'note': ' · '.join(notes), 'symbol': symbol(found, e['name'], 36 if group == 'staples' else 56),
                      'missing': not e.get('pantry_id') or e['pantry_id'] not in pantry, 'group': group,
                      'img': found.image_url if found is not None else None, 'pantry_id': e.get('pantry_id')})
@@ -262,7 +263,8 @@ def build(recipe, servings=None, plan='calm', system=DEFAULT):
         return i.get('state') or i.get('cut')
     # The river delta: every line as the drawing shows it, with the amount for these servings
     pictured = {lid: {'name': i['name'], 'img': (ingredients.get(lid).image_url if ingredients.get(lid) is not None else None),
-                      'amount': fmt_amount(i['amount'] * factor, i.get('unit'), system) if i.get('amount') is not None else '',
+                      'amount': fmt_amount(i['amount'] * factor, i.get('unit'), system, density(ingredients.get(lid)))
+                      if i.get('amount') is not None else '',
                       'prep': i.get('prep_style') or '', 'cut': state_of(lid, i), 'count': count_of(i, factor),
                       'state': line_state({**i, 'state': state_of(lid, i)}, lang),
                       # the state alone in words, for its sign in the delta (the note may say something else: "melne")
