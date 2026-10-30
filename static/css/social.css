@@ -5,8 +5,6 @@
   --sl-ink: var(--color-ink);
   --sl-muted: rgb(var(--neutral-500));
   --sl-line: rgb(var(--accent-200));
-  /* The parts' line colours, as on the recipe page's metro map (cook_views.css) */
-  --lane-0: #0f766e; --lane-1: #7c3aed; --lane-2: #be185d; --lane-3: #475569;
 }
 html, body { margin: 0; background: var(--sl-paper); }
 .slide {
@@ -131,12 +129,3 @@ html, body { margin: 0; background: var(--sl-paper); }
 .size-tt .foot { bottom: 160px; }
 .foot span { display: inline-flex; align-items: center; gap: 14px; }
 .foot img { width: 48px; height: 48px; border-radius: 50%; }
-
-/* The style trial's looks (?look=, static/css/themes.css gives the colours and fonts): their headings */
-:root[data-look="c"] .slide :is(.title, .head, .end .line) { font-weight: 800; letter-spacing: -0.025em; }
-:root[data-look="d"] .slide :is(.title, .head, .end .line) { font-weight: 800; letter-spacing: -0.02em; }
-:root[data-look="d"] .end .address { background: #F2B630; color: #1C1A17; }
-:root[data-look="e"] .slide :is(.title, .head, .end .line) { font-weight: 800; font-stretch: 72%; text-transform: uppercase;
-  letter-spacing: 0.01em; }
-:root[data-look="f"] .slide :is(.title, .head, .end .line) { font-weight: 500; letter-spacing: 0.01em; }
-:root[data-look="f"] .facts span { border-radius: 0; border-width: 0 0 0 0; border-top: 1px solid var(--sl-ink); background: none; }
