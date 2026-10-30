@@ -240,5 +240,14 @@ html.site-menu:not(.cooking) body:has(.make.has-ovl) .trialbar { top: 76px; }
 .photo-strip { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }
 .photo-strip img { flex: 0 0 100%; width: 100%; max-height: calc(100dvh - 32px); object-fit: contain; scroll-snap-align: center; background: var(--color-soft); }
 .ovl-more .more-mine .note { white-space: pre-line; }
+.mine-h { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
+.mine-h .eyebrow { min-width: 0; }
+.ovl-more .mine-edit { flex: none; border: 0; padding: 0; background: none; color: var(--color-accent); font: 600 14px/1 var(--font-sans);
+  text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.mine-form { display: grid; gap: var(--space-3); }
+.mine-form[hidden], [data-mine-view][hidden], .mine-edit[hidden] { display: none; }
+.mine-form textarea { min-height: 180px; }
+.mine-foot { display: flex; gap: var(--space-3); }
+.mine-foot button { flex: 1; min-height: var(--tap); border-radius: var(--radius-pill); font: 600 15px/1 var(--font-sans); cursor: pointer; }
 .more-mine .mine-stars { margin-bottom: var(--space-2); }
 .more-mine .mine-stars .icon { width: 18px; height: 18px; }

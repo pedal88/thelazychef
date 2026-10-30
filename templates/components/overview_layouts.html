@@ -9,6 +9,7 @@
    (static/js/overview_fit.js). The other versions of the dish by chef personas are a chip and a part of the sheet.
    Import with context. #}
 {% from "components/dish_info.html" import ingredient_list, dish_facts, servings_stepper with context %}
+{% from "components/feedback_fields.html" import feedback_fields with context %}
 
 {% macro corner_buttons() -%}
 <a class="fab ovl-back" href="{{ url_for('recipes_list') }}" aria-label="All recipes">{{ icon('back') }}</a>
@@ -192,10 +193,20 @@
   <div class="sheet-h" id="more-top"><h2 id="sheet-more-h">About the dish</h2>
     <button type="button" class="sheet-x" data-sheet-close aria-label="Close">{{ icon('close') }}</button></div>
   {% if mine and (mine.note or mine.rating or mine.photos) %}
-  <section id="more-mine" class="more-mine"><h3 class="eyebrow">Your note{{ made_line() }}</h3>
-    {{ my_stars() }}
-    {% if mine.note %}<p class="note">{{ mine.note }}</p>{% endif %}
-    {{ my_photo('mine-photo-open') }}
+  {# Edit turns the note into the feedback fields, filled in with what was saved (static/js/my_note.js) #}
+  <section id="more-mine" class="more-mine" data-mine-note>
+    <div class="mine-h"><h3 class="eyebrow">Your note{{ made_line() }}</h3>
+      <button type="button" class="mine-edit" data-mine-edit>Edit</button></div>
+    <div data-mine-view>
+      {{ my_stars() }}
+      {% if mine.note %}<p class="note">{{ mine.note }}</p>{% endif %}
+      {{ my_photo('mine-photo-open') }}
+    </div>
+    <form class="mine-form" data-mine-form hidden>
+      {{ feedback_fields('What would you do next time?') }}
+      <div class="mine-foot"><button type="button" class="fb-cancel" data-mine-cancel>Cancel</button>
+        <button type="submit" class="fb-save">Save</button></div>
+    </form>
   </section>
   {% endif %}
   {% if has_parts(imgs) %}

@@ -106,6 +106,8 @@ class OverviewMineTests(unittest.TestCase):
         self.assertIn('Your note · made once, last', html)
         self.assertIn('aria-label="4 of 5"', html)
         self.assertIn('id="more-mine"', html)
+        self.assertIn('data-mine-edit>Edit</button>', html)  # the note can be edited in the sheet (static/js/my_note.js)
+        self.assertIn('data-mine-form hidden', html)
         self.assertIn('data-noted="1"', html)  # the finished card offers Edit your note
         self.assertIn('data-jump="more-mine" aria-label="Your note from last time"', html)  # while cooking
         # The AI image stays the dish's picture; the cook's photo opens only when asked for, from a quiet label
@@ -118,6 +120,15 @@ class OverviewMineTests(unittest.TestCase):
         made = self.client.get('/recipes?view=made').get_data(as_text=True)
         self.assertIn('class="rcard-mine" role="img" aria-label="You added a photo"', made)
         self.assertNotIn('/static/user_uploads/mine.jpg', made)
+
+        # Edited later: the sheet's form saves through the same feedback endpoint, and the page shows the new note
+        self.client.post(f'/api/interactions/recipe/{self.recipe.id}/feedback',
+                         data={'rating': '5', 'comment': 'Next time 11, 12 and 13 min\n11 min at 130 was perfect',
+                               'keep_photos': '["/static/user_uploads/mine.jpg"]'})
+        html = self.client.get(self.url).get_data(as_text=True)
+        self.assertIn('11 min at 130 was perfect', html)
+        self.assertIn('aria-label="5 of 5"', html)
+        self.assertIn('data-sheet="sheet-photo"', html)  # the photo is kept
 
         # Another cook sees none of it, nor does a visitor
         other = User(email='other@test')
