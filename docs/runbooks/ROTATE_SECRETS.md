@@ -176,27 +176,20 @@ Når alt ligger i Secret Manager, er et bytte enklere: legg til en ny versjon (s
 
 Claude Code på MacBooken sender guider og forsiden som utkast med denne nøkkelen (`docs/CONTENT.md`, «The content API»). Den ligger i Secret Manager og i Keychain på MacBooken, og vises aldri i terminalen. Uten den svarer API-et 401, og ingenting annet i appen påvirkes.
 
-Første gang, før PR-en som la den til i `deploy.yaml` merges (ellers feiler deployen):
+Alt gjøres på MacBooken (gcloud er logget inn som `thelazychefai@gmail.com` mot `thelazychefai-prod`). Nøkkelen går rett fra Secret Manager til Keychain, uten utklippstavle. Hemmeligheten og tilgangen må finnes før deployen, ellers feiler «Deploy to Prod» med `Permission denied on secret`.
 
-1. Mac mini: lag nøkkelen og gi tjenestekontoen tilgang (`SA` som i steg 3):
+Første gang (eller hvis deployen feilet av den grunnen):
 
-   ```bash
-   openssl rand -hex 32 | tr -d '\n' | gcloud secrets create CONTENT_API_KEY --data-file=- --project=thelazychefai-prod
-   gcloud secrets add-iam-policy-binding CONTENT_API_KEY --member=serviceAccount:SA --role=roles/secretmanager.secretAccessor --format='value(etag)' --project=thelazychefai-prod
-   ```
+```bash
+P=thelazychefai-prod
+SA=$(gcloud run services describe lazy-chef-app --region europe-west1 --project $P --format='value(spec.template.spec.serviceAccountName)')
+SA=${SA:-$(gcloud projects describe $P --format='value(projectNumber)')-compute@developer.gserviceaccount.com}
+openssl rand -hex 32 | tr -d '\n' | gcloud secrets create CONTENT_API_KEY --data-file=- --project=$P
+gcloud secrets add-iam-policy-binding CONTENT_API_KEY --member="serviceAccount:$SA" --role=roles/secretmanager.secretAccessor --format='value(etag)' --project=$P
+security add-generic-password -U -a "$USER" -s thelazychef-content-api -w "$(gcloud secrets versions access latest --secret=CONTENT_API_KEY --project=$P)"
+security find-generic-password -s thelazychef-content-api -w | wc -c   # 65: 64 tegn og linjeskiftet
+```
 
-2. Mac mini: kopier den (Universal Clipboard tar den med til MacBooken):
+Feilet deployen, kjør den feilede jobben på nytt: `gh run rerun <run-id> --failed` (id-en fra `gh run list --branch main --limit 1`). Etterpå skal `python -m scripts.content pages` liste sidene.
 
-   ```bash
-   gcloud secrets versions access latest --secret=CONTENT_API_KEY --project=thelazychefai-prod | pbcopy
-   ```
-
-3. MacBook: legg den i Keychain. Kommandoen spør etter passordet; lim inn med `Cmd+V`, to ganger:
-
-   ```bash
-   security add-generic-password -a "$USER" -s thelazychef-content-api -w
-   ```
-
-4. Merge PR-en. Etter deployen, på MacBook: `python -m scripts.content pages` skal liste sidene.
-
-Bytte senere: legg til en ny versjon (`openssl rand -hex 32 | tr -d '\n' | gcloud secrets versions add CONTENT_API_KEY --data-file=-`), lag en ny revisjon som under «Senere bytter», og bytt Keychain-oppføringen på MacBooken (`security add-generic-password -U -a "$USER" -s thelazychef-content-api -w`).
+Bytte senere: samme blokk, men `gcloud secrets versions add` i stedet for `create` og uten `add-iam-policy-binding`. Lag så en ny revisjon som under «Senere bytter», så appen leser den nye versjonen.

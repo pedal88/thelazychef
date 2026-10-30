@@ -22,6 +22,7 @@ import requests
 
 KEYCHAIN = 'thelazychef-content-api'
 IMAGE = re.compile(r'^[a-z0-9][a-z0-9_-]*\.(svg|png|jpg|jpeg|webp|gif)$')
+MD_IMAGE = re.compile(r'!\[[^\]]*\]\(([^)\s]+)\)')  # ![A honing steel](honing-steel.svg) in a text block
 
 
 def _key():
@@ -74,12 +75,14 @@ def upload_images(slug, paths):
 
 
 def push(path, images=True):
-    """The package's images that lie next to it (named in the package, uploaded first), then the package."""
+    """The package's images that lie next to it (named in the package or in its Markdown, uploaded first), then the
+    package."""
     with open(path, encoding='utf-8') as f:
         package = json.load(f)
     if images:
         folder = os.path.dirname(os.path.abspath(path))
-        names = sorted({s for s in _strings(package) if IMAGE.match(s) and os.path.isfile(os.path.join(folder, s))})
+        named = {n for s in _strings(package) for n in [s, *MD_IMAGE.findall(s)]}
+        names = sorted(n for n in named if IMAGE.match(n) and os.path.isfile(os.path.join(folder, n)))
         if names:
             upload_images(package['slug'], [os.path.join(folder, n) for n in names])
     body = _call('POST', '/packages', json=package)
