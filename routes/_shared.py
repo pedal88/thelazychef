@@ -188,6 +188,19 @@ LOOK_FONTS = {
          '&family=Zen+Kaku+Gothic+New:wght@400;500;700',
 }
 
+# The look visitors see until they choose another (admins, with the chip): a key in LOOK_FONTS, or None for today's.
+# The site and the social slides both start from it.
+SITE_LOOK = 'd'
+
+
+def look_of(asked):
+    """The look for a page asked with ?look=: 'today' is today's look (None), a key in LOOK_FONTS that look, and
+    anything else the site's."""
+    if asked == 'today':
+        return None
+    return asked if asked in LOOK_FONTS else SITE_LOOK
+
+
 IMAGE_STYLES = {'cutout': 'White', 'editorial': 'Angled', 'overhead': 'From above', 'illustrated': 'Illustrated'}
 
 

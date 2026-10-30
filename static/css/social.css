@@ -1,5 +1,5 @@
 /* The slides of TikTok and Instagram posts (templates/social/slide.html, docs/SOCIAL.md): a fixed-size page on the
-   cream of the metro-map mark, serif titles, the ingredient symbols large. Sizes are in pixels of the 1080-wide image. */
+   look's lightest accent, the look's titles, the ingredient symbols large. Sizes are in pixels of the 1080-wide image. */
 :root {
   --sl-paper: rgb(var(--accent-50));
   --sl-ink: var(--color-ink);
@@ -118,7 +118,7 @@ html, body { margin: 0; background: var(--sl-paper); }
 
 /* The address */
 .end { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-.end .mark { width: 300px; height: 300px; border-radius: 50%; }
+.end .mark { width: 300px; height: 300px; }
 .end .line { margin: 56px 0 0; font: 700 60px/1.12 var(--font-serif); }
 .end .address { margin: 48px 0 0; padding: 26px 44px; border-radius: var(--radius-pill); background: var(--color-accent);
   color: var(--color-paper); font: 700 50px/1 var(--font-sans); }
@@ -128,4 +128,4 @@ html, body { margin: 0; background: var(--sl-paper); }
   align-items: center; font: 600 26px/1 var(--font-sans); color: var(--sl-muted); }
 .size-tt .foot { bottom: 160px; }
 .foot span { display: inline-flex; align-items: center; gap: 14px; }
-.foot img { width: 48px; height: 48px; border-radius: 50%; }
+.foot .brand-badge { width: 52px; height: 52px; }

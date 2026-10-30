@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 {# One slide of a TikTok or Instagram post (routes/social_routes.py, services/social.py, docs/SOCIAL.md), drawn at
    the post's size and photographed by scripts/social_render.py. Not part of the site: no menu, no scripts. #}
+{% import "components/brand.html" as brand -%}
 <html lang="en"{% if look %} data-look="{{ look }}"{% endif %}>
 <head>
 <meta charset="utf-8">
 <meta name="robots" content="noindex">
 <title>{{ fmt }} {{ n }}/{{ slides }} - The Lazy Chef</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
-{# The style trial's looks, as on the site (static/css/themes.css); ?look=c|d|e|f chooses one and loads its fonts #}
+{# The site's look (routes/_shared.SITE_LOOK), or the one ?look= asks for, as on the site (static/css/themes.css) #}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/themes.css') }}">
 {% if look %}<link rel="stylesheet" href="https://fonts.googleapis.com/css2?{{ LOOK_FONTS[look] }}&display=swap">{% endif %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/social.css') }}">
@@ -129,7 +130,7 @@
 
 {% elif s.kind == 'end' %}
   <div class="end">
-    <img class="mark" src="{{ url_for('static', filename='brand/mark.svg') }}" alt="">
+    {{ brand.badge('mark') }}
     <p class="line">{{ s.line }}</p>
     <p class="address">{{ address }}</p>
     <p class="note">{{ 'Link in bio' if size == 'ig' else 'Type it in your browser' }}</p>
@@ -137,7 +138,7 @@
 {% endif %}
 
 <footer class="foot">
-  <span><img src="{{ url_for('static', filename='brand/mark.svg') }}" alt="">The Lazy Chef</span>
+  <span>{{ brand.badge() }}The Lazy Chef</span>
   <span>{{ n }} / {{ slides }}</span>
 </footer>
 </main>

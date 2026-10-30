@@ -97,6 +97,12 @@
 :root[data-look="f"] .rv2.ready .bowl { border: 0; border-top: 1px solid var(--color-ink); border-radius: 0; background: none; }
 :root[data-look="f"] .rv2.cook .card { border-radius: 0; background: rgb(var(--paper)); border-left: 2px solid var(--color-cook); }
 
+/* The brand's badge (templates/components/brand.html): the mark on the look's main-button colour, as on the profile
+   pictures; the accent in a look without one */
+.brand-badge { display: inline-flex; align-items: center; justify-content: center; flex: none; border-radius: 50%;
+  background: var(--look-go, var(--color-accent)); color: var(--look-go-ink, var(--color-paper)); }
+.brand-badge svg { width: 64%; height: 64%; }
+
 /* Style and image trial (admins only): a tool floating over the page, not part of it. Its own colours
    and system font, so no look changes it; bottom left, above the Cook bar. */
 .trialbar { position: fixed; left: 14px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); z-index: 160; max-width: min(360px, calc(100vw - 28px));

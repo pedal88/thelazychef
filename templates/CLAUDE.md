@@ -19,8 +19,12 @@ share one look: paper surfaces, thin lines, mono labels, serif titles, and line 
   chip with the style trial's look on every other page, from `base.html`), `look_switch.html` (the look switch in the
   menu's Admin group).
 - The style trial (`static/css/themes.css`, temporary): a look's colours and fonts, and what makes it more than them
-  (headings, the main button, lines), for every page and the social slides alike. Kept on the device; visitors who
-  have not chosen one see today's look.
+  (headings, the main button, lines), for every page and the social slides alike. Visitors see the site's look
+  (`routes/_shared.SITE_LOOK`, set on `<html>` by `base.html`); an admin's choice is kept on the device.
+- The brand: `components/brand.html` (`mark()`, the floppy chef's hat in the text colour; `badge()`, the mark on the
+  look's main-button colour), in the top bar and on the slides. `static/brand/` has it as files: `mark.svg`,
+  `favicon.svg`, `apple-touch-icon.png`, `avatar.png` (the TikTok and Instagram profile picture) and `share.png`
+  (the share card).
 
 ## The recipe page
 

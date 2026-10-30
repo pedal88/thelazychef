@@ -1,0 +1,10 @@
+{# The Lazy Chef's mark: a chef's hat that has flopped over like a nightcap. Drawn in the text colour, so it takes the
+   look's accent; badge() is the mark on the look's main-button colour, as on the profile pictures and the last slide.
+   static/brand/ has the same drawing as files (mark.svg, favicon.svg, avatar.png, share.png). #}
+{% macro mark(cls='') -%}
+<svg class="{{ cls }}" viewBox="18 12 76 76" fill="currentColor" aria-hidden="true" focusable="false"><path d="M30 62 C21 55 21 39 33 34 C35 22 52 17 61 24 C76 21 88 31 89 47 C90 57 88 65 84 70 C82 61 78 52 70 46 C68 51 68 57 70 62 Z"/><circle cx="84" cy="75" r="6.5"/><rect x="28" y="66" width="44" height="14" rx="3.5"/></svg>
+{%- endmacro %}
+
+{% macro badge(cls='') -%}
+<span class="brand-badge {{ cls }}">{{ mark() }}</span>
+{%- endmacro %}

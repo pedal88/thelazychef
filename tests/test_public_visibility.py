@@ -81,6 +81,15 @@ class PublicVisibilityTests(unittest.TestCase):
                 self.assertEqual(html.count('class="trialbar"'), 1)
                 self.assertIn('data-look-switch', html)
 
+    def test_pages_come_in_the_sites_look_with_the_brand_mark_and_icon(self):
+        from routes._shared import SITE_LOOK
+        html = self.client.get('/recipes').get_data(as_text=True)
+        self.assertIn(f'data-look="{SITE_LOOK}"', html.split('>', 2)[1])  # on <html>, before any script runs
+        self.assertIn('brand/favicon.svg', html)
+        self.assertIn('viewBox="18 12 76 76"', html)  # the mark in the header (components/brand.html)
+        for name in ('favicon.svg', 'apple-touch-icon.png', 'share.png', 'avatar.png', 'mark.svg'):
+            self.assertEqual(self.client.get(f'/static/brand/{name}').status_code, 200, name)
+
     def _shows_recipe(self, url):
         return self.client.get(url).status_code == 200
 
