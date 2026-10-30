@@ -1,5 +1,15 @@
 {# Ways into the app or to other pages, as tiles (services/content/blocks.Links) #}
 {% include 'blocks/_row_head.html' %}
+{% if b.data.style == 'cards' %}
+<ul class="gcards">
+  {% for t in b.data.tiles %}
+  <li><a class="gcard" href="{{ t.url }}">
+    {% if t.image %}<img class="gcard-img" src="{{ t.image }}" alt="" loading="lazy">{% else %}<span class="gcard-img gcard-ic">{{ icon(t.icon or 'book') }}</span>{% endif %}
+    <span class="gcard-body">{% if t.label %}<small>{{ t.label }}</small>{% endif %}<b>{{ t.title }}</b>{% if t.text %}<span>{{ t.text }}</span>{% endif %}</span>
+  </a></li>
+  {% endfor %}
+</ul>
+{% else %}
 <ul class="tiles">
   {% for t in b.data.tiles %}
   <li><a class="tile" href="{{ t.url }}">
@@ -8,3 +18,4 @@
   </a></li>
   {% endfor %}
 </ul>
+{% endif %}

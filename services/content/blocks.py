@@ -188,13 +188,16 @@ class CookNext(Block):
 
 class Links(Block):
     """Ways into the app or to other pages, as tiles. An item's "to" is an endpoint in LINKABLE or "page:<slug>"
-    (a published page: its title, summary and image unless the item says otherwise)."""
+    (a published page: its title, summary and image unless the item says otherwise). style "cards" shows each as a
+    card with its image across the top (the guides on the home page), with a short "label" above the title."""
     label = 'Links'
 
     def check(self, s, ctx):
         from services.content.pages import find_page
         errors = []
         _text(s, 'title', errors, limit=120)
+        if s.get('style', 'tiles') not in ('tiles', 'cards'):
+            errors.append('style must be "tiles" or "cards"')
         items = s.get('items')
         if not isinstance(items, list) or not items:
             return errors + ['items must be a list of links']
@@ -208,7 +211,7 @@ class Links(Block):
                     errors.append(f'item {n}: no page "{to[5:]}"')
             elif to not in LINKABLE:
                 errors.append(f'item {n}: "to" must be "page:<slug>" or one of {", ".join(LINKABLE)}')
-            for key in ('title', 'text', 'icon'):
+            for key in ('title', 'text', 'icon', 'label'):
                 _text(item, key, errors, limit=200)
         return errors
 
@@ -227,9 +230,9 @@ class Links(Block):
             else:
                 title, blurb, icon = LINKABLE[to]
                 tile = {'url': url_for(to), 'title': title, 'text': blurb, 'icon': icon, 'image': None}
-            tile.update({k: item[k] for k in ('title', 'text', 'icon') if item.get(k)})
+            tile.update({k: item[k] for k in ('title', 'text', 'icon', 'label') if item.get(k)})
             tiles.append(tile)
-        return {'title': s.get('title'), 'tiles': tiles} if tiles else None
+        return {'title': s.get('title'), 'tiles': tiles, 'style': s.get('style', 'tiles')} if tiles else None
 
 
 class Interactive(Block):
