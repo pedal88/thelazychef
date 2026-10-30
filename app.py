@@ -15,7 +15,7 @@ from database.models import db, Ingredient, Recipe, RecipeMealType, RecipeDiet, 
 from services.storage_service import get_storage_provider
 from services.measures import SYSTEMS
 from services.recipe_v2 import states
-from routes._shared import DIFFICULTY_LABELS, LOOK_FONTS, absolute_url, EQUIPMENT_STYLES, OVERVIEW_LAYOUTS, chosen_overview, IMAGE_STYLES, chosen_equipment_style, dish_images, equipment_image, get_recipe_image_url, get_image_url, icon, notes_text, site_menu, unit_chosen, unit_system
+from routes._shared import DIFFICULTY_LABELS, LOOK_FONTS, SITE_LOOK, absolute_url, EQUIPMENT_STYLES, OVERVIEW_LAYOUTS, chosen_overview, IMAGE_STYLES, chosen_equipment_style, dish_images, equipment_image, get_recipe_image_url, get_image_url, icon, notes_text, site_menu, unit_chosen, unit_system
 
 
 app = Flask(__name__)
@@ -111,6 +111,7 @@ app.add_template_global(SYSTEMS, 'UNIT_SYSTEMS')
 app.add_template_global(dish_images)
 app.add_template_global(IMAGE_STYLES, 'IMAGE_STYLES')
 app.add_template_global(LOOK_FONTS, 'LOOK_FONTS')
+app.add_template_global(SITE_LOOK, 'SITE_LOOK')
 app.add_template_global(EQUIPMENT_STYLES, 'EQUIPMENT_STYLES')
 app.add_template_global(OVERVIEW_LAYOUTS, 'OVERVIEW_LAYOUTS')
 app.add_template_global(states.key, 'state_key')  # the signs for what is done to an ingredient (states.json)

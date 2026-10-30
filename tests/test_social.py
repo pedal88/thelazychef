@@ -83,17 +83,27 @@ class SocialTests(unittest.TestCase):
         self.assertIn(self.recipe.title, html)
         self.assertIn('/static/recipes/tikka.png', html)
 
-    def test_a_slide_can_be_drawn_in_a_look_from_the_style_trial(self):
+    def test_a_slide_is_in_the_sites_look_unless_it_asks_for_another(self):
+        from routes._shared import LOOK_FONTS, SITE_LOOK
         base = f'/social/recipe/{self.recipe.id}/map'
         html = self.get(base, look='e', slide=1).get_data(as_text=True)
         self.assertIn('<html lang="en" data-look="e">', html)
         self.assertIn('/static/css/themes.css', html)
         self.assertIn('family=Archivo', html)
-        for look in (None, 'z'):
+        for look in (None, 'z'):  # none asked, or one that is not a look: the site's
             with self.subTest(look=look):
                 html = self.get(base, look=look, slide=1).get_data(as_text=True)
-                self.assertIn('<html lang="en">', html)
-                self.assertNotIn('fonts.googleapis', html)
+                self.assertIn(f'<html lang="en" data-look="{SITE_LOOK}">', html)
+                self.assertIn(LOOK_FONTS[SITE_LOOK].replace('&', '&amp;'), html)
+        html = self.get(base, look='today', slide=1).get_data(as_text=True)
+        self.assertIn('<html lang="en">', html)
+        self.assertNotIn('fonts.googleapis', html)
+
+    def test_the_slides_carry_the_brand_mark_on_the_badge(self):
+        count = int(self.get(f'/social/recipe/{self.recipe.id}/map', slide=1).headers['X-Slides'])
+        html = self.get(f'/social/recipe/{self.recipe.id}/map', slide=count).get_data(as_text=True)
+        self.assertEqual(html.count('class="brand-badge'), 2)  # the last slide's and the footer's
+        self.assertNotIn('brand/mark.svg', html)
 
     def test_the_site_and_the_slides_read_the_looks_fonts_from_one_place(self):
         from routes._shared import LOOK_FONTS

@@ -1,16 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080">
-  <rect width="1080" height="1080" fill="#FFF7ED"/>
-  <g transform="translate(540 540) scale(1.15) translate(-490 -540)">
-    <g fill="none" stroke-width="90" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M300 300 H400 L640 540" stroke="#16A34A"/>
-      <path d="M250 540 H640" stroke="#EA580C"/>
-      <path d="M300 780 H400 L640 540" stroke="#2563EB"/>
-    </g>
-    <g fill="#FFFFFF" stroke="#0F172A" stroke-width="16">
-      <circle cx="335" cy="300" r="30"/>
-      <circle cx="335" cy="540" r="30"/>
-      <circle cx="335" cy="780" r="30"/>
-      <circle cx="640" cy="540" r="120" stroke-width="34"/>
-    </g>
-  </g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="18 12 76 76"><g fill="#9E6A12"><path d="M30 62 C21 55 21 39 33 34 C35 22 52 17 61 24 C76 21 88 31 89 47 C90 57 88 65 84 70 C82 61 78 52 70 46 C68 51 68 57 70 62 Z"/><circle cx="84" cy="75" r="6.5"/><rect x="28" y="66" width="44" height="14" rx="3.5"/></g></svg>
