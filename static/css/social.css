@@ -41,7 +41,9 @@ html, body { margin: 0; background: var(--sl-paper); }
   border: 3px solid var(--sl-line); font: 600 44px/1 var(--font-serif); font-style: normal; color: var(--sl-muted); }
 .tile figcaption { margin-top: 6px; display: flex; flex-direction: column; gap: 2px; font-size: 26px; line-height: 1.15; }
 .tile figcaption b { font-size: 28px; }
-.tile figcaption span { color: var(--sl-muted); hyphens: auto; overflow-wrap: break-word; }
+/* Names get smaller with the tile (7 columns and up) rather than break; a word still too long hyphenates */
+.tile { container-type: inline-size; }
+.tile figcaption span { color: var(--sl-muted); font-size: min(1em, 19cqw); hyphens: auto; overflow-wrap: break-word; }
 .kind-collage .grid, .kind-pantry_cover .grid { margin-top: 40px; }
 
 /* The metro map: the drawing scaled up, the names beside it */
