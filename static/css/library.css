@@ -220,6 +220,10 @@
 .fb-thumbs:empty { display: none; }
 .fb-thumb { position: relative; }
 .fb-thumb img { display: block; width: 76px; height: 76px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--color-line); }
+.fb-thumb-file { display: grid; place-content: center; justify-items: center; gap: 2px; width: 76px; height: 76px; padding: 4px;
+  border-radius: var(--radius-sm); border: 1px solid var(--color-line); background: var(--color-soft); color: var(--color-muted); }
+.fb-thumb-file .icon { width: 22px; height: 22px; }
+.fb-thumb-file small { max-width: 66px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; }
 .fb-thumb button { position: absolute; top: -8px; right: -8px; display: grid; place-items: center; width: 26px; height: 26px; border: 1px solid var(--color-line);
   border-radius: 50%; background: var(--color-paper); color: var(--color-ink); cursor: pointer; }
 .fb-thumb button .icon { width: 14px; height: 14px; }

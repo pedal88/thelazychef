@@ -78,14 +78,19 @@
         if (!data.success) throw new Error('not saved');
         n = data.made_count;
       }
-      await fb.save();
+      const missed = await fb.save();
       saved = true;
-      tell(!n ? 'Saved. Thank you.' : n === 1 ? 'Saved. It is in your Made list now.' : `Saved. That was your ${nth(n)} time.`);
+      const done = !n ? 'Saved. Thank you.' : n === 1 ? 'Saved. It is in your Made list now.' : `Saved. That was your ${nth(n)} time.`;
+      tell(missed ? `${done} ${missed}` : done, !!missed);
       saveBtn.textContent = 'Close';
       saveBtn.disabled = false;
     } catch (err) {
-      tell('Something went wrong. Please try again.', true);
+      tell(err.friendly || 'Something went wrong. Please try again.', true);
       saveBtn.disabled = false;
     }
   });
+  // A change after saving (a photo added or removed, the comment edited) is saved again rather than closed away
+  const unsave = () => { if (saved) { saved = false; saveBtn.textContent = 'Save'; } };
+  form.addEventListener('change', unsave);
+  form.addEventListener('input', unsave);
 })();

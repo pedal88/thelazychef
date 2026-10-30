@@ -181,6 +181,9 @@ def save_feedback(recipe_id):
     Accepts JPG, PNG, GIF, WEBP, and HEIC/HEIF (Apple iPhone format).
     HEIC files are converted to JPEG before storage because browsers
     cannot natively render HEIC.
+
+    Answers with the stored photo URLs, so the form can show what was saved instead of its own preview, and the
+    names of the photos it could not save.
     """
     # Register HEIF/HEIC support into Pillow (idempotent; safe to call each request)
     import pillow_heif
@@ -231,6 +234,7 @@ def save_feedback(recipe_id):
         base_urls = list(interaction.user_photos or [])
 
     new_urls: list[str] = base_urls
+    skipped: list[str] = []
     photos = request.files.getlist('photos')
 
     for photo in photos[:5]:  # Cap at 5 new uploads per submission
@@ -238,6 +242,7 @@ def save_feedback(recipe_id):
             continue
         ext = photo.filename.rsplit('.', 1)[-1].lower()
         if ext not in ALLOWED_EXTS:
+            skipped.append(photo.filename)
             continue
 
         file_bytes = photo.read()
@@ -252,6 +257,7 @@ def save_feedback(recipe_id):
                 ext = 'jpg'
             except Exception as e:
                 print(f"HEIC conversion error for {photo.filename}: {e}")
+                skipped.append(photo.filename)
                 continue
 
         filename = f"user_{current_user.id}_recipe_{recipe_id}_{uuid.uuid4().hex[:8]}.{ext}"
@@ -260,11 +266,12 @@ def save_feedback(recipe_id):
             new_urls.append(url)
         except Exception as e:
             print(f"Photo upload error: {e}")
+            skipped.append(photo.filename)
 
     interaction.user_photos = new_urls
     flag_modified(interaction, 'user_photos')  # Force SQLAlchemy to dirty-track JSON column
     db.session.commit()
-    return jsonify({'success': True})
+    return jsonify({'success': True, 'user_photos': new_urls, 'skipped': skipped})
 
 
 @interactions_bp.route('/api/interactions/recipe/<int:recipe_id>', methods=['GET'])

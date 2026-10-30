@@ -133,11 +133,16 @@
     e.preventDefault();
     save.disabled = true;
     try {
-      await fb.save();
+      const missed = await fb.save();
+      if (missed) {
+        fb.say(`Saved. ${missed}`, true);  // stays open so the note can be read
+        save.disabled = false;
+        return;
+      }
       fb.say('Saved. Thank you.');
       setTimeout(() => dialog.close(), 1200);
     } catch (err) {
-      fb.say('Something went wrong. Please try again.', true);
+      fb.say(err.friendly || 'Something went wrong. Please try again.', true);
       save.disabled = false;
     }
   });
