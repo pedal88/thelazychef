@@ -157,6 +157,37 @@ def new_version(recipe_id):
     return redirect(url_for('recipe_v2.generating', recipe_id=recipe.id))
 
 
+def needs_text(recipe):
+    """A recipe whose making failed before it had any steps (the site blocked reading the link, or an error): the admin
+    can paste the recipe's text on it (paste_source)."""
+    return recipe.schema_version == 2 and recipe.status != 'generating' and not recipe.steps
+
+
+@recipe_v2_bp.route('/new-recipe/v2/paste/<int:recipe_id>', methods=['POST'])
+@login_required
+@admin_required
+def paste_source(recipe_id):
+    """Make the recipe again into the same recipe from text the admin pasted, as New Recipe does with pasted text, images
+    after. A link stays the recipe's source (generate.create_recipe), so it is still "Based on" the site."""
+    recipe = db.session.get(Recipe, recipe_id) or abort(404)
+    text = (request.form.get('text') or '').strip()
+    if not needs_text(recipe):
+        abort(400)
+    if not text or is_link(text):
+        flash('Paste the text of the recipe, not the link.', 'error')
+        return redirect(url_for('recipe_detail', recipe_id=recipe_id))
+    recipe.title = text.splitlines()[0][:120]
+    recipe.status, recipe.is_flagged_for_review, recipe.validation_errors = 'generating', False, []
+    db.session.commit()
+    try:
+        tasks.enqueue(recipe.id, 'text', text, recipe.language)
+    except Exception as e:
+        recipe.status, recipe.is_flagged_for_review = 'draft', True
+        recipe.validation_errors = [{'rule': 'error', 'message': friendly_ai_error(e, 'Could not start making the recipe.')}]
+        db.session.commit()
+    return redirect(url_for('recipe_v2.generating', recipe_id=recipe.id))
+
+
 @recipe_v2_bp.route('/new-recipe/v2/recalculate/<int:recipe_id>', methods=['POST'])
 @login_required
 @admin_required

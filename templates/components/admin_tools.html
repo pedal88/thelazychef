@@ -1,11 +1,11 @@
 {# Admin tools for the floating admin chip on the recipe page (Overview, or the one-page flow): the draft notes,
-   recalculate, images and versions. admin is the dict recipe_detail gives: the family of versions and the chefs.
+   the recipe's text when making it failed, recalculate, images and versions. admin is the dict recipe_detail gives: the family of versions and the chefs.
    Import with context. #}
 {% macro admin_tools() %}
 {% if recipe.status != 'approved' %}
 <div class="tsec"><span class="tlabel">Draft</span>
   <p>Only admins can see this recipe.{% if v.missing %} {{ v.missing }} {{ 'ingredient is' if v.missing == 1 else 'ingredients are' }} not in the pantry.{% endif %}</p>
-  {% if v.errors %}<p>It did not pass validation after the retries:</p><ul>{% for e in v.errors[:5] %}<li>{{ e.message }}</li>{% endfor %}</ul>{% endif %}
+  {% if v.errors %}<p>{{ 'The link could not be read:' if v.errors[0].rule == 'source' else 'It did not pass validation after the retries:' }}</p><ul>{% for e in v.errors[:5] %}<li>{{ e.message }}</li>{% endfor %}</ul>{% endif %}
   {% if v.persona_notes %}<p>It breaks a rule of its chef:</p><ul>{% for n in v.persona_notes %}<li>{{ n }}</li>{% endfor %}</ul>{% endif %}
 </div>
 {% endif %}
@@ -15,6 +15,14 @@
 </div>
 {% endif %}
 {% if admin %}
+{% if not recipe.steps and recipe.status != 'generating' %}
+<div class="tsec tpaste"><span class="tlabel">Recipe</span>
+  <form method="post" action="{{ url_for('recipe_v2.paste_source', recipe_id=recipe.id) }}">
+    <textarea name="text" rows="5" required aria-label="The recipe's text" placeholder="Paste the recipe: title, ingredients and method."></textarea>
+    <button type="submit">Make it from the text</button>
+    <span>Made into this recipe{{ ', still based on ' ~ recipe.source_input.split('/')[2] if recipe.source_type == 'web' and '://' in (recipe.source_input or '') }}, with images after. About a minute.</span></form>
+</div>
+{% endif %}
 {% if recipe.steps %}
 <div class="tsec"><span class="tlabel">Recipe</span>
   <form method="post" action="{{ url_for('recipe_v2.recalculate', recipe_id=recipe.id) }}"><button type="submit">Recalculate</button>

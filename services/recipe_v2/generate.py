@@ -216,9 +216,11 @@ def create_recipe(kind, source, chef_id=None, language=None, call=None, recipe=N
         recipe = Recipe(cuisine='', difficulty='', chef_id=chef_id, settings=settings or None,
                         age_from_months=age_from_months if 'baby' in (settings or []) else None)
         db.session.add(recipe)
-    recipe.title, recipe.status, recipe.source_type = title, 'draft', SOURCE_TYPES[kind]
+    # Text pasted for a link the site would not let us read (recipe_v2_routes.paste_source) keeps the link as its source
+    for_link = kind == 'text' and recipe.source_type == 'web'
+    recipe.title, recipe.status, recipe.source_type = title, 'draft', 'web' if for_link else SOURCE_TYPES[kind]
     # A version keeps the note on what it is a version of; the base recipe's text is not an input worth storing
-    if not (kind == 'version' and recipe.source_input):
+    if not (kind == 'version' and recipe.source_input) and not for_link:
         recipe.source_input = source[:500]
     recipe.source_text, recipe.schema_version = text, 2
     if language:  # a version has its base recipe's language from when it was queued

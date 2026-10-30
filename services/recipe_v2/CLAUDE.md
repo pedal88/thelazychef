@@ -12,7 +12,9 @@ equipment, active and standing minutes, which lines and earlier steps they use).
 
 1. Round 1 (`write_text`): Claude writes or tidies the recipe as plain text, in the chef persona's voice
    (`persona.spec` + `prompt_block`; idea, link, video, pasted text or a version of another recipe).
-   Links and videos are read by `sources.py` (web scraping, or Gemini watching the video).
+   Links and videos are read by `sources.py` (web scraping, or Gemini watching the video). A link the site will not
+   let us read leaves a flagged draft without steps (rule `source`); the admin pastes the recipe's text on it in the
+   admin chip (`recipe_v2_routes.paste_source`), it is made into the same recipe, and the link stays its source.
 2. Round 2 (`structure`): Claude turns the text into the graph with structured output. `services/recipe_v2_validator.py`
    checks it; errors go back for at most `MAX_RETRIES = 2` new attempts. A recipe still invalid is saved as a flagged
    draft with its errors.
