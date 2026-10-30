@@ -26,6 +26,32 @@
 {% endif %}
 {%- endmacro %}
 
+{# What the cook kept from the last time (mine from recipe_detail: the comment, the stars and the photos of "I made
+   this", components/feedback_fields.html), so it is at hand when the dish is made again. The AI image stays the
+   dish's picture: the cook's own photo is a small round one in its corner. All of it opens the sheet at Your note. #}
+{% macro made_line() %}{% if mine.made_count %} · made {{ {1: 'once', 2: 'twice'}.get(mine.made_count, mine.made_count ~ ' times') }}{% if mine.last_made %}, last {{ mine.last_made }}{% endif %}{% endif %}{% endmacro %}
+
+{% macro my_stars() -%}
+{% if mine.rating %}<span class="mine-stars" role="img" aria-label="{{ mine.rating }} of 5">{% for i in range(5) %}<span{% if i < mine.rating %} class="on"{% endif %}>{{ icon('star') }}</span>{% endfor %}</span>{% endif %}
+{%- endmacro %}
+
+{% macro note_card() -%}
+{% if mine and (mine.note or mine.rating) %}
+<button type="button" class="ovl-note" data-sheet="sheet-more" data-jump="more-mine">
+  <span class="ovl-note-h"><span class="eyebrow">{{ icon('message') }}Your note{{ made_line() }}</span>{{ my_stars() }}</span>
+  {% if mine.note %}<span class="ovl-note-text">{{ mine.note }}</span>{% endif %}
+</button>
+{% endif %}
+{%- endmacro %}
+
+{% macro my_photo() -%}
+{% if mine and mine.photos %}
+<button type="button" class="ovl-myphoto" data-sheet="sheet-more" data-jump="more-mine" aria-label="Your photo{{ 's' if mine.photos|length > 1 }}">
+  <img src="{{ mine.photos[-1] }}" alt="" width="96" height="96" loading="lazy">{% if mine.photos|length > 1 %}<span>{{ mine.photos|length }}</span>{% endif %}
+</button>
+{% endif %}
+{%- endmacro %}
+
 {% macro servings_part() -%}
 {% if v.scalable %}<div class="ovl-serv"><span class="eyebrow">Servings</span>{{ servings_stepper('recipe_detail') }}</div>
 {% else %}<div class="ovl-serv"><span class="eyebrow">Makes</span> <b>{{ v.yield_text }}</b></div>{% endif %}
@@ -72,6 +98,7 @@
   {{ corner_buttons() }}
   <figure class="pp-img{% if not imgs.dish %} no-img{% endif %}">
     {% if imgs.dish %}<img src="{{ imgs.dish }}" alt="{{ v.title }}" width="1200" height="900">{% endif %}
+    {{ my_photo() }}
     <figcaption>
       <h1>{{ v.title }}</h1>
       <p class="pp-times"><span><b>{{ v.total }}</b> total</span><span><b>{{ v.active }}</b> active</span><span><b>{{ v.steps|length }}</b> steps</span></p>
@@ -80,6 +107,7 @@
   </figure>
   <div class="pp-side">
     <div class="pp-top">{{ servings_part() }}{{ more_chips(imgs) }}</div>
+    {{ note_card() }}
     {{ ingredients(imgs) }}
     <div class="pp-go">{{ start_button() }}</div>
   </div>
@@ -113,7 +141,7 @@
 <div class="ovl ovl-compact">
   {{ corner_buttons() }}
   <div class="cc-plate">
-    <figure class="cc-img{% if not imgs.dish %} no-img{% endif %}">{% if imgs.dish %}<img src="{{ imgs.dish }}" alt="{{ v.title }}" width="1200" height="900">{% else %}{{ icon('pot') }}{% endif %}</figure>
+    <figure class="cc-img{% if not imgs.dish %} no-img{% endif %}">{% if imgs.dish %}<img src="{{ imgs.dish }}" alt="{{ v.title }}" width="1200" height="900">{% else %}{{ icon('pot') }}{% endif %}{{ my_photo() }}</figure>
     <div class="cc-head">
       <h1>{{ v.title }}</h1>
       <p class="pp-times"><span><b>{{ v.total }}</b> total</span><span><b>{{ v.active }}</b> active</span><span><b>{{ v.steps|length }}</b> steps</span></p>
@@ -124,6 +152,7 @@
         <button type="button" class="cc-btn" data-sheet="sheet-more" data-jump="more-top" aria-label="More about the dish">⋯ More</button>
       </div>
       {{ save_buttons() }}
+      {{ note_card() }}
     </div>
   </div>
   <div class="cc-body">
@@ -153,6 +182,13 @@
 <dialog class="ovl-more" id="sheet-more" aria-labelledby="sheet-more-h">
   <div class="sheet-h" id="more-top"><h2 id="sheet-more-h">About the dish</h2>
     <button type="button" class="sheet-x" data-sheet-close aria-label="Close">{{ icon('close') }}</button></div>
+  {% if mine and (mine.note or mine.rating or mine.photos) %}
+  <section id="more-mine" class="more-mine"><h3 class="eyebrow">Your note{{ made_line() }}</h3>
+    {{ my_stars() }}
+    {% if mine.note %}<p class="note">{{ mine.note }}</p>{% endif %}
+    {% if mine.photos %}<div class="mine-photos">{% for u in mine.photos|reverse %}<a href="{{ u }}" target="_blank" rel="noopener"><img src="{{ u }}" alt="Your photo" loading="lazy"></a>{% endfor %}</div>{% endif %}
+  </section>
+  {% endif %}
   {% if has_parts(imgs) %}
   <section id="more-parts"><h3 class="eyebrow">The parts</h3>
     {% if imgs.parts %}

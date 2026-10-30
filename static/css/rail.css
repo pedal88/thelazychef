@@ -114,8 +114,8 @@
   .pagecard .sc-back:focus-visible, .pagecard .sc-alt:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; border-radius: 4px; }
 
   /* Quieter corner controls beside the steps */
-  html:has(.vpanel.rail:not([hidden])) :is(.fab, .fab-tools .vmenu-btn, .fab-tools .bowls-open) { box-shadow: none; opacity: .7; }
-  html:has(.vpanel.rail:not([hidden])) :is(.fab, .fab-tools .vmenu-btn, .fab-tools .bowls-open):hover { opacity: 1; }
+  html:has(.vpanel.rail:not([hidden])) :is(.fab, .fab-tools .vmenu-btn, .fab-tools .bowls-open, .fab-tools .note-open) { box-shadow: none; opacity: .7; }
+  html:has(.vpanel.rail:not([hidden])) :is(.fab, .fab-tools .vmenu-btn, .fab-tools .bowls-open, .fab-tools .note-open):hover { opacity: 1; }
 }
 /* ---- The step you are on, lifted (chosen 25.10.2026): the rest of the list fades back, and the card has larger
         type a little above the middle with the step's number large and faint beside it ---- */

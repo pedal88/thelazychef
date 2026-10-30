@@ -1,5 +1,6 @@
-"""Saved and Cook next on the recipe page's first screen (components/overview_layouts.html, save_buttons), and
-unsaving that keeps what else the cook stored about the dish (Made, the rating, the comment)."""
+"""Saved and Cook next on the recipe page's first screen (components/overview_layouts.html, save_buttons), unsaving
+that keeps what else the cook stored about the dish (Made, the rating, the comment), and that note shown again when the
+dish is made again (note_card, my_photo, the sheet's Your note, the note button while cooking)."""
 import json
 import os
 import sys
@@ -82,6 +83,43 @@ class OverviewMineTests(unittest.TestCase):
         self.client.post(f'/api/recipes/{other.id}/favorite')
         self.assertIsNone(db.session.get(UserRecipeInteraction, (self.user.id, other.id)))
         self.assertEqual(db.session.execute(db.select(UserQueue)).first(), None)
+
+    def test_the_note_from_last_time_is_on_the_page(self):
+        self.login()
+        html = self.client.get(self.url).get_data(as_text=True)
+        self.assertNotIn('class="ovl-note"', html)
+        self.assertNotIn('id="more-mine"', html)
+        self.assertNotIn('class="ovl-myphoto"', html)
+
+        self.client.post(f'/api/interactions/recipe/{self.recipe.id}/cooked')
+        self.client.post(f'/api/interactions/recipe/{self.recipe.id}/feedback',
+                         data={'rating': '4', 'comment': 'Next time 11, 12 and 13 min'})
+        mark = db.session.get(UserRecipeInteraction, (self.user.id, self.recipe.id))
+        mark.user_photos = ['/static/user_uploads/mine.jpg']
+        db.session.commit()
+        html = self.client.get(self.url).get_data(as_text=True)
+        self.assertIn('class="ovl-note"', html)
+        self.assertIn('Next time 11, 12 and 13 min', html)
+        self.assertIn('Your note · made once, last', html)
+        self.assertIn('aria-label="4 of 5"', html)
+        self.assertIn('id="more-mine"', html)
+        self.assertIn('data-jump="more-mine" aria-label="Your note from last time"', html)  # while cooking
+        # The AI image stays the dish's picture; the cook's photo is the small round one
+        self.assertIn('class="ovl-myphoto"', html)
+        self.assertIn('<img src="/static/user_uploads/mine.jpg" alt="" width="96"', html)
+        # and on the card in the Made list
+        self.assertIn('class="rcard-mine" src="/static/user_uploads/mine.jpg"',
+                      self.client.get('/recipes?view=made').get_data(as_text=True))
+
+        # Another cook sees none of it, nor does a visitor
+        other = User(email='other@test')
+        other.set_password('pw')
+        db.session.add(other)
+        db.session.commit()
+        self.client.get('/logout')
+        self.assertNotIn('Next time 11', self.client.get(self.url).get_data(as_text=True))
+        self.client.post('/login', data={'email': 'other@test', 'password': 'pw'})
+        self.assertNotIn('Next time 11', self.client.get(self.url).get_data(as_text=True))
 
 
 if __name__ == '__main__':

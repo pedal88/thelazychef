@@ -185,13 +185,19 @@ def recipe_detail(recipe_id):
     if viewer_is_admin():
         # and the chefs that can make one
         admin = {'family': family, 'chefs': get_chefs()}
-    # Saved and Cook next, for the two buttons on the overview
+    # Saved and Cook next, for the two buttons on the overview, and what the cook kept from the last time (the
+    # comment, the stars and the photos of "I made this"), so the note is at hand when the dish is made again
     mine = None
     if current_user.is_authenticated:
         mark = db.session.get(UserRecipeInteraction, (current_user.id, recipe.id))
         mine = {'saved': bool(mark and mark.status == 'favorite'),
                 'queued': db.session.execute(db.select(UserQueue.id).where(
-                    UserQueue.user_id == current_user.id, UserQueue.recipe_id == recipe.id)).first() is not None}
+                    UserQueue.user_id == current_user.id, UserQueue.recipe_id == recipe.id)).first() is not None,
+                'note': (mark.comment or '').strip() if mark else '',
+                'rating': mark.rating if mark else None,
+                'photos': list(mark.user_photos or []) if mark else [],
+                'made_count': (mark.made_count or 0) if mark else 0,
+                'last_made': f"{mark.last_made_at.day} {mark.last_made_at:%b}" if mark and mark.last_made_at else None}
     # One page: the overview, and prep and cooking together (#prep, #cook)
     return render_template('recipe_v2_make.html', recipe=recipe, v=view, admin=admin, mine=mine,
                            versions=versions if len(versions) > 1 else [])
