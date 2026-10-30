@@ -1,0 +1,135 @@
+{
+  "slug": "knives",
+  "kind": "guide",
+  "lang": "en",
+  "title": "Which knives? Three you need, three you might",
+  "summary": "A chef's knife, a petty knife and a bread knife cover most of the cooking. Then three to add when a job asks for it, and how to keep them sharp.",
+  "hero_image": null,
+  "note": "The knife guide: two comparisons (must have, optional), then sharpening and German or Japanese on their own",
+  "blocks": [
+    {
+      "kind": "text",
+      "settings": {
+        "markdown": "You need fewer knives than the shops want to sell you. Three cover nearly everything a home kitchen does: a chef's knife for most of the cutting, a small petty knife for the fiddly jobs, and a bread knife for what the other two would crush. Buy those three well, and keep them sharp, before you think about a fourth.\n\nBelow are the three, then three more that are worth buying only when a job asks for them, and last how to keep them all sharp. The drawings are to the same scale, so you can see how the knives compare in size."
+      }
+    },
+    {
+      "kind": "compare",
+      "settings": {
+        "title": "Must have: the three you need",
+        "text": "Scores from 1 to 5, compared with all six knives in this guide. Worth spending on says how much a dearer knife gives you: 5 means pay for a good one, 1 means a cheap one does the job.",
+        "layout": "cards",
+        "scale": 5,
+        "criteria": [
+          {"key": "jobs", "label": "Jobs it covers"},
+          {"key": "often", "label": "Used often"},
+          {"key": "forgiving", "label": "Forgiving"},
+          {"key": "spend", "label": "Worth spending on"}
+        ],
+        "facts": [
+          {"key": "length", "label": "Blade"},
+          {"key": "edge", "label": "Edge"},
+          {"key": "best", "label": "Best for"},
+          {"key": "price", "label": "What to pay"}
+        ],
+        "items": [
+          {
+            "name": "Chef's knife", "tag": "The workhorse", "image": "chefs-knife.svg",
+            "scores": {"jobs": 5, "often": 5, "forgiving": 4, "spend": 5},
+            "facts": {"length": "20 to 21 cm", "edge": "Straight, curving up to the tip", "best": "Chopping, slicing and dicing: most of the cutting", "price": "600 to 1,500 kr"},
+            "pick": "you buy one knife only. It does most of the work, so this is where the money goes.",
+            "avoid": "it feels like a cleaver in your hand. Then the santoku below is your big knife."
+          },
+          {
+            "name": "Petty knife", "tag": "The precise one", "image": "petty-knife.svg",
+            "scores": {"jobs": 3, "often": 4, "forgiving": 5, "spend": 2},
+            "facts": {"length": "12 to 13 cm", "edge": "Straight, pointed tip", "best": "Peeling, trimming, cutting in the hand, small fruit", "price": "250 to 600 kr"},
+            "pick": "you keep using the big knife for jobs that fit in your hand.",
+            "avoid": "you already have a small knife you like. Any sharp one will do."
+          },
+          {
+            "name": "Bread knife", "tag": "The one you never sharpen", "image": "bread-knife.svg",
+            "scores": {"jobs": 2, "often": 4, "forgiving": 5, "spend": 1},
+            "facts": {"length": "22 to 25 cm", "edge": "Serrated", "best": "Crusty bread, cake, soft tomatoes", "price": "200 to 500 kr"},
+            "pick": "you slice your own bread. The teeth go through a hard crust without squashing the inside.",
+            "avoid": "you hope it will save you sharpening the others. Keep it for bread."
+          }
+        ],
+        "note": "A bread knife cannot be sharpened at home. When it stops biting, buy a new one, which is why it need not cost much."
+      }
+    },
+    {
+      "kind": "compare",
+      "settings": {
+        "title": "Optional: three to add when a job asks for it",
+        "text": "None of these is needed to start cooking. Each does one job better than the chef's knife, so buy it when you notice that job coming up again and again.",
+        "layout": "cards",
+        "scale": 5,
+        "criteria": [
+          {"key": "jobs", "label": "Jobs it covers"},
+          {"key": "often", "label": "Used often"},
+          {"key": "forgiving", "label": "Forgiving"},
+          {"key": "spend", "label": "Worth spending on"}
+        ],
+        "facts": [
+          {"key": "length", "label": "Blade"},
+          {"key": "edge", "label": "Edge"},
+          {"key": "best", "label": "Best for"},
+          {"key": "price", "label": "What to pay"}
+        ],
+        "items": [
+          {
+            "name": "Santoku", "tag": "The second big knife", "image": "santoku.svg",
+            "scores": {"jobs": 4, "often": 4, "forgiving": 4, "spend": 3},
+            "facts": {"length": "16 to 18 cm", "edge": "Flat, with a rounded-down tip", "best": "Thin slices, vegetables, chopping straight down", "price": "500 to 1,500 kr"},
+            "pick": "you chop straight down more than you rock the blade, or a chef's knife feels too big.",
+            "avoid": "you have a chef's knife you like. It does the same jobs."
+          },
+          {
+            "name": "Boning knife", "tag": "For a whole chicken", "image": "boning-knife.svg",
+            "scores": {"jobs": 1, "often": 1, "forgiving": 3, "spend": 2},
+            "facts": {"length": "13 to 15 cm", "edge": "Narrow, stiff and pointed", "best": "Jointing a chicken, taking meat off the bone, trimming", "price": "300 to 700 kr"},
+            "pick": "you buy whole chickens or cuts on the bone and joint them yourself.",
+            "avoid": "your meat comes ready cut."
+          },
+          {
+            "name": "Fillet knife", "tag": "For a whole fish", "image": "fillet-knife.svg",
+            "scores": {"jobs": 1, "often": 1, "forgiving": 3, "spend": 2},
+            "facts": {"length": "17 to 20 cm", "edge": "Thin and flexible", "best": "Filleting fish, taking the skin off a fillet", "price": "250 to 600 kr"},
+            "pick": "you fish, or buy whole fish and fillet them yourself.",
+            "avoid": "you buy your fish as fillets."
+          }
+        ]
+      }
+    },
+    {
+      "kind": "text",
+      "settings": {
+        "markdown": "## Keeping them sharp\n\nA dull knife is the dangerous one: it slides off a tomato skin or an onion instead of biting, and you press harder. A steel and a stone keep the edge between them, and a sharpener with ceramic wheels is the simple option in between.\n\n![A honing steel](honing-steel.svg)\n\n**The honing steel** takes no metal off. It straightens an edge that has rolled over in use. Give the knife a few light strokes on each side before you cook, at the same angle each time.\n\n![A sharpener with ceramic wheels](roll-sharpener.svg)\n\n**The simple option: a sharpener with ceramic wheels.** You pull the knife through the slot a few times. Unlike the steel, the wheels take a little metal off, so the knife really does get sharper, and it is just as quick. The angle is fixed and suits Western knives like the chef's knife, not hard Japanese ones with a thin edge. It cannot save a knife that is very dull or chipped, and the edge is not as fine as one from a stone. Use it often, and have the knife ground on a stone once a year, by you or a knife sharpener. Around 250 kr.\n\n![A whetstone with a coarse and a fine side](whetstone.svg)\n\n**The whetstone** grinds a new edge when the steel no longer helps, a few times a year. The coarse side (around 1000) makes the edge, the fine side (3000 to 6000) polishes it. Wet the stone, hold the angle, and work the whole length of the blade until you feel a small burr on the other side.\n\n- The bread knife is not sharpened at home. When it stops biting, replace it.\n- Skip the cheap pull-through sharpeners with hard metal blades in a V instead of wheels. They tear off a lot of steel and leave a ragged edge."
+      }
+    },
+    {
+      "kind": "text",
+      "settings": {
+        "markdown": "## German or Japanese?\n\nBoth make good knives. They are built for different habits.\n\n- **German style:** softer, tougher steel, a thicker blade and a curved edge you rock on the board. It forgives a twist or a knock against bone, and a steel brings it back to sharp. Sharpened at about 20 degrees a side.\n- **Japanese style:** harder steel that holds a thinner, sharper edge for longer, on a flatter blade made for slicing down and forward. It can chip if you twist it or hit bone, and wants a lighter hand and a stone (or a ceramic rod) rather than a steel. Sharpened at about 15 degrees a side.\n\nIf you are unsure, start with German: it puts up with more. Choose Japanese if you like thin, clean slices and will look after the edge."
+      }
+    },
+    {
+      "kind": "text",
+      "settings": {
+        "markdown": "## What to skip\n\n- **The block of twelve.** A set pays for knives you will not use. Put the money into a good chef's knife, and keep the knives on a magnetic strip or with blade guards in the drawer, not loose.\n- **Glass, stone and marble boards.** They dull an edge in a few cuts. Use wood or plastic.\n- **The dishwasher.** Heat, salt and other things knocking against the edge dull and chip it, and wooden handles crack. Wash by hand and dry straight away.\n- **Serrated knives that \"never need sharpening\",** apart from the bread knife. They tear rather than cut, and cannot be sharpened when they do go dull."
+      }
+    },
+    {
+      "kind": "recipes",
+      "settings": {
+        "title": "Plenty to chop",
+        "text": "Vegetarian dishes where the chef's knife does most of the work.",
+        "filter": {"diet": "vegetarian"},
+        "sort": "new",
+        "limit": 5,
+        "more": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 70" width="380" height="70" fill="none" stroke="#2B2F2C" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Santoku: a tall 17 cm blade with a flat edge, a tip that drops to the edge, dimples, and a wooden Japanese handle">
+<path d="M118 12 L17 13 Q12 13 12 18 L12 27 Q12 32 17 32 L118 33 Z" fill="#EAD7C2"></path>
+<path d="M24 22.5 L106 22.8" stroke-width="1.2"></path>
+<path d="M118 11.5 L132 11 L132 34 L118 33.5 Z" fill="#A3A6A1"></path>
+<path d="M132 10 L250 10.5 Q284 13 300 50 Q301 54 295 54 L140 56 Q133 56 132 50 Z" fill="#E6E7E3"></path>
+<ellipse cx="158" cy="43" rx="6" ry="3" fill="#D3D4D0" stroke-width="1.2"></ellipse>
+<ellipse cx="182" cy="43" rx="6" ry="3" fill="#D3D4D0" stroke-width="1.2"></ellipse>
+<ellipse cx="206" cy="43" rx="6" ry="3" fill="#D3D4D0" stroke-width="1.2"></ellipse>
+<ellipse cx="230" cy="43" rx="6" ry="3" fill="#D3D4D0" stroke-width="1.2"></ellipse>
+<ellipse cx="254" cy="43" rx="6" ry="3" fill="#D3D4D0" stroke-width="1.2"></ellipse>
+<path d="M140 50.5 L292 49" stroke-width="1.4"></path>
+</svg>

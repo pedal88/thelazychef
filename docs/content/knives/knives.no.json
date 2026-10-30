@@ -1,0 +1,135 @@
+{
+  "slug": "knives",
+  "kind": "guide",
+  "lang": "no",
+  "title": "Hvilke kniver? Tre du trenger, tre du kanskje vil ha",
+  "summary": "En kokkekniv, en pettykniv og en brødkniv dekker det meste av matlagingen. Så tre til du kan kjøpe når en jobb krever det, og hvordan du holder dem skarpe.",
+  "hero_image": null,
+  "note": "Knivguiden på norsk: de samme bildene, egne ord",
+  "blocks": [
+    {
+      "kind": "text",
+      "settings": {
+        "markdown": "Du trenger færre kniver enn butikkene vil selge deg. Tre dekker nesten alt et vanlig kjøkken gjør: en kokkekniv til det meste av kuttingen, en liten pettykniv til småjobbene, og en brødkniv til det de to andre ville klemt flatt. Kjøp de tre i god kvalitet, og hold dem skarpe, før du tenker på en fjerde.\n\nUnder finner du de tre, så tre til som bare er verdt å kjøpe når en jobb krever det, og til slutt hvordan du holder dem skarpe. Tegningene er i samme målestokk, så du ser hvor store knivene er i forhold til hverandre."
+      }
+    },
+    {
+      "kind": "compare",
+      "settings": {
+        "title": "Må ha: de tre du trenger",
+        "text": "Poeng fra 1 til 5, sammenliknet med alle de seks knivene i guiden. Verdt å bruke penger på sier hvor mye mer du får av en dyrere kniv: 5 betyr kjøp en god en, 1 betyr at en billig gjør jobben.",
+        "layout": "cards",
+        "scale": 5,
+        "criteria": [
+          {"key": "jobs", "label": "Jobber den dekker"},
+          {"key": "often", "label": "Brukes ofte"},
+          {"key": "forgiving", "label": "Tilgivende"},
+          {"key": "spend", "label": "Verdt å bruke penger på"}
+        ],
+        "facts": [
+          {"key": "length", "label": "Blad"},
+          {"key": "edge", "label": "Egg"},
+          {"key": "best", "label": "Best til"},
+          {"key": "price", "label": "Hva den koster"}
+        ],
+        "items": [
+          {
+            "name": "Kokkekniv", "tag": "Arbeidshesten", "image": "chefs-knife.svg",
+            "scores": {"jobs": 5, "often": 5, "forgiving": 4, "spend": 5},
+            "facts": {"length": "20 til 21 cm", "edge": "Rett, buer opp mot tuppen", "best": "Hakking, skjæring og terninger: det meste av kuttingen", "price": "600 til 1 500 kr"},
+            "pick": "du bare skal kjøpe én kniv. Den gjør det meste av jobben, så det er her pengene skal brukes.",
+            "avoid": "den føles som en øks i hånden. Da er santokuen lenger ned din store kniv."
+          },
+          {
+            "name": "Pettykniv", "tag": "Den presise", "image": "petty-knife.svg",
+            "scores": {"jobs": 3, "often": 4, "forgiving": 5, "spend": 2},
+            "facts": {"length": "12 til 13 cm", "edge": "Rett, spiss tupp", "best": "Skrelling, rensing, kutting i hånden, små frukter", "price": "250 til 600 kr"},
+            "pick": "du stadig bruker den store kniven til jobber som får plass i hånden.",
+            "avoid": "du allerede har en liten kniv du liker. Enhver skarp kniv duger."
+          },
+          {
+            "name": "Brødkniv", "tag": "Den du aldri sliper", "image": "bread-knife.svg",
+            "scores": {"jobs": 2, "often": 4, "forgiving": 5, "spend": 1},
+            "facts": {"length": "22 til 25 cm", "edge": "Tagget", "best": "Brød med skorpe, kake, myke tomater", "price": "200 til 500 kr"},
+            "pick": "du skjærer brødet selv. Tennene går gjennom en hard skorpe uten å klemme sammen innmaten.",
+            "avoid": "du håper den skal spare deg for å slipe de andre. Bruk den til brød."
+          }
+        ],
+        "note": "En brødkniv kan ikke slipes hjemme. Når den slutter å bite, kjøper du en ny, og derfor trenger den ikke koste mye."
+      }
+    },
+    {
+      "kind": "compare",
+      "settings": {
+        "title": "Valgfritt: tre til når en jobb krever det",
+        "text": "Ingen av disse trenger du for å begynne. Hver av dem gjør én jobb bedre enn kokkekniven, så kjøp den når du merker at den jobben kommer igjen og igjen.",
+        "layout": "cards",
+        "scale": 5,
+        "criteria": [
+          {"key": "jobs", "label": "Jobber den dekker"},
+          {"key": "often", "label": "Brukes ofte"},
+          {"key": "forgiving", "label": "Tilgivende"},
+          {"key": "spend", "label": "Verdt å bruke penger på"}
+        ],
+        "facts": [
+          {"key": "length", "label": "Blad"},
+          {"key": "edge", "label": "Egg"},
+          {"key": "best", "label": "Best til"},
+          {"key": "price", "label": "Hva den koster"}
+        ],
+        "items": [
+          {
+            "name": "Santoku", "tag": "Den andre store kniven", "image": "santoku.svg",
+            "scores": {"jobs": 4, "often": 4, "forgiving": 4, "spend": 3},
+            "facts": {"length": "16 til 18 cm", "edge": "Flat, med avrundet tupp", "best": "Tynne skiver, grønnsaker, hakking rett ned", "price": "500 til 1 500 kr"},
+            "pick": "du hakker rett ned mer enn du vipper bladet, eller kokkekniven føles for stor.",
+            "avoid": "du har en kokkekniv du liker. Den gjør de samme jobbene."
+          },
+          {
+            "name": "Utbeiningskniv", "tag": "Til en hel kylling", "image": "boning-knife.svg",
+            "scores": {"jobs": 1, "often": 1, "forgiving": 3, "spend": 2},
+            "facts": {"length": "13 til 15 cm", "edge": "Smal, stiv og spiss", "best": "Partere kylling, skjære kjøtt fra beinet, trimme", "price": "300 til 700 kr"},
+            "pick": "du kjøper hele kyllinger eller kjøtt med bein og parterer selv.",
+            "avoid": "kjøttet ditt kommer ferdig skåret."
+          },
+          {
+            "name": "Filetkniv", "tag": "Til en hel fisk", "image": "fillet-knife.svg",
+            "scores": {"jobs": 1, "often": 1, "forgiving": 3, "spend": 2},
+            "facts": {"length": "17 til 20 cm", "edge": "Tynn og bøyelig", "best": "Filetere fisk, ta skinnet av en filet", "price": "250 til 600 kr"},
+            "pick": "du fisker, eller kjøper hel fisk og fileterer selv.",
+            "avoid": "du kjøper fisken som filet."
+          }
+        ]
+      }
+    },
+    {
+      "kind": "text",
+      "settings": {
+        "markdown": "## Slik holder du dem skarpe\n\nDet er den sløve kniven som er farlig: den glir av tomatskallet eller løken i stedet for å bite, og du presser hardere. Brynestål og slipestein holder eggen ved like, og en sliper med keramiske hjul er det enkle alternativet midt imellom.\n\n![Et brynestål](honing-steel.svg)\n\n**Brynestålet** tar ikke bort metall. Det retter opp en egg som har bøyd seg under bruk. Gi kniven noen lette strøk på hver side før du lager mat, med samme vinkel hver gang.\n\n![En sliper med keramiske hjul](roll-sharpener.svg)\n\n**Det enkle alternativet: en sliper med keramiske hjul.** Du trekker kniven gjennom sporet noen ganger. I motsetning til brynestålet tar hjulene bort litt stål, så kniven blir faktisk skarpere, og det går like fort. Vinkelen er fast og passer vestlige kniver som kokkekniven, ikke harde japanske kniver med tynn egg. Den kan ikke redde en kniv som er veldig sløv eller har hakk, og eggen blir ikke like fin som fra en slipestein. Bruk den ofte, og få kniven slipt på stein en gang i året, selv eller hos en knivsliper. Rundt 250 kr.\n\n![En slipestein med en grov og en fin side](whetstone.svg)\n\n**Slipesteinen** sliper en ny egg når brynestålet ikke hjelper lenger, et par ganger i året. Den grove siden (rundt 1000) lager eggen, den fine siden (3000 til 6000) polerer den. Gjør steinen våt, hold vinkelen, og jobb over hele bladet til du kjenner en liten grat på den andre siden.\n\n- Brødkniven slipes ikke hjemme. Når den slutter å bite, bytter du den ut.\n- Dropp de billige trekksliperne med hardmetall i en V i stedet for hjul. De river av mye stål og gir en ujevn egg."
+      }
+    },
+    {
+      "kind": "text",
+      "settings": {
+        "markdown": "## Tysk eller japansk?\n\nBegge lager gode kniver. De er laget for ulike vaner.\n\n- **Tysk stil:** mykere og seigere stål, et tykkere blad og en buet egg du vipper mot fjølen. Den tåler en vridning eller et slag mot bein, og brynestålet gjør den skarp igjen. Slipes med rundt 20 grader per side.\n- **Japansk stil:** hardere stål som holder en tynnere og skarpere egg lenger, på et flatere blad laget for å skjære ned og fremover. Den kan få hakk hvis du vrir den eller treffer bein, og vil ha en lettere hånd og en slipestein (eller en keramisk stav) i stedet for brynestål. Slipes med rundt 15 grader per side.\n\nEr du usikker, begynn med tysk: den tåler mer. Velg japansk hvis du liker tynne, rene skiver og vil ta vare på eggen."
+      }
+    },
+    {
+      "kind": "text",
+      "settings": {
+        "markdown": "## Dette kan du droppe\n\n- **Knivblokken med tolv kniver.** Et sett betaler for kniver du ikke kommer til å bruke. Bruk pengene på en god kokkekniv, og oppbevar knivene på en magnetlist eller med bladbeskyttere i skuffen, ikke løse.\n- **Skjærefjøler av glass, stein og marmor.** De gjør eggen sløv på noen få kutt. Bruk tre eller plast.\n- **Oppvaskmaskinen.** Varme, salt og andre ting som slår mot eggen gjør den sløv og gir hakk, og trehåndtak sprekker. Vask for hånd og tørk med en gang.\n- **Taggete kniver som «aldri trenger sliping»,** bortsett fra brødkniven. De river i stedet for å skjære, og kan ikke slipes når de først blir sløve."
+      }
+    },
+    {
+      "kind": "recipes",
+      "settings": {
+        "title": "Mye å hakke",
+        "text": "Vegetarretter der kokkekniven gjør det meste av jobben.",
+        "filter": {"diet": "vegetarian"},
+        "sort": "new",
+        "limit": 5,
+        "more": true
+      }
+    }
+  ]
+}

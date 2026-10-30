@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 70" width="380" height="70" fill="none" stroke="#2B2F2C" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="A sharpener with ceramic wheels: a handle, and a slot over the wheels that you pull the knife through">
+<path d="M12 41 Q12 32 21 32 L112 32 L112 52 L21 52 Q12 52 12 43 Z" fill="#A3A6A1"></path>
+<path d="M30 37 L30 47 M38 37 L38 47 M46 37 L46 47" stroke-width="1.4"></path>
+<path d="M108 52 L108 24 Q108 16 116 16 L137 16 L137 31 Q137 34 140 34 L145 34 Q148 34 148 31 L148 16 L169 16 Q177 16 177 24 L177 52 Z" fill="#E6E7E3"></path>
+<circle cx="142.5" cy="43" r="6" fill="#FFFFFF"></circle>
+<circle cx="142.5" cy="43" r="1.6" fill="#2B2F2C" stroke="none"></circle>
+</svg>
