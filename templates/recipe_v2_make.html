@@ -72,6 +72,7 @@
     <div class="runs-line fab-runs" data-runs aria-live="polite" hidden></div>
     {{ step_list() }}
     <div class="fab-tools">
+      {% if mine and (mine.note or mine.photos) %}<button type="button" class="note-open" data-sheet="sheet-more" data-jump="more-mine" aria-label="Your note from last time" title="Your note from last time">{{ icon('message') }}</button>{% endif %}
       {{ details_button() }}
       {{ view_menu() }}
       {{ bowls_button() }}

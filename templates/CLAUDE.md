@@ -38,6 +38,10 @@ One page, `recipe_v2_make.html`, from `services/recipe_v2/view.page`: the overvi
   `static/js/done.js`): the dish, how long it took, and for a signed-in cook "I made this" (counted once per meal,
   `/api/interactions/recipe/<id>/cooked`) with stars, comment and photos. Those fields are shared with the recipe
   list's drawer: `components/feedback_fields.html` and `static/js/feedback.js`.
+- What the cook saved there comes back the next time (`mine` from `recipe_detail`; `components/overview_layouts.html`):
+  the note and stars as a card above the ingredients, the cook's own photo as a small round one in the corner of the
+  AI image (which stays the dish's picture, also on the Made list's card), all of it in the sheet at `#more-mine`,
+  and a note button among the floating controls while cooking.
 - `docs/prototypes/*.html` are the prototypes the views were built from; they are not served by the app.
 
 ## Pages made of blocks

@@ -11,11 +11,11 @@ html.cooking .rv2.make { padding-top: 0; }
 html.cooking body .trialbar { bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }  /* no bar under it while cooking */
 
 /* The floating controls: small, round and half see-through, over the steps */
-.fab, .fab-tools .vmenu-btn, .fab-tools .bowls-open, .fab-tools .details-btn { display: inline-grid; place-items: center; height: 40px; min-width: 40px; border-radius: var(--radius-pill);
+.fab, .fab-tools .vmenu-btn, .fab-tools .bowls-open, .fab-tools .details-btn, .fab-tools .note-open { display: inline-grid; place-items: center; height: 40px; min-width: 40px; border-radius: var(--radius-pill);
   border: 1px solid color-mix(in srgb, var(--color-line) 70%, transparent); color: var(--color-ink); cursor: pointer;
   background: color-mix(in srgb, var(--color-paper) 82%, transparent); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
   box-shadow: 0 2px 10px rgb(0 0 0 / .08); padding: 0; font: 600 13px/1 var(--font-sans); }
-.fab:hover, .fab-tools .vmenu-btn:hover, .fab-tools .bowls-open:hover, .fab-tools .details-btn:hover { background: var(--color-paper); }
+.fab:hover, .fab-tools .vmenu-btn:hover, .fab-tools .bowls-open:hover, .fab-tools .details-btn:hover, .fab-tools .note-open:hover { background: var(--color-paper); }
 .fab-tools .details-btn[aria-pressed="true"] { background: var(--color-ink); color: var(--color-paper); border-color: var(--color-ink); }
 .fab-back { position: fixed; z-index: 130; top: calc(10px + env(safe-area-inset-top, 0px)); left: max(10px, env(safe-area-inset-left, 0px)); }
 .fab-tools { position: fixed; z-index: 130; right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(14px + env(safe-area-inset-bottom, 0px));
