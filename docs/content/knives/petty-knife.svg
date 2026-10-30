@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 70" width="380" height="70" fill="none" stroke="#2B2F2C" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Petty knife: a narrow 13 cm blade and a riveted handle">
+<path d="M108 15 L24 14.5 Q12 14.5 12 23.5 Q12 32.5 24 32.5 L108 32 Z" fill="#A3A6A1"></path>
+<circle cx="40" cy="23.5" r="2.2" fill="#FFFFFF" stroke-width="1.6"></circle>
+<circle cx="78" cy="23.5" r="2.2" fill="#FFFFFF" stroke-width="1.6"></circle>
+<path d="M108 14 L116 14 L116 36 Q111 36 108 32 Z" fill="#D3D4D0"></path>
+<path d="M116 14 L218 15 Q236 16 246 22 Q222 37 190 38 L124 40 Q117 40 116 36 Z" fill="#E6E7E3"></path>
+<path d="M124 35.5 L190 34 Q218 33.4 238 23" stroke-width="1.4"></path>
+</svg>

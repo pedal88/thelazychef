@@ -88,6 +88,23 @@ image that is not uploaded is refused, so upload the images first. A full addres
 Lower case file names, `.svg`, `.png`, `.jpg`, `.webp` or `.gif`, at most 5 MB. Line drawings as SVG suit the cards;
 photos as WebP.
 
+### Drawing style
+
+The guides' drawings are flat line drawings, so a new guide's set sits next to the frying pans and the knives
+(`docs/content/frying-pans/`, `docs/content/knives/`):
+
+- One dark outline, `#2B2F2C`, with round caps and joins. Flat fills: no gradients, shadows or text in the drawing (the
+  card carries the name, so one file serves both languages).
+- Steel `#E6E7E3` and `#D3D4D0`, plastic `#A3A6A1`, wood `#EAD7C2`, white for holes. Other colour only when it is what
+  tells the items apart, like a pan's coating.
+- One frame per guide: every drawing in a set has the same `viewBox` and the same view, so they line up in the cards.
+  Draw to scale when size matters: the knives are 1 unit to 1 mm in a 380 × 70 frame.
+- The outline comes out at about 2 px in a card: 2.2 in a 220-wide frame, 2.6 in a 380-wide one. Details (rivets, the
+  edge bevel) at about half that.
+- The view that shows the difference: the pans from a little above to show the inside, the knives side on to show the
+  blade.
+- An `aria-label` on the `<svg>` that says what sets this one apart.
+
 ## Interactives
 
 Upload in Admin -> Pages -> Interactives (a file or pasted HTML, at most 2 MB); the reply gives the block to paste.

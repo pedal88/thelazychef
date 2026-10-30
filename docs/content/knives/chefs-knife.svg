@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 70" width="380" height="70" fill="none" stroke="#2B2F2C" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Chef's knife: a 21 cm blade with a curved edge, a bolster and a riveted handle">
+<path d="M126 10 L26 9.5 Q12 9.5 12 20.5 Q12 31.5 26 31.5 L126 31 Z" fill="#A3A6A1"></path>
+<circle cx="46" cy="20.5" r="2.6" fill="#FFFFFF" stroke-width="1.6"></circle>
+<circle cx="76" cy="20.5" r="2.6" fill="#FFFFFF" stroke-width="1.6"></circle>
+<circle cx="106" cy="20.5" r="2.6" fill="#FFFFFF" stroke-width="1.6"></circle>
+<path d="M126 9 L138 9 L138 37 Q131 37 126 31 Z" fill="#D3D4D0"></path>
+<path d="M138 9 L292 10 Q330 12 350 24 Q300 55 252 56 L150 58 Q140 58 138 52 Z" fill="#E6E7E3"></path>
+<path d="M146 51 L250 49.5 Q300 48.8 338 26" stroke-width="1.4"></path>
+</svg>

@@ -53,7 +53,7 @@ class ContentTests(unittest.TestCase):
         db.session.remove()
         db.drop_all()
         self.ctx.pop()
-        for slug in ('cast-iron', 'pans', 'frying-pans'):  # images the tests uploaded (local storage)
+        for slug in ('cast-iron', 'pans', 'frying-pans', 'knives'):  # images the tests uploaded (local storage)
             shutil.rmtree(os.path.join(ROOT, 'static', 'content', slug), ignore_errors=True)
 
     def login(self, email):
@@ -267,40 +267,60 @@ class ContentTests(unittest.TestCase):
         self.assertIn('name="tp-1" value="1" checked', html)
         self.assertIn('They slide off.', html)
 
-    def test_the_pilot_guide_is_a_valid_package(self):
-        """docs/content/frying-pans: the example every new guide can start from"""
-        folder = os.path.join(ROOT, 'docs', 'content', 'frying-pans')
-        with open(os.path.join(folder, 'frying-pans.json'), encoding='utf-8') as f:
-            data = json.load(f)
-        images = sorted(n for n in os.listdir(folder) if n.endswith('.svg'))
-        self.assertEqual(images, ['carbon-steel.svg', 'cast-iron.svg', 'ceramic.svg', 'non-stick.svg', 'stainless-steel.svg'])
-        self.assertIn('no image "cast-iron.svg"', ' '.join(check_blocks(data['blocks'], data['slug'])))
+    def _guide(self, slug, images):
+        """A guide package in docs/content/<slug>: its images uploaded, the English and Norwegian versions checked
+        and published"""
+        folder = os.path.join(ROOT, 'docs', 'content', slug)
+        self.assertEqual(sorted(n for n in os.listdir(folder) if n.endswith('.svg')), images)
+        packages = {}
+        for lang, name in (('en', f'{slug}.json'), ('no', f'{slug}.no.json')):
+            with open(os.path.join(folder, name), encoding='utf-8') as f:
+                packages[lang] = json.load(f)
+            self.assertEqual((packages[lang]['slug'], packages[lang]['lang']), (slug, lang))
+        self.assertIn(f'no image "{images[0]}"', ' '.join(check_blocks(packages['en']['blocks'], slug)))
         self.login('admin@test')
         with self.client as c:
             from io import BytesIO
-            c.post('/admin/pages/images', data={'slug': 'frying-pans', 'images': [
+            c.post('/admin/pages/images', data={'slug': slug, 'images': [
                 (BytesIO(open(os.path.join(folder, n), 'rb').read()), n) for n in images]}, content_type='multipart/form-data')
-        self.assertEqual(check_blocks(data['blocks'], data['slug']), [])
-        publish(save_version(data))
-        db.session.commit()
-        html = self.client.get('/guides/frying-pans').get_data(as_text=True)
+        for package in packages.values():
+            self.assertEqual(check_blocks(package['blocks'], slug), [])
+            publish(save_version(package))
+            db.session.commit()
+        return (self.client.get(f'/guides/{slug}').get_data(as_text=True),
+                self.client.get(f'/guides/{slug}?lang=no').get_data(as_text=True))
+
+    def test_the_pilot_guide_is_a_valid_package(self):
+        """docs/content/frying-pans: the example every new guide can start from"""
+        html, norsk = self._guide('frying-pans', ['carbon-steel.svg', 'cast-iron.svg', 'ceramic.svg', 'non-stick.svg',
+                                                  'stainless-steel.svg'])
         for part in ('Five pans, the same six questions', 'The heat store', 'What are you cooking?', 'Looking after them'):
             self.assertIn(part, html)
-        # The Norwegian version: the same images, its own words
-        with open(os.path.join(folder, 'frying-pans.no.json'), encoding='utf-8') as f:
-            norsk = json.load(f)
-        self.assertEqual(check_blocks(norsk['blocks'], norsk['slug']), [])
-        publish(save_version(norsk))
-        db.session.commit()
-        self.assertIn('Hva skal du lage?', self.client.get('/guides/frying-pans?lang=no').get_data(as_text=True))
-        self.assertIn('What are you cooking?', self.client.get('/guides/frying-pans').get_data(as_text=True))
-        # The home page in docs/content points at the guide
+        self.assertIn('Hva skal du lage?', norsk)
+
+    def test_the_knife_guide_is_a_valid_package(self):
+        """docs/content/knives: two comparisons (must have, optional), then sharpening as text with its drawings"""
+        html, norsk = self._guide('knives', ['boning-knife.svg', 'bread-knife.svg', 'chefs-knife.svg', 'fillet-knife.svg',
+                                             'honing-steel.svg', 'petty-knife.svg', 'roll-sharpener.svg', 'santoku.svg',
+                                             'whetstone.svg'])
+        for part in ('Must have: the three you need', 'The workhorse', 'Optional: three to add', 'Keeping them sharp',
+                     'German or Japanese?'):
+            self.assertIn(part, html)
+        for part in ('Må ha: de tre du trenger', 'Den du aldri sliper', 'Slik holder du dem skarpe', 'Tysk eller japansk?'):
+            self.assertIn(part, norsk)
+
+    def test_the_home_page_points_at_the_guides(self):
+        """docs/content/home.json: a tile per published guide"""
+        self._guide('frying-pans', ['carbon-steel.svg', 'cast-iron.svg', 'ceramic.svg', 'non-stick.svg', 'stainless-steel.svg'])
+        self._guide('knives', sorted(n for n in os.listdir(os.path.join(ROOT, 'docs', 'content', 'knives')) if n.endswith('.svg')))
         with open(os.path.join(ROOT, 'docs', 'content', 'home.json'), encoding='utf-8') as f:
             home = json.load(f)
         self.assertEqual(check_blocks(home['blocks'], home['slug']), [])
         publish(save_version(home))
         db.session.commit()
-        self.assertIn('href="/guides/frying-pans"', self.client.get('/').get_data(as_text=True))
+        html = self.client.get('/').get_data(as_text=True)
+        self.assertIn('href="/guides/frying-pans"', html)
+        self.assertIn('href="/guides/knives"', html)
 
     # --- the content API (routes/content_api_routes.py, scripts/content.py) ---
 
