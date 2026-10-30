@@ -90,6 +90,8 @@ class OverviewMineTests(unittest.TestCase):
         self.assertNotIn('class="ovl-note"', html)
         self.assertNotIn('id="more-mine"', html)
         self.assertNotIn('class="ovl-myphoto"', html)
+        self.assertNotIn('data-noted="1"', html)
+        self.assertIn('data-st-finished hidden', html)  # the food is ready: back to the recipe (static/js/steps.js)
 
         self.client.post(f'/api/interactions/recipe/{self.recipe.id}/cooked')
         self.client.post(f'/api/interactions/recipe/{self.recipe.id}/feedback',
@@ -103,6 +105,7 @@ class OverviewMineTests(unittest.TestCase):
         self.assertIn('Your note · made once, last', html)
         self.assertIn('aria-label="4 of 5"', html)
         self.assertIn('id="more-mine"', html)
+        self.assertIn('data-noted="1"', html)  # the finished card offers Edit your note
         self.assertIn('data-jump="more-mine" aria-label="Your note from last time"', html)  # while cooking
         # The AI image stays the dish's picture; the cook's photo is the small round one
         self.assertIn('class="ovl-myphoto"', html)

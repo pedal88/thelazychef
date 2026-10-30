@@ -58,7 +58,7 @@
 
 {% block content %}
 {% set cont_img = dish_images(recipe).dish %}
-<article class="rv2 ready make has-ovl" data-recipe="{{ recipe.id }}" data-title="{{ v.title }}"{% if cont_img %} data-img="{{ cont_img }}"{% endif %}>
+<article class="rv2 ready make has-ovl" data-recipe="{{ recipe.id }}" data-title="{{ v.title }}"{% if cont_img %} data-img="{{ cont_img }}"{% endif %}{% if mine and (mine.note or mine.rating) %} data-noted="1"{% endif %}>
   {% call recipe_head(recipe, v, 'make') %}{{ admin_tools() }}{% endcall %}
 
   {% if ovl == 'compact' %}{{ compact() }}{% else %}{{ poster() }}{% endif %}
