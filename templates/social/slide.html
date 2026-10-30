@@ -7,9 +7,9 @@
 <meta name="robots" content="noindex">
 <title>{{ fmt }} {{ n }}/{{ slides }} - The Lazy Chef</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
-{# A look from the style trial (?look=c|d|e|f): its colours and fonts over today's (static/css/themes.css) #}
-{% if look %}<link rel="stylesheet" href="{{ url_for('static', filename='css/themes.css') }}">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?{{ LOOK_FONTS[look] }}&display=swap">{% endif %}
+{# The style trial's looks, as on the site (static/css/themes.css); ?look=c|d|e|f chooses one and loads its fonts #}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/themes.css') }}">
+{% if look %}<link rel="stylesheet" href="https://fonts.googleapis.com/css2?{{ LOOK_FONTS[look] }}&display=swap">{% endif %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/social.css') }}">
 </head>
 <body>

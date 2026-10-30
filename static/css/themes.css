@@ -57,19 +57,31 @@
   --icon-stroke: 1.25; --radius: 4px; --radius-sm: 2px;
 }
 
-/* ---- What makes each look more than its colours, on the recipe pages ---- */
+/* ---- What makes each look more than its colours, on every page and on the social slides ---- */
 
-/* C Hvit benk: tight, heavy headings */
-:root[data-look="c"] .rv2 h1, :root[data-look="c"] .rv2 h2, :root[data-look="c"] .rv2.cook .card h2 { font-weight: 800; letter-spacing: -0.025em; }
+/* Each look's headings and main button, as values (below), so the site and the posts have the same */
+:root[data-look="c"] { --look-title-weight: 800; --look-title-tracking: -0.025em; }  /* C Hvit benk: tight, heavy */
+:root[data-look="d"] { --look-title-weight: 800; --look-title-tracking: -0.02em;      /* D Safran: the main button */
+  --look-go: #F2B630; --look-go-ink: #1C1A17; --look-go-soft: #FCF0CF; }              /* in bright saffron */
+:root[data-look="e"] { --look-title-weight: 800; --look-title-tracking: 0.01em;       /* E Porselen: condensed capitals */
+  --look-title-case: uppercase; --look-title-stretch: 72%; }
+:root[data-look="f"] { --look-title-weight: 500; --look-title-tracking: 0.01em; }    /* F Washi: a quiet mincho */
 
-/* D Safran: the main button in bright saffron with dark text; rounder */
-:root[data-look="d"] .rv2 h1, :root[data-look="d"] .rv2.cook .card h2 { font-weight: 800; letter-spacing: -0.02em; }
-:root[data-look="d"] .rv2 .go { background: #F2B630; border-color: #F2B630; color: #1C1A17; }
-:root[data-look="d"] .rv2 .btn.primary { background: #FCF0CF; border-color: #F2B630; color: #1C1A17; }
+/* The headings: the recipe page, the browsing pages, the content pages, the galaxies, the slides */
+:root[data-look] :is(.rv2 h1, .rv2 h2, .rv2.cook .card h2, .lib-head h1, .lbar-title h1, .rcard h3, .lib-empty h3, .fb-head h2,
+    .pg-head h1, .blk-intro h1, .blk-intro h2, .blk-prose h2, .row-h h2, .cmp-name h3, .gx-head h1,
+    .slide .title, .slide .head, .slide .end .line) {
+  font-weight: var(--look-title-weight); letter-spacing: var(--look-title-tracking);
+  text-transform: var(--look-title-case, none); font-stretch: var(--look-title-stretch, normal); }
 
-/* E Porselen: everything in cobalt, plate rims, condensed capitals, the step you are on as a blue plate */
-:root[data-look="e"] .rv2 h1, :root[data-look="e"] .rv2.cook .card h2, :root[data-look="e"] .rv2 h2 { font-weight: 800; font-stretch: 72%; text-transform: uppercase; letter-spacing: 0.01em; }
-:root[data-look="e"] .rv2 .fact, :root[data-look="e"] .rv2.ready .bowl, :root[data-look="e"] .rv2 .settings, :root[data-look="e"] .rv2 .nutrition, :root[data-look="e"] .rv2.ready .ftile {
+/* The main button: Start cooking, Save, Sign up, the address on a post */
+:root[data-look="d"] :is(.rv2 .go, .lib-go, .disc-save, a.bg-orange-600, button.bg-orange-600, .slide .end .address) {
+  background: var(--look-go); border-color: var(--look-go); color: var(--look-go-ink); }
+:root[data-look="d"] .rv2 .btn.primary { background: var(--look-go-soft); border-color: var(--look-go); color: var(--look-go-ink); }
+
+/* E Porselen: plate rims, the dish on a plate, the step you are on as a blue plate */
+:root[data-look="e"] .rv2 .fact, :root[data-look="e"] .rv2.ready .bowl, :root[data-look="e"] .rv2 .settings, :root[data-look="e"] .rv2 .nutrition, :root[data-look="e"] .rv2.ready .ftile,
+:root[data-look="e"] .slide .facts span {
   border: 1.5px solid var(--color-ink); box-shadow: inset 0 0 0 4px var(--color-paper), inset 0 0 0 5px rgb(var(--neutral-200)); }
 :root[data-look="e"] .rv2 .hero img { border-radius: 999px / 46%; border: 1.5px solid var(--color-ink); }
 :root[data-look="e"] .rv2.cook .card.cook { background: var(--color-ink); color: rgb(var(--paper)); border-radius: 28px; box-shadow: inset 0 0 0 6px var(--color-ink), inset 0 0 0 7px rgb(255 255 255 / .35); }
@@ -77,12 +89,11 @@
 :root[data-look="e"] .rv2.cook .card.cook .donebox b { color: rgb(var(--neutral-200)); }
 :root[data-look="e"] .rv2.cook .card.cook .txt .pill, :root[data-look="e"] .rv2.cook .card.cook .needs { color: var(--color-ink); }
 
-/* F Washi: thin lines instead of boxes, a quiet mincho, tabs as a line under the word */
-:root[data-look="f"] .rv2 h1, :root[data-look="f"] .rv2.cook .card h2 { font-weight: 500; letter-spacing: 0.01em; }
+/* F Washi: thin lines instead of boxes, tabs as a line under the word */
 :root[data-look="f"] .rv2 .flowbar { border: 0; background: none; padding: 0; gap: 18px; border-bottom: 1px solid var(--color-line); border-radius: 0; }
 :root[data-look="f"] .rv2 .flowbar a { border-radius: 0; padding-inline: 2px; }
 :root[data-look="f"] .rv2 .flowbar a[aria-current="page"] { background: none; color: var(--color-ink); box-shadow: inset 0 -2px 0 var(--color-ink); }
-:root[data-look="f"] .rv2 .fact { background: none; border-radius: 0; border-top: 1px solid var(--color-ink); padding-inline: 0; }
+:root[data-look="f"] :is(.rv2 .fact, .slide .facts span) { background: none; border-radius: 0; border: 0; border-top: 1px solid var(--color-ink); padding-inline: 0; }
 :root[data-look="f"] .rv2.ready .bowl { border: 0; border-top: 1px solid var(--color-ink); border-radius: 0; background: none; }
 :root[data-look="f"] .rv2.cook .card { border-radius: 0; background: rgb(var(--paper)); border-left: 2px solid var(--color-cook); }
 

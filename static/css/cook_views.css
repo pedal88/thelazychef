@@ -28,10 +28,10 @@
 }
 
 /* ---- Metro map: a transit map, time down the page ---- */
-.mt .lane-0, .mt-key .lane-0 { --lane: #0f766e; }
-.mt .lane-1, .mt-key .lane-1 { --lane: #7c3aed; }
-.mt .lane-2, .mt-key .lane-2 { --lane: #be185d; }
-.mt .lane-3, .mt-key .lane-3 { --lane: #475569; }
+.mt .lane-0, .mt-key .lane-0 { --lane: var(--lane-0); }
+.mt .lane-1, .mt-key .lane-1 { --lane: var(--lane-1); }
+.mt .lane-2, .mt-key .lane-2 { --lane: var(--lane-2); }
+.mt .lane-3, .mt-key .lane-3 { --lane: var(--lane-3); }
 .mt-key { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin: 4px 0 var(--space-3); font-size: 13px; color: var(--color-muted); }
 .mt-key span { display: inline-flex; align-items: center; gap: 6px; }
 .mt-key i { width: 22px; height: 7px; border-radius: 4px; background: var(--lane); }

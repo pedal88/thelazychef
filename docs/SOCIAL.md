@@ -46,8 +46,10 @@ python -m scripts.social_render week --size tt --code 4          # one shop, fiv
 ```
 
 `--look c|d|e|f` (`?look=` on the pages) draws the slides in one of the style trial's looks (`static/css/themes.css`,
-the fonts in `routes/_shared.LOOK_FONTS`), to compare the directions on real posts. Post in the look visitors see on
-the site, today's until one is chosen.
+the fonts in `routes/_shared.LOOK_FONTS`), to compare the directions on real posts. The slides and the site read the
+same look: its colours, fonts, headings and main button are in `themes.css` for both, and the metro map's line colours
+are tokens (`--lane-0`…`--lane-3` in `tokens.css`). Post in the look visitors see on the site, today's until one is
+chosen.
 
 It reads production (or `--base http://127.0.0.1:8000`), photographs each slide with headless Chrome and writes the
 PNGs and `caption.txt` to `~/promptlab-runs/social/`, outside the repo. Nothing is written to production and nothing

@@ -93,7 +93,7 @@ class SocialTests(unittest.TestCase):
             with self.subTest(look=look):
                 html = self.get(base, look=look, slide=1).get_data(as_text=True)
                 self.assertIn('<html lang="en">', html)
-                self.assertNotIn('themes.css', html)
+                self.assertNotIn('fonts.googleapis', html)
 
     def test_the_site_and_the_slides_read_the_looks_fonts_from_one_place(self):
         from routes._shared import LOOK_FONTS
