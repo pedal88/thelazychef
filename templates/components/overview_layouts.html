@@ -44,11 +44,20 @@
 {% endif %}
 {%- endmacro %}
 
-{% macro my_photo() -%}
+{# The cook's own photos are not shown until asked for: a quiet "Your photo" on the AI image (which stays the dish's
+   picture) opens them in photo_sheet. Closed, the sheet's lazy images are not even loaded. #}
+{% macro my_photo(cls='ovl-myphoto') -%}
 {% if mine and mine.photos %}
-<button type="button" class="ovl-myphoto" data-sheet="sheet-more" data-jump="more-mine" aria-label="Your photo{{ 's' if mine.photos|length > 1 }}">
-  <img src="{{ mine.photos[-1] }}" alt="" width="96" height="96" loading="lazy">{% if mine.photos|length > 1 %}<span>{{ mine.photos|length }}</span>{% endif %}
-</button>
+<button type="button" class="{{ cls }}" data-sheet="sheet-photo">{{ icon('image') }}<span>Your photo{{ 's' if mine.photos|length > 1 }}{% if mine.photos|length > 1 %} · {{ mine.photos|length }}{% endif %}</span></button>
+{% endif %}
+{%- endmacro %}
+
+{% macro photo_sheet() -%}
+{% if mine and mine.photos %}
+<dialog class="photo-sheet" id="sheet-photo" aria-label="Your photo{{ 's' if mine.photos|length > 1 }}">
+  <button type="button" class="sheet-x" data-sheet-close aria-label="Close">{{ icon('close') }}</button>
+  <div class="photo-strip">{% for u in mine.photos|reverse %}<img src="{{ u }}" alt="Your photo{% if mine.photos|length > 1 %} {{ loop.index }} of {{ mine.photos|length }}{% endif %}" loading="lazy">{% endfor %}</div>
+</dialog>
 {% endif %}
 {%- endmacro %}
 
@@ -186,7 +195,7 @@
   <section id="more-mine" class="more-mine"><h3 class="eyebrow">Your note{{ made_line() }}</h3>
     {{ my_stars() }}
     {% if mine.note %}<p class="note">{{ mine.note }}</p>{% endif %}
-    {% if mine.photos %}<div class="mine-photos">{% for u in mine.photos|reverse %}<a href="{{ u }}" target="_blank" rel="noopener"><img src="{{ u }}" alt="Your photo" loading="lazy"></a>{% endfor %}</div>{% endif %}
+    {{ my_photo('mine-photo-open') }}
   </section>
   {% endif %}
   {% if has_parts(imgs) %}

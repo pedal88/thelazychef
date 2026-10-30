@@ -47,9 +47,10 @@ One page, `recipe_v2_make.html`, from `services/recipe_v2/view.page`: the overvi
   the recipe, How did it go? (Edit your note) and Cook it again: the card beside the steps, or on a phone a block under
   the list.
 - What the cook saved there comes back the next time (`mine` from `recipe_detail`; `components/overview_layouts.html`):
-  the note and stars as a card above the ingredients, the cook's own photo as a small round one in the corner of the
-  AI image (which stays the dish's picture, also on the Made list's card), all of it in the sheet at `#more-mine`,
-  and a note button among the floating controls while cooking.
+  the note and stars as a card above the ingredients, and a note button among the floating controls while cooking,
+  all of it in the sheet at `#more-mine`. The cook's own photos are not shown until asked for: a quiet "Your photo"
+  on the AI image (which stays the dish's picture) and in `#more-mine` opens them in `#sheet-photo`; the Made list's
+  card has only a small mark.
 - `docs/prototypes/*.html` are the prototypes the views were built from; they are not served by the app.
 
 ## Pages made of blocks

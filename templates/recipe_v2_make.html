@@ -11,7 +11,7 @@
 {% from "components/prep_board.html" import prep_body with context %}
 {% from "components/step_list.html" import step_list, view_menu, details_button, bowls_button with context %}
 {% from "components/admin_tools.html" import admin_tools with context %}
-{% from "components/overview_layouts.html" import poster, compact, more_sheet with context %}
+{% from "components/overview_layouts.html" import poster, compact, more_sheet, photo_sheet with context %}
 {% from "components/feedback_fields.html" import feedback_fields with context %}
 
 {% block title %}{{ v.title }} - The Lazy Chef{% endblock %}
@@ -123,6 +123,7 @@
   </dialog>
   {% endif %}
   {{ more_sheet() }}
+  {{ photo_sheet() }}
 </article>
 <script>
   (function () {

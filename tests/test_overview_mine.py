@@ -90,6 +90,7 @@ class OverviewMineTests(unittest.TestCase):
         self.assertNotIn('class="ovl-note"', html)
         self.assertNotIn('id="more-mine"', html)
         self.assertNotIn('class="ovl-myphoto"', html)
+        self.assertNotIn('id="sheet-photo"', html)
         self.assertNotIn('data-noted="1"', html)
         self.assertIn('data-st-finished hidden', html)  # the food is ready: back to the recipe (static/js/steps.js)
 
@@ -107,12 +108,16 @@ class OverviewMineTests(unittest.TestCase):
         self.assertIn('id="more-mine"', html)
         self.assertIn('data-noted="1"', html)  # the finished card offers Edit your note
         self.assertIn('data-jump="more-mine" aria-label="Your note from last time"', html)  # while cooking
-        # The AI image stays the dish's picture; the cook's photo is the small round one
-        self.assertIn('class="ovl-myphoto"', html)
-        self.assertIn('<img src="/static/user_uploads/mine.jpg" alt="" width="96"', html)
-        # and on the card in the Made list
-        self.assertIn('class="rcard-mine" src="/static/user_uploads/mine.jpg"',
-                      self.client.get('/recipes?view=made').get_data(as_text=True))
+        # The AI image stays the dish's picture; the cook's photo opens only when asked for, from a quiet label
+        self.assertIn('class="ovl-myphoto" data-sheet="sheet-photo"', html)
+        self.assertIn('class="mine-photo-open" data-sheet="sheet-photo"', html)  # in the sheet's Your note
+        self.assertIn('id="sheet-photo"', html)
+        self.assertIn('<img src="/static/user_uploads/mine.jpg" alt="Your photo" loading="lazy">', html)
+        self.assertEqual(html.count('src="/static/user_uploads/mine.jpg"'), 1)  # only in the closed photo sheet
+        # and the card in the Made list has a mark, not the photo
+        made = self.client.get('/recipes?view=made').get_data(as_text=True)
+        self.assertIn('class="rcard-mine" role="img" aria-label="You added a photo"', made)
+        self.assertNotIn('/static/user_uploads/mine.jpg', made)
 
         # Another cook sees none of it, nor does a visitor
         other = User(email='other@test')

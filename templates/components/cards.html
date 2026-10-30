@@ -13,9 +13,9 @@
         {% else %}
         <span class="no-img">{{ icon('utensils') }}</span>
         {% endif %}
-        {# The cook's own photo of the dish, small in the corner: the AI image stays the picture #}
+        {# The cook took a photo of the dish: only a small mark; the photo opens from the recipe page #}
         {% set own = recipe.interaction.user_photos if recipe.interaction is defined and recipe.interaction else none %}
-        {% if own %}<img class="rcard-mine" src="{{ own[-1] }}" alt="Your photo" loading="lazy">{% endif %}
+        {% if own %}<span class="rcard-mine" role="img" aria-label="You added a photo" title="You added a photo">{{ icon('image') }}</span>{% endif %}
         {% if recipe.is_super_liked %}<span class="rcard-star">Super liked</span>{% endif %}
         <span class="rcard-acts">
             {% if show_inspector %}

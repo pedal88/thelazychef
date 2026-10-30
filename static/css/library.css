@@ -19,10 +19,10 @@
 .rcard:hover .rcard-img img { transform: scale(1.03); }
 .rcard-img .no-img { position: absolute; inset: 0; display: grid; place-items: center; color: var(--color-line-strong); }
 .rcard-img .no-img .icon { width: 40px; height: 40px; }
-/* The cook's own photo of the dish, small and round in the corner (cards.html) */
-.rcard-img .rcard-mine { position: absolute; z-index: 2; left: var(--space-2); bottom: var(--space-2); width: 36px; height: 36px; border-radius: 50%;
-  border: 2px solid var(--color-paper); box-shadow: 0 1px 6px rgb(0 0 0 / .25); transition: none; }
-.rcard:hover .rcard-img .rcard-mine { transform: none; }
+/* The cook took a photo of the dish: a small mark in the corner, not the photo (cards.html) */
+.rcard-img .rcard-mine { position: absolute; z-index: 2; left: var(--space-2); bottom: var(--space-2); display: grid; place-items: center;
+  width: 26px; height: 26px; border-radius: 50%; background: rgb(0 0 0 / .45); color: #fff; }
+.rcard-img .rcard-mine .icon { width: 14px; height: 14px; }
 .rcard-acts { position: absolute; top: var(--space-2); right: var(--space-2); display: flex; gap: 6px; z-index: 2; }
 .rcard-acts button { display: grid; place-items: center; width: 36px; height: 36px; border: 0; border-radius: 50%; cursor: pointer;
   background: color-mix(in srgb, var(--color-paper) 92%, transparent); color: var(--color-muted); box-shadow: 0 1px 4px rgb(0 0 0 / .12); }
