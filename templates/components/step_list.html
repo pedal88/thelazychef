@@ -95,6 +95,12 @@
     {% endfor %}
   </ol>
   <p class="st-reset rail-reset"><button type="button" data-steps-reset>Untick all the steps</button></p>
+  {# Every step ticked off (static/js/steps.js); on a wide screen the card beside the steps says the same #}
+  <div class="st-finished" data-st-finished hidden>
+    <p class="eyebrow">{{ icon('check') }}The food is ready</p>
+    <button type="button" class="go" data-cook-close>Back to the recipe</button>
+    <div class="st-finished-more"><button type="button" data-st-feedback>How did it go?</button><button type="button" data-steps-reset>Cook it again</button></div>
+  </div>
   </div>
   {{ side_card(page=True) }}
 </section>

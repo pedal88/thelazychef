@@ -14,7 +14,11 @@
    tells the board ("steps:done"), the board asks for them ("ready:steps"). So you can do the prep from the bowls
    and go on in any view, or never open the bowls. The card beside a view shows a ready bowl instead of what is in it.
    A bowl's step button shows that step in the view you are in. The bowls the plan puts in a wait come forward when the
-   step they wait for is ticked off, and the card of that step offers them under "While you wait". */
+   step they wait for is ticked off, and the card of that step offers them under "While you wait".
+   With every step ticked off the food is ready: the card (and on a phone the block under the list) leads back to
+   the recipe, to the note (How did it go? or Edit your note) and to Cook it again. Once the celebration has saved the
+   meal (static/js/done.js says "steps:clear"), the ticks go and the page reloads at the overview, which shows the
+   note just saved. */
 (function () {
   'use strict';
   const page = document.querySelector('.make[data-recipe]');
@@ -68,6 +72,7 @@
       sw.title = say;
     }
     marks(next ? next.dataset.st : null);
+    finishedBlock(!next);
     timelineMarks();
     runs();
     deltaFlow();
@@ -115,6 +120,16 @@
       sp.panel.classList.toggle('strip', on);
       dispatchEvent(new Event('resize'));  // the delta makes room for the strip, or takes it back
     }
+  }
+
+  /* The food is ready: the block under the list (a phone; on a wide screen the card says it) */
+  const noted = () => page.dataset.noted === '1';
+  function finishedBlock(on) {
+    const box = $('[data-st-finished]');
+    if (!box) return;
+    box.hidden = !on;
+    page.classList.toggle('all-done', on);
+    box.querySelector('[data-st-feedback]').textContent = noted() ? 'Edit your note' : 'How did it go?';
   }
 
   /* The card beside the steps (the rail): which step of how many, the time from it to the table, what it needs
@@ -167,18 +182,21 @@
       + [...lb.map(b => `<button type="button" data-sheet="sheet-bowls" data-jump="${esc(b.closest('.later').id)}">Bowl ${esc(b.querySelector('.bno').dataset.no)}: ${esc(b.querySelector('.bowl-h b').textContent)}</button>`),
         ...look.map(x => `<button type="button" data-tip-look="${esc(x.id)}">${esc(byId[x.id].dataset.label)}</button> <span>${x.minutes} min</span>`)].join(' · ');
     const main = q('[data-sc-done]'), alt = q('[data-sc-alt]');
-    main.innerHTML = !row ? 'How did it go?' : peek ? esc(back.textContent) : 'Done <span aria-hidden="true">→</span> next step';
-    alt.hidden = !peek;
+    main.innerHTML = !row ? 'Back to the recipe' : peek ? esc(back.textContent) : 'Done <span aria-hidden="true">→</span> next step';
+    alt.hidden = !peek && !!row;
     if (peek) alt.textContent = done.has(id) ? `Untick step ${num(row)}` : `Mark step ${num(row)} as done`;
+    else if (!row) alt.textContent = noted() ? 'Edit your note' : 'How did it go?';
+    q('[data-steps-reset]').textContent = !row ? 'Cook it again' : 'Untick all the steps';
   }
   // The card's main button: done and on to the next step, or back to it from a look at another
   function cardDone(sp) {
     if (sp.pick) { sp.pick = null; splitRender(); return; }
     const id = nextId();
-    if (id) tick(byId[id]); else finished();
+    if (id) tick(byId[id]); else stopCooking();  // the food is ready: back to the recipe
   }
   // Its small button, on a look at another step: tick that step off, or back on, and go back
   function cardAlt(sp) {
+    if (!sp.pick && !nextId()) { finished(); return; }  // the food is ready: the note
     const id = sp.pick;
     sp.pick = null;
     if (id && byId[id]) tick(byId[id]); else splitRender();
@@ -495,6 +513,19 @@
     else { history.replaceState(null, '', location.pathname + location.search); cooking(false); }
   }
   addEventListener('popstate', () => cooking(location.hash === '#cook'));
+  // The meal is saved (static/js/done.js): the ticks go, and the overview is loaded afresh so it shows the new note
+  page.addEventListener('steps:clear', () => {
+    st = { done: [], runs: [] };
+    opened.clear();
+    render();
+    if (history.state && history.state.cook) {
+      addEventListener('popstate', () => location.reload(), { once: true });
+      history.back();
+    } else {
+      history.replaceState(null, '', location.pathname + location.search);
+      location.reload();
+    }
+  });
 
   /* How many bowls are ready, on the Bowls button, after static/js/ready.js has painted them */
   function bowls() {
@@ -609,6 +640,7 @@
       if (sp && getComputedStyle(sp.card).display !== 'none') { sp.pick = id === nextId() ? null : id; splitRender(); } else showStep(id);
       return;
     }
+    if (t.closest('[data-st-feedback]')) { finished(); return; }
     if (t.closest('[data-steps-reset]')) { st = { done: [], runs: [] }; opened.clear(); render(); if (t.closest('dialog')) startCooking(); return; }
     const fold = t.closest('[data-side-fold]');
     if (fold) { const sp = splits.find(x => x.card.contains(fold)); sp.folded = !sp.folded; splitRender(); return; }

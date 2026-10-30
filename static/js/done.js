@@ -1,7 +1,8 @@
 /* The celebration when the last step is ticked off (templates/recipe_v2_make.html, #sheet-done). static/js/steps.js
    says "steps:finished" with how long the cooking took; the sheet opens with a burst of confetti, the dish and the
    time. A signed-in cook saves "I made this" (POST /api/interactions/recipe/<id>/cooked, which counts the times) and
-   the stars, comment and photos (static/js/feedback.js). "Cook it again" unticks the steps (steps.js). */
+   the stars, comment and photos (static/js/feedback.js). "Cook it again" unticks the steps (steps.js); closing the
+   sheet once the meal is saved unticks them too and goes back to the recipe ("steps:clear", steps.js). */
 (function () {
   'use strict';
   const page = document.querySelector('.make[data-recipe]');
@@ -17,6 +18,7 @@
   const fb = made && window.Feedback ? window.Feedback.attach(form) : null;
   const still = matchMedia('(prefers-reduced-motion: reduce)');
   let saved = false;
+  let again = false;  // "Cook it again" closes the sheet to cook, not to go back to the recipe
   // The answer below the fields, scrolled to where it can be seen
   const tell = (text, error) => { fb.say(text, error); form.querySelector('[data-fb-status]').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); };
 
@@ -49,6 +51,7 @@
   async function open(minutes) {
     sub.textContent = took(minutes);
     saved = false;
+    again = false;
     if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save'; }
     if (!dialog.open) dialog.showModal();
     confetti();
@@ -63,8 +66,11 @@
 
   page.addEventListener('steps:finished', e => open(e.detail ? e.detail.minutes : null));
   // "Cook it again" unticks the steps (steps.js, on the same click) and goes back to them
-  dialog.addEventListener('click', e => { if (e.target.closest('[data-steps-reset]')) dialog.close(); });
-  dialog.addEventListener('close', () => burst.replaceChildren());
+  dialog.addEventListener('click', e => { if (e.target.closest('[data-steps-reset]')) { again = true; dialog.close(); } });
+  dialog.addEventListener('close', () => {
+    burst.replaceChildren();
+    if (saved && !again) page.dispatchEvent(new CustomEvent('steps:clear'));
+  });
 
   form.addEventListener('submit', async e => {
     e.preventDefault();
@@ -80,6 +86,7 @@
       }
       const missed = await fb.save();
       saved = true;
+      page.dataset.noted = '1';
       const done = !n ? 'Saved. Thank you.' : n === 1 ? 'Saved. It is in your Made list now.' : `Saved. That was your ${nth(n)} time.`;
       tell(missed ? `${done} ${missed}` : done, !!missed);
       saveBtn.textContent = 'Close';

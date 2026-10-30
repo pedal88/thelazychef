@@ -18,7 +18,7 @@
 }
 
 @media (min-width: 1000px) {
-  .rail-reset { display: none; }
+  .rail-reset, .st-finished { display: none; }
   html:has(.vpanel.rail:not([hidden])) .fab-tools .details-btn { display: none; }  /* every step is one line */
 
   /* The layout: the height between the controls at the top and the bottom, without the page scrolling */
