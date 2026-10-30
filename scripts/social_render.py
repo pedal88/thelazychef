@@ -11,7 +11,9 @@ Reads the public slide pages (/social/…) from production by default, or --base
 and takes each picture with headless Chrome (--chrome, or $CHROME; the macOS path by default). Nothing is written to
 production and nothing costs money. The pictures go to ~/promptlab-runs/social/<date>-<format>-<recipe>-<size>/, outside
 the repo: they hold recipe content. --code is the post's code in the address on the last slide
-(thelazychef.app/tiktok/3), so the Funnel page tells this post's visits from the others'.
+(thelazychef.app/tiktok/3), so the Funnel page tells this post's visits from the others': take the next free code the
+Funnel page gives. With a code the script ends with the address that logs the post in the Funnel page's post log, the
+form filled in; open it when the post is up.
 """
 import argparse
 import datetime
@@ -38,6 +40,7 @@ def tls():
 
 
 SIZES = {'ig': (1080, 1350), 'tt': (1080, 1920)}
+PLATFORM_OF_SIZE = {'ig': 'instagram', 'tt': 'tiktok'}  # the post log's platforms (services/funnel.PLATFORMS)
 # Headless Chrome now and then hangs on a page and never takes the picture, and a request to the site can stall: both
 # are stopped after SHOT_SECONDS and tried again, SHOT_TRIES times in all; Chrome each time with a profile of its own,
 # so a stuck one cannot lock the next
@@ -79,6 +82,12 @@ def page_url(base, fmt, recipe, **args):
     return f'{base.rstrip("/")}{path}?{urllib.parse.urlencode({k: v for k, v in args.items() if v})}'
 
 
+def log_url(base, size, code, fmt, recipe):
+    """The Funnel page's form for a new post, filled in for this one."""
+    query = {'platform': PLATFORM_OF_SIZE[size], 'code': code, 'format': fmt, 'recipe': recipe}
+    return f'{base.rstrip("/")}/admin/funnel/posts/new?{urllib.parse.urlencode({k: v for k, v in query.items() if v})}'
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('format', choices=['map', 'grid', 'pantry', 'week'])
@@ -113,6 +122,8 @@ def main():
         print(f'{target}')
     (folder / 'caption.txt').write_text(caption, encoding='utf-8')
     print(f'\n{count} slides and caption.txt in {folder}\n\n{caption}')
+    if args.code:
+        print(f'\nWhen it is up, log it: {log_url(args.base, args.size, args.code, args.format, args.recipe)}')
 
 
 if __name__ == '__main__':
