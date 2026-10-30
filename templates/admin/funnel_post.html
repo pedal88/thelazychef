@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{# A post in the Funnel page's post log (routes/funnel_routes.py, services/funnel.py): what it is and what it tries,
+   and the platform's numbers, a row per day after it went up. A new post has the first form only. #}
+{% set new = not post.id %}
+{% macro val(key) %}{{ form[key] if key in form and form.get('part') != 'stats' else (post[key] if post.id and post[key] is not none else '') }}{% endmacro %}
+{% block title %}{{ 'Log a post' if new else ref }} - Funnel - The Lazy Chef{% endblock %}
+
+{% block content %}
+{% set field = 'mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm' %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+  <div class="flex flex-wrap items-center gap-3">
+    <a href="{{ url_for('funnel.dashboard') }}#posts" class="text-sm text-slate-500 hover:text-slate-900">← Funnel</a>
+    <h1 class="font-serif text-2xl font-bold text-slate-900">{{ 'Log a post' if new else post.title }}</h1>
+    {% if ref %}<span class="font-mono text-xs text-slate-500">{{ ref }}</span>{% endif %}
+  </div>
+
+  {% if error %}<p class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{{ error }}</p>{% endif %}
+
+  <form method="post" class="rounded-xl border border-slate-200 bg-white p-4 grid sm:grid-cols-2 gap-4">
+    <input type="hidden" name="part" value="post">
+    <label class="text-sm text-slate-700">Platform
+      <select name="platform" class="{{ field }}">
+        {% for key, label in platforms %}<option value="{{ key }}" {{ 'selected' if val('platform') == key }}>{{ label }}</option>{% endfor %}
+      </select>
+    </label>
+    <label class="text-sm text-slate-700">Code
+      <input name="code" value="{{ val('code') }}" required class="{{ field }} font-mono">
+      <span class="text-xs text-slate-500">The number in the address on the last slide: 5 for thelazychef.app/tiktok/5.</span>
+    </label>
+    <label class="text-sm text-slate-700">Format
+      <select name="format" class="{{ field }}">
+        {% for key in formats %}<option value="{{ key }}" {{ 'selected' if val('format') == key }}>{{ key }}</option>{% endfor %}
+      </select>
+    </label>
+    <label class="text-sm text-slate-700">Recipe
+      <input name="recipe_id" value="{{ val('recipe_id') }}" inputmode="numeric" class="{{ field }}" placeholder="297">
+      {% if post.recipe_id %}<a href="{{ url_for('recipe_detail', recipe_id=post.recipe_id) }}" class="text-xs text-slate-500 hover:underline">Open recipe {{ post.recipe_id }}</a>{% endif %}
+    </label>
+    <label class="text-sm text-slate-700 sm:col-span-2">Title
+      <input name="title" value="{{ val('title') }}" maxlength="200" class="{{ field }}" placeholder="The recipe's title when left empty">
+    </label>
+    <label class="text-sm text-slate-700 sm:col-span-2">What it tries
+      <input name="hook" value="{{ val('hook') }}" maxlength="200" class="{{ field }}" placeholder="The words on the first slide, or what is new in this post">
+    </label>
+    <label class="text-sm text-slate-700">Sound
+      <input name="sound" value="{{ val('sound') }}" maxlength="120" class="{{ field }}">
+    </label>
+    <label class="text-sm text-slate-700">Went up
+      <input type="date" name="posted_on" value="{{ val('posted_on') }}" required class="{{ field }}">
+    </label>
+    <label class="text-sm text-slate-700 sm:col-span-2">Link to the post
+      <input name="url" value="{{ val('url') }}" maxlength="300" class="{{ field }}" placeholder="https://www.tiktok.com/@…">
+    </label>
+    <label class="text-sm text-slate-700 sm:col-span-2">Notes
+      <textarea name="notes" rows="3" class="{{ field }}" placeholder="Comments worth keeping, what to try next">{{ val('notes') }}</textarea>
+    </label>
+    <div class="sm:col-span-2"><button type="submit" class="px-4 py-2 rounded-full bg-slate-900 text-white text-sm font-semibold">{{ 'Log it' if new else 'Save' }}</button></div>
+  </form>
+
+  {% if not new %}
+  <section class="rounded-xl border border-slate-200 bg-white p-4 space-y-3">
+    <h2 class="font-semibold text-slate-900">Numbers from {{ dict(platforms)[post.platform] }}</h2>
+    <p class="text-sm text-slate-600">Copy them from the post's analytics 2 and 7 days after it went up. The same day again replaces that row.</p>
+    {% if post.stats %}
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="text-left text-slate-500"><tr><th class="py-2 pr-4 font-medium">Day</th>{% for key in stat_fields %}<th class="py-2 pr-4 font-medium text-right">{{ key.replace('_', ' ')|capitalize }}</th>{% endfor %}</tr></thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for s in post.stats|sort(attribute='day') %}
+          <tr><td class="py-2 pr-4">{{ s.day }}</td>{% for key in stat_fields %}<td class="py-2 pr-4 text-right tabular-nums">{{ '{:,}'.format(s[key]).replace(',', ' ') if s[key] is not none else '–' }}</td>{% endfor %}</tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+    {% set sv = form if form.get('part') == 'stats' else {} %}
+    <form method="post" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <input type="hidden" name="part" value="stats">
+      <label class="text-sm text-slate-700">Days after
+        <input name="day" value="{{ sv.get('day', '2' if not post.stats else '7') }}" inputmode="numeric" class="{{ field }}">
+      </label>
+      {% for key in stat_fields %}
+      <label class="text-sm text-slate-700">{{ key.replace('_', ' ')|capitalize }}
+        <input name="{{ key }}" value="{{ sv.get(key, '') }}" inputmode="numeric" class="{{ field }} tabular-nums">
+      </label>
+      {% endfor %}
+      <div class="col-span-2 sm:col-span-4"><button type="submit" class="px-4 py-2 rounded-full bg-slate-900 text-white text-sm font-semibold">Save the numbers</button></div>
+    </form>
+  </section>
+
+  <form method="post" action="{{ url_for('funnel.delete_post', post_id=post.id) }}" class="text-right"
+        onsubmit="return confirm('Remove {{ ref }} from the log, with its numbers?')">
+    <button type="submit" class="text-sm text-red-700 hover:underline">Remove from the log</button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

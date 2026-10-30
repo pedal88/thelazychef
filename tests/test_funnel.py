@@ -18,7 +18,7 @@ os.environ.setdefault('GOOGLE_API_KEY', 'test-key')
 os.environ.pop('K_SERVICE', None)
 
 from app import app  # noqa: E402
-from database.models import Recipe, ReferralVisit, User, UserRecipeInteraction, db  # noqa: E402
+from database.models import Recipe, ReferralVisit, SocialPost, User, UserRecipeInteraction, db  # noqa: E402
 from services import funnel  # noqa: E402
 from services.recipe_v2.generate import refresh  # noqa: E402
 from services.recipe_v2.store import save_v2  # noqa: E402
@@ -164,6 +164,68 @@ class FunnelTests(unittest.TestCase):
         html = self.client.get('/admin/funnel').get_data(as_text=True)
         self.assertIn('Sign-ups per week', html)
         self.assertIn('No visits with a code yet.', html)
+
+    # The post log
+
+    def log(self, **fields):
+        form = {'platform': 'tiktok', 'code': '5', 'format': 'map', 'title': 'Teriyaki salmon',
+                'posted_on': '2026-10-30', **fields}
+        return self.client.post('/admin/funnel/posts/new', data=form)
+
+    def test_the_next_code_is_above_every_number_in_use(self):
+        self.assertEqual(funnel.next_code(), '1')
+        self.client.get('/tiktok/2')
+        app.test_client().get('/recipes?ref=ig-7')
+        app.test_client().get('/ig/launch')
+        self.assertEqual(funnel.next_code(), '8')
+        self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
+        self.log(code='11', platform='instagram')
+        self.assertEqual(funnel.next_code(), '12')
+        html = self.client.get('/admin/funnel/posts/new?platform=instagram&format=grid&recipe=4').get_data(as_text=True)
+        self.assertIn('name="code" value="12"', html)
+        self.assertIn('<option value="grid" selected>', html)
+        self.assertIn('name="recipe_id" value="4"', html)
+
+    def test_a_logged_post_shows_its_numbers_beside_what_its_code_brought(self):
+        for _ in range(3):
+            app.test_client().get('/tiktok/5')
+        app.test_client().get('/ig/5')  # the same code on Instagram is another post
+        self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
+        post_id = int(self.log().location.rsplit('/', 1)[1])
+        self.client.post(f'/admin/funnel/posts/{post_id}', data={'part': 'stats', 'day': '2', 'views': '1 500',
+                                                                 'saves': '12'})
+        self.client.post(f'/admin/funnel/posts/{post_id}', data={'part': 'stats', 'day': '2', 'views': '2,000'})
+        [row] = funnel.report()['posts']
+        self.assertEqual((row['ref'], row['visits'], row['latest'].views, row['latest'].saves, row['per_1000']),
+                         ('tiktok-5', 3, 2000, None, 1.5))
+        html = self.client.get('/admin/funnel').get_data(as_text=True)
+        self.assertIn('Teriyaki salmon', html)
+        self.assertIn('tiktok-5 · map · day 2', html)
+
+    def test_the_post_form_says_what_is_wrong(self):
+        recipe = Recipe(title='Pad Thai', cuisine='', difficulty='', status='approved', schema_version=2)
+        db.session.add(recipe)
+        db.session.commit()
+        self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
+        self.assertEqual(self.log(title='', recipe_id=str(recipe.id)).status_code, 302)
+        self.assertEqual(db.session.execute(db.select(SocialPost)).scalar().title, 'Pad Thai')
+        for fields, message in (({}, 'TikTok already has a post with code 5.'),
+                                ({'code': '6', 'recipe_id': '999'}, 'There is no recipe 999.'),
+                                ({'code': 'tiktok-6'}, 'Give the code from the address'),
+                                ({'code': '6', 'title': ''}, 'Give the post a title'),
+                                ({'code': '6', 'posted_on': ''}, 'Give the day it went up.')):
+            with self.subTest(fields=fields):
+                response = self.log(**fields)
+                self.assertEqual(response.status_code, 400)
+                self.assertIn(message, response.get_data(as_text=True))
+        self.assertEqual(len(db.session.execute(db.select(SocialPost)).scalars().all()), 1)
+
+    def test_the_render_script_ends_with_the_address_that_logs_the_post(self):
+        from scripts.social_render import log_url
+        self.assertEqual(log_url('https://thelazychef.app', 'tt', '5', 'map', 297),
+                         'https://thelazychef.app/admin/funnel/posts/new?platform=tiktok&code=5&format=map&recipe=297')
+        self.assertEqual(log_url('http://127.0.0.1:8000/', 'ig', '6', 'week', None),
+                         'http://127.0.0.1:8000/admin/funnel/posts/new?platform=instagram&code=6&format=week')
 
     # Shared links
 

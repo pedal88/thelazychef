@@ -18,6 +18,34 @@
   </div>
   {% if r.totals.untracked %}<p class="mt-2 text-xs text-slate-500">{{ r.totals.untracked }} signed up before the tracking began and count as “Not known”.</p>{% endif %}
 
+  <div id="posts" class="mt-8 flex flex-wrap items-baseline gap-3">
+    <h2 class="font-semibold text-slate-900">Per post</h2>
+    <span class="text-sm text-slate-500">Next free code: <span class="font-mono font-semibold text-slate-900">{{ r.next_code }}</span></span>
+    <a href="{{ url_for('funnel.new_post') }}" class="ml-auto px-3 py-1.5 rounded-full bg-slate-900 text-white text-sm font-semibold">Log a post</a>
+  </div>
+  <p class="mt-1 text-sm text-slate-500">The platform's numbers (the latest copied in) beside what the post's code brought. Per 1000 views is the visits it sent on.</p>
+  <div class="mt-2 overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="text-left text-slate-500"><tr><th class="py-2 pr-4 font-medium">Went up</th><th class="py-2 pr-4 font-medium">Post</th><th class="py-2 pr-4 font-medium text-right">Views</th><th class="py-2 pr-4 font-medium text-right">Saves</th><th class="py-2 pr-4 font-medium text-right">Shares</th><th class="py-2 pr-4 font-medium text-right">Visits</th><th class="py-2 pr-4 font-medium text-right">Per 1000 views</th><th class="py-2 pr-4 font-medium text-right">Signed up</th><th class="py-2 font-medium text-right">Made</th></tr></thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for row in r.posts %}
+        {% set s = row.latest %}
+        <tr>
+          <td class="py-2 pr-4 whitespace-nowrap">{{ row.post.posted_on.strftime('%d.%m') }}</td>
+          <td class="py-2 pr-4"><a href="{{ url_for('funnel.edit_post', post_id=row.post.id) }}" class="hover:underline">{{ row.post.title }}</a> <span class="font-mono text-xs text-slate-500">{{ row.ref }} · {{ row.post.format }}{{ ' · day ' ~ s.day if s }}</span></td>
+          {% for value in (s.views if s else none, s.saves if s else none, s.shares if s else none) %}<td class="py-2 pr-4 text-right tabular-nums {{ 'text-slate-300' if value is none }}">{{ value if value is not none else '–' }}</td>{% endfor %}
+          <td class="py-2 pr-4 text-right tabular-nums">{{ row.visits }}</td>
+          <td class="py-2 pr-4 text-right tabular-nums {{ 'text-slate-300' if row.per_1000 is none }}">{{ row.per_1000 if row.per_1000 is not none else '–' }}</td>
+          <td class="py-2 pr-4 text-right tabular-nums">{{ row.signups }}</td>
+          <td class="py-2 text-right tabular-nums">{{ row.made }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9" class="py-2 text-slate-500">No posts logged yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
   <h2 class="mt-8 font-semibold text-slate-900">Per channel</h2>
   <div class="mt-2 overflow-x-auto">
     <table class="w-full text-sm">

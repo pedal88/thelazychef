@@ -1,8 +1,11 @@
 """The funnel from TikTok and Instagram to the app (services/funnel.py): the short addresses people type from a post,
-the ref code any page can carry (?ref=ig-3), and the admin Funnel page."""
-from flask import Blueprint, redirect, render_template, request, url_for
+the ref code any page can carry (?ref=ig-3), the admin Funnel page, and its post log."""
+import datetime
+
+from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
+from database.models import SocialPost, db
 from services import funnel
 from utils.decorators import admin_required
 
@@ -44,3 +47,58 @@ def instagram(code):
 @admin_required
 def dashboard():
     return render_template('admin/funnel.html', r=funnel.report(), labels=funnel.CHANNEL_LABELS)
+
+
+def _post_page(post, error=None, form=None):
+    return render_template('admin/funnel_post.html', post=post, error=error, form=form or {},
+                           platforms=funnel.PLATFORMS, formats=funnel.POST_FORMATS, stat_fields=funnel.STAT_FIELDS,
+                           ref=funnel.post_ref(post) if post.id else None), 400 if error else 200
+
+
+@funnel_bp.route('/admin/funnel/posts/new', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def new_post():
+    """A post for the log. scripts/social_render.py prints this address with the platform, code, format and recipe
+    filled in; an empty code is the next free one."""
+    if request.method == 'POST':
+        post = SocialPost()
+        error = funnel.save_post(post, request.form)
+        if error:
+            db.session.rollback()
+            return _post_page(SocialPost(), error, request.form)
+        flash(f'Logged {funnel.post_ref(post)}.', 'success')
+        return redirect(url_for('funnel.edit_post', post_id=post.id))
+    args = request.args
+    form = {'platform': args.get('platform', 'tiktok'), 'code': args.get('code') or funnel.next_code(),
+            'format': args.get('format', 'map'), 'recipe_id': args.get('recipe', ''),
+            'posted_on': datetime.date.today().isoformat()}
+    return _post_page(SocialPost(), form=form)
+
+
+@funnel_bp.route('/admin/funnel/posts/<int:post_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_post(post_id):
+    """A logged post: what it is, and its numbers from the platform, a row per day after it went up."""
+    post = db.session.get(SocialPost, post_id) or abort(404)
+    if request.method == 'POST':
+        save = funnel.save_stat if request.form.get('part') == 'stats' else funnel.save_post
+        error = save(post, request.form)
+        if error:
+            db.session.rollback()
+            return _post_page(post, error, request.form)
+        flash('Saved.', 'success')
+        return redirect(url_for('funnel.edit_post', post_id=post.id))
+    return _post_page(post)
+
+
+@funnel_bp.route('/admin/funnel/posts/<int:post_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_post(post_id):
+    post = db.session.get(SocialPost, post_id) or abort(404)
+    db.session.delete(post)
+    db.session.commit()
+    flash(f'Removed {funnel.post_ref(post)} from the log.', 'success')
+    return redirect(url_for('funnel.dashboard') + '#posts')

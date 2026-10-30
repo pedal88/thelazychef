@@ -4,6 +4,9 @@ A visit can bring a ref code: the short addresses (thelazychef.app/tiktok, /ig, 
 one post can be told from another) or ?ref= on any page. The first code of a browser session is kept in the session and
 counted per day (ReferralVisit); when the visitor signs up, it is saved on the user with their answer to "How did you
 find us?". The admin Funnel page counts sign-ups and the users who saved or made a recipe, per channel and week.
+
+The post log (SocialPost) puts each post's own numbers, copied from TikTok or Instagram, beside the visits and sign-ups
+its code brought, so a post can be judged by how many came, not only by how many saw it (docs/SOCIAL.md).
 """
 import datetime
 import re
@@ -11,7 +14,7 @@ import re
 from flask import session
 from sqlalchemy import case, func
 
-from database.models import ReferralVisit, User, UserRecipeInteraction, db
+from database.models import Recipe, ReferralVisit, SocialPost, SocialPostStat, User, UserRecipeInteraction, db
 
 # The answers to "How did you find us?" on the sign-up form: (stored value, label)
 SOURCES = [
@@ -29,6 +32,12 @@ CHANNELS = [value for value, _ in SOURCES] + ['unknown']
 CHANNEL_LABELS = dict(SOURCES, unknown='Not known')
 
 SESSION_KEY = 'ref'
+
+# The post log: where a post went up (funnel channels), what kind it is (scripts/social_render.py's formats), and the
+# platform numbers copied in for it
+PLATFORMS = [('tiktok', 'TikTok'), ('instagram', 'Instagram')]
+POST_FORMATS = ['map', 'grid', 'pantry', 'week', 'other']
+STAT_FIELDS = ['views', 'likes', 'comments', 'saves', 'shares', 'profile_visits']
 
 
 def clean_ref(value):
@@ -79,7 +88,8 @@ def report(weeks=12, today=None):
     {'weeks': [{'start', 'signups': {channel: n}, 'total'}], newest first,
      'channels': [{'key', 'label', 'signups', 'saved', 'made'}],
      'totals': {'signups', 'saved', 'made', 'untracked'},
-     'refs': [{'ref', 'visits', 'visits_28', 'signups', 'made'}], most visits first}"""
+     'refs': [{'ref', 'visits', 'visits_28', 'signups', 'made'}], most visits first,
+     'posts': post_log(), 'next_code': next_code()}"""
     today = today or datetime.date.today()
     users = db.session.execute(db.select(User).where(User.is_admin.is_not(True))).scalars().all()
     saved_ids = set(db.session.execute(
@@ -125,4 +135,106 @@ def report(weeks=12, today=None):
                    'made': len(made_ids & {u.id for u in users}),
                    'untracked': sum(1 for u in users if not u.created_at)},
         'refs': sorted(refs.values(), key=lambda r: (-r['visits'], -r['signups'], r['ref'])),
+        'posts': post_log(refs),
+        'next_code': next_code(),
     }
+
+
+def post_ref(post):
+    """The ref code a post's short address gives: thelazychef.app/tiktok/5 is tiktok-5, /ig/5 is instagram-5."""
+    return f'{post.platform}-{post.code}'
+
+
+def post_log(refs):
+    """The posts, newest first, each with its latest platform numbers and what its code brought (refs as in
+    report()). per_1000 is visits per 1000 views: how well a post sends people on, which views alone do not say."""
+    posts = db.session.execute(
+        db.select(SocialPost).order_by(SocialPost.posted_on.desc(), SocialPost.id.desc())).scalars().all()
+    rows = []
+    for post in posts:
+        brought = refs.get(post_ref(post), {})
+        stats = sorted(post.stats, key=lambda s: s.day)
+        latest = next((s for s in reversed(stats) if s.views is not None), stats[-1] if stats else None)
+        visits = brought.get('visits', 0)
+        views = latest.views if latest else None
+        rows.append({'post': post, 'ref': post_ref(post), 'latest': latest, 'visits': visits,
+                     'signups': brought.get('signups', 0), 'made': brought.get('made', 0),
+                     'per_1000': round(visits * 1000 / views, 1) if views else None})
+    return rows
+
+
+def next_code():
+    """The code for the next post: one above every number in use, in the post log or in a ref code a visit or a
+    sign-up brought (tiktok-5, ig-5), so a post rendered with it is told apart from all before it."""
+    used = list(db.session.execute(db.select(SocialPost.code)).scalars())
+    used += [ref.split('-', 1)[1] for ref in db.session.execute(db.select(ReferralVisit.ref).distinct()).scalars()
+             if '-' in ref]
+    used += [ref.split('-', 1)[1] for ref in db.session.execute(
+        db.select(User.signup_ref).where(User.signup_ref.is_not(None)).distinct()).scalars() if '-' in ref]
+    return str(max((int(code) for code in used if code.isdigit()), default=0) + 1)
+
+
+def _text(form, key, length):
+    return (form.get(key) or '').strip()[:length] or None
+
+
+def save_post(post, form):
+    """Fills a post from the form on the post page; returns what is wrong, or None when it is saved."""
+    platform = form.get('platform')
+    fmt = form.get('format')
+    code = clean_ref(form.get('code'))
+    if platform not in dict(PLATFORMS):
+        return 'Pick TikTok or Instagram.'
+    if fmt not in POST_FORMATS:
+        return 'Pick a format.'
+    if not code or '-' in code:
+        return 'Give the code from the address on the last slide, e.g. 5 for thelazychef.app/tiktok/5.'
+    taken = db.session.execute(db.select(SocialPost).filter_by(platform=platform, code=code)).scalar()
+    if taken and taken is not post:
+        return f'{dict(PLATFORMS)[platform]} already has a post with code {code}.'
+    recipe = None
+    if (form.get('recipe_id') or '').strip():
+        if not form['recipe_id'].strip().isdigit():
+            return 'The recipe is its number, e.g. 297.'
+        recipe = db.session.get(Recipe, int(form['recipe_id']))
+        if recipe is None:
+            return f'There is no recipe {form["recipe_id"].strip()}.'
+    title = _text(form, 'title', 200) or (recipe.title[:200] if recipe else None)
+    if not title:
+        return 'Give the post a title, or the recipe it is drawn from.'
+    try:
+        posted_on = datetime.date.fromisoformat(form.get('posted_on') or '')
+    except ValueError:
+        return 'Give the day it went up.'
+    post.platform, post.code, post.format, post.title, post.posted_on = platform, code, fmt, title, posted_on
+    post.recipe_id = recipe.id if recipe else None
+    post.hook, post.sound, post.url = _text(form, 'hook', 200), _text(form, 'sound', 120), _text(form, 'url', 300)
+    post.notes = _text(form, 'notes', 5000)
+    if post.id is None:
+        db.session.add(post)
+    db.session.commit()
+    return None
+
+
+def save_stat(post, form):
+    """Keeps the platform's numbers for a post on a day after it went up, replacing what that day had; returns what is
+    wrong, or None."""
+    day = (form.get('day') or '').strip()
+    if not day.isdigit() or not 0 <= int(day) <= 365:
+        return 'Give the number of days since it went up, e.g. 2 or 7.'
+    numbers = {}
+    for key in STAT_FIELDS:
+        value = (form.get(key) or '').replace(' ', '').replace(',', '').strip()
+        if value and not value.isdigit():
+            return f'{key.replace("_", " ").capitalize()} must be a whole number.'
+        numbers[key] = int(value) if value else None
+    if all(v is None for v in numbers.values()):
+        return 'Give at least one number.'
+    stat = next((s for s in post.stats if s.day == int(day)), None)
+    if stat is None:
+        stat = SocialPostStat(day=int(day))
+        post.stats.append(stat)
+    for key, value in numbers.items():
+        setattr(stat, key, value)
+    db.session.commit()
+    return None

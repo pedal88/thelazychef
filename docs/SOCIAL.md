@@ -54,8 +54,12 @@ chosen.
 
 It reads production (or `--base http://127.0.0.1:8000`), photographs each slide with headless Chrome and writes the
 PNGs and `caption.txt` to `~/promptlab-runs/social/`, outside the repo. Nothing is written to production and nothing
-costs money. Give every post its own code, and use the same code for the same post on both platforms only if you want
-them counted together.
+costs money.
+
+Give every post its own code: the Funnel page shows the next free one (one above every number used so far). The code
+is per platform, since `/tiktok/5` and `/ig/5` are the ref codes `tiktok-5` and `instagram-5`, so the same post on
+both platforms can share its number and still be counted apart. With `--code` the script ends with the address of the
+post log's form, filled in with the platform, code, format and recipe.
 
 To design slides without production, run the app on a local database (`docs/README_TOP_COMMANDS.md`). The public
 ingredient galaxy (`/api/graph/ingredient-galaxy`) has every ingredient's name, category and symbol, enough for the
@@ -69,4 +73,16 @@ pantry CSV `scripts/local_db.py` reads when there is no production export at han
   address on the last slide and in the bio is how people come.
 - Instagram: post as a carousel; the link in bio is `thelazychef.app/ig`.
 - Label AI-generated content where the platform asks: the dish images are made by Gemini.
-- Note each post's code, format and recipe, so the Funnel page's rows can be read back.
+- Log the post when it is up (the address the render script ends with, or Log a post on the Funnel page).
+
+## Learning from the posts
+
+The Funnel page's post log (`SocialPost`, `services/funnel.py`) has a row per post: what it is, what it tries (the
+words on the first slide, the sound) and the platform's numbers, copied by hand from the post's analytics 2 and 7 days
+after it went up (views, likes, comments, saves, shares, profile visits). Beside them are the visits, sign-ups and
+cooks its code brought, and visits per 1000 views, the number that says whether a post sends people on rather than
+only being seen.
+
+Once a week: see which posts won and lost, pick one thing to change in the next ones (format, first slide, kind of
+recipe, time), and change only that. Judge a format on at least three posts, not one: what TikTok shows a post to
+varies a lot. Comments that ask for something the app lacks go in the post's notes.

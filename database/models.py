@@ -471,6 +471,46 @@ class ReferralVisit(db.Model):
     count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
 
+class SocialPost(db.Model):
+    """A post on TikTok or Instagram, by its code: the code in the address on its last slide (thelazychef.app/tiktok/5
+    gives the ref code tiktok-5), so its visits and sign-ups can be put beside the platform's numbers
+    (services/funnel.py, docs/SOCIAL.md)."""
+    __tablename__ = 'social_post'
+    __table_args__ = (UniqueConstraint('platform', 'code', name='uq_social_post_code'),)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    platform: Mapped[str] = mapped_column(String(20), nullable=False)  # 'tiktok' or 'instagram', a funnel channel
+    code: Mapped[str] = mapped_column(String(20), nullable=False)
+    format: Mapped[str] = mapped_column(String(20), nullable=False)  # map, grid, pantry, week or other
+    recipe_id: Mapped[Optional[int]] = mapped_column(ForeignKey('recipe.id', ondelete='SET NULL'), nullable=True)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    # What is tried in this post: the words on the first slide, the sound, anything else that was changed
+    hook: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
+    sound: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    url: Mapped[Optional[str]] = mapped_column(String(300), nullable=True)
+    posted_on: Mapped[datetime.date] = mapped_column(Date, nullable=False)
+
+    stats: Mapped[list["SocialPostStat"]] = relationship(back_populates="post", cascade="all, delete-orphan",
+                                                         order_by="SocialPostStat.day")
+
+
+class SocialPostStat(db.Model):
+    """The platform's numbers for a post, copied by hand from the app some days after it went up (2 and 7 days)."""
+    __tablename__ = 'social_post_stat'
+    __table_args__ = (UniqueConstraint('post_id', 'day', name='uq_social_post_stat_day'),)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    post_id: Mapped[int] = mapped_column(ForeignKey('social_post.id', ondelete='CASCADE'), nullable=False)
+    day: Mapped[int] = mapped_column(Integer, nullable=False)  # days after posting
+    views: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    likes: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    comments: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    saves: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    shares: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    profile_visits: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+
+    post: Mapped["SocialPost"] = relationship(back_populates="stats")
+
+
 # ---------------------------------------------------------------------------
 # User Cook-Next Queue
 # ---------------------------------------------------------------------------
