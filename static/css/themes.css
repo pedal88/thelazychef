@@ -148,10 +148,13 @@ html.whole-fullscreen .trialbar { display: none; }
 .trialbar .tsec select { font: 500 12px/1.3 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; color: #f4f4f5;
   background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .15); border-radius: 7px; padding: 4px 6px; max-width: 100%; }
 
+.trialbar .tpaste form button { background: #a78bfa; color: #18181b; font-weight: 600; }
+.trialbar .tpaste form button:hover { background: #c4b5fd; color: #18181b; }
+
 /* Notes on the recipe in the chip (components/recipe_notes.html) */
-.trialbar .tnotes textarea { box-sizing: border-box; width: 100%; resize: vertical; min-height: 64px; padding: 6px 8px; border: 1px solid rgba(255, 255, 255, .14);
+.trialbar .tnotes textarea, .trialbar .tpaste textarea { box-sizing: border-box; width: 100%; resize: vertical; min-height: 64px; padding: 6px 8px; border: 1px solid rgba(255, 255, 255, .14);
   border-radius: 8px; background: rgba(255, 255, 255, .06); color: #f4f4f5; font: 400 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
-.trialbar .tnotes textarea:focus { outline: 2px solid #a78bfa; outline-offset: 0; }
+.trialbar .tnotes textarea:focus, .trialbar .tpaste textarea:focus { outline: 2px solid #a78bfa; outline-offset: 0; }
 .trialbar .tnotes .trow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .trialbar .tnotes .trow a, .trialbar .tnotes .twhere { font-size: 11px; }
 .trialbar .tnotes .tsave, .trialbar .tnotes .tcopy { background: #a78bfa; color: #18181b; font-weight: 600; }

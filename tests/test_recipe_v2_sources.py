@@ -168,6 +168,51 @@ class WebRecipeTests(unittest.TestCase):
         self.assertEqual((recipe.status, recipe.is_flagged_for_review), ('draft', True))
         self.assertEqual(recipe.validation_errors, [{'rule': 'source', 'message': 'This site blocks automatic reading.'}])
 
+    def blocked(self):
+        """A recipe from a link the site would not let us read, as tasks.run leaves it."""
+        recipe = Recipe(title='https://blocked.example/frittata/', cuisine='', difficulty='', status='draft', schema_version=2,
+                        source_type='web', source_input='https://blocked.example/frittata/', language='en',
+                        is_flagged_for_review=True, validation_errors=[{'rule': 'source', 'message': 'This site blocks automatic reading.'}])
+        db.session.add(recipe)
+        db.session.commit()
+        return recipe
+
+    def test_the_text_pasted_on_a_blocked_recipe_is_made_into_it(self):
+        recipe = self.blocked()
+        page = self.client.get(f'/recipe/{recipe.id}').get_data(as_text=True)
+        self.assertIn(f'/new-recipe/v2/paste/{recipe.id}', page)
+        self.assertIn('still based on blocked.example', page)
+        text = 'Spinach and tomato frittata\n- 6 eggs\n- 1 handful spinach\n\n1. Whisk and bake.'
+        with mock.patch.object(tasks, 'enqueue') as enqueue:
+            res = self.client.post(f'/new-recipe/v2/paste/{recipe.id}', data={'text': text})
+        self.assertEqual(res.headers['Location'], f'/new-recipe/v2/{recipe.id}')
+        self.assertEqual(enqueue.call_args[0], (recipe.id, 'text', text, 'en'))
+        recipe = db.session.get(Recipe, recipe.id)
+        self.assertEqual((recipe.title, recipe.status, recipe.is_flagged_for_review, recipe.validation_errors),
+                         ('Spinach and tomato frittata', 'generating', False, []))
+
+    def test_only_text_and_only_on_a_recipe_without_steps(self):
+        recipe = self.blocked()
+        with mock.patch.object(tasks, 'enqueue') as enqueue:
+            self.client.post(f'/new-recipe/v2/paste/{recipe.id}', data={'text': 'https://blocked.example/frittata/'})
+            enqueue.assert_not_called()
+            self.assertEqual(db.session.get(Recipe, recipe.id).status, 'draft')
+            recipe.status = 'generating'
+            db.session.commit()
+            self.assertEqual(self.client.post(f'/new-recipe/v2/paste/{recipe.id}', data={'text': 'Frittata\n- eggs'}).status_code, 400)
+
+    def test_a_recipe_made_from_text_pasted_for_a_link_is_still_based_on_the_link(self):
+        from services.recipe_v2 import generate
+
+        recipe = self.blocked()
+        recipe.status = 'generating'
+        db.session.commit()
+        spent = {'cost_usd': 0, 'seconds': 0}
+        with mock.patch.object(generate, 'write_text', return_value=('Frittata\n- 6 eggs', spent)), \
+                mock.patch.object(generate, 'structure', return_value=(None, [dict(spent, errors=[{'rule': 'x', 'message': 'y'}], warnings=[])])):
+            generate.create_recipe('text', 'Frittata\n- 6 eggs', recipe=recipe)
+        self.assertEqual((recipe.source_type, recipe.source_input), ('web', 'https://blocked.example/frittata/'))
+
     def test_the_page_text_goes_into_round_1(self):
         from services.recipe_v2 import claude, generate
 
