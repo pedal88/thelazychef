@@ -218,22 +218,27 @@ html.site-menu:not(.cooking) body:has(.make.has-ovl) .trialbar { top: 76px; }
 .mine-stars .icon { width: 14px; height: 14px; }
 .mine-stars .on { color: var(--color-accent); }
 .mine-stars .on .icon { fill: currentColor; }
-/* The cook's own photo: small and round in a corner of the AI image, which stays the dish's picture */
-.ovl-myphoto { position: absolute; z-index: 2; right: var(--space-4); bottom: var(--space-4); width: 52px; height: 52px; padding: 0;
-  border: 2px solid var(--color-paper); border-radius: 50%; background: var(--color-soft); box-shadow: 0 2px 8px rgb(0 0 0 / .25); cursor: pointer; }
-.pp-img .ovl-myphoto img, .cc-img .ovl-myphoto img { position: static; display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-.ovl-myphoto span { position: absolute; top: -6px; right: -6px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: var(--radius-pill);
-  background: var(--color-ink); color: var(--color-paper); font: 600 11px/20px var(--font-sans); }
-.ovl-myphoto:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
-.pp-img:has(.ovl-myphoto) figcaption { padding-right: calc(var(--space-4) + 68px); }
+/* The cook's own photo, only when asked for: a quiet label in a corner of the AI image (and in the sheet's Your note)
+   opens it in the photo sheet */
+/* Two classes each, to win over .ready button { font: inherit; color: inherit } */
+.pp-img .ovl-myphoto, .cc-img .ovl-myphoto, .ovl-more .mine-photo-open { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: var(--radius-pill);
+  font: 500 12px/1.4 var(--font-sans); cursor: pointer; }
+.pp-img .ovl-myphoto, .cc-img .ovl-myphoto { position: absolute; z-index: 2; right: var(--space-3); bottom: var(--space-3); border: 0;
+  background: rgb(0 0 0 / .45); color: #fff; backdrop-filter: blur(4px); }
+.pp-img .ovl-myphoto:hover, .cc-img .ovl-myphoto:hover { background: rgb(0 0 0 / .6); }
+.ovl-myphoto .icon, .mine-photo-open .icon { width: 14px; height: 14px; }
+.ovl-myphoto:focus-visible, .mine-photo-open:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.pp-img:has(.ovl-myphoto) figcaption { padding-right: calc(var(--space-3) + 120px); }
 .cc-img { position: relative; }
-.cc-img .ovl-myphoto { right: var(--space-2); bottom: var(--space-2); width: 40px; height: 40px; }
+.cc-img .ovl-myphoto { right: var(--space-2); bottom: var(--space-2); }
+.ovl-more .mine-photo-open { margin-top: var(--space-3); border: 1px solid var(--color-line); background: var(--color-soft); color: var(--color-ink); }
+.ovl-more .mine-photo-open:hover { border-color: var(--color-line-strong); }
+.photo-sheet { border: 0; padding: 0; width: min(760px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); border-radius: var(--radius-sm);
+  background: var(--color-paper); overflow: hidden; }
+.photo-sheet::backdrop { background: rgb(0 0 0 / .7); }
+.photo-sheet .sheet-x { position: absolute; z-index: 1; top: var(--space-2); right: var(--space-2); border-radius: 50%; background: var(--color-paper); color: var(--color-ink); }
+.photo-strip { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }
+.photo-strip img { flex: 0 0 100%; width: 100%; max-height: calc(100dvh - 32px); object-fit: contain; scroll-snap-align: center; background: var(--color-soft); }
 .ovl-more .more-mine .note { white-space: pre-line; }
 .more-mine .mine-stars { margin-bottom: var(--space-2); }
 .more-mine .mine-stars .icon { width: 18px; height: 18px; }
-.mine-photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: var(--space-2); margin-top: var(--space-3); }
-.mine-photos img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--color-line); }
-@media (max-width: 600px) {
-  .ovl-myphoto { right: var(--space-3); bottom: var(--space-3); width: 44px; height: 44px; }
-  .pp-img:has(.ovl-myphoto) figcaption { padding-right: calc(var(--space-3) + 56px); }
-}
