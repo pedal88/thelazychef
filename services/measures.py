@@ -7,6 +7,9 @@ US converts weights to oz and lb, volumes to tsp, tbsp and cups, and °C to °F.
 approximate units (clove, pinch) are the same in both, except a length of ginger or cinnamon in cm, which is
 inches in US.
 
+A weight of flour, sugar, butter or a spice is a volume for a US reader (data/constraints/us_volume.json), and a
+shopping list sums one item's amounts across units (fmt_total).
+
 Free text (a step's text, done_when and short, the chef's note, the yield) is written metric, as number, space,
 unit ("200 °C", "3 cm", "20 × 30 cm", "2 dl"; the structuring prompt asks for it), and localize_text converts those
 measures for a US reader. unconverted() finds what it cannot convert (cups or °F in the text, degrees with no
@@ -82,6 +85,8 @@ def _grams_us(g):
 
 
 def _ml_us(ml):
+    if ml < TSP / 8:
+        return _named('1', 'pinch', 1)  # a few strands of saffron: no honest fraction of a teaspoon
     if ml < TBSP - 1:
         return _named(_quarters(ml / TSP), 'tsp', 1)
     if ml < CUP / 4 - 2:
@@ -90,14 +95,33 @@ def _ml_us(ml):
     return _named(frac(cups), 'cup', cups)
 
 
-def fmt_amount(amount, unit, system=DEFAULT):
-    """"400 g", "1½ tbsp", "2 cloves", "3" (pieces have no unit); in US "14 oz", "¾ cup", "1½ in"."""
+@lru_cache(maxsize=1)
+def _us_volume():
+    with open(os.path.join(ROOT, 'data', 'constraints', 'us_volume.json'), encoding='utf-8') as f:
+        return [dict(r, name=re.compile(r['name'], re.I) if r.get('name') else None) for r in json.load(f)['rules']]
+
+
+def density(ingredient):
+    """Grams per ml for a pantry item US recipes measure by volume (flour, sugar, butter, spices:
+    data/constraints/us_volume.json), else None. ingredient is a pantry Ingredient (or None)."""
+    if ingredient is None:
+        return None
+    name, sub = (getattr(ingredient, 'name', '') or '').lower(), getattr(ingredient, 'sub_category', None)
+    for rule in _us_volume():
+        if (rule['name'] and rule['name'].search(name)) or (rule.get('sub_category') and rule['sub_category'] == sub):
+            return rule['g_per_ml']
+    return None
+
+
+def fmt_amount(amount, unit, system=DEFAULT, g_per_ml=None):
+    """"400 g", "1½ tbsp", "2 cloves", "3" (pieces have no unit); in US "14 oz", "¾ cup", "1½ in". g_per_ml (density())
+    is for a weight US recipes measure by volume: 250 g flour is "2 cups" for a US reader."""
     if amount is None:
         return ''
     u = units().get(unit) or {}
     if system == 'us' and unit not in SPOONS:
         if u.get('type') == 'weight' and u.get('g'):
-            return _grams_us(amount * u['g'])
+            return _ml_us(amount * u['g'] / g_per_ml) if g_per_ml else _grams_us(amount * u['g'])
         if u.get('type') == 'volume' and u.get('ml'):
             return _ml_us(amount * u['ml'])
         if unit == 'cm':
@@ -105,6 +129,48 @@ def fmt_amount(amount, unit, system=DEFAULT):
     elif unit in US_UNITS:
         return _metric(amount * u['g'], 'g') if u.get('g') else _metric(amount * u['ml'], 'ml')
     return _metric(amount, unit)
+
+
+def _base(amount, unit, system, g_per_ml):
+    """(kind, amount in the kind's base unit) for summing: weights in g, volumes in ml (a US weight measured by
+    volume too), anything else by its own unit."""
+    u = units().get(unit) or {}
+    if u.get('type') == 'weight' and u.get('g'):
+        if system == 'us' and g_per_ml:
+            return 'volume', amount * u['g'] / g_per_ml
+        return 'weight', amount * u['g']
+    if u.get('type') == 'volume' and u.get('ml'):
+        return 'volume', amount * u['ml']
+    return unit or 'piece', amount
+
+
+def fmt_total(amounts, system=DEFAULT, g_per_ml=None):
+    """The amounts of one item in a shopping list ([{'amount', 'unit'}]) as one sum per kind: "1 dl + 2 tbsp" is
+    "1⅓ dl", and for a US reader "½ cup". Metric writes a sum in the unit with the largest share (a US unit's sum in g
+    or ml); US in its own units. Counts are summed by unit ("2 cloves")."""
+    kinds = {}
+    for a in amounts:
+        kind, base = _base(a['amount'], a['unit'], system, g_per_ml)
+        k = kinds.setdefault(kind, {'total': 0.0, 'shares': {}, 'items': []})
+        k['total'] += base
+        k['shares'][a['unit']] = k['shares'].get(a['unit'], 0) + base
+        k['items'].append(a)
+    out = []
+    for kind, k in kinds.items():
+        if len(k['items']) == 1:
+            a = k['items'][0]
+            out.append(fmt_amount(a['amount'], a['unit'], system, g_per_ml))
+        elif kind not in ('weight', 'volume'):
+            out.append(fmt_amount(k['total'], kind, system))
+        elif system == 'us':
+            out.append(_ml_us(k['total']) if kind == 'volume' else _grams_us(k['total']))
+        else:
+            unit = max(k['shares'], key=k['shares'].get)
+            if unit in US_UNITS:
+                unit = 'g' if kind == 'weight' else 'ml'
+            per = units()[unit]['g' if kind == 'weight' else 'ml'] if unit in units() else 1
+            out.append(_metric(k['total'] / per, unit))
+    return ' + '.join(out)
 
 
 def degrees(c, system=DEFAULT):

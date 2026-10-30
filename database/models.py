@@ -440,6 +440,8 @@ class User(UserMixin, db.Model):
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime, default=datetime.datetime.utcnow, nullable=True)
     signup_source: Mapped[Optional[str]] = mapped_column(String(30), nullable=True)
     signup_ref: Mapped[Optional[str]] = mapped_column(String(60), nullable=True)
+    # The measuring system the user chose in the menu, 'metric' or 'us' (services/measures.py); empty until they choose
+    unit_system: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)
 
     # Relationship to interactions
     interactions: Mapped[list["UserRecipeInteraction"]] = relationship(back_populates="user", cascade="all, delete-orphan")

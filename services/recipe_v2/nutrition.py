@@ -104,7 +104,8 @@ def apply(recipe):
 
 
 def per_serving(recipe):
-    """Rounded per-serving values for the recipe page, or None when the recipe has no nutrition."""
+    """Rounded per-serving values for the recipe page, or None when the recipe has no nutrition. Salt (g) is the
+    European label's, sodium (mg) the US label's."""
     if recipe.total_calories is None:
         return None
     n = recipe.base_servings or 1
@@ -112,4 +113,5 @@ def per_serving(recipe):
     return {'kcal': round(v['calories']), 'protein': round(v['protein']), 'carbs': round(v['carbs']),
             'net_carbs': round(v['carbs'] - (v['fiber'] or 0)), 'fat': round(v['fat']),
             'saturated_fat': round(v['saturated_fat'] or 0, 1), 'fiber': round(v['fiber'] or 0, 1),
-            'sugar': round(v['sugar'] or 0), 'salt': round((v['sodium_mg'] or 0) * 2.5 / 1000, 1)}
+            'sugar': round(v['sugar'] or 0), 'salt': round((v['sodium_mg'] or 0) * 2.5 / 1000, 1),
+            'sodium_mg': round(v['sodium_mg'] or 0)}

@@ -36,8 +36,11 @@ then `refresh`. Run it on saved recipes after changing derive, nutrition or the 
   `data/constraints/equipment.json` (the air fryer has two drawers) and can be overridden per kitchen.
 - `mise.py` (Prep: what to set out, the bowls), `whole.py` (timeline and metro map), `delta.py` (the river delta
   drawing), `groups.py` (kitchen groups for the ingredient list), `read.py`.
-- Amounts and temperatures are written in the reader's measuring system, metric or US (`services/measures.py`, the
-  `units` cookie read by `routes/_shared.unit_system()`). Only the display converts: the stored recipe, `gram_weight`,
+- Amounts and temperatures are written in the reader's measuring system, metric or US (`services/measures.py`;
+  `routes/_shared.unit_choice()`: the user's `unit_system`, else the `units` cookie, else metric, and US once for a
+  browser in a US time zone). For a US reader flour, sugar, butter and spices weighed in g become cups and spoons
+  (`data/constraints/us_volume.json`), the shopping list sums an item across units (`fmt_total`), and the
+  nutrition table is the US label (sodium in mg). Only the display converts: the stored recipe, `gram_weight`,
   nutrition, the planner and Prep's rules read the stored units. Measures in free text (a step's text, short and
   done_when, the chef's note, the yield) are converted by `measures.localize_text` when written metric as number,
   space, unit ("200 °C", "3 cm", "2 dl"; structuring prompt rule 8b). What it cannot convert gives the validator

@@ -123,11 +123,27 @@ def site_menu():
     return out
 
 
+def unit_choice():
+    """The reader's measuring system (services/measures.py) and whether anyone chose it: (system, chosen).
+
+    The switch in the site menu (components/unit_switch.html) sets the cookie "units", so it works for visitors too,
+    and for a signed-in user also user.unit_system, which follows them to other devices and wins over the cookie.
+    Nobody chose: metric, and the script in base.html picks US once for a browser in a US time zone."""
+    from services.measures import DEFAULT, SYSTEMS
+    if current_user.is_authenticated and getattr(current_user, 'unit_system', None) in SYSTEMS:
+        return current_user.unit_system, True
+    cookie = request.cookies.get('units')
+    return (cookie, True) if cookie in SYSTEMS else (DEFAULT, False)
+
+
 def unit_system():
-    """The reader's measuring system, 'metric' or 'us' (services/measures.py): a cookie set by the switch in the
-    site menu (components/unit_switch.html), so it works for visitors too. Metric when it is not set."""
-    from services.measures import system_of
-    return system_of(request.cookies.get('units'))
+    """The reader's measuring system, 'metric' or 'us' (unit_choice)."""
+    return unit_choice()[0]
+
+
+def unit_chosen():
+    """Whether the reader (or a US time zone, once) has chosen a measuring system (unit_choice)."""
+    return unit_choice()[1]
 
 
 def icon(name, label=None, cls=''):

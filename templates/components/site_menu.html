@@ -2,7 +2,7 @@
    (desktop), and the same items as one list for the phone menu (listed). Who sees what
    is decided there. Import with context. #}
 {% from "components/look_switch.html" import look_switch %}
-{% from "components/unit_switch.html" import unit_switch %}
+{% from "components/unit_switch.html" import unit_switch with context %}
 
 {% macro _link(item, cls) -%}
 <a href="{{ item.url }}" class="{{ cls }}">{{ icon(item.icon, cls='menu-icon') }}{{ item.label }}</a>

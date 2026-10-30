@@ -96,6 +96,42 @@ class RecipeV2ViewTests(unittest.TestCase):
         _, html = self.page('carbonara')
         self.assertIn('<b class="amt">400 g</b> spaghetti', html)
 
+    def test_the_nutrition_label_follows_the_system(self):
+        r = db.session.get(Recipe, self.ids['carbonara'])
+        r.base_servings = 4
+        for field, total in (('calories', 2400), ('protein', 100), ('carbs', 300), ('fat', 80), ('saturated_fat', 30),
+                             ('fiber', 12), ('sugar', 8), ('sodium_mg', 4000)):
+            setattr(r, 'total_' + field, total)
+        db.session.commit()
+        _, html = self.page('carbonara')
+        self.assertIn('<tr><th>Salt</th><td>2.5 g</td></tr>', html)
+        self.client.set_cookie('units', 'us')
+        _, html = self.page('carbonara')
+        self.assertIn('<tr><th>Calories</th><td>600</td></tr>', html)
+        self.assertIn('<tr><th>Sodium</th><td>1000 mg</td></tr>', html)
+        self.assertNotIn('<th>Salt</th>', html)
+
+    def test_a_signed_in_choice_is_kept_on_the_user(self):
+        _, html = self.page('carbonara')
+        self.assertIn('data-unit-switch data-units-auto', html)  # nobody chose: the page may pick US for a US time zone
+        self.assertEqual(self.client.post('/api/me/units', json={'units': 'us'}).status_code, 302)  # signed out
+        self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
+        self.assertEqual(self.client.post('/api/me/units', json={'units': 'imperial'}).status_code, 400)
+        self.assertEqual(self.client.post('/api/me/units', json={'units': 'us'}).get_json(), {'units': 'us'})
+        self.assertEqual(db.session.execute(db.select(User.unit_system).where(User.email == 'admin@test')).scalar(), 'us')
+        self.client.set_cookie('units', 'metric')  # another device's cookie: the user's choice wins
+        _, html = self.page('carbonara')
+        self.assertIn('<b class="amt">14 oz</b> spaghetti', html)
+        self.assertNotIn('data-unit-switch data-units-auto', html)
+
+    def test_the_ingredients_page_in_us(self):
+        html = self.client.get('/ingredients').get_data(as_text=True)
+        self.assertIn('Kilojoules', html)
+        self.client.set_cookie('units', 'us')
+        html = self.client.get('/ingredients').get_data(as_text=True)
+        self.assertIn('per 100 g (about 3½ oz)', html)
+        self.assertNotIn('Kilojoules', html)
+
     def test_the_state_follows_the_ingredient_in_cook_steps(self):
         _, html = self.page('tikka')
         self.assertIn('3 cloves hvitløk</span> <span class="prep">(fint revet)</span>', html)  # the state and grade in the recipe's language
