@@ -135,6 +135,13 @@ class FreeTextTests(unittest.TestCase):
         self.assertEqual(unconverted('Sett ovnen på 200 °C og hell i 2 dl'), [])
         self.assertEqual(unconverted(None), [])
 
+    def test_a_fraction_without_a_us_unit_is_not_a_us_measure(self):
+        # From production (units_report, 30.10.2026): numbers alone, with spoons or minutes, were reported
+        for text in ('about 1 1/2 tbsp', 'cook 1 to 1 1/2 minutes', 'set to 3½ tbsp; the extra ½ tbsp', '1/2 sitron'):
+            self.assertEqual(unconverted(text), [], text)
+        self.assertEqual(unconverted('Add 1½ cups flour'), ['1½ cups'])
+        self.assertEqual(unconverted('a 9 1/2" tin'), ['9 1/2"'])
+
 
 class Pantry:
     def __init__(self, name, sub_category=None):
