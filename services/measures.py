@@ -13,7 +13,8 @@ shopping list sums one item's amounts across units (fmt_total).
 Free text (a step's text, done_when and short, the chef's note, the yield) is written metric, as number, space,
 unit ("200 °C", "3 cm", "20 × 30 cm", "2 dl"; the structuring prompt asks for it), and localize_text converts those
 measures for a US reader. unconverted() finds what it cannot convert (cups or °F in the text, degrees with no
-scale), for the validator's warning us_measure and scripts/units_report.py.
+scale) and missed() the metric measures it leaves ("et par dl"), for the validator's warnings us_measure and
+missed_measure and scripts/units_report.py.
 """
 import json
 import os
@@ -190,7 +191,19 @@ def temp(c, system=DEFAULT):
     return f"{degrees(c, system)} {'°F' if system == 'us' else '°C'}"
 
 
+FRACTIONS = {'¼': 0.25, '½': 0.5, '¾': 0.75, '⅓': 1 / 3, '⅔': 2 / 3, '⅛': 0.125}
+
+
 def _num(text):
+    """A number as written in a recipe: "2", "1,5", "½", "1½", "1 ½", "1/2", "1 1/2"."""
+    text = text.strip()
+    if '/' in text:
+        *whole, part = text.split()
+        top, bottom = part.split('/')
+        return (float(whole[0]) if whole else 0) + int(top) / (int(bottom) or 1)
+    if text[-1] in FRACTIONS:
+        whole = text[:-1].strip()
+        return (float(whole) if whole else 0) + FRACTIONS[text[-1]]
     return float(text.replace(',', '.'))
 
 
@@ -200,7 +213,7 @@ def inches(cm):
     return str(round(i)) if i >= 4 else _quarters(max(i, 0.25))
 
 
-NUM = r'\d+(?:[.,]\d+)?'
+NUM = r'(?:\d+ ?)?[¼½¾⅓⅔⅛]|\d+ \d+/\d+|\d+/\d+|\d+(?:[.,]\d+)?'  # "1½" and "1 1/2" before "1" on its own
 DASH = r'\s*[–-]\s*'
 TEMP = re.compile(rf'(?P<a>{NUM})(?:{DASH}(?P<b>{NUM}))?\s*°\s*(?P<u>[CF])\b')
 LENGTH = re.compile(rf'(?P<a>{NUM})(?:{DASH}(?P<b>{NUM}))?(?:\s*[×x]\s*(?P<c>{NUM}))?\s*(?P<u>cm|mm)\b')
@@ -248,6 +261,16 @@ def localize_text(text, system=DEFAULT):
         return text
     text = LENGTH.sub(_lengths, text)
     return AMOUNT.sub(_amounts, text)
+
+
+# A metric unit left in the text after localize_text(text, 'us'), with the word before it: "par dl", "halv liter"
+MISSED = re.compile(r'(?:[^\s{}]+\s+)?(?:°\s*C\b|(?<![\w°])(?:kg|grams?|gram|g|ml|cl|dl|liters?|litres?|l|cm|mm)\b)')
+
+
+def missed(text):
+    """The metric measures in free text that localize_text leaves as they are for a US reader, because they are not
+    written as number, space, unit: "et par dl", "en halv liter". The text should write them as "1 dl", "5 dl"."""
+    return [m.group(0).strip() for m in MISSED.finditer(localize_text(text, 'us') or '')]
 
 
 def unconverted(text):

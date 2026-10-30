@@ -13,7 +13,7 @@ import os
 import re
 from functools import lru_cache
 
-from services.measures import unconverted
+from services.measures import missed, unconverted
 
 CONSTRAINTS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'constraints')
 
@@ -272,6 +272,10 @@ def validate_recipe_v2(recipe, catalogs=None):
             if found:
                 warn('us_measure', f'{sid}.{key} has measures the app cannot convert: {", ".join(found)}. Write them '
                                    f'metric, as "200 °C", "3 cm", "2 dl", "400 g".')
+            left = missed(s.get(key))
+            if left:
+                warn('missed_measure', f'{sid}.{key} has measures the app cannot convert for US readers: {", ".join(left)}. '
+                                       f'Write them as number, space, unit: "1 dl", "200 °C".')
         if TIME_WORDS.search(s.get('text') or ''):
             warn('time_words', f'{sid}.text contains time words ("mens", "meanwhile"). Say what to do, not when.')
         if (s.get('active_minutes') or 0) + (s.get('passive_minutes') or 0) <= 0:
@@ -318,6 +322,10 @@ def validate_recipe_v2(recipe, catalogs=None):
         found = unconverted(recipe.get(key))
         if found:
             warn('us_measure', f'{key} has measures the app cannot convert: {", ".join(found)}. Write them metric.')
+        left = missed(recipe.get(key))
+        if left:
+            warn('missed_measure', f'{key} has measures the app cannot convert for US readers: {", ".join(left)}. '
+                                   f'Write them as number, space, unit.')
 
     return {
         'valid': not errors,

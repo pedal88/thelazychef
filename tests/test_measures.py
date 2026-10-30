@@ -5,8 +5,8 @@ import unittest
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from services.measures import (degrees, density, fmt_amount, fmt_total, frac, localize_text, system_of, temp,  # noqa: E402
-                               unconverted)
+from services.measures import (degrees, density, fmt_amount, fmt_total, frac, localize_text, missed, system_of,  # noqa: E402
+                               temp, unconverted)
 
 
 class MetricTests(unittest.TestCase):
@@ -107,6 +107,23 @@ class FreeTextTests(unittest.TestCase):
         self.assertEqual(self.us('2–3 dl vann'), '¾–1¼ cups vann')
         self.assertEqual(self.us('500 gram mel'), '1 lb mel')
         self.assertEqual(self.us('2 liter vann'), '8⅓ cups vann')
+
+    def test_fractions(self):
+        self.assertEqual(self.us('Tilsett ½ dl vann'), 'Tilsett 3½ tbsp vann')
+        self.assertEqual(self.us('Rør inn 1½ dl fløte'), 'Rør inn ⅔ cup fløte')
+        self.assertEqual(self.us('Add 1 ½ dl milk'), 'Add ⅔ cup milk')
+        self.assertEqual(self.us('Use 1/2 dl oil'), 'Use 3½ tbsp oil')
+        self.assertEqual(self.us('Pour 1 1/2 l water'), 'Pour 6¼ cups water')
+        self.assertEqual(self.us('skiver på ½ cm'), 'skiver på ¼ in')
+        self.assertEqual(self.us('1/2 sitron'), '1/2 sitron')  # no unit, nothing to convert
+        self.assertEqual(localize_text('Tilsett ½ dl vann'), 'Tilsett ½ dl vann')
+
+    def test_missed_finds_metric_measures_left_as_written(self):
+        self.assertEqual(missed('Tilsett et par dl vann'), ['par dl'])
+        self.assertEqual(missed('Kok opp en halv liter vann'), ['halv liter'])
+        self.assertEqual(missed('Sett ovnen på to hundre °C'), ['hundre °C'])
+        for text in ('Sett ovnen på 200 °C og hell i 1½ dl', 'Del {i3} i 4', 'G-streng', 'Kok i 10 min', '', None):
+            self.assertEqual(missed(text), [], text)
 
     def test_what_is_left_alone(self):
         for text in ('Kok i 10 min', 'Snu 2 ganger', 'Tilsett {i3} og {i4}', 'Kok 5–6 minutter', '', None):

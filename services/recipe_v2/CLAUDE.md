@@ -44,7 +44,7 @@ then `refresh`. Run it on saved recipes after changing derive, nutrition or the 
   nutrition, the planner and Prep's rules read the stored units. Measures in free text (a step's text, short and
   done_when, the chef's note, the yield) are converted by `measures.localize_text` when written metric as number,
   space, unit ("200 °C", "3 cm", "2 dl"; structuring prompt rule 8b). What it cannot convert gives the validator
-  warning `us_measure`; `scripts/units_report.py` lists it in the saved recipes. Tins sized in cm have `name_us`.
+  warning `us_measure` (US units) or `missed_measure` (metric, but not as number, space, unit: "et par dl"); `scripts/units_report.py` lists it in the saved recipes. Tins sized in cm have `name_us`.
 - `states.py` is the state catalog (`data/constraints/states.json`): what is done to an ingredient before it goes in.
 
 ## Rules that are easy to break

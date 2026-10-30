@@ -1,6 +1,7 @@
 """A read-only report on the measures in the saved recipes' free text (a step's text, short and done_when, the
-chef's note and the yield): how many the US view converts (services/measures.localize_text), and which it cannot,
-because they are written in US units ("2 cups", "350°F") or as degrees with no scale ("200°").
+chef's note and the yield): how many the US view converts (services/measures.localize_text), and which it cannot:
+written in US units ("2 cups", "350°F") or as degrees with no scale ("200°"), or metric but not as number, space,
+unit ("et par dl", "en halv liter"), which a US reader would see as written.
 
 It only reads: on Postgres the transaction is set to read only before the first query, and it is rolled back at
 the end. Nothing is written to the database, and nothing costs money.
@@ -34,7 +35,7 @@ def main():
 
     from sqlalchemy import text
     from app import app, db
-    from services.measures import AMOUNT, LENGTH, TEMP, unconverted
+    from services.measures import AMOUNT, LENGTH, TEMP, missed, unconverted
 
     with app.app_context():
         conn = db.session.connection()
@@ -61,7 +62,7 @@ def main():
             continue
         for kind, pattern in (('temperature', TEMP), ('length', LENGTH), ('amount', AMOUNT)):
             converted[kind] += len(pattern.findall(value))
-        found = unconverted(value)
+        found = unconverted(value) + missed(value)
         if found:
             problems.append({'recipe_id': rid, 'status': st, 'field': field, 'found': found, 'text': value})
 

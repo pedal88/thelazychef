@@ -172,3 +172,10 @@ def test_us_measures_in_free_text_are_a_warning():
     assert result['valid']  # a warning, not an error
     found = [w['message'] for w in result['warnings'] if w['code'] == 'us_measure']
     assert len(found) == 2 and '350°F' in found[0] and '9"' in found[1]
+
+
+def test_metric_measures_in_words_are_a_warning():
+    r = load('carbonara')
+    step(r, 's1')['done_when'] = 'Når du har et par dl kokende vann'
+    found = [w['message'] for w in validate_recipe_v2(r)['warnings'] if w['code'] == 'missed_measure']
+    assert len(found) == 1 and 'par dl' in found[0]
