@@ -19,6 +19,7 @@ import os
 import ssl
 import subprocess
 import sys
+import tempfile
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -37,6 +38,40 @@ def tls():
 
 
 SIZES = {'ig': (1080, 1350), 'tt': (1080, 1920)}
+# Headless Chrome now and then hangs on a page and never takes the picture, and a request to the site can stall: both
+# are stopped after SHOT_SECONDS and tried again, SHOT_TRIES times in all; Chrome each time with a profile of its own,
+# so a stuck one cannot lock the next
+SHOT_SECONDS = 90
+SHOT_TRIES = 3
+
+
+def fetch(url, context):
+    """(headers, text) of a page, tried again when it stalls."""
+    for attempt in range(1, SHOT_TRIES + 1):
+        try:
+            with urllib.request.urlopen(url, context=context, timeout=SHOT_SECONDS) as response:
+                return response.headers, response.read().decode('utf-8')
+        except TimeoutError:
+            if attempt == SHOT_TRIES:
+                raise
+            print(f'{url}: no answer, trying again')
+
+
+def shoot(chrome, width, height, target, url):
+    for attempt in range(1, SHOT_TRIES + 1):
+        with tempfile.TemporaryDirectory(prefix='social-chrome-') as profile:
+            try:
+                # virtual-time-budget lets the fonts and the symbols load before the picture is taken
+                subprocess.run([chrome, '--headless', '--disable-gpu', '--hide-scrollbars',
+                                f'--user-data-dir={profile}', '--force-device-scale-factor=1',
+                                f'--window-size={width},{height}',
+                                '--virtual-time-budget=10000', f'--screenshot={target}', url],
+                               check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=SHOT_SECONDS)
+                return
+            except subprocess.TimeoutExpired:
+                if attempt == SHOT_TRIES:
+                    raise
+                print(f'{target.name}: Chrome hung, trying again')
 
 
 def page_url(base, fmt, recipe, **args):
@@ -62,11 +97,8 @@ def main():
     query = {'size': args.size, 'code': args.code, 'look': args.look, 'ids': args.ids}
     first = page_url(args.base, args.format, args.recipe, **query, slide=1)
     context = tls()
-    with urllib.request.urlopen(first, context=context) as response:
-        count = int(response.headers['X-Slides'])
-    with urllib.request.urlopen(page_url(args.base, args.format, args.recipe, **query, caption=1),
-                                context=context) as response:
-        caption = response.read().decode('utf-8')
+    count = int(fetch(first, context)[0]['X-Slides'])
+    caption = fetch(page_url(args.base, args.format, args.recipe, **query, caption=1), context)[1]
 
     name = '-'.join(str(x) for x in (datetime.date.today().isoformat(), args.format, args.recipe, args.size, args.code,
                                      args.look and f'look-{args.look}')
@@ -76,12 +108,7 @@ def main():
     width, height = SIZES[args.size]
     for n in range(1, count + 1):
         target = folder / f'{n:02d}.png'
-        url = page_url(args.base, args.format, args.recipe, **query, slide=n)
-        # virtual-time-budget lets the fonts and the symbols load before the picture is taken
-        subprocess.run([args.chrome, '--headless', '--disable-gpu', '--hide-scrollbars',
-                        '--force-device-scale-factor=1', f'--window-size={width},{height}',
-                        '--virtual-time-budget=10000', f'--screenshot={target}', url],
-                       check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        shoot(args.chrome, width, height, target, page_url(args.base, args.format, args.recipe, **query, slide=n))
         print(f'{target}')
     (folder / 'caption.txt').write_text(caption, encoding='utf-8')
     print(f'\n{count} slides and caption.txt in {folder}\n\n{caption}')
