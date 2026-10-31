@@ -318,6 +318,13 @@ class ContentTests(unittest.TestCase):
         self._guide('knives', sorted(n for n in os.listdir(os.path.join(ROOT, 'docs', 'content', 'knives')) if n.endswith('.svg')))
         with open(os.path.join(ROOT, 'docs', 'content', 'home.json'), encoding='utf-8') as f:
             home = json.load(f)
+        # The recipes the home page names by id (From our posts), approved and with a picture, as in production
+        for recipe_id in sorted({i for b in home['blocks'] if b['kind'] == 'recipes' for i in b['settings'].get('ids', [])}):
+            r = Recipe(id=recipe_id, title=f'Dish {recipe_id}', status='approved', cuisine='Italian', difficulty='Simplistic')
+            db.session.add(r)
+            save_v2(r, CARBONARA)
+            r.title, r.image_filename = f'Dish {recipe_id}', 'dish.webp'
+        db.session.commit()
         self.assertEqual(check_blocks(home['blocks'], home['slug']), [])
         publish(save_version(home))
         db.session.commit()
