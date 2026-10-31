@@ -1,12 +1,15 @@
 """Auth Blueprint: login, registration and logout, and the signed-in user's measuring system."""
-from flask import flash, jsonify, redirect, render_template, request, url_for
+import secrets
+
+from flask import abort, flash, jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 from sqlalchemy import func
 
 from database.models import User, db
 from routes._flat import FlatBlueprint
+from routes._shared import absolute_url
 from services.measures import SYSTEMS
-from services import funnel, signup
+from services import funnel, google_signin, signup
 
 auth_bp = FlatBlueprint("auth", __name__)
 
@@ -21,15 +24,23 @@ def _by_email(email):
     return db.session.execute(db.select(User).where(func.lower(User.email) == email)).scalar()
 
 
-def _signed_in(user, hello=None):
+def _signed_in(user, hello=None, args=None):
     """Signs the user in, kept on this device (a year, Flask-Login's remember cookie) so a cook who signs up at
     breakfast is still signed in at dinner, then does what they pressed before they had an account (services/signup.py)
-    and goes back to where they were."""
+    and goes back to where they were. args: the address's next, do and recipe (the request's own by default)."""
+    args = request.args if args is None else args
     login_user(user, remember=True)
-    wanted = signup.pending(request.args)
+    wanted = signup.pending(args)
     if wanted or hello:
         flash(signup.do(user, *wanted) if wanted else hello, 'success')
-    return redirect(signup.safe_next(request.args.get('next')) or url_for('recipes_list'))
+    return redirect(signup.safe_next(args.get('next')) or url_for('recipes_list'))
+
+
+def _page(template, **context):
+    """Log in or sign up, with what was pressed and Continue with Google (components/google_button.html)."""
+    return render_template(template, carry=signup.carry(request.args), wanted=signup.pending(request.args),
+                           google=google_signin.enabled(),
+                           in_app=google_signin.in_app_browser(request.user_agent.string), **context)
 
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
@@ -47,7 +58,7 @@ def login():
             return _signed_in(user)
         flash('That email and password do not match.', 'error')
 
-    return render_template('login.html', carry=signup.carry(request.args), wanted=signup.pending(request.args))
+    return _page('login.html')
 
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
@@ -72,8 +83,39 @@ def register():
             db.session.commit()
             return _signed_in(user, hello='Welcome to The Lazy Chef.')
 
-    return render_template('register.html', sources=funnel.SOURCES, carry=signup.carry(request.args),
-                           wanted=signup.pending(request.args))
+    return _page('register.html', sources=funnel.SOURCES)
+
+
+# Continue with Google (services/google_signin.py): to Google and back, with what was pressed kept in the session
+def _google_back():
+    return absolute_url(url_for('google_done'))
+
+
+@auth_bp.route('/login/google')
+def google_start():
+    if not google_signin.enabled():
+        abort(404)
+    state = secrets.token_urlsafe(24)
+    session['google'] = {'state': state, **signup.carry(request.args)}
+    return redirect(google_signin.start_url(_google_back(), state))
+
+
+@auth_bp.route('/login/google/done')
+def google_done():
+    """Google sends the visitor back here: with a code when they chose an account, with error when they did not. The
+    state must be the one this browser was sent off with, so no one else's code can sign anyone in here."""
+    started = session.pop('google', None) or {}
+    args = {key: value for key, value in started.items() if key != 'state'}
+    found = None
+    if google_signin.enabled() and started.get('state') and request.args.get('state') == started['state'] \
+            and request.args.get('code'):
+        found = google_signin.identity(request.args['code'], _google_back())
+    if not found:
+        if not request.args.get('error'):  # they closed Google's page or said no: nothing to explain
+            flash('Signing in with Google did not go through. Try again, or use your email.', 'error')
+        return redirect(url_for('login', **args))
+    user, made = google_signin.user_for(*found, ref=funnel.session_ref())
+    return _signed_in(user, hello='Welcome to The Lazy Chef.' if made else None, args=args)
 
 
 @auth_bp.route('/privacy')

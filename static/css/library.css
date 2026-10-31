@@ -251,3 +251,15 @@
 /* Sign up and log in (register.html, login.html): why to have an account, or what it will do with what was pressed */
 .auth-why { margin: var(--space-3) 0 0; text-align: center; color: var(--color-ink); font-size: 15px; line-height: 1.45; }
 .auth-link { color: var(--color-ink); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.auth-google-box { margin-top: var(--space-6); }
+.auth-google { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: var(--tap); padding: 0 16px;
+  border: 1px solid var(--color-line-strong); border-radius: 8px; background: var(--color-paper); color: var(--color-ink);
+  font: 600 15px/1 var(--font-sans); text-decoration: none; }
+.auth-google:hover { border-color: var(--color-ink); }
+.auth-google:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.auth-inapp { margin: 0; padding: var(--space-3) var(--space-4); border: 1px solid var(--color-line); border-radius: 8px;
+  color: var(--color-ink); font-size: 14px; line-height: 1.45; }
+.auth-or { display: flex; align-items: center; gap: var(--space-3); margin: var(--space-4) 0 0; color: var(--color-muted); font-size: 13px; }
+.auth-or::before, .auth-or::after { content: ""; flex: 1; border-top: 1px solid var(--color-line); }
+.auth-note { margin: 0; text-align: center; color: var(--color-muted); font-size: 13px; }
+.auth-note a { color: var(--color-ink); text-decoration: underline; text-underline-offset: 3px; }

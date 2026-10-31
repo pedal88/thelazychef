@@ -260,5 +260,5 @@ jobs:
             --image ${{ env.GAR_LOCATION }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
             --allow-unauthenticated --timeout=600 \
             --update-labels managed-by=github-actions,commit-sha=${{ github.sha }} \
-            --update-secrets GOOGLE_API_KEY=GOOGLE_API_KEY:latest,DB_PASS=DB_PASS:latest,SECRET_KEY=SECRET_KEY:latest,ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest,CONTENT_API_KEY=CONTENT_API_KEY:latest \
+            --update-secrets GOOGLE_API_KEY=GOOGLE_API_KEY:latest,DB_PASS=DB_PASS:latest,SECRET_KEY=SECRET_KEY:latest,ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest,CONTENT_API_KEY=CONTENT_API_KEY:latest,GOOGLE_OAUTH_CLIENT_ID=GOOGLE_OAUTH_CLIENT_ID:latest,GOOGLE_OAUTH_CLIENT_SECRET=GOOGLE_OAUTH_CLIENT_SECRET:latest \
             --update-env-vars FLASK_APP=app.py,DB_BACKEND=cloudsql,INSTANCE_CONNECTION_NAME=thelazychefai-prod:europe-north2:lazy-chef-db-eu,DB_USER=${{ secrets.DB_USER }},DB_NAME=${{ secrets.DB_NAME }},STORAGE_BACKEND=gcs,GCS_BUCKET_NAME=thelazychef-assets,TASKS_QUEUE=recipe-generation,TASKS_LOCATION=europe-west1,TASKS_SERVICE_ACCOUNT=recipe-tasks@thelazychefai-prod.iam.gserviceaccount.com,APP_BASE_URL=https://lazy-chef-app-57buprlcwq-ew.a.run.app

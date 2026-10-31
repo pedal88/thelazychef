@@ -431,6 +431,7 @@ class RecipeLine(db.Model):
 
 class User(UserMixin, db.Model):
     __tablename__ = 'user'
+    __table_args__ = (UniqueConstraint('google_sub', name='uq_user_google_sub'),)
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     email: Mapped[str] = mapped_column(String(150), unique=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(256), nullable=False)
@@ -442,6 +443,9 @@ class User(UserMixin, db.Model):
     signup_ref: Mapped[Optional[str]] = mapped_column(String(60), nullable=True)
     # The measuring system the user chose in the menu, 'metric' or 'us' (services/measures.py); empty until they choose
     unit_system: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)
+    # The Google account the user signs in with (its "sub", which stays when the Gmail address changes); empty for
+    # those who only use a password (services/google_signin.py)
+    google_sub: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
     # Relationship to interactions
     interactions: Mapped[list["UserRecipeInteraction"]] = relationship(back_populates="user", cascade="all, delete-orphan")

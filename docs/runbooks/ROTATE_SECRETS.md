@@ -193,3 +193,26 @@ security find-generic-password -s thelazychef-content-api -w | wc -c   # 65: 64 
 Feilet deployen, kjør den feilede jobben på nytt: `gh run rerun <run-id> --failed` (id-en fra `gh run list --branch main --limit 1`). Etterpå skal `python -m scripts.content pages` liste sidene.
 
 Bytte senere: samme blokk, men `gcloud secrets versions add` i stedet for `create` og uten `add-iam-policy-binding`. Lag så en ny revisjon som under «Senere bytter», så appen leser den nye versjonen.
+
+## Google-innloggingen (`GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`)
+
+«Continue with Google» (`services/google_signin.py`) bruker OAuth-klienten «The Lazy Chef web» i Google Auth Platform
+(Web application, redirect URI `https://thelazychef.app/login/google/done`, publisert som External). ID-en og
+hemmeligheten ligger i Secret Manager. Uten dem vises ingen Google-knapp, men deployen henter dem, så de må finnes før
+den kjører, ellers feiler den med `Permission denied on secret`.
+
+Første gang, på MacBooken. Verdiene limes inn ved spørsmålet og vises ikke i terminalen eller historikken:
+
+```bash
+P=thelazychefai-prod
+SA=$(gcloud run services describe lazy-chef-app --region europe-west1 --project $P --format='value(spec.template.spec.serviceAccountName)')
+SA=${SA:-$(gcloud projects describe $P --format='value(projectNumber)')-compute@developer.gserviceaccount.com}
+read -rs "ID?Client ID: "; echo; printf %s "$ID" | gcloud secrets create GOOGLE_OAUTH_CLIENT_ID --data-file=- --project=$P
+read -rs "SECRET?Client secret: "; echo; printf %s "$SECRET" | gcloud secrets create GOOGLE_OAUTH_CLIENT_SECRET --data-file=- --project=$P
+unset ID SECRET
+for S in GOOGLE_OAUTH_CLIENT_ID GOOGLE_OAUTH_CLIENT_SECRET; do gcloud secrets add-iam-policy-binding $S --member="serviceAccount:$SA" --role=roles/secretmanager.secretAccessor --format='value(etag)' --project=$P; done
+```
+
+Bytte hemmeligheten senere: lag en ny i klienten (Clients → klienten → Add secret), legg den inn med
+`gcloud secrets versions add GOOGLE_OAUTH_CLIENT_SECRET --data-file=-` som over, lag en ny revisjon som under «Senere
+bytter», og slett den gamle i klienten først når innloggingen virker.
