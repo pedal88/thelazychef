@@ -95,6 +95,9 @@ come only by typing an address or through the Instagram bio link.
 8. **Log both posts** in the post log: the address the render script ends with, or Log a post. Put the title or hook
    in What it tries, and the sound and the post's link.
 9. **Copy in the numbers** 2 and 7 days later (a reminder task in meOS for each), and once a week read them as below.
+   With many posts a day, use **Copy in numbers** on the Funnel page (`/admin/funnel/numbers`): every post that went
+   up on one date in one table, Day 2 or Day 7, one or both platforms, saved at once. Drafts are left out until they
+   are marked posted.
 
 The dish images are made by Gemini: label every post as AI-generated where the platform asks.
 

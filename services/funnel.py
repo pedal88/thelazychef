@@ -349,25 +349,72 @@ def save_post(post, form):
     return None
 
 
+def _numbers(form, prefix=''):
+    """{field: whole number or None} from a form's fields (prefix + 'views', …), or a string saying which is wrong."""
+    numbers = {}
+    for key in STAT_FIELDS:
+        value = (form.get(prefix + key) or '').replace(' ', '').replace(',', '').strip()
+        if value and not value.isdigit():
+            return f'{key.replace("_", " ").capitalize()} must be a whole number.'
+        numbers[key] = int(value) if value else None
+    return numbers
+
+
+def _put_stat(post, day, numbers):
+    """The post's row for the day, made if it has none, with these numbers in place of the old ones."""
+    stat = next((s for s in post.stats if s.day == day), None)
+    if stat is None:
+        stat = SocialPostStat(day=day)
+        post.stats.append(stat)
+    for key, value in numbers.items():
+        setattr(stat, key, value)
+
+
 def save_stat(post, form):
     """Keeps the platform's numbers for a post on a day after it went up, replacing what that day had; returns what is
     wrong, or None."""
     day = (form.get('day') or '').strip()
     if not day.isdigit() or not 0 <= int(day) <= 365:
         return 'Give the number of days since it went up, e.g. 2 or 7.'
-    numbers = {}
-    for key in STAT_FIELDS:
-        value = (form.get(key) or '').replace(' ', '').replace(',', '').strip()
-        if value and not value.isdigit():
-            return f'{key.replace("_", " ").capitalize()} must be a whole number.'
-        numbers[key] = int(value) if value else None
+    numbers = _numbers(form)
+    if isinstance(numbers, str):
+        return numbers
     if all(v is None for v in numbers.values()):
         return 'Give at least one number.'
-    stat = next((s for s in post.stats if s.day == int(day)), None)
-    if stat is None:
-        stat = SocialPostStat(day=int(day))
-        post.stats.append(stat)
-    for key, value in numbers.items():
-        setattr(stat, key, value)
+    _put_stat(post, int(day), numbers)
     db.session.commit()
     return None
+
+
+# The numbers sheet: the posts of one day in one table, to copy their numbers in at once
+SHEET_DAYS = (2, 7)
+
+
+def sheet(day, on, platform=None):
+    """The posts that went up on the date on (not drafts), on one platform or both, each with its numbers for the day
+    after it went up, if any: [{'post', 'stat'}], TikTok first, then by code."""
+    query = db.select(SocialPost).where(SocialPost.posted_on == on, SocialPost.status == 'posted')
+    if platform:
+        query = query.where(SocialPost.platform == platform)
+    posts = db.session.execute(query).scalars().all()
+    order = [key for key, _ in PLATFORMS]
+    posts.sort(key=lambda p: (order.index(p.platform) if p.platform in order else len(order),
+                              int(p.code) if p.code.isdigit() else 0, p.code))
+    return [{'post': p, 'stat': next((s for s in p.stats if s.day == day), None)} for p in posts]
+
+
+def save_sheet(rows, day, form):
+    """Keeps the numbers the sheet's form gives for each post (fields '<post id>-views', …), replacing that day's row
+    of the posts that got any; nothing is saved when one is wrong. Returns (how many posts got numbers, what is
+    wrong or None)."""
+    found = []
+    for row in rows:
+        numbers = _numbers(form, f'{row["post"].id}-')
+        if isinstance(numbers, str):
+            return 0, f'{post_ref(row["post"])}: {numbers}'
+        if any(v is not None for v in numbers.values()):
+            found.append((row['post'], numbers))
+    for post, numbers in found:
+        _put_stat(post, day, numbers)
+    db.session.commit()
+    return len(found), None

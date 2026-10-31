@@ -109,6 +109,36 @@ def edit_post(post_id):
     return _post_page(post)
 
 
+@funnel_bp.route('/admin/funnel/numbers', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def numbers():
+    """The numbers sheet: every post that went up on one date, ?day=2 or 7 days later (?on=, default that many days
+    ago), on ?platform= or both, in one table to copy the platform's numbers into at once."""
+    values = request.values
+    day = values.get('day', 7, type=int)
+    if day not in funnel.SHEET_DAYS:
+        day = 7
+    try:
+        on = datetime.date.fromisoformat(values.get('on') or '')
+    except ValueError:
+        on = datetime.date.today() - datetime.timedelta(days=day)
+    platform = values.get('platform') if values.get('platform') in dict(funnel.PLATFORMS) else ''
+    rows = funnel.sheet(day, on, platform or None)
+    error = None
+    if request.method == 'POST':
+        saved, error = funnel.save_sheet(rows, day, request.form)
+        if error:
+            db.session.rollback()
+        else:
+            flash(f'Saved the numbers of {saved} post{"s" if saved != 1 else ""}.', 'success')
+            return redirect(url_for('funnel.numbers', day=day, on=on.isoformat(), platform=platform or None))
+    return render_template('admin/funnel_numbers.html', rows=rows, day=day, on=on, platform=platform,
+                           days=funnel.SHEET_DAYS, platforms=funnel.PLATFORMS, stat_fields=funnel.STAT_FIELDS,
+                           ref=funnel.post_ref, error=error, form=request.form if error else {},
+                           day_span=datetime.timedelta(days=day)), 400 if error else 200
+
+
 @funnel_bp.route('/admin/funnel/posts/<int:post_id>/posted', methods=['POST'])
 @login_required
 @admin_required
