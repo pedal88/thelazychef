@@ -10,6 +10,7 @@ from sqlalchemy.orm.attributes import flag_modified
 from database.models import Recipe, UserRecipeInteraction, db
 from routes._flat import FlatBlueprint
 from routes._shared import DIFFICULTY_LABELS, get_recipe_image_url, get_storage
+from services import signup
 from services.recipe_library import feed_ids
 
 interactions_bp = FlatBlueprint("interactions", __name__)
@@ -151,25 +152,12 @@ def toggle_made(recipe_id):
     return jsonify({'success': True, 'is_made': interaction.is_made})
 
 
-# Saving again soon after (the steps unticked and ticked off again, Save pressed twice) is the same meal
-SAME_MEAL = datetime.timedelta(hours=3)
-
-
 @interactions_bp.route('/api/interactions/recipe/<int:recipe_id>/cooked', methods=['POST'])
 @login_required
 def mark_cooked(recipe_id):
     """I made this, from the celebration after the last step: marks the recipe as made and counts the time."""
     db.get_or_404(Recipe, recipe_id)
-    interaction = db.session.get(UserRecipeInteraction, (current_user.id, recipe_id))
-    if not interaction:
-        interaction = UserRecipeInteraction(user_id=current_user.id, recipe_id=recipe_id, status='pass',
-                                            is_super_like=False, made_count=0)
-        db.session.add(interaction)
-    now = datetime.datetime.utcnow()
-    if not interaction.last_made_at or now - interaction.last_made_at > SAME_MEAL or not interaction.made_count:
-        interaction.made_count = (interaction.made_count or 0) + 1
-    interaction.is_made, interaction.last_made_at = True, now
-    db.session.commit()
+    interaction = signup.cooked(current_user.id, recipe_id)
     return jsonify({'success': True, 'made_count': interaction.made_count})
 
 

@@ -232,7 +232,7 @@
         <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-        <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+        <div class="site-flash max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
             {% for category, message in messages %}
             <div
                 class="rounded-lg p-4 mb-4 text-sm font-medium {% if category == 'error' %}bg-red-50 text-red-800 border-red-200{% else %}bg-green-50 text-green-800 border-green-200{% endif %} border">

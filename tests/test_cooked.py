@@ -87,7 +87,7 @@ class CookedTests(unittest.TestCase):
     def test_the_page_has_the_celebration(self):
         html = self.client.get(f'/recipe/{self.recipe.id}').get_data(as_text=True)
         self.assertIn('id="sheet-done"', html)
-        self.assertIn('Log in</a> to keep it in your Made list', html)  # signed out: no form to save
+        self.assertIn(f'/register?next=/recipe/{self.recipe.id}&amp;do=made', html)  # signed out: I made this signs up
         self.assertNotIn('data-done-made', html)
         self.login()
         html = self.client.get(f'/recipe/{self.recipe.id}').get_data(as_text=True)

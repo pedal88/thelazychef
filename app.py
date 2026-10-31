@@ -1,3 +1,4 @@
+import datetime
 import os
 from dotenv import load_dotenv
 
@@ -76,6 +77,11 @@ if not app.config['SECRET_KEY']:
         raise RuntimeError("SECRET_KEY environment variable must be set in production")
     print("WARNING: SECRET_KEY not set, using a random key (sessions reset on restart)")
     app.config['SECRET_KEY'] = os.urandom(32).hex()
+# Signing in keeps a cook signed in on the device for a year (routes/auth_routes._signed_in): the cookie only over
+# https in production, and not sent along when another site posts to this one
+app.config['REMEMBER_COOKIE_DURATION'] = datetime.timedelta(days=365)
+app.config['REMEMBER_COOKIE_SECURE'] = bool(os.environ.get('K_SERVICE'))
+app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
 # Database Configuration (Local vs Cloud SQL)
 configure_database(app)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
