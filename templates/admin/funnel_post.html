@@ -45,8 +45,13 @@
     <label class="text-sm text-slate-700">Sound
       <input name="sound" value="{{ val('sound') }}" maxlength="120" class="{{ field }}">
     </label>
-    <label class="text-sm text-slate-700">Went up
+    <label class="text-sm text-slate-700">Went up (or is planned for)
       <input type="date" name="posted_on" value="{{ val('posted_on') }}" required class="{{ field }}">
+    </label>
+    <label class="text-sm text-slate-700">Status
+      <select name="status" class="{{ field }}">
+        {% for key, label in statuses %}<option value="{{ key }}" {{ 'selected' if (val('status') or 'posted') == key }}>{{ label }}</option>{% endfor %}
+      </select>
     </label>
     <label class="text-sm text-slate-700 sm:col-span-2">Link to the post
       <input name="url" value="{{ val('url') }}" maxlength="300" class="{{ field }}" placeholder="https://www.tiktok.com/@…">

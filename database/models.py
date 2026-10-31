@@ -488,7 +488,9 @@ class SocialPost(db.Model):
     sound: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     url: Mapped[Optional[str]] = mapped_column(String(300), nullable=True)
-    posted_on: Mapped[datetime.date] = mapped_column(Date, nullable=False)
+    posted_on: Mapped[datetime.date] = mapped_column(Date, nullable=False)  # or the day it is planned for, as a draft
+    # 'draft' when scripts/social_batch.py has planned and rendered it, 'posted' once it is up
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default='posted', server_default='posted')
 
     stats: Mapped[list["SocialPostStat"]] = relationship(back_populates="post", cascade="all, delete-orphan",
                                                          order_by="SocialPostStat.day")

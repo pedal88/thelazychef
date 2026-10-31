@@ -67,6 +67,7 @@ def dashboard():
 def _post_page(post, error=None, form=None):
     return render_template('admin/funnel_post.html', post=post, error=error, form=form or {},
                            platforms=funnel.PLATFORMS, formats=funnel.POST_FORMATS, stat_fields=funnel.STAT_FIELDS,
+                           statuses=funnel.POST_STATUSES,
                            ref=funnel.post_ref(post) if post.id else None), 400 if error else 200
 
 
@@ -106,6 +107,18 @@ def edit_post(post_id):
         flash('Saved.', 'success')
         return redirect(url_for('funnel.edit_post', post_id=post.id))
     return _post_page(post)
+
+
+@funnel_bp.route('/admin/funnel/posts/<int:post_id>/posted', methods=['POST'])
+@login_required
+@admin_required
+def mark_posted(post_id):
+    """A draft from scripts/social_batch.py is up: it went up today."""
+    post = db.session.get(SocialPost, post_id) or abort(404)
+    post.status, post.posted_on = 'posted', datetime.date.today()
+    db.session.commit()
+    flash(f'{funnel.post_ref(post)} is up.', 'success')
+    return redirect(url_for('funnel.dashboard') + '#posts')
 
 
 @funnel_bp.route('/admin/funnel/posts/<int:post_id>/delete', methods=['POST'])

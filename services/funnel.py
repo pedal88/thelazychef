@@ -19,7 +19,9 @@ import re
 from flask import session
 from sqlalchemy import case, func
 
-from database.models import Recipe, ReferralVisit, SocialPost, SocialPostStat, User, UserRecipeInteraction, db
+from database.models import (Recipe, RecipeComponent, ReferralVisit, SocialPost, SocialPostStat, User,
+                             UserRecipeInteraction, db)
+from services import social_week
 
 # The answers to "How did you find us?" on the sign-up form: (stored value, label)
 SOURCES = [
@@ -49,6 +51,16 @@ _ROBOTS = re.compile(r'bot\b|bot/|crawl|spider|slurp|facebookexternalhit|faceboo
 PLATFORMS = [('tiktok', 'TikTok'), ('instagram', 'Instagram')]
 POST_FORMATS = ['map', 'grid', 'pantry', 'week', 'other']
 STAT_FIELDS = ['views', 'likes', 'comments', 'saves', 'shares', 'profile_visits']
+POST_STATUSES = [('draft', 'Draft'), ('posted', 'Posted')]
+
+# A day's posts planned by scripts/social_batch.py: the formats it renders, the ones it suggests in turn when it is
+# given no plan, the parts a map's recipe has so its lines meet (docs/SOCIAL.md), and how long a recipe rests after a
+# post
+RENDERED_FORMATS = ['map', 'grid', 'pantry', 'week']
+DAY_FORMATS = ['map', 'grid']
+MAP_PARTS = (3, 4)
+RECIPE_REST_DAYS = 60
+FORMAT_TITLES = {'pantry': 'The foundation pantry', 'week': 'One shop, five dinners'}
 
 
 def clean_ref(value):
@@ -214,6 +226,83 @@ def next_code():
     return str(max((int(code) for code in used if code.isdigit()), default=0) + 1)
 
 
+def suggest(day, n=5):
+    """n posts for a day, when none are planned by hand: weeknight dinners with a dish image (the week post's
+    candidates) that no post has drawn on in the RECIPE_REST_DAYS before it, in DAY_FORMATS by turn, a map only from a
+    recipe with MAP_PARTS parts. [{'format', 'recipe_id', 'title'}], fewer when the recipes run out."""
+    rested = set(db.session.execute(db.select(SocialPost.recipe_id).where(
+        SocialPost.recipe_id.is_not(None),
+        SocialPost.posted_on > day - datetime.timedelta(days=RECIPE_REST_DAYS))).scalars())
+    free = [i for i in sorted(social_week.candidates()) if i not in rested]
+    parts = dict(db.session.execute(
+        db.select(RecipeComponent.recipe_id, func.count(RecipeComponent.id))
+        .where(RecipeComponent.recipe_id.in_(free)).group_by(RecipeComponent.recipe_id)).all())
+    titles = dict(db.session.execute(db.select(Recipe.id, Recipe.title).where(Recipe.id.in_(free))).all())
+    picked = []
+    for k in range(n):
+        fmt = DAY_FORMATS[k % len(DAY_FORMATS)]
+        fits = [i for i in free if fmt != 'map' or parts.get(i, 0) in MAP_PARTS]
+        if not fits:
+            fmt, fits = 'grid', free
+        if not fits:
+            break
+        chosen = fits[0]
+        free.remove(chosen)
+        picked.append({'format': fmt, 'recipe_id': chosen, 'title': titles[chosen]})
+    return picked
+
+
+def _plan_item(item):
+    """(format, recipe, week ids, hook) of a planned post, or a string saying what is wrong with it."""
+    fmt = item.get('format')
+    if fmt not in RENDERED_FORMATS:
+        return f'format must be one of {", ".join(RENDERED_FORMATS)}, not {fmt!r}'
+    recipe = None
+    if fmt in ('map', 'grid'):
+        recipe_id = item.get('recipe_id')
+        recipe = db.session.get(Recipe, recipe_id) if isinstance(recipe_id, int) else None
+        if recipe is None or recipe.status != 'approved' or recipe.schema_version != 2:
+            return f'{fmt} needs an approved recipe, and {recipe_id!r} is not one'
+    ids = item.get('ids') or None
+    if ids is not None and (fmt != 'week' or not isinstance(ids, list) or len(ids) != 5
+                            or not all(isinstance(i, int) for i in ids)):
+        return 'ids are the five recipe ids of a week post'
+    hook = (item.get('hook') or '').strip()[:200] or None
+    return fmt, recipe, ids, hook
+
+
+def plan_drafts(day, items):
+    """Logs a day's planned posts as drafts, each on both platforms under one code (thelazychef.app/tiktok/5 and
+    /ig/5), and returns ([{'code', 'format', 'recipe_id', 'ids', 'title', 'hook', 'new'}], errors). Nothing is saved
+    when an item is wrong. A post the day already has (same format, recipe and week) keeps its code, so the script can
+    run again; a hook given again replaces the old one."""
+    checked = [_plan_item(item) for item in items]
+    errors = [f'post {n}: {c}' for n, c in enumerate(checked, 1) if isinstance(c, str)]
+    if errors:
+        return [], errors
+    planned = []
+    for fmt, recipe, ids, hook in checked:
+        notes = f'Recipes {",".join(str(i) for i in ids)}' if ids else None
+        title = recipe.title[:200] if recipe else FORMAT_TITLES[fmt]
+        found = db.session.execute(db.select(SocialPost).filter_by(
+            posted_on=day, format=fmt, recipe_id=recipe.id if recipe else None, notes=notes, status='draft')
+            .order_by(SocialPost.id)).scalars().first()
+        code = found.code if found else next_code()
+        for platform, _ in PLATFORMS:
+            post = db.session.execute(db.select(SocialPost).filter_by(platform=platform, code=code)).scalar()
+            if post is None:
+                post = SocialPost(platform=platform, code=code, format=fmt, recipe_id=recipe.id if recipe else None,
+                                  title=title, notes=notes, posted_on=day, status='draft')
+                db.session.add(post)
+            if hook:
+                post.hook = hook
+        db.session.flush()  # so the next post's code is one above this one
+        planned.append({'code': code, 'format': fmt, 'recipe_id': recipe.id if recipe else None, 'ids': ids,
+                        'title': title, 'hook': hook or (found.hook if found else None), 'new': found is None})
+    db.session.commit()
+    return planned, []
+
+
 def _text(form, key, length):
     return (form.get(key) or '').strip()[:length] or None
 
@@ -223,8 +312,11 @@ def save_post(post, form):
     platform = form.get('platform')
     fmt = form.get('format')
     code = clean_ref(form.get('code'))
+    status = form.get('status') or 'posted'
     if platform not in dict(PLATFORMS):
         return 'Pick TikTok or Instagram.'
+    if status not in dict(POST_STATUSES):
+        return 'Pick draft or posted.'
     if fmt not in POST_FORMATS:
         return 'Pick a format.'
     if not code or '-' in code:
@@ -247,6 +339,7 @@ def save_post(post, form):
     except ValueError:
         return 'Give the day it went up.'
     post.platform, post.code, post.format, post.title, post.posted_on = platform, code, fmt, title, posted_on
+    post.status = status
     post.recipe_id = recipe.id if recipe else None
     post.hook, post.sound, post.url = _text(form, 'hook', 200), _text(form, 'sound', 120), _text(form, 'url', 300)
     post.notes = _text(form, 'notes', 5000)
