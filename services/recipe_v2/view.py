@@ -246,6 +246,9 @@ def build(recipe, servings=None, plan='calm', system=DEFAULT):
             'while': f"While: {during['short'].lower()}" if during else '',
             'html': step_html(s, lines, ingredients, factor, recipe.language, system), 'done_when': s.get('done_when'),
             'setup': bool(s.get('setup')), 'heat': sid in heated,
+            # For the social slides (services/social.py): the equipment ids, the temperature and the minutes as stored
+            'equipment_ids': list(s.get('equipment') or []), 'temp_c': s.get('temp_c'),
+            'minutes': (s.get('active_minutes') or 0) + (s.get('passive_minutes') or 0),
         })
     # Where the heat goes on, for the step list of the one-page flow: the first step that heats the food (not
     # preheating the oven or bringing water to the boil), and the time from there to the table
@@ -293,7 +296,8 @@ def build(recipe, servings=None, plan='calm', system=DEFAULT):
     return {
         'title': recipe.title, 'servings': servings, 'scalable': scalable, 'yield_text': localize_text(recipe.yield_text, system),
         'units': system,
-        'total': duration(sch['T']), 'total_min': sch['T'], 'active': duration(sch['A']), 'plan': plan, 'plans': PLAN_NAMES,
+        'total': duration(sch['T']), 'total_min': sch['T'], 'active': duration(sch['A']), 'active_min': sch['A'],
+        'plan': plan, 'plans': PLAN_NAMES,
         'plan_hint': PLAN_HINTS[plan], 'parts': [c['name'] for c in v2['components']],
         'shopping': shop, 'shop_groups': groups.grouped(shop), 'equipment': equipment_list(first_use, cat, system), 'steps': steps,
         'heat_on': heat_on, 'time_strip': time_strip(steps, sch['T']),

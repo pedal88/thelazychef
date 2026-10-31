@@ -32,7 +32,7 @@
         {% set s = row.latest %}
         <tr>
           <td class="py-2 pr-4 whitespace-nowrap">{{ row.post.posted_on.strftime('%d.%m') }}</td>
-          <td class="py-2 pr-4"><a href="{{ url_for('funnel.edit_post', post_id=row.post.id) }}" class="hover:underline">{{ row.post.title }}</a> <span class="font-mono text-xs text-slate-500">{{ row.ref }} · {{ row.post.format }}{{ ' · day ' ~ s.day if s }}</span></td>
+          <td class="py-2 pr-4"><a href="{{ url_for('funnel.edit_post', post_id=row.post.id) }}" class="hover:underline">{{ row.post.title }}</a> <span class="font-mono text-xs text-slate-500">{{ row.ref }} · {{ row.post.format }}{% if row.post.series %} · {{ row.post.series }}{{ ' #' ~ row.post.series_n if row.post.series_n }}{% endif %}{% if row.post.hook_group %} · {{ row.post.hook_group }}{% endif %}{% if row.post.cta_group %} · {{ row.post.cta_group }}{% endif %}{{ ' · day ' ~ s.day if s }}</span></td>
           {% for value in (s.views if s else none, s.saves if s else none, s.shares if s else none) %}<td class="py-2 pr-4 text-right tabular-nums {{ 'text-slate-300' if value is none }}">{{ value if value is not none else '–' }}</td>{% endfor %}
           <td class="py-2 pr-4 text-right tabular-nums">{{ row.visits }}</td>
           <td class="py-2 pr-4 text-right tabular-nums {{ 'text-slate-300' if row.per_1000 is none }}">{{ row.per_1000 if row.per_1000 is not none else '–' }}</td>

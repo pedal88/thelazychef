@@ -493,6 +493,19 @@ class SocialPost(db.Model):
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     url: Mapped[Optional[str]] = mapped_column(String(300), nullable=True)
     posted_on: Mapped[datetime.date] = mapped_column(Date, nullable=False)
+    # The variant, for the trial plan (docs/SOCIAL.md "Learning from the posts"): the round of the plan, the series
+    # and the post's number in it, the hook group (hook above holds its words), the CTA group, every recipe in the post
+    # ("325,326,329"), the slide kinds used, the look, how many slides, and the time of day it went up
+    round: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)
+    series: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)
+    series_n: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    hook_group: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    cta_group: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    recipe_ids: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
+    views: Mapped[Optional[str]] = mapped_column(String(300), nullable=True)
+    look: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)
+    slides: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    slot: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
 
     stats: Mapped[list["SocialPostStat"]] = relationship(back_populates="post", cascade="all, delete-orphan",
                                                          order_by="SocialPostStat.day")

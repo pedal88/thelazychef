@@ -131,6 +131,25 @@ class SocialTests(unittest.TestCase):
         self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
         self.assertEqual(self.get(f'{base}/map').status_code, 200)
 
+    def test_a_hook_and_a_cta_change_only_the_first_and_last_slides(self):
+        base = f'/social/recipe/{self.recipe.id}'
+        html = self.get(f'{base}/grid', hook='guess', slide=1).get_data(as_text=True)
+        self.assertNotIn('Can you guess the dinner?', html.replace('Can you guess the dinner?', '', 1)
+                         if 'Can you guess the dinner?' in html else html)  # one of the group's phrasings, once
+        self.assertNotIn(self.recipe.title, html.split('<main', 1)[1])
+        self.assertEqual(self.kinds('grid'), ['collage', 'ingredients', 'dish', 'end'])
+        cover = self.get(f'{base}/map', hook='number', slide=1).get_data(as_text=True)
+        self.assertIn('class="name">' + self.recipe.title, cover)  # the dish is still named under the hook
+        self.assertIn('things', cover)  # one of the number group's phrasings
+        last = self.get(f'{base}/map', cta='follow', code=3, slide=5).get_data(as_text=True)
+        self.assertIn('Follow', last)
+        self.assertIn('class="address small">thelazychef.app/ig/3', last)
+        # Not a group: the post as it always was
+        plain = self.get(f'{base}/map', hook='shout', cta='buy', code=3, slide=5).get_data(as_text=True)
+        self.assertIn('class="address">thelazychef.app/ig/3', plain)
+        self.assertIn('Every step in full', plain)
+        self.assertNotIn('class="name">', self.get(f'{base}/map', hook='shout', slide=1).get_data(as_text=True))
+
     def test_the_steps_slide_shows_one_more_step_rather_than_and_1_more(self):
         view = {'title': 'Soup', 'total': '20 min', 'parts': [], 'shop_groups': [], 'metro_map': None,
                 'steps': [{'short': f'Step {i}', 'duration': '1 min', 'phase': 'cook'} for i in range(11)]}

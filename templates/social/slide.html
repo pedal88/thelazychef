@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 {# One slide of a TikTok or Instagram post (routes/social_routes.py, services/social.py, docs/SOCIAL.md), drawn at
-   the post's size and photographed by scripts/social_render.py. Not part of the site: no menu, no scripts. #}
+   the post's size and photographed by scripts/social_render.py. Not part of the site: no menu, and no script but
+   the one that scales the river delta to the room it has. #}
 {% import "components/brand.html" as brand -%}
+{% from "components/delta.html" import pic, heat with context -%}
 <html lang="en"{% if look %} data-look="{{ look }}"{% endif %}>
 <head>
 <meta charset="utf-8">
@@ -11,6 +13,10 @@
 {# The site's look (routes/_shared.SITE_LOOK), or the one ?look= asks for, as on the site (static/css/themes.css) #}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/themes.css') }}">
 {% if look %}<link rel="stylesheet" href="https://fonts.googleapis.com/css2?{{ LOOK_FONTS[look] }}&display=swap">{% endif %}
+{% if slide.kind == 'delta' %}{# The river delta's own styles and handwriting, as on the recipe page #}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&display=swap">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/delta.css') }}">
+{% endif -%}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/social.css') }}">
 </head>
 <body>
@@ -37,7 +43,17 @@
   <h1 class="title">{{ s.title }}</h1>
   {% if s.image %}<div class="hero"><img src="{{ s.image }}" alt=""></div>
   {% else %}<div class="hero tiles">{% for t in s.tiles[:12] if t.img %}<img src="{{ t.img }}" alt="">{% endfor %}</div>{% endif %}
-  <p class="facts"><span>{{ s.total }}</span><span>{{ s.count }} ingredients</span>{% if s.parts|length > 1 %}<span>{{ s.parts|length }} parts</span>{% endif %}</p>
+  {% if s.name %}<p class="facts"><span class="name">{{ s.name }}</span><span>{{ s.total }}</span></p>
+  {% else %}<p class="facts"><span>{{ s.total }}</span><span>{{ s.count }} ingredients</span>{% if s.parts|length > 1 %}<span>{{ s.parts|length }} parts</span>{% endif %}</p>{% endif %}
+
+{% elif s.kind == 'got_cover' %}
+  <p class="eyebrow">{{ s.eyebrow }}</p>
+  <h1 class="title">{{ s.title }}</h1>
+  <div class="got">
+    <div class="sym big">{% if s.symbol %}<img src="{{ s.symbol }}" alt="">{% else %}<i>{{ s.ingredient[:1]|upper }}</i>{% endif %}</div>
+    <div class="dishes small">{% for d in s.dishes %}{% if d %}<img src="{{ d }}" alt="">{% endif %}{% endfor %}</div>
+  </div>
+  <p class="facts"><span>{{ s.count }} dinners</span><span>one shopping list</span></p>
 
 {% elif s.kind == 'map' %}
   {% set m, k, pad = s.map, s.k, s.pad %}
@@ -64,7 +80,7 @@
   {% if s.staples %}<p class="note">Plus what you probably have: {{ s.staples|join(', ') }}</p>{% endif %}
 
 {% elif s.kind == 'collage' %}
-  <p class="eyebrow">{{ s.count }} ingredients</p>
+  <p class="eyebrow">{% if s.eyebrow %}{{ s.eyebrow }}{% else %}{{ s.count }} ingredients{% endif %}</p>
   <h1 class="title">{{ s.title }}</h1>
   {{ grid(s.tiles, s.cols, labels=false) }}
   <p class="note big">Swipe for the answer.</p>
@@ -76,6 +92,95 @@
     {% for st in s.steps %}<li><b class="no ph-{{ st.phase }}">{{ st.no }}</b><span>{{ st.short }}</span><small>{{ st.duration }}</small></li>{% endfor %}
   </ol>
   {% if s.more %}<p class="note">And {{ s.more }} more in the recipe.</p>{% endif %}
+
+{% elif s.kind == 'timers' %}
+  <h2 class="head">{{ s.title }}</h2>
+  <ol class="steps timers">
+    {% for st in s.steps %}<li><b class="no ph-{{ st.phase }}">{{ st.no }}</b><span>{{ st.short }}</span>{% if st.timer %}<small class="timer">{{ st.timer }} timer</small>{% else %}<small>{{ st.duration }}</small>{% endif %}</li>{% endfor %}
+  </ol>
+  {% if s.more %}<p class="note">And {{ s.more }} more in the recipe.</p>{% endif %}
+
+{% elif s.kind == 'numbers' %}
+  <h2 class="head">{{ s.title }}</h2>
+  <div class="numbers">
+    {% for i in s['items'] %}<div class="number"><b>{{ i.value }}{% if i.unit %}<small>{{ i.unit }}</small>{% endif %}</b><span>{{ i.label }}</span></div>{% endfor %}
+  </div>
+
+{% elif s.kind == 'timebar' %}
+  <h2 class="head">{{ s.title }}</h2>
+  <div class="tbar" style="--you:{{ s.active }}; --other:{{ s.idle }}">
+    <div class="track"><span class="you"></span><span class="other"></span></div>
+    <div class="keys"><span class="you"><b>{{ s.you }}</b></span><span class="other"><b>{{ s.other }}</b></span></div>
+  </div>
+  <p class="note">{{ s.total }} minutes from start to table.</p>
+
+{% elif s.kind == 'airfryer' %}
+  <h2 class="head">{{ s.title }}</h2>
+  <div class="airfryer">
+    <div class="machine">{% if s.img %}<img src="{{ s.img }}" alt="">{% endif %}</div>
+    <div class="numbers">
+      {% if s.temp %}<div class="number"><b>{{ s.temp }}</b><span>heat</span></div>{% endif %}
+      <div class="number"><b>{{ s.minutes }}<small>min</small></b><span>in the {{ s.name|lower }}</span></div>
+    </div>
+  </div>
+
+{% elif s.kind == 'wash' %}
+  <h2 class="head">{{ s.title }}</h2>
+  <div class="wash" style="--cols:{{ s.cols }}">
+    {% for e in s['items'] %}<figure class="vessel"><div class="pic">{% if e.img %}<img src="{{ e.img }}" alt="">{% endif %}</div><figcaption>{{ e.name }}</figcaption></figure>{% endfor %}
+  </div>
+  <p class="note">Pots, pans, trays and bowls. Not the knife, the board or the oven.</p>
+
+{% elif s.kind == 'shop_split' %}
+  <h2 class="head">{{ s.title }}</h2>
+  {{ grid(s.tiles, s.cols) }}
+  {% if s.have %}
+  <h3 class="have">You probably have</h3>
+  <div class="have-row">{% for t in s.have %}<span class="have-item">{% if t.img %}<img src="{{ t.img }}" alt="">{% endif %}{{ t.name }}</span>{% endfor %}</div>
+  {% endif %}
+
+{% elif s.kind == 'delta' %}
+  <h2 class="head">{{ s.title }}</h2>
+  <p class="key"><span class="down">Down is time: {{ s.total }}</span></p>
+  <section class="delta slide-delta" aria-label="The whole recipe as a drawing">
+    <div class="skv vert" style="grid-template-columns: repeat({{ s.cols }}, minmax(0, 1fr)); grid-template-rows: repeat({{ s.rows }}, auto)">
+      {% for n in s.cells %}
+      <div class="g2-cell{{ ' flows' if n.flows }}" style="grid-column: {{ n.col[0] }} / {{ n.col[1] }}; grid-row: {{ n.row }}">
+        <div class="g2-node ph-{{ n.phase }}{{ ' main' if n.main }}">
+          {% for note in n.notes %}<span class="g2-note hand">{{ note }}</span>{% endfor %}
+          {% for a in n.also %}<span class="g2-note hand">+ from {{ a.no }}</span>{% endfor %}
+          <div class="mn-head">
+            {%- for st in n.chain -%}
+            <span class="fx-seg">{% if not loop.first %}<span class="fx-arrow" aria-hidden="true">→</span>{% endif %}<span class="fx-no">{{ st.no }}</span><span class="hand mn-v">{{ st.label }}</span>{% if st.heat %}{{ heat(st.heat) }}{% endif %}{% if st.temp %}<span class="mn-temp">{{ st.temp }}°</span>{% endif %}{% if st.wait %}<span class="mn-wait"><span class="hand">{{ st.wait }} min</span></span>{% endif %}</span>
+            {%- endfor -%}
+          </div>
+          {% if n.bowls or n.pics %}
+          <div class="g2-pics">
+            {% for b in n.bowls %}<span class="fx-bowl">{% for p in b %}{{ pic(p, 84) }}{% endfor %}</span>{% endfor %}
+            {% for p in n.pics %}{{ pic(p, 108) }}{% endfor %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  <script>
+    // The drawing is laid out at full size and scaled down to the room between the title and the footer, as
+    // static/js/delta.js does on the page; Chrome takes the picture after this has run (virtual time budget)
+    (function () {
+      var box = document.querySelector('.slide-delta'), draw = box.querySelector('.skv');
+      function fit() {
+        draw.style.transform = '';
+        var k = Math.min(1, box.clientHeight / draw.offsetHeight, box.clientWidth / draw.offsetWidth);
+        draw.style.transformOrigin = '50% 0';
+        draw.style.transform = 'scale(' + k + ')';
+      }
+      fit();
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+      window.addEventListener('load', fit);
+    })();
+  </script>
 
 {% elif s.kind == 'pantry_cover' %}
   <p class="eyebrow">Save this for your next big shop</p>
@@ -101,8 +206,8 @@
   <p class="note">Share of all the ingredient lines in {{ s.sample }}.</p>
 
 {% elif s.kind == 'week_cover' %}
-  <p class="eyebrow">One shop, five dinners</p>
-  <h1 class="title">Buy {{ s.count }} things. Make {{ s.days|length }} dinners.</h1>
+  <p class="eyebrow">{{ s.eyebrow or 'One shop, five dinners' }}</p>
+  <h1 class="title">{{ s.title or 'Buy ' ~ s.count ~ ' things. Make ' ~ s.days|length ~ ' dinners.' }}</h1>
   <div class="dishes">{% for d in s.days %}<img src="{{ d.image }}" alt="">{% endfor %}</div>
   <p class="facts"><span>{{ s.lines }} ingredients, {{ s.count }} to buy</span><span>{{ s.fastest }}–{{ s.slowest }} min each</span></p>
 
@@ -126,14 +231,17 @@
   <p class="eyebrow">{{ s.day }} · {{ s.total }}</p>
   <h1 class="title">{{ s.title }}</h1>
   <div class="hero{{ ' small' if s.many }}">{% if s.image %}<img src="{{ s.image }}" alt="">{% endif %}</div>
-  {{ grid(s.tiles, s.cols) }}
+  {{ grid(s.tiles, s.cols) }}{% if s.note %}
+  <p class="note">{{ s.note }}</p>{% endif %}
 
 {% elif s.kind == 'end' %}
-  <div class="end">
+  <div class="end{{ ' cta' if s.cta }}">
     {{ brand.badge('mark') }}
     <p class="line">{{ s.line }}</p>
-    <p class="address">{{ address }}</p>
-    <p class="note">{{ 'Link in bio' if size == 'ig' else 'Type it in your browser' }}</p>
+    {% if s.small %}<p class="address small">{{ address }}</p>
+    {% elif s.cta %}<p class="note">{{ 'Link in bio' if size == 'ig' else 'Type it in your browser' }}</p>
+    {% else %}<p class="address">{{ address }}</p>
+    <p class="note">{{ 'Link in bio' if size == 'ig' else 'Type it in your browser' }}</p>{% endif %}
   </div>
 {% endif %}
 
