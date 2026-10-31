@@ -180,6 +180,18 @@ def report(weeks=12, today=None):
     }
 
 
+def post_recipe(platform, code):
+    """The recipe a post's short address opens: the one the post log has for that platform and code, when it is
+    approved. None for a post drawn from several recipes (week, pantry), one not in the log, or the bare /tiktok and
+    /ig of the bios: those open the home page."""
+    code = clean_ref(code)
+    if not code:
+        return None
+    post = db.session.execute(db.select(SocialPost).filter_by(platform=platform, code=code)).scalar()
+    recipe = post and post.recipe_id and db.session.get(Recipe, post.recipe_id)
+    return recipe.id if recipe and recipe.status == 'approved' else None
+
+
 def post_ref(post):
     """The ref code a post's short address gives: thelazychef.app/tiktok/5 is tiktok-5, /ig/5 is instagram-5."""
     return f'{post.platform}-{post.code}'
