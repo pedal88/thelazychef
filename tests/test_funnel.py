@@ -45,6 +45,13 @@ class FunnelTests(unittest.TestCase):
     def visits(self):
         return {(v.ref, v.count) for v in db.session.execute(db.select(ReferralVisit)).scalars()}
 
+    def visit(self, path, client=None):
+        """Opens path as a visitor whose page stays in view, so it asks for the visit to be counted."""
+        client = client or app.test_client()
+        client.get(path)
+        client.post('/ref/seen')
+        return client
+
     def register(self, email='cook@test', source=''):
         return self.client.post('/register', data={'email': email, 'password': 'pw', 'source': source})
 
@@ -53,13 +60,44 @@ class FunnelTests(unittest.TestCase):
 
     # The ref code
 
-    def test_a_short_address_keeps_its_code_counts_the_visit_and_opens_the_home_page(self):
+    def test_a_short_address_keeps_its_code_and_opens_the_home_page(self):
         response = self.client.get('/tiktok/3')
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.location, '/')
         with self.client.session_transaction() as session:
             self.assertEqual(session['ref'], 'tiktok-3')
+
+    def test_a_visit_counts_once_when_the_page_asks_not_when_the_address_is_fetched(self):
+        self.client.get('/tiktok/3')
+        self.assertEqual(self.visits(), set())
+        self.assertIn("fetch('/ref/seen'", self.client.get('/recipes').get_data(as_text=True))
+        self.assertEqual(self.client.post('/ref/seen').status_code, 204)
+        self.client.post('/ref/seen')
         self.assertEqual(self.visits(), {('tiktok-3', 1)})
+        self.assertNotIn("fetch('/ref/seen'", self.client.get('/recipes').get_data(as_text=True))
+        self.assertNotIn("fetch('/ref/seen'", app.test_client().get('/recipes').get_data(as_text=True))  # no code
+
+    def test_robots_get_no_code_and_count_nothing(self):
+        for agent in ('facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)',
+                      'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+                      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/120.0',
+                      'WhatsApp/2.23', 'curl/8.4.0', ''):
+            with self.subTest(agent=agent):
+                client = app.test_client()
+                client.get('/ig/1', headers={'User-Agent': agent})
+                client.post('/ref/seen', headers={'User-Agent': agent})
+                with client.session_transaction() as session:
+                    self.assertNotIn('ref', session)
+        self.assertEqual(self.visits(), set())
+        self.assertFalse(funnel.is_robot('Mozilla/5.0 (Linux; Android 13; CUBOT KINGKONG 9) AppleWebKit/537.36'))
+
+    def test_visits_that_come_at_once_all_count(self):
+        today = datetime.date.today()
+        for _ in range(5):
+            funnel.count_visit('instagram-1', today)
+        funnel.count_visit('instagram-1', today - datetime.timedelta(days=1))
+        self.assertEqual(sorted((v.day, v.count) for v in db.session.execute(db.select(ReferralVisit)).scalars()),
+                         [(today - datetime.timedelta(days=1), 1), (today, 5)])
 
     def test_every_short_address_names_its_channel(self):
         for path, ref in (('/tiktok', 'tiktok'), ('/tt', 'tiktok'), ('/ig', 'instagram'), ('/ig/7', 'instagram-7'),
@@ -71,8 +109,8 @@ class FunnelTests(unittest.TestCase):
                     self.assertEqual(session['ref'], ref)
 
     def test_the_first_code_of_a_session_wins(self):
-        self.client.get('/tiktok')
-        self.client.get('/recipes?ref=ig-2')
+        self.visit('/tiktok', self.client)
+        self.visit('/recipes?ref=ig-2', self.client)
         with self.client.session_transaction() as session:
             self.assertEqual(session['ref'], 'tiktok')
         self.assertEqual(self.visits(), {('tiktok', 1)})
@@ -84,13 +122,13 @@ class FunnelTests(unittest.TestCase):
 
     def test_visits_from_one_code_add_up_per_day(self):
         for _ in range(3):
-            app.test_client().get('/ig')
+            self.visit('/ig')
         self.assertEqual(self.visits(), {('instagram', 3)})
 
     def test_a_signed_in_user_is_not_counted(self):
         self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
-        self.client.get('/tiktok')
-        self.client.get('/recipes?ref=ig-1')
+        self.visit('/tiktok', self.client)
+        self.visit('/recipes?ref=ig-1', self.client)
         self.assertEqual(self.visits(), set())
 
     # Signing up
@@ -174,9 +212,9 @@ class FunnelTests(unittest.TestCase):
 
     def test_the_next_code_is_above_every_number_in_use(self):
         self.assertEqual(funnel.next_code(), '1')
-        self.client.get('/tiktok/2')
-        app.test_client().get('/recipes?ref=ig-7')
-        app.test_client().get('/ig/launch')
+        self.visit('/tiktok/2', self.client)
+        self.visit('/recipes?ref=ig-7')
+        self.visit('/ig/launch')
         self.assertEqual(funnel.next_code(), '8')
         self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
         self.log(code='11', platform='instagram')
@@ -188,8 +226,8 @@ class FunnelTests(unittest.TestCase):
 
     def test_a_logged_post_shows_its_numbers_beside_what_its_code_brought(self):
         for _ in range(3):
-            app.test_client().get('/tiktok/5')
-        app.test_client().get('/ig/5')  # the same code on Instagram is another post
+            self.visit('/tiktok/5')
+        self.visit('/ig/5')  # the same code on Instagram is another post
         self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
         post_id = int(self.log().location.rsplit('/', 1)[1])
         self.client.post(f'/admin/funnel/posts/{post_id}', data={'part': 'stats', 'day': '2', 'views': '1 500',

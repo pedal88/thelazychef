@@ -462,7 +462,7 @@ class User(UserMixin, db.Model):
 class ReferralVisit(db.Model):
     """Visits that came with a ref code, counted per code and day: the clicks the platforms cannot count for us, since
     a TikTok bio has no link and people type the address (services/funnel.py). One per browser session, for its
-    first code."""
+    first code, once a page has been in view for a few seconds (robots are not counted)."""
     __tablename__ = 'referral_visit'
     __table_args__ = (UniqueConstraint('ref', 'day', name='uq_referral_visit_day'),)
     id: Mapped[int] = mapped_column(Integer, primary_key=True)

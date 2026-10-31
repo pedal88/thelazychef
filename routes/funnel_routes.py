@@ -16,14 +16,29 @@ funnel_bp = Blueprint('funnel', __name__)
 def keep_ref():
     """?ref= on any page a visitor opens is kept for the session (the first one only) and counted."""
     if request.method == 'GET' and 'ref' in request.args and not current_user.is_authenticated:
-        funnel.remember(request.args.get('ref'))
+        funnel.remember(request.args.get('ref'), request.user_agent.string)
+
+
+@funnel_bp.app_context_processor
+def ref_unseen():
+    """base.html asks /ref/seen to count the visit when this session brought a code that is not counted yet."""
+    return {'ref_unseen': not current_user.is_authenticated and funnel.unseen()}
+
+
+@funnel_bp.route('/ref/seen', methods=['POST'])
+def ref_seen():
+    """The page has been open in a browser for a few seconds: count the session's visit for its code (once). Open to
+    anyone, like the short addresses; it counts nothing without a code kept in the session."""
+    if not current_user.is_authenticated:
+        funnel.seen(request.user_agent.string)
+    return '', 204
 
 
 # The short addresses on the posts and in the TikTok bio, which has no link: thelazychef.app/tiktok, /ig, and /tiktok/3
 # for one post (the code tiktok-3). They keep the code and open the home page.
 def _short_link(channel, code):
     if not current_user.is_authenticated:
-        funnel.remember(f'{channel}-{code}' if code else channel)
+        funnel.remember(f'{channel}-{code}' if code else channel, request.user_agent.string)
     return redirect(url_for('content.home'))
 
 

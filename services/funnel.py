@@ -1,9 +1,14 @@
 """Where users come from, for the TikTok and Instagram funnel (routes/funnel_routes.py).
 
 A visit can bring a ref code: the short addresses (thelazychef.app/tiktok, /ig, and /tiktok/3, which gives tiktok-3 so
-one post can be told from another) or ?ref= on any page. The first code of a browser session is kept in the session and
-counted per day (ReferralVisit); when the visitor signs up, it is saved on the user with their answer to "How did you
-find us?". The admin Funnel page counts sign-ups and the users who saved or made a recipe, per channel and week.
+one post can be told from another) or ?ref= on any page. The first code of a browser session is kept in the session;
+when the visitor signs up, it is saved on the user with their answer to "How did you find us?". The admin Funnel page
+counts sign-ups and the users who saved or made a recipe, per channel and week.
+
+A visit is counted (ReferralVisit, per code and day) only when a page has been open in a browser for a few seconds: the
+page asks for it (seen(), from base.html). The moment a post goes up, Meta fetches every address in it from some twenty
+machines, some as a link preview robot and some as a browser that never stays, and before 01.11.2026 each of those
+counted as a visit (7 and 8 for the first two Instagram posts).
 
 The post log (SocialPost) puts each post's own numbers, copied from TikTok or Instagram, beside the visits and sign-ups
 its code brought, so a post can be judged by how many came, not only by how many saw it (docs/SOCIAL.md).
@@ -32,6 +37,12 @@ CHANNELS = [value for value, _ in SOURCES] + ['unknown']
 CHANNEL_LABELS = dict(SOURCES, unknown='Not known')
 
 SESSION_KEY = 'ref'
+SEEN_KEY = 'ref_seen'  # the session's visit has been counted
+
+# Programs that fetch a page without a person behind them: link previews, search engines, scripts. Case matters, so a
+# phone named CUBOT is not taken for one.
+_ROBOTS = re.compile(r'bot\b|bot/|crawl|spider|slurp|facebookexternalhit|facebookcatalog|meta-external|WhatsApp|'
+                     r'Headless|python-|curl/|Wget|Go-http-client')
 
 # The post log: where a post went up (funnel channels), what kind it is (scripts/social_render.py's formats), and the
 # platform numbers copied in for it
@@ -46,19 +57,48 @@ def clean_ref(value):
     return ref or None
 
 
-def remember(ref):
-    """Keeps the first ref code of this browser session and counts the visit. Later codes are ignored, so a visitor who
-    came from TikTok and then opens a shared ?ref=ig link stays a TikTok visitor."""
+def is_robot(user_agent):
+    return not user_agent or bool(_ROBOTS.search(user_agent))
+
+
+def remember(ref, user_agent):
+    """Keeps the first ref code of this browser session. Later codes are ignored, so a visitor who came from TikTok and
+    then opens a shared ?ref=ig link stays a TikTok visitor. Robots get none. The visit is counted by seen()."""
     ref = clean_ref(ref)
-    if not ref or session.get(SESSION_KEY):
+    if not ref or session.get(SESSION_KEY) or is_robot(user_agent):
         return
     session[SESSION_KEY] = ref
-    today = datetime.date.today()
-    visit = db.session.execute(db.select(ReferralVisit).filter_by(ref=ref, day=today)).scalar()
-    if visit is None:
-        visit = ReferralVisit(ref=ref, day=today, count=0)
-        db.session.add(visit)
-    visit.count += 1
+
+
+def unseen():
+    """Whether this session brought a code whose visit has not been counted yet: then the page asks seen() to."""
+    return bool(session.get(SESSION_KEY)) and not session.get(SEEN_KEY)
+
+
+def seen(user_agent):
+    """Counts the session's visit for its code, once. Returns whether it counted."""
+    ref = session.get(SESSION_KEY)
+    if not ref or session.get(SEEN_KEY) or is_robot(user_agent):
+        return False
+    session[SEEN_KEY] = True
+    count_visit(ref, datetime.date.today())
+    return True
+
+
+def count_visit(ref, day):
+    """Adds one to the code's count for the day in a single statement, so visits that come at the same moment neither
+    get lost nor collide on the row they both create."""
+    table = ReferralVisit.__table__
+    dialect = db.engine.dialect.name
+    if dialect == 'postgresql':
+        from sqlalchemy.dialects.postgresql import insert
+    elif dialect == 'sqlite':
+        from sqlalchemy.dialects.sqlite import insert
+    else:
+        raise NotImplementedError(dialect)
+    statement = insert(table).values(ref=ref, day=day, count=1)
+    db.session.execute(statement.on_conflict_do_update(
+        index_elements=[table.c.ref, table.c.day], set_={'count': table.c.count + 1}))
     db.session.commit()
 
 
