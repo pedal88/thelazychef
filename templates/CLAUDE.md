@@ -38,7 +38,8 @@ One page, `recipe_v2_make.html`, from `services/recipe_v2/view.page`: the overvi
 - `steps.js` owns which steps are done (`st.done`) and announces it (`steps:done`); the bowls ask for it
   (`ready:steps`), so the bowls and the step list always agree.
 - Servings scale every amount (`static/js/servings.js`).
-- When the last step is ticked off, `steps.js` says `steps:finished` and the celebration opens (`#sheet-done`,
+- When the last step is ticked off, `steps.js` says `steps:finished` and the celebration opens (`#sheet-done`; Made it on
+  the overview and below the steps, `[data-made-it]`, open it at any time,
   `static/js/done.js`): the dish, how long it took, and for a signed-in cook "I made this" (counted once per meal,
   `/api/interactions/recipe/<id>/cooked`) with stars, comment and photos. Those fields are shared with the recipe
   list's drawer: `components/feedback_fields.html` and `static/js/feedback.js`. A visitor's I made this, like their

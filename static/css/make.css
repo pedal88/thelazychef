@@ -92,6 +92,13 @@ html.cooking body .trialbar { bottom: calc(14px + env(safe-area-inset-bottom, 0p
 .slist.focus .st.is-next { cursor: default; }
 .slist.all .st { cursor: default; }
 .slist.all .st-timer-mini, .st.is-next .st-timer-mini, .st.is-open .st-timer-mini { display: none; }
+/* I made this below the steps, for a cook who did not tick them all (step_list.html) */
+.st-made { margin: var(--space-6) 0 0; }
+.st-made button { display: flex; align-items: center; gap: var(--space-3); width: 100%; min-height: var(--tap); padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-line); border-radius: var(--radius); background: var(--color-paper); color: var(--color-ink); font: 15px/1.3 var(--font-sans); text-align: left; cursor: pointer; }
+.st-made button:hover { border-color: var(--color-serve); }
+.st-made .icon { flex: none; width: 20px; height: 20px; color: var(--color-serve); }
+.st-made:has(~ .st-finished:not([hidden])) { display: none; }  /* every step ticked: the food-is-ready block says it */
 .st-reset { margin: var(--space-4) 0 0; text-align: right; }
 .st-reset button { border: 0; background: none; color: var(--color-muted); font-size: 13px; text-decoration: underline; cursor: pointer; }
 /* Every step ticked off (step_list.html, the block under the list; on a wide screen the card beside it says it) */

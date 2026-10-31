@@ -94,6 +94,8 @@
     {{ step_row(s, lang) }}
     {% endfor %}
   </ol>
+  {# Most cook without ticking every step: I made this is here too, not only after the last one (static/js/done.js) #}
+  <p class="st-made"><button type="button" data-made-it>{{ icon('check') }}<span>Cooked it already? <b>I made this</b></span></button></p>
   <p class="st-reset rail-reset"><button type="button" data-steps-reset>Untick all the steps</button></p>
   {# Every step ticked off (static/js/steps.js); on a wide screen the card beside the steps says the same #}
   <div class="st-finished" data-st-finished hidden>

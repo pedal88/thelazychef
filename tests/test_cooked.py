@@ -94,6 +94,17 @@ class CookedTests(unittest.TestCase):
         self.assertIn('data-done-made', html)
         self.assertIn('name="rating"', html)
 
+    def test_made_it_opens_the_celebration_without_ticking_every_step(self):
+        # On the overview beside Save and Cook next, and below the steps, for visitors and cooks alike
+        for signed_in in (False, True):
+            if signed_in:
+                self.login()
+            html = self.client.get(f'/recipe/{self.recipe.id}').get_data(as_text=True)
+            with self.subTest(signed_in=signed_in):
+                self.assertEqual(html.count('data-made-it'), 2)
+                self.assertIn('Cooked it already? <b>I made this</b>', html)
+                self.assertIn('data-done-steps', html)  # the sheet says "Made it" rather than "All n steps done"
+
 
 if __name__ == '__main__':
     unittest.main()

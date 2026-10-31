@@ -18,11 +18,16 @@
 
 {# Saved and Cook next on the first screen, for a signed-in cook (mine from routes/recipes_routes.recipe_detail);
    the script in recipe_v2_make.html toggles them #}
+{# I made this without ticking off every step: opens the celebration (static/js/done.js), which saves it for a cook
+   and offers a visitor to sign up #}
+{% macro made_it() %}<button type="button" class="ovl-tog" data-made-it>{{ icon('check') }}<span>Made it</span></button>{% endmacro %}
+
 {% macro save_buttons() -%}
 {% if mine %}
 <div class="ovl-mine">
   <button type="button" class="ovl-tog" data-mine="save" aria-pressed="{{ 'true' if mine.saved else 'false' }}">{{ icon('heart') }}<span data-on="Saved" data-off="Save">{{ 'Saved' if mine.saved else 'Save' }}</span></button>
   <button type="button" class="ovl-tog" data-mine="queue" aria-pressed="{{ 'true' if mine.queued else 'false' }}">{{ icon('pot') }}<span data-on="In Cook next" data-off="Cook next">{{ 'In Cook next' if mine.queued else 'Cook next' }}</span></button>
+  {{ made_it() }}
 </div>
 {% else %}
 {# A visitor: the same two buttons, to sign up, which saves the dish (or puts it in Cook next) and comes back here
@@ -30,6 +35,7 @@
 <div class="ovl-mine">
   <a class="ovl-tog" href="{{ url_for('register', next=request.path, do='save', recipe=recipe.id) }}">{{ icon('heart') }}<span>Save</span></a>
   <a class="ovl-tog" href="{{ url_for('register', next=request.path, do='queue', recipe=recipe.id) }}">{{ icon('pot') }}<span>Cook next</span></a>
+  {{ made_it() }}
 </div>
 {% endif %}
 {%- endmacro %}
