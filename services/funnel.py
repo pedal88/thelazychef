@@ -20,6 +20,7 @@ from flask import session
 from sqlalchemy import case, func
 
 from database.models import Recipe, ReferralVisit, SocialPost, SocialPostStat, User, UserRecipeInteraction, db
+from services.social_series import CTAS, HOOKS, SERIES
 
 # The answers to "How did you find us?" on the sign-up form: (stored value, label)
 SOURCES = [
@@ -47,8 +48,13 @@ _ROBOTS = re.compile(r'bot\b|bot/|crawl|spider|slurp|facebookexternalhit|faceboo
 # The post log: where a post went up (funnel channels), what kind it is (scripts/social_render.py's formats), and the
 # platform numbers copied in for it
 PLATFORMS = [('tiktok', 'TikTok'), ('instagram', 'Instagram')]
-POST_FORMATS = ['map', 'grid', 'pantry', 'week', 'other']
+POST_FORMATS = ['map', 'grid', 'pantry', 'week', 'series', 'other']
 STAT_FIELDS = ['views', 'likes', 'comments', 'saves', 'shares', 'profile_visits']
+# The variant a post is logged with (docs/SOCIAL.md "Learning from the posts"): the series, hook and CTA groups come
+# from services/social_series.py; the rest is free text or a number
+VARIANT_CHOICES = {'series': list(SERIES), 'hook_group': list(HOOKS), 'cta_group': list(CTAS)}
+VARIANT_TEXT = {'round': 40, 'recipe_ids': 200, 'views': 300, 'look': 10, 'slot': 20}
+VARIANT_NUMBERS = ('series_n', 'slides')
 
 
 def clean_ref(value):
@@ -262,6 +268,26 @@ def save_post(post, form):
     post.recipe_id = recipe.id if recipe else None
     post.hook, post.sound, post.url = _text(form, 'hook', 200), _text(form, 'sound', 120), _text(form, 'url', 300)
     post.notes = _text(form, 'notes', 5000)
+    for key, choices in VARIANT_CHOICES.items():
+        value = (form.get(key) or '').strip()
+        if value and value not in choices:
+            return f'{key.replace("_", " ").capitalize()} must be one of {", ".join(choices)}, or empty.'
+        setattr(post, key, value or None)
+    for key, length in VARIANT_TEXT.items():
+        setattr(post, key, _text(form, key, length))
+    for key in VARIANT_NUMBERS:
+        value = (form.get(key) or '').strip()
+        if value and not value.isdigit():
+            return f'{key.replace("_", " ").capitalize()} must be a whole number.'
+        setattr(post, key, int(value) if value else None)
+    if post.recipe_ids:
+        ids = [x.strip() for x in post.recipe_ids.split(',')]
+        if not all(x.isdigit() for x in ids):
+            return 'Recipes are their numbers, comma separated: 325,326,329.'
+        post.recipe_ids = ','.join(ids)
+        if recipe is None:
+            recipe = db.session.get(Recipe, int(ids[0]))
+            post.recipe_id = recipe.id if recipe else None
     if post.id is None:
         db.session.add(post)
     db.session.commit()

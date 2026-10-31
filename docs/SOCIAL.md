@@ -2,7 +2,61 @@
 
 Carousel posts drawn from the recipes themselves, for the first users from TikTok and Instagram (goal: 50 sign-ups
 from outside family and friends before 31.01.2027, 10 of them have made a recipe). No video and no faces: what sets the
-account apart is that a recipe here is data, so its metro map, its ingredients and the pantry can be drawn.
+account apart is that a recipe here is data, so its ingredients, its equipment, its times and its river delta can be
+drawn. From 31.10.2026 the posts run as series (below), five a day per platform, aiming at followers, shares and
+saves first; the formats before them are kept as they were.
+
+## The series
+
+A series is a fixed promise repeated with a new dish each time: same name, same slides, new content. It gives a
+reason to follow, and every post is made from the database (`services/social_series.py`, the page `/social/post`).
+Four run at once; Guess the dinner and the cuisine week come in between, once or twice a week each.
+
+| Series | `?series=` | Filter | Slides |
+|---|---|---|---|
+| Air fryer dinners | `airfryer` | `heat_source` air fryer | the dish and the hook, the air fryer's heat and time, the ingredient symbols, the river delta (small ones) or the time bar, the shopping list in two, follow |
+| Got [ingredient]? | `got` | three dinners with the same main protein (`protein_type`) | the ingredient large with the three dishes, each dinner with what it needs beyond the ingredient, one shopping list for all three (×3 = in three dinners), save |
+| High-protein dinners | `protein` | at least 35 g protein per serving; the lighter dishes (fewest kcal) first | the dish and the hook, protein, kcal and minutes as big numbers, the symbols, the time bar, the shopping list in two, follow |
+| Dishes to wash: N | `dishes` | at most two vessels to wash (`cleanup_factor` 1) | the dish and the hook, the vessels with their images, the symbols, the river delta (small ones) or the time bar, the steps with timers (at most six), send |
+| Guess the dinner | `guess` | every dish | the `grid` format with the series' name and number: the symbols, the list, the dish, ask |
+| 5 weeknights of [cuisine] | `cuisine` | five dinners of one cuisine, varied as the week is | the five dishes, Monday to Friday one per slide, one shopping list for the week, save |
+
+Every series takes approved recipes with a dish image only, one per dish, no baby food. The first slide carries the
+series' name and number ("Air fryer dinners #7") and the hook, with the dish named under it; the second slide
+delivers what the hook promised; the shopping list is next to last; the last slide is the CTA.
+
+The slide kinds the series are built from, each from the recipe page's view (`services/social.py`): `wash` (the
+vessels only, `derive.VESSELS`, with the equipment images in the chosen style), `shop_split` (to buy, with amounts,
+and a row of what you probably have), `delta` (the river delta placed on a grid without its script: a column per
+branch, the dish last, arrows straight down), `timers` (the steps with their standing time as the timer, at most
+`TIMER_STEPS`), `numbers` (protein, kcal, minutes), `timebar` ("9 min you, 41 min the oven": the planner's active
+minutes against the rest, named after the heat source) and `airfryer` (the highest temperature and the minutes of the
+steps in it, with its image). The river delta goes on a slide only when it is small: at most two levels above the
+dish (`max_depth` ≤ `DELTA_DEPTH`) and two branches (`leaves` ≤ `DELTA_LEAVES`), 11 of the 59 public recipes on
+31.10.2026; otherwise the time bar takes its place. Look at a rendered delta slide on a phone before it goes out.
+
+**Hooks** (`?hook=<group>`): the words on the first slide, at most eight words, every number the post's own. The
+groups are `number` ("12 things to buy. 40 minutes."), `lazy` ("9 minutes of work. That's it."), `search` ("Got
+chicken thighs? 3 dinners."), `guess` and `contrast` ("Not an hour. 25 minutes.", only when true). Each group has
+several phrasings; the post draws one with a seed from the series, number and recipes, so the same post renders
+with the same words every time, and different posts of a week get different first slides. A phrasing whose numbers
+the post lacks is never drawn; a group with nothing to say, or one that is not a group, falls back to the series'
+own group (`SERIES[slug]['hook']`), which has phrasings of its own.
+
+**CTAs** (`?cta=<group>`): one per post, on the last slide and in the caption: `follow` (the default while followers
+are the goal), `save`, `send`, `ask` (a real question), `site` ("Every step with timers: thelazychef.app/tiktok/41")
+and `bio` (Instagram only; TikTok gets `site`). The address with the code is on the last slide whatever the CTA:
+large with `site`, small under the other CTAs, so the visit is counted either way.
+
+`?hook=` and `?cta=` work on the formats too (`/social/recipe/<id>/grid?hook=guess&cta=ask`); without them, and
+with a value that is not a group, a format renders exactly as before.
+
+`/social/post?series=airfryer` picks the next recipe itself: within the filter, a recipe at most once in seven days
+per series (`ONCE_A_WEEK`, from the post log on both platforms), the never used first, then the longest ago; High-
+protein puts the lighter dishes first. `?ids=` gives the recipes instead (one, three for `got`, five for `cuisine`),
+`?n=` the number (else one above the highest logged for the series). The answer's headers say what was made:
+`X-Recipes`, `X-N`, `X-Hook`, `X-Hook-Text`, `X-Cta`, `X-Views` (the slide kinds), `X-Look`. A series with nothing
+left to pick answers 404: it pauses until there are recipes (serier.md counts the gaps).
 
 ## The formats
 
@@ -43,7 +97,14 @@ python -m scripts.social_render grid 345 --size ig --code 2
 python -m scripts.social_render pantry --size tt --code 3
 python -m scripts.social_render map 345 --look d                 # in look D from the style trial
 python -m scripts.social_render week --size tt --code 4          # one shop, five dinners: the site picks the five
+python -m scripts.social_render --series airfryer --size tt --code 12               # the next air fryer dinner
+python -m scripts.social_render --series got --ids 323,326,329 --n 4 --hook search --cta save --size ig --code 13
+python -m scripts.social_render grid 345 --hook guess --cta ask                     # a hook and a CTA on a format
 ```
+
+A series post (`--series`, with `--n`, `--hook`, `--cta`, and `--ids` for chosen recipes) lets the site pick the
+recipes and the number, prints what it chose, and renders every slide with those fixed. Render both sizes with the
+same number: the same post on both platforms, on different days.
 
 The slides come in the site's look (`routes/_shared.SITE_LOOK`, D Safran for now). `--look today|c|d|e|f` (`?look=`
 on the pages) draws them in another of the style trial's looks (`static/css/themes.css`,
@@ -59,7 +120,8 @@ costs money.
 Give every post its own code: the Funnel page shows the next free one (one above every number used so far). The code
 is per platform, since `/tiktok/5` and `/ig/5` are the ref codes `tiktok-5` and `instagram-5`, so the same post on
 both platforms can share its number and still be counted apart. With `--code` the script ends with the address of the
-post log's form, filled in with the platform, code, format and recipe.
+post log's form, filled in with the platform, code, format and recipe, and for a series post the series, number,
+hook group and words, CTA group, recipes, views used, look and slide count.
 
 A post's address opens what the post showed: `/tiktok/2` goes to the recipe the post log has for TikTok's code 2, when
 it is approved. A post drawn from several recipes (`week`, `pantry`), a code not in the log and the bios' bare
@@ -108,7 +170,11 @@ The dish images are made by Gemini: label every post as AI-generated where the p
 
 The Funnel page's post log (`SocialPost`, `services/funnel.py`) has a row per post: what it is, what it tries (the
 words on the first slide, the sound) and the platform's numbers, copied by hand from the post's analytics 2 and 7 days
-after it went up (views, likes, comments, saves, shares, profile visits). Beside them are the visits, sign-ups and
+after it went up (views, likes, comments, saves, shares, profile visits). The variant fields say which group a post
+belongs to in the trial plan (playbook.md): the round, the series and the post's number in it, the hook group (the
+words stay in What it tries), the CTA group, every recipe in the post (the first is the one its address opens), the
+views used (the slide kinds), the look, how many slides, and the time of day it went up. The render script fills
+them in; the time of day is typed in when the post is up. Beside them are the visits, sign-ups and
 cooks its code brought, and visits per 1000 views, the number that says whether a post sends people on rather than
 only being seen.
 

@@ -69,15 +69,15 @@ def dashboard():
 def _post_page(post, error=None, form=None):
     return render_template('admin/funnel_post.html', post=post, error=error, form=form or {},
                            platforms=funnel.PLATFORMS, formats=funnel.POST_FORMATS, stat_fields=funnel.STAT_FIELDS,
-                           ref=funnel.post_ref(post) if post.id else None), 400 if error else 200
+                           choices=funnel.VARIANT_CHOICES, ref=funnel.post_ref(post) if post.id else None), 400 if error else 200
 
 
 @funnel_bp.route('/admin/funnel/posts/new', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def new_post():
-    """A post for the log. scripts/social_render.py prints this address with the platform, code, format and recipe
-    filled in; an empty code is the next free one."""
+    """A post for the log. scripts/social_render.py prints this address with the platform, code, format, recipe and
+    the variant (series, n, hook, cta, recipes, views, look, slides) filled in; an empty code is the next free one."""
     if request.method == 'POST':
         post = SocialPost()
         error = funnel.save_post(post, request.form)
@@ -89,7 +89,10 @@ def new_post():
     args = request.args
     form = {'platform': args.get('platform', 'tiktok'), 'code': args.get('code') or funnel.next_code(),
             'format': args.get('format', 'map'), 'recipe_id': args.get('recipe', ''),
-            'posted_on': datetime.date.today().isoformat()}
+            'posted_on': datetime.date.today().isoformat(), 'hook': args.get('hook', ''),
+            'series': args.get('series', ''), 'series_n': args.get('n', ''), 'hook_group': args.get('hook_group', ''),
+            'cta_group': args.get('cta', ''), 'recipe_ids': args.get('recipes', ''), 'views': args.get('views', ''),
+            'look': args.get('look', ''), 'slides': args.get('slides', ''), 'round': args.get('round', '')}
     return _post_page(SocialPost(), form=form)
 
 

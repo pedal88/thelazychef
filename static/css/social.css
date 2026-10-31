@@ -129,3 +129,79 @@ html, body { margin: 0; background: var(--sl-paper); }
 .size-tt .foot { bottom: 160px; }
 .foot span { display: inline-flex; align-items: center; gap: 14px; }
 .foot .brand-badge { width: 52px; height: 52px; }
+
+/* The series' slides (services/social_series.py, docs/SOCIAL.md "The series") */
+/* A series cover names the dish under the hook */
+.facts .name { font-weight: 700; }
+/* Got [ingredient]?: the ingredient large, the dinners small beside it */
+.got { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 24px; margin: 24px 0; }
+.got .sym.big { width: 100%; }
+.got .sym.big i { font-size: 120px; }
+.got .dishes.small { flex: none; display: grid; grid-template-columns: 1fr; margin: 0; }
+.got .dishes.small img { width: 68%; justify-self: center; }
+/* The big numbers */
+.numbers { flex: 1; display: grid; grid-auto-rows: min-content; align-content: center; gap: 56px; }
+.number { display: flex; flex-direction: column; gap: 6px; }
+.number b { font: 700 150px/1 var(--font-serif); letter-spacing: -.02em; color: var(--color-accent); }
+.number b small { font: 600 56px/1 var(--font-sans); color: var(--sl-ink); margin-left: 12px; }
+.number span { font: 600 34px/1.2 var(--font-sans); color: var(--sl-muted); }
+/* The air fryer: the machine beside its heat and time */
+.airfryer { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 24px; }
+.airfryer .machine { display: flex; align-items: center; justify-content: center; }
+.airfryer .machine { overflow: visible; }
+.airfryer .machine img { width: 135%; max-width: none; max-height: 760px; object-fit: contain; mix-blend-mode: multiply; }
+.airfryer .numbers { flex: none; gap: 40px; }
+.airfryer .number b { font-size: 110px; }
+/* You against the kitchen: one bar in two parts */
+.kind-timebar .tbar { flex: 1; display: flex; flex-direction: column; justify-content: center; margin-bottom: 40px; }
+.tbar .track { display: flex; height: 96px; border-radius: 48px; overflow: hidden; background: var(--sl-line); }
+.tbar .track .you { flex: var(--you) 0 0; background: var(--color-accent); }
+.tbar .track .other { flex: var(--other) 0 0; background: var(--sl-line); }
+.tbar .keys { display: flex; margin-top: 28px; }
+.tbar .keys span { font: 600 36px/1.2 var(--font-sans); }
+.tbar .keys .you { flex: var(--you) 0 0; min-width: min-content; padding-right: 24px; color: var(--color-accent); }
+.tbar .keys .other { flex: var(--other) 0 0; min-width: min-content; color: var(--sl-muted); }
+.tbar .keys b { display: block; }
+/* The steps with timers */
+.steps.timers small.timer { padding: 10px 20px; border-radius: var(--radius-pill); background: var(--color-paper);
+  border: 2px solid var(--sl-line); color: var(--sl-ink); font-weight: 600; }
+/* The dishes to wash: the vessels, large */
+.wash { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(var(--cols), 1fr); align-content: center;
+  justify-items: center; gap: 40px 24px; }
+.vessel { margin: 0; text-align: center; min-width: 0; }
+.vessel .pic { width: 100%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; }
+.vessel .pic img { max-width: 100%; max-height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+.vessel figcaption { margin-top: 12px; font: 600 36px/1.15 var(--font-sans); }
+/* The shopping list in two: what to buy, then a row of what you probably have */
+.have { margin: 40px 0 0; font: 600 28px/1 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--color-accent); }
+.have-row { display: flex; flex-wrap: wrap; gap: 16px 28px; margin-top: 18px; }
+.have-item { display: inline-flex; align-items: center; gap: 8px; font: 500 30px/1 var(--font-sans); color: var(--sl-muted); }
+.have-item img { width: 56px; height: 56px; object-fit: contain; mix-blend-mode: multiply; }
+/* The river delta, drawn larger than on the page (static/css/delta.css) and placed without its script: a column per
+   branch, the dish last, an arrow straight down from each step into the one it flows into */
+.slide-delta { flex: 1; min-height: 0; display: flex; align-items: flex-start; justify-content: center; margin-top: 24px; }
+.slide-delta .skv { width: 100%; column-gap: 40px; row-gap: 130px; align-items: end; padding: 0; }
+.slide-delta .g2-cell { position: relative; }
+.slide-delta .g2-cell.flows::after { content: ''; position: absolute; left: 50%; bottom: -118px; width: 0; height: 100px;
+  border-left: 5px solid var(--color-pencil); transform: translateX(-50%); }
+.slide-delta .g2-cell.flows::before { content: ''; position: absolute; left: 50%; bottom: -118px; width: 24px; height: 24px;
+  border-right: 5px solid var(--color-pencil); border-bottom: 5px solid var(--color-pencil);
+  transform: translate(-50%, 0) rotate(45deg); transform-origin: center; margin-bottom: 3px; }
+.slide-delta .g2-node { gap: 10px; padding: 8px 12px; }
+.slide-delta .g2-note { font-size: 30px; }
+.slide-delta .mn-head { column-gap: 22px; }
+.slide-delta .fx-seg { gap: 14px; }
+.slide-delta .fx-arrow { font-size: 40px; }
+.slide-delta .mn-v, .slide-delta .g2-node.main .mn-v { font-size: 50px; white-space: normal; }
+.slide-delta .fx-no { min-width: 44px; height: 44px; padding: 0 6px; border-width: 3px; font-size: 26px; }
+.slide-delta .fx-no::before { display: none; }
+.slide-delta .ic-heat { width: 48px; height: 38px; stroke-width: 2; }
+.slide-delta .mn-wait .hand, .slide-delta .mn-temp { font-size: 34px; }
+.slide-delta .g2-pics { max-width: none; gap: 10px 20px; margin-top: 12px; }
+.slide-delta .fx-bowl { gap: 6px 14px; padding: 14px 20px 10px; border-radius: 28px; max-width: none; }
+.slide-delta .mn-ing small, .slide-delta .fx-bowl .mn-ing small { font-size: 24px; }
+.slide-delta .ing-img .mark { width: 36px; height: 36px; right: -8px; bottom: -8px; border-width: 2px; }
+.slide-delta .ing-img .mark svg { width: 22px; height: 22px; }
+/* The last slide with a CTA: the address small under it, so the visit is still counted */
+.end.cta .line { font-size: 72px; }
+.end .address.small { margin-top: 64px; padding: 0; background: none; color: var(--sl-muted); font: 600 34px/1 var(--font-mono); }
