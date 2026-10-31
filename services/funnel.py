@@ -7,7 +7,7 @@ counts sign-ups and the users who saved or made a recipe, per channel and week.
 
 A visit is counted (ReferralVisit, per code and day) only when a page has been open in a browser for a few seconds: the
 page asks for it (seen(), from base.html). The moment a post goes up, Meta fetches every address in it from some twenty
-machines, some as a link preview robot and some as a browser that never stays, and before 01.11.2026 each of those
+machines, some as a link preview robot and some as a browser that never stays, and before 31.10.2026 each of those
 counted as a visit (7 and 8 for the first two Instagram posts).
 
 The post log (SocialPost) puts each post's own numbers, copied from TikTok or Instagram, beside the visits and sign-ups
