@@ -221,6 +221,10 @@ html.cooking body .trialbar { bottom: calc(14px + env(safe-area-inset-bottom, 0p
 .done-made input:focus-visible + .done-box { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 .done-made b { display: block; font-weight: 600; }
 .done-made small { display: block; color: var(--color-muted); font-size: 13px; }
+/* A message on the recipe page (base.html, after signing up from I made this): below the floating back and menu */
+.site-flash { padding-top: 64px; }
+a.done-made { color: inherit; text-decoration: none; }
+a.done-made:hover { border-color: var(--color-serve); }
 .done-login { margin: 0; color: var(--color-muted); }
 .done-login a { color: var(--color-ink); font-weight: 600; }
 .done-sheet .fb-foot { flex: none; }

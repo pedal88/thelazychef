@@ -6,7 +6,7 @@
 <header class="lib-head disc-head">
     <p class="eyebrow">Discover</p>
     <h1>What shall we cook?</h1>
-    <p class="lib-sub">Save a dish for later or pass on it. Tap the card to open the recipe.{% if not current_user.is_authenticated %} <a href="{{ url_for('login') }}">Log in</a> to keep what you save.{% endif %}</p>
+    <p class="lib-sub">Save a dish for later or pass on it. Tap the card to open the recipe.{% if not current_user.is_authenticated %} Saving asks you to <a href="{{ url_for('register', next=request.path) }}">sign up</a>, once.{% endif %}</p>
 </header>
 
 <section class="disc" aria-label="Recipes to discover">
@@ -116,8 +116,15 @@
         emptyState.hidden = cards.length > 0;
     }
 
+    // A visitor who saves signs up first: the account saves the dish and brings them back here (services/signup.py)
+    const signUp = {{ url_for('register', next=request.path, do='save') | tojson }};
+
     function handleAction(action) {
         if (cards.length === 0) return;
+        if (!isLoggedIn && action === 'like') {
+            location.href = signUp + '&recipe=' + cards[cards.length - 1].id;
+            return;
+        }
         const top = cards.pop();
         const card = top.el;
         card.classList.add(action === 'like' ? 'is-liked' : 'is-passed');

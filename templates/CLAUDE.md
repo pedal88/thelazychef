@@ -41,7 +41,9 @@ One page, `recipe_v2_make.html`, from `services/recipe_v2/view.page`: the overvi
 - When the last step is ticked off, `steps.js` says `steps:finished` and the celebration opens (`#sheet-done`,
   `static/js/done.js`): the dish, how long it took, and for a signed-in cook "I made this" (counted once per meal,
   `/api/interactions/recipe/<id>/cooked`) with stars, comment and photos. Those fields are shared with the recipe
-  list's drawer: `components/feedback_fields.html` and `static/js/feedback.js`.
+  list's drawer: `components/feedback_fields.html` and `static/js/feedback.js`. A visitor's I made this, like their
+  Save and Cook next on the overview and Save on Discover, goes to sign up, which does it and comes back
+  (`services/signup.py`).
 - Closing the celebration once the meal is saved unticks the steps and reloads the page at the overview, where the
   note just saved shows ("steps:clear"). A list with every step ticked off says the food is ready and offers Back to
   the recipe, How did it go? (Edit your note) and Cook it again: the card beside the steps, or on a phone a block under

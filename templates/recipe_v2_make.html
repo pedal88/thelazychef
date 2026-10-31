@@ -93,7 +93,8 @@
   </dialog>
 
   {# The celebration when the last step is ticked off (static/js/done.js): the dish, how long it took, and for a
-     signed-in cook "I made this" (counted, /api/interactions/recipe/<id>/cooked), stars, a comment and photos.
+     signed-in cook "I made this" (counted, /api/interactions/recipe/<id>/cooked), stars, a comment and photos; for a
+     visitor, I made this signs them up.
      Opens once when the steps are done; the step card's "How did it go?" opens it again. #}
   {% set done_img = dish_images(recipe).dish %}
   <dialog class="done-sheet" id="sheet-done" aria-labelledby="done-h">
@@ -112,7 +113,10 @@
           <span><b>I made this</b><small data-done-count>It goes in your Made list.</small></span></label>
         {{ feedback_fields('How did it turn out? Anything you would change next time?') }}
         {% else %}
-        <p class="done-login"><a href="{{ url_for('login', next=request.path) }}">Log in</a> to keep it in your Made list, rate it and remember what you would change.</p>
+        {# A visitor: I made this signs them up, marks the dish as made and comes back here (services/signup.py) #}
+        <a class="done-made" href="{{ url_for('register', next=request.path, do='made', recipe=recipe.id) }}"><span class="done-box">{{ icon('check') }}</span>
+          <span><b>I made this</b><small>Sign up to keep it in your Made list, with your notes for next time.</small></span></a>
+        <p class="done-login">Have an account? <a href="{{ url_for('login', next=request.path, do='made', recipe=recipe.id) }}">Log in</a></p>
         {% endif %}
       </div>
       <div class="fb-foot">
