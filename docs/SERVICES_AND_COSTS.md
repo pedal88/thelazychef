@@ -26,8 +26,9 @@ USDA values, `scripts/ingredient_nutrition.py`).
 | Cloud SQL | Postgres `lazy-chef-db-eu` (europe-north2), with pgvector | `database/db_connector.py` (Cloud SQL Python Connector + pg8000) |
 | Cloud Storage | Bucket `thelazychef-assets`: dish images (`recipes/`), ingredient symbols (`pantry/symbols/`), category and cuisine symbols (`pantry/categories/`, `pantry/cuisines/`) | `services/storage_service.py` (`get_storage()` in routes) |
 | Cloud Tasks | Queue `recipe-generation` (europe-west1): recipe generation, the pantry job and the image job | `services/recipe_v2/tasks.py` (REST calls with google.auth, no client library) |
-| Secret Manager | `GOOGLE_API_KEY`, `ANTHROPIC_API_KEY`, `DB_PASS`, `SECRET_KEY`, `CONTENT_API_KEY`, mounted into Cloud Run by the deploy | `deploy.yaml` (`--update-secrets`); rotation: `docs/runbooks/ROTATE_SECRETS.md` |
+| Secret Manager | `GOOGLE_API_KEY`, `ANTHROPIC_API_KEY`, `DB_PASS`, `SECRET_KEY`, `CONTENT_API_KEY`, `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, mounted into Cloud Run by the deploy | `deploy.yaml` (`--update-secrets`); rotation: `docs/runbooks/ROTATE_SECRETS.md` |
 | Artifact Registry | Docker images (europe-north2) | `deploy.yaml` |
+| Google sign-in (OAuth client, Google Auth Platform) | Continue with Google on log in and sign up: the OAuth client "The Lazy Chef web" (Web application), redirect URI `https://thelazychef.app/login/google/done`, scopes `openid` and `email` only, so the app needs no verification by Google. Free | `services/google_signin.py` (token exchange with `requests`, the ID token checked with google-auth) |
 | Workload Identity Federation | GitHub Actions authenticates to Google without a key | `deploy.yaml`, `scripts/setup_wif.sh` |
 
 ### The background jobs (Cloud Tasks)
@@ -63,6 +64,7 @@ Read by the app (all listed in `.env.example`):
 | `FLASK_DEBUG` | no | Debug mode for `python app.py` |
 | `GOOGLE_API_KEY` | yes (app.py checks it) | Gemini. Scripts that do not call Gemini set a dummy value |
 | `ANTHROPIC_API_KEY` | to generate recipes | Claude |
+| `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET` | for Continue with Google | The OAuth client (above); without both there is no Google button and `/login/google` is 404 |
 | `CONTENT_API_KEY` | for the content API | The key Claude Code sends content drafts with (`/api/content`, `docs/CONTENT.md`); without it the API answers 401 |
 | `DB_BACKEND` | no | `local` (SQLite, default) or `cloudsql` |
 | `DATABASE_URL` | no | Overrides the database URL (tests use `sqlite://`; a local Postgres with `postgresql+pg8000://…`) |
