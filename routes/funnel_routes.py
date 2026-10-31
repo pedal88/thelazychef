@@ -35,11 +35,13 @@ def ref_seen():
 
 
 # The short addresses on the posts and in the TikTok bio, which has no link: thelazychef.app/tiktok, /ig, and /tiktok/3
-# for one post (the code tiktok-3). They keep the code and open the home page.
+# for one post (the code tiktok-3). They keep the code and open what the post showed: its recipe when the post log has
+# one for the code, else the home page. The visit is counted on the page they open, as anywhere.
 def _short_link(channel, code):
     if not current_user.is_authenticated:
         funnel.remember(f'{channel}-{code}' if code else channel, request.user_agent.string)
-    return redirect(url_for('content.home'))
+    recipe_id = code and funnel.post_recipe(channel, code)
+    return redirect(url_for('recipe_detail', recipe_id=recipe_id) if recipe_id else url_for('content.home'))
 
 
 # The last route listed is registered first and is the address; the shorter alias above it redirects there.
