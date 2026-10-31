@@ -65,15 +65,38 @@ To design slides without production, run the app on a local database (`docs/READ
 ingredient galaxy (`/api/graph/ingredient-galaxy`) has every ingredient's name, category and symbol, enough for the
 pantry CSV `scripts/local_db.py` reads when there is no production export at hand.
 
-## Posting
+## The accounts
 
-- Pick recipes with a dish image (Discover shows only those).
-- Edit the caption: the draft is a start, not the post.
-- TikTok: post as a photo carousel and add a sound in the app. The bio has no link before 1,000 followers, so the
-  address on the last slide and in the bio is how people come.
-- Instagram: post as a carousel; the link in bio is `thelazychef.app/ig`.
-- Label AI-generated content where the platform asks: the dish images are made by Gemini.
-- Log the post when it is up (the address the render script ends with, or Log a post on the Funnel page).
+The Lazy Chef on TikTok and on Instagram, in English. Both use `static/brand/avatar.png` (the chef's hat on saffron)
+as the profile picture. The TikTok bio gives `thelazychef.app/tiktok` as text (a bio link needs 1,000 followers); the
+Instagram bio links to `thelazychef.app/ig`. Links in captions can be read but not tapped on either platform, so people
+come only by typing an address or through the Instagram bio link.
+
+## A post, from start to finish
+
+1. **Pick the format and recipe.** One with a dish image (Discover shows only those). For `map`, a recipe with three
+   or four parts, so the lines on the map meet: with one part it is one straight line and the caption's promise falls
+   flat.
+2. **Take the next free code** from the Funnel page (`/admin/funnel`, Per post).
+3. **Render both sizes** with that code, `--size tt` and `--size ig`, and look over every slide: words broken badly,
+   names that run off the slide, numbers that disagree.
+4. **Write the caption** from the draft in `caption.txt`: what the post shows in a sentence or two, `Every step with
+   timers: thelazychef.app/tiktok/<code>` (or `/ig/<code>`), and five hashtags. Save it as `caption-final.txt` in the
+   post's folder, one for each size, so the address is right for each platform.
+5. **Move the files to the phone** with AirDrop: the PNGs and `caption-final.txt` from each folder (Universal
+   Clipboard also works, once Handoff is on for both the Mac and the iPhone).
+6. **TikTok:** check that the profile is The Lazy Chef (the hat), then + → Upload → the five or so slides in order →
+   photo mode (a strip of slides at the bottom, not a timeline) → a sound → Next. Give a short hook as the title (up to
+   90 characters, shown in bold above the caption: "4 lines, 1 plate, 42 minutes"), paste the caption, turn on
+   AI-generated content under More options, and post. A draft keeps the caption it was saved with: check that the
+   address carries this post's code.
+7. **Instagram:** check the profile, then + → Post → select several, in order → 4:5, not square → Next → music →
+   paste the caption (the `/ig/` address) → turn on the AI label under advanced settings → Share.
+8. **Log both posts** in the post log: the address the render script ends with, or Log a post. Put the title or hook
+   in What it tries, and the sound and the post's link.
+9. **Copy in the numbers** 2 and 7 days later (a reminder task in meOS for each), and once a week read them as below.
+
+The dish images are made by Gemini: label every post as AI-generated where the platform asks.
 
 ## Learning from the posts
 
@@ -85,8 +108,23 @@ only being seen.
 
 A visit counts once the page has been in view for three seconds, not when the address is fetched. When a post goes
 up, Meta fetches every address in its caption from some twenty machines within the minute, as a link preview robot and
-as browsers that never stay; until 01.11.2026 they counted, and gave each Instagram post 7–8 visits that were no one.
+as browsers that never stay; until 31.10.2026 they counted, and gave each Instagram post 7–8 visits that were no one.
 
 Once a week: see which posts won and lost, pick one thing to change in the next ones (format, first slide, kind of
 recipe, time), and change only that. Judge a format on at least three posts, not one: what TikTok shows a post to
 varies a lot. Comments that ask for something the app lacks go in the post's notes.
+
+To see who opened a code's address, read the production request logs (read only, on a machine with production
+credentials). Meta's fetches come in the minute a post goes up, as `facebookexternalhit` or with `fbclid`; people come
+later, from a phone:
+
+```bash
+gcloud logging read 'resource.type="cloud_run_revision" AND httpRequest.requestUrl:"/ig/1"' \
+  --project thelazychefai-prod --limit 100 --format='value(timestamp,httpRequest.userAgent)'
+```
+
+## What the first posts said
+
+- **Guess the dinner** (`grid`, code 2, 30.10.2026): 444 views, 6 likes and 1 save on TikTok in its first day, the
+  account's most viewed post, and no one typed its address. The step from seeing a post to opening the site is where the
+  funnel leaks first: watch visits per 1000 views as formats and hooks change.
