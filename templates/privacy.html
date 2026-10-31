@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{# The privacy policy (routes/auth_routes.privacy), linked from the footer and from log in and sign up, and given to
+   Google for Continue with Google. Keep it true to the code: when the app starts to store or send something new
+   (docs/SERVICES_AND_COSTS.md), say so here and change the date. #}
+{% block title %}Privacy - The Lazy Chef{% endblock %}
+{% block content %}
+<header class="lib-head">
+    <p class="eyebrow">Privacy</p>
+    <h1>What we keep about you</h1>
+    <p class="lib-sub">Last changed 31 October 2026.</p>
+</header>
+
+<article class="legal">
+    <p>The Lazy Chef is a recipe site made and run by Pål Andreas Dahl in Norway, who is responsible for your data.
+        Write to <a href="mailto:thelazychefai@gmail.com">thelazychefai@gmail.com</a> about anything on this page.</p>
+
+    <h2>Without an account</h2>
+    <p>You can read and cook every recipe without telling us anything. Your ticked-off steps stay in your own
+        browser. When you come from one of our TikTok or Instagram posts, we count one visit for that
+        post, per day, with nothing that says who you are.</p>
+
+    <h2>With an account</h2>
+    <ul>
+        <li>Your email address, and your password, stored only as a one-way hash we cannot read back.</li>
+        <li>If you sign in with Google: the ID of your Google account and the email Google gives us. We ask Google for
+            nothing else.</li>
+        <li>When you signed up, your answer to "How did you find us?", and which post you came from, if any.</li>
+        <li>What you do with recipes: the ones you save, put in Cook next or mark as made, and your stars, notes and
+            photos.</li>
+        <li>If you pair with someone in Mirror, they see your email and the recipes you have both saved.</li>
+    </ul>
+    <p>We use this only to give you your account and to see, in numbers, which posts bring people who cook. We do not
+        sell it, show ads or use it to train AI models.</p>
+
+    <h2>Photos</h2>
+    <p>A photo you add to a recipe is stored at an unlisted web address so that your page can show it. It is not
+        linked from anywhere, but anyone who has the address can open it. Removing a photo from your note takes it off
+        your page; to have the file itself deleted, write to us.</p>
+
+    <h2>Cookies</h2>
+    <p>Three, all for the site itself: one for your visit, one that remembers metric or US units if you choose, and one
+        that keeps you signed in on this device for up to a year, until you log out. No tracking or advertising
+        cookies.</p>
+
+    <h2>Where it is kept, and who else sees it</h2>
+    <ul>
+        <li>Everything is stored with Google Cloud in the EU (Stockholm and Belgium). Google keeps the site's request
+            logs (address, browser and time of each request) for 30 days.</li>
+        <li>Pages load fonts from Google Fonts and styles from Tailwind's servers, which see your IP address as with any
+            web request.</li>
+        <li>The recipes and their pictures are written and drawn by AI (Anthropic's Claude and Google's Gemini). Nothing
+            you write or upload is sent to them.</li>
+    </ul>
+
+    <h2>Your rights</h2>
+    <p>Write to us to see what we have about you, to correct it, or to have your account and everything in it deleted;
+        we answer within 30 days. You can also complain to the Norwegian Data Protection Authority,
+        <a href="https://www.datatilsynet.no/" rel="noopener">Datatilsynet</a>. We keep your data for as long as you have
+        an account.</p>
+</article>
+{% endblock %}
