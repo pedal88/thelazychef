@@ -200,6 +200,48 @@ class DayOfPostsTests(unittest.TestCase):
         self.client.post(url, data={f'{first.id}-views': '1500'})
         self.assertEqual([(s.views, s.profile_visits) for s in first.stats], [(1500, None)])
 
+    # Per format and hook
+
+    def test_formats_and_hooks_are_summed_per_platform_over_the_window(self):
+        today = datetime.date(2026, 11, 10)
+        posts = (  # (platform, code, format, hook, days ago, views, saves, visits, status)
+            ('tiktok', '1', 'map', 'Guess it', 1, 1000, 10, 2, 'posted'),
+            ('tiktok', '2', 'map', 'Guess it', 3, 3000, 20, 1, 'posted'),
+            ('tiktok', '3', 'map', 'Once', 2, None, None, 0, 'posted'),
+            ('tiktok', '4', 'grid', None, 6, 500, 0, 0, 'posted'),
+            ('tiktok', '5', 'grid', None, 20, 900, 9, 9, 'posted'),
+            ('instagram', '1', 'map', 'Guess it', 1, 200, 2, 4, 'posted'),
+            ('tiktok', '6', 'map', None, 0, None, None, 0, 'draft'))
+        rows = []
+        for platform, code, fmt, hook, ago, views, saves, visits, status in posts:
+            post = SocialPost(platform=platform, code=code, format=fmt, hook=hook, title='x', status=status,
+                              posted_on=today - datetime.timedelta(days=ago))
+            latest = mock.Mock(views=views, saves=saves) if views is not None else None
+            rows.append({'post': post, 'latest': latest, 'visits': visits})
+        week = funnel.summary(rows, today, 7)
+        self.assertEqual([(g['platform'], g['label'], g['posts'], g['median_views'], g['saves_1000'],
+                           g['visits_1000']) for g in week['formats']],
+                         [('tiktok', 'map', 3, 2000, 7.5, 0.8), ('tiktok', 'grid', 1, 500, 0.0, 0.0),
+                          ('instagram', 'map', 1, 200, 10.0, 20.0)])
+        self.assertEqual([(g['platform'], g['label'], g['posts']) for g in week['hooks']],
+                         [('tiktok', 'Guess it', 2)])
+        month = funnel.summary(rows, today, 28)
+        self.assertEqual([(g['label'], g['posts']) for g in month['formats'] if g['platform'] == 'tiktok'],
+                         [('grid', 2), ('map', 3)])
+
+    def test_the_funnel_page_shows_formats_and_hooks(self):
+        self.api('POST', '/drafts', json={'day': datetime.date.today().isoformat(),
+                                          'posts': [{'format': 'pantry', 'hook': 'Save this'}]})
+        self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
+        html = self.client.get('/admin/funnel').get_data(as_text=True)
+        self.assertIn('Per format and hook', html)
+        self.assertIn('No posts went up in the last 7 days.', html)
+        for post in self.posts():
+            self.client.post(f'/admin/funnel/posts/{post.id}/posted')
+        html = self.client.get('/admin/funnel').get_data(as_text=True)
+        self.assertIn('<span class="font-mono">pantry</span>', html)
+        self.assertNotIn('No posts went up in the last 7 days.', html)
+
 
 class PlanTests(unittest.TestCase):
     def test_a_plan_is_a_post_per_line_with_its_hook(self):

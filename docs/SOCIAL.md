@@ -144,6 +144,11 @@ Once a week: see which posts won and lost, pick one thing to change in the next 
 recipe, time), and change only that. Judge a format on at least three posts, not one: what TikTok shows a post to
 varies a lot. Comments that ask for something the app lacks go in the post's notes.
 
+With dozens of posts a week, read **Per format and hook** on the Funnel page instead of the rows: for the last 7 and 28
+days, per platform, each format and each hook used on two posts or more, with the number of posts, the median views,
+and saves and visits per 1000 views (summed over the posts with views, so a post seen by many weighs more). Give posts
+that try the same thing the same hook, word for word, so they are summed together.
+
 To see who opened a code's address, read the production request logs (read only, on a machine with production
 credentials). Meta's fetches come in the minute a post goes up, as `facebookexternalhit` or with `fbclid`; people come
 later, from a phone:
