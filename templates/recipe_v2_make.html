@@ -95,7 +95,8 @@
   {# The celebration when the last step is ticked off (static/js/done.js): the dish, how long it took, and for a
      signed-in cook "I made this" (counted, /api/interactions/recipe/<id>/cooked), stars, a comment and photos; for a
      visitor, I made this signs them up.
-     Opens once when the steps are done; the step card's "How did it go?" opens it again. #}
+     Opens once when the steps are done; the step card's "How did it go?" opens it again, and Made it on the overview
+     and below the steps open it whenever the cook likes. #}
   {% set done_img = dish_images(recipe).dish %}
   <dialog class="done-sheet" id="sheet-done" aria-labelledby="done-h">
     <form class="done-form" data-done-form>
@@ -105,7 +106,7 @@
         <button type="button" class="done-x" data-sheet-close aria-label="Close">{{ icon('close') }}</button>
       </div>
       <div class="done-body">
-        <p class="done-eyebrow"><span class="done-tick">{{ icon('check') }}</span>All {{ v.steps|length }} steps done</p>
+        <p class="done-eyebrow"><span class="done-tick">{{ icon('check') }}</span><span data-done-steps data-all="All {{ v.steps|length }} steps done">All {{ v.steps|length }} steps done</span></p>
         <h2 id="done-h">Enjoy your meal!</h2>
         <p class="done-sub" data-done-sub data-title="{{ v.title }}" data-plan="{{ v.total_min }}">You made {{ v.title }}.</p>
         {% if current_user.is_authenticated %}
