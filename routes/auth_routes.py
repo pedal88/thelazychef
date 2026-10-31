@@ -62,6 +62,12 @@ def register():
         
     return render_template('register.html', sources=funnel.SOURCES)
 
+@auth_bp.route('/privacy')
+def privacy():
+    """What the site keeps about people (templates/privacy.html), also the policy Google's sign-in asks for."""
+    return render_template('privacy.html')
+
+
 @auth_bp.route('/logout')
 def logout():
     logout_user()
