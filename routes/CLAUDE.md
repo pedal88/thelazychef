@@ -23,7 +23,7 @@
 Admin: `generate_routes` (`/new-recipe`, the form page), `recipe_v2_routes` (`/new-recipe/v2`, batch `/new-recipe/v2/batch`,
 images `/new-recipe/v2/images`, Recalculate), `admin_recipes_routes` (Recipes Management), `admin_ingredients_routes`,
 `admin_chefs_routes`, `recipe_notes_routes`, `funnel_routes` (`funnel.*`: the short addresses `/tiktok`, `/ig`,
-`/tiktok/<code>` and `?ref=` on any page, kept per session and counted, the admin Funnel page `/admin/funnel` and its
+`/tiktok/<code>` (to the post's recipe when the post log has one, else home) and `?ref=` on any page, kept per session and counted, the admin Funnel page `/admin/funnel` and its
 post log `/admin/funnel/posts/…`; `services/funnel.py`). `social_routes` (`social.*`): the slides of TikTok and Instagram posts, public and noindex
 (`docs/SOCIAL.md`).
 

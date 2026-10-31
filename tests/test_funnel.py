@@ -67,6 +67,29 @@ class FunnelTests(unittest.TestCase):
         with self.client.session_transaction() as session:
             self.assertEqual(session['ref'], 'tiktok-3')
 
+    def test_a_post_with_a_recipe_in_the_log_opens_that_recipe(self):
+        salmon = Recipe(title='Teriyaki salmon', cuisine='', difficulty='', status='approved')
+        draft = Recipe(title='Draft', cuisine='', difficulty='', status='draft')
+        db.session.add_all([salmon, draft])
+        db.session.flush()
+        day = datetime.date(2026, 10, 30)
+        db.session.add_all([
+            SocialPost(platform='tiktok', code='1', format='map', recipe_id=salmon.id, title='Map', posted_on=day),
+            SocialPost(platform='tiktok', code='2', format='grid', recipe_id=draft.id, title='Grid', posted_on=day),
+            SocialPost(platform='tiktok', code='4', format='week', title='Week', posted_on=day)])
+        db.session.commit()
+        client = app.test_client()
+        self.assertEqual(client.get('/tiktok/1').location, f'/recipe/{salmon.id}')
+        with client.session_transaction() as session:
+            self.assertEqual(session['ref'], 'tiktok-1')
+        client.post('/ref/seen')  # counted on the recipe page, as on any other
+        self.assertEqual(self.visits(), {('tiktok-1', 1)})
+        # A recipe not approved, a post of several recipes, the same code on the other platform, a post not in the
+        # log and the bio's bare address open the home page
+        for path in ('/tiktok/2', '/tiktok/4', '/ig/1', '/tiktok/9', '/tiktok'):
+            with self.subTest(path=path):
+                self.assertEqual(app.test_client().get(path).location, '/')
+
     def test_a_visit_counts_once_when_the_page_asks_not_when_the_address_is_fetched(self):
         self.client.get('/tiktok/3')
         self.assertEqual(self.visits(), set())

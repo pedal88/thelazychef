@@ -118,6 +118,12 @@ def google_done():
     return _signed_in(user, hello='Welcome to The Lazy Chef.' if made else None, args=args)
 
 
+@auth_bp.route('/privacy')
+def privacy():
+    """What the site keeps about people (templates/privacy.html), also the policy Google's sign-in asks for."""
+    return render_template('privacy.html')
+
+
 @auth_bp.route('/logout')
 def logout():
     logout_user()

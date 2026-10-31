@@ -61,6 +61,11 @@ is per platform, since `/tiktok/5` and `/ig/5` are the ref codes `tiktok-5` and 
 both platforms can share its number and still be counted apart. With `--code` the script ends with the address of the
 post log's form, filled in with the platform, code, format and recipe.
 
+A post's address opens what the post showed: `/tiktok/2` goes to the recipe the post log has for TikTok's code 2, when
+it is approved. A post drawn from several recipes (`week`, `pantry`), a code not in the log and the bios' bare
+`/tiktok` and `/ig` open the home page (`services/funnel.post_recipe`). The code is kept either way, and the visit is
+counted on the page it opens.
+
 To design slides without production, run the app on a local database (`docs/README_TOP_COMMANDS.md`). The public
 ingredient galaxy (`/api/graph/ingredient-galaxy`) has every ingredient's name, category and symbol, enough for the
 pantry CSV `scripts/local_db.py` reads when there is no production export at hand.
@@ -93,7 +98,8 @@ come only by typing an address or through the Instagram bio link.
 7. **Instagram:** check the profile, then + → Post → select several, in order → 4:5, not square → Next → music →
    paste the caption (the `/ig/` address) → turn on the AI label under advanced settings → Share.
 8. **Log both posts** in the post log: the address the render script ends with, or Log a post. Put the title or hook
-   in What it tries, and the sound and the post's link.
+   in What it tries, and the sound and the post's link. Keep the recipe filled in: the post's address opens that
+   recipe, the dish the caption promised, and a post logged without one opens the home page.
 9. **Copy in the numbers** 2 and 7 days later (a reminder task in meOS for each), and once a week read them as below.
 
 The dish images are made by Gemini: label every post as AI-generated where the platform asks.
