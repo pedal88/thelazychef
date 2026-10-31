@@ -185,6 +185,9 @@ app.register_blueprint(funnel_bp)
 from routes.social_routes import social_bp
 app.register_blueprint(social_bp)
 
+from routes.social_api_routes import social_api_bp
+app.register_blueprint(social_api_bp)
+
 
 if __name__ == '__main__':
     with app.app_context():

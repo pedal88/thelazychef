@@ -23,6 +23,7 @@ and a printed summary that can be pasted back.
 | `units_report` | Read-only report of the measures in the recipes' free text that the US view cannot convert |
 | `content` | The content API: send a guide or the home page to production as a draft (`push`), read a version (`get`), list pages; never publishes (`docs/CONTENT.md`) |
 | `social_render` | Photograph a TikTok or Instagram post's slides from the site, with a caption draft (`docs/SOCIAL.md`) |
+| `social_batch` | A day of posts: plan them (or take the site's suggestions), log them as drafts with their codes, render both sizes, copy them to iCloud Drive for the phone (`docs/SOCIAL.md`) |
 | `local_db` | A local SQLite database with the pantry and five example recipes (`docs/README_TOP_COMMANDS.md`) |
 | `generate_v2` | Make one v2 recipe from the command line |
 | `seed_admin` | Create or reset an admin user |

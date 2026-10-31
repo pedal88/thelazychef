@@ -32,7 +32,9 @@
         {% set s = row.latest %}
         <tr>
           <td class="py-2 pr-4 whitespace-nowrap">{{ row.post.posted_on.strftime('%d.%m') }}</td>
-          <td class="py-2 pr-4"><a href="{{ url_for('funnel.edit_post', post_id=row.post.id) }}" class="hover:underline">{{ row.post.title }}</a> <span class="font-mono text-xs text-slate-500">{{ row.ref }} · {{ row.post.format }}{{ ' · day ' ~ s.day if s }}</span></td>
+          <td class="py-2 pr-4"><a href="{{ url_for('funnel.edit_post', post_id=row.post.id) }}" class="hover:underline">{{ row.post.title }}</a> <span class="font-mono text-xs text-slate-500">{{ row.ref }} · {{ row.post.format }}{{ ' · day ' ~ s.day if s }}</span>
+            {% if row.post.status == 'draft' %}<span class="ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">Draft</span>
+            <form method="post" action="{{ url_for('funnel.mark_posted', post_id=row.post.id) }}" class="inline"><button type="submit" class="ml-1 text-xs font-semibold text-slate-900 underline">Mark posted today</button></form>{% endif %}</td>
           {% for value in (s.views if s else none, s.saves if s else none, s.shares if s else none) %}<td class="py-2 pr-4 text-right tabular-nums {{ 'text-slate-300' if value is none }}">{{ value if value is not none else '–' }}</td>{% endfor %}
           <td class="py-2 pr-4 text-right tabular-nums">{{ row.visits }}</td>
           <td class="py-2 pr-4 text-right tabular-nums {{ 'text-slate-300' if row.per_1000 is none }}">{{ row.per_1000 if row.per_1000 is not none else '–' }}</td>

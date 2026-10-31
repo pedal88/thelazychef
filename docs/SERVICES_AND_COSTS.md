@@ -63,7 +63,7 @@ Read by the app (all listed in `.env.example`):
 | `FLASK_DEBUG` | no | Debug mode for `python app.py` |
 | `GOOGLE_API_KEY` | yes (app.py checks it) | Gemini. Scripts that do not call Gemini set a dummy value |
 | `ANTHROPIC_API_KEY` | to generate recipes | Claude |
-| `CONTENT_API_KEY` | for the content API | The key Claude Code sends content drafts with (`/api/content`, `docs/CONTENT.md`); without it the API answers 401 |
+| `CONTENT_API_KEY` | for the content and social APIs | The key Claude Code sends content drafts with (`/api/content`, `docs/CONTENT.md`) and `scripts/social_batch.py` logs a day's posts with (`/api/social`, `docs/SOCIAL.md`); without it both answer 401 |
 | `DB_BACKEND` | no | `local` (SQLite, default) or `cloudsql` |
 | `DATABASE_URL` | no | Overrides the database URL (tests use `sqlite://`; a local Postgres with `postgresql+pg8000://…`) |
 | `INSTANCE_CONNECTION_NAME`, `DB_USER`, `DB_PASS`, `DB_NAME` | with `cloudsql` | Cloud SQL connection |
