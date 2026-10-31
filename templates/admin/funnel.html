@@ -49,6 +49,32 @@
     </table>
   </div>
 
+  <div id="formats" class="mt-8">
+    <h2 class="font-semibold text-slate-900">Per format and hook</h2>
+    <p class="mt-1 text-sm text-slate-500">The posts that went up in the window, with each one's latest numbers. Per 1000 views is summed over the posts with views, so a post seen by many weighs more. A hook is listed once it is on {{ r.hook_min_posts }} posts or more. Judge a format on several posts, not one.</p>
+    {% for days, s in r.summary.items() %}
+    <h3 class="mt-4 text-sm font-semibold text-slate-700">Last {{ days }} days</h3>
+    <div class="mt-1 overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="text-left text-slate-500"><tr><th class="py-2 pr-4 font-medium">Platform</th><th class="py-2 pr-4 font-medium">Format or hook</th><th class="py-2 pr-4 font-medium text-right">Posts</th><th class="py-2 pr-4 font-medium text-right">Median views</th><th class="py-2 pr-4 font-medium text-right">Saves per 1000</th><th class="py-2 font-medium text-right">Visits per 1000</th></tr></thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for kind, groups in (('format', s.formats), ('hook', s.hooks)) %}
+          {% for g in groups %}
+          <tr>
+            <td class="py-2 pr-4 whitespace-nowrap">{{ r.platform_labels.get(g.platform, g.platform) }}</td>
+            <td class="py-2 pr-4">{% if kind == 'format' %}<span class="font-mono">{{ g.label }}</span>{% else %}“{{ g.label }}”{% endif %}</td>
+            <td class="py-2 pr-4 text-right tabular-nums">{{ g.posts }}</td>
+            {% for value in (g.median_views, g.saves_1000, g.visits_1000) %}<td class="py-2 {{ 'pr-4' if not loop.last }} text-right tabular-nums {{ 'text-slate-300' if value is none }}">{{ value if value is not none else '–' }}</td>{% endfor %}
+          </tr>
+          {% endfor %}
+          {% endfor %}
+          {% if not s.formats %}<tr><td colspan="6" class="py-2 text-slate-500">No posts went up in the last {{ days }} days.</td></tr>{% endif %}
+        </tbody>
+      </table>
+    </div>
+    {% endfor %}
+  </div>
+
   <h2 class="mt-8 font-semibold text-slate-900">Per channel</h2>
   <div class="mt-2 overflow-x-auto">
     <table class="w-full text-sm">
