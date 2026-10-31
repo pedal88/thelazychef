@@ -424,6 +424,22 @@
                 .catch(() => { });
         }
     </script>
+    {% if ref_unseen %}
+    {# A visit with a ref code counts once the page has been in view for three seconds: robots and link scanners that
+       fetch the address and leave are not counted (routes/funnel_routes.ref_seen, services/funnel.py) #}
+    <script>
+        (function () {
+            var timer;
+            function count() { fetch('/ref/seen', { method: 'POST', credentials: 'same-origin', keepalive: true }).catch(function () { }); }
+            function watch() {
+                clearTimeout(timer);
+                if (document.visibilityState === 'visible') timer = setTimeout(count, 3000);
+            }
+            document.addEventListener('visibilitychange', watch);
+            watch();
+        })();
+    </script>
+    {% endif %}
 </body>
 
 </html>

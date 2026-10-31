@@ -83,6 +83,10 @@ after it went up (views, likes, comments, saves, shares, profile visits). Beside
 cooks its code brought, and visits per 1000 views, the number that says whether a post sends people on rather than
 only being seen.
 
+A visit counts once the page has been in view for three seconds, not when the address is fetched. When a post goes
+up, Meta fetches every address in its caption from some twenty machines within the minute, as a link preview robot and
+as browsers that never stay; until 01.11.2026 they counted, and gave each Instagram post 7–8 visits that were no one.
+
 Once a week: see which posts won and lost, pick one thing to change in the next ones (format, first slide, kind of
 recipe, time), and change only that. Judge a format on at least three posts, not one: what TikTok shows a post to
 varies a lot. Comments that ask for something the app lacks go in the post's notes.
