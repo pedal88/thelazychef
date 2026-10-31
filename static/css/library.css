@@ -253,3 +253,5 @@
   color: var(--color-ink); font-size: 14px; line-height: 1.45; }
 .auth-or { display: flex; align-items: center; gap: var(--space-3); margin: var(--space-4) 0 0; color: var(--color-muted); font-size: 13px; }
 .auth-or::before, .auth-or::after { content: ""; flex: 1; border-top: 1px solid var(--color-line); }
+.auth-note { margin: 0; text-align: center; color: var(--color-muted); font-size: 13px; }
+.auth-note a { color: var(--color-ink); text-decoration: underline; text-underline-offset: 3px; }
