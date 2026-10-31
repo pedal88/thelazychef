@@ -149,6 +149,57 @@ class DayOfPostsTests(unittest.TestCase):
         self.assertIn('<option value="posted" selected>',
                       self.client.get(f'/admin/funnel/posts/{tiktok.id}').get_data(as_text=True))
 
+    # The numbers sheet
+
+    def day_of_posts(self, on, first=1):
+        """Three codes from first on both platforms, up on the date on, a draft for that day that is not up yet, and a
+        post from the day before."""
+        for code in range(first, first + 3):
+            for platform in ('tiktok', 'instagram'):
+                db.session.add(SocialPost(platform=platform, code=str(code), format='map', title=f'Post {code}',
+                                          posted_on=on))
+        db.session.add(SocialPost(platform='tiktok', code=str(first + 4), format='map', title='Draft', posted_on=on,
+                                  status='draft'))
+        db.session.add(SocialPost(platform='tiktok', code=str(first + 3), format='map', title='Other day',
+                                  posted_on=on - datetime.timedelta(days=1)))
+        db.session.commit()
+
+    def test_the_sheet_holds_one_dates_posts_tiktok_first_and_no_drafts(self):
+        self.day_of_posts(DAY)
+        rows = funnel.sheet(7, DAY)
+        self.assertEqual([funnel.post_ref(r['post']) for r in rows],
+                         ['tiktok-1', 'tiktok-2', 'tiktok-3', 'instagram-1', 'instagram-2', 'instagram-3'])
+        self.assertEqual(len(funnel.sheet(7, DAY, 'instagram')), 3)
+        self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
+        on = datetime.date.today() - datetime.timedelta(days=2)
+        self.day_of_posts(on, first=11)
+        html = self.client.get('/admin/funnel/numbers?day=2').get_data(as_text=True)
+        self.assertIn(f'went up on {on.strftime("%d.%m.%Y")}', html)
+        self.assertNotIn('Other day', html)
+        self.assertNotIn('>Draft<', html)
+
+    def test_the_sheet_saves_every_post_that_got_numbers_and_nothing_when_one_is_wrong(self):
+        self.day_of_posts(DAY)
+        self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
+        rows = funnel.sheet(7, DAY)
+        first, second = rows[0]['post'], rows[1]['post']
+        url = f'/admin/funnel/numbers?day=7&on={DAY}'
+        response = self.client.post(url, data={f'{first.id}-views': '1 200', f'{second.id}-saves': 'many'})
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('tiktok-2: Saves must be a whole number.', response.get_data(as_text=True))
+        self.assertIn('value="1 200"', response.get_data(as_text=True))
+        self.assertEqual(first.stats, [])
+        response = self.client.post(url, data={f'{first.id}-views': '1 200', f'{first.id}-profile_visits': '4',
+                                               f'{second.id}-saves': '3'})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual([(s.day, s.views, s.profile_visits) for s in first.stats], [(7, 1200, 4)])
+        self.assertEqual([(s.day, s.saves) for s in second.stats], [(7, 3)])
+        self.assertEqual(rows[2]['post'].stats, [])
+        html = self.client.get(url).get_data(as_text=True)
+        self.assertIn(f'name="{first.id}-views" value="1200"', html)
+        self.client.post(url, data={f'{first.id}-views': '1500'})
+        self.assertEqual([(s.views, s.profile_visits) for s in first.stats], [(1500, None)])
+
 
 class PlanTests(unittest.TestCase):
     def test_a_plan_is_a_post_per_line_with_its_hook(self):
