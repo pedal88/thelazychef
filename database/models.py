@@ -492,7 +492,7 @@ class SocialPost(db.Model):
     sound: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     url: Mapped[Optional[str]] = mapped_column(String(300), nullable=True)
-    posted_on: Mapped[datetime.date] = mapped_column(Date, nullable=False)
+    posted_on: Mapped[datetime.date] = mapped_column(Date, nullable=False)  # or the day it is planned for, as a draft
     # The variant, for the trial plan (docs/SOCIAL.md "Learning from the posts"): the round of the plan, the series
     # and the post's number in it, the hook group (hook above holds its words), the CTA group, every recipe in the post
     # ("325,326,329"), the slide kinds used, the look, how many slides, and the time of day it went up
@@ -506,6 +506,8 @@ class SocialPost(db.Model):
     look: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)
     slides: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     slot: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    # 'draft' when scripts/social_batch.py has planned and rendered it, 'posted' once it is up
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default='posted', server_default='posted')
 
     stats: Mapped[list["SocialPostStat"]] = relationship(back_populates="post", cascade="all, delete-orphan",
                                                          order_by="SocialPostStat.day")
