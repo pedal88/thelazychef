@@ -514,7 +514,8 @@ class SocialPost(db.Model):
 
 
 class SocialPostStat(db.Model):
-    """The platform's numbers for a post, copied by hand from the app some days after it went up (2 and 7 days)."""
+    """The platform's numbers for a post some days after it went up: copied by hand from the app (2 and 7 days), or
+    fetched from the platform's API every day (services/social_stats.py)."""
     __tablename__ = 'social_post_stat'
     __table_args__ = (UniqueConstraint('post_id', 'day', name='uq_social_post_stat_day'),)
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -526,6 +527,10 @@ class SocialPostStat(db.Model):
     saves: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     shares: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     profile_visits: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    reach: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # accounts that saw it (Instagram gives it)
+    # 'manual' when typed in on the Funnel page, 'instagram' when services/social_stats.py fetched it, and when
+    fetched_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime, nullable=True)
+    source: Mapped[str] = mapped_column(String(20), nullable=False, default='manual', server_default='manual')
 
     post: Mapped["SocialPost"] = relationship(back_populates="stats")
 

@@ -26,7 +26,8 @@ USDA values, `scripts/ingredient_nutrition.py`).
 | Cloud SQL | Postgres `lazy-chef-db-eu` (europe-north2), with pgvector | `database/db_connector.py` (Cloud SQL Python Connector + pg8000) |
 | Cloud Storage | Bucket `thelazychef-assets`: dish images (`recipes/`), ingredient symbols (`pantry/symbols/`), category and cuisine symbols (`pantry/categories/`, `pantry/cuisines/`) | `services/storage_service.py` (`get_storage()` in routes) |
 | Cloud Tasks | Queue `recipe-generation` (europe-west1): recipe generation, the pantry job and the image job | `services/recipe_v2/tasks.py` (REST calls with google.auth, no client library) |
-| Secret Manager | `GOOGLE_API_KEY`, `ANTHROPIC_API_KEY`, `DB_PASS`, `SECRET_KEY`, `CONTENT_API_KEY`, `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, mounted into Cloud Run by the deploy | `deploy.yaml` (`--update-secrets`); rotation: `docs/runbooks/ROTATE_SECRETS.md` |
+| Secret Manager | `GOOGLE_API_KEY`, `ANTHROPIC_API_KEY`, `DB_PASS`, `SECRET_KEY`, `CONTENT_API_KEY`, `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `INSTAGRAM_ACCESS_TOKEN`, mounted into Cloud Run by the deploy | `deploy.yaml` (`--update-secrets`); rotation: `docs/runbooks/ROTATE_SECRETS.md` |
+| Cloud Scheduler | Job `social-stats` (europe-west1), daily at 06:00 Oslo: `POST /internal/tasks/social-stats` with an OIDC token from `TASKS_SERVICE_ACCOUNT` | `routes/funnel_routes.py`; the command: `docs/runbooks/ROTATE_SECRETS.md`, "Instagram" |
 | Artifact Registry | Docker images (europe-north2) | `deploy.yaml` |
 | Google sign-in (OAuth client, Google Auth Platform) | Continue with Google on log in and sign up: the OAuth client "The Lazy Chef web" (Web application), redirect URI `https://thelazychef.app/login/google/done`, scopes `openid` and `email` only, so the app needs no verification by Google. Free | `services/google_signin.py` (token exchange with `requests`, the ID token checked with google-auth) |
 | Workload Identity Federation | GitHub Actions authenticates to Google without a key | `deploy.yaml`, `scripts/setup_wif.sh` |
@@ -49,6 +50,11 @@ Without `TASKS_QUEUE` (local runs) the generation runs inside the request and th
 
 - Web pages and video: `requests` + BeautifulSoup for recipe links, `yt_dlp` (and ffmpeg in the image) for videos
   (`services/recipe_v2/sources.py`, `services/social_media_service.py`).
+- Instagram (Meta Graph API, `graph.facebook.com/v26.0`): each post's numbers into the post log, once a day
+  (`services/social_stats.py`, `docs/SOCIAL.md`). The Meta app "The Lazy Chef stats", in development mode with the business
+  portfolio "The Lazy Chef" and the account thelazychef.ai as Instagram Tester, no App Review. Its Unified login configuration
+  gives a system-user token that never expires, with `instagram_basic`, `instagram_manage_insights` and
+  `instagram_content_publish`. A new Graph API version every few months; each lasts about two years.
 - Front-end from CDNs: Tailwind (`cdn.tailwindcss.com`, `templates/base.html`), D3 v7 (the galaxies),
   ECharts (jsdelivr, ingredients admin), Google Fonts.
 - Stock photos from images.unsplash.com only as backgrounds on two admin pages (`index.html`, `new_ingredient.html`).
@@ -64,6 +70,7 @@ Read by the app (all listed in `.env.example`):
 | `FLASK_DEBUG` | no | Debug mode for `python app.py` |
 | `GOOGLE_API_KEY` | yes (app.py checks it) | Gemini. Scripts that do not call Gemini set a dummy value |
 | `ANTHROPIC_API_KEY` | to generate recipes | Claude |
+| `INSTAGRAM_ACCESS_TOKEN`, `INSTAGRAM_USER_ID` | to fetch Instagram's numbers | The Meta app's system-user token (Secret Manager) and the account's id (`deploy.yaml`); without them nothing is fetched and the numbers are typed in by hand |
 | `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET` | for Continue with Google | The OAuth client (above); without both there is no Google button and `/login/google` is 404 |
 | `CONTENT_API_KEY` | for the content and social APIs | The key Claude Code sends content drafts with (`/api/content`, `docs/CONTENT.md`) and `scripts/social_batch.py` logs a day's posts with (`/api/social`, `docs/SOCIAL.md`); without it both answer 401 |
 | `DB_BACKEND` | no | `local` (SQLite, default) or `cloudsql` |
@@ -78,7 +85,8 @@ Scripts only: `GOOGLE_APPLICATION_CREDENTIALS`, `GOOGLE_CLOUD_LOCATION` (embeddi
 
 ## Costs
 
-Every Claude and Gemini call costs money; nothing else in the code does per request. Rough numbers, from the
+Every Claude and Gemini call costs money; nothing else in the code does per request (the Instagram Graph API is free, and
+one Cloud Scheduler job is within the free tier of three). Rough numbers, from the
 constants in the code and measured runs:
 
 | What | Cost | Where it is set or measured |
