@@ -287,6 +287,40 @@ class FunnelTests(unittest.TestCase):
                          'https://thelazychef.app/admin/funnel/posts/new?platform=tiktok&code=5&format=map&recipe=297')
         self.assertEqual(log_url('http://127.0.0.1:8000/', 'ig', '6', 'week', None),
                          'http://127.0.0.1:8000/admin/funnel/posts/new?platform=instagram&code=6&format=week')
+        self.assertEqual(log_url('https://thelazychef.app', 'tt', '7', 'series', '325', series='airfryer', n='4',
+                                 hook_group='lazy', hook='Air fryer #4: 12 min of work', cta='follow'),
+                         'https://thelazychef.app/admin/funnel/posts/new?platform=tiktok&code=7&format=series&recipe=325'
+                         '&series=airfryer&n=4&hook_group=lazy&hook=Air+fryer+%234%3A+12+min+of+work&cta=follow')
+
+    def test_a_post_is_logged_with_its_variant(self):
+        self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
+        form = self.client.get('/admin/funnel/posts/new?platform=instagram&code=8&format=series&series=got&n=3'
+                               '&hook_group=search&hook=Got+beef%3F+3+dinners.&cta=save&recipes=325,326,329'
+                               '&views=got_cover+day+day+day+shop+end&look=d&slides=6').get_data(as_text=True)
+        for value in ('value="got" selected', 'value="search" selected', 'value="save" selected',
+                      'value="325,326,329"', 'value="Got beef? 3 dinners."', 'value="6"'):
+            self.assertIn(value, form)
+        recipe = Recipe(title='Kofte', cuisine='', difficulty='', status='approved', schema_version=2)
+        db.session.add(recipe)
+        db.session.commit()
+        response = self.log(format='series', series='got', series_n='3', hook_group='search', cta_group='save',
+                            recipe_ids=f'{recipe.id}, 326', views='got_cover day day day shop end', look='d',
+                            slides='6', slot='18:30', round='2 series')
+        self.assertEqual(response.status_code, 302, response.get_data(as_text=True))
+        post = db.session.execute(db.select(SocialPost)).scalar()
+        self.assertEqual((post.series, post.series_n, post.hook_group, post.cta_group, post.recipe_ids, post.slides,
+                          post.slot, post.round, post.look), ('got', 3, 'search', 'save', f'{recipe.id},326', 6,
+                                                               '18:30', '2 series', 'd'))
+        self.assertEqual(post.recipe_id, recipe.id)  # the first recipe is the one the post's address opens
+        html = self.client.get('/admin/funnel').get_data(as_text=True)
+        self.assertIn('tiktok-5 · series · got #3 · search · save', html)
+        for fields, message in (({'code': '6', 'series': 'soup'}, 'Series must be one of'),
+                                ({'code': '6', 'slides': 'six'}, 'Slides must be a whole number.'),
+                                ({'code': '6', 'recipe_ids': '325;326'}, 'Recipes are their numbers')):
+            with self.subTest(fields=fields):
+                response = self.log(**fields)
+                self.assertEqual(response.status_code, 400)
+                self.assertIn(message, response.get_data(as_text=True))
 
     # Shared links
 

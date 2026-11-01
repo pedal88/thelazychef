@@ -8,13 +8,19 @@ The formats, tests for the first weeks:
 - pantry: "The foundation pantry": the foundation by kitchen group, and how much of what goes into dinner it covers.
 - week: "One shop, five dinners": five dinners that share their shopping, the list, the week, each day
   (services/social_week.py).
+- The series (services/social_series.py, /social/post?series=): Air fryer dinners, Got [ingredient]?, High-protein
+  dinners, Dishes to wash: N, Guess the dinner and 5 weeknights of [cuisine], built from the slide kinds here: the
+  dishes to wash, the shopping list split in "to buy" and "you probably have", the river delta, the steps with
+  timers, the big numbers, the active-against-hands-off bar and the air fryer's temperature and time.
 
 Two sizes: ig (1080 × 1350, Instagram's tallest carousel) and tt (1080 × 1920, TikTok's photo mode). The last slide
 gives the short address for the platform (thelazychef.app/ig or /tiktok, with the post's code), so a visit that came
 from the post is counted (services/funnel.py).
 """
 from database.models import Ingredient, db
+from services.measures import temp
 from services.recipe_v2 import groups
+from services.recipe_v2.derive import HEAT_LABELS, VESSELS
 
 SIZES = {'ig': (1080, 1350), 'tt': (1080, 1920)}
 FORMATS = {'map': 'Dinner as a subway map', 'grid': 'Everything in a dish'}
@@ -51,6 +57,17 @@ PANTRY_HEAD = 70
 GRID_ROOM = {'ig': 470, 'tt': 760}
 CAPTION = 74
 WIDTH = 912
+# The river delta goes on a slide only when it is small enough to read on a phone: at most DELTA_DEPTH levels above
+# the dish (delta.build's max_depth, the dish at 0) and DELTA_LEAVES branches. 11 of the 59 public recipes on
+# 31.10.2026 (serier.md); else the slide shows the time bar.
+DELTA_DEPTH = 2
+DELTA_LEAVES = 2
+# The steps with timers: at most this many on the slide, the rest "and N more"
+TIMER_STEPS = 6
+# What does the hands-off minutes while the cook does nothing, by the recipe's heat source (derive.HEAT_SOURCES)
+IDLE_BY = {'airfryer': 'the air fryer', 'oven': 'the oven', 'pot': 'the pot', 'pan': 'the pan', 'grill': 'the grill',
+           'slow_cooker': 'the slow cooker', 'microwave': 'the microwave', 'sous_vide': 'the water bath'}
+IDLE = 'hands off'
 
 
 def address(size, code=None):
@@ -69,6 +86,97 @@ def _ingredients(v):
              for g in v['shop_groups'] if g['key'] != 'staples' for s in g['items']]
     staples = [s['name'] for g in v['shop_groups'] if g['key'] == 'staples' for s in g['items']]
     return tiles, staples
+
+
+def _staples(v):
+    """What you probably have, as tiles (the staples group of the shopping list)."""
+    return [{'name': s['name'], 'amount': None, 'img': s['img'], 'key': buy_key(s)}
+            for g in v['shop_groups'] if g['key'] == 'staples' for s in g['items']]
+
+
+def end_slide(line, cta=None):
+    """The last slide: the address, after the line; or a CTA ({'group', 'text'}, services/social_series.py), with the
+    address kept small under it when the CTA is not the site itself."""
+    if cta:
+        return {'kind': 'end', 'line': cta['text'], 'cta': cta['group'], 'small': cta['group'] != 'site'}
+    return {'kind': 'end', 'line': line}
+
+
+# The slide kinds the series are built from (docs/SOCIAL.md "The series"), each from the recipe page's view
+
+def delta_fits(d):
+    """Whether the river delta is small enough for a slide."""
+    return bool(d) and d['max_depth'] <= DELTA_DEPTH and d['leaves'] <= DELTA_LEAVES
+
+
+def delta_slide(view):
+    """The river delta drawn on the slide, or None when it is too big (then the time bar takes its place). The cells
+    are placed on a grid as static/js/delta.js does portrait: a column per branch, the dish on the last row; every
+    arrow runs straight down into the step below, since a step spans its branches."""
+    d = view['delta']
+    if not delta_fits(d):
+        return None
+    flows = {a for a, b in d['edges']}
+    return {'kind': 'delta', 'title': 'The whole dish', 'total': view['total'], 'cols': d['leaves'],
+            'rows': d['max_depth'] + 1,
+            'cells': [{**n, 'row': d['max_depth'] - n['depth'] + 1, 'col': (n['span'][0] + 1, n['span'][1] + 1),
+                       'flows': n['id'] in flows} for n in d['nodes']]}
+
+
+def timebar_slide(view, heat_source=None):
+    """Active against hands-off time: "9 min you, 41 min the oven"."""
+    total, active = view['total_min'], min(view['active_min'], view['total_min'])
+    idle = total - active
+    doer = IDLE_BY.get(heat_source, IDLE)
+    return {'kind': 'timebar', 'title': f'{total} minutes. {active} of them yours.', 'active': active, 'idle': idle,
+            'total': total, 'doer': doer, 'you': f'{active} min you', 'other': f'{idle} min {doer}'}
+
+
+def timers_slide(view):
+    """The steps with their timers, at most TIMER_STEPS; a standing time is the timer."""
+    steps = [{'no': s['n'], 'short': s['short'], 'duration': s['duration'], 'phase': s['phase'],
+              'timer': f"{s['passive_min']} min" if s.get('passive_min') else None} for s in view['steps']]
+    shown = steps if len(steps) <= TIMER_STEPS + 1 else steps[:TIMER_STEPS]
+    return {'kind': 'timers', 'title': f'{len(steps)} steps, {view["total"]}', 'steps': shown,
+            'more': len(steps) - len(shown)}
+
+
+def numbers_slide(view, title=None):
+    """The big numbers: protein and kcal per serving (when the recipe has nutrition), and the minutes."""
+    n = view['nutrition']
+    items = []
+    if n:
+        items += [{'value': n['protein'], 'unit': 'g', 'label': 'protein per serving'},
+                  {'value': n['kcal'], 'unit': '', 'label': 'kcal per serving'}]
+    items.append({'value': view['total_min'], 'unit': 'min', 'label': 'start to table'})
+    if not n:
+        items.append({'value': view['active_min'], 'unit': 'min', 'label': 'of them yours'})
+    return {'kind': 'numbers', 'title': title or view['title'], 'items': items}
+
+
+def wash_slide(view, images):
+    """The equipment to wash: the vessels (derive.VESSELS) with their images ({equipment id: url}), nothing else."""
+    items = [{'name': e['name'], 'img': images.get(e['id'])} for e in view['equipment'] if e['id'] in VESSELS]
+    return {'kind': 'wash', 'title': f'Dishes to wash: {len(items)}', 'items': items, 'count': len(items),
+            'cols': min(max(len(items), 1), 3)}
+
+
+def airfryer_slide(view, images):
+    """The air fryer's temperature and time, from the steps in it (else the heated steps), with its image."""
+    steps = [s for s in view['steps'] if 'airfryer' in s['equipment_ids']] or [s for s in view['steps'] if s['heat']]
+    temps = [s['temp_c'] for s in steps if s.get('temp_c')]
+    minutes = sum(s['minutes'] for s in steps)
+    return {'kind': 'airfryer', 'title': 'In the air fryer', 'name': HEAT_LABELS['airfryer'],
+            'temp': temp(max(temps), view['units']) if temps else None, 'minutes': minutes,
+            'img': images.get('airfryer')}
+
+
+def shop_split_slide(view, size):
+    """The shopping list in two: what to buy, with amounts, and what you probably have."""
+    tiles, _ = _ingredients(view)
+    have = _staples(view)
+    return {'kind': 'shop_split', 'title': f'Buy {len(tiles)} things', 'tiles': tiles, 'have': have,
+            'cols': columns(len(tiles), size, room=160 if have else 0)}
 
 
 def columns(n, size, labels=True, room=0):
@@ -112,21 +220,25 @@ def map_slide(m, size):
     return {'kind': 'map', 'map': m, 'k': k, 'pad': MAP_PAD, 'labels': labels, 'every': every}
 
 
-def recipe_slides(view, fmt, dish_image, size='ig'):
-    """The slides of a recipe post: [{'kind', ...}], from the recipe page's view (services/recipe_v2/view.page)."""
+def recipe_slides(view, fmt, dish_image, size='ig', hook=None, cta=None):
+    """The slides of a recipe post: [{'kind', ...}], from the recipe page's view (services/recipe_v2/view.page).
+    hook is the words on the first slide instead of the dish's name (the grid's question), cta the last slide's
+    {'group', 'text'} (services/social_series.py); without them the post is as it always was."""
     tiles, staples = _ingredients(view)
     facts = {'total': view['total'], 'count': len(tiles), 'parts': view['parts']}
     cover = {'kind': 'cover', 'eyebrow': FORMATS[fmt], 'title': view['title'], 'image': dish_image, 'tiles': tiles,
              **facts}
+    if hook:
+        cover.update(title=hook, name=view['title'])
     if fmt == 'grid':
         return [
             # The dish is not named before the third slide: the first asks the viewer to guess it
-            {'kind': 'collage', 'title': 'Can you guess the dinner?', 'tiles': tiles, 'count': len(tiles),
+            {'kind': 'collage', 'title': hook or 'Can you guess the dinner?', 'tiles': tiles, 'count': len(tiles),
              'cols': columns(len(tiles), size, labels=False, room=200)},
             {'kind': 'ingredients', 'title': 'What you need', 'tiles': tiles, 'staples': staples,
              'cols': columns(len(tiles), size)},
-            {**cover, 'kind': 'dish', 'eyebrow': f'{len(tiles)} ingredients make'},
-            {'kind': 'end', 'line': 'The whole recipe, step by step, with timers'},
+            {**cover, 'kind': 'dish', 'eyebrow': f'{len(tiles)} ingredients make', 'title': view['title'], 'name': None},
+            end_slide('The whole recipe, step by step, with timers', cta),
         ]
     slides = [cover]
     if view['metro_map']:
@@ -140,7 +252,7 @@ def recipe_slides(view, fmt, dish_image, size='ig'):
         shown = steps if len(steps) <= STEPS_PER_SLIDE[size] + 1 else steps[:STEPS_PER_SLIDE[size]]
         slides.append({'kind': 'steps', 'title': f'{len(steps)} steps, {view["total"]}', 'steps': shown,
                        'more': len(steps) - len(shown)})
-    slides.append({'kind': 'end', 'line': 'Every step in full, with timers, bowls and the map'})
+    slides.append(end_slide('Every step in full, with timers, bowls and the map', cta))
     return slides
 
 

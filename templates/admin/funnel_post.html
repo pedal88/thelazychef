@@ -45,6 +45,45 @@
     <label class="text-sm text-slate-700">Sound
       <input name="sound" value="{{ val('sound') }}" maxlength="120" class="{{ field }}">
     </label>
+    <fieldset class="sm:col-span-2 grid sm:grid-cols-3 gap-4 rounded-lg border border-slate-200 p-3">
+      <legend class="text-sm font-semibold text-slate-900 px-1">The variant</legend>
+      <label class="text-sm text-slate-700">Round
+        <input name="round" value="{{ val('round') }}" maxlength="40" class="{{ field }}" placeholder="3 hooks">
+      </label>
+      <label class="text-sm text-slate-700">Series
+        <select name="series" class="{{ field }}"><option value="">–</option>
+          {% for key in choices.series %}<option value="{{ key }}" {{ 'selected' if val('series') == key }}>{{ key }}</option>{% endfor %}
+        </select>
+      </label>
+      <label class="text-sm text-slate-700">Number in the series
+        <input name="series_n" value="{{ val('series_n') }}" inputmode="numeric" class="{{ field }}" placeholder="7">
+      </label>
+      <label class="text-sm text-slate-700">Hook group
+        <select name="hook_group" class="{{ field }}"><option value="">–</option>
+          {% for key in choices.hook_group %}<option value="{{ key }}" {{ 'selected' if val('hook_group') == key }}>{{ key }}</option>{% endfor %}
+        </select>
+      </label>
+      <label class="text-sm text-slate-700">CTA group
+        <select name="cta_group" class="{{ field }}"><option value="">–</option>
+          {% for key in choices.cta_group %}<option value="{{ key }}" {{ 'selected' if val('cta_group') == key }}>{{ key }}</option>{% endfor %}
+        </select>
+      </label>
+      <label class="text-sm text-slate-700">Recipes
+        <input name="recipe_ids" value="{{ val('recipe_ids') }}" maxlength="200" class="{{ field }} font-mono" placeholder="325,326,329">
+      </label>
+      <label class="text-sm text-slate-700 sm:col-span-2">Views used
+        <input name="views" value="{{ val('views') }}" maxlength="300" class="{{ field }} font-mono" placeholder="cover airfryer ingredients delta shop_split end">
+      </label>
+      <label class="text-sm text-slate-700">Look
+        <input name="look" value="{{ val('look') }}" maxlength="10" class="{{ field }}" placeholder="d">
+      </label>
+      <label class="text-sm text-slate-700">Slides
+        <input name="slides" value="{{ val('slides') }}" inputmode="numeric" class="{{ field }}" placeholder="6">
+      </label>
+      <label class="text-sm text-slate-700">Time of day
+        <input name="slot" value="{{ val('slot') }}" maxlength="20" class="{{ field }}" placeholder="18:30">
+      </label>
+    </fieldset>
     <label class="text-sm text-slate-700">Went up
       <input type="date" name="posted_on" value="{{ val('posted_on') }}" required class="{{ field }}">
     </label>

@@ -45,6 +45,14 @@ def candidates():
                (Recipe.prep_time_mins.is_(None)) | (Recipe.prep_time_mins <= WEEK_HANDS_ON))
         .order_by(Recipe.id)).all()
     ids = one_per_dish(rows)
+    buy = buy_sets(ids)
+    proteins = dict(db.session.execute(db.select(Recipe.id, Recipe.protein_type).where(Recipe.id.in_(ids))).all())
+    return {i: {'protein': (proteins.get(i) or 'none').lower(), 'buy': frozenset(buy[i])} for i in ids if buy[i]}
+
+
+def buy_sets(ids):
+    """{recipe id: set of what to buy} for these recipes: the pantry item's id, else the line's name; staples left
+    out. The series pick with it too (services/social_series.py)."""
     lines = db.session.execute(
         db.select(RecipeLine.recipe_id, RecipeLine.name, Ingredient.id, Ingredient.tier, Ingredient.name)
         .outerjoin(Ingredient, Ingredient.id == RecipeLine.ingredient_id)
@@ -55,8 +63,7 @@ def candidates():
         if mise.staple(line):
             continue
         buy[recipe_id].add(ingredient_id or written.strip().lower())
-    proteins = dict(db.session.execute(db.select(Recipe.id, Recipe.protein_type).where(Recipe.id.in_(ids))).all())
-    return {i: {'protein': (proteins.get(i) or 'none').lower(), 'buy': frozenset(buy[i])} for i in ids if buy[i]}
+    return buy
 
 
 def _fits(week, c, complete=False):
@@ -101,16 +108,23 @@ def pick(c, k=len(WEEK_DAYS)):
     return sorted(best)
 
 
-def week_slides(views, images, size='ig'):
-    """The slides for five recipes' views (services/recipe_v2/view.page) and dish images, in the days' order."""
-    from services.social import _ingredients, buy_key, columns
+def days_of(views, images, labels=WEEK_DAYS):
+    """A day per recipe view (services/recipe_v2/view.page) and dish image, labelled Mon to Fri, or as given."""
+    from services.social import _ingredients
     days = []
-    for day, view, image in zip(WEEK_DAYS, views, images):
+    for day, view, image in zip(labels, views, images):
         tiles, staples = _ingredients(view)
         days.append({'day': day, 'title': view['title'], 'total': view['total'], 'total_min': view['total_min'],
                      'image': image, 'tiles': tiles, 'staples': staples})
-    # One thing to buy is one pantry item, whatever each recipe calls it ("chicken thighs", "boneless, skinless
-    # chicken thighs"); the list shows its shortest name
+    return days
+
+
+def shopping(days, views):
+    """One list for the days' dinners: (what to buy, each with how many dinners it goes into, and the staples). The
+    days' tiles learn which other days use them (also) and whether they are shared. One thing to buy is one pantry
+    item, whatever each recipe calls it ("chicken thighs", "boneless, skinless chicken thighs"); the list shows its
+    shortest name."""
+    from services.social import buy_key
     used = Counter(k for d in days for k in {t['key'] for t in d['tiles']})
     shop = {}
     for d in days:
@@ -127,12 +141,20 @@ def week_slides(views, images, size='ig'):
         for s in (s for g in view['shop_groups'] if g['key'] == 'staples' for s in g['items']):
             if buy_key(s) not in staples or len(s['name']) < len(staples[buy_key(s)]):
                 staples[buy_key(s)] = s['name']
-    staples = sorted(set(staples.values()))
+    return shop, sorted(set(staples.values()))
+
+
+def week_slides(views, images, size='ig', eyebrow=None, title=None, cta=None):
+    """The slides for five recipes' views (services/recipe_v2/view.page) and dish images, in the days' order. A
+    series (services/social_series.py) gives the cover its own eyebrow and title and the last slide a CTA."""
+    from services.social import columns, end_slide
+    days = days_of(views, images)
+    shop, staples = shopping(days, views)
     lines = sum(len(d['tiles']) for d in days)
     times = [d['total_min'] for d in days]
     return [
         {'kind': 'week_cover', 'count': len(shop), 'days': days, 'lines': lines,
-         'fastest': min(times), 'slowest': max(times)},
+         'fastest': min(times), 'slowest': max(times), 'eyebrow': eyebrow, 'title': title},
         {'kind': 'shop', 'title': 'The shopping list', 'tiles': shop, 'staples': staples,
          'cols': columns(len(shop), size)},
         {'kind': 'week', 'title': 'The week', 'days': days},
@@ -141,5 +163,5 @@ def week_slides(views, images, size='ig'):
            'cols': max(5, columns(len(d['tiles']), size,
                                   room=DAY_ROOM_MANY if len(d['tiles']) > DAY_MANY else DAY_ROOM))}
           for d in days),
-        {'kind': 'end', 'line': 'All five recipes, step by step, with timers'},
+        end_slide('All five recipes, step by step, with timers', cta),
     ]
