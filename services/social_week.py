@@ -110,11 +110,11 @@ def pick(c, k=len(WEEK_DAYS)):
 
 def days_of(views, images, labels=WEEK_DAYS):
     """A day per recipe view (services/recipe_v2/view.page) and dish image, labelled Mon to Fri, or as given."""
-    from services.social import _ingredients
+    from services.social import _ingredients, clock
     days = []
     for day, view, image in zip(labels, views, images):
         tiles, staples = _ingredients(view)
-        days.append({'day': day, 'title': view['title'], 'total': view['total'], 'total_min': view['total_min'],
+        days.append({'day': day, 'title': view['title'], 'total': clock(view['total_min']), 'total_min': view['total_min'],
                      'image': image, 'tiles': tiles, 'staples': staples})
     return days
 
@@ -147,7 +147,7 @@ def shopping(days, views):
 def week_slides(views, images, size='ig', eyebrow=None, title=None, cta=None):
     """The slides for five recipes' views (services/recipe_v2/view.page) and dish images, in the days' order. A
     series (services/social_series.py) gives the cover its own eyebrow and title and the last slide a CTA."""
-    from services.social import columns, end_slide
+    from services.social import columns, end_slide, shop_slides
     days = days_of(views, images)
     shop, staples = shopping(days, views)
     lines = sum(len(d['tiles']) for d in days)
@@ -155,8 +155,7 @@ def week_slides(views, images, size='ig', eyebrow=None, title=None, cta=None):
     return [
         {'kind': 'week_cover', 'count': len(shop), 'days': days, 'lines': lines,
          'fastest': min(times), 'slowest': max(times), 'eyebrow': eyebrow, 'title': title},
-        {'kind': 'shop', 'title': 'The shopping list', 'tiles': shop, 'staples': staples,
-         'cols': columns(len(shop), size)},
+        *shop_slides(shop, staples, size),
         {'kind': 'week', 'title': 'The week', 'days': days},
         # A day's tiles say which other days use them too, a line more under each; many tiles leave the dish smaller
         *({'kind': 'day', **d, 'many': len(d['tiles']) > DAY_MANY,

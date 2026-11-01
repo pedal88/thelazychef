@@ -15,7 +15,7 @@ import random
 
 from sqlalchemy import func
 
-from database.models import Ingredient, Recipe, SocialPost, db
+from database.models import Ingredient, Recipe, RecipeMealType, SocialPost, db
 from services import social, social_week
 from services.recipe_library import FAMILY, one_per_dish
 from services.recipe_v2.derive import ACCENT, ANIMAL, FISH_NAMES, MEAT_LABELS, OTHER_PROTEINS, VESSELS
@@ -24,6 +24,7 @@ PROTEIN_G = 35      # High-protein dinners: at least this much protein per servi
 WASH_MAX = 2        # Dishes to wash: at most this many vessels (derive.cleanup_factor 1)
 GOT_RECIPES = 3     # Got [ingredient]?: dinners per post
 ONCE_A_WEEK = 7     # days a recipe stays out of a series after a post
+QUICK_MINUTES = 45  # a hook promises a time only up to this ("Not an hour", "Dinner in 25 minutes")
 NOT_AN_INGREDIENT = ('Vegetarian', 'Other')  # protein labels Got [ingredient]? cannot ask for
 
 SERIES = {
@@ -31,7 +32,7 @@ SERIES = {
                  'hashtags': '#airfryer #airfryerrecipes #easydinner #dinnerideas #weeknightdinner',
                  'hooks': {'lazy': [('Air fryer #{n}: {active} min of work', ('n', 'active')),
                                     ('{active} min of work. Then the air fryer.', ('active',)),
-                                    ('You: {active} min. Air fryer: {idle} min.', ('active', 'idle'))]}},
+                                    ('You: {active} min. Air fryer: {idle} min.', ('active', 'idle', 'restful', 'machine'))]}},
     'got': {'name': 'Got {ingredient}?', 'noun': 'dinner idea', 'count': GOT_RECIPES, 'hook': 'search', 'cta': 'save',
             'hashtags': '#dinnerideas #whatsfordinner #easyrecipes #mealprep #{tag}'},
     'protein': {'name': 'High-protein dinners', 'noun': 'high-protein dinner', 'count': 1, 'hook': 'number',
@@ -63,20 +64,20 @@ HOOKS = {
                ('{dishes} dinners. {count} things to buy.', ('many', 'count')),
                ('{total} minutes, {count} things, dinner.', ('total', 'count'))],
     'lazy': [("{active} minutes of work. That's it.", ('active',)),
-             ('You: {active} min. {doer_cap}: {idle} min.', ('active', 'idle')),
+             ('You: {active} min. {doer_cap}: {idle} min.', ('active', 'idle', 'restful')),
              ('You do {active} minutes. Dinner does the rest.', ('active',))],
     'search': [('Got {ingredient}? {dishes} dinners.', ('ingredient', 'many')),
                ('{ingredient_cap} for dinner? {dishes} ideas.', ('ingredient', 'many')),
                ('What to make with {ingredient}: {dishes} dinners', ('ingredient', 'many')),
-               ('Got {ingredient}? Dinner in {total} minutes.', ('ingredient', 'total'))],
+               ('Got {ingredient}? Dinner in {fastest} minutes.', ('ingredient', 'quick'))],
     'guess': [('Guess the dinner from {symbols} symbols', ('symbols',)),
               ('Can you guess the dinner?', ()),
               ('{symbols} symbols. One dinner. Guess it.', ('symbols',))],
     # Used sparingly; each is true only under its condition (few, quick, one_two in facts())
     'contrast': [('Not 30 ingredients. Just {count}.', ('few',)),
-                 ('Not an hour. {total} minutes.', ('quick',)),
+                 ('Not an hour. {total} minutes.', ('quick', 'total')),
                  ('Not a sink full. {vessels} dishes to wash.', ('one_two',)),
-                 ('No takeaway. {total} minutes, {count} things.', ('quick', 'count'))],
+                 ('No takeaway. {total} minutes, {count} things.', ('quick', 'total', 'count'))],
 }
 
 # The CTA groups and what they ask; "ask" has a question for one dish and one for several, "site" carries the
@@ -139,18 +140,23 @@ def facts(posts, n=None, count=None, ingredient=None, cuisine=None):
     for several dinners). Every value is the post's own number."""
     v = posts[0]['view']
     tiles, _ = social._ingredients(v)
-    total = max(p['view']['total_min'] for p in posts)
-    active = min(max(p['view']['active_min'] for p in posts), total)
+    many = len(posts) > 1
+    # One dinner has a time; several have only the fastest of them, so no hook sums or picks the slowest. The
+    # hands-off minutes and who does them are the time bar's and the air fryer slide's (social.hands_off), so the
+    # viewer meets one number; "you against the air fryer" is said only when the air fryer does at least as much
+    total, active = (None, None) if many else (v['total_min'], min(v['active_min'], v['total_min']))
+    idle, doer = social.hands_off(v, posts[0]['heat_source']) if not many else (None, social.IDLE)
+    fastest = min(p['view']['total_min'] for p in posts)
     vessels = len([e for e in v['equipment'] if e['id'] in VESSELS])
     nutrition = v['nutrition'] or {}
-    f = {'n': n, 'dishes': len(posts), 'many': len(posts) > 1, 'count': len(tiles) if count is None else count,
-         'symbols': len(tiles), 'total': total, 'active': active, 'idle': total - active,
-         'doer': social.IDLE_BY.get(posts[0]['heat_source'], social.IDLE), 'vessels': vessels,
-         'doer_cap': social.IDLE_BY.get(posts[0]['heat_source'], social.IDLE).capitalize(),
+    f = {'n': n, 'dishes': len(posts), 'many': many, 'count': len(tiles) if count is None else count,
+         'symbols': len(tiles), 'total': total, 'active': active, 'idle': idle, 'fastest': fastest, 'doer': doer,
+         'doer_cap': doer.capitalize(), 'restful': bool(idle) and idle >= (active or 0), 'machine': doer != social.IDLE,
+         'vessels': vessels,
          'protein': nutrition.get('protein'), 'kcal': nutrition.get('kcal'), 'ingredient': ingredient,
          'ingredient_cap': ingredient[:1].upper() + ingredient[1:] if ingredient else None, 'cuisine': cuisine,
          'title': v['title']}
-    f.update(few=f['count'] <= 15, quick=f['total'] <= 45, one_two=vessels <= WASH_MAX)
+    f.update(few=f['count'] <= 15, quick=fastest <= QUICK_MINUTES, one_two=1 <= vessels <= WASH_MAX)
     return f
 
 
@@ -222,8 +228,7 @@ def slides(slug, posts, size, n, hook_group=None, cta_group=None, code=None):
                         'note': f"Plus the {shared['name']}." if len(rest) < len(d['tiles']) else None,
                         'cols': max(5, social.columns(len(rest), size, room=social_week.DAY_ROOM_MANY
                                                       if len(rest) > social_week.DAY_MANY else social_week.DAY_ROOM))})
-        out.append({'kind': 'shop', 'title': f'One list for all {len(posts)}', 'tiles': shop, 'staples': staples,
-                    'cols': social.columns(len(shop), size)})
+        out += social.shop_slides(shop, staples, size, f'One list for all {len(posts)}')
         out.append(social.end_slide('', call))
         return out, f, group, text, call
 
@@ -236,9 +241,9 @@ def slides(slug, posts, size, n, hook_group=None, cta_group=None, code=None):
         group, text = hook_for(hook_group, f, sd, slug)
         call = cta(cta_group, f, size, address, sd, series['noun']) or cta(series['cta'], f, size, address, sd, series['noun'])
         week = social_week.week_slides(views, images, size, eyebrow=label, title=text, cta=call)
-        by_kind = {s['kind']: s for s in week}
         days = [s for s in week if s['kind'] == 'day']
-        return [by_kind['week_cover'], *days, by_kind['shop'], by_kind['end']], f, group, text, call
+        shops = [s for s in week if s['kind'] == 'shop']
+        return [week[0], *days, *shops, week[-1]], f, group, text, call
 
     f = facts(posts, n)
     group, text = hook_for(hook_group, f, sd, slug)
@@ -249,12 +254,14 @@ def slides(slug, posts, size, n, hook_group=None, cta_group=None, code=None):
         return out, f, group, text, call
     cover = {'kind': 'cover', 'eyebrow': label, 'title': text, 'name': v['title'], 'image': r['image'],
              'tiles': tiles, 'total': v['total'], 'count': len(tiles), 'parts': v['parts']}
+    # The shopping list in two is the ingredient symbols with amounts, so no symbols slide beside it: the steps with
+    # timers take that place
     if slug == 'airfryer':
-        out = [cover, social.airfryer_slide(v, r['eq']), ingredients, delta_or_bar,
+        out = [cover, social.airfryer_slide(v, r['eq']), delta_or_bar, social.timers_slide(v),
                social.shop_split_slide(v, size), social.end_slide('', call)]
     elif slug == 'protein':
-        out = [cover, social.numbers_slide(v, 'Per serving'), ingredients, social.timebar_slide(v, r['heat_source']),
-               social.shop_split_slide(v, size), social.end_slide('', call)]
+        out = [cover, social.numbers_slide(v, 'Per serving'), social.timebar_slide(v, r['heat_source']),
+               social.timers_slide(v), social.shop_split_slide(v, size), social.end_slide('', call)]
     else:  # dishes
         out = [cover, social.wash_slide(v, r['eq']), ingredients, delta_or_bar, social.timers_slide(v),
                social.end_slide('', call)]
@@ -312,11 +319,15 @@ def next_n(slug):
 
 
 def candidates(slug):
-    """The recipes a series may draw from: approved, with a dish image, not baby food, one per dish, within the
-    series' filter. {id: {'protein', 'cuisine', 'kcal', 'buy'}}."""
+    """The recipes a series may draw from: approved, with a dish image, a dinner (the meal type, as the week takes
+    them: social_week.WEEK_MEAL) and not baby food, one per dish, within the series' filter.
+    {id: {'protein', 'cuisine', 'kcal', 'buy'}}."""
     q = db.select(Recipe.id, FAMILY, Recipe.base_recipe_id).where(
         Recipe.status == 'approved', Recipe.schema_version == 2, Recipe.image_filename.isnot(None),
-        Recipe.age_from_months.is_(None)).order_by(Recipe.id)
+        Recipe.age_from_months.is_(None),
+        Recipe.id.in_(db.select(RecipeMealType.recipe_id).where(RecipeMealType.meal_type == social_week.WEEK_MEAL)),
+        Recipe.id.not_in(db.select(RecipeMealType.recipe_id).where(RecipeMealType.meal_type == social_week.NOT_FOR_WEEK)),
+    ).order_by(Recipe.id)
     if slug == 'airfryer':
         q = q.where(Recipe.heat_source == 'airfryer')
     elif slug == 'protein':

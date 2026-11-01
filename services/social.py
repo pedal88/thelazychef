@@ -20,7 +20,7 @@ from the post is counted (services/funnel.py).
 from database.models import Ingredient, db
 from services.measures import temp
 from services.recipe_v2 import groups
-from services.recipe_v2.derive import HEAT_LABELS, VESSELS
+from services.recipe_v2.derive import HEAT_LABELS, HEAT_SOURCES, VESSELS
 
 SIZES = {'ig': (1080, 1350), 'tt': (1080, 1920)}
 FORMATS = {'map': 'Dinner as a subway map', 'grid': 'Everything in a dish'}
@@ -64,10 +64,36 @@ DELTA_DEPTH = 2
 DELTA_LEAVES = 2
 # The steps with timers: at most this many on the slide, the rest "and N more"
 TIMER_STEPS = 6
+# A shopping list for several dinners goes over as many slides as it takes to keep SHOP_PER_SLIDE things or fewer on
+# each, split evenly, so a week of 50 things is readable on a phone
+SHOP_PER_SLIDE = 24
 # What does the hands-off minutes while the cook does nothing, by the recipe's heat source (derive.HEAT_SOURCES)
 IDLE_BY = {'airfryer': 'the air fryer', 'oven': 'the oven', 'pot': 'the pot', 'pan': 'the pan', 'grill': 'the grill',
            'slow_cooker': 'the slow cooker', 'microwave': 'the microwave', 'sous_vide': 'the water bath'}
 IDLE = 'hands off'
+
+
+def clock(minutes):
+    """A time on a slide: "45 min", and from two hours "2 h 37 min" (the recipe page's view.duration says "2.6 h",
+    which reads badly beside "105 min")."""
+    if minutes < 120:
+        return f'{minutes} min'
+    hours, rest = divmod(minutes, 60)
+    return f'{hours} h {rest} min' if rest else f'{hours} h'
+
+
+def shop_slides(tiles, staples, size, title='The shopping list'):
+    """The shopping list for several dinners (×3 = in three of them), over more slides than one when it is long;
+    the staples on the last."""
+    pages = max(1, -(-len(tiles) // SHOP_PER_SLIDE))
+    base, extra = divmod(len(tiles), pages)
+    out, at = [], 0
+    for i in range(pages):
+        page = tiles[at:at + base + (1 if i < extra else 0)]
+        at += len(page)
+        out.append({'kind': 'shop', 'title': title if pages == 1 else f'{title}, {i + 1} of {pages}', 'tiles': page,
+                    'staples': staples if i == pages - 1 else [], 'cols': columns(len(page), size)})
+    return out
 
 
 def address(size, code=None):
@@ -117,17 +143,34 @@ def delta_slide(view):
     if not delta_fits(d):
         return None
     flows = {a for a, b in d['edges']}
-    return {'kind': 'delta', 'title': 'The whole dish', 'total': view['total'], 'cols': d['leaves'],
+    return {'kind': 'delta', 'title': 'The whole dish', 'total': clock(view['total_min']), 'cols': d['leaves'],
             'rows': d['max_depth'] + 1,
             'cells': [{**n, 'row': d['max_depth'] - n['depth'] + 1, 'col': (n['span'][0] + 1, n['span'][1] + 1),
                        'flows': n['id'] in flows} for n in d['nodes']]}
 
 
-def timebar_slide(view, heat_source=None):
-    """Active against hands-off time: "9 min you, 41 min the oven"."""
+def machine_minutes(view, heat_source):
+    """The minutes the heat source cooks on its own: the standing time of the steps in it (derive.HEAT_SOURCES).
+    0 when the recipe has no such step or none stands."""
+    ids = set(HEAT_SOURCES.get(heat_source, ()))
+    return sum(s.get('passive_min') or 0 for s in view['steps'] if ids & set(s['equipment_ids']))
+
+
+def hands_off(view, heat_source=None):
+    """The time the cook is not working, and who does it: (minutes, 'the air fryer'). One definition for the hook,
+    the time bar and the air fryer slide: the heat source's own minutes (machine_minutes) when it has any, else the
+    whole of the time from start to table that is not active, 'hands off'."""
     total, active = view['total_min'], min(view['active_min'], view['total_min'])
-    idle = total - active
-    doer = IDLE_BY.get(heat_source, IDLE)
+    minutes = machine_minutes(view, heat_source)
+    if minutes:
+        return minutes, IDLE_BY.get(heat_source, IDLE)
+    return total - active, IDLE
+
+
+def timebar_slide(view, heat_source=None):
+    """You against the kitchen: "9 min you, 41 min the oven" (hands_off)."""
+    total, active = view['total_min'], min(view['active_min'], view['total_min'])
+    idle, doer = hands_off(view, heat_source)
     return {'kind': 'timebar', 'title': f'{total} minutes. {active} of them yours.', 'active': active, 'idle': idle,
             'total': total, 'doer': doer, 'you': f'{active} min you', 'other': f'{idle} min {doer}'}
 
@@ -137,7 +180,7 @@ def timers_slide(view):
     steps = [{'no': s['n'], 'short': s['short'], 'duration': s['duration'], 'phase': s['phase'],
               'timer': f"{s['passive_min']} min" if s.get('passive_min') else None} for s in view['steps']]
     shown = steps if len(steps) <= TIMER_STEPS + 1 else steps[:TIMER_STEPS]
-    return {'kind': 'timers', 'title': f'{len(steps)} steps, {view["total"]}', 'steps': shown,
+    return {'kind': 'timers', 'title': f'{len(steps)} steps, {clock(view["total_min"])}', 'steps': shown,
             'more': len(steps) - len(shown)}
 
 
@@ -162,10 +205,11 @@ def wash_slide(view, images):
 
 
 def airfryer_slide(view, images):
-    """The air fryer's temperature and time, from the steps in it (else the heated steps), with its image."""
+    """The air fryer's temperature and its minutes (hands_off: the same number the hook and the time bar give), with
+    its image. A recipe with no step standing in the air fryer shows the minutes of its heated steps instead."""
     steps = [s for s in view['steps'] if 'airfryer' in s['equipment_ids']] or [s for s in view['steps'] if s['heat']]
     temps = [s['temp_c'] for s in steps if s.get('temp_c')]
-    minutes = sum(s['minutes'] for s in steps)
+    minutes = machine_minutes(view, 'airfryer') or sum(s['minutes'] for s in steps)
     return {'kind': 'airfryer', 'title': 'In the air fryer', 'name': HEAT_LABELS['airfryer'],
             'temp': temp(max(temps), view['units']) if temps else None, 'minutes': minutes,
             'img': images.get('airfryer')}
@@ -225,7 +269,7 @@ def recipe_slides(view, fmt, dish_image, size='ig', hook=None, cta=None):
     hook is the words on the first slide instead of the dish's name (the grid's question), cta the last slide's
     {'group', 'text'} (services/social_series.py); without them the post is as it always was."""
     tiles, staples = _ingredients(view)
-    facts = {'total': view['total'], 'count': len(tiles), 'parts': view['parts']}
+    facts = {'total': clock(view['total_min']), 'count': len(tiles), 'parts': view['parts']}
     cover = {'kind': 'cover', 'eyebrow': FORMATS[fmt], 'title': view['title'], 'image': dish_image, 'tiles': tiles,
              **facts}
     if hook:
@@ -242,7 +286,7 @@ def recipe_slides(view, fmt, dish_image, size='ig', hook=None, cta=None):
         ]
     slides = [cover]
     if view['metro_map']:
-        slides.append({**map_slide(view['metro_map'], size), 'title': 'The map', 'total': view['total']})
+        slides.append({**map_slide(view['metro_map'], size), 'title': 'The map', 'total': clock(view['total_min'])})
     slides.append({'kind': 'ingredients', 'title': 'What you need', 'tiles': tiles, 'staples': staples,
                    'cols': columns(len(tiles), size)})
     steps = [{'no': i + 1, 'short': s['short'], 'duration': s['duration'], 'phase': s['phase']}
@@ -250,7 +294,7 @@ def recipe_slides(view, fmt, dish_image, size='ig', hook=None, cta=None):
     if steps:
         # One step more than fits is shown rather than "and 1 more"
         shown = steps if len(steps) <= STEPS_PER_SLIDE[size] + 1 else steps[:STEPS_PER_SLIDE[size]]
-        slides.append({'kind': 'steps', 'title': f'{len(steps)} steps, {view["total"]}', 'steps': shown,
+        slides.append({'kind': 'steps', 'title': f'{len(steps)} steps, {clock(view["total_min"])}', 'steps': shown,
                        'more': len(steps) - len(shown)})
     slides.append(end_slide('Every step in full, with timers, bowls and the map', cta))
     return slides

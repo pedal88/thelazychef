@@ -14,14 +14,16 @@ Four run at once; Guess the dinner and the cuisine week come in between, once or
 
 | Series | `?series=` | Filter | Slides |
 |---|---|---|---|
-| Air fryer dinners | `airfryer` | `heat_source` air fryer | the dish and the hook, the air fryer's heat and time, the ingredient symbols, the river delta (small ones) or the time bar, the shopping list in two, follow |
+| Air fryer dinners | `airfryer` | `heat_source` air fryer | the dish and the hook, the air fryer's heat and time, the river delta (small ones) or the time bar, the steps with timers, the shopping list in two, follow |
 | Got [ingredient]? | `got` | three dinners with the same main protein (`protein_type`) | the ingredient large with the three dishes, each dinner with what it needs beyond the ingredient, one shopping list for all three (×3 = in three dinners), save |
-| High-protein dinners | `protein` | at least 35 g protein per serving; the lighter dishes (fewest kcal) first | the dish and the hook, protein, kcal and minutes as big numbers, the symbols, the time bar, the shopping list in two, follow |
+| High-protein dinners | `protein` | at least 35 g protein per serving; the lighter dishes (fewest kcal) first | the dish and the hook, protein, kcal and minutes as big numbers, the time bar, the steps with timers, the shopping list in two, follow |
 | Dishes to wash: N | `dishes` | at most two vessels to wash (`cleanup_factor` 1) | the dish and the hook, the vessels with their images, the symbols, the river delta (small ones) or the time bar, the steps with timers (at most six), send |
 | Guess the dinner | `guess` | every dish | the `grid` format with the series' name and number: the symbols, the list, the dish, ask |
 | 5 weeknights of [cuisine] | `cuisine` | five dinners of one cuisine, varied as the week is | the five dishes, Monday to Friday one per slide, one shopping list for the week, save |
 
-Every series takes approved recipes with a dish image only, one per dish, no baby food. The first slide carries the
+Every series takes approved recipes with a dish image only, dinners (the meal type, as the week takes them), one
+per dish, no baby food. The shopping list in two is the ingredient symbols with their amounts, so a series with it
+has no symbols slide beside it. The first slide carries the
 series' name and number ("Air fryer dinners #7") and the hook, with the dish named under it; the second slide
 delivers what the hook promised; the shopping list is next to last; the last slide is the CTA.
 
@@ -29,13 +31,23 @@ The slide kinds the series are built from, each from the recipe page's view (`se
 vessels only, `derive.VESSELS`, with the equipment images in the chosen style), `shop_split` (to buy, with amounts,
 and a row of what you probably have), `delta` (the river delta placed on a grid without its script: a column per
 branch, the dish last, arrows straight down), `timers` (the steps with their standing time as the timer, at most
-`TIMER_STEPS`), `numbers` (protein, kcal, minutes), `timebar` ("9 min you, 41 min the oven": the planner's active
-minutes against the rest, named after the heat source) and `airfryer` (the highest temperature and the minutes of the
-steps in it, with its image). The river delta goes on a slide only when it is small: at most two levels above the
+`TIMER_STEPS`), `numbers` (protein, kcal, minutes), `timebar` ("9 min you, 41 min the oven") and `airfryer` (the
+highest temperature and the air fryer's minutes, with its image). The minutes the cook is not working have one
+definition for the hook, the time bar and the air fryer slide (`social.hands_off`): the standing time of the steps
+in the heat source ("the air fryer", "the oven") when there is any, else all the time from start to table that is
+not active, "hands off". The "You: 9 min. Air fryer: 20 min." hook is drawn only when the air fryer does at least as
+much as the cook. The river delta goes on a slide only when it is small: at most two levels above the
 dish (`max_depth` ≤ `DELTA_DEPTH`) and two branches (`leaves` ≤ `DELTA_LEAVES`), 11 of the 59 public recipes on
 31.10.2026; otherwise the time bar takes its place. Look at a rendered delta slide on a phone before it goes out.
 
-**Hooks** (`?hook=<group>`): the words on the first slide, at most eight words, every number the post's own. The
+A list for several dinners (the week, Got, the cuisine week) goes over as many slides as it takes to keep
+`SHOP_PER_SLIDE` things or fewer on each ("The shopping list, 1 of 2"), the staples on the last. Times on the slides
+are `social.clock`: minutes up to two hours, then "2 h 37 min" (the recipe page's "2.6 h" reads badly beside "105
+min"; the page is unchanged).
+
+**Hooks** (`?hook=<group>`): the words on the first slide, at most eight words, every number the post's own. A post
+of several dinners has no single time, so its hooks say none, except "Dinner in 25 minutes" for the fastest and
+only when that is within `QUICK_MINUTES`. The
 groups are `number` ("12 things to buy. 40 minutes."), `lazy` ("9 minutes of work. That's it."), `search` ("Got
 chicken thighs? 3 dinners."), `guess` and `contrast` ("Not an hour. 25 minutes.", only when true). Each group has
 several phrasings; the post draws one with a seed from the series, number and recipes, so the same post renders

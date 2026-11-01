@@ -112,7 +112,12 @@ class WeekPostTests(unittest.TestCase):
         count = int(response.headers['X-Slides'])
         kinds = [self.client.get(f'/social/week?slide={n}').get_data(as_text=True)
                  .split(' kind-', 1)[1].split('"', 1)[0] for n in range(1, count + 1)]
-        self.assertEqual(kinds, ['week_cover', 'shop', 'week', 'day', 'day', 'day', 'day', 'day', 'end'])
+        # The five fixtures need 52 things to buy: the list goes over three slides (social.SHOP_PER_SLIDE)
+        self.assertEqual(kinds, ['week_cover', 'shop', 'shop', 'shop', 'week', 'day', 'day', 'day', 'day', 'day', 'end'])
+        third = self.client.get('/social/week?slide=4').get_data(as_text=True)
+        self.assertIn('The shopping list, 3 of 3', third)
+        self.assertIn('Plus what you probably have', third)
+        self.assertNotIn('Plus what you probably have', self.client.get('/social/week?slide=2').get_data(as_text=True))
 
     def test_the_shopping_list_says_how_many_dinners_use_a_thing_and_the_days_say_which(self):
         views = [{'title': f'Dish {i}', 'total': '20 min', 'total_min': 20 + i, 'shop_groups': [
@@ -145,7 +150,7 @@ class WeekPostTests(unittest.TestCase):
 
     def test_five_chosen_dinners_in_their_order_and_the_caption_names_them(self):
         order = ','.join(str(i) for i in reversed(self.ids))
-        first = self.client.get(f'/social/week?ids={order}&slide=4').get_data(as_text=True)
+        first = self.client.get(f'/social/week?ids={order}&slide=6').get_data(as_text=True)  # Monday, after the three list slides
         self.assertIn(db.session.get(Recipe, self.ids[-1]).title, first)
         caption = self.client.get(f'/social/week?ids={order}&caption=1&size=tt&code=4').get_data(as_text=True)
         self.assertIn('thelazychef.app/tiktok/4', caption)
