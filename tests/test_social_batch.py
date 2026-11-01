@@ -194,6 +194,57 @@ class DayOfPostsTests(unittest.TestCase):
         self.client.post(url, data={f'{first.id}-views': '1500'})
         self.assertEqual([(s.views, s.profile_visits) for s in first.stats], [(1500, None)])
 
+    # Per format and hook
+
+    def test_series_hooks_and_ctas_are_summed_per_platform_over_the_window(self):
+        today = datetime.date(2026, 11, 10)
+        posts = (  # (platform, code, series or format, hook group, cta group, days ago, views, saves, visits, status)
+            ('tiktok', '1', 'airfryer', 'lazy', 'follow', 1, 1000, 10, 2, 'posted'),
+            ('tiktok', '2', 'airfryer', 'number', 'follow', 3, 3000, 20, 1, 'posted'),
+            ('tiktok', '3', 'airfryer', 'lazy', 'save', 2, None, None, 0, 'posted'),
+            ('tiktok', '4', 'grid', None, None, 6, 500, 0, 0, 'posted'),
+            ('tiktok', '5', 'grid', None, None, 20, 900, 9, 9, 'posted'),
+            ('instagram', '1', 'airfryer', 'lazy', 'bio', 1, 200, 2, 4, 'posted'),
+            ('tiktok', '6', 'airfryer', 'lazy', 'follow', 0, None, None, 0, 'draft'))
+        rows = []
+        for platform, code, kind, hook, cta, ago, views, saves, visits, status in posts:
+            series = kind if kind in social_series.SERIES else None
+            post = SocialPost(platform=platform, code=code, format='series' if series else kind, series=series,
+                              hook_group=hook, cta_group=cta, title='x', status=status,
+                              posted_on=today - datetime.timedelta(days=ago))
+            latest = mock.Mock(views=views, saves=saves) if views is not None else None
+            rows.append({'post': post, 'latest': latest, 'visits': visits})
+        week = funnel.summary(rows, today, 7)
+
+        def table(groups):
+            return [(g['platform'], g['label'], g['posts'], g['median_views'], g['saves_1000'], g['visits_1000'])
+                    for g in groups]
+        self.assertEqual(table(week['series']), [('tiktok', 'airfryer', 3, 2000, 7.5, 0.8),
+                                                 ('tiktok', 'grid', 1, 500, 0.0, 0.0),
+                                                 ('instagram', 'airfryer', 1, 200, 10.0, 20.0)])
+        self.assertEqual(table(week['hooks']), [('tiktok', 'lazy', 2, 1000, 10.0, 2.0),
+                                                ('tiktok', 'number', 1, 3000, 6.7, 0.3),
+                                                ('instagram', 'lazy', 1, 200, 10.0, 20.0)])
+        self.assertEqual([(g['platform'], g['label'], g['posts']) for g in week['ctas']],
+                         [('tiktok', 'follow', 2), ('tiktok', 'save', 1), ('instagram', 'bio', 1)])
+        month = funnel.summary(rows, today, 28)
+        self.assertEqual([(g['label'], g['posts']) for g in month['series'] if g['platform'] == 'tiktok'],
+                         [('grid', 2), ('airfryer', 3)])
+
+    def test_the_funnel_page_shows_series_hooks_and_ctas(self):
+        self.drafts({**airfryer(7, [self.ids[2]]), 'cta_group': 'follow'}, day=datetime.date.today())
+        self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
+        html = self.client.get('/admin/funnel').get_data(as_text=True)
+        self.assertIn('Per series, hook and CTA', html)
+        self.assertIn('No posts went up in the last 7 days.', html)
+        for post in self.posts():
+            self.client.post(f'/admin/funnel/posts/{post.id}/posted')
+        html = self.client.get('/admin/funnel').get_data(as_text=True)
+        for kind, label in (('series', 'airfryer'), ('hook', 'lazy'), ('cta', 'follow')):
+            self.assertIn(f'<span class="text-xs text-slate-500">{kind}</span> <span class="font-mono">{label}</span>',
+                          html)
+        self.assertNotIn('No posts went up in the last 7 days.', html)
+
 
 class PlanTests(unittest.TestCase):
     def test_a_day_is_the_four_series_and_a_fifth_by_weekday(self):

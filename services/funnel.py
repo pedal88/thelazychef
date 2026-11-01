@@ -15,6 +15,7 @@ its code brought, so a post can be judged by how many came, not only by how many
 """
 import datetime
 import re
+import statistics
 
 from flask import session
 from sqlalchemy import case, func
@@ -56,6 +57,8 @@ VARIANT_CHOICES = {'series': list(SERIES), 'hook_group': list(HOOKS), 'cta_group
 VARIANT_TEXT = {'round': 40, 'recipe_ids': 200, 'views': 300, 'look': 10, 'slot': 20}
 VARIANT_NUMBERS = ('series_n', 'slides')
 POST_STATUSES = [('draft', 'Draft'), ('posted', 'Posted')]
+# The days the Funnel page sums the posts over, per series, hook group and CTA group
+SUMMARY_WINDOWS = (7, 28)
 
 # A day's posts planned by scripts/social_batch.py: the formats it renders besides the series, and their titles
 RENDERED_FORMATS = ['map', 'grid', 'pantry', 'week']
@@ -178,6 +181,7 @@ def report(weeks=12, today=None):
     for ref, row in by_ref.items():
         refs.setdefault(ref, {'ref': ref, 'visits': 0, 'visits_28': 0, 'signups': 0, 'made': 0}).update(row)
 
+    posts = post_log(refs)
     return {
         'weeks': [{'start': start, 'signups': by_week[start], 'total': sum(by_week[start].values())}
                   for start in starts],
@@ -186,7 +190,9 @@ def report(weeks=12, today=None):
                    'made': len(made_ids & {u.id for u in users}),
                    'untracked': sum(1 for u in users if not u.created_at)},
         'refs': sorted(refs.values(), key=lambda r: (-r['visits'], -r['signups'], r['ref'])),
-        'posts': post_log(refs),
+        'posts': posts,
+        'summary': {days: summary(posts, today, days) for days in SUMMARY_WINDOWS},
+        'platform_labels': dict(PLATFORMS),
         'next_code': next_code(),
     }
 
@@ -260,6 +266,38 @@ def post_log(refs):
                      'signups': brought.get('signups', 0), 'made': brought.get('made', 0),
                      'per_1000': round(visits * 1000 / views, 1) if views else None})
     return rows
+
+
+def summary(rows, today, days):
+    """What the post log says per series (or format, for a post outside the series), per hook group and per CTA
+    group, over the posts that went up in the last days days (drafts left out), per platform: {'series': [...],
+    'hooks': [...], 'ctas': [...]}, each {'platform', 'label', 'posts', 'median_views', 'saves_1000',
+    'visits_1000'}. Saves and visits per 1000 views are summed over the posts with views, so a post seen by many
+    weighs more than one seen by few. Judge a group on several posts, not one (docs/SOCIAL.md)."""
+    since = today - datetime.timedelta(days=days)
+    rows = [r for r in rows if r['post'].status == 'posted' and since < r['post'].posted_on <= today]
+    order = [key for key, _ in PLATFORMS]
+
+    def group(key_of):
+        groups = {}
+        for row in rows:
+            key = key_of(row['post'])
+            if key:
+                groups.setdefault((row['post'].platform, key), []).append(row)
+        out = []
+        for (platform, label), members in groups.items():
+            seen = [m for m in members if m['latest'] and m['latest'].views]
+            views = sum(m['latest'].views for m in seen)
+            out.append({'platform': platform, 'label': label, 'posts': len(members),
+                        'median_views': round(statistics.median(m['latest'].views for m in seen)) if seen else None,
+                        'saves_1000': round(sum(m['latest'].saves or 0 for m in seen) * 1000 / views, 1)
+                        if views else None,
+                        'visits_1000': round(sum(m['visits'] for m in seen) * 1000 / views, 1) if views else None})
+        return sorted(out, key=lambda g: (order.index(g['platform']) if g['platform'] in order else len(order),
+                                          -(g['visits_1000'] or 0), -g['posts'], g['label']))
+
+    return {'series': group(lambda p: p.series or p.format), 'hooks': group(lambda p: p.hook_group),
+            'ctas': group(lambda p: p.cta_group)}
 
 
 def next_code():
