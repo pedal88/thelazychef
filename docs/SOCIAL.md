@@ -124,9 +124,11 @@ post log's form, filled in with the platform, code, format and recipe, and for a
 hook group and words, CTA group, recipes, views used, look and slide count.
 
 A post's address opens what the post showed: `/tiktok/2` goes to the recipe the post log has for TikTok's code 2, when
-it is approved. A post drawn from several recipes (`week`, `pantry`), a code not in the log and the bios' bare
-`/tiktok` and `/ig` open the home page (`services/funnel.post_recipe`). The code is kept either way, and the visit is
-counted on the page it opens.
+it is approved. A post of several recipes (`week`, Got chicken?, the cuisine week: every one in the log's Recipes,
+`recipe_ids`) opens its own page, `/post/tiktok/4`: the dinners, a day over each for a week, and one shopping list for
+all of them. The pantry post, a code not in the log and the bios' bare `/tiktok` and `/ig` open the home page
+(`services/funnel.post_recipes`). The code is kept either way, and the visit is counted on the page it opens. So log
+every post with its recipes; the home page's "From our posts" row is drawn from them too.
 
 To design slides without production, run the app on a local database (`docs/README_TOP_COMMANDS.md`). The public
 ingredient galaxy (`/api/graph/ingredient-galaxy`) has every ingredient's name, category and symbol, enough for the

@@ -64,7 +64,7 @@ content is made: `docs/CONTENT.md`.
 
 ## Other pages
 
-`landing.html` (Discover), `recipes_list.html`,
+`landing.html` (Discover), `recipes_list.html`, `post.html` (where a post of several dinners lands: the dishes and one shopping list),
 `explore_galaxy.html` / `explore_ingredient_galaxy.html`, `recipe_v2_new.html` / `recipe_v2_batch*.html` (admin:
 making recipes), `admin/` (management pages, still mostly plain Tailwind), `recipe_print.html`, `social/slide.html` (one
 slide of a TikTok or Instagram post, `static/css/social.css`; `docs/SOCIAL.md`).

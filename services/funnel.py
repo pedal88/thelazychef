@@ -186,16 +186,52 @@ def report(weeks=12, today=None):
     }
 
 
-def post_recipe(platform, code):
-    """The recipe a post's short address opens: the one the post log has for that platform and code, when it is
-    approved. None for a post drawn from several recipes (week, pantry), one not in the log, or the bare /tiktok and
-    /ig of the bios: those open the home page."""
+def post_for(platform, code):
+    """The post in the log with this platform and code, or None."""
     code = clean_ref(code)
-    if not code:
-        return None
-    post = db.session.execute(db.select(SocialPost).filter_by(platform=platform, code=code)).scalar()
-    recipe = post and post.recipe_id and db.session.get(Recipe, post.recipe_id)
-    return recipe.id if recipe and recipe.status == 'approved' else None
+    return code and db.session.execute(db.select(SocialPost).filter_by(platform=platform, code=code)).scalar()
+
+
+def _ids_of(post):
+    """The recipes a post was drawn from, in its order: every one in recipe_ids, else its one recipe."""
+    if post.recipe_ids:
+        return [int(i) for i in post.recipe_ids.split(',') if i.isdigit()]
+    return [post.recipe_id] if post.recipe_id else []
+
+
+def post_recipes(post):
+    """The approved recipes a post showed, in its order, each once. A post's short address opens the one recipe, or
+    for several (a week, Got chicken?) the post's own page; with none (the pantry post, a post not in the log) and for
+    the bare /tiktok and /ig of the bios, the home page."""
+    ids = list(dict.fromkeys(_ids_of(post)))
+    approved = set(db.session.execute(
+        db.select(Recipe.id).where(Recipe.id.in_(ids), Recipe.status == 'approved')).scalars()) if ids else set()
+    return [i for i in ids if i in approved]
+
+
+def post_view(post, ids, user=None):
+    """What a post's page (templates/post.html) shows for these recipes (post_recipes): the cards, a day each for a
+    week (Mon to Fri), and one shopping list for all of them, each thing to buy once with how many dinners it goes into
+    (services/social_week.shopping, as on the post's slides)."""
+    from services import social_week
+    from services.recipe_library import cards
+    from services.recipe_v2.view import page
+    recipes = cards(ids, user)
+    views = [page(r) for r in recipes]
+    week = len(recipes) == len(social_week.WEEK_DAYS) and (post.format == 'week' or post.series == 'cuisine')
+    days = social_week.days_of(views, [None] * len(views),
+                               labels=social_week.WEEK_DAYS if week else [v['title'] for v in views])
+    shop, staples = social_week.shopping(days, views)
+    return {'post': post, 'platform': dict(PLATFORMS)[post.platform], 'recipes': recipes,
+            'days': [d['day'] for d in days] if week else None, 'shop': shop, 'staples': staples}
+
+
+def posted_recipes():
+    """Every recipe the posts showed, the newest post first, each once: the home page's "From our posts" row
+    (services/content/blocks.Recipes, source "posts")."""
+    posts = db.session.execute(
+        db.select(SocialPost).order_by(SocialPost.posted_on.desc(), SocialPost.id.desc())).scalars()
+    return list(dict.fromkeys(i for post in posts for i in _ids_of(post)))
 
 
 def post_ref(post):

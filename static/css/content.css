@@ -204,3 +204,28 @@
 .tp:has(.tp-jobs input[value="6"]:checked) .tp-answer[data-for="6"],
 .tp:has(.tp-jobs input[value="7"]:checked) .tp-answer[data-for="7"],
 .tp:has(.tp-jobs input[value="8"]:checked) .tp-answer[data-for="8"] { display: block; }
+
+/* A post's page (templates/post.html): the dinners as cards, a day over each for a week, and one shopping list */
+.pg-post { max-width: 1180px; }
+/* On a phone the dinners are one row to swipe, like the home page's rows, so the shopping list is not five cards down */
+.post-dishes { list-style: none; display: grid; gap: var(--space-4); grid-auto-flow: column; grid-auto-columns: 44%;
+  overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 0 var(--space-6); margin: 0 calc(-1 * var(--space-6));
+  padding: 0 var(--space-6) var(--space-2);
+  scrollbar-width: none; }
+.post-dishes::-webkit-scrollbar { display: none; }
+.post-dishes li { scroll-snap-align: start; }
+@media (min-width: 700px) {
+  .post-dishes { grid-auto-flow: row; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); margin: 0; padding: 0; overflow: visible; }
+}
+.post-dishes li { display: flex; flex-direction: column; gap: var(--space-1); }
+.post-dishes .rcard { flex: 1; }
+.post-day { font: 500 12px/1.3 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--color-muted); }
+.post-shop { list-style: none; margin: 0; padding: 0; columns: 150px 4; column-gap: var(--space-4); }
+.post-shop li { break-inside: avoid; display: flex; align-items: center; gap: var(--space-3); padding: 4px 0; color: var(--color-ink); }
+.post-shop .sym { --s: 36px; flex: none; width: var(--s); height: var(--s); display: flex; align-items: center; justify-content: center; }
+.post-shop .sym img { width: 100%; height: 100%; object-fit: contain; }
+.post-shop .sym-letter { width: 100%; height: 100%; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: var(--color-soft); border: 1px solid var(--color-line); color: var(--color-muted); font: 600 14px/1 var(--font-sans); }
+.post-shop small { display: block; color: var(--color-muted); font-size: 13px; }
+.post-staples { margin: var(--space-4) 0 0; }
+.post-go { margin: 0; }

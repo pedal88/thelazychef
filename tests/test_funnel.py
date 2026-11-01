@@ -84,11 +84,62 @@ class FunnelTests(unittest.TestCase):
             self.assertEqual(session['ref'], 'tiktok-1')
         client.post('/ref/seen')  # counted on the recipe page, as on any other
         self.assertEqual(self.visits(), {('tiktok-1', 1)})
-        # A recipe not approved, a post of several recipes, the same code on the other platform, a post not in the
-        # log and the bio's bare address open the home page
+        # A recipe not approved, a post of no recipe (the pantry, an old week), the same code on the other platform, a
+        # post not in the log and the bio's bare address open the home page
         for path in ('/tiktok/2', '/tiktok/4', '/ig/1', '/tiktok/9', '/tiktok'):
             with self.subTest(path=path):
                 self.assertEqual(app.test_client().get(path).location, '/')
+
+    def v2_recipe(self, name, status='approved'):
+        with open(os.path.join(ROOT, 'data', 'pilot_v2', 'fasit', f'{name}.json'), encoding='utf-8') as f:
+            data = json.load(f)
+        recipe = Recipe(title=data['title'], cuisine='', difficulty='', status=status, schema_version=2,
+                        image_filename=f'{name}.png')
+        db.session.add(recipe)
+        save_v2(recipe, data, {})
+        db.session.flush()
+        refresh(recipe)
+        return recipe
+
+    def test_a_post_of_several_dinners_opens_its_page_with_one_shopping_list(self):
+        names = sorted(f[:-5] for f in os.listdir(os.path.join(ROOT, 'data', 'pilot_v2', 'fasit')) if f.endswith('.json'))
+        recipes = [self.v2_recipe(n) for n in names[:3]]
+        draft = self.v2_recipe(names[3], status='draft')
+        day = datetime.date(2026, 11, 1)
+        ids = ','.join(str(r.id) for r in [*recipes, draft])
+        db.session.add_all([
+            SocialPost(platform='tiktok', code='20', format='series', series='got', recipe_ids=ids,
+                       recipe_id=recipes[0].id, title='Got eggs?', posted_on=day),
+            SocialPost(platform='tiktok', code='21', format='series', series='got',
+                       recipe_ids=f'{recipes[0].id},{draft.id}', title='Got eggs?', posted_on=day)])
+        db.session.commit()
+        client = app.test_client()
+        self.assertEqual(client.get('/tiktok/20').location, '/post/tiktok/20')
+        with client.session_transaction() as session:
+            self.assertEqual(session['ref'], 'tiktok-20')
+        html = client.get('/post/tiktok/20').get_data(as_text=True)
+        self.assertIn('3 dinners, one shop', html)
+        self.assertIn('From our TikTok', html)
+        for r in recipes:
+            self.assertIn(f'/recipe/{r.id}"', html)
+        self.assertNotIn(f'/recipe/{draft.id}"', html)  # a draft is never shown
+        self.assertIn('The shopping list', html)
+        # Only one approved recipe left: it opens that recipe, and the post has no page
+        self.assertEqual(client.get('/tiktok/21').location, f'/recipe/{recipes[0].id}')
+        self.assertEqual(client.get('/post/tiktok/21').status_code, 404)
+        self.assertEqual(client.get('/post/instagram/20').status_code, 404)
+        self.assertEqual(client.get('/post/x/20').status_code, 404)
+
+    def test_the_recipes_the_posts_showed_newest_post_first(self):
+        old, new = datetime.date(2026, 10, 30), datetime.date(2026, 11, 1)
+        db.session.add_all([
+            SocialPost(platform='tiktok', code='1', format='map', recipe_id=5, title='A', posted_on=old),
+            SocialPost(platform='instagram', code='1', format='map', recipe_id=5, title='A', posted_on=old),
+            SocialPost(platform='tiktok', code='2', format='series', recipe_ids='7,8,5', recipe_id=7, title='B',
+                       posted_on=new),
+            SocialPost(platform='tiktok', code='3', format='pantry', title='C', posted_on=new)])
+        db.session.commit()
+        self.assertEqual(funnel.posted_recipes(), [7, 8, 5])
 
     def test_a_visit_counts_once_when_the_page_asks_not_when_the_address_is_fetched(self):
         self.client.get('/tiktok/3')

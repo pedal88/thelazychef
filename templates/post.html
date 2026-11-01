@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{# A post that showed several dinners (routes/funnel_routes.post_page, services/funnel.post_view): where its short
+   address lands. The dishes, each to its recipe, then one shopping list for all of them, as on the post's slides. #}
+{% import "components/cards.html" as card with context %}
+{% block title %}{{ recipes|length }} dinners, one shop - The Lazy Chef{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/content.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="pg pg-post">
+  <header class="pg-head">
+    <p class="eyebrow">From our {{ platform }}</p>
+    <h1>{{ recipes|length }} dinners, one shop</h1>
+    <p class="pg-sum">Every dish from the post, step by step with timers, and one shopping list for all {{ recipes|length }}.</p>
+  </header>
+
+  <section class="blk" aria-labelledby="post-dishes">
+    <div class="row-h"><h2 id="post-dishes">The dinners</h2></div>
+    <ol class="post-dishes">
+      {% for recipe in recipes %}
+      <li>{% if days %}<span class="post-day">{{ days[loop.index0] }}</span>{% endif %}{{ card.recipe_preview_card(recipe, recipe.id) }}</li>
+      {% endfor %}
+    </ol>
+  </section>
+
+  <section class="blk" aria-labelledby="post-shop">
+    <div class="row-h"><h2 id="post-shop">The shopping list</h2><span class="row-more">{{ shop|length }} things to buy</span></div>
+    <ul class="post-shop">
+      {% for t in shop %}
+      <li><span class="sym">{% if t.img %}<img src="{{ t.img }}" alt="" width="36" height="36" loading="lazy">{% else %}<span class="sym-letter" aria-hidden="true">{{ t.name[:1]|upper }}</span>{% endif %}</span>
+        <span>{{ t.name }}{% if t.times > 1 %}<small>in {{ t.times }} dinners</small>{% endif %}</span></li>
+      {% endfor %}
+    </ul>
+    {% if staples %}<p class="row-text post-staples">You probably have: {{ staples|join(', ') }}.</p>{% endif %}
+  </section>
+
+  <p class="post-go"><a class="lib-go" href="{{ url_for('recipe_detail', recipe_id=recipes[0].id) }}">Start with {{ recipes[0].title }} <span aria-hidden="true">→</span></a></p>
+</div>
+{% endblock %}

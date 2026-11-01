@@ -35,13 +35,27 @@ def ref_seen():
 
 
 # The short addresses on the posts and in the TikTok bio, which has no link: thelazychef.app/tiktok, /ig, and /tiktok/3
-# for one post (the code tiktok-3). They keep the code and open what the post showed: its recipe when the post log has
-# one for the code, else the home page. The visit is counted on the page they open, as anywhere.
+# for one post (the code tiktok-3). They keep the code and open what the post showed: its recipe, the post's page when
+# it showed several, else the home page (funnel.post_recipes). The visit is counted on the page they open, as anywhere.
 def _short_link(channel, code):
     if not current_user.is_authenticated:
         funnel.remember(f'{channel}-{code}' if code else channel, request.user_agent.string)
-    recipe_id = code and funnel.post_recipe(channel, code)
-    return redirect(url_for('recipe_detail', recipe_id=recipe_id) if recipe_id else url_for('content.home'))
+    post = code and funnel.post_for(channel, code)
+    ids = funnel.post_recipes(post) if post else []
+    if len(ids) > 1:
+        return redirect(url_for('funnel.post_page', platform=channel, code=post.code))
+    return redirect(url_for('recipe_detail', recipe_id=ids[0]) if ids else url_for('content.home'))
+
+
+@funnel_bp.route('/post/<platform>/<code>')
+def post_page(platform, code):
+    """A post that showed several dinners (a week, Got chicken?): the dishes, each to its recipe, and one shopping
+    list for all of them, as the post had it. Public; a post of one recipe or none has no page."""
+    post = funnel.post_for(platform, code) if platform in dict(funnel.PLATFORMS) else None
+    ids = funnel.post_recipes(post) if post else []
+    if len(ids) < 2:
+        abort(404)
+    return render_template('post.html', **funnel.post_view(post, ids, current_user if current_user.is_authenticated else None))
 
 
 # The last route listed is registered first and is the address; the shorter alias above it redirects there.
