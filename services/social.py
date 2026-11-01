@@ -20,7 +20,7 @@ from the post is counted (services/funnel.py).
 from database.models import Ingredient, db
 from services.measures import temp
 from services.recipe_v2 import groups
-from services.recipe_v2.derive import HEAT_LABELS, VESSELS
+from services.recipe_v2.derive import HEAT_LABELS, HEAT_SOURCES, VESSELS
 
 SIZES = {'ig': (1080, 1350), 'tt': (1080, 1920)}
 FORMATS = {'map': 'Dinner as a subway map', 'grid': 'Everything in a dish'}
@@ -149,11 +149,28 @@ def delta_slide(view):
                        'flows': n['id'] in flows} for n in d['nodes']]}
 
 
-def timebar_slide(view, heat_source=None):
-    """Active against hands-off time: "9 min you, 41 min the oven"."""
+def machine_minutes(view, heat_source):
+    """The minutes the heat source cooks on its own: the standing time of the steps in it (derive.HEAT_SOURCES).
+    0 when the recipe has no such step or none stands."""
+    ids = set(HEAT_SOURCES.get(heat_source, ()))
+    return sum(s.get('passive_min') or 0 for s in view['steps'] if ids & set(s['equipment_ids']))
+
+
+def hands_off(view, heat_source=None):
+    """The time the cook is not working, and who does it: (minutes, 'the air fryer'). One definition for the hook,
+    the time bar and the air fryer slide: the heat source's own minutes (machine_minutes) when it has any, else the
+    whole of the time from start to table that is not active, 'hands off'."""
     total, active = view['total_min'], min(view['active_min'], view['total_min'])
-    idle = total - active
-    doer = IDLE_BY.get(heat_source, IDLE)
+    minutes = machine_minutes(view, heat_source)
+    if minutes:
+        return minutes, IDLE_BY.get(heat_source, IDLE)
+    return total - active, IDLE
+
+
+def timebar_slide(view, heat_source=None):
+    """You against the kitchen: "9 min you, 41 min the oven" (hands_off)."""
+    total, active = view['total_min'], min(view['active_min'], view['total_min'])
+    idle, doer = hands_off(view, heat_source)
     return {'kind': 'timebar', 'title': f'{total} minutes. {active} of them yours.', 'active': active, 'idle': idle,
             'total': total, 'doer': doer, 'you': f'{active} min you', 'other': f'{idle} min {doer}'}
 
@@ -188,10 +205,11 @@ def wash_slide(view, images):
 
 
 def airfryer_slide(view, images):
-    """The air fryer's temperature and time, from the steps in it (else the heated steps), with its image."""
+    """The air fryer's temperature and its minutes (hands_off: the same number the hook and the time bar give), with
+    its image. A recipe with no step standing in the air fryer shows the minutes of its heated steps instead."""
     steps = [s for s in view['steps'] if 'airfryer' in s['equipment_ids']] or [s for s in view['steps'] if s['heat']]
     temps = [s['temp_c'] for s in steps if s.get('temp_c')]
-    minutes = sum(s['minutes'] for s in steps)
+    minutes = machine_minutes(view, 'airfryer') or sum(s['minutes'] for s in steps)
     return {'kind': 'airfryer', 'title': 'In the air fryer', 'name': HEAT_LABELS['airfryer'],
             'temp': temp(max(temps), view['units']) if temps else None, 'minutes': minutes,
             'img': images.get('airfryer')}
