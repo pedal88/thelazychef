@@ -106,6 +106,23 @@ def log_url(base, size, code, fmt, recipe, **variant):
     return f'{base.rstrip("/")}/admin/funnel/posts/new?{urllib.parse.urlencode({k: v for k, v in query.items() if v})}'
 
 
+def render(base, chrome, folder, fmt, recipe, query, context=None):
+    """Every slide of a post as 01.png, 02.png… and the text's first draft as caption.txt in folder, from the slide
+    pages with query (size, code, look, and a series' fixed recipes, number, hook and CTA); returns (number of
+    slides, caption)."""
+    context = context or tls()
+    count = int(fetch(page_url(base, fmt, recipe, **query, slide=1), context)[0]['X-Slides'])
+    caption = fetch(page_url(base, fmt, recipe, **query, caption=1), context)[1]
+    folder.mkdir(parents=True, exist_ok=True)
+    width, height = SIZES[query['size']]
+    for n in range(1, count + 1):
+        target = folder / f'{n:02d}.png'
+        shoot(chrome, width, height, target, page_url(base, fmt, recipe, **query, slide=n))
+        print(f'{target}')
+    (folder / 'caption.txt').write_text(caption, encoding='utf-8')
+    return count, caption
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('format', nargs='?', choices=['map', 'grid', 'pantry', 'week'],
@@ -149,20 +166,13 @@ def main():
                    'views': headers['X-Views'], 'look': headers['X-Look'], 'slides': count}
         print(f"{args.series} #{headers['X-N']}: recipes {headers['X-Recipes']}, hook {headers['X-Hook']} "
               f"\"{headers['X-Hook-Text']}\", cta {headers['X-Cta']}")
-    caption = fetch(page_url(args.base, fmt, args.recipe, **query, caption=1), context)[1]
 
     name = '-'.join(str(x) for x in (datetime.date.today().isoformat(), args.series or args.format,
                                      args.series and f"n{query['n']}", args.recipe, args.size, args.code,
                                      args.look and f'look-{args.look}')
                     if x is not None)
     folder = args.out / name
-    folder.mkdir(parents=True, exist_ok=True)
-    width, height = SIZES[args.size]
-    for n in range(1, count + 1):
-        target = folder / f'{n:02d}.png'
-        shoot(args.chrome, width, height, target, page_url(args.base, fmt, args.recipe, **query, slide=n))
-        print(f'{target}')
-    (folder / 'caption.txt').write_text(caption, encoding='utf-8')
+    count, caption = render(args.base, args.chrome, folder, fmt, args.recipe, query, context)
     print(f'\n{count} slides and caption.txt in {folder}\n\n{caption}')
     if args.code:
         recipe = args.recipe or (variant.get('recipes') or '').split(',')[0]

@@ -55,6 +55,11 @@ STAT_FIELDS = ['views', 'likes', 'comments', 'saves', 'shares', 'profile_visits'
 VARIANT_CHOICES = {'series': list(SERIES), 'hook_group': list(HOOKS), 'cta_group': list(CTAS)}
 VARIANT_TEXT = {'round': 40, 'recipe_ids': 200, 'views': 300, 'look': 10, 'slot': 20}
 VARIANT_NUMBERS = ('series_n', 'slides')
+POST_STATUSES = [('draft', 'Draft'), ('posted', 'Posted')]
+
+# A day's posts planned by scripts/social_batch.py: the formats it renders besides the series, and their titles
+RENDERED_FORMATS = ['map', 'grid', 'pantry', 'week']
+FORMAT_TITLES = {'pantry': 'The foundation pantry', 'week': 'One shop, five dinners'}
 
 
 def clean_ref(value):
@@ -232,6 +237,96 @@ def next_code():
     return str(max((int(code) for code in used if code.isdigit()), default=0) + 1)
 
 
+def _ids(value):
+    """A list of recipe ids from [1, 2] or None; False when it is something else."""
+    if value is None:
+        return None
+    return value if isinstance(value, list) and value and all(isinstance(i, int) for i in value) else False
+
+
+def _plan_item(item):
+    """A planned post as the fields of its drafts, {platform: CTA group}, or a string saying what is wrong with it.
+    A series post comes with what the site chose for it (scripts/social_batch.py reads it from the slide page's
+    headers): its number, recipes, hook group and words, CTA group per platform, views, look and slides."""
+    fmt = item.get('format')
+    ids = _ids(item.get('ids'))
+    hook = (item.get('hook') or '').strip()[:200] or None
+    hook_group = item.get('hook_group') or None
+    ctas = item.get('cta_group') or {}
+    if isinstance(ctas, str):
+        ctas = {platform: ctas for platform, _ in PLATFORMS}
+    if hook_group is not None and hook_group not in HOOKS:
+        return f'hook_group must be one of {", ".join(HOOKS)}, not {hook_group!r}'
+    if not isinstance(ctas, dict) or any(c not in CTAS for c in ctas.values() if c):
+        return f'cta_group must be one of {", ".join(CTAS)}, or one per platform'
+    fields = {'hook': hook, 'hook_group': hook_group, 'recipe_id': None, 'recipe_ids': None, 'series': None,
+              'series_n': None}
+    if fmt == 'series':
+        slug, n = item.get('series'), item.get('series_n')
+        if slug not in SERIES:
+            return f'series must be one of {", ".join(SERIES)}, not {slug!r}'
+        if not isinstance(n, int) or n < 1:
+            return 'a series post needs its number (series_n)'
+        if not ids:
+            return 'a series post needs its recipes (ids)'
+        fields.update(series=slug, series_n=n, title=f'{slug} #{n}' + (f': {hook}' if hook else ''))
+    elif fmt in ('map', 'grid'):
+        recipe_id = item.get('recipe_id')
+        recipe = db.session.get(Recipe, recipe_id) if isinstance(recipe_id, int) else None
+        if recipe is None or recipe.status != 'approved' or recipe.schema_version != 2:
+            return f'{fmt} needs an approved recipe, and {recipe_id!r} is not one'
+        ids, fields['title'] = [recipe.id], recipe.title
+    elif fmt in RENDERED_FORMATS:
+        if ids is not None and (fmt != 'week' or len(ids or []) != 5):
+            return 'ids are the five recipe ids of a week post'
+        fields['title'] = FORMAT_TITLES[fmt]
+    else:
+        return f'format must be series or one of {", ".join(RENDERED_FORMATS)}, not {fmt!r}'
+    if ids is False:
+        return 'ids are recipe ids: [325, 326, 329]'
+    if ids:
+        fields.update(recipe_id=ids[0], recipe_ids=','.join(str(i) for i in ids))
+    views = (item.get('views') or '').strip()[:300] or None
+    look = (item.get('look') or '').strip()[:10] or None
+    slides = item.get('slides') if isinstance(item.get('slides'), int) else None
+    fields.update(format=fmt, title=fields['title'][:200], views=views, look=look, slides=slides)
+    return fields, ctas
+
+
+def plan_drafts(day, items):
+    """Logs a day's planned posts as drafts, each on both platforms under one code (thelazychef.app/tiktok/5 and
+    /ig/5), and returns ([{'code', 'format', 'series', 'series_n', 'recipe_ids', 'title', 'hook', 'new'}], errors).
+    Nothing is saved when an item is wrong. A post the day already has (the same series and number, or the same
+    format and recipes) keeps its code, so the script can run again; what is sent again replaces what it had."""
+    checked = [_plan_item(item) for item in items]
+    errors = [f'post {n}: {c}' for n, c in enumerate(checked, 1) if isinstance(c, str)]
+    if errors:
+        return [], errors
+    planned = []
+    for fields, ctas in checked:
+        same = ({'series': fields['series'], 'series_n': fields['series_n']} if fields['series'] else
+                {'format': fields['format'], 'recipe_ids': fields['recipe_ids']})
+        found = db.session.execute(db.select(SocialPost).filter_by(posted_on=day, status='draft', **same)
+                                   .order_by(SocialPost.id)).scalars().first()
+        code = found.code if found else next_code()
+        for platform, _ in PLATFORMS:
+            post = db.session.execute(db.select(SocialPost).filter_by(platform=platform, code=code)).scalar()
+            if post is None:
+                post = SocialPost(platform=platform, code=code, posted_on=day, status='draft')
+                db.session.add(post)
+            for key, value in fields.items():
+                if value is not None or key not in ('hook', 'hook_group', 'views', 'look', 'slides'):
+                    setattr(post, key, value)
+            if ctas.get(platform):
+                post.cta_group = ctas[platform]
+        db.session.flush()  # so the next post's code is one above this one
+        planned.append({'code': code, 'format': fields['format'], 'series': fields['series'],
+                        'series_n': fields['series_n'], 'recipe_ids': fields['recipe_ids'],
+                        'title': fields['title'], 'hook': post.hook, 'new': found is None})
+    db.session.commit()
+    return planned, []
+
+
 def _text(form, key, length):
     return (form.get(key) or '').strip()[:length] or None
 
@@ -241,8 +336,11 @@ def save_post(post, form):
     platform = form.get('platform')
     fmt = form.get('format')
     code = clean_ref(form.get('code'))
+    status = form.get('status') or 'posted'
     if platform not in dict(PLATFORMS):
         return 'Pick TikTok or Instagram.'
+    if status not in dict(POST_STATUSES):
+        return 'Pick draft or posted.'
     if fmt not in POST_FORMATS:
         return 'Pick a format.'
     if not code or '-' in code:
@@ -265,6 +363,7 @@ def save_post(post, form):
     except ValueError:
         return 'Give the day it went up.'
     post.platform, post.code, post.format, post.title, post.posted_on = platform, code, fmt, title, posted_on
+    post.status = status
     post.recipe_id = recipe.id if recipe else None
     post.hook, post.sound, post.url = _text(form, 'hook', 200), _text(form, 'sound', 120), _text(form, 'url', 300)
     post.notes = _text(form, 'notes', 5000)

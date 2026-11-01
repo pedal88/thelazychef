@@ -36,6 +36,8 @@ post log `/admin/funnel/posts/…`; `services/funnel.py`). `social_routes` (`soc
   token with `tasks.verified` and return 401 otherwise.
 - `/api/content/…` (`content_api_routes.py`) is for Claude Code, not people: `key_required` checks `CONTENT_API_KEY`
   and returns 401 otherwise. It makes drafts only; publishing stays in Admin -> Pages.
+- `/api/social/…` (`social_api_routes.py`) is for `scripts/social_batch.py`, with the same key: it logs a day's posts
+  as drafts in the post log, series with what the site chose for them. It posts nothing.
 - Drafts and pending ingredients must not leak to visitors (`tests/test_public_visibility.py`):
   check `status == 'approved'` or `viewer_is_admin()`.
 - Errors shown to users go through `utils/ai_errors.friendly_ai_error`; never a raw Google or Anthropic message.
