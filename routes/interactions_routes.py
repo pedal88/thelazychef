@@ -256,10 +256,26 @@ def save_feedback(recipe_id):
             print(f"Photo upload error: {e}")
             skipped.append(photo.filename)
 
+    removed = [u for u in (interaction.user_photos or []) if u not in new_urls]
     interaction.user_photos = new_urls
     flag_modified(interaction, 'user_photos')  # Force SQLAlchemy to dirty-track JSON column
     db.session.commit()
+    _delete_photos(removed, recipe_id)
     return jsonify({'success': True, 'user_photos': new_urls, 'skipped': skipped})
+
+
+def _delete_photos(urls, recipe_id):
+    """Deletes the files of photos the cook took off their note (the privacy page promises it). Only files this cook
+    stored for this recipe (user_<id>_recipe_<id>_…), so a URL sent in can never reach anyone else's."""
+    mine = f"user_{current_user.id}_recipe_{recipe_id}_"
+    for url in urls:
+        filename = url.rsplit('/', 1)[-1]
+        if not filename.startswith(mine):
+            continue
+        try:
+            get_storage().delete(filename, 'user_uploads')
+        except Exception as e:
+            print(f"Photo delete error: {e}")
 
 
 @interactions_bp.route('/api/interactions/recipe/<int:recipe_id>', methods=['GET'])
