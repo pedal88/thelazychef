@@ -479,13 +479,15 @@ def _numbers(form, prefix=''):
 
 
 def _put_stat(post, day, numbers):
-    """The post's row for the day, made if it has none, with these numbers in place of the old ones."""
+    """The post's row for the day, made if it has none, with these numbers typed in place of the old ones. A row
+    typed in by hand is not overwritten by the daily fetch (services/social_stats.py)."""
     stat = next((s for s in post.stats if s.day == day), None)
     if stat is None:
         stat = SocialPostStat(day=day)
         post.stats.append(stat)
     for key, value in numbers.items():
         setattr(stat, key, value)
+    stat.source = 'manual'
 
 
 def save_stat(post, form):

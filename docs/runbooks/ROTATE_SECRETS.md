@@ -216,3 +216,28 @@ for S in GOOGLE_OAUTH_CLIENT_ID GOOGLE_OAUTH_CLIENT_SECRET; do gcloud secrets ad
 Bytte hemmeligheten senere: lag en ny i klienten (Clients → klienten → Add secret), legg den inn med
 `gcloud secrets versions add GOOGLE_OAUTH_CLIENT_SECRET --data-file=-` som over, lag en ny revisjon som under «Senere
 bytter», og slett den gamle i klienten først når innloggingen virker.
+
+## Instagram (`INSTAGRAM_ACCESS_TOKEN`)
+
+Den daglige hentingen av tall (`services/social_stats.py`, `docs/SOCIAL.md`) bruker system-user-tokenet til Meta-appen «The Lazy Chef stats» (Use cases → Instagram API → API setup with Unified login → Generate token). Det utløper aldri. Det ligger i Keychain på MacBooken (`thelazychef-instagram`) og i Secret Manager. Deployen henter det, så hemmeligheten og tilgangen må finnes før den kjører, ellers feiler den med `Permission denied on secret`.
+
+Første gang, på MacBooken:
+
+```bash
+P=thelazychefai-prod
+SA=$(gcloud run services describe lazy-chef-app --region europe-west1 --project $P --format='value(spec.template.spec.serviceAccountName)')
+SA=${SA:-$(gcloud projects describe $P --format='value(projectNumber)')-compute@developer.gserviceaccount.com}
+security find-generic-password -s thelazychef-instagram -w | tr -d '\n' | gcloud secrets create INSTAGRAM_ACCESS_TOKEN --data-file=- --project=$P
+gcloud secrets add-iam-policy-binding INSTAGRAM_ACCESS_TOKEN --member="serviceAccount:$SA" --role=roles/secretmanager.secretAccessor --format='value(etag)' --project=$P
+```
+
+Når PR-en er ute, den daglige jobben (én gang). `APP_BASE_URL` og tjenestekontoen er de samme som i `deploy.yaml`:
+
+```bash
+P=thelazychefai-prod
+gcloud services enable cloudscheduler.googleapis.com --project $P
+gcloud scheduler jobs create http social-stats --project $P --location europe-west1 --schedule "0 6 * * *" --time-zone "Europe/Oslo" --http-method POST --uri https://lazy-chef-app-57buprlcwq-ew.a.run.app/internal/tasks/social-stats --oidc-service-account-email recipe-tasks@thelazychefai-prod.iam.gserviceaccount.com --oidc-token-audience https://lazy-chef-app-57buprlcwq-ew.a.run.app --attempt-deadline 300s
+gcloud scheduler jobs run social-stats --project $P --location europe-west1
+```
+
+Bytte tokenet: lag et nytt i Meta (for eksempel etter nye tillatelser i konfigurasjonen), lagre det i Keychain med `security add-generic-password -U -a "$USER" -s thelazychef-instagram -w "$(pbpaste)"` (feltet `security` selv spør med, kutter ved 128 tegn), legg det inn med `gcloud secrets versions add INSTAGRAM_ACCESS_TOKEN --data-file=-` som over, og lag en ny revisjon som under «Senere bytter».

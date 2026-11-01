@@ -179,7 +179,7 @@ come only by typing an address or through the Instagram bio link.
 9. **Copy in the numbers** 2 and 7 days later (a reminder task in meOS for each), and once a week read them as below.
    With many posts a day, use **Copy in numbers** on the Funnel page (`/admin/funnel/numbers`): every post that went
    up on one date in one table, Day 2 or Day 7, one or both platforms, saved at once. Drafts are left out until they
-   are marked posted.
+   are marked posted. Instagram's numbers come by themselves (below), so this is for TikTok.
 
 The dish images are made by Gemini: label every post as AI-generated where the platform asks.
 
@@ -220,6 +220,17 @@ whole day anew). It reads production and writes only the drafts; it costs nothin
 
 Look over every slide, post as in steps 6–7, and press **Mark posted today** beside the draft on the Funnel page (or
 set Status on the post's page, with its link). A draft's day is the day it was planned for until then.
+
+## Instagram's numbers, fetched
+
+Every morning the job `social-stats` (`services/social_stats.py`) reads the account's latest posts from Meta's Graph API
+and finds each in the post log by the code in its caption (`thelazychef.app/ig/5`), else by its link. A draft becomes
+posted on the day Instagram says it went up, with its link, so Mark posted is not needed on Instagram. Each post gets a
+row of numbers for that day after it went up: every day for the first 14 days, and on day 30. Views, reach, likes,
+comments, saves, shares and profile visits. A row typed in by hand for a day is left alone. **Fetch from Instagram** on
+the Funnel page does the same now, and says what it found. Numbers can be up to 48 hours late at Meta, so the latest
+days move a little. A post the log does not have is only counted: log it to get its numbers. TikTok has no such fetch: its
+Accounts API needs a verified company.
 
 ## Learning from the posts
 

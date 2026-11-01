@@ -2,11 +2,12 @@
 the ref code any page can carry (?ref=ig-3), the admin Funnel page, and its post log."""
 import datetime
 
-from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
+from flask import Blueprint, abort, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from database.models import SocialPost, db
-from services import funnel
+from services import funnel, social_stats
+from services.recipe_v2 import tasks
 from utils.decorators import admin_required
 
 funnel_bp = Blueprint('funnel', __name__)
@@ -156,6 +157,40 @@ def numbers():
                            days=funnel.SHEET_DAYS, platforms=funnel.PLATFORMS, stat_fields=funnel.STAT_FIELDS,
                            ref=funnel.post_ref, error=error, form=request.form if error else {},
                            day_span=datetime.timedelta(days=day)), 400 if error else 200
+
+
+@funnel_bp.route('/admin/funnel/fetch', methods=['POST'])
+@login_required
+@admin_required
+def fetch_now():
+    """Fetch from Instagram on the Funnel page: what the daily job does, now."""
+    if not social_stats.configured():
+        flash('Instagram is not set up: INSTAGRAM_ACCESS_TOKEN and INSTAGRAM_USER_ID are missing.', 'error')
+    else:
+        try:
+            flash(social_stats.report(social_stats.fetch_instagram()), 'success')
+        except social_stats.StatsError as e:
+            db.session.rollback()
+            flash(f'Instagram could not be read: {e}', 'error')
+    return redirect(url_for('funnel.dashboard') + '#posts')
+
+
+@funnel_bp.route('/internal/tasks/social-stats', methods=['POST'])
+def social_stats_task():
+    """The daily job (Cloud Scheduler, social-stats): the platforms' numbers into the post log. It carries the
+    queue's service account's OIDC token, like the Cloud Tasks jobs (tasks.verified)."""
+    if not tasks.verified(request.headers.get('Authorization')):
+        return jsonify({'error': 'unauthorized'}), 401
+    if not social_stats.configured():
+        return jsonify({'skipped': 'Instagram is not set up'}), 200
+    try:
+        summary = social_stats.fetch_instagram()
+    except social_stats.StatsError as e:
+        db.session.rollback()
+        print(f'social-stats: {e}')
+        return jsonify({'error': str(e)}), 502  # Cloud Scheduler tries again
+    print(f'social-stats: {social_stats.report(summary)}')
+    return jsonify(summary), 200
 
 
 @funnel_bp.route('/admin/funnel/posts/<int:post_id>/posted', methods=['POST'])
