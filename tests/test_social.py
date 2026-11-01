@@ -151,7 +151,7 @@ class SocialTests(unittest.TestCase):
         self.assertNotIn('class="name">', self.get(f'{base}/map', hook='shout', slide=1).get_data(as_text=True))
 
     def test_the_steps_slide_shows_one_more_step_rather_than_and_1_more(self):
-        view = {'title': 'Soup', 'total': '20 min', 'parts': [], 'shop_groups': [], 'metro_map': None,
+        view = {'title': 'Soup', 'total': '20 min', 'total_min': 20, 'parts': [], 'shop_groups': [], 'metro_map': None,
                 'steps': [{'short': f'Step {i}', 'duration': '1 min', 'phase': 'cook'} for i in range(11)]}
         steps = social.recipe_slides(view, 'map', None, 'ig')[-2]
         self.assertEqual((len(steps['steps']), steps['more']), (11, 0))

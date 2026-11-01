@@ -35,7 +35,14 @@ steps in it, with its image). The river delta goes on a slide only when it is sm
 dish (`max_depth` ≤ `DELTA_DEPTH`) and two branches (`leaves` ≤ `DELTA_LEAVES`), 11 of the 59 public recipes on
 31.10.2026; otherwise the time bar takes its place. Look at a rendered delta slide on a phone before it goes out.
 
-**Hooks** (`?hook=<group>`): the words on the first slide, at most eight words, every number the post's own. The
+A list for several dinners (the week, Got, the cuisine week) goes over as many slides as it takes to keep
+`SHOP_PER_SLIDE` things or fewer on each ("The shopping list, 1 of 2"), the staples on the last. Times on the slides
+are `social.clock`: minutes up to two hours, then "2 h 37 min" (the recipe page's "2.6 h" reads badly beside "105
+min"; the page is unchanged).
+
+**Hooks** (`?hook=<group>`): the words on the first slide, at most eight words, every number the post's own. A post
+of several dinners has no single time, so its hooks say none, except "Dinner in 25 minutes" for the fastest and
+only when that is within `QUICK_MINUTES`. The
 groups are `number` ("12 things to buy. 40 minutes."), `lazy` ("9 minutes of work. That's it."), `search` ("Got
 chicken thighs? 3 dinners."), `guess` and `contrast` ("Not an hour. 25 minutes.", only when true). Each group has
 several phrasings; the post draws one with a seed from the series, number and recipes, so the same post renders
