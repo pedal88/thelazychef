@@ -57,10 +57,8 @@ VARIANT_CHOICES = {'series': list(SERIES), 'hook_group': list(HOOKS), 'cta_group
 VARIANT_TEXT = {'round': 40, 'recipe_ids': 200, 'views': 300, 'look': 10, 'slot': 20}
 VARIANT_NUMBERS = ('series_n', 'slides')
 POST_STATUSES = [('draft', 'Draft'), ('posted', 'Posted')]
-# What the Funnel page sums per format and per hook: the days it looks back over, and the posts a hook needs to be
-# listed
+# The days the Funnel page sums the posts over, per series, hook group and CTA group
 SUMMARY_WINDOWS = (7, 28)
-HOOK_MIN_POSTS = 2
 
 # A day's posts planned by scripts/social_batch.py: the formats it renders besides the series, and their titles
 RENDERED_FORMATS = ['map', 'grid', 'pantry', 'week']
@@ -194,7 +192,7 @@ def report(weeks=12, today=None):
         'refs': sorted(refs.values(), key=lambda r: (-r['visits'], -r['signups'], r['ref'])),
         'posts': posts,
         'summary': {days: summary(posts, today, days) for days in SUMMARY_WINDOWS},
-        'platform_labels': dict(PLATFORMS), 'hook_min_posts': HOOK_MIN_POSTS,
+        'platform_labels': dict(PLATFORMS),
         'next_code': next_code(),
     }
 
@@ -271,16 +269,16 @@ def post_log(refs):
 
 
 def summary(rows, today, days):
-    """What the post log says per format and per hook, over the posts that went up in the last days days (drafts
-    left out), per platform: {'formats': [...], 'hooks': [...]}, each {'platform', 'label', 'posts', 'median_views',
-    'saves_1000', 'visits_1000'}. Saves and visits per 1000 views are summed over the posts with views, so a post
-    seen by many weighs more than one seen by few. A hook needs HOOK_MIN_POSTS posts to be listed; a format is
-    judged on several posts, not one (docs/SOCIAL.md)."""
+    """What the post log says per series (or format, for a post outside the series), per hook group and per CTA
+    group, over the posts that went up in the last days days (drafts left out), per platform: {'series': [...],
+    'hooks': [...], 'ctas': [...]}, each {'platform', 'label', 'posts', 'median_views', 'saves_1000',
+    'visits_1000'}. Saves and visits per 1000 views are summed over the posts with views, so a post seen by many
+    weighs more than one seen by few. Judge a group on several posts, not one (docs/SOCIAL.md)."""
     since = today - datetime.timedelta(days=days)
     rows = [r for r in rows if r['post'].status == 'posted' and since < r['post'].posted_on <= today]
     order = [key for key, _ in PLATFORMS]
 
-    def group(key_of, least=1):
+    def group(key_of):
         groups = {}
         for row in rows:
             key = key_of(row['post'])
@@ -288,8 +286,6 @@ def summary(rows, today, days):
                 groups.setdefault((row['post'].platform, key), []).append(row)
         out = []
         for (platform, label), members in groups.items():
-            if len(members) < least:
-                continue
             seen = [m for m in members if m['latest'] and m['latest'].views]
             views = sum(m['latest'].views for m in seen)
             out.append({'platform': platform, 'label': label, 'posts': len(members),
@@ -300,7 +296,8 @@ def summary(rows, today, days):
         return sorted(out, key=lambda g: (order.index(g['platform']) if g['platform'] in order else len(order),
                                           -(g['visits_1000'] or 0), -g['posts'], g['label']))
 
-    return {'formats': group(lambda p: p.format), 'hooks': group(lambda p: p.hook, HOOK_MIN_POSTS)}
+    return {'series': group(lambda p: p.series or p.format), 'hooks': group(lambda p: p.hook_group),
+            'ctas': group(lambda p: p.cta_group)}
 
 
 def next_code():
