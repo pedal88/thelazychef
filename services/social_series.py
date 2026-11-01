@@ -24,6 +24,7 @@ PROTEIN_G = 35      # High-protein dinners: at least this much protein per servi
 WASH_MAX = 2        # Dishes to wash: at most this many vessels (derive.cleanup_factor 1)
 GOT_RECIPES = 3     # Got [ingredient]?: dinners per post
 ONCE_A_WEEK = 7     # days a recipe stays out of a series after a post
+QUICK_MINUTES = 45  # a hook promises a time only up to this ("Not an hour", "Dinner in 25 minutes")
 NOT_AN_INGREDIENT = ('Vegetarian', 'Other')  # protein labels Got [ingredient]? cannot ask for
 
 SERIES = {
@@ -68,15 +69,15 @@ HOOKS = {
     'search': [('Got {ingredient}? {dishes} dinners.', ('ingredient', 'many')),
                ('{ingredient_cap} for dinner? {dishes} ideas.', ('ingredient', 'many')),
                ('What to make with {ingredient}: {dishes} dinners', ('ingredient', 'many')),
-               ('Got {ingredient}? Dinner in {total} minutes.', ('ingredient', 'total'))],
+               ('Got {ingredient}? Dinner in {fastest} minutes.', ('ingredient', 'quick'))],
     'guess': [('Guess the dinner from {symbols} symbols', ('symbols',)),
               ('Can you guess the dinner?', ()),
               ('{symbols} symbols. One dinner. Guess it.', ('symbols',))],
     # Used sparingly; each is true only under its condition (few, quick, one_two in facts())
     'contrast': [('Not 30 ingredients. Just {count}.', ('few',)),
-                 ('Not an hour. {total} minutes.', ('quick',)),
+                 ('Not an hour. {total} minutes.', ('quick', 'total')),
                  ('Not a sink full. {vessels} dishes to wash.', ('one_two',)),
-                 ('No takeaway. {total} minutes, {count} things.', ('quick', 'count'))],
+                 ('No takeaway. {total} minutes, {count} things.', ('quick', 'total', 'count'))],
 }
 
 # The CTA groups and what they ask; "ask" has a question for one dish and one for several, "site" carries the
@@ -139,18 +140,20 @@ def facts(posts, n=None, count=None, ingredient=None, cuisine=None):
     for several dinners). Every value is the post's own number."""
     v = posts[0]['view']
     tiles, _ = social._ingredients(v)
-    total = max(p['view']['total_min'] for p in posts)
-    active = min(max(p['view']['active_min'] for p in posts), total)
+    many = len(posts) > 1
+    # One dinner has a time; several have only the fastest of them, so no hook sums or picks the slowest
+    total, active = (None, None) if many else (v['total_min'], min(v['active_min'], v['total_min']))
+    fastest = min(p['view']['total_min'] for p in posts)
     vessels = len([e for e in v['equipment'] if e['id'] in VESSELS])
     nutrition = v['nutrition'] or {}
-    f = {'n': n, 'dishes': len(posts), 'many': len(posts) > 1, 'count': len(tiles) if count is None else count,
-         'symbols': len(tiles), 'total': total, 'active': active, 'idle': total - active,
-         'doer': social.IDLE_BY.get(posts[0]['heat_source'], social.IDLE), 'vessels': vessels,
+    f = {'n': n, 'dishes': len(posts), 'many': many, 'count': len(tiles) if count is None else count,
+         'symbols': len(tiles), 'total': total, 'active': active, 'idle': total - active if total else None,
+         'fastest': fastest, 'doer': social.IDLE_BY.get(posts[0]['heat_source'], social.IDLE), 'vessels': vessels,
          'doer_cap': social.IDLE_BY.get(posts[0]['heat_source'], social.IDLE).capitalize(),
          'protein': nutrition.get('protein'), 'kcal': nutrition.get('kcal'), 'ingredient': ingredient,
          'ingredient_cap': ingredient[:1].upper() + ingredient[1:] if ingredient else None, 'cuisine': cuisine,
          'title': v['title']}
-    f.update(few=f['count'] <= 15, quick=f['total'] <= 45, one_two=vessels <= WASH_MAX)
+    f.update(few=f['count'] <= 15, quick=fastest <= QUICK_MINUTES, one_two=1 <= vessels <= WASH_MAX)
     return f
 
 
@@ -222,8 +225,7 @@ def slides(slug, posts, size, n, hook_group=None, cta_group=None, code=None):
                         'note': f"Plus the {shared['name']}." if len(rest) < len(d['tiles']) else None,
                         'cols': max(5, social.columns(len(rest), size, room=social_week.DAY_ROOM_MANY
                                                       if len(rest) > social_week.DAY_MANY else social_week.DAY_ROOM))})
-        out.append({'kind': 'shop', 'title': f'One list for all {len(posts)}', 'tiles': shop, 'staples': staples,
-                    'cols': social.columns(len(shop), size)})
+        out += social.shop_slides(shop, staples, size, f'One list for all {len(posts)}')
         out.append(social.end_slide('', call))
         return out, f, group, text, call
 
@@ -236,9 +238,9 @@ def slides(slug, posts, size, n, hook_group=None, cta_group=None, code=None):
         group, text = hook_for(hook_group, f, sd, slug)
         call = cta(cta_group, f, size, address, sd, series['noun']) or cta(series['cta'], f, size, address, sd, series['noun'])
         week = social_week.week_slides(views, images, size, eyebrow=label, title=text, cta=call)
-        by_kind = {s['kind']: s for s in week}
         days = [s for s in week if s['kind'] == 'day']
-        return [by_kind['week_cover'], *days, by_kind['shop'], by_kind['end']], f, group, text, call
+        shops = [s for s in week if s['kind'] == 'shop']
+        return [week[0], *days, *shops, week[-1]], f, group, text, call
 
     f = facts(posts, n)
     group, text = hook_for(hook_group, f, sd, slug)

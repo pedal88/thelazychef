@@ -19,7 +19,7 @@ os.environ.pop('K_SERVICE', None)
 
 from app import app  # noqa: E402
 from database.models import Recipe, SocialPost, db  # noqa: E402
-from services import social, social_series as series  # noqa: E402
+from services import social, social_series as series, social_week  # noqa: E402
 from services.recipe_v2.generate import refresh  # noqa: E402
 from services.recipe_v2.store import save_v2  # noqa: E402
 from services.recipe_v2.view import page  # noqa: E402
@@ -73,13 +73,19 @@ class SeriesTests(unittest.TestCase):
 
     def test_every_series_renders_in_both_sizes_with_its_slides(self):
         one, three, five = str(self.ids[0]), ','.join(map(str, self.ids[:3])), ','.join(map(str, self.ids))
+
+        def shops(ids):  # one list for several dinners takes as many slides as SHOP_PER_SLIDE allows
+            views = [page(db.session.get(Recipe, i)) for i in ids]
+            shop, _ = social_week.shopping(social_week.days_of(views, [None] * len(views)), views)
+            return ['shop'] * -(-len(shop) // social.SHOP_PER_SLIDE)
+        self.assertEqual(len(shops(self.ids)), 3)  # the five fixtures need 52 things: three slides
         expected = {
             'airfryer': (one, ['cover', 'airfryer', 'ingredients', 'timebar', 'shop_split', 'end']),
-            'got': (three, ['got_cover', 'day', 'day', 'day', 'shop', 'end']),
+            'got': (three, ['got_cover', 'day', 'day', 'day', *shops(self.ids[:3]), 'end']),
             'protein': (one, ['cover', 'numbers', 'ingredients', 'timebar', 'shop_split', 'end']),
             'dishes': (one, ['cover', 'wash', 'ingredients', 'timebar', 'timers', 'end']),
             'guess': (one, ['collage', 'ingredients', 'dish', 'end']),
-            'cuisine': (five, ['week_cover', 'day', 'day', 'day', 'day', 'day', 'shop', 'end']),
+            'cuisine': (five, ['week_cover', 'day', 'day', 'day', 'day', 'day', *shops(self.ids), 'end']),
         }
         self.assertEqual(sorted(expected), sorted(series.SERIES))
         for slug, (ids, kinds) in expected.items():
@@ -119,9 +125,46 @@ class SeriesTests(unittest.TestCase):
         self.assertIn(self.get(series='dishes', ids=self.ids[0], n=1).headers['X-Hook-Text'],
                       ('Dishes to wash: 4', '4 dishes to wash. 16 min of work.', 'One dinner, 4 dishes to wash.'))
 
+    def test_a_hook_over_several_dinners_names_only_the_fastest_and_only_when_quick(self):
+        def post(total, active=10):
+            return {'id': total, 'heat_source': None, 'view': {'total_min': total, 'active_min': active, 'equipment': [],
+                                                              'nutrition': None, 'title': 'x', 'shop_groups': []}}
+        f = series.facts([post(157), post(60), post(25)], 3, count=20, ingredient='chicken')
+        self.assertEqual((f['total'], f['active'], f['idle'], f['fastest'], f['quick']), (None, None, None, 25, True))
+        for seed in ('a', 'b', 'c', 'd', 'e', 'f'):
+            text = series.hook('search', f, seed)
+            self.assertNotIn('157', text)
+            self.assertNotIn('60', text)
+            self.assertNotIn('minutes', text.replace('25 minutes', ''))
+        slow = series.facts([post(157), post(60)], 3, count=20, ingredient='chicken')
+        self.assertFalse(slow['quick'])
+        for seed in ('a', 'b', 'c', 'd', 'e', 'f'):
+            self.assertNotIn('minutes', series.hook('search', slow, seed))
+            self.assertIsNone(series.hook('contrast', slow, seed))
+        self.assertNotIn('minutes', ' '.join(series.hook('number', slow, s) for s in 'abcdef'))
+        one = series.facts([post(40, 12)], 1)
+        self.assertEqual((one['total'], one['active'], one['idle'], one['fastest'], one['quick']), (40, 12, 28, 40, True))
+
+    def test_slides_say_hours_and_minutes_and_a_long_list_goes_over_more_slides(self):
+        self.assertEqual([social.clock(m) for m in (45, 119, 120, 157, 180)],
+                         ['45 min', '119 min', '2 h', '2 h 37 min', '3 h'])
+        view = {'title': 'Stew', 'total_min': 157, 'shop_groups': [], 'total': '2.6 h'}
+        self.assertEqual(social_week.days_of([view], [None], ['Fri'])[0]['total'], '2 h 37 min')
+        tiles = [{'name': f't{i}', 'amount': None, 'img': None, 'key': f'k{i}', 'times': 1} for i in range(52)]
+        pages = social.shop_slides(tiles, ['salt'], 'ig')
+        self.assertEqual([len(p['tiles']) for p in pages], [18, 17, 17])
+        self.assertTrue(all(len(p['tiles']) <= social.SHOP_PER_SLIDE for p in pages))
+        self.assertEqual([p['title'] for p in pages], ['The shopping list, 1 of 3', 'The shopping list, 2 of 3',
+                                                       'The shopping list, 3 of 3'])
+        self.assertEqual([p['staples'] for p in pages], [[], [], ['salt']])
+        self.assertEqual([t['name'] for p in pages for t in p['tiles']], [t['name'] for t in tiles])
+        self.assertEqual([len(p['tiles']) for p in social.shop_slides(tiles[:40], [], 'ig')], [20, 20])
+        [one] = social.shop_slides(tiles[:24], ['salt'], 'ig', 'One list for all 3')
+        self.assertEqual((one['title'], len(one['tiles']), one['staples']), ('One list for all 3', 24, ['salt']))
+
     def test_every_phrasing_is_at_most_eight_words(self):
         facts = {'n': 7, 'dishes': 3, 'many': True, 'count': 12, 'symbols': 12, 'total': 40, 'active': 9, 'idle': 31,
-                 'doer': 'the air fryer', 'doer_cap': 'The air fryer', 'vessels': 2, 'protein': 46, 'kcal': 425, 'ingredient': 'chicken thighs',
+                 'doer': 'the air fryer', 'doer_cap': 'The air fryer', 'vessels': 2, 'fastest': 25, 'protein': 46, 'kcal': 425, 'ingredient': 'chicken thighs',
                  'ingredient_cap': 'Chicken thighs', 'cuisine': 'Middle Eastern', 'few': True, 'quick': True,
                  'one_two': True}
         lists = [HOOKS for HOOKS in series.HOOKS.values()] + [h for s in series.SERIES.values() for h in s.get('hooks', {}).values()]
@@ -170,7 +213,7 @@ class SeriesTests(unittest.TestCase):
         self.assertIn('Got beef?', cover)
         self.assertIn('3 dinners', cover)
         shop = self.get(series='got', ids=ids, n=1, slide=5).get_data(as_text=True)
-        self.assertIn('One list for all 3', shop)
+        self.assertIn('One list for all 3, 1 of 2', shop)
 
     def test_the_cuisine_week_is_five_weeknights_and_one_list(self):
         ids = ','.join(map(str, self.ids))
@@ -188,7 +231,7 @@ class SeriesTests(unittest.TestCase):
         self.assertFalse(social.delta_fits(None))
         view = {'delta': {'max_depth': 1, 'leaves': 2, 'edges': [['a', 'c'], ['b', 'c']], 'nodes': [
             {'id': 'a', 'depth': 1, 'span': [0, 1]}, {'id': 'b', 'depth': 1, 'span': [1, 2]},
-            {'id': 'c', 'depth': 0, 'span': [0, 2]}]}, 'total': '30 min'}
+            {'id': 'c', 'depth': 0, 'span': [0, 2]}]}, 'total': '30 min', 'total_min': 30}
         slide = social.delta_slide(view)
         self.assertEqual((slide['cols'], slide['rows']), (2, 2))
         self.assertEqual([(c['row'], c['col'], c['flows']) for c in slide['cells']],
