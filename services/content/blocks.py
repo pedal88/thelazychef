@@ -106,7 +106,8 @@ class Text(Block):
 
 
 class Recipes(Block):
-    """A row of recipe cards: chosen ones (ids), or the newest, quickest or least hands-on matching a filter.
+    """A row of recipe cards: chosen ones (ids), the ones the newest posts showed (source "posts", from the post log,
+    services/funnel.posted_recipes), or the newest, quickest or least hands-on matching a filter.
     Only approved recipes with a dish image. "more" links to the recipe list with the same filter."""
     label = 'Recipes'
 
@@ -137,14 +138,21 @@ class Recipes(Block):
                             errors.append(f'filter {key}: "{v}" is not one of the choices')
         if s.get('sort', 'new') not in SORTS:
             errors.append(f'sort must be one of {", ".join(SORTS)}')
+        if 'source' in s and (s['source'] != 'posts' or ids is not None or flt is not None):
+            errors.append('source must be "posts", without ids or filter')
         return errors
 
     def load(self, s, ctx):
         limit = s.get('limit', 6)
-        if s.get('ids'):
+        if s.get('source') == 'posts':
+            from services.funnel import posted_recipes
+            ids = posted_recipes()
+        else:
+            ids = s.get('ids')
+        if ids or s.get('source') == 'posts':  # no posts yet: no row, not the newest recipes
             pictured = set(db.session.execute(db.select(Recipe.id).where(
-                Recipe.id.in_(s['ids']), Recipe.status == 'approved', Recipe.image_filename.isnot(None))).scalars())
-            recipes = cards([i for i in s['ids'] if i in pictured][:limit], ctx.user)
+                Recipe.id.in_(ids), Recipe.status == 'approved', Recipe.image_filename.isnot(None))).scalars())
+            recipes = cards([i for i in ids if i in pictured][:limit], ctx.user)
             more = None
         else:
             args = _filter_args(s.get('filter') or {})

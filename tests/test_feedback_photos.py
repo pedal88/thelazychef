@@ -92,6 +92,23 @@ class FeedbackPhotoTests(unittest.TestCase):
                                  content_type='multipart/form-data').get_json()
         self.assertEqual((again['user_photos'], again['skipped']), (first, []))
 
+    def test_a_photo_taken_off_the_note_is_deleted_and_no_one_elses_can_be(self):
+        kept, gone = self.client.post(self.url, data={'photos': [(io.BytesIO(image_bytes('PNG')), 'a.png'),
+                                                                 (io.BytesIO(image_bytes('PNG')), 'b.png')]},
+                                      content_type='multipart/form-data').get_json()['user_photos']
+        other = os.path.join(self.root, 'static', 'user_uploads', 'user_99_recipe_1_abcdef12.png')
+        with open(other, 'wb') as f:
+            f.write(image_bytes('PNG'))
+        mark = db.session.get(UserRecipeInteraction, (self.user.id, self.recipe.id))
+        mark.user_photos = [kept, gone, '/static/user_uploads/user_99_recipe_1_abcdef12.png']
+        db.session.commit()
+        res = self.client.post(self.url, data={'keep_photos': json.dumps([kept])},
+                               content_type='multipart/form-data').get_json()
+        self.assertEqual(res['user_photos'], [kept])
+        self.assertTrue(os.path.exists(os.path.join(self.root, kept.lstrip('/'))))
+        self.assertFalse(os.path.exists(os.path.join(self.root, gone.lstrip('/'))))
+        self.assertTrue(os.path.exists(other))  # not this cook's: taken off the note, never deleted
+
 
 if __name__ == '__main__':
     unittest.main()

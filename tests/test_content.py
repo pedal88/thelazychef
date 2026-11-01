@@ -150,6 +150,23 @@ class ContentTests(unittest.TestCase):
         self.assertEqual([r.title for r in rows[1]['data']['recipes']], ['Shown'])
         self.assertIn(f'no approved recipe with id {draft.id}', ' '.join(check_blocks([{'kind': 'recipes', 'settings': {'ids': [draft.id]}}])))
 
+    def test_a_recipe_row_can_follow_the_posts(self):
+        import datetime
+        from database.models import SocialPost
+        row = {'kind': 'recipes', 'settings': {'title': 'From our posts', 'source': 'posts'}}
+        text = save_version(guide(blocks=[row]))
+        self.assertEqual(render_blocks(text, None, 'en'), [])  # no posts yet: no row, not the newest recipes
+        old, new, hidden = self.recipe('Old post'), self.recipe('New post'), self.recipe('No picture', image=None)
+        day = datetime.date(2026, 11, 1)
+        db.session.add_all([
+            SocialPost(platform='tiktok', code='1', format='map', recipe_id=old.id, title='A', posted_on=day - datetime.timedelta(days=1)),
+            SocialPost(platform='tiktok', code='2', format='series', recipe_ids=f'{new.id},{hidden.id}', title='B', posted_on=day)])
+        db.session.commit()
+        self.assertEqual([r.title for r in render_blocks(text, None, 'en')[0]['data']['recipes']], ['New post', 'Old post'])
+        for wrong in ({'source': 'feed'}, {'source': 'posts', 'ids': [old.id]}):
+            self.assertIn('source must be "posts", without ids or filter',
+                          ' '.join(check_blocks([{'kind': 'recipes', 'settings': wrong}])))
+
     def test_cook_next_and_links(self):
         r = self.recipe('Queued')
         db.session.add(UserQueue(user_id=self.user.id, recipe_id=r.id, position=1))
