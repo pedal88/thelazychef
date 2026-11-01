@@ -5,16 +5,16 @@ batch script plans. Only adds a column.
 
 Downgrade drops it.
 
-Revision ID: b8d4f2a6c1e9
-Revises: a7c3e9d1f5b8
-Create Date: 2026-10-31
+Revision ID: c3f9a1e5d7b2
+Revises: b8d4f2a6c9e1
+Create Date: 2026-11-01
 """
 from alembic import op
 import sqlalchemy as sa
 
 
-revision = 'b8d4f2a6c1e9'
-down_revision = 'a7c3e9d1f5b8'
+revision = 'c3f9a1e5d7b2'
+down_revision = 'b8d4f2a6c9e1'
 branch_labels = None
 depends_on = None
 

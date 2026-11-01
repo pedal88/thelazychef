@@ -171,24 +171,35 @@ The dish images are made by Gemini: label every post as AI-generated where the p
 At five posts a day on each platform, steps 1–5 and 8 above are one command the evening before:
 
 ```bash
-python -m scripts.social_batch 2026-11-03                    # five posts the site suggests for the day
+python -m scripts.social_batch 2026-11-03                    # the day's series
 python -m scripts.social_batch 2026-11-03 --plan day.txt     # or the posts in a plan
 python -m scripts.social_batch 2026-11-03 --dry-run          # show the plan only
 ```
 
-A plan has a post per line: `map 345 | 4 lines, 1 plate, 42 minutes`, `grid 297 | Guess the dinner`,
-`week 320,324,334,341,353`, `week` or `pantry`; after the `|` comes the hook. Without a plan the site suggests the
-posts (`funnel.suggest`): weeknight dinners with a dish image that no post has drawn on in the last 60 days, map and
-grid by turn, a map only from a recipe with three or four parts. A week or pantry post the same every day would be the
-same post again, so those come only from a plan.
+Without a plan a day is the four series that run side by side (`airfryer`, `got`, `protein`, `dishes`) and a fifth
+post: `guess` on Mondays and Fridays, `cuisine` on Wednesdays, else one of the four again by turn
+(`scripts/social_batch.DAY_SERIES`, `FIFTH`). A plan has a post per line: a series or a format, the recipes if they are
+fixed, `hook=`, `cta=` and `n=` if they are fixed, and for a format the words it tries after `|`:
 
-The script logs each post in the post log as a **draft** on both platforms under one code (through the social API,
-`/api/social`, with the content API's key: `CONTENT_API_KEY` or the Keychain item, as `scripts/content.py`), then
-renders both sizes with that code into `~/promptlab-runs/social/<day>/`, with `day.txt` listing the posts and, per
-post and size, the slides, `caption.txt` (the address already carries the code) and `title.txt` (the hook, for
-TikTok's title). It copies each folder to the phone through iCloud Drive (`The Lazy Chef/<day>/` there, or `--phone`),
-so AirDrop is not needed. Run the same day again and it keeps the codes and renders only what is missing (`--force`
-renders again). It reads production and writes only the drafts; it costs nothing.
+```
+airfryer hook=number cta=follow
+got 323,326,329 hook=search
+map 345 cta=save | 4 lines, 1 plate, 42 minutes
+pantry
+```
+
+For a series the script first asks the slide page what the series chose (its headers, in both sizes, since the CTA
+can differ), then logs the post in the post log as a **draft** on both platforms under one code, with the series,
+number, recipes, hook, CTA per platform, views and look (through the social API, `/api/social/drafts`, with the content
+API's key: `CONTENT_API_KEY` or the Keychain item, as `scripts/content.py`). Because the draft is in the log, the next
+post of the same series takes the next number and other recipes. A series that has run out is skipped and said so.
+
+Then both sizes are rendered with that code and those choices into `~/promptlab-runs/social/<day>/`: per post and size
+the slides, `caption.txt` (the address already carries the code) and `title.txt` (the hook, for TikTok's title), with
+`day.txt` listing the posts and `plan.json` what was logged. Each folder is copied to the phone through iCloud Drive
+(`The Lazy Chef/<day>/` there, or `--phone`), so AirDrop is not needed. Run the same day again and it reads
+`plan.json`, plans only what it lacks and renders only what is missing (`--force` renders again, `--replan` plans the
+whole day anew). It reads production and writes only the drafts; it costs nothing.
 
 Look over every slide, post as in steps 6–7, and press **Mark posted today** beside the draft on the Funnel page (or
 set Status on the post's page, with its link). A draft's day is the day it was planned for until then.
