@@ -21,7 +21,8 @@
   <div id="posts" class="mt-8 flex flex-wrap items-baseline gap-3">
     <h2 class="font-semibold text-slate-900">Per post</h2>
     <span class="text-sm text-slate-500">Next free code: <span class="font-mono font-semibold text-slate-900">{{ r.next_code }}</span></span>
-    <a href="{{ url_for('funnel.new_post') }}" class="ml-auto px-3 py-1.5 rounded-full bg-slate-900 text-white text-sm font-semibold">Log a post</a>
+    <a href="{{ url_for('funnel.numbers') }}" class="ml-auto px-3 py-1.5 rounded-full border border-slate-300 text-slate-900 text-sm font-semibold">Copy in numbers</a>
+    <a href="{{ url_for('funnel.new_post') }}" class="px-3 py-1.5 rounded-full bg-slate-900 text-white text-sm font-semibold">Log a post</a>
   </div>
   <p class="mt-1 text-sm text-slate-500">The platform's numbers (the latest copied in) beside what the post's code brought. Per 1000 views is the visits it sent on.</p>
   <div class="mt-2 overflow-x-auto">

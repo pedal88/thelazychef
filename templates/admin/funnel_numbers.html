@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{# The numbers sheet (routes/funnel_routes.numbers, services/funnel.sheet): every post that went up on one date, in one
+   table, to copy each platform's numbers in at once 2 or 7 days later instead of post by post. #}
+{% block title %}Numbers, day {{ day }} - Funnel - The Lazy Chef{% endblock %}
+
+{% block content %}
+{% set field = 'w-20 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm text-right tabular-nums' %}
+<div class="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-5">
+  <div class="flex flex-wrap items-center gap-3">
+    <a href="{{ url_for('funnel.dashboard') }}#posts" class="text-sm text-slate-500 hover:text-slate-900">← Funnel</a>
+    <h1 class="font-serif text-2xl font-bold text-slate-900">Numbers, day {{ day }}</h1>
+  </div>
+  <p class="text-sm text-slate-600">The posts that went up on {{ on.strftime('%d.%m.%Y') }}, {{ day }} days before {{ (on + day_span).strftime('%d.%m') }}. Copy each one's numbers from its analytics; a post left empty keeps what it has, and the same day again replaces its row.</p>
+
+  <form method="get" class="flex flex-wrap items-end gap-3 text-sm">
+    {% for d in days %}
+    <a href="{{ url_for('funnel.numbers', day=d, platform=platform or None) }}" class="px-3 py-1.5 rounded-full {{ 'bg-slate-900 text-white' if d == day else 'border border-slate-300 text-slate-900' }} font-semibold">Day {{ d }}</a>
+    {% endfor %}
+    <input type="hidden" name="day" value="{{ day }}">
+    <label class="text-slate-700">Went up
+      <input type="date" name="on" value="{{ on.isoformat() }}" class="mt-1 block rounded-lg border border-slate-300 bg-white px-3 py-1.5">
+    </label>
+    <label class="text-slate-700">Platform
+      <select name="platform" class="mt-1 block rounded-lg border border-slate-300 bg-white px-3 py-1.5">
+        <option value="">Both</option>
+        {% for key, label in platforms %}<option value="{{ key }}" {{ 'selected' if platform == key }}>{{ label }}</option>{% endfor %}
+      </select>
+    </label>
+    <button type="submit" class="px-3 py-1.5 rounded-full border border-slate-300 font-semibold">Show</button>
+  </form>
+
+  {% if error %}<p class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{{ error }}</p>{% endif %}
+
+  {% if rows %}
+  <form method="post" class="space-y-4">
+    <input type="hidden" name="day" value="{{ day }}">
+    <input type="hidden" name="on" value="{{ on.isoformat() }}">
+    <input type="hidden" name="platform" value="{{ platform }}">
+    <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+      <table class="w-full text-sm">
+        <thead class="text-left text-slate-500"><tr><th class="py-2 px-3 font-medium">Post</th>{% for key in stat_fields %}<th class="py-2 px-1 font-medium text-right">{{ key.replace('_', ' ')|capitalize }}</th>{% endfor %}</tr></thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for row in rows %}
+          {% set p = row.post %}
+          <tr>
+            <td class="py-2 px-3"><a href="{{ url_for('funnel.edit_post', post_id=p.id) }}" class="hover:underline">{{ p.title }}</a> <span class="block font-mono text-xs text-slate-500">{{ ref(p) }} · {{ p.format }}</span></td>
+            {% for key in stat_fields %}
+            {% set name = p.id ~ '-' ~ key %}
+            <td class="py-2 px-1 text-right"><input name="{{ name }}" value="{{ form.get(name, row.stat[key] if row.stat and row.stat[key] is not none else '') }}" inputmode="numeric" aria-label="{{ ref(p) }} {{ key.replace('_', ' ') }}" class="{{ field }}"></td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <button type="submit" class="px-4 py-2 rounded-full bg-slate-900 text-white text-sm font-semibold">Save all</button>
+  </form>
+  {% else %}
+  <p class="text-sm text-slate-500">No posts went up on {{ on.strftime('%d.%m.%Y') }}{{ ' on ' ~ dict(platforms)[platform] if platform }}. Drafts are left out until they are marked posted.</p>
+  {% endif %}
+</div>
+{% endblock %}
