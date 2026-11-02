@@ -57,8 +57,14 @@ PANTRY_HEAD = 70
 GRID_ROOM = {'ig': 470, 'tt': 760}
 CAPTION = 74
 WIDTH = 912
-# The points game's score block and bar take this much more of a slide than a title does
-GUESS_ROOM = 230
+# The points game's pictures: the height left for them after the margins, the eyebrow, the score block, the bar and
+# the line at the bottom, per size; a tile's caption; and how much of its cell a symbol takes on Instagram's shorter
+# slide (static/css/social.css shrinks it there), so that 12 is 4 by 3 and 15 is 5 by 3 on both sizes
+GAME_HEIGHT = {'ig': 790, 'tt': 1008}
+GAME_CAPTION = 82
+GAME_SYMBOL = {'ig': 0.72, 'tt': 1.0}
+# The symbols strip on a cover: at most this many in a row
+STRIP_COLS = 6
 # The river delta goes on a slide only when it is small enough to read on a phone: at most DELTA_DEPTH levels above
 # the dish (delta.build's max_depth, the dish at 0) and DELTA_LEAVES branches. 11 of the 59 public recipes on
 # 31.10.2026 (serier.md); else the slide shows the time bar.
@@ -281,6 +287,25 @@ def columns(n, size, labels=True, room=0):
         if rows * (WIDTH / cols + (CAPTION if labels else 0) + 20) <= height:
             return cols
     return 9
+
+
+def game_columns(n, size):
+    """The columns of the points game's pictures: full rows where a count from 4 to STRIP_COLS divides them (12 is
+    4 by 3, 15 is 5 by 3), with the symbols as large as fit; else the fewest columns from 4 that fit the slide."""
+    def fits(cols):
+        rows = -(-n // cols)
+        return rows * (WIDTH / cols * GAME_SYMBOL[size] + GAME_CAPTION + 12) <= GAME_HEIGHT[size]
+    full = [c for c in range(4, STRIP_COLS + 1) if n % c == 0 and fits(c)]
+    if full:
+        return full[0]
+    return next((c for c in range(4, 9) if fits(c)), 9)
+
+
+def strip_columns(n):
+    """The columns of a cover's symbols strip: one row up to STRIP_COLS, else rows as even as they come (7 is 4 and
+    3, 12 is 6 and 6), never an orphan."""
+    rows = max(1, -(-n // STRIP_COLS))
+    return -(-n // rows)
 
 
 def map_slide(m, size):

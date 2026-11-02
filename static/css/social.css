@@ -131,13 +131,14 @@ html, body { margin: 0; background: var(--sl-paper); }
 .foot .brand-badge { width: 52px; height: 52px; }
 
 /* The series' slides (services/social_series.py, docs/SOCIAL.md "The series") */
-/* What to make with [ingredient]: the ingredient large in the middle, the three dinners across the slide under it */
-.got { flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; margin: 16px 0; }
-.got .sym.big { width: 46%; flex: none; }
+/* What to make with [ingredient]: the ingredient in the middle, the three dinners large in one row across the
+   whole slide under it, edge to edge */
+.got { flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; margin: 8px 0; }
+.got .sym.big { width: 36%; flex: none; }
 .got .sym.big i { font-size: 120px; }
-.got .dishes.three { flex: none; display: flex; justify-content: center; margin: 0 -40px; }
-.got .dishes.three img { width: 34%; mix-blend-mode: multiply; }
-.size-tt .got .sym.big { width: 56%; }
+.got .dishes.three { flex: none; display: flex; flex-wrap: nowrap; justify-content: space-between; align-items: center; width: 1080px; margin: 0 -84px; }
+.got .dishes.three img { width: 33.333%; flex: none; mix-blend-mode: multiply; }
+.size-tt .got .sym.big { width: 44%; }
 /* The big numbers */
 .numbers { flex: 1; display: grid; grid-auto-rows: min-content; align-content: center; gap: 56px; }
 .number { display: flex; flex-direction: column; gap: 6px; }
@@ -208,9 +209,9 @@ html, body { margin: 0; background: var(--sl-paper); }
 .end.over.answer { text-align: center; align-items: center; }
 .end.over .eyebrow { margin: 0 0 18px; color: var(--look-go-soft, var(--sl-line)); }
 .end.over .title { margin: 0 0 46px; font-size: 96px; color: #fff; }
-/* A series cover: the dish named large under the hook, then the ingredient symbols lifted, in two rows */
+/* A series cover: the dish named large under the hook, then the ingredient symbols lifted, in even rows */
 .dish { margin: 20px 0 0; font: 500 50px/1.15 var(--font-serif); color: var(--sl-muted); }
-.strip { display: flex; flex-wrap: wrap; gap: 0 2px; margin: 24px 0 0; }
+.strip { display: grid; grid-template-columns: repeat(var(--cols), 150px); gap: 0 2px; margin: 24px 0 0; }
 .strip img { width: 150px; height: 150px; object-fit: contain; mix-blend-mode: multiply; }
 /* 3 ingredients, 3 dinners: the three symbols large, the dinners small under them */
 .trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 40px; }
@@ -260,3 +261,4 @@ html, body { margin: 0; background: var(--sl-paper); }
 .size-ig .kind-guess_names .tile figcaption span, .size-ig .kind-guess_amounts .tile figcaption span { font-size: 25px; }
 .size-ig .kind-guess_amounts .tile figcaption b { font-size: 27px; }
 .size-ig .next { margin-top: 14px; font-size: 38px; }
+.size-ig .kind-guess_pictures .sym, .size-ig .kind-guess_names .sym, .size-ig .kind-guess_amounts .sym { width: 72%; }  /* GAME_SYMBOL */

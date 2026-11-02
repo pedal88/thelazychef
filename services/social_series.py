@@ -38,6 +38,7 @@ PROTEIN_G = 35      # High-protein dinners: at least this much protein per servi
 WASH_MAX = 2        # one or two dishes to wash (the contrast hook)
 BUY_MAX = 6         # Only 6 things to buy: at most this many
 SHARED_MIN = 3      # 3 ingredients, 3 dinners: at least this many shared, staples left out
+TRIO_BUY_MAX = 12   # ... and each dinner at most this many things to buy, so its slide is not a wall of tiny symbols
 GUESS_MAX = 15      # Guess the dinner: at most this many things to buy, so the pictures fit a slide (the rest are left out)
 # The points game (guess.yaml): the points per slide, the score line and the line at the bottom
 GUESS = [('guess_pictures', 5, 'points if you get it from the pictures', 'Not sure? Swipe for the names.'),
@@ -405,8 +406,10 @@ def slides(slug, posts, size, n, hook_group=None, cta_group=None, code=None, hoo
     out = []
     for kind in card['slides']:
         if kind == 'cover':
-            out.append({'kind': 'cover', 'eyebrow': label, 'title': text, 'name': v['title'], 'image': r['image'],
-                        'tiles': tiles, 'symbols': [t for t in tiles if t['img']][:social.COVER_SYMBOLS],
+            symbols = [t for t in tiles if t['img']][:social.COVER_SYMBOLS]
+            named = f['dish'].lower() in text.lower()  # the hook names the dish: no name line under it
+            out.append({'kind': 'cover', 'eyebrow': label, 'title': text, 'name': None if named else v['title'],
+                        'image': r['image'], 'tiles': tiles, 'symbols': symbols, 'strip_cols': social.strip_columns(len(symbols)),
                         'total': social.clock(f['total']) if f['total'] else None, 'count': len(tiles), 'parts': v['parts']})
         elif kind == 'got_cover':
             out.append({'kind': 'got_cover', 'eyebrow': label, 'title': text, 'symbol': shared['symbol'],
@@ -450,7 +453,7 @@ def slides(slug, posts, size, n, hook_group=None, cta_group=None, code=None, hoo
             # The same columns on all three picture slides, as many as keep the names readable beside the score
             out.append({'kind': kind, 'eyebrow': label, 'points': points, 'line': line, 'next': nxt,
                         'tiles': shown, 'labels': kind != 'guess_pictures', 'image': r['image'],
-                        'cols': max(4, social.columns(len(tiles), size, room=social.GUESS_ROOM))})
+                        'cols': social.game_columns(len(tiles), size)})
         elif kind == 'answer':
             out.append({**social.end_slide('', call, images), 'kind': 'answer', 'eyebrow': 'The answer',
                         'dish': f['dish']})
@@ -593,18 +596,25 @@ def candidates(slug):
         return {}
     is_dinner = set(db.session.execute(dinners.where(RecipeMealType.recipe_id.in_(ids))).scalars())
     rows = db.session.execute(db.select(Recipe.id, Recipe.protein_type, Recipe.cuisine, Recipe.total_calories,
-                                        Recipe.base_servings, Recipe.total_protein).where(Recipe.id.in_(ids))).all()
+                                        Recipe.base_servings, Recipe.total_protein, Recipe.title)
+                              .where(Recipe.id.in_(ids))).all()
     return {i: {'protein': protein, 'cuisine': cuisine, 'kcal': (kcal or 0) / (servings or 4),
-                'protein_g': (grams or 0) / (servings or 4), 'buy': frozenset(buy.get(i, ())), 'dinner': i in is_dinner}
-            for i, protein, cuisine, kcal, servings, grams in rows}
+                'protein_g': (grams or 0) / (servings or 4), 'buy': frozenset(buy.get(i, ())), 'dinner': i in is_dinner,
+                'title': title}
+            for i, protein, cuisine, kcal, servings, grams, title in rows}
 
 
 def trios(c, among=None):
     """3 ingredients, 3 dinners: every set of three dinners from candidates('three3') (or the ids in among) that
     share at least SHARED_MIN things to buy (staples left out), one of them a protein, with chicken breast and thigh
     as one ingredient, and that are three different dishes: no two share more than social_week.WEEK_SAME of what
-    they buy (the week's rule, so three gyros are not a set). [(ids, shared), ...], the most shared first."""
-    ids = list(c)
+    they buy (the week's rule, so three gyros are not a set) and no two are the same dish by name (the title up to
+    "with", a comma or a bracket, social_series.short_title: two butter chickens are one dish however much the
+    homemade one buys). Each dinner buys at most TRIO_BUY_MAX things, so its slide stays readable.
+    [(ids, shared), ...], the most shared first."""
+    ids = [i for i in c if len(c[i]['buy']) <= TRIO_BUY_MAX]
+    if among is not None:
+        among = [i for i in among if i in set(ids)]
     rows = db.session.execute(db.select(Ingredient).where(Ingredient.id.in_(
         {k for i in ids for k in c[i]['buy'] if isinstance(k, int)}))).scalars().all()
     label = {i.id: _protein_label(i) for i in rows}
@@ -615,6 +625,7 @@ def trios(c, among=None):
         if len(common) < SHARED_MIN or not any(k == 'protein:Chicken' or label.get(k) for k in common):
             continue
         if any(len(c[a]['buy'] & c[b]['buy']) / len(c[a]['buy'] | c[b]['buy']) > social_week.WEEK_SAME
+               or short_title(c[a].get('title') or str(a)).lower() == short_title(c[b].get('title') or str(b)).lower()
                for a, b in itertools.combinations(three, 2)):
             continue
         out.append((list(three), len(common)))

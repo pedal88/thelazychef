@@ -47,7 +47,7 @@
   <p class="eyebrow">{{ s.eyebrow }}</p>
   <h1 class="title">{{ s.title }}</h1>{% if s.name %}
   <p class="dish">{{ s.name }}</p>{% endif %}{% if s.symbols %}
-  <p class="strip">{% for t in s.symbols %}<img src="{{ t.img }}" alt="">{% endfor %}</p>{% endif %}
+  <p class="strip" style="--cols:{{ s.strip_cols or 6 }}">{% for t in s.symbols %}<img src="{{ t.img }}" alt="">{% endfor %}</p>{% endif %}
   {% if s.image %}<div class="hero"><img src="{{ s.image }}" alt=""></div>
   {% else %}<div class="hero tiles">{% for t in s.tiles[:12] if t.img %}<img src="{{ t.img }}" alt="">{% endfor %}</div>{% endif %}
   {% if s.name %}{% if s.total %}<p class="facts"><span>{{ s.total }}</span></p>{% endif %}

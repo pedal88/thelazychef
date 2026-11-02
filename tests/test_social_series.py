@@ -162,6 +162,19 @@ class SeriesTests(unittest.TestCase):
                     self.assertIn(f'width:1080px; height:{social.SIZES[size][1]}px', html)
                     self.assertNotIn('kind-timebar', html)
 
+    def test_the_games_pictures_fill_their_rows_and_a_cover_strip_has_no_orphan(self):
+        self.assertEqual([social.game_columns(n, 'tt') for n in (5, 8, 12, 15, 13, 14)], [5, 4, 4, 5, 5, 5])
+        self.assertEqual([social.game_columns(n, 'ig') for n in (5, 8, 12, 15, 13, 14)], [5, 4, 4, 5, 5, 5])
+        self.assertEqual([social.strip_columns(n) for n in (3, 6, 7, 8, 11, 12)], [3, 6, 4, 4, 6, 6])
+        # A hook that names the dish leaves no name line under it
+        pot = self.get(series='onepot', ids=self.ids[0], n=1, hook_text='One pot. Spaghetti carbonara.', slide=1)
+        self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
+        pot = self.get(series='onepot', ids=self.ids[0], n=1, hook_text='One pot. Spaghetti carbonara.', slide=1).get_data(as_text=True)
+        self.assertNotIn('class="dish">', pot)
+        plain = self.get(series='onepot', ids=self.ids[0], n=1, hook_text='Dishes to wash: one.', slide=1).get_data(as_text=True)
+        self.assertIn('class="dish">Spaghetti carbonara', plain)
+        self.assertNotIn('class="strip"', plain)  # the test pantry has no symbol images: no strip at all
+
     def test_the_steps_go_over_slides_as_on_the_cook_view_with_each_steps_symbols(self):
         view = page(db.session.get(Recipe, self.ids[0]))  # carbonara: 9 steps
         slides = social.steps_slides(view, 'ig')
@@ -554,6 +567,12 @@ class SeriesTests(unittest.TestCase):
         db.session.commit()
         sets = series.trios(c)
         self.assertEqual([ids for ids, _ in sets], [[1, 2, 3], [2, 3, 4]])  # 1 and 4 share 7 of 9: near copies
+        # The same dish by name is one dish, however different its list; a dinner buying too much is left out
+        named = {i: {**c[i], 'title': t} for i, t in zip(c, ('Butter Chicken with Basmati Rice and Naan', 'Chicken Pad Thai',
+                                                           'Butter Chicken with Basmati Rice and Homemade Naan', 'Chicken Curry'))}
+        self.assertEqual([ids for ids, _ in series.trios(named)], [[2, 3, 4]])
+        big = {**c, 2: {**c[2], 'buy': frozenset(range(100, 100 + series.TRIO_BUY_MAX + 1)) | {2, 10, 11}}}
+        self.assertEqual(series.trios(big), [])
         self.assertEqual(series.trio(c, [1, 2, 3, 4], {}), [1, 2, 3])
         self.assertNotEqual(series.merge_key('a', 'Beef'), series.merge_key('b', 'Beef'))
         # The fixtures share salt and oil only (staples), so no set: the series has run out
