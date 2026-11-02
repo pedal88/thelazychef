@@ -19,7 +19,7 @@ os.environ.pop('K_SERVICE', None)
 
 from app import app  # noqa: E402
 from database.models import Recipe, SocialPost, User, db  # noqa: E402
-from scripts.social_batch import day_plan, folder_name, parse_plan, plan_post  # noqa: E402
+from scripts.social_batch import POSTS_PER_DAY, day_plan, folder_name, parse_plan, plan_post  # noqa: E402
 from services import funnel, social_series  # noqa: E402
 
 DAY = datetime.date(2026, 11, 3)  # a Tuesday
@@ -247,13 +247,19 @@ class DayOfPostsTests(unittest.TestCase):
 
 
 class PlanTests(unittest.TestCase):
-    def test_a_day_is_the_four_series_and_a_fifth_by_weekday(self):
+    def test_a_day_takes_its_posts_from_the_series_by_turn(self):
         monday = datetime.date(2026, 11, 2)
-        self.assertEqual([p['kind'] for p in day_plan(monday)], ['airfryer', 'got', 'protein', 'dishes', 'guess'])
-        self.assertEqual(day_plan(monday + datetime.timedelta(days=2))[-1]['kind'], 'cuisine')
-        self.assertEqual(day_plan(monday + datetime.timedelta(days=4))[-1]['kind'], 'guess')
-        fifths = {day_plan(monday + datetime.timedelta(days=d))[-1]['kind'] for d in (1, 3, 5, 6, 8)}
-        self.assertTrue(fifths <= {'airfryer', 'got', 'protein', 'dishes'})
+        kinds = lambda day, *n: [p['kind'] for p in day_plan(day, *n)]  # noqa: E731
+        tuesday = monday + datetime.timedelta(days=1)
+        saturday, sunday = monday + datetime.timedelta(days=5), monday + datetime.timedelta(days=6)
+        self.assertEqual(POSTS_PER_DAY, 2)
+        self.assertEqual(len(day_plan(tuesday)), 2)
+        self.assertEqual(sorted(kinds(saturday) + kinds(sunday)), ['airfryer', 'dishes', 'got', 'protein'])
+        self.assertEqual(kinds(monday)[-1], 'guess')
+        self.assertEqual(kinds(monday + datetime.timedelta(days=2))[-1], 'cuisine')
+        self.assertEqual(kinds(monday, 5), ['airfryer', 'got', 'protein', 'dishes', 'guess'])
+        self.assertEqual(kinds(monday + datetime.timedelta(days=2), 5)[-1], 'cuisine')
+        self.assertEqual(kinds(tuesday, 4), ['airfryer', 'got', 'protein', 'dishes'])
 
     def test_a_plan_is_a_post_per_line(self):
         text = ('# Tuesday\nairfryer hook=number cta=follow\ngot 323,326,329 hook=search n=4\nguess\n\n'

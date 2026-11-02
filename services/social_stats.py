@@ -39,9 +39,21 @@ def configured():
 
 def graph_get(path, params):
     """GET a Graph API path with the token: the JSON answer, or StatsError."""
+    return _graph('get', path, params=params)
+
+
+def graph_post(path, params):
+    """POST to a Graph API path with the token: the JSON answer, or StatsError."""
+    return _graph('post', path, data=params)
+
+
+def _graph(method, path, params=None, data=None):
+    token = {'access_token': os.environ['INSTAGRAM_ACCESS_TOKEN']}
     try:
-        res = requests.get(f'{GRAPH}/{path}', timeout=30,
-                           params={**params, 'access_token': os.environ['INSTAGRAM_ACCESS_TOKEN']})
+        if method == 'get':
+            res = requests.get(f'{GRAPH}/{path}', timeout=30, params={**params, **token})
+        else:
+            res = requests.post(f'{GRAPH}/{path}', timeout=60, data={**data, **token})
         body = res.json()
     except (requests.RequestException, ValueError):
         # Not from the exception: its text can hold the address with the token
@@ -103,7 +115,7 @@ def fetch_instagram(today=None, get=graph_get, now=None):
             summary['unlogged'].append(item.get('permalink') or item['id'])
             continue
         summary['matched'] += 1
-        if post.status == 'draft':
+        if post.status != 'posted':
             went_up = datetime.datetime.strptime(item['timestamp'], '%Y-%m-%dT%H:%M:%S%z')
             post.status, post.posted_on = 'posted', went_up.astimezone(datetime.timezone.utc).date()
             summary['posted'] += 1

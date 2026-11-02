@@ -506,8 +506,16 @@ class SocialPost(db.Model):
     look: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)
     slides: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     slot: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
-    # 'draft' when scripts/social_batch.py has planned and rendered it, 'posted' once it is up
+    # 'draft' when scripts/social_batch.py has planned and rendered it, 'scheduled' when approved in the Instagram
+    # queue, 'posted' once it is up
     status: Mapped[str] = mapped_column(String(20), nullable=False, default='posted', server_default='posted')
+    # The Instagram queue (services/social_publish.py): the text, the slides on Cloud Storage (a line each), when it is
+    # to go up (UTC), what Instagram called it, and why the last try failed; status 'scheduled' once it is approved
+    caption: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    slide_urls: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    scheduled_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime, nullable=True)
+    media_id: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)
+    publish_error: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     stats: Mapped[list["SocialPostStat"]] = relationship(back_populates="post", cascade="all, delete-orphan",
                                                          order_by="SocialPostStat.day")

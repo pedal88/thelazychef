@@ -24,7 +24,7 @@ USDA values, `scripts/ingredient_nutrition.py`).
 |---|---|---|
 | Cloud Run | The app (`lazy-chef-app`, europe-west1) and the migration job (`lazy-chef-db-migration`) | `.github/workflows/deploy.yaml` |
 | Cloud SQL | Postgres `lazy-chef-db-eu` (europe-north2), with pgvector | `database/db_connector.py` (Cloud SQL Python Connector + pg8000) |
-| Cloud Storage | Bucket `thelazychef-assets`: dish images (`recipes/`), ingredient symbols (`pantry/symbols/`), category and cuisine symbols (`pantry/categories/`, `pantry/cuisines/`) | `services/storage_service.py` (`get_storage()` in routes) |
+| Cloud Storage | Bucket `thelazychef-assets`: dish images (`recipes/`), ingredient symbols (`pantry/symbols/`), category and cuisine symbols (`pantry/categories/`, `pantry/cuisines/`), the Instagram queue's slides as public JPEGs (`social/`) | `services/storage_service.py` (`get_storage()` in routes) |
 | Cloud Tasks | Queue `recipe-generation` (europe-west1): recipe generation, the pantry job and the image job | `services/recipe_v2/tasks.py` (REST calls with google.auth, no client library) |
 | Secret Manager | `GOOGLE_API_KEY`, `ANTHROPIC_API_KEY`, `DB_PASS`, `SECRET_KEY`, `CONTENT_API_KEY`, `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `INSTAGRAM_ACCESS_TOKEN`, mounted into Cloud Run by the deploy | `deploy.yaml` (`--update-secrets`); rotation: `docs/runbooks/ROTATE_SECRETS.md` |
 | Cloud Scheduler | Job `social-stats` (europe-west1), daily at 06:00 Oslo: `POST /internal/tasks/social-stats` with an OIDC token from `TASKS_SERVICE_ACCOUNT` | `routes/funnel_routes.py`; the command: `docs/runbooks/ROTATE_SECRETS.md`, "Instagram" |
@@ -43,6 +43,10 @@ calls the app back with an OIDC token from the `TASKS_SERVICE_ACCOUNT`, checked 
 3. `/internal/tasks/recipe-v2-images/<id>`: the dish and component images with their vision check (`tasks.run_images`).
    Queued after 2 (or straight after 1), unless the form said "Skip the images".
 
+The same queue also holds the Instagram queue's posts: `/internal/tasks/social-publish/<id>`, one task per approved post,
+waiting until its time (`scheduleTime`; `services/social_publish.py`). It is not retried on a failure: the post goes back
+to draft with the reason.
+
 Each job retries up to `MAX_ATTEMPTS = 3` (600 s deadline); the last failure is noted on the recipe instead of raising.
 Without `TASKS_QUEUE` (local runs) the generation runs inside the request and the pantry and image jobs do not run.
 
@@ -51,7 +55,8 @@ Without `TASKS_QUEUE` (local runs) the generation runs inside the request and th
 - Web pages and video: `requests` + BeautifulSoup for recipe links, `yt_dlp` (and ffmpeg in the image) for videos
   (`services/recipe_v2/sources.py`, `services/social_media_service.py`).
 - Instagram (Meta Graph API, `graph.facebook.com/v26.0`): each post's numbers into the post log, once a day
-  (`services/social_stats.py`, `docs/SOCIAL.md`). The Meta app "The Lazy Chef stats", in development mode with the business
+  (`services/social_stats.py`, `docs/SOCIAL.md`), and publishing the approved posts of the Instagram queue
+  (`services/social_publish.py`). The Meta app "The Lazy Chef stats", in development mode with the business
   portfolio "The Lazy Chef" and the account thelazychef.ai as Instagram Tester, no App Review. Its Unified login configuration
   gives a system-user token that never expires, with `instagram_basic`, `instagram_manage_insights` and
   `instagram_content_publish`. A new Graph API version every few months; each lasts about two years.

@@ -6,7 +6,7 @@ from flask import Blueprint, abort, flash, jsonify, redirect, render_template, r
 from flask_login import current_user, login_required
 
 from database.models import SocialPost, db
-from services import funnel, social_stats
+from services import funnel, social_publish, social_stats
 from services.recipe_v2 import tasks
 from utils.decorators import admin_required
 
@@ -191,6 +191,64 @@ def social_stats_task():
         return jsonify({'error': str(e)}), 502  # Cloud Scheduler tries again
     print(f'social-stats: {social_stats.report(summary)}')
     return jsonify(summary), 200
+
+
+@funnel_bp.route('/admin/funnel/queue')
+@login_required
+@admin_required
+def queue():
+    """The Instagram queue: the posts scripts/social_batch.py has rendered, by day, to approve with a time."""
+    return render_template('admin/funnel_queue.html', days=social_publish.queue(),
+                           ready=social_stats.configured() and tasks.configured())
+
+
+@funnel_bp.route('/admin/funnel/queue/approve', methods=['POST'])
+@login_required
+@admin_required
+def approve_queue():
+    """Schedules the posts ticked in the form with their times and text; the others stay as they are."""
+    errors, done = [], 0
+    for day in social_publish.queue():
+        for row in day['posts']:
+            post = row['post']
+            if request.form.get(f'approve-{post.id}'):
+                error = social_publish.schedule(post, social_publish.parse_when(request.form.get(f'when-{post.id}')),
+                                                request.form.get(f'caption-{post.id}'))
+                if error:
+                    errors.append(error)
+                else:
+                    done += 1
+    if done:
+        flash(f'{done} post{"s" if done != 1 else ""} scheduled.', 'success')
+    for error in errors:
+        flash(error, 'error')
+    return redirect(url_for('funnel.queue'))
+
+
+@funnel_bp.route('/admin/funnel/queue/<int:post_id>/cancel', methods=['POST'])
+@login_required
+@admin_required
+def cancel_queue(post_id):
+    post = db.session.get(SocialPost, post_id) or abort(404)
+    social_publish.cancel(post)
+    flash(f'{funnel.post_ref(post)} is back to draft.', 'success')
+    return redirect(url_for('funnel.queue'))
+
+
+@funnel_bp.route('/internal/tasks/social-publish/<int:post_id>', methods=['POST'])
+def social_publish_task(post_id):
+    """A scheduled post's Cloud Task, at its time. Always 200 when it has run: a failure is shown in the queue, not
+    tried again (services/social_publish.py)."""
+    if not tasks.verified(request.headers.get('Authorization')):
+        return jsonify({'error': 'unauthorized'}), 401
+    post = db.session.get(SocialPost, post_id)
+    if post is None:
+        return jsonify({'result': 'no such post'}), 200
+    if not social_stats.configured():
+        return jsonify({'result': 'Instagram is not set up'}), 200
+    result = social_publish.publish(post)
+    print(f'social-publish: {funnel.post_ref(post)}: {result}')
+    return jsonify({'result': result}), 200
 
 
 @funnel_bp.route('/admin/funnel/posts/<int:post_id>/posted', methods=['POST'])
