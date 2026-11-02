@@ -65,8 +65,8 @@ DELTA_LEAVES = 2
 # The steps as on the Cook view (a series): this many per slide, over as many slides as it takes, each step's
 # symbols with it
 COOK_STEPS = {'ig': 3, 'tt': 4}
-# The symbols on a series cover: this many of the things to buy, under the hook
-COVER_SYMBOLS = 8
+# The symbols on a series cover: this many of the things to buy, under the hook, in two rows of six
+COVER_SYMBOLS = 12
 # One Pot Meals count the vessels food is cooked in: not bowls, sieves, machines (derive.VESSELS has them for the
 # washing up) and not the air fryer, which is a series of its own
 COOK_VESSELS = {'grill_pan', 'saucepan', 'large_pot', 'wide_pot', 'dutch_oven', 'frying_pan', 'wok', 'steamer',
@@ -268,7 +268,7 @@ def shop_split_slide(view, size):
     tiles, _ = _ingredients(view)
     have = _staples(view)
     return {'kind': 'shop_split', 'title': f'Buy {len(tiles)} things', 'tiles': tiles, 'have': have,
-            'cols': columns(len(tiles), size, room=160 if have else 0)}
+            'cols': columns(len(tiles), size, room=220 if have else 0)}
 
 
 def columns(n, size, labels=True, room=0):

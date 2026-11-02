@@ -131,14 +131,13 @@ html, body { margin: 0; background: var(--sl-paper); }
 .foot .brand-badge { width: 52px; height: 52px; }
 
 /* The series' slides (services/social_series.py, docs/SOCIAL.md "The series") */
-/* A series cover names the dish under the hook */
-.facts .name { font-weight: 700; }
-/* Got [ingredient]?: the ingredient large, the dinners small beside it */
-.got { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 24px; margin: 24px 0; }
-.got .sym.big { width: 100%; }
+/* What to make with [ingredient]: the ingredient large in the middle, the three dinners across the slide under it */
+.got { flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; margin: 16px 0; }
+.got .sym.big { width: 46%; flex: none; }
 .got .sym.big i { font-size: 120px; }
-.got .dishes.small { flex: none; display: grid; grid-template-columns: 1fr; margin: 0; }
-.got .dishes.small img { width: 68%; justify-self: center; }
+.got .dishes.three { flex: none; display: flex; justify-content: center; margin: 0 -40px; }
+.got .dishes.three img { width: 34%; mix-blend-mode: multiply; }
+.size-tt .got .sym.big { width: 56%; }
 /* The big numbers */
 .numbers { flex: 1; display: grid; grid-auto-rows: min-content; align-content: center; gap: 56px; }
 .number { display: flex; flex-direction: column; gap: 6px; }
@@ -160,10 +159,10 @@ html, body { margin: 0; background: var(--sl-paper); }
 .vessel .pic img { max-width: 100%; max-height: 100%; object-fit: contain; mix-blend-mode: multiply; }
 .vessel figcaption { margin-top: 12px; font: 600 36px/1.15 var(--font-sans); }
 /* The shopping list in two: what to buy, then a row of what you probably have */
-.have { margin: 40px 0 0; font: 600 28px/1 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--color-accent); }
-.have-row { display: flex; flex-wrap: wrap; gap: 16px 28px; margin-top: 18px; }
-.have-item { display: inline-flex; align-items: center; gap: 8px; font: 500 30px/1 var(--font-sans); color: var(--sl-muted); }
-.have-item img { width: 56px; height: 56px; object-fit: contain; mix-blend-mode: multiply; }
+.have { margin: 44px 0 0; font: 600 34px/1 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--color-accent); }
+.have-row { display: flex; flex-wrap: wrap; gap: 18px 32px; margin-top: 22px; }
+.have-item { display: inline-flex; align-items: center; gap: 10px; font: 500 38px/1 var(--font-sans); color: var(--sl-ink); }
+.have-item img { width: 76px; height: 76px; object-fit: contain; mix-blend-mode: multiply; }
 /* The river delta, drawn larger than on the page (static/css/delta.css) and placed without its script: a column per
    branch, the dish last, an arrow straight down from each step into the one it flows into */
 .slide-delta { flex: 1; min-height: 0; display: flex; align-items: flex-start; justify-content: center; margin-top: 24px; }
@@ -193,9 +192,10 @@ html, body { margin: 0; background: var(--sl-paper); }
 .end.cta .line { font-size: 72px; }
 .end .address.small { margin-top: 64px; padding: 0; background: none; color: var(--sl-muted); font: 600 34px/1 var(--font-mono); }
 
-/* The ingredient symbols lifted: a strip under the hook on a series cover */
-.strip { display: flex; gap: 6px; margin: 28px 0 0; }
-.strip img { width: 108px; height: 108px; object-fit: contain; mix-blend-mode: multiply; }
+/* A series cover: the dish named large under the hook, then the ingredient symbols lifted, in two rows */
+.dish { margin: 20px 0 0; font: 500 50px/1.15 var(--font-serif); color: var(--sl-muted); }
+.strip { display: flex; flex-wrap: wrap; gap: 0 2px; margin: 24px 0 0; }
+.strip img { width: 150px; height: 150px; object-fit: contain; mix-blend-mode: multiply; }
 /* 3 ingredients, 3 dinners: the three symbols large, the dinners small under them */
 .trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 40px; }
 .trio .tile figcaption span { font-size: 34px; color: var(--sl-ink); font-weight: 600; }
@@ -203,9 +203,10 @@ html, body { margin: 0; background: var(--sl-paper); }
 .dishes.small.row img { width: 30%; mix-blend-mode: multiply; }
 /* Four dinners on a cover: larger than five */
 .dishes.n4 img { width: 48%; }
-/* The steps as on the Cook view: the number, the step's name large, its symbols with amounts; no minutes */
+/* The steps as on the Cook view: the marker, the step's name large, its symbols with amounts; no minutes */
 .cook { flex: 1; margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; justify-content: space-evenly; gap: 24px; }
 .cook-step { display: grid; grid-template-columns: 72px 1fr; gap: 24px; align-items: start; }
+/* The step marker (templates/social/slide.html step_no): a numbered circle in the phase's colour, to be swapped */
 .cook-step .no { width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
   background: var(--ph); color: var(--color-paper); font: 700 34px/1 var(--font-sans); margin-top: 6px; }
 .cook-body h2 { margin: 0; font: 700 58px/1.08 var(--font-serif); letter-spacing: -.01em; }

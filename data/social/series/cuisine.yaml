@@ -22,9 +22,11 @@ hooks:
   number:
     - text: "{dishes} {cuisine} dinners. {count} things to buy."
       needs: [cuisine, count, many]
-    - text: "A week of {cuisine}. {count} things."
-      needs: [cuisine, count]
-    - text: "{cuisine} all week. {count} things, one shop."
-      needs: [cuisine, count]
+    - text: "{dishes} {cuisine} dinners, one shopping list."
+      needs: [cuisine, many]
 proposed_hooks: []
-retired_hooks: []
+retired_hooks:
+  - text: "A week of {cuisine}. {count} things."
+    why: Four dinners are not a week (2.11.2026).
+  - text: "{cuisine} all week. {count} things, one shop."
+    why: The same.

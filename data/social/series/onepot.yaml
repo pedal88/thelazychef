@@ -2,7 +2,7 @@
 name: One Pot Meals
 status: active
 purpose: Sell the dinner by how little there is to clean up afterwards, the cost of cooking nobody shows.
-message: One pot, pan, wok or tray does the cooking; the vessels shown as they are, the symbols and the steps.
+message: One pot, pan, wok or tray does the cooking; the dish, the symbols, the steps and one shopping list.
 hypothesis: >
   Washing up is what keeps people from cooking on a weeknight; one pot is a promise people search for, and a true
   small number of dishes ("Dishes to wash: 1", only when it is literally one) is worth a share to whoever does them.
@@ -14,7 +14,7 @@ stop_when: >
 pick:
   filter: onepot          # exactly one vessel the food is cooked in (social.COOK_VESSELS), not the air fryer
   count: 1
-slides: [cover, wash, delta, steps, shop_split, end]
+slides: [cover, delta, steps, shop_split, end]
 cta: send
 noun: one-pot dinner
 hashtags: "#onepot #onepan #onepotmeal #easydinner #dinnerideas"

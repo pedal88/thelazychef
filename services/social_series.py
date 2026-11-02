@@ -331,8 +331,10 @@ def shared_trio(posts):
         for t in ts:
             if t['key'] in keys:
                 m = merge_key(t['key'], label.get(t['key']))
-                if m not in by_key or len(t['name']) < len(by_key[m]['name']):
-                    by_key[m] = {'name': t['name'], 'img': t['img'], 'protein': bool(label.get(t['key']))}
+                # A merged ingredient is named by what it is ("chicken": one dinner has thighs, one breast)
+                name = label[t['key']].lower() if m != t['key'] else t['name']
+                if m not in by_key or len(name) < len(by_key[m]['name']):
+                    by_key[m] = {'name': name, 'img': t['img'], 'protein': bool(label.get(t['key']))}
     chosen = sorted(by_key.values(), key=lambda x: (not x['protein'], x['name'].lower()))[:SHARED_MIN]
     return {'keys': keys, 'names': [c['name'] for c in chosen], 'symbols': chosen}
 
@@ -403,15 +405,21 @@ def slides(slug, posts, size, n, hook_group=None, cta_group=None, code=None, hoo
             out.append({'kind': 'trio_cover', 'eyebrow': label, 'title': text, 'symbols': shared['symbols'],
                         'dishes': images, 'count': len(posts)})
         elif kind == 'week_cover':
-            out.append(social_week.week_slides(views, images, size, eyebrow=label, title=text, cta=call,
-                                               labels=[d['day'] for d in days])[0])
+            cover = social_week.week_slides(views, images, size, eyebrow=label, title=text, cta=call,
+                                            labels=[d['day'] for d in days])[0]
+            grams = [d['protein'] for d in days if d['protein']]
+            if card['filter'] == 'protein' and grams:  # the four-dinner protein post: the protein range, no time
+                cover['each'] = f'{min(grams)}–{max(grams)} g protein per serving' if min(grams) != max(grams) \
+                    else f'{grams[0]} g protein per serving'
+            out.append(cover)
         elif kind == 'days':
             for d in days:
                 keep = [t for t in d['tiles'] if not shared or t['key'] not in shared['keys']]
                 plus = None
                 if shared and len(keep) < len(d['tiles']):
                     plus = f"Plus the {shared['name']}." if 'name' in shared else f"Plus {', '.join(shared['names'])}."
-                out.append({'kind': 'day', **d, 'tiles': keep, 'many': len(keep) > social_week.DAY_MANY, 'note': plus,
+                day = f"{d['day']} · {d['protein']} g protein" if card['filter'] == 'protein' and d['protein'] else d['day']
+                out.append({'kind': 'day', **d, 'day': day, 'tiles': keep, 'many': len(keep) > social_week.DAY_MANY, 'note': plus,
                             'cols': max(5, social.columns(len(keep), size, room=social_week.DAY_ROOM_MANY
                                                           if len(keep) > social_week.DAY_MANY else social_week.DAY_ROOM))})
         elif kind == 'shop':
@@ -563,24 +571,35 @@ def candidates(slug):
             for i, protein, cuisine, kcal, servings, grams in rows}
 
 
-def trio(c, eligible, last):
-    """3 ingredients, 3 dinners: three eligible dinners that share at least SHARED_MIN things to buy (staples left
-    out), one of them a protein; chicken breast and thigh are one ingredient. The set least recently seen first,
-    then the one sharing most; [] when there is none."""
+def trios(c, among=None):
+    """3 ingredients, 3 dinners: every set of three dinners from candidates('three3') (or the ids in among) that
+    share at least SHARED_MIN things to buy (staples left out), one of them a protein, with chicken breast and thigh
+    as one ingredient, and that are three different dishes: no two share more than social_week.WEEK_SAME of what
+    they buy (the week's rule, so three gyros are not a set). [(ids, shared), ...], the most shared first."""
     ids = list(c)
     rows = db.session.execute(db.select(Ingredient).where(Ingredient.id.in_(
         {k for i in ids for k in c[i]['buy'] if isinstance(k, int)}))).scalars().all()
     label = {i.id: _protein_label(i) for i in rows}
     merged = {i: {merge_key(k, label.get(k)) for k in c[i]['buy']} for i in ids}
-    best = None
-    for three in itertools.combinations(sorted(eligible), 3):
+    out = []
+    for three in itertools.combinations(sorted(among if among is not None else ids), 3):
         common = set.intersection(*(merged[i] for i in three))
         if len(common) < SHARED_MIN or not any(k == 'protein:Chicken' or label.get(k) for k in common):
             continue
-        key = (max(last.get(i, datetime.date.min) for i in three), -len(common), three)
-        if best is None or key < best[0]:
-            best = (key, three)
-    return list(best[1]) if best else []
+        if any(len(c[a]['buy'] & c[b]['buy']) / len(c[a]['buy'] | c[b]['buy']) > social_week.WEEK_SAME
+               for a, b in itertools.combinations(three, 2)):
+            continue
+        out.append((list(three), len(common)))
+    return sorted(out, key=lambda x: (-x[1], x[0]))
+
+
+def trio(c, eligible, last):
+    """The next set for 3 ingredients, 3 dinners: the one least recently seen, then the one sharing most; [] when
+    there is none."""
+    sets = trios(c, eligible)
+    if not sets:
+        return []
+    return min(sets, key=lambda x: (max(last.get(i, datetime.date.min) for i in x[0]), -x[1], x[0]))[0]
 
 
 def pick(slug, today=None):

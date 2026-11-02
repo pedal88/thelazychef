@@ -146,7 +146,7 @@ class SeriesTests(unittest.TestCase):
             'three3': (three, lambda size: ['trio_cover', 'day', 'day', 'day', *shops(self.ids[:3]), 'end']),
             'protein': (one, lambda size: ['cover', 'numbers', *steps(self.ids[0], size), 'shop_split', 'end']),
             'protein4': (four, lambda size: ['week_cover', 'day', 'day', 'day', 'day', *shops(self.ids[:4]), 'end']),
-            'onepot': (one, lambda size: ['cover', 'wash', *delta, *steps(self.ids[0], size), 'shop_split', 'end']),
+            'onepot': (one, lambda size: ['cover', *delta, *steps(self.ids[0], size), 'shop_split', 'end']),  # no wash slide
             'under20': (one, lambda size: ['cover', *steps(self.ids[0], size), 'shop_split', 'end']),
             'only6': (one, lambda size: ['cover', 'shop_split', *steps(self.ids[0], size), 'end']),
             'guess': (one, lambda size: ['collage', 'ingredients', 'dish', 'end']),
@@ -379,7 +379,10 @@ class SeriesTests(unittest.TestCase):
         self.assertIn('Thu', self.get(series='cuisine', ids=ids, n=2, slide=5).get_data(as_text=True))
         self.assertEqual(self.get(series='cuisine', ids=','.join(map(str, self.ids))).status_code, 404)  # five is not four
         four = self.get(series='protein4', ids=ids, n=1, slide=2).get_data(as_text=True)
-        self.assertIn('Dinner 1', four)
+        self.assertIn('Dinner 1 · 40 g protein', four)
+        cover = self.get(series='protein4', ids=ids, n=1, slide=1).get_data(as_text=True)
+        self.assertIn('40 g protein per serving', cover)
+        self.assertNotIn('min each', cover)
 
     def test_the_caption_counts_its_dishes_in_good_english(self):
         f = {**series.sample_facts(), 'vessels': 1, 'active': 8, 'total': None}
@@ -496,6 +499,21 @@ class SeriesTests(unittest.TestCase):
         shared = series.shared_trio(posts)
         self.assertEqual(len(shared['symbols']), min(3, len(shared['keys'])))
         self.assertEqual(series.merge_key('a', 'Chicken'), series.merge_key('b', 'Chicken'))
+        # Three dinners sharing chicken (thigh, breast, thigh), onion and garlic: one set, named "chicken"; two near
+        # copies (more than WEEK_SAME of the list in common) are not three different dishes
+        c = {1: {'buy': frozenset({1, 10, 11, 20, 21, 22, 23, 24}), 'protein': 'Chicken'},
+             2: {'buy': frozenset({2, 10, 11, 30, 31, 32, 33, 34}), 'protein': 'Chicken'},
+             3: {'buy': frozenset({1, 10, 11, 40, 41, 42, 43, 44}), 'protein': 'Chicken'},
+             4: {'buy': frozenset({1, 10, 11, 20, 21, 22, 23, 25}), 'protein': 'Chicken'}}
+        from database.models import Ingredient
+        for i, name, sub in ((1, 'chicken thigh', 'chicken'), (2, 'chicken breast', 'chicken'), (10, 'onion', 'onion'),
+                             (11, 'garlic', 'garlic')):
+            db.session.add(Ingredient(id=i, food_id=f'f{i}', name=name, main_category='meat' if i < 3 else 'produce',
+                                      sub_category=sub, tier='core', status='active'))
+        db.session.commit()
+        sets = series.trios(c)
+        self.assertEqual([ids for ids, _ in sets], [[1, 2, 3], [2, 3, 4]])  # 1 and 4 share 7 of 9: near copies
+        self.assertEqual(series.trio(c, [1, 2, 3, 4], {}), [1, 2, 3])
         self.assertNotEqual(series.merge_key('a', 'Beef'), series.merge_key('b', 'Beef'))
         # The fixtures share salt and oil only (staples), so no set: the series has run out
         self.assertEqual(series.pick('three3', datetime.date(2026, 11, 2)), [])

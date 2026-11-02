@@ -102,7 +102,7 @@ class SocialTests(unittest.TestCase):
     def test_the_slides_carry_the_brand_mark_on_the_badge(self):
         count = int(self.get(f'/social/recipe/{self.recipe.id}/map', slide=1).headers['X-Slides'])
         html = self.get(f'/social/recipe/{self.recipe.id}/map', slide=count).get_data(as_text=True)
-        self.assertEqual(html.count('class="brand-badge'), 2)  # the last slide's and the footer's
+        self.assertEqual(html.count('class="brand-badge'), 1)  # the last slide's; the footer shows no second logo
         self.assertNotIn('brand/mark.svg', html)
 
     def test_the_site_and_the_slides_read_the_looks_fonts_from_one_place(self):
@@ -139,10 +139,10 @@ class SocialTests(unittest.TestCase):
         self.assertNotIn(self.recipe.title, html.split('<main', 1)[1])
         self.assertEqual(self.kinds('grid'), ['collage', 'ingredients', 'dish', 'end'])
         cover = self.get(f'{base}/map', hook='guess', slide=1).get_data(as_text=True)
-        self.assertIn('class="name">' + self.recipe.title, cover)  # the dish is still named under the hook
+        self.assertIn('class="dish">' + self.recipe.title, cover)  # the dish is still named under the hook
         self.assertIn('uess', cover)  # one of the guess group's phrasings
         # A group with nothing true to say about this dish (90 minutes: no time may be said): the post as it was
-        self.assertNotIn('class="name">', self.get(f'{base}/map', hook='number', slide=1).get_data(as_text=True))
+        self.assertNotIn('class="dish">', self.get(f'{base}/map', hook='number', slide=1).get_data(as_text=True))
         last = self.get(f'{base}/map', cta='follow', code=3, slide=5).get_data(as_text=True)
         self.assertIn('Follow', last)
         self.assertIn('class="address small">thelazychef.app/ig/3', last)
