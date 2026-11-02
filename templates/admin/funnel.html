@@ -22,7 +22,9 @@
     <h2 class="font-semibold text-slate-900">Per post</h2>
     <span class="text-sm text-slate-500">Next free code: <span class="font-mono font-semibold text-slate-900">{{ r.next_code }}</span></span>
     <a href="{{ url_for('funnel.queue') }}" class="ml-auto px-3 py-1.5 rounded-full border border-slate-300 text-slate-900 text-sm font-semibold">Instagram queue</a>
+    <a href="{{ url_for('funnel.tiktok_page') }}" class="px-3 py-1.5 rounded-full border border-slate-300 text-slate-900 text-sm font-semibold">TikTok posts</a>
     <form method="post" action="{{ url_for('funnel.fetch_now') }}"><button type="submit" class="px-3 py-1.5 rounded-full border border-slate-300 text-slate-900 text-sm font-semibold">Fetch from Instagram</button></form>
+    <a href="{{ url_for('funnel.report_page') }}" class="px-3 py-1.5 rounded-full border border-slate-300 text-slate-900 text-sm font-semibold">Weekly report</a>
     <a href="{{ url_for('funnel.numbers') }}" class="px-3 py-1.5 rounded-full border border-slate-300 text-slate-900 text-sm font-semibold">Copy in numbers</a>
     <a href="{{ url_for('funnel.new_post') }}" class="px-3 py-1.5 rounded-full bg-slate-900 text-white text-sm font-semibold">Log a post</a>
   </div>

@@ -27,6 +27,8 @@ CLAUDE_SONNET = "claude-sonnet-5-5"
 # Chosen in phase 0b (docs/pilot/RECIPE_V2_PILOT_0B.md) for both rounds: text and structuring.
 RECIPE_V2_MODEL = CLAUDE_OPUS
 RECIPE_V2_EFFORT = "low"
+SOCIAL_REPORT_MODEL = CLAUDE_SONNET  # the weekly report on the posts (services/social_report.py)
+SOCIAL_REPORT_EFFORT = "low"
 
 _client = None
 _claude = None

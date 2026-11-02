@@ -2,12 +2,14 @@
 the ref code any page can carry (?ref=ig-3), the admin Funnel page, and its post log."""
 import datetime
 
-from flask import Blueprint, abort, flash, jsonify, redirect, render_template, request, url_for
+from flask import Blueprint, Response, abort, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from database.models import SocialPost, db
-from services import funnel, social_publish, social_stats
+from database.models import SocialPost, SocialReport, db
+from routes._shared import get_storage
+from services import funnel, social_publish, social_report, social_stats
 from services.recipe_v2 import tasks
+from utils.ai_errors import friendly_ai_error
 from utils.decorators import admin_required
 
 funnel_bp = Blueprint('funnel', __name__)
@@ -193,6 +195,46 @@ def social_stats_task():
     return jsonify(summary), 200
 
 
+@funnel_bp.route('/internal/tasks/social-report', methods=['POST'])
+def social_report_task():
+    """The weekly job (Cloud Scheduler, social-report), Sunday morning after social-stats. A week already written is
+    left alone, so a repeated call costs nothing."""
+    if not tasks.verified(request.headers.get('Authorization')):
+        return jsonify({'error': 'unauthorized'}), 401
+    try:
+        row = social_report.write_week()
+    except Exception as e:
+        db.session.rollback()
+        print(f'social-report: {e}')
+        return jsonify({'error': 'the report was not written'}), 502  # Cloud Scheduler tries again
+    return jsonify({'week_ending': row.week_ending.isoformat(), 'headline': row.report.get('headline')}), 200
+
+
+@funnel_bp.route('/admin/funnel/report')
+@login_required
+@admin_required
+def report_page():
+    """The weekly report: the newest, or ?id= an earlier one, with the list of them."""
+    reports = db.session.execute(db.select(SocialReport).order_by(SocialReport.week_ending.desc())).scalars().all()
+    chosen = next((r for r in reports if r.id == request.args.get('id', type=int)), reports[0] if reports else None)
+    return render_template('admin/funnel_report.html', report=chosen, reports=reports)
+
+
+@funnel_bp.route('/admin/funnel/report/write', methods=['POST'])
+@login_required
+@admin_required
+def write_report():
+    """The report for the week ending today, now, replacing one already written for it."""
+    try:
+        row = social_report.write_week(replace=True)
+    except Exception as e:
+        db.session.rollback()
+        print(f'social-report: {e}')
+        flash(friendly_ai_error(e, 'The report could not be written. Try again.'), 'error')
+        return redirect(url_for('funnel.report_page'))
+    return redirect(url_for('funnel.report_page', id=row.id))
+
+
 @funnel_bp.route('/admin/funnel/queue')
 @login_required
 @admin_required
@@ -200,6 +242,26 @@ def queue():
     """The Instagram queue: the posts scripts/social_batch.py has rendered, by day, to approve with a time."""
     return render_template('admin/funnel_queue.html', days=social_publish.queue(),
                            ready=social_stats.configured() and tasks.configured())
+
+
+@funnel_bp.route('/admin/funnel/tiktok')
+@login_required
+@admin_required
+def tiktok_page():
+    """The TikTok posts scripts/social_batch.py has rendered, for the phone: save the slides, copy the words, post in
+    TikTok's app, mark it posted."""
+    return render_template('admin/funnel_tiktok.html', days=social_publish.tiktok_days())
+
+
+@funnel_bp.route('/admin/funnel/posts/<int:post_id>/slides/<int:n>.jpg')
+@login_required
+@admin_required
+def post_slide(post_id, n):
+    post = db.session.get(SocialPost, post_id) or abort(404)
+    data = social_publish.slide_bytes(post, n, get_storage())
+    if data is None:
+        abort(404)
+    return Response(data, mimetype='image/jpeg', headers={'Cache-Control': 'private, max-age=3600'})
 
 
 @funnel_bp.route('/admin/funnel/queue/approve', methods=['POST'])
@@ -258,8 +320,12 @@ def mark_posted(post_id):
     """A draft from scripts/social_batch.py is up: it went up today."""
     post = db.session.get(SocialPost, post_id) or abort(404)
     post.status, post.posted_on = 'posted', datetime.date.today()
+    post.sound = (request.form.get('sound') or '').strip()[:120] or post.sound
+    post.url = (request.form.get('url') or '').strip()[:300] or post.url
     db.session.commit()
     flash(f'{funnel.post_ref(post)} is up.', 'success')
+    if request.form.get('back') == 'tiktok':
+        return redirect(url_for('funnel.tiktok_page'))
     return redirect(url_for('funnel.dashboard') + '#posts')
 
 
