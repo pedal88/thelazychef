@@ -229,9 +229,9 @@ def post_view(post, ids, user=None):
     from services.recipe_v2.view import page
     recipes = cards(ids, user)
     views = [page(r) for r in recipes]
-    week = len(recipes) == len(social_week.WEEK_DAYS) and (post.format == 'week' or post.series == 'cuisine')
+    week = len(recipes) <= len(social_week.WEEK_DAYS) and (post.format == 'week' or post.series == 'cuisine')
     days = social_week.days_of(views, [None] * len(views),
-                               labels=social_week.WEEK_DAYS if week else [v['title'] for v in views])
+                               labels=social_week.WEEK_DAYS[:len(recipes)] if week else [v['title'] for v in views])
     shop, staples = social_week.shopping(days, views)
     return {'post': post, 'platform': dict(PLATFORMS)[post.platform], 'recipes': recipes,
             'days': [d['day'] for d in days] if week else None, 'shop': shop, 'staples': staples}

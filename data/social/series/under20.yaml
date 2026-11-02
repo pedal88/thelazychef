@@ -1,0 +1,32 @@
+# A series card (docs/SOCIAL.md "The series"). The top is the why, for Pål to correct; the rest is what the code reads.
+name: Under 20 minutes of work
+status: active
+purpose: Reach the people who would cook if it took less of them; the work, not the clock, is what they measure.
+message: A dinner with under 20 minutes of work, the steps as they are and one shopping list.
+hypothesis: >
+  "Minutes of work" is a truer promise than "ready in 30", and the few dinners that keep it are the ones people
+  follow for; under 10 is stressed when it is true.
+signal: Follows and saves per 1000 views.
+stop_when: >
+  After 10 posts per platform it is below the median of the other series on follows per 1000 views, or the catalog
+  runs out (11 dinners on 2.11.2026, 1 of them under 10 minutes).
+
+pick:
+  filter: under20         # the steps' active minutes add up to under 20 (social.SAY_ACTIVE_UNDER)
+  count: 1
+slides: [cover, steps, shop_split, end]
+cta: follow
+noun: quick dinner
+hashtags: "#quickdinner #easydinner #20minutemeals #weeknightdinner #dinnerideas"
+hooks:
+  lazy:
+    - text: "{active} minutes of work. {dish}."
+      needs: [active]
+    - text: "Under 10 minutes of work. {dish}."
+      needs: [stress_active]
+    - text: "{active} minutes of work. That's it."
+      needs: [active]
+    - text: "You do {active} minutes. Dinner does the rest."
+      needs: [active]
+proposed_hooks: []
+retired_hooks: []

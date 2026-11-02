@@ -48,16 +48,19 @@ def post_of(view, heat_source='airfryer', rid=1):
 class CardTests(unittest.TestCase):
     def test_the_cards_in_the_repo_pass_the_check(self):
         self.assertEqual(series.check_cards(), [])
-        self.assertEqual(sorted(series.SERIES), ['airfryer', 'cuisine', 'dishes', 'got', 'guess', 'protein'])
+        self.assertEqual(sorted(series.SERIES), ['airfryer', 'cuisine', 'got', 'guess', 'onepot', 'only6', 'protein',
+                                                 'protein4', 'three3', 'under20'])
+        self.assertEqual(series.active(), ['cuisine', 'got', 'guess', 'onepot', 'protein', 'protein4', 'under20'])
+        self.assertEqual(sorted(set(series.SERIES) - set(series.active())), ['airfryer', 'only6', 'three3'])
         for slug, card in series.SERIES.items():
             with self.subTest(series=slug):
                 self.assertIn(card['status'], series.STATUSES)
                 self.assertTrue(card['hook'] in series.HOOKS)
-                self.assertEqual(card['slides'][-1], 'end')
+                self.assertIn(card['slides'][-1], ('end', 'answer'))
 
     def test_the_check_fails_a_hook_too_long_a_fact_no_post_has_and_a_slide_kind_that_is_not_one(self):
         good = series.SERIES['airfryer']
-        bad = {**good, 'status': 'maybe', 'slides': ['cover', 'carousel', 'end'],
+        bad = {**good, 'status': 'maybe', 'slides': ['cover', 'carousel', 'timebar', 'end'], 'filter': 'soup',
                'hooks': {'lazy': [('A hook that goes on for more than eight words. {active} min.', ('active',)),
                          ('{active} min, {wait} min standing.', ('active', 'wait')),
                          ('{active} min and {total} min.', ('active',))],
@@ -65,8 +68,9 @@ class CardTests(unittest.TestCase):
                'retired_hooks': [{'text': 'old', 'why': ''}], 'purpose': ''}
         problems = '\n'.join(series.check_cards({'x': bad}))
         for text in ('is 12 words, over 8', 'needs wait, which no post has', 'uses total without needing it',
-                     "slide kind 'carousel' is not one", 'status must be one of', "hook group 'shout' is not in",
-                     'retired hook "old" has no why', 'purpose is empty'):
+                     "slide kind 'carousel' is not one", "slide kind 'timebar' is not one", 'status must be one of',
+                     "hook group 'shout' is not in", 'retired hook "old" has no why', 'purpose is empty',
+                     'pick.filter must be one of'):
             with self.subTest(text=text):
                 self.assertIn(text, problems)
         self.assertEqual(series.check_cards({'ok': good}), [])
@@ -127,35 +131,103 @@ class SeriesTests(unittest.TestCase):
     # The series
 
     def test_every_series_renders_in_both_sizes_with_its_cards_slides(self):
-        one, three, five = str(self.ids[0]), ','.join(map(str, self.ids[:3])), ','.join(map(str, self.ids))
+        one, three, four = str(self.ids[0]), ','.join(map(str, self.ids[:3])), ','.join(map(str, self.ids[:4]))
 
         def shops(ids):  # one list for several dinners takes as many slides as SHOP_PER_SLIDE allows
             views = [page(db.session.get(Recipe, i)) for i in ids]
             shop, _ = social_week.shopping(social_week.days_of(views, [None] * len(views)), views)
             return ['shop'] * -(-len(shop) // social.SHOP_PER_SLIDE)
-        self.assertEqual(len(shops(self.ids)), 3)  # the five fixtures need 52 things: three slides
+
+        def steps(rid, size):  # the steps go over slides of COOK_STEPS each
+            return ['cook'] * -(-len(page(db.session.get(Recipe, rid))['steps']) // social.COOK_STEPS[size])
+        delta = ['delta'] if social.delta_fits(page(db.session.get(Recipe, self.ids[0]))['delta']) else []
         expected = {
-            'airfryer': (one, ['cover', 'airfryer', 'timebar', 'timers', 'shop_split', 'end']),
-            'got': (three, ['got_cover', 'day', 'day', 'day', *shops(self.ids[:3]), 'end']),
-            'protein': (one, ['cover', 'numbers', 'timebar', 'timers', 'shop_split', 'end']),
-            'dishes': (one, ['cover', 'wash', 'ingredients', 'timebar', 'timers', 'end']),
-            'guess': (one, ['collage', 'ingredients', 'dish', 'end']),
-            'cuisine': (five, ['week_cover', 'day', 'day', 'day', 'day', 'day', *shops(self.ids), 'end']),
+            'airfryer': (one, lambda size: ['cover', 'airfryer', *delta, *steps(self.ids[0], size), 'shop_split', 'end']),
+            'got': (three, lambda size: ['got_cover', 'day', 'day', 'day', *shops(self.ids[:3]), 'end']),
+            'three3': (three, lambda size: ['trio_cover', 'day', 'day', 'day', *shops(self.ids[:3]), 'end']),
+            'protein': (one, lambda size: ['cover', 'numbers', *steps(self.ids[0], size), 'shop_split', 'end']),
+            'protein4': (four, lambda size: ['week_cover', 'day', 'day', 'day', 'day', *shops(self.ids[:4]), 'end']),
+            'onepot': (one, lambda size: ['cover', *delta, *steps(self.ids[0], size), 'shop_split', 'end']),  # no wash slide
+            'under20': (one, lambda size: ['cover', *steps(self.ids[0], size), 'shop_split', 'end']),
+            'only6': (one, lambda size: ['cover', 'shop_split', *steps(self.ids[0], size), 'end']),
+            'guess': (one, lambda size: ['guess_pictures', 'guess_names', 'guess_amounts', 'guess_dish', 'answer']),
+            'cuisine': (four, lambda size: ['week_cover', 'day', 'day', 'day', 'day', *shops(self.ids[:4]), 'end']),
         }
         self.assertEqual(sorted(expected), sorted(series.SERIES))
         for slug, (ids, kinds) in expected.items():
             for size in ('ig', 'tt'):
                 with self.subTest(series=slug, size=size):
-                    self.assertEqual(self.kinds(size, series=slug, ids=ids, n=3), kinds)
+                    self.assertEqual(self.kinds(size, series=slug, ids=ids, n=3), kinds(size))
                     html = self.get(size=size, series=slug, ids=ids, n=3, slide=1).get_data(as_text=True)
                     self.assertIn('#3', html)  # the series' number on the first slide
                     self.assertIn(f'width:1080px; height:{social.SIZES[size][1]}px', html)
+                    self.assertNotIn('kind-timebar', html)
+
+    def test_the_games_pictures_fill_their_rows_and_a_cover_strip_has_no_orphan(self):
+        self.assertEqual([social.game_columns(n, 'tt') for n in (5, 8, 12, 15, 13, 14)], [5, 4, 4, 5, 5, 5])
+        self.assertEqual([social.game_columns(n, 'ig') for n in (5, 8, 12, 15, 13, 14)], [5, 4, 4, 5, 5, 5])
+        self.assertEqual([social.strip_columns(n) for n in (3, 6, 7, 8, 11, 12)], [3, 6, 4, 4, 6, 6])
+        # A hook that names the dish leaves no name line under it
+        pot = self.get(series='onepot', ids=self.ids[0], n=1, hook_text='One pot. Spaghetti carbonara.', slide=1)
+        self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
+        pot = self.get(series='onepot', ids=self.ids[0], n=1, hook_text='One pot. Spaghetti carbonara.', slide=1).get_data(as_text=True)
+        self.assertNotIn('class="dish">', pot)
+        # A dish over 30 minutes whose hook names it: no name line, and no chip at all (no "None", no "N ingredients")
+        slow = db.session.get(Recipe, self.ids[1])  # lasagne, 105 min
+        html = self.get(series='onepot', ids=slow.id, n=1, hook_text='One pot. Lasagne.', slide=1).get_data(as_text=True)
+        body = html.split('<main', 1)[1]
+        self.assertNotIn('class="dish">', body)
+        self.assertNotIn('class="facts"', body)
+        self.assertNotIn('None', body)
+        self.assertNotIn('ingredients', body)
+        quick = self.get(series='onepot', ids=self.ids[0], n=1, hook_text='One pot. Spaghetti carbonara.', slide=1).get_data(as_text=True)
+        self.assertIn('<p class="facts"><span>26 min</span></p>', quick)  # 26 minutes: the time chip alone
+        plain = self.get(series='onepot', ids=self.ids[0], n=1, hook_text='Dishes to wash: one.', slide=1).get_data(as_text=True)
+        self.assertIn('class="dish">Spaghetti carbonara', plain)
+        self.assertNotIn('class="strip"', plain)  # the test pantry has no symbol images: no strip at all
+
+    def test_the_steps_go_over_slides_as_on_the_cook_view_with_each_steps_symbols(self):
+        view = page(db.session.get(Recipe, self.ids[0]))  # carbonara: 9 steps
+        slides = social.steps_slides(view, 'ig')
+        self.assertEqual([len(sl['steps']) for sl in slides], [3, 3, 3])
+        self.assertEqual([sl['eyebrow'] for sl in slides], ['Step 1 to 3 of 9', 'Step 4 to 6 of 9', 'Step 7 to 9 of 9'])
+        self.assertEqual([len(sl['steps']) for sl in social.steps_slides(view, 'tt')], [3, 3, 3])  # 9 over 4 a slide
+        self.assertEqual([len(sl['steps']) for sl in social.steps_slides({**view, 'steps': view['steps'][:7]}, 'tt')], [4, 3])
+        first = slides[0]['steps'][0]
+        self.assertEqual(set(first), {'no', 'short', 'phase', 'symbols'})  # no minutes, no timer
+        with_symbols = [st for sl in slides for st in sl['steps'] if st['symbols']]
+        self.assertTrue(with_symbols)
+        self.assertEqual(set(with_symbols[0]['symbols'][0]), {'name', 'img', 'amount'})
+        html = self.get(series='under20', ids=self.ids[0], n=1, slide=2).get_data(as_text=True)
+        self.assertIn('class="cook"', html)
+        self.assertIn('Step 1 to 3 of 9', html)
+        self.assertNotIn(' min', html.split('<main', 1)[1].split('<footer', 1)[0])
+
+    def test_the_last_slide_of_a_series_is_the_dish_with_the_cta_as_a_button(self):
+        count = int(self.get(series='protein', ids=self.ids[0], n=1).headers['X-Slides'])
+        html = self.get(series='protein', ids=self.ids[0], n=1, code=4, slide=count).get_data(as_text=True)
+        self.assertIn('class="photo n1"', html)
+        self.assertIn('/static/recipes/carbonara.png', html)
+        self.assertIn('class="end over"', html)
+        self.assertIn('thelazychef.app/ig/4', html)
+        self.assertIn('The Lazy Chef', html)
+        self.assertNotIn('class="brand-badge mark"', html)  # no logo in a yellow circle
+        ids = ','.join(map(str, self.ids[:4]))
+        count = int(self.get(series='protein4', ids=ids, n=1).headers['X-Slides'])
+        html = self.get(series='protein4', ids=ids, n=1, slide=count).get_data(as_text=True)
+        self.assertIn('class="photo n4"', html)
+        self.assertEqual(html.count('<img src="/static/recipes/'), 4)
+        # The formats keep their last slide as it was
+        last = self.client.get(f'/social/recipe/{self.ids[0]}/grid', query_string={'slide': 4}).get_data(as_text=True)
+        self.assertIn('class="brand-badge mark"', last)
 
     def test_the_answer_says_what_the_post_was_made_of(self):
         r = self.get(series='airfryer', ids=self.ids[0], n=7, hook='guess', cta='save', code=9, size='tt')
         self.assertEqual((r.headers['X-Recipes'], r.headers['X-N'], r.headers['X-Hook'], r.headers['X-Cta']),
                          (str(self.ids[0]), '7', 'guess', 'save'))
-        self.assertEqual(r.headers['X-Views'], 'cover airfryer timebar timers shop_split end')
+        self.assertTrue(r.headers['X-Views'].startswith('cover airfryer '))
+        self.assertTrue(r.headers['X-Views'].endswith(' shop_split end'))
+        self.assertIn('cook', r.headers['X-Views'].split())
         self.assertEqual(r.headers['X-Look'], SITE_LOOK)
         self.assertEqual(r.headers['X-Robots-Tag'], 'noindex')
         caption = self.get(series='airfryer', ids=self.ids[0], n=7, cta='save', code=9, size='tt', caption=1)
@@ -174,8 +246,16 @@ class SeriesTests(unittest.TestCase):
         number = self.get(series='protein', ids=self.ids[0], n=2, hook='number').headers['X-Hook-Text']
         self.assertIn('40', number)  # 160 g over 4 servings
         self.assertLessEqual(len(number.split()), series.HOOK_WORDS)
-        self.assertIn(self.get(series='dishes', ids=self.ids[0], n=1).headers['X-Hook-Text'],
-                      ('Dishes to wash: 4', '4 dishes to wash. 16 min of work.', 'One dinner, 4 dishes to wash.'))
+        # One Pot Meals names its vessel; carbonara cooks in a pot and a pan, so its card has nothing true to say and
+        # the shared number group speaks instead
+        pot = series.facts([post_of(view_of(6, 12, heat='frying_pan'))], 1, series='One Pot Meals')
+        self.assertEqual(pot['vessel'], None)  # view_of names no equipment list; the fact needs the view's equipment
+        pot = {**series.sample_facts(), 'vessel': 'frying pan', 'one_dish': False, 'dish': 'Shakshuka', 'active': 8}
+        self.assertIn(series.hook_for(None, pot, 'a', 'onepot')[1],
+                      ('One frying pan. Shakshuka.', 'Shakshuka, in one frying pan.', 'One frying pan, 8 min of work.'))
+        self.assertNotIn('Dishes to wash: 1', [series.hook('number', pot, s, 'onepot') for s in 'abcdefgh'])
+        self.assertIn('Dishes to wash: 1', [series.hook('number', {**pot, 'one_dish': True}, s, 'onepot') for s in 'abcdefghijkl'])
+        self.assertEqual(self.get(series='onepot', ids=self.ids[0], n=1).headers['X-Hook'], 'number')
 
     def test_time_is_said_only_when_short(self):
         self.assertEqual([social.said_active(m) for m in (9, 19, 20, 38)], [9, 19, None, None])
@@ -190,14 +270,13 @@ class SeriesTests(unittest.TestCase):
             for group in series.HOOKS:
                 text = series.hook(group, slow, seed) or ''
                 self.assertNotIn('min', text, (group, text))
-        # Nor the cover chip, the day label, the numbers slide, the timers' title or the caption
+        # Nor the cover chip, the numbers slide or the caption; a day's label never has minutes
         v = view_of(36, 11)
-        self.assertEqual(social_week.days_of([v], [None], ['Mon'])[0]['total'], None)
-        self.assertEqual(social_week.days_of([view_of(6, 12)], [None], ['Mon'])[0]['total'], '20 min')
-        self.assertEqual([i['label'] for i in social.numbers_slide(v)['items']], ['things to buy', 'dishes to wash'])
-        self.assertEqual([i['label'] for i in social.numbers_slide(view_of(6, 12))['items']], ['start to table', 'of work'])
-        self.assertEqual(social.timers_slide(v)['title'], '2 steps')
-        self.assertEqual(social.timers_slide(view_of(6, 12))['title'], '2 steps, 20 min')
+        self.assertNotIn('total', social_week.days_of([view_of(6, 12)], [None], ['Mon'])[0])
+        self.assertNotIn(' min', self.get(series='protein4', ids=','.join(map(str, self.ids[:4])), n=1, slide=2)
+                         .get_data(as_text=True).split('<main', 1)[1].split('class="grid"', 1)[0])
+        for quick_or_slow in (v, view_of(6, 12)):  # the big numbers never show minutes now
+            self.assertEqual([i['label'] for i in social.numbers_slide(quick_or_slow)['items']], ['things to buy', 'dishes to wash'])
         call = {'group': 'follow', 'text': 'Follow'}
         self.assertNotIn('minute', series.caption('airfryer', [post_of(v)], slow, 'x', call, 'ig'))
         self.assertIn('8 minutes of work', series.caption('airfryer', [post_of(view_of(6, 12))], quick, 'x', call, 'ig'))
@@ -260,10 +339,10 @@ class SeriesTests(unittest.TestCase):
     def test_a_group_the_post_cannot_say_truly_falls_back(self):
         facts = {**series.sample_facts(), 'count': 25, 'total': None, 'vessels': 5, 'few': False, 'one_two': False}
         self.assertIsNone(series.hook('contrast', facts, 'x'))
-        group, text = series.hook_for('contrast', facts, 'x', 'dishes')
-        self.assertEqual((group, '5' in text), ('number', True))  # the series' own group, with its own numbers
+        group, text = series.hook_for('contrast', facts, 'x', 'onepot')
+        self.assertEqual((group, 'frying pan' in text), ('number', True))  # the series' own group, its own facts
         self.assertEqual(series.hook_for('contrast', facts, 'x')[0], 'number')
-        self.assertEqual(series.hook_for('contrast', {**facts, 'count': 6, 'few': True}, 'x', 'dishes'),
+        self.assertEqual(series.hook_for('contrast', {**facts, 'count': 6, 'few': True}, 'x', 'onepot'),
                          ('contrast', 'Not 30 ingredients. Just 6.'))
 
     def test_bad_hook_cta_series_or_recipes_fall_back_or_are_not_found(self):
@@ -288,17 +367,20 @@ class SeriesTests(unittest.TestCase):
         self.assertEqual((admin.headers['X-Hook'], admin.headers['X-Hook-Text'], admin.headers['X-Cta']),
                          ('preview', 'Try these words', 'preview'))
         self.assertIn('Try these words', self.get(**args, slide=1).get_data(as_text=True))
-        last = self.get(**args, slide=6, code=3).get_data(as_text=True)
+        count = int(admin.headers['X-Slides'])
+        last = self.get(**args, slide=count, code=3).get_data(as_text=True)
         self.assertIn('Tap it', last)
-        self.assertIn('class="address small">thelazychef.app/ig/3', last)
+        self.assertIn('<b>thelazychef.app/ig/3</b>', last)
 
-    def test_the_address_stays_on_the_last_slide_small_unless_the_cta_is_the_site(self):
-        for cta, small in (('follow', True), ('send', True), ('site', False)):
+    def test_the_address_stays_on_the_last_slide_whatever_the_cta(self):
+        count = int(self.get(series='airfryer', ids=self.ids[0]).headers['X-Slides'])
+        for cta in ('follow', 'send', 'site'):
             with self.subTest(cta=cta):
-                html = self.get(series='airfryer', ids=self.ids[0], cta=cta, code=4, size='tt', slide=6).get_data(as_text=True)
-                self.assertIn('thelazychef.app/tiktok/4', html)
-                self.assertEqual('class="address small"' in html, small)
-        bio = self.get(series='airfryer', ids=self.ids[0], cta='bio', code=4, size='ig', slide=6)
+                html = self.get(series='airfryer', ids=self.ids[0], cta=cta, code=4, size='tt', slide=count).get_data(as_text=True)
+                self.assertIn('thelazychef.app/tiktok/4', html)  # in the button with site, under it otherwise
+                self.assertEqual('<b>thelazychef.app/tiktok/4</b>' in html, cta != 'site')
+                self.assertEqual('Type it in your browser' in html, cta != 'site')
+        bio = self.get(series='airfryer', ids=self.ids[0], cta='bio', code=4, size='ig', slide=count)
         self.assertEqual(bio.headers['X-Cta'], 'bio')
         self.assertIn('link in bio', bio.get_data(as_text=True))
         self.assertEqual(self.get(series='airfryer', ids=self.ids[0], cta='bio', size='tt').headers['X-Cta'], 'site')
@@ -311,26 +393,35 @@ class SeriesTests(unittest.TestCase):
         shop = self.get(series='got', ids=ids, n=1, slide=5).get_data(as_text=True)
         self.assertIn('One list for all 3, 1 of 2', shop)
 
-    def test_the_cuisine_week_is_five_weeknights_and_one_list(self):
-        ids = ','.join(map(str, self.ids))
+    def test_the_cuisine_week_is_four_weeknights_and_one_list(self):
+        ids = ','.join(map(str, self.ids[:4]))
         cover = self.get(series='cuisine', ids=ids, n=2, slide=1).get_data(as_text=True)
-        self.assertIn('5 weeknights of Italian #2', cover)
+        self.assertIn('4 weeknights of Italian #2', cover)
+        self.assertIn('class="dishes n4"', cover)
         self.assertNotIn('min each', cover)  # the slowest is over 30 minutes: no minutes on the cover
         self.assertIn('Italian', self.get(series='cuisine', ids=ids, n=2).headers['X-Hook-Text'])
         self.assertIn('Mon', self.get(series='cuisine', ids=ids, n=2, slide=2).get_data(as_text=True))
+        self.assertIn('Thu', self.get(series='cuisine', ids=ids, n=2, slide=5).get_data(as_text=True))
+        self.assertEqual(self.get(series='cuisine', ids=','.join(map(str, self.ids))).status_code, 404)  # five is not four
+        four = self.get(series='protein4', ids=ids, n=1, slide=2).get_data(as_text=True)
+        self.assertIn('Dinner 1 · 40 g protein', four)
+        cover = self.get(series='protein4', ids=ids, n=1, slide=1).get_data(as_text=True)
+        self.assertIn('40 g protein per serving', cover)
+        self.assertNotIn('min each', cover)
 
     def test_the_caption_counts_its_dishes_in_good_english(self):
         f = {**series.sample_facts(), 'vessels': 1, 'active': 8, 'total': None}
         call = {'group': 'send', 'text': 'Send it'}
-        text = series.caption('dishes', [post_of(view_of(6, 12, title='Shakshuka'))], f, 'x', call, 'ig', 5)
-        self.assertIn('Shakshuka, with 1 dish to wash, 8 minutes of work.', text)
+        text = series.caption('onepot', [post_of(view_of(6, 12, title='Shakshuka'))], f, 'x', call, 'ig', 5)
+        self.assertIn('Shakshuka, cooked in one frying pan, with 1 dish to wash, 8 minutes of work.', text)
         self.assertIn('thelazychef.app/ig/5', text)
-        text = series.caption('dishes', [post_of(view_of(6, 12))], {**f, 'vessels': 2, 'active': None}, 'x', call, 'ig')
-        self.assertIn('with 2 dishes to wash.', text)
+        text = series.caption('onepot', [post_of(view_of(6, 12))], {**f, 'vessels': 2, 'active': None, 'vessel': None}, 'x', call, 'ig')
+        self.assertIn('Gyros, cooked, with 2 dishes to wash.', text)
+        self.assertIn('one thing to buy', series.caption('only6', [post_of(view_of(6, 12))], {**f, 'count': 1}, 'x', call, 'ig').replace('1 thing', 'one thing'))
 
     # The slide kinds
 
-    def test_the_delta_goes_on_a_slide_only_when_small_else_the_time_bar(self):
+    def test_the_delta_goes_on_a_slide_only_when_small_else_no_slide(self):
         self.assertTrue(social.delta_fits({'max_depth': 2, 'leaves': 2, 'nodes': [], 'edges': []}))
         self.assertFalse(social.delta_fits({'max_depth': 3, 'leaves': 2, 'nodes': [], 'edges': []}))
         self.assertFalse(social.delta_fits({'max_depth': 1, 'leaves': 3, 'nodes': [], 'edges': []}))
@@ -343,38 +434,31 @@ class SeriesTests(unittest.TestCase):
         self.assertEqual([(c['row'], c['col'], c['flows']) for c in slide['cells']],
                          [(1, (1, 2), True), (1, (2, 3), True), (2, (1, 3), False)])
         self.assertIsNone(social.delta_slide({**view, 'total_min': 45})['total'])
-        recipe = db.session.get(Recipe, self.ids[0])
-        kinds = self.kinds(series='dishes', ids=recipe.id)
-        self.assertEqual(kinds[3], 'delta' if social.delta_fits(page(recipe)['delta']) else 'timebar')
+        for rid in self.ids:
+            recipe = db.session.get(Recipe, rid)
+            kinds = self.kinds(series='onepot', ids=recipe.id)
+            self.assertEqual('delta' in kinds, social.delta_fits(page(recipe)['delta']))
+            self.assertNotIn('timebar', kinds)
 
-    def test_the_time_bar_the_numbers_the_timers_and_the_wash(self):
+    def test_the_hands_off_time_the_numbers_and_the_wash(self):
         view = page(db.session.get(Recipe, self.ids[0]))
-        bar = social.timebar_slide(view, 'oven')  # nothing stands in an oven here: the rest is hands off
-        self.assertEqual((bar['active'] + bar['idle'], bar['doer']), (view['total_min'], 'hands off'))
-        self.assertEqual(bar['other'], f"{bar['idle']} min hands off")
-        pot = social.timebar_slide(view, 'pot')  # the pasta water stands in the pot
-        self.assertEqual((pot['idle'], pot['doer']), social.hands_off(view, 'pot'))
-        self.assertEqual(pot['doer'], 'the pot' if social.machine_minutes(view, 'pot') else 'hands off')
+        self.assertEqual(social.hands_off(view, 'oven')[1], 'hands off')  # nothing stands in an oven here
+        self.assertEqual(social.hands_off(view, 'pot')[1], 'the pot' if social.machine_minutes(view, 'pot') else 'hands off')
         numbers = social.numbers_slide(view)
-        self.assertEqual([(i['value'], i['unit']) for i in numbers['items']],
-                         [(40, 'g'), (500, ''), (view['total_min'], 'min'), (view['active_min'], 'min')])  # 26 and 17: short
-        timers = social.timers_slide(view)
-        self.assertLessEqual(len(timers['steps']), social.TIMER_STEPS + 1)
-        self.assertEqual(len(timers['steps']) + timers['more'], len(view['steps']))
+        self.assertEqual([(i['value'], i['unit']) for i in numbers['items']], [(40, 'g'), (500, '')])  # no minutes
         wash = social.wash_slide(view, {'frying_pan': 'pan.webp'})
         self.assertEqual([e['name'] for e in wash['items']], ['Large pot', 'Bowl', 'Frying pan', 'Colander'])
         self.assertEqual(wash['title'], 'Dishes to wash: 4')
         self.assertEqual(wash['items'][2]['img'], 'pan.webp')
+        self.assertEqual([e['id'] for e in social.cooking_vessels(view)], ['large_pot', 'frying_pan'])
         split = social.shop_split_slide(view, 'ig')
         self.assertTrue(split['tiles'] and split['have'])
         self.assertNotIn('Salt', [t['name'] for t in split['tiles']])
 
-    def test_the_air_fryer_time_is_one_number_on_the_slide_the_bar_and_the_hook(self):
+    def test_the_air_fryer_time_is_one_number_on_the_slide_and_in_the_hook(self):
         v = view_of(36, 11)  # 38 min of work, 11 in the air fryer, 49 in all
         self.assertEqual(social.hands_off(v, 'airfryer'), (11, 'the air fryer'))
         self.assertEqual(social.airfryer_slide(v, {})['minutes'], 11)
-        bar = social.timebar_slide(v, 'airfryer')
-        self.assertEqual((bar['active'], bar['idle'], bar['other']), (38, 11, '11 min the air fryer'))
         f = series.facts([post_of(v)], 1)
         self.assertEqual((f['idle'], f['doer'], f['machine'], f['machine_min']), (None, 'the air fryer', True, 11))
         # Nothing stands in the air fryer: the time not working is hands off, and no machine time
@@ -391,15 +475,123 @@ class SeriesTests(unittest.TestCase):
 
     # Picking
 
-    def test_every_series_takes_dinners_only(self):
+    def test_every_series_but_guess_takes_dinners_only(self):
         breakfast = db.session.get(Recipe, self.ids[0])
         db.session.execute(db.delete(RecipeMealType).where(RecipeMealType.recipe_id == breakfast.id))
         db.session.add(RecipeMealType(recipe_id=breakfast.id, meal_type='Breakfast'))
         db.session.commit()
         for slug in series.SERIES:
             with self.subTest(series=slug):
-                self.assertNotIn(breakfast.id, series.candidates(slug))
-                self.assertIn(self.ids[1], series.candidates(slug))
+                if slug == 'guess':
+                    self.assertFalse(series.candidates(slug)[breakfast.id]['dinner'])
+                else:
+                    self.assertNotIn(breakfast.id, series.candidates(slug))
+                    self.assertIn(self.ids[1], series.candidates(slug) if slug not in ('onepot', 'under20', 'only6')
+                                  else self.ids)
+        # Guess the dish, not the dinner, on the one that is not one: in the caption (the hook is the score line)
+        caption = self.get(series='guess', ids=breakfast.id, n=1, caption=1).get_data(as_text=True)
+        self.assertIn('One dish,', caption)
+        self.assertIn('One dinner,', self.get(series='guess', ids=self.ids[1], n=1, caption=1).get_data(as_text=True))
+
+    def test_guess_the_dinner_is_a_points_game_over_five_slides(self):
+        rid = self.ids[0]
+        r = self.get(series='guess', ids=rid, n=12, code=3)
+        self.assertEqual(r.headers['X-Views'], 'guess_pictures guess_names guess_amounts guess_dish answer')
+        self.assertIn(r.headers['X-Hook-Text'], ('5 points if you guess from the pictures', '5 points: get it from the pictures'))
+        self.assertEqual(r.headers['X-Cta'], 'ask')
+        title = db.session.get(Recipe, rid).title
+        pages = [self.get(series='guess', ids=rid, n=12, code=3, slide=n).get_data(as_text=True) for n in range(1, 6)]
+        bodies = [p.split('<main', 1)[1] for p in pages]
+        for body in bodies[:4]:  # the dish is not named before the answer
+            self.assertNotIn(title, body)
+            self.assertIn('class="bar"', body)
+        self.assertIn('<b>5</b><span>' + r.headers['X-Hook-Text'][2:] + '</span>', bodies[0])
+        self.assertIn('Not sure? Swipe for the names.', bodies[0])
+        self.assertNotIn('<figcaption>', bodies[0])  # pictures only
+        self.assertIn('<b>4</b><span>points with the names</span>', bodies[1])
+        self.assertIn('<span>egg</span>', bodies[1])
+        self.assertNotIn('<b>2</b><span>egg', bodies[1])  # no amounts yet
+        self.assertIn('<b>3</b><span>points with the amounts</span>', bodies[2])
+        self.assertIn('<b>2</b><span>egg</span>', bodies[2])
+        self.assertIn('<b>2</b><span>points if you know it now</span>', bodies[3])
+        self.assertIn('/static/recipes/carbonara.png', bodies[3])
+        self.assertIn('Swipe for the answer.', bodies[3])
+        self.assertEqual(bodies[0].count('class="on"'), 5)
+        self.assertEqual(bodies[3].count('class="on"'), 2)
+        self.assertIn('The answer', bodies[4])
+        self.assertIn('class="title">Spaghetti carbonara</h1>', bodies[4])
+        self.assertIn('How many points did you get?', bodies[4])
+        self.assertIn('thelazychef.app/ig/3', bodies[4])
+        self.assertEqual(bodies[4].count('The Lazy Chef'), 1)  # one wordmark
+        caption = self.get(series='guess', ids=rid, n=12, code=3, caption=1).get_data(as_text=True)
+        self.assertNotIn(title, caption)
+        self.assertIn('5 points if you know it from the pictures alone, 4 with the names', caption)
+        self.assertIn('How many points did you get?', caption)
+        # At most GUESS_MAX things to buy: carbonara (5) is in, lasagne (21) and tikka (17) are left out
+        c = series.candidates('guess')
+        self.assertIn(self.ids[0], c)
+        self.assertNotIn(self.ids[1], c)
+        self.assertNotIn(self.ids[2], c)
+        self.assertLessEqual(max(len(x['buy']) for x in c.values()), series.GUESS_MAX)
+
+    def test_one_pot_under_20_and_only_6_pick_by_the_steps_and_the_list(self):
+        c = series.candidates('onepot')  # exactly one vessel the food is cooked in, not the air fryer
+        for rid in self.ids:
+            db.session.get(Recipe, rid).heat_source = 'pan'
+        db.session.commit()
+        self.assertEqual(series.candidates('onepot'), {})  # the fixtures all cook in two or more, or in the air fryer
+        self.assertEqual(c, {})
+        self.assertEqual(list(series.candidates('under20')), [self.ids[0]])  # carbonara: 16 minutes of work
+        self.assertEqual(list(series.candidates('only6')), [self.ids[0]])  # carbonara: five things to buy
+        self.assertEqual(self.get(series='only6').headers['X-Recipes'], str(self.ids[0]))
+        # A dinner made short enough, in the steps' active minutes
+        from database.models import RecipeStep
+        for step in db.session.execute(db.select(RecipeStep).where(RecipeStep.recipe_id == self.ids[1])).scalars():
+            step.active_minutes = 1
+        db.session.commit()
+        self.assertEqual(sorted(series.candidates('under20')), self.ids[:2])
+        self.assertEqual(series.pick('under20', datetime.date(2026, 11, 2)), [self.ids[0]])
+        only = series.facts([post_of(view_of(6, 12))], 1, count=5, series='Only 6 things to buy')
+        self.assertTrue(only['only_six'])
+        self.assertEqual(series.hook_for(None, only, 'a', 'only6')[0], 'number')
+        self.assertIn('5', series.hook_for(None, only, 'a', 'only6')[1])
+        self.assertIsNone(series.hook('number', {**only, 'count': 9, 'only_six': False}, 'a', 'only6'))
+
+    def test_three_ingredients_three_dinners_share_three_things_one_a_protein(self):
+        views = [page(db.session.get(Recipe, i)) for i in self.ids[:3]]
+        posts = [{'id': i, 'view': v, 'image': None, 'eq': {}, 'heat_source': None, 'protein': 'Beef',
+                  'cuisine': 'Italian', 'dinner': True} for i, v in zip(self.ids, views)]
+        shared = series.shared_trio(posts)
+        self.assertEqual(len(shared['symbols']), min(3, len(shared['keys'])))
+        self.assertEqual(series.merge_key('a', 'Chicken'), series.merge_key('b', 'Chicken'))
+        # Three dinners sharing chicken (thigh, breast, thigh), onion and garlic: one set, named "chicken"; two near
+        # copies (more than WEEK_SAME of the list in common) are not three different dishes
+        c = {1: {'buy': frozenset({1, 10, 11, 20, 21, 22, 23, 24}), 'protein': 'Chicken'},
+             2: {'buy': frozenset({2, 10, 11, 30, 31, 32, 33, 34}), 'protein': 'Chicken'},
+             3: {'buy': frozenset({1, 10, 11, 40, 41, 42, 43, 44}), 'protein': 'Chicken'},
+             4: {'buy': frozenset({1, 10, 11, 20, 21, 22, 23, 25}), 'protein': 'Chicken'}}
+        from database.models import Ingredient
+        for i, name, sub in ((1, 'chicken thigh', 'chicken'), (2, 'chicken breast', 'chicken'), (10, 'onion', 'onion'),
+                             (11, 'garlic', 'garlic')):
+            db.session.add(Ingredient(id=i, food_id=f'f{i}', name=name, main_category='meat' if i < 3 else 'produce',
+                                      sub_category=sub, tier='core', status='active'))
+        db.session.commit()
+        sets = series.trios(c)
+        self.assertEqual([ids for ids, _ in sets], [[1, 2, 3], [2, 3, 4]])  # 1 and 4 share 7 of 9: near copies
+        # The same dish by name is one dish, however different its list; a dinner buying too much is left out
+        named = {i: {**c[i], 'title': t} for i, t in zip(c, ('Butter Chicken with Basmati Rice and Naan', 'Chicken Pad Thai',
+                                                           'Butter Chicken with Basmati Rice and Homemade Naan', 'Chicken Curry'))}
+        self.assertEqual([ids for ids, _ in series.trios(named)], [[2, 3, 4]])
+        big = {**c, 2: {**c[2], 'buy': frozenset(range(100, 100 + series.TRIO_BUY_MAX + 1)) | {2, 10, 11}}}
+        self.assertEqual(series.trios(big), [])
+        self.assertEqual(series.trio(c, [1, 2, 3, 4], {}), [1, 2, 3])
+        self.assertNotEqual(series.merge_key('a', 'Beef'), series.merge_key('b', 'Beef'))
+        # The fixtures share salt and oil only (staples), so no set: the series has run out
+        self.assertEqual(series.pick('three3', datetime.date(2026, 11, 2)), [])
+        self.assertEqual(self.get(series='three3').status_code, 404)
+        ids = ','.join(map(str, self.ids[:3]))
+        cover = self.get(series='three3', ids=ids, n=1, slide=1).get_data(as_text=True)
+        self.assertIn('3 ingredients, 3 dinners #1', cover)
 
     def test_a_recipe_goes_at_most_once_a_week_per_series_never_used_first(self):
         today = datetime.date(2026, 11, 2)
@@ -435,14 +627,16 @@ class SeriesTests(unittest.TestCase):
         db.session.get(Recipe, self.ids[3]).protein_type = 'Vegetarian'
         db.session.commit()
         self.assertEqual(series.pick('got', today), self.ids[:3])  # beef has one dinner left, vegetarian is no ingredient
-        self.assertEqual(len(series.pick('cuisine', today)), 5)
-        db.session.get(Recipe, self.ids[0]).cuisine = 'Thai'
+        self.assertEqual(len(series.pick('cuisine', today)), 4)
+        self.assertEqual(len(series.pick('protein4', today)), 4)
+        for rid in self.ids[:2]:
+            db.session.get(Recipe, rid).cuisine = 'Thai'
         db.session.commit()
         self.assertEqual(series.pick('cuisine', today), [])
         self.assertEqual(self.get(series='cuisine').status_code, 404)  # the series has run out: it pauses
 
     def test_a_post_without_recipes_picks_them_and_says_which(self):
-        r = self.get(series='dishes')
+        r = self.get(series='protein')
         self.assertEqual(r.status_code, 200)
         self.assertEqual((r.headers['X-Recipes'], r.headers['X-N']), (str(self.ids[0]), '1'))
 

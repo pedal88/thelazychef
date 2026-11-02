@@ -254,12 +254,12 @@ class PlanTests(unittest.TestCase):
         saturday, sunday = monday + datetime.timedelta(days=5), monday + datetime.timedelta(days=6)
         self.assertEqual(POSTS_PER_DAY, 2)
         self.assertEqual(len(day_plan(tuesday)), 2)
-        self.assertEqual(sorted(kinds(saturday) + kinds(sunday)), ['airfryer', 'dishes', 'got', 'protein'])
+        self.assertEqual(sorted(kinds(saturday) + kinds(sunday)), ['got', 'onepot', 'protein', 'under20'])
         self.assertEqual(kinds(monday)[-1], 'guess')
         self.assertEqual(kinds(monday + datetime.timedelta(days=2))[-1], 'cuisine')
-        self.assertEqual(kinds(monday, 5), ['airfryer', 'got', 'protein', 'dishes', 'guess'])
+        self.assertEqual(kinds(monday, 5), ['got', 'protein', 'under20', 'onepot', 'guess'])
         self.assertEqual(kinds(monday + datetime.timedelta(days=2), 5)[-1], 'cuisine')
-        self.assertEqual(kinds(tuesday, 4), ['airfryer', 'got', 'protein', 'dishes'])
+        self.assertEqual(kinds(tuesday, 4), ['got', 'protein', 'under20', 'onepot'])
 
     def test_a_plan_is_a_post_per_line(self):
         text = ('# Tuesday\nairfryer hook=number cta=follow\ngot 323,326,329 hook=search n=4\nguess\n\n'

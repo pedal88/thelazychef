@@ -6,10 +6,10 @@ in both sizes, and put them where the phone can reach them (docs/SOCIAL.md, "A d
     python -m scripts.social_batch 2026-11-03 --plan day.txt     # the posts in a plan
     python -m scripts.social_batch 2026-11-03 --dry-run          # show the plan, log and render nothing
 
-Without a plan a day takes -n posts (POSTS_PER_DAY, two for now) from the four series that run side by side (airfryer,
-got, protein, dishes), by turn from day to day. Guess the dinner on Mondays and Fridays and a cuisine week on Wednesdays
-take the day's last place, or a fifth one (~/promptlab-runs/social/notes/serier.md). Each series picks its own recipes
-and number, as on /social/post.
+Without a plan a day takes -n posts (POSTS_PER_DAY, two for now) from the four series that run side by side (got,
+protein, under20, onepot), by turn from day to day. Guess the dinner on Mondays and Fridays and a cuisine week on
+Wednesdays take the day's last place, or a fifth one (~/promptlab-runs/social/notes/serier-v2.md). Each series picks
+its own recipes and number, as on /social/post.
 
 A plan has a post per line: a series or a format, the recipes if they are to be fixed (comma separated), then
 hook=, cta= and n= if they are to be fixed, and for a format after | the words it tries. # starts a comment.
@@ -60,7 +60,7 @@ SIZES = ('tt', 'ig')
 FORMATS = ('map', 'grid', 'pantry', 'week')
 # A day without a plan: how many posts, the four series that run side by side, and the extra by weekday (Monday is 0)
 POSTS_PER_DAY = 2
-DAY_SERIES = ('airfryer', 'got', 'protein', 'dishes')
+DAY_SERIES = ('got', 'protein', 'under20', 'onepot')  # the first rotation (serier-v2.md); airfryer waits
 FIFTH = {0: 'guess', 2: 'cuisine', 4: 'guess'}
 
 
