@@ -118,12 +118,11 @@ A series post (`--series`, with `--n`, `--hook`, `--cta`, and `--ids` for chosen
 recipes and the number, prints what it chose, and renders every slide with those fixed. Render both sizes with the
 same number: the same post on both platforms, on different days.
 
-The slides come in the site's look (`routes/_shared.SITE_LOOK`, D Safran for now). `--look today|c|d|e|f` (`?look=`
+The slides come in the site's look (`routes/_shared.SITE_LOOK`, F Washi since 02.11.2026). `--look today|c|d|e|f` (`?look=`
 on the pages) draws them in another of the style trial's looks (`static/css/themes.css`,
 the fonts in `routes/_shared.LOOK_FONTS`), to compare the directions on real posts. The slides and the site read the
 same look: its colours, fonts, headings and main button are in `themes.css` for both, and the metro map's line colours
-are tokens (`--lane-0`…`--lane-3` in `tokens.css`). Post in the look visitors see on the site, today's until one is
-chosen.
+are tokens (`--lane-0`…`--lane-3` in `tokens.css`). Post in the look visitors see on the site.
 
 It reads production (or `--base http://127.0.0.1:8000`), photographs each slide with headless Chrome and writes the
 PNGs and `caption.txt` to `~/promptlab-runs/social/`, outside the repo. Nothing is written to production and nothing
