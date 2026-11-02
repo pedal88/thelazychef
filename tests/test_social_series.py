@@ -55,7 +55,7 @@ class CardTests(unittest.TestCase):
             with self.subTest(series=slug):
                 self.assertIn(card['status'], series.STATUSES)
                 self.assertTrue(card['hook'] in series.HOOKS)
-                self.assertEqual(card['slides'][-1], 'end')
+                self.assertIn(card['slides'][-1], ('end', 'answer'))
 
     def test_the_check_fails_a_hook_too_long_a_fact_no_post_has_and_a_slide_kind_that_is_not_one(self):
         good = series.SERIES['airfryer']
@@ -149,7 +149,7 @@ class SeriesTests(unittest.TestCase):
             'onepot': (one, lambda size: ['cover', *delta, *steps(self.ids[0], size), 'shop_split', 'end']),  # no wash slide
             'under20': (one, lambda size: ['cover', *steps(self.ids[0], size), 'shop_split', 'end']),
             'only6': (one, lambda size: ['cover', 'shop_split', *steps(self.ids[0], size), 'end']),
-            'guess': (one, lambda size: ['collage', 'ingredients', 'dish', 'end']),
+            'guess': (one, lambda size: ['guess_pictures', 'guess_names', 'guess_amounts', 'guess_dish', 'answer']),
             'cuisine': (four, lambda size: ['week_cover', 'day', 'day', 'day', 'day', *shops(self.ids[:4]), 'end']),
         }
         self.assertEqual(sorted(expected), sorted(series.SERIES))
@@ -464,11 +464,51 @@ class SeriesTests(unittest.TestCase):
                     self.assertNotIn(breakfast.id, series.candidates(slug))
                     self.assertIn(self.ids[1], series.candidates(slug) if slug not in ('onepot', 'under20', 'only6')
                                   else self.ids)
-        # Guess the dish, not the dinner, on the one that is not one
-        r = self.get(series='guess', ids=breakfast.id, n=1)
-        self.assertIn('dish', r.headers['X-Hook-Text'])
-        self.assertNotIn('dinner', r.headers['X-Hook-Text'])
-        self.assertIn('dinner', self.get(series='guess', ids=self.ids[1], n=1).headers['X-Hook-Text'])
+        # Guess the dish, not the dinner, on the one that is not one: in the caption (the hook is the score line)
+        caption = self.get(series='guess', ids=breakfast.id, n=1, caption=1).get_data(as_text=True)
+        self.assertIn('One dish,', caption)
+        self.assertIn('One dinner,', self.get(series='guess', ids=self.ids[1], n=1, caption=1).get_data(as_text=True))
+
+    def test_guess_the_dinner_is_a_points_game_over_five_slides(self):
+        rid = self.ids[0]
+        r = self.get(series='guess', ids=rid, n=12, code=3)
+        self.assertEqual(r.headers['X-Views'], 'guess_pictures guess_names guess_amounts guess_dish answer')
+        self.assertIn(r.headers['X-Hook-Text'], ('5 points if you guess from the pictures', '5 points: get it from the pictures'))
+        self.assertEqual(r.headers['X-Cta'], 'ask')
+        title = db.session.get(Recipe, rid).title
+        pages = [self.get(series='guess', ids=rid, n=12, code=3, slide=n).get_data(as_text=True) for n in range(1, 6)]
+        bodies = [p.split('<main', 1)[1] for p in pages]
+        for body in bodies[:4]:  # the dish is not named before the answer
+            self.assertNotIn(title, body)
+            self.assertIn('class="bar"', body)
+        self.assertIn('<b>5</b><span>' + r.headers['X-Hook-Text'][2:] + '</span>', bodies[0])
+        self.assertIn('Not sure? Swipe for the names.', bodies[0])
+        self.assertNotIn('<figcaption>', bodies[0])  # pictures only
+        self.assertIn('<b>4</b><span>points with the names</span>', bodies[1])
+        self.assertIn('<span>egg</span>', bodies[1])
+        self.assertNotIn('<b>2</b><span>egg', bodies[1])  # no amounts yet
+        self.assertIn('<b>3</b><span>points with the amounts</span>', bodies[2])
+        self.assertIn('<b>2</b><span>egg</span>', bodies[2])
+        self.assertIn('<b>2</b><span>points if you know it now</span>', bodies[3])
+        self.assertIn('/static/recipes/carbonara.png', bodies[3])
+        self.assertIn('Swipe for the answer.', bodies[3])
+        self.assertEqual(bodies[0].count('class="on"'), 5)
+        self.assertEqual(bodies[3].count('class="on"'), 2)
+        self.assertIn('The answer', bodies[4])
+        self.assertIn('class="title">Spaghetti carbonara</h1>', bodies[4])
+        self.assertIn('How many points did you get?', bodies[4])
+        self.assertIn('thelazychef.app/ig/3', bodies[4])
+        self.assertEqual(bodies[4].count('The Lazy Chef'), 1)  # one wordmark
+        caption = self.get(series='guess', ids=rid, n=12, code=3, caption=1).get_data(as_text=True)
+        self.assertNotIn(title, caption)
+        self.assertIn('5 points if you know it from the pictures alone, 4 with the names', caption)
+        self.assertIn('How many points did you get?', caption)
+        # At most GUESS_MAX things to buy: carbonara (5) is in, lasagne (21) and tikka (17) are left out
+        c = series.candidates('guess')
+        self.assertIn(self.ids[0], c)
+        self.assertNotIn(self.ids[1], c)
+        self.assertNotIn(self.ids[2], c)
+        self.assertLessEqual(max(len(x['buy']) for x in c.values()), series.GUESS_MAX)
 
     def test_one_pot_under_20_and_only_6_pick_by_the_steps_and_the_list(self):
         c = series.candidates('onepot')  # exactly one vessel the food is cooked in, not the air fryer

@@ -33,9 +33,10 @@
 {%- endmacro %}
 
 {%- macro step_no(st) -%}
-<b class="no ph-{{ st.phase }}">{{ st.no }}</b>
+<b class="no">{{ st.no }}</b>
 {%- endmacro %}
-{# step_no: the step's marker on the Cook view's slides, in one place so it is a quick swap (a numbered circle now) #}
+{# step_no: the step's marker on the Cook view's slides, in one place so it is a quick swap (marker A, 2.11.2026: a
+   large numeral in the display face, a light tone, no circle and no phase colour) #}
 {% macro grid(tiles, cols, labels=true) -%}
 <div class="grid" style="--cols:{{ cols }}">
   {% for t in tiles %}{{ tile(t, labels) }}{% endfor %}
@@ -67,6 +68,14 @@
   <div class="trio">{% for t in s.symbols %}<figure class="tile"><div class="sym">{% if t.img %}<img src="{{ t.img }}" alt="">{% else %}<i>{{ t.name[:1]|upper }}</i>{% endif %}</div><figcaption><span>{{ t.name }}</span></figcaption></figure>{% endfor %}</div>
   <div class="dishes small row">{% for d in s.dishes %}{% if d %}<img src="{{ d }}" alt="">{% endif %}{% endfor %}</div>
   <p class="facts"><span>{{ s.count }} dinners</span><span>one shopping list</span></p>
+
+{% elif s.kind in ('guess_pictures', 'guess_names', 'guess_amounts', 'guess_dish') %}
+  <p class="eyebrow">{{ s.eyebrow }}</p>
+  <div class="score"><b>{{ s.points }}</b><span>{{ s.line }}</span></div>
+  <p class="bar">{% for i in range(5) %}<u{% if i < s.points %} class="on"{% endif %}></u>{% endfor %}</p>
+  {% if s.kind == 'guess_dish' %}<div class="hero">{% if s.image %}<img src="{{ s.image }}" alt="">{% endif %}</div>
+  {% else %}{{ grid(s.tiles, s.cols, labels=s.labels) }}{% endif %}
+  <p class="next">{{ s.next }}</p>
 
 {% elif s.kind == 'map' %}
   {% set m, k, pad = s.map, s.k, s.pad %}
@@ -243,11 +252,13 @@
   {{ grid(s.tiles, s.cols) }}{% if s.note %}
   <p class="note">{{ s.note }}</p>{% endif %}
 
-{% elif s.kind == 'end' and s.images %}
-  {# A series: the dish over the whole slide (several in a grid), the CTA as the site's button, the address readable #}
+{% elif s.kind in ('end', 'answer') and s.images %}
+  {# A series: the dish over the whole slide (several in a grid), the CTA as the site's button, the address readable;
+     the game's answer names the dish above the button #}
   <div class="photo n{{ s.count }}">{% for i in s.images %}<img src="{{ i }}" alt="">{% endfor %}</div>
   <div class="shade"></div>
-  <div class="end over">
+  <div class="end over{{ ' answer' if s.kind == 'answer' }}">
+    {% if s.kind == 'answer' %}<p class="eyebrow">{{ s.eyebrow }}</p><h1 class="title">{{ s.dish }}</h1>{% endif %}
     <p class="line">{{ s.line }}</p>
     {% if s.cta != 'site' %}<p class="go">{{ 'Link in bio' if size == 'ig' else 'Type it in your browser' }} · <b>{{ address }}</b></p>{% endif %}
     <p class="word">{{ brand.mark('mark') }}The Lazy Chef</p>
@@ -265,7 +276,7 @@
 {% endif %}
 
 <footer class="foot">
-  <span>{% if s.kind != 'end' %}{{ brand.badge() }}The Lazy Chef{% endif %}</span>
+  <span>{% if s.kind not in ('end', 'answer') %}{{ brand.badge() }}The Lazy Chef{% endif %}</span>
   <span>{{ n }} / {{ slides }}</span>
 </footer>
 </main>

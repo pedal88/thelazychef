@@ -28,7 +28,7 @@ the post renders with them (the groups are then `preview`). Anyone else's are ig
 
 | Series | `?series=` | Status | Filter | Slides |
 |---|---|---|---|---|
-| Guess the dinner | `guess` | active | every recipe, dinner or not (the hook says "dish" on the 11 that are not) | the `grid` format with the series' name and number: the symbols, the list, the dish, ask |
+| Guess the dinner | `guess` | active | every recipe, dinner or not (the caption says "dish" on the ones that are not), at most 15 things to buy | a points game over five slides: the pictures alone (5 points), with the names (4), with the amounts (3), the dish (2), then the answer: the dish over the whole slide, its short name, "How many points did you get?" |
 | What to make with [ingredient] | `got` | active | three dinners with the same main protein (`protein_type`) | the ingredient large with the three dishes, each dinner with what it needs beyond the ingredient, one shopping list for all three (×3 = in three dinners), save |
 | High-protein dinners | `protein` | active | at least 35 g protein per serving; the lighter dishes (fewest kcal) first | the dish and the hook, protein and kcal as big numbers (no minutes), the steps, the shopping list in two, follow |
 | 4 high-protein dinners | `protein4` | active | four of the same, varied as the week is | the four dishes large, a dinner each, one shopping list, save |
@@ -57,9 +57,14 @@ what you probably have); `delta` (the river delta placed on a grid without its s
 dish last, arrows straight down; only when it is small, at most two levels above the dish and two branches, else no
 slide); `steps` (the steps as on the recipe page's Cook view: the number, the step's name large and the symbols of
 what goes in, three to a slide on Instagram and four on TikTok, over as many slides as it takes, no minutes;
-the slide kind is `cook`, since the map format's one list is `steps`); `numbers` (protein and kcal, no minutes);
+the slide kind is `cook`, since the map format's one list is `steps`; the step marker is one macro, `step_no`,
+and one CSS block: a large numeral in the display face in a light tone, no circle); `numbers` (protein and kcal, no
+minutes);
 `airfryer` (the highest temperature and the air fryer's minutes, with its image); `days` and `shop` for several
-dinners; `grid` for Guess; and `end`: on a series, the dish over the whole slide (several in a grid), a dark shade,
+dinners; `guess_pictures`, `guess_names`, `guess_amounts`, `guess_dish` and `answer` for the points game (the score
+and a five-part bar in the same place on every slide, the pictures in the same places on the first three; the first
+slide's score line is the hook, "5" counted among its eight words; a card may give a CTA group its own words,
+`ctas`); and `end`: on a series, the dish over the whole slide (several in a grid), a dark shade,
 the CTA as the site's yellow button, the address readable in white and a small wordmark. The formats keep their
 old last slide. There is no time bar any more. The minutes the cook is not working have one definition for the hook
 and the air fryer slide (`social.hands_off`): the standing time of the steps in the heat source when there is any,

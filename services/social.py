@@ -57,6 +57,8 @@ PANTRY_HEAD = 70
 GRID_ROOM = {'ig': 470, 'tt': 760}
 CAPTION = 74
 WIDTH = 912
+# The points game's score block and bar take this much more of a slide than a title does
+GUESS_ROOM = 230
 # The river delta goes on a slide only when it is small enough to read on a phone: at most DELTA_DEPTH levels above
 # the dish (delta.build's max_depth, the dish at 0) and DELTA_LEAVES branches. 11 of the 59 public recipes on
 # 31.10.2026 (serier.md); else the slide shows the time bar.

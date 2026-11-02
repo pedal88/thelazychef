@@ -38,15 +38,23 @@ PROTEIN_G = 35      # High-protein dinners: at least this much protein per servi
 WASH_MAX = 2        # one or two dishes to wash (the contrast hook)
 BUY_MAX = 6         # Only 6 things to buy: at most this many
 SHARED_MIN = 3      # 3 ingredients, 3 dinners: at least this many shared, staples left out
+GUESS_MAX = 15      # Guess the dinner: at most this many things to buy, so the pictures fit a slide (the rest are left out)
+# The points game (guess.yaml): the points per slide, the score line and the line at the bottom
+GUESS = [('guess_pictures', 5, 'points if you get it from the pictures', 'Not sure? Swipe for the names.'),
+         ('guess_names', 4, 'points with the names', 'Still not sure? Swipe for the amounts.'),
+         ('guess_amounts', 3, 'points with the amounts', 'Last clue: swipe to see the dish.'),
+         ('guess_dish', 2, 'points if you know it now', 'Swipe for the answer.')]
+GUESS_KINDS = tuple(k for k, _, _, _ in GUESS)
 ONCE_A_WEEK = 7     # days a recipe stays out of a series after a post
 NOT_AN_INGREDIENT = ('Vegetarian', 'Other')  # protein labels What to make with cannot ask for
 HOOK_WORDS = 8      # a hook is at most this many words, filled in
 STATUSES = ('active', 'paused', 'retired')
 # The pick filters a card may name (candidates())
-FILTERS = ('all', 'airfryer', 'protein', 'onepot', 'under20', 'only6', 'got', 'three3', 'cuisine')
+FILTERS = ('guess', 'airfryer', 'protein', 'onepot', 'under20', 'only6', 'got', 'three3', 'cuisine')
 # The slide kinds a card may list, built in slides(): a kind may stand for several slides (days, shop, grid, steps)
 SLIDE_KINDS = ('cover', 'got_cover', 'trio_cover', 'week_cover', 'airfryer', 'numbers', 'delta', 'steps', 'wash',
-               'ingredients', 'shop_split', 'days', 'shop', 'grid', 'end')
+               'ingredients', 'shop_split', 'days', 'shop', 'grid', 'end',
+               'guess_pictures', 'guess_names', 'guess_amounts', 'guess_dish', 'answer')
 # The facts a hook phrasing may need, and what they are (facts()); a time fact exists only when the time may be said
 FACTS = {
     'n': "the post's number in the series", 'series': "the series' name, filled in", 'dish': 'the dish, short',
@@ -155,8 +163,8 @@ def check_cards(cards=None, hooks=None, ctas=None):
         for kind in card['slides']:
             if kind not in SLIDE_KINDS:
                 problems.append(f'{where}: slide kind {kind!r} is not one of {", ".join(SLIDE_KINDS)}')
-        if not card['slides'] or card['slides'][-1] != 'end':
-            problems.append(f'{where}: the slides must end with end')
+        if not card['slides'] or card['slides'][-1] not in ('end', 'answer'):
+            problems.append(f'{where}: the slides must end with end (or the answer)')
         if card.get('cta') not in ctas:
             problems.append(f'{where}: cta must be one of {", ".join(ctas)}, not {card.get("cta")!r}')
         if not card['hooks']:
@@ -215,13 +223,14 @@ def hook_for(group, facts, seed, slug=None):
     return 'number', f"{facts['count']} things to buy."
 
 
-def cta(group, facts, size, address, seed, noun='dinner'):
-    """The last slide's call to action: {'group', 'text'}, or None when the group is not one."""
+def cta(group, facts, size, address, seed, noun='dinner', slug=None):
+    """The last slide's call to action: {'group', 'text'}, or None when the group is not one. A card's own words for
+    the group (ctas in the card) come before the shared ones."""
     if group not in CTAS:
         return None
     if group == 'bio' and size != 'ig':
         group = 'site'
-    choices = CTAS[group]
+    choices = ((SERIES.get(slug) or {}).get('ctas') or {}).get(group) or CTAS[group]
     if isinstance(choices, dict):
         choices = choices['many' if facts.get('many') else 'one']
     text = random.Random(seed + ':cta').choice(choices).format(noun=noun, address=address, dishes=facts.get('dishes'))
@@ -390,7 +399,8 @@ def slides(slug, posts, size, n, hook_group=None, cta_group=None, code=None, hoo
     if cta_text:
         call = {'group': 'preview', 'text': cta_text}
     else:
-        call = cta(cta_group, f, size, address, sd, card['noun']) or cta(card['cta'], f, size, address, sd, card['noun'])
+        call = (cta(cta_group, f, size, address, sd, card['noun'], slug)
+                or cta(card['cta'], f, size, address, sd, card['noun'], slug))
 
     out = []
     for kind in card['slides']:
@@ -429,6 +439,21 @@ def slides(slug, posts, size, n, hook_group=None, cta_group=None, code=None, hoo
             grid = social.recipe_slides(v, 'grid', r['image'], size, hook=text, cta=call)[:-1]
             grid[0]['eyebrow'] = label
             out += grid
+        elif kind in GUESS_KINDS:
+            # The points game: the same pictures in the same places on the first three, then the dish; the score
+            # and the five-part bar sit in the same place, so a swipe reads as a countdown. The first slide's score
+            # line is the hook (its words after the points)
+            _, points, line, nxt = next(g for g in GUESS if g[0] == kind)
+            if kind == 'guess_pictures':
+                line = text[2:] if text.startswith(f'{points} ') else text
+            shown = [{**t, 'amount': None} for t in tiles] if kind == 'guess_names' else tiles
+            # The same columns on all three picture slides, as many as keep the names readable beside the score
+            out.append({'kind': kind, 'eyebrow': label, 'points': points, 'line': line, 'next': nxt,
+                        'tiles': shown, 'labels': kind != 'guess_pictures', 'image': r['image'],
+                        'cols': max(4, social.columns(len(tiles), size, room=social.GUESS_ROOM))})
+        elif kind == 'answer':
+            out.append({**social.end_slide('', call, images), 'kind': 'answer', 'eyebrow': 'The answer',
+                        'dish': f['dish']})
         elif kind == 'airfryer':
             out.append(social.airfryer_slide(v, r['eq']))
         elif kind == 'numbers':
@@ -486,8 +511,9 @@ def caption(slug, posts, f, text, call, size, code=None):
         what = f"{v['title']}{work or ': under 20 minutes of work'}{in_time}."
     elif kind == 'only6':
         what = f"{v['title']}: {plural(f['count'], 'thing')} to buy{work}{in_time}."
-    elif kind == 'all':
-        what = f"{f['symbols']} ingredients, one {f['meal']}. Guess it before the third picture gives it away."
+    elif kind == 'guess':
+        what = (f"One {f['meal']}, {f['symbols']} things to buy. 5 points if you know it from the pictures alone, 4 with "
+                "the names, 3 with the amounts, 2 from the dish. The answer is on the last slide.")
     else:
         what = f"{v['title']}: the whole dinner in the air fryer{work}{in_time}."
     lines = [what, '', call['text']]
@@ -524,7 +550,7 @@ def next_n(slug):
 
 def candidates(slug):
     """The recipes a series may draw from: approved, with a dish image, not baby food, one per dish, a dinner (the
-    meal type, as the week takes them: social_week.WEEK_MEAL) unless the card's filter is 'all', within the filter
+    meal type, as the week takes them: social_week.WEEK_MEAL) unless the card's filter is 'guess', within the filter
     (FILTERS). {id: {'protein', 'cuisine', 'kcal', 'buy', 'dinner'}}."""
     kind = SERIES[slug]['filter']
     q = db.select(Recipe.id, FAMILY, Recipe.base_recipe_id).where(
@@ -533,7 +559,7 @@ def candidates(slug):
         Recipe.id.not_in(db.select(RecipeMealType.recipe_id).where(RecipeMealType.meal_type == social_week.NOT_FOR_WEEK)),
     ).order_by(Recipe.id)
     dinners = db.select(RecipeMealType.recipe_id).where(RecipeMealType.meal_type == social_week.WEEK_MEAL)
-    if kind != 'all':
+    if kind != 'guess':
         q = q.where(Recipe.id.in_(dinners))
     if kind == 'airfryer':
         q = q.where(Recipe.heat_source == 'airfryer')
@@ -558,9 +584,11 @@ def candidates(slug):
         for rid, equipment in steps:
             cooking.setdefault(rid, set()).update(set(equipment or []) & social.COOK_VESSELS)
         ids = [i for i in ids if len(cooking.get(i, ())) == 1]
-    buy = social_week.buy_sets(ids) if kind in ('got', 'cuisine', 'only6', 'three3', 'protein') and ids else {}
+    buy = social_week.buy_sets(ids) if kind in ('got', 'cuisine', 'only6', 'three3', 'protein', 'guess') and ids else {}
     if kind == 'only6':
         ids = [i for i in ids if 0 < len(buy.get(i, ())) <= BUY_MAX]
+    if kind == 'guess':  # the three with more things to buy than fit the pictures are left out
+        ids = [i for i in ids if 0 < len(buy.get(i, ())) <= GUESS_MAX]
     if not ids:
         return {}
     is_dinner = set(db.session.execute(dinners.where(RecipeMealType.recipe_id.in_(ids))).scalars())

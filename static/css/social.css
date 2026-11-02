@@ -192,6 +192,22 @@ html, body { margin: 0; background: var(--sl-paper); }
 .end.cta .line { font-size: 72px; }
 .end .address.small { margin-top: 64px; padding: 0; background: none; color: var(--sl-muted); font: 600 34px/1 var(--font-mono); }
 
+/* Guess the dinner, the points game: the score and the five-part bar in the same place on every slide, the
+   pictures in the same places on the first three, the line at the bottom */
+.score { display: flex; align-items: center; gap: 30px; margin-top: 34px; }
+.score b { font: 800 170px/.9 var(--font-serif); color: var(--color-accent); letter-spacing: -.03em; }
+.score span { font: 700 50px/1.1 var(--font-serif); max-width: 640px; }
+.bar { display: flex; gap: 14px; margin: 30px 0 0; }
+.bar u { width: 96px; height: 14px; border-radius: 7px; background: var(--sl-line); }
+.bar u.on { background: var(--color-accent); }
+.kind-guess_pictures .grid, .kind-guess_names .grid, .kind-guess_amounts .grid { gap: 26px 22px; margin-top: 36px; }
+.kind-guess_names .tile figcaption span, .kind-guess_amounts .tile figcaption span { font-size: 30px; }
+.kind-guess_amounts .tile figcaption b { font-size: 33px; }
+.kind-guess_dish .hero { margin: 24px -60px; }
+.next { margin: 24px 0 0; font: 600 42px/1.2 var(--font-sans); }
+.end.over.answer { text-align: center; align-items: center; }
+.end.over .eyebrow { margin: 0 0 18px; color: var(--look-go-soft, var(--sl-line)); }
+.end.over .title { margin: 0 0 46px; font-size: 96px; color: #fff; }
 /* A series cover: the dish named large under the hook, then the ingredient symbols lifted, in two rows */
 .dish { margin: 20px 0 0; font: 500 50px/1.15 var(--font-serif); color: var(--sl-muted); }
 .strip { display: flex; flex-wrap: wrap; gap: 0 2px; margin: 24px 0 0; }
@@ -205,11 +221,11 @@ html, body { margin: 0; background: var(--sl-paper); }
 .dishes.n4 img { width: 48%; }
 /* The steps as on the Cook view: the marker, the step's name large, its symbols with amounts; no minutes */
 .cook { flex: 1; margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; justify-content: space-evenly; gap: 24px; }
-.cook-step { display: grid; grid-template-columns: 72px 1fr; gap: 24px; align-items: start; }
-/* The step marker (templates/social/slide.html step_no): a numbered circle in the phase's colour, to be swapped */
-.cook-step .no { width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  background: var(--ph); color: var(--color-paper); font: 700 34px/1 var(--font-sans); margin-top: 6px; }
-.cook-body h2 { margin: 0; font: 700 58px/1.08 var(--font-serif); letter-spacing: -.01em; }
+.cook-step { display: grid; grid-template-columns: 120px 1fr; gap: 18px; align-items: start; }
+/* The step marker (templates/social/slide.html step_no), marker A: a large numeral in the display face, in a light
+   tone of the look's accent, no circle and no phase colour */
+.cook-step .no { font: 800 128px/.86 var(--font-serif); color: rgb(var(--accent-300)); letter-spacing: -.03em; }
+.cook-body h2 { margin: 0; font: 800 66px/1.08 var(--font-serif); letter-spacing: -.015em; }
 .cook-syms { display: flex; flex-wrap: wrap; gap: 4px 20px; margin-top: 14px; }
 .cook-syms .tile { width: 132px; }
 .cook-syms .sym img { width: 120%; height: 120%; }
@@ -234,3 +250,13 @@ html, body { margin: 0; background: var(--sl-paper); }
 .end.over .word { margin: 48px 0 0; display: inline-flex; align-items: center; gap: 14px; font: 600 30px/1 var(--font-sans); color: rgb(255 255 255 / .9); }
 .end.over .word .mark { width: 48px; height: 48px; }
 .slide:has(.end.over) .foot { color: rgb(255 255 255 / .75); }
+/* The game on Instagram's shorter slide: a smaller score and tighter rows, so fifteen things with amounts still fit */
+.size-ig .score { margin-top: 18px; gap: 24px; }
+.size-ig .score b { font-size: 128px; }
+.size-ig .score span { font-size: 44px; }
+.size-ig .bar { margin-top: 20px; }
+.size-ig .kind-guess_names .grid, .size-ig .kind-guess_amounts .grid, .size-ig .kind-guess_pictures .grid { gap: 12px 18px; margin-top: 20px; }
+.size-ig .kind-guess_names .tile figcaption, .size-ig .kind-guess_amounts .tile figcaption { font-size: 25px; }
+.size-ig .kind-guess_names .tile figcaption span, .size-ig .kind-guess_amounts .tile figcaption span { font-size: 25px; }
+.size-ig .kind-guess_amounts .tile figcaption b { font-size: 27px; }
+.size-ig .next { margin-top: 14px; font-size: 38px; }

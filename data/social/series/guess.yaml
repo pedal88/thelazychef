@@ -2,31 +2,41 @@
 name: Guess the dinner
 status: active
 purpose: >
-  Reach and volume: a post anyone can play, and every recipe qualifies, dinner or not, so it can run ten times a
+  Reach and volume: a game anyone can play, and every recipe qualifies, dinner or not, so it can run ten times a
   week.
-message: The ingredient symbols first, the dish on the third slide; guess it before it is given away.
+message: >
+  A points game over five slides: the pictures alone are 5 points, the names 4, the amounts 3, the dish itself 2;
+  the answer on the last slide.
 hypothesis: >
-  A guess earns swipes and comments, which the platforms read as interest, and the symbols are what looks most like
-  the app; the account's most viewed post so far was one (code 2, 30.10.2026).
+  A countdown earns swipes to the end and a comment with the score, which the platforms read as interest, and the
+  symbols are what looks most like the app; the account's most viewed post so far was a guess (code 2, 30.10.2026).
 signal: Comments and follows per 1000 views; views per slide, for the swipes.
 stop_when: >
-  After 10 posts per platform it is below the median of the other series on follows per 1000 views; with 59
-  recipes it supports about ten posts a week for five weeks before a dish comes round again.
+  After 10 posts per platform it is below the median of the other series on follows per 1000 views; with 56
+  recipes of at most 15 things to buy it supports about ten posts a week for five weeks before a dish comes round.
 
 pick:
-  filter: all             # every recipe, dinner or not (the hook says "dish" on the 11 that are not)
+  filter: guess           # every recipe, dinner or not (the hook says "dish" on the ones that are not), at most 15 to buy
   count: 1
-slides: [grid, end]
+slides: [guess_pictures, guess_names, guess_amounts, guess_dish, answer]
 cta: ask
+ctas:
+  ask:
+    - "How many points did you get?"
 noun: dinner to guess
-hashtags: "#recipe #ingredients #dinnerideas #easyrecipes #cooking"
+hashtags: "#recipe #ingredients #dinnerideas #guessthedish #cooking"
+# The first slide's score line is the hook: "5" large, the rest beside it; eight words, the 5 counted
 hooks:
   guess:
-    - text: "Guess the {meal} from {symbols} symbols"
-      needs: [symbols]
-    - text: "Can you guess the {meal}?"
+    - text: "5 points if you guess from the pictures"
       needs: []
-    - text: "{symbols} symbols. One {meal}. Guess it."
-      needs: [symbols]
+    - text: "5 points: get it from the pictures"
+      needs: []
 proposed_hooks: []
-retired_hooks: []
+retired_hooks:
+  - text: "Guess the {meal} from {symbols} symbols"
+    why: The game's first slide is the score, not a question (2.11.2026).
+  - text: "Can you guess the {meal}?"
+    why: The same.
+  - text: "{symbols} symbols. One {meal}. Guess it."
+    why: The same.
