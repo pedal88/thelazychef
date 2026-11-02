@@ -54,7 +54,7 @@ def enqueue_images(recipe_id):
     _queue(IMAGES_PATH.format(id=recipe_id), {})
 
 
-def _queue(path, payload):
+def _queue(path, payload, at=None):
     import google.auth
     from google.auth.transport.requests import AuthorizedSession
 
@@ -68,6 +68,8 @@ def _queue(path, payload):
             'oidcToken': {'serviceAccountEmail': os.environ['TASKS_SERVICE_ACCOUNT'], 'audience': base},
         },
     }}
+    if at:  # a UTC datetime: the task waits in the queue until then (at most 30 days)
+        task['task']['scheduleTime'] = at.strftime('%Y-%m-%dT%H:%M:%SZ')
     credentials, _ = google.auth.default(scopes=['https://www.googleapis.com/auth/cloud-platform'])
     res = AuthorizedSession(credentials).post(f'https://cloudtasks.googleapis.com/v2/{queue}/tasks', json=task, timeout=20)
     res.raise_for_status()

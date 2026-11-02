@@ -1,13 +1,15 @@
 """A day of TikTok and Instagram posts in one go: plan them, log them as drafts with their codes, render every slide
 in both sizes, and put them where the phone can reach them (docs/SOCIAL.md, "A day of posts").
 
-    python -m scripts.social_batch 2026-11-03                    # the day's series (below)
+    python -m scripts.social_batch 2026-11-03                    # the day's two posts (below)
+    python -m scripts.social_batch 2026-11-03 -n 5               # or five
     python -m scripts.social_batch 2026-11-03 --plan day.txt     # the posts in a plan
     python -m scripts.social_batch 2026-11-03 --dry-run          # show the plan, log and render nothing
 
-Without a plan a day is the four series that run side by side (airfryer, got, protein, dishes) and a fifth post:
-Guess the dinner on Mondays and Fridays, a cuisine week on Wednesdays, else one of the four again by turn
-(~/promptlab-runs/social/notes/serier.md). Each series picks its own recipes and number, as on /social/post.
+Without a plan a day takes -n posts (POSTS_PER_DAY, two for now) from the four series that run side by side (airfryer,
+got, protein, dishes), by turn from day to day. Guess the dinner on Mondays and Fridays and a cuisine week on Wednesdays
+take the day's last place, or a fifth one (~/promptlab-runs/social/notes/serier.md). Each series picks its own recipes
+and number, as on /social/post.
 
 A plan has a post per line: a series or a format, the recipes if they are to be fixed (comma separated), then
 hook=, cta= and n= if they are to be fixed, and for a format after | the words it tries. # starts a comment.
@@ -29,13 +31,17 @@ The slides go to ~/promptlab-runs/social/<day>/: a folder per post and size with
 (the hook's words, for TikTok's title), day.txt listing the posts, and plan.json with what was logged. Running the same
 day again reads plan.json, plans only the posts it lacks and renders only what is missing (--force renders again;
 --replan plans the whole day anew, which logs new drafts). Each folder is copied to --phone (an iCloud Drive folder by
-default), so it is on the phone without AirDrop.
+default), so it is on the phone without AirDrop. The Instagram slides also go up as JPEGs with the caption, so the post
+waits in the Instagram queue on the Funnel page (services/social_publish.py): nothing goes up until it is approved
+there.
 
-Nothing is posted and nothing costs money. Put each post up by hand (docs/SOCIAL.md) and mark it posted on the Funnel
-page. --base (or LAZYCHEF_URL) points it at another copy of the app, e.g. http://127.0.0.1:8000.
+Nothing is posted and nothing costs money. Approve the Instagram posts in the queue, put the TikTok ones up by hand
+(docs/SOCIAL.md) and mark those posted on the Funnel page. --base (or LAZYCHEF_URL) points it at another copy of the
+app, e.g. http://127.0.0.1:8000.
 """
 import argparse
 import datetime
+import io
 import json
 import os
 import shutil
@@ -44,6 +50,7 @@ import urllib.error
 from pathlib import Path
 
 import requests
+from PIL import Image
 
 from scripts.content import _key
 from scripts.social_render import CHROME, CTAS, HOOKS, PLATFORM_OF_SIZE, SERIES, fetch, page_url, render, tls
@@ -51,16 +58,23 @@ from scripts.social_render import CHROME, CTAS, HOOKS, PLATFORM_OF_SIZE, SERIES,
 PHONE = Path.home() / 'Library' / 'Mobile Documents' / 'com~apple~CloudDocs' / 'The Lazy Chef'
 SIZES = ('tt', 'ig')
 FORMATS = ('map', 'grid', 'pantry', 'week')
-# A day without a plan: the four series that run side by side, and the fifth post by weekday (Monday is 0)
+# A day without a plan: how many posts, the four series that run side by side, and the extra by weekday (Monday is 0)
+POSTS_PER_DAY = 2
 DAY_SERIES = ('airfryer', 'got', 'protein', 'dishes')
 FIFTH = {0: 'guess', 2: 'cuisine', 4: 'guess'}
 
 
-def day_plan(day):
-    """The posts of a day without a plan: DAY_SERIES, then FIFTH's series for the weekday or one of DAY_SERIES by
-    turn."""
-    fifth = FIFTH.get(day.weekday(), DAY_SERIES[day.toordinal() % len(DAY_SERIES)])
-    return [{'kind': slug} for slug in DAY_SERIES + (fifth,)]
+def day_plan(day, n=POSTS_PER_DAY):
+    """The n posts of a day without a plan: DAY_SERIES by turn, going on from where yesterday's stopped (all four when
+    n is four or more). FIFTH's series for the weekday takes the last place, or the fifth; above four, the fifth and on
+    are DAY_SERIES again."""
+    four = len(DAY_SERIES)
+    start = 0 if n >= four else day.toordinal() * n % four
+    slugs = [DAY_SERIES[(start + i) % four] for i in range(n)]
+    extra = FIFTH.get(day.weekday())
+    if extra:
+        slugs[min(n, four + 1) - 1] = extra
+    return [{'kind': slug} for slug in slugs]
 
 
 def parse_plan(text):
@@ -102,9 +116,9 @@ def parse_plan(text):
     return posts
 
 
-def api(base, path, body):
-    resp = requests.post(f'{base.rstrip("/")}/api/social{path}', json=body,
-                         headers={'Authorization': f'Bearer {_key()}'}, timeout=120)
+def api(base, path, **kw):
+    resp = requests.post(f'{base.rstrip("/")}/api/social{path}', headers={'Authorization': f'Bearer {_key()}'},
+                         timeout=120, **kw)
     try:
         answer = resp.json()
     except ValueError:
@@ -150,6 +164,22 @@ def plan_post(post, base, look, context):
     return draft, query, kind, recipe
 
 
+def jpegs(folder):
+    """The Instagram slides as JPEG, the one kind Instagram's API takes, in order."""
+    out = []
+    for png in sorted(folder.glob('*.png')):
+        buffer = io.BytesIO()
+        Image.open(png).convert('RGB').save(buffer, 'JPEG', quality=92)
+        out.append(buffer.getvalue())
+    return out
+
+
+def send_to_queue(base, code, folder):
+    """The post's Instagram slides and caption to the app: it then waits in the Instagram queue."""
+    files = [('slides', (f'{n:02d}.jpg', data, 'image/jpeg')) for n, data in enumerate(jpegs(folder), 1)]
+    api(base, f'/slides/{code}', files=files, data={'caption': (folder / 'caption.txt').read_text(encoding='utf-8')})
+
+
 def folder_name(place, entry):
     what = entry['series'] and f"{entry['series']}{entry['series_n']}" or entry['format']
     recipes = (entry['recipe_ids'] or '').replace(',', '-') or None
@@ -164,6 +194,7 @@ def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('day', type=datetime.date.fromisoformat, help='the day the posts go up, e.g. 2026-11-03')
     p.add_argument('--plan', type=Path, help="the posts, a line each (see above); else the day's series")
+    p.add_argument('-n', type=int, default=POSTS_PER_DAY, help=f'posts in a day without a plan ({POSTS_PER_DAY})')
     p.add_argument('--dry-run', action='store_true', help='show the plan; log and render nothing')
     p.add_argument('--replan', action='store_true', help="plan the day anew even when it has a plan.json")
     p.add_argument('--force', action='store_true', help='render slides again that are already there')
@@ -182,7 +213,7 @@ def main():
         except ValueError as e:
             p.error(f'{args.plan}: {e}')
     else:
-        posts = day_plan(args.day)
+        posts = day_plan(args.day, args.n)
     if args.dry_run:
         for place, post in enumerate(posts, 1):
             print(f"{place}. {' '.join(f'{k}={v}' if k != 'kind' else v for k, v in post.items())}")
@@ -202,7 +233,7 @@ def main():
                       'public); skipped')
                 continue
             draft, query, fmt, recipe = planned
-            logged = api(args.base, '/drafts', {'day': args.day.isoformat(), 'posts': [draft]})['posts'][0]
+            logged = api(args.base, '/drafts', json={'day': args.day.isoformat(), 'posts': [draft]})['posts'][0]
             entries.append({**logged, 'place': place, 'page': fmt, 'recipe': recipe, 'query': query})
             manifest.write_text(json.dumps(entries, indent=1, ensure_ascii=False), encoding='utf-8')
 
@@ -219,6 +250,10 @@ def main():
             if args.phone and not args.no_phone:
                 shutil.copytree(folder, args.phone / args.day.isoformat() / f'{name}-{PLATFORM_OF_SIZE[size]}',
                                 dirs_exist_ok=True)
+        if args.force or not entry.get('queued'):
+            send_to_queue(args.base, entry['code'], day_folder / name / 'ig')
+            entry['queued'] = True
+            manifest.write_text(json.dumps(entries, indent=1, ensure_ascii=False), encoding='utf-8')
         summary.append(f"{entry['place']}. code {entry['code']}  {entry['title']}"
                        + ('' if entry['new'] else '  (logged before: same code)'))
 
@@ -226,7 +261,8 @@ def main():
             + '\n'.join(summary)
             + f"\n\nThe slides: {day_folder}"
             + (f"\nOn the phone: {args.phone / args.day.isoformat()}" if args.phone and not args.no_phone else '')
-            + f"\nWhen a post is up, mark it posted: {args.base.rstrip('/')}/admin/funnel#posts\n")
+            + f"\nApprove the Instagram posts: {args.base.rstrip('/')}/admin/funnel/queue"
+            + f"\nWhen a TikTok post is up, mark it posted: {args.base.rstrip('/')}/admin/funnel#posts\n")
     (day_folder / 'day.txt').write_text(text, encoding='utf-8')
     print('\n' + text)
 

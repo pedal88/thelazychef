@@ -8,8 +8,10 @@ import datetime
 
 from flask import Blueprint, jsonify, request
 
+from database.models import SocialPost, db
+from routes._shared import get_storage
 from routes.content_api_routes import key_required
-from services import funnel
+from services import funnel, social_publish
 
 social_api_bp = Blueprint('social_api', __name__, url_prefix='/api/social')
 
@@ -36,3 +38,20 @@ def drafts():
     if errors:
         return jsonify({'errors': errors}), 400
     return jsonify({'day': day.isoformat(), 'posts': planned})
+
+
+@social_api_bp.route('/slides/<code>', methods=['POST'])
+@key_required
+def slides(code):
+    """A post's slides for Instagram (JPEGs, the form's files named slides, in order) and its caption: the post then
+    waits in the Instagram queue on the Funnel page. Nothing goes up until it is approved there."""
+    post = db.session.execute(db.select(SocialPost).filter_by(platform='instagram', code=code)).scalar()
+    if post is None:
+        return jsonify({'error': f'no Instagram post with code {code}'}), 404
+    if post.status != 'draft':
+        return jsonify({'error': f'instagram-{code} is {post.status}, not a draft'}), 400
+    error = social_publish.save_slides(post, [f.read() for f in request.files.getlist('slides')],
+                                       (request.form.get('caption') or '').strip(), get_storage())
+    if error:
+        return jsonify({'error': error}), 400
+    return jsonify({'code': code, 'slides': len(social_publish.slides_of(post))})

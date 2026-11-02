@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{# The Instagram queue (routes/funnel_routes.queue, services/social_publish.py): the posts scripts/social_batch.py has
+   rendered, by day, with their slides and text, to approve with a time. A Cloud Task publishes each at its time. #}
+{% block title %}Instagram queue - Funnel - The Lazy Chef{% endblock %}
+
+{% block content %}
+{% set field = 'rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm' %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+  <div class="flex flex-wrap items-center gap-3">
+    <a href="{{ url_for('funnel.dashboard') }}#posts" class="text-sm text-slate-500 hover:text-slate-900">← Funnel</a>
+    <h1 class="font-serif text-2xl font-bold text-slate-900">Instagram queue</h1>
+  </div>
+  <p class="text-sm text-slate-600">Tick a post, check its slides, text and time (Oslo), and approve. It goes up by itself at that time, with the AI label and without music. To post one with music, leave it unticked, post it by hand, and it is marked posted the next morning.</p>
+  {% if not ready %}<p class="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">Publishing is not set up here: it needs the Instagram token and the task queue.</p>{% endif %}
+
+  {% if days %}
+  <form method="post" action="{{ url_for('funnel.approve_queue') }}" class="space-y-6">
+    {% for day in days %}
+    <section class="space-y-3">
+      <h2 class="font-semibold text-slate-900">{{ day.day.strftime('%A %d.%m') }}</h2>
+      {% for row in day.posts %}
+      {% set p = row.post %}
+      <div class="rounded-xl border border-slate-200 bg-white p-4 space-y-3">
+        <div class="flex flex-wrap items-center gap-3">
+          {% if p.status == 'draft' %}
+          <label class="flex items-center gap-2 text-sm font-semibold text-slate-900"><input type="checkbox" name="approve-{{ p.id }}" value="1" checked> {{ p.title }}</label>
+          {% else %}
+          <span class="text-sm font-semibold text-slate-900">{{ p.title }}</span>
+          <span class="rounded-full bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-800">Scheduled</span>
+          {% endif %}
+          <span class="font-mono text-xs text-slate-500">instagram-{{ p.code }}</span>
+          <label class="ml-auto text-sm text-slate-700">Goes up
+            <input type="datetime-local" name="when-{{ p.id }}" value="{{ row.when }}" class="{{ field }}" {{ 'disabled' if p.status == 'scheduled' }}>
+          </label>
+        </div>
+        {% if p.publish_error %}<p class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">The last try failed: {{ p.publish_error }}</p>{% endif %}
+        <div class="flex gap-2 overflow-x-auto">
+          {% for url in row.slides %}<a href="{{ url }}" target="_blank" rel="noopener" class="shrink-0"><img src="{{ url }}" alt="Slide {{ loop.index }}" loading="lazy" class="h-44 w-auto rounded-lg border border-slate-200"></a>{% endfor %}
+        </div>
+        <textarea name="caption-{{ p.id }}" rows="4" class="w-full {{ field }}" {{ 'disabled' if p.status == 'scheduled' }}>{{ p.caption or '' }}</textarea>
+        {% if p.status == 'scheduled' %}<button type="submit" formaction="{{ url_for('funnel.cancel_queue', post_id=p.id) }}" class="text-sm text-red-700 hover:underline">Cancel, back to draft</button>{% endif %}
+      </div>
+      {% endfor %}
+    </section>
+    {% endfor %}
+    <button type="submit" class="px-4 py-2 rounded-full bg-slate-900 text-white text-sm font-semibold" {{ 'disabled' if not ready }}>Approve the ticked posts</button>
+  </form>
+  {% else %}
+  <p class="text-sm text-slate-500">Nothing waiting. <code class="font-mono">python -m scripts.social_batch &lt;day&gt;</code> puts a day's posts here.</p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -185,17 +185,18 @@ The dish images are made by Gemini: label every post as AI-generated where the p
 
 ## A day of posts
 
-At five posts a day on each platform, steps 1–5 and 8 above are one command the evening before:
+Steps 1–5 and 8 above are one command the evening before:
 
 ```bash
-python -m scripts.social_batch 2026-11-03                    # the day's series
+python -m scripts.social_batch 2026-11-03                    # the day's posts, two for now (POSTS_PER_DAY)
+python -m scripts.social_batch 2026-11-03 -n 5               # or five
 python -m scripts.social_batch 2026-11-03 --plan day.txt     # or the posts in a plan
 python -m scripts.social_batch 2026-11-03 --dry-run          # show the plan only
 ```
 
-Without a plan a day is the four series that run side by side (`airfryer`, `got`, `protein`, `dishes`) and a fifth
-post: `guess` on Mondays and Fridays, `cuisine` on Wednesdays, else one of the four again by turn
-(`scripts/social_batch.DAY_SERIES`, `FIFTH`). A plan has a post per line: a series or a format, the recipes if they are
+Without a plan a day takes its posts from the four series that run side by side (`airfryer`, `got`, `protein`,
+`dishes`), by turn from day to day. `guess` on Mondays and Fridays and `cuisine` on Wednesdays take the day's last place,
+or the fifth (`scripts/social_batch.DAY_SERIES`, `FIFTH`). A plan has a post per line: a series or a format, the recipes if they are
 fixed, `hook=`, `cta=` and `n=` if they are fixed, and for a format the words it tries after `|`:
 
 ```
@@ -218,8 +219,22 @@ the slides, `caption.txt` (the address already carries the code) and `title.txt`
 `plan.json`, plans only what it lacks and renders only what is missing (`--force` renders again, `--replan` plans the
 whole day anew). It reads production and writes only the drafts; it costs nothing.
 
-Look over every slide, post as in steps 6–7, and press **Mark posted today** beside the draft on the Funnel page (or
-set Status on the post's page, with its link). A draft's day is the day it was planned for until then.
+On Instagram, approve the posts in the queue (below). On TikTok, look over every slide, post as in step 6, and press
+**Mark posted today** beside the draft on the Funnel page (or set Status on the post's page, with its link). A draft's
+day is the day it was planned for until then.
+
+## The Instagram queue
+
+The batch also sends each post's Instagram slides (as JPEG, the one kind the API takes) and caption to the app, so it
+waits at **Instagram queue** on the Funnel page (`/admin/funnel/queue`, `services/social_publish.py`). There each post
+shows its slides, its text to edit and a time in Oslo, 11:00 and 18:00 for a day of two. **Approve the ticked posts**
+schedules them, and a Cloud Task publishes each at its time with the AI label on. Cancel puts one back to draft. Nothing
+goes up without that approval. If it fails, the post goes back to draft with the reason, and is not tried again by
+itself.
+
+The API cannot add music to a carousel. To post one with music, leave it unticked, post it by hand as in step 7, and the
+next morning's fetch marks it posted. Instagram allows 50–100 API posts in 24 hours, far above what we post. A task never
+posts twice: it first looks for the post's code among the latest posts.
 
 ## Instagram's numbers, fetched
 

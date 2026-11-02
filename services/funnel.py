@@ -56,7 +56,7 @@ STAT_FIELDS = ['views', 'likes', 'comments', 'saves', 'shares', 'profile_visits'
 VARIANT_CHOICES = {'series': list(SERIES), 'hook_group': list(HOOKS), 'cta_group': list(CTAS)}
 VARIANT_TEXT = {'round': 40, 'recipe_ids': 200, 'views': 300, 'look': 10, 'slot': 20}
 VARIANT_NUMBERS = ('series_n', 'slides')
-POST_STATUSES = [('draft', 'Draft'), ('posted', 'Posted')]
+POST_STATUSES = [('draft', 'Draft'), ('scheduled', 'Scheduled'), ('posted', 'Posted')]
 # The days the Funnel page sums the posts over, per series, hook group and CTA group
 SUMMARY_WINDOWS = (7, 28)
 
