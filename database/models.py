@@ -521,6 +521,17 @@ class SocialPost(db.Model):
                                                          order_by="SocialPostStat.day")
 
 
+class SocialReport(db.Model):
+    """The weekly report on the posts: the numbers it was written from and what Claude read out of them
+    (services/social_report.py). One per week, by the day it ends."""
+    __tablename__ = 'social_report'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    week_ending: Mapped[datetime.date] = mapped_column(Date, nullable=False, unique=True)
+    written_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+    facts: Mapped[dict] = mapped_column(JSON, nullable=False)
+    report: Mapped[dict] = mapped_column(JSON, nullable=False)
+
+
 class SocialPostStat(db.Model):
     """The platform's numbers for a post some days after it went up: copied by hand from the app (2 and 7 days), or
     fetched from the platform's API every day (services/social_stats.py)."""

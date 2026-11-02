@@ -140,12 +140,11 @@ A series post (`--series`, with `--n`, `--hook`, `--cta`, and `--ids` for chosen
 recipes and the number, prints what it chose, and renders every slide with those fixed. Render both sizes with the
 same number: the same post on both platforms, on different days.
 
-The slides come in the site's look (`routes/_shared.SITE_LOOK`, D Safran for now). `--look today|c|d|e|f` (`?look=`
+The slides come in the site's look (`routes/_shared.SITE_LOOK`, F Washi since 02.11.2026). `--look today|c|d|e|f` (`?look=`
 on the pages) draws them in another of the style trial's looks (`static/css/themes.css`,
 the fonts in `routes/_shared.LOOK_FONTS`), to compare the directions on real posts. The slides and the site read the
 same look: its colours, fonts, headings and main button are in `themes.css` for both, and the metro map's line colours
-are tokens (`--lane-0`…`--lane-3` in `tokens.css`). Post in the look visitors see on the site, today's until one is
-chosen.
+are tokens (`--lane-0`…`--lane-3` in `tokens.css`). Post in the look visitors see on the site.
 
 It reads production (or `--base http://127.0.0.1:8000`), photographs each slide with headless Chrome and writes the
 PNGs and `caption.txt` to `~/promptlab-runs/social/`, outside the repo. Nothing is written to production and nothing
@@ -241,9 +240,20 @@ the slides, `caption.txt` (the address already carries the code) and `title.txt`
 `plan.json`, plans only what it lacks and renders only what is missing (`--force` renders again, `--replan` plans the
 whole day anew). It reads production and writes only the drafts; it costs nothing.
 
-On Instagram, approve the posts in the queue (below). On TikTok, look over every slide, post as in step 6, and press
-**Mark posted today** beside the draft on the Funnel page (or set Status on the post's page, with its link). A draft's
-day is the day it was planned for until then.
+On Instagram, approve the posts in the queue (below). On TikTok, use the TikTok posts page (below). A draft's day is the
+day it was planned for until it is marked posted.
+
+## The TikTok posts page
+
+TikTok's API is closed to us, so a post goes up by hand, from `/admin/funnel/tiktok` on the phone
+(`templates/admin/funnel_tiktok.html`, `static/js/funnel_tiktok.js`). The batch sends each post's TikTok slides and caption to the app as it
+does Instagram's. For each post the page has **Save slides to Photos** (the phone's share sheet, Save Images), **Copy**
+for the title and the caption, and **It is up: mark posted today** with the sound and the post's link. Look over the
+slides there before posting. The slides are also in iCloud Drive as before.
+
+Reading TikTok by a script is left out on purpose. TikTok's terms for the EEA forbid extracting data with automated
+software it has not approved, and the other version forbids scripts that interact with the service, with no exception
+for your own account; the penalty is the account. TikTok's numbers are typed in, on **Copy in numbers**.
 
 ## The Instagram queue
 
@@ -268,6 +278,15 @@ comments, saves, shares and profile visits. A row typed in by hand for a day is 
 the Funnel page does the same now, and says what it found. Numbers can be up to 48 hours late at Meta, so the latest
 days move a little. A post the log does not have is only counted: log it to get its numbers. TikTok has no such fetch: its
 Accounts API needs a verified company.
+
+## The weekly report
+
+Sunday at 07:00 the job `social-report` (`services/social_report.py`) reads the week's posts from the post log, with the
+week before and the series, hook and CTA groups over 28 days. Claude (`SOCIAL_REPORT_MODEL`, the prompt in
+`data/prompts/social/weekly_report.md`) says in Norwegian what won, what lost and the one change for next week, and
+may not judge a group on fewer than three posts. It is at **Weekly report** on the Funnel page, kept per week with the
+numbers it was written from; **Write it now** writes the week ending today. TikTok's numbers must be typed in first to
+count. A few cents a week; a week with no posts makes no call.
 
 ## Learning from the posts
 

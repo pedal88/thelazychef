@@ -20,6 +20,7 @@ os.environ.pop('K_SERVICE', None)
 
 from app import app  # noqa: E402
 from database.models import Recipe, RecipeMealType, SocialPost, User, db  # noqa: E402
+from routes._shared import SITE_LOOK  # noqa: E402
 from services import social, social_series as series, social_week  # noqa: E402
 from services.recipe_v2.generate import refresh  # noqa: E402
 from services.recipe_v2.store import save_v2  # noqa: E402
@@ -155,7 +156,7 @@ class SeriesTests(unittest.TestCase):
         self.assertEqual((r.headers['X-Recipes'], r.headers['X-N'], r.headers['X-Hook'], r.headers['X-Cta']),
                          (str(self.ids[0]), '7', 'guess', 'save'))
         self.assertEqual(r.headers['X-Views'], 'cover airfryer timebar timers shop_split end')
-        self.assertEqual(r.headers['X-Look'], 'd')
+        self.assertEqual(r.headers['X-Look'], SITE_LOOK)
         self.assertEqual(r.headers['X-Robots-Tag'], 'noindex')
         caption = self.get(series='airfryer', ids=self.ids[0], n=7, cta='save', code=9, size='tt', caption=1)
         text = caption.get_data(as_text=True)

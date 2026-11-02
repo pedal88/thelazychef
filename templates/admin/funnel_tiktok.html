@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{# The TikTok posts for the phone (routes/funnel_routes.tiktok_page, services/social_publish.tiktok_days): what
+   scripts/social_batch.py rendered, with buttons to save the slides and copy the words, for posting in TikTok's app.
+   static/js/funnel_tiktok.js holds the buttons. #}
+{% block title %}TikTok posts - Funnel - The Lazy Chef{% endblock %}
+
+{% block content %}
+{% set field = 'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base' %}
+{% set go = 'w-full px-4 py-3 rounded-full bg-slate-900 text-white text-sm font-semibold disabled:opacity-50' %}
+{% set quiet = 'px-3 py-1.5 rounded-full border border-slate-300 text-slate-900 text-sm font-semibold' %}
+<div class="max-w-xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+  <div class="flex flex-wrap items-center gap-3">
+    <a href="{{ url_for('funnel.dashboard') }}#posts" class="text-sm text-slate-500 hover:text-slate-900">← Funnel</a>
+    <h1 class="font-serif text-2xl font-bold text-slate-900">TikTok posts</h1>
+    <a href="{{ url_for('funnel.numbers') }}" class="ml-auto text-sm text-slate-500 underline">Copy in numbers</a>
+  </div>
+
+  {% for day in days %}
+  <section class="space-y-4">
+    <h2 class="font-semibold text-slate-900">{{ day.day.strftime('%A %d.%m') }}</h2>
+    {% for row in day.posts %}
+    {% set p = row.post %}
+    <article class="rounded-xl border border-slate-200 bg-white p-4 space-y-4" data-tiktok-post
+             data-slides="{{ range(1, row.slides|length + 1)|list|tojson }}"
+             data-base="{{ url_for('funnel.post_slide', post_id=p.id, n=0)|replace('/0.jpg', '/') }}" data-code="{{ p.code }}">
+      <div class="flex flex-wrap items-baseline gap-2">
+        <span class="text-sm font-semibold text-slate-900">{{ p.title }}</span>
+        <span class="font-mono text-xs text-slate-500">tiktok-{{ p.code }}</span>
+      </div>
+      <div class="flex gap-2 overflow-x-auto">
+        {% for url in row.slides %}<img src="{{ url }}" alt="Slide {{ loop.index }}" loading="lazy" class="h-40 w-auto shrink-0 rounded-lg border border-slate-200">{% endfor %}
+      </div>
+      <div class="space-y-2">
+        <button type="button" class="{{ go }}" data-save disabled>Getting the slides ready…</button>
+        <p class="text-xs text-slate-500" data-save-note hidden></p>
+      </div>
+      <div class="space-y-1">
+        <div class="flex items-center justify-between gap-3"><label class="text-sm text-slate-700" for="title-{{ p.id }}">Title</label><button type="button" class="{{ quiet }}" data-copy="title-{{ p.id }}">Copy</button></div>
+        <input id="title-{{ p.id }}" value="{{ p.hook or p.title }}" class="{{ field }}" maxlength="90">
+      </div>
+      <div class="space-y-1">
+        <div class="flex items-center justify-between gap-3"><label class="text-sm text-slate-700" for="caption-{{ p.id }}">Caption</label><button type="button" class="{{ quiet }}" data-copy="caption-{{ p.id }}">Copy</button></div>
+        <textarea id="caption-{{ p.id }}" rows="6" class="{{ field }}">{{ p.caption or '' }}</textarea>
+      </div>
+      <p class="text-sm text-slate-600">In TikTok: + → Upload → the slides in order → photo mode → a sound. Paste the title and caption, turn on AI-generated content under More options, and post. Check first that the profile is The Lazy Chef.</p>
+      <form method="post" action="{{ url_for('funnel.mark_posted', post_id=p.id) }}" class="space-y-2">
+        <input type="hidden" name="back" value="tiktok">
+        <input name="sound" maxlength="120" placeholder="The sound you chose" aria-label="Sound" class="{{ field }}">
+        <input name="url" type="url" maxlength="300" placeholder="Link to the post (optional)" aria-label="Link to the post" class="{{ field }}">
+        <button type="submit" class="{{ go }}">It is up: mark posted today</button>
+      </form>
+    </article>
+    {% endfor %}
+  </section>
+  {% else %}
+  <p class="text-sm text-slate-500">Nothing waiting. <code class="font-mono">python -m scripts.social_batch &lt;day&gt;</code> puts a day's posts here.</p>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/funnel_tiktok.js') }}"></script>{% endblock %}
