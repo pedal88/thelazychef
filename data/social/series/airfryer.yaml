@@ -1,0 +1,40 @@
+# A series card (docs/SOCIAL.md "The series"). The top is the why, for Pål to correct; the rest is what the code reads.
+name: Air fryer dinners
+status: active
+purpose: >
+  Reach the people who own an air fryer and want whole dinners from it, not sides and snacks, which is what most
+  air fryer content is.
+message: The whole dinner cooked in the air fryer, with its heat and time, the symbols and one shopping list.
+hypothesis: >
+  Air fryer owners follow an account that gives them a new dinner for it every day; the machine is the niche, and the
+  niche is what the platforms test a post on.
+signal: Follows per 1000 views first, then saves.
+stop_when: >
+  After 10 posts per platform it is below the median of the other series on follows per 1000 views, or the catalog
+  runs out (12 dinners on 2.11.2026).
+
+pick:
+  filter: airfryer        # heat_source air fryer (services/social_series.candidates)
+  count: 1
+slides: [cover, airfryer, delta_or_timebar, timers, shop_split, end]
+cta: follow
+noun: air fryer dinner
+hashtags: "#airfryer #airfryerrecipes #easydinner #dinnerideas #weeknightdinner"
+# The first group is the default. The machine's time is said only when it is short (machine_min exists under 20 min).
+hooks:
+  series:
+    - text: "Air fryer #{n}: {dish}"
+      needs: [n, dish]
+  lazy:
+    - text: "{temp}. {machine_min} minutes."
+      needs: [temp, machine_min]
+    - text: "{machine_min} minutes in the air fryer."
+      needs: [machine_min]
+proposed_hooks: []
+retired_hooks:
+  - text: "Air fryer #{n}: {active} min of work"
+    why: Named the active time, which breaks the time rule on seven of the twelve air fryer dinners (2.11.2026).
+  - text: "{active} min of work. Then the air fryer."
+    why: The same; and the active time was not the series' promise.
+  - text: "You: {active} min. Air fryer: {idle} min."
+    why: The same; and on most dinners the cook did more than the air fryer, which argued against the series.

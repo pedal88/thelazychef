@@ -1,0 +1,90 @@
+# The hook groups and CTA groups every series may draw from (docs/SOCIAL.md "The series", playbook.md). A series
+# card (data/social/series/<slug>.yaml) adds its own phrasings per group and names which group is its default.
+#
+# A hook phrasing: text with {facts} and the facts it needs (services/social_series.FACTS). A phrasing is drawn only
+# when the post has every fact it needs and the filled text is at most eight words; every number in it is the post's
+# own. Time facts (active, total, fastest, machine_min) exist only when the time is short enough to be said
+# (services/social.py: active under 20 min, total at 30 or less), so a phrasing that names a time is never drawn for
+# a slow dinner.
+hooks:
+  number:
+    - text: "{count} things to buy. {total} minutes."
+      needs: [count, total]
+    - text: "{vessels} dishes to wash. {active} min of work."
+      needs: [vessels, active]
+    - text: "{protein} g protein. {kcal} kcal."
+      needs: [protein, kcal]
+    - text: "{dishes} dinners. {count} things to buy."
+      needs: [many, count]
+    - text: "{total} minutes, {count} things, dinner."
+      needs: [total, count]
+  lazy:
+    - text: "{active} minutes of work. That's it."
+      needs: [active]
+    - text: "You: {active} min. {doer_cap}: {idle} min."
+      needs: [active, idle, restful]
+    - text: "You do {active} minutes. Dinner does the rest."
+      needs: [active]
+  search:
+    - text: "What to make with {ingredient}: {dishes} dinners"
+      needs: [ingredient, many]
+    - text: "Got {ingredient}? {dishes} dinners."
+      needs: [ingredient, many]
+    - text: "{ingredient_cap} for dinner? {dishes} ideas."
+      needs: [ingredient, many]
+    - text: "Got {ingredient}? Dinner in {fastest} minutes."
+      needs: [ingredient, fastest]
+  guess:
+    - text: "Guess the dinner from {symbols} symbols"
+      needs: [symbols]
+    - text: "Can you guess the dinner?"
+      needs: []
+    - text: "{symbols} symbols. One dinner. Guess it."
+      needs: [symbols]
+  # Used sparingly; each is true only under its condition
+  contrast:
+    - text: "Not 30 ingredients. Just {count}."
+      needs: [few]
+    - text: "Not an hour. {total} minutes."
+      needs: [total]
+    - text: "Not a sink full. {vessels} dishes to wash."
+      needs: [one_two]
+    - text: "No takeaway. {total} minutes, {count} things."
+      needs: [total, count]
+  # The series' name and number with the dish: no claim but the series itself
+  series:
+    - text: "{series} #{n}: {dish}"
+      needs: [series, n, dish]
+
+# The CTA groups: one per post, on the last slide and in the caption. "ask" and "site" have words for one dish and
+# for several; "bio" is Instagram only (TikTok gets "site"). {noun} is the series' noun, {address} the post's.
+ctas:
+  follow:
+    - "Follow for tomorrow's {noun}"
+    - "Follow for the next {noun}"
+    - "A new {noun} every day. Follow."
+  save:
+    - "Save this for Sunday's shop"
+    - "Save it for your next shop"
+    - "Save this for a lazy weeknight"
+  send:
+    - "Send to the person you cook with"
+    - "Send this to whoever cooks tonight"
+    - "Send it to your flatmate"
+  ask:
+    one:
+      - "Would you cook this tonight?"
+      - "What would you add?"
+    many:
+      - "Which one would you cook first?"
+      - "Which one is yours?"
+  site:
+    one:
+      - "Every step with timers: {address}"
+      - "The whole recipe, with timers: {address}"
+    many:
+      - "All {dishes} on one shopping list: {address}"
+      - "Every recipe, with timers: {address}"
+  bio:
+    - "Shopping list: link in bio"
+    - "The full recipe: link in bio"

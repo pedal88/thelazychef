@@ -36,6 +36,8 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
+import yaml
+
 CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
 
 
@@ -51,9 +53,14 @@ def tls():
 
 SIZES = {'ig': (1080, 1350), 'tt': (1080, 1920)}
 PLATFORM_OF_SIZE = {'ig': 'instagram', 'tt': 'tiktok'}  # the post log's platforms (services/funnel.PLATFORMS)
-SERIES = ['airfryer', 'got', 'protein', 'dishes', 'guess', 'cuisine']  # services/social_series.SERIES
-HOOKS = ['number', 'lazy', 'search', 'guess', 'contrast']
-CTAS = ['follow', 'save', 'send', 'ask', 'site', 'bio']
+# The series are the cards in data/social/series (services/social_series.py), the hook and CTA groups the shared
+# file; read here without the app, so the script needs no database
+ROOT = Path(__file__).resolve().parent.parent
+SERIES = sorted(p.stem for p in (ROOT / 'data' / 'social' / 'series').glob('*.yaml'))
+with open(ROOT / 'data' / 'social' / 'hooks.yaml', encoding='utf-8') as _f:
+    _shared = yaml.safe_load(_f) or {}
+HOOKS = list(_shared.get('hooks') or {})
+CTAS = list(_shared.get('ctas') or {})
 # Headless Chrome now and then hangs on a page and never takes the picture, and a request to the site can stall: both
 # are stopped after SHOT_SECONDS and tried again, SHOT_TRIES times in all; Chrome each time with a profile of its own,
 # so a stuck one cannot lock the next

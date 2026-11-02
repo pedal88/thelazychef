@@ -1,0 +1,30 @@
+# A series card (docs/SOCIAL.md "The series"). The top is the why, for Pål to correct; the rest is what the code reads.
+name: "5 weeknights of {cuisine}"
+status: active
+purpose: Give the week a theme people search for, and something to save for Sunday's shop.
+message: Five weeknight dinners of one cuisine, a day each, and one shopping list for the week.
+hypothesis: >
+  A themed week is saved for the shop more than a single dinner, and the cuisine's name in the title is a search
+  word; the one list is the reason to open the site.
+signal: Saves per 1000 views, then visits per 1000 views.
+stop_when: >
+  After 8 posts per platform it is below the median of the other series on saves per 1000 views, or the cuisines
+  with five dinners run out (six on 31.10.2026).
+
+pick:
+  filter: cuisine         # five dinners of one cuisine, varied as the week is
+  count: 5
+slides: [week_cover, days, shop, end]
+cta: save
+noun: weeknight dinner
+hashtags: "#mealplan #weeknightdinner #{tag} #dinnerideas #easyrecipes"
+hooks:
+  number:
+    - text: "5 {cuisine} dinners. {count} things to buy."
+      needs: [cuisine, count]
+    - text: "A week of {cuisine}. {count} things."
+      needs: [cuisine, count]
+    - text: "{cuisine} all week. {count} things, one shop."
+      needs: [cuisine, count]
+proposed_hooks: []
+retired_hooks: []

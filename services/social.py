@@ -71,6 +71,24 @@ SHOP_PER_SLIDE = 24
 IDLE_BY = {'airfryer': 'the air fryer', 'oven': 'the oven', 'pot': 'the pot', 'pan': 'the pan', 'grill': 'the grill',
            'slow_cooker': 'the slow cooker', 'microwave': 'the microwave', 'sous_vide': 'the water bath'}
 IDLE = 'hands off'
+# Time is a selling point only when it is short (serier-v2.md): the active time is said only under SAY_ACTIVE_UNDER
+# minutes, the time from start to table only at SAY_TOTAL_UPTO or less, and under STRESS_* it may be stressed
+# ("under 10 minutes of work"). Above the limits no minutes appear: not in the hook, on the cover, on a day's label,
+# on the numbers slide or in the caption. said_active() and said_total() give the minutes or None.
+SAY_ACTIVE_UNDER = 20
+SAY_TOTAL_UPTO = 30
+STRESS_ACTIVE_UNDER = 10
+STRESS_TOTAL_UNDER = 20
+
+
+def said_active(minutes):
+    """The minutes of work when they may be said, else None."""
+    return minutes if minutes is not None and minutes < SAY_ACTIVE_UNDER else None
+
+
+def said_total(minutes):
+    """The minutes from start to table when they may be said, else None."""
+    return minutes if minutes is not None and minutes <= SAY_TOTAL_UPTO else None
 
 
 def clock(minutes):
@@ -143,7 +161,8 @@ def delta_slide(view):
     if not delta_fits(d):
         return None
     flows = {a for a, b in d['edges']}
-    return {'kind': 'delta', 'title': 'The whole dish', 'total': clock(view['total_min']), 'cols': d['leaves'],
+    total = said_total(view['total_min'])
+    return {'kind': 'delta', 'title': 'The whole dish', 'total': clock(total) if total else None, 'cols': d['leaves'],
             'rows': d['max_depth'] + 1,
             'cells': [{**n, 'row': d['max_depth'] - n['depth'] + 1, 'col': (n['span'][0] + 1, n['span'][1] + 1),
                        'flows': n['id'] in flows} for n in d['nodes']]}
@@ -167,6 +186,13 @@ def hands_off(view, heat_source=None):
     return total - active, IDLE
 
 
+def machine_temp(view, heat_source):
+    """The heat source's temperature as written for the reader ("200 °C"), the highest of its steps, or None."""
+    ids = set(HEAT_SOURCES.get(heat_source, ()))
+    temps = [s['temp_c'] for s in view['steps'] if s.get('temp_c') and ids & set(s['equipment_ids'])]
+    return temp(max(temps), view['units']) if temps else None
+
+
 def timebar_slide(view, heat_source=None):
     """You against the kitchen: "9 min you, 41 min the oven" (hands_off)."""
     total, active = view['total_min'], min(view['active_min'], view['total_min'])
@@ -180,20 +206,26 @@ def timers_slide(view):
     steps = [{'no': s['n'], 'short': s['short'], 'duration': s['duration'], 'phase': s['phase'],
               'timer': f"{s['passive_min']} min" if s.get('passive_min') else None} for s in view['steps']]
     shown = steps if len(steps) <= TIMER_STEPS + 1 else steps[:TIMER_STEPS]
-    return {'kind': 'timers', 'title': f'{len(steps)} steps, {clock(view["total_min"])}', 'steps': shown,
+    total = said_total(view['total_min'])
+    return {'kind': 'timers', 'title': f'{len(steps)} steps' + (f', {clock(total)}' if total else ''), 'steps': shown,
             'more': len(steps) - len(shown)}
 
 
 def numbers_slide(view, title=None):
-    """The big numbers: protein and kcal per serving (when the recipe has nutrition), and the minutes."""
+    """The big numbers: protein and kcal per serving (when the recipe has nutrition), and the minutes when they may
+    be said; without either, the things to buy and the dishes to wash."""
     n = view['nutrition']
     items = []
     if n:
         items += [{'value': n['protein'], 'unit': 'g', 'label': 'protein per serving'},
                   {'value': n['kcal'], 'unit': '', 'label': 'kcal per serving'}]
-    items.append({'value': view['total_min'], 'unit': 'min', 'label': 'start to table'})
-    if not n:
-        items.append({'value': view['active_min'], 'unit': 'min', 'label': 'of them yours'})
+    if said_total(view['total_min']):
+        items.append({'value': view['total_min'], 'unit': 'min', 'label': 'start to table'})
+    if said_active(view['active_min']):
+        items.append({'value': view['active_min'], 'unit': 'min', 'label': 'of work'})
+    if not items:
+        items += [{'value': len(_ingredients(view)[0]), 'unit': '', 'label': 'things to buy'},
+                  {'value': len([e for e in view['equipment'] if e['id'] in VESSELS]), 'unit': '', 'label': 'dishes to wash'}]
     return {'kind': 'numbers', 'title': title or view['title'], 'items': items}
 
 

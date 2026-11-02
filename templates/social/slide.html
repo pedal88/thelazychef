@@ -43,7 +43,7 @@
   <h1 class="title">{{ s.title }}</h1>
   {% if s.image %}<div class="hero"><img src="{{ s.image }}" alt=""></div>
   {% else %}<div class="hero tiles">{% for t in s.tiles[:12] if t.img %}<img src="{{ t.img }}" alt="">{% endfor %}</div>{% endif %}
-  {% if s.name %}<p class="facts"><span class="name">{{ s.name }}</span><span>{{ s.total }}</span></p>
+  {% if s.name %}<p class="facts"><span class="name">{{ s.name }}</span>{% if s.total %}<span>{{ s.total }}</span>{% endif %}</p>
   {% else %}<p class="facts"><span>{{ s.total }}</span><span>{{ s.count }} ingredients</span>{% if s.parts|length > 1 %}<span>{{ s.parts|length }} parts</span>{% endif %}</p>{% endif %}
 
 {% elif s.kind == 'got_cover' %}
@@ -141,7 +141,7 @@
 
 {% elif s.kind == 'delta' %}
   <h2 class="head">{{ s.title }}</h2>
-  <p class="key"><span class="down">Down is time: {{ s.total }}</span></p>
+  <p class="key"><span class="down">Down is time{% if s.total %}: {{ s.total }}{% endif %}</span></p>
   <section class="delta slide-delta" aria-label="The whole recipe as a drawing">
     <div class="skv vert" style="grid-template-columns: repeat({{ s.cols }}, minmax(0, 1fr)); grid-template-rows: repeat({{ s.rows }}, auto)">
       {% for n in s.cells %}
@@ -209,7 +209,7 @@
   <p class="eyebrow">{{ s.eyebrow or 'One shop, five dinners' }}</p>
   <h1 class="title">{{ s.title or 'Buy ' ~ s.count ~ ' things. Make ' ~ s.days|length ~ ' dinners.' }}</h1>
   <div class="dishes">{% for d in s.days %}<img src="{{ d.image }}" alt="">{% endfor %}</div>
-  <p class="facts"><span>{{ s.lines }} ingredients, {{ s.count }} to buy</span><span>{{ s.fastest }}–{{ s.slowest }} min each</span></p>
+  <p class="facts"><span>{{ s.lines }} ingredients, {{ s.count }} to buy</span>{% if s.each %}<span>{{ s.each }}</span>{% endif %}</p>
 
 {% elif s.kind == 'shop' %}
   <h2 class="head">{{ s.title }}</h2>
@@ -221,14 +221,14 @@
   <div class="week">
     {% for d in s.days %}
     <div class="wday"><span class="d">{{ d.day }}</span>{% if d.image %}<img class="dish" src="{{ d.image }}" alt="">{% else %}<i class="dish"></i>{% endif %}
-      <div><b>{{ d.title }}</b><small>{{ d.total }}</small>
+      <div><b>{{ d.title }}</b>{% if d.total %}<small>{{ d.total }}</small>{% endif %}
         <p class="syms">{% for t in d.tiles[:12] if t.img %}<img class="{{ 'shared' if t.shared }}" src="{{ t.img }}" alt="">{% endfor %}</p></div></div>
     {% endfor %}
   </div>
   <p class="note">Ringed: bought once, used again.</p>
 
 {% elif s.kind == 'day' %}
-  <p class="eyebrow">{{ s.day }} · {{ s.total }}</p>
+  <p class="eyebrow">{{ s.day }}{% if s.total %} · {{ s.total }}{% endif %}</p>
   <h1 class="title">{{ s.title }}</h1>
   <div class="hero{{ ' small' if s.many }}">{% if s.image %}<img src="{{ s.image }}" alt="">{% endif %}</div>
   {{ grid(s.tiles, s.cols) }}{% if s.note %}

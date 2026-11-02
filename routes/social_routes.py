@@ -113,9 +113,11 @@ def week_post():
 
 @social_bp.route('/social/post')
 def series_post():
-    """A post of a series (services/social_series.SERIES): ?series=<slug>, the recipes in ?ids= (as many as the
-    series takes) or the ones the series picks next, ?n= the post's number (else the next in the log), ?hook= and
-    ?cta= the groups. The answer says what was made: X-Recipes, X-N, X-Hook, X-Hook-Text, X-Cta, X-Views, X-Look."""
+    """A post of a series (services/social_series.SERIES, the cards in data/social/series): ?series=<slug>, the
+    recipes in ?ids= (as many as the series takes) or the ones the series picks next, ?n= the post's number (else
+    the next in the log), ?hook= and ?cta= the groups. The answer says what was made: X-Recipes, X-N, X-Hook,
+    X-Hook-Text, X-Cta, X-Views, X-Look. An admin may try words that are on no card yet with ?hook_text= and
+    ?cta_text= (the groups are then 'preview'); anyone else's are ignored."""
     slug = request.args.get('series')
     if slug not in social_series.SERIES:
         abort(404)
@@ -128,8 +130,9 @@ def series_post():
     n = request.args.get('n', type=int) or social_series.next_n(slug)
     size = _size()
     code = request.args.get('code')
+    preview = {k: request.args.get(k) for k in ('hook_text', 'cta_text')} if viewer_is_admin() else {}
     slides, facts, group, text, call = social_series.slides(slug, posts, size, n, request.args.get('hook'),
-                                                            request.args.get('cta'), code)
+                                                            request.args.get('cta'), code, **preview)
     headers = {'X-Recipes': ','.join(str(i) for i in ids), 'X-N': str(n), 'X-Hook': group, 'X-Hook-Text': text,
                'X-Cta': call['group'], 'X-Views': social_series.views_used(slides),
                'X-Look': look_of(request.args.get('look')) or 'today'}

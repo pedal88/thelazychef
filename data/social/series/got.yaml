@@ -1,0 +1,32 @@
+# A series card (docs/SOCIAL.md "The series"). The top is the why, for Pål to correct; the rest is what the code reads.
+name: "What to make with {ingredient}"
+status: active
+purpose: >
+  Catch the search for what to cook with the ingredient that is already in the fridge, which is how dinner is
+  decided most days.
+message: Three dinners from one ingredient, each with what it needs beyond it, and one shopping list for all three.
+hypothesis: >
+  "What to make with chicken" is what people type, on the platforms as in Google; a post that answers it with three
+  real dinners is saved and found again, and the search words in the title bring people who do not follow yet.
+signal: Saves per 1000 views, and profile visits (the search found the account).
+stop_when: After 10 posts per platform it is below the median of the other series on saves per 1000 views.
+
+pick:
+  filter: got             # three dinners with one main protein, one version per dish
+  count: 3
+slides: [got_cover, days, shop, end]
+cta: save
+noun: dinner idea
+hashtags: "#dinnerideas #whatsfordinner #easyrecipes #mealprep #{tag}"
+hooks:
+  search:
+    - text: "What to make with {ingredient}: {dishes} dinners"
+      needs: [ingredient, many]
+    - text: "Got {ingredient}? {dishes} dinners."
+      needs: [ingredient, many]
+    - text: "{ingredient_cap} for dinner? {dishes} ideas."
+      needs: [ingredient, many]
+    - text: "Got {ingredient}? Dinner in {fastest} minutes."
+      needs: [ingredient, fastest]
+proposed_hooks: []
+retired_hooks: []
