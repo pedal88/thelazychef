@@ -171,6 +171,16 @@ class SeriesTests(unittest.TestCase):
         self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
         pot = self.get(series='onepot', ids=self.ids[0], n=1, hook_text='One pot. Spaghetti carbonara.', slide=1).get_data(as_text=True)
         self.assertNotIn('class="dish">', pot)
+        # A dish over 30 minutes whose hook names it: no name line, and no chip at all (no "None", no "N ingredients")
+        slow = db.session.get(Recipe, self.ids[1])  # lasagne, 105 min
+        html = self.get(series='onepot', ids=slow.id, n=1, hook_text='One pot. Lasagne.', slide=1).get_data(as_text=True)
+        body = html.split('<main', 1)[1]
+        self.assertNotIn('class="dish">', body)
+        self.assertNotIn('class="facts"', body)
+        self.assertNotIn('None', body)
+        self.assertNotIn('ingredients', body)
+        quick = self.get(series='onepot', ids=self.ids[0], n=1, hook_text='One pot. Spaghetti carbonara.', slide=1).get_data(as_text=True)
+        self.assertIn('<p class="facts"><span>26 min</span></p>', quick)  # 26 minutes: the time chip alone
         plain = self.get(series='onepot', ids=self.ids[0], n=1, hook_text='Dishes to wash: one.', slide=1).get_data(as_text=True)
         self.assertIn('class="dish">Spaghetti carbonara', plain)
         self.assertNotIn('class="strip"', plain)  # the test pantry has no symbol images: no strip at all

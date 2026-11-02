@@ -50,7 +50,8 @@
   <p class="strip" style="--cols:{{ s.strip_cols or 6 }}">{% for t in s.symbols %}<img src="{{ t.img }}" alt="">{% endfor %}</p>{% endif %}
   {% if s.image %}<div class="hero"><img src="{{ s.image }}" alt=""></div>
   {% else %}<div class="hero tiles">{% for t in s.tiles[:12] if t.img %}<img src="{{ t.img }}" alt="">{% endfor %}</div>{% endif %}
-  {% if s.name %}{% if s.total %}<p class="facts"><span>{{ s.total }}</span></p>{% endif %}
+  {% if s.series %}{# a series cover's only chip is the time, when it may be said; a format's keeps its three #}
+  {% if s.total %}<p class="facts"><span>{{ s.total }}</span></p>{% endif %}
   {% else %}<p class="facts"><span>{{ s.total }}</span><span>{{ s.count }} ingredients</span>{% if s.parts|length > 1 %}<span>{{ s.parts|length }} parts</span>{% endif %}</p>{% endif %}
 
 {% elif s.kind == 'got_cover' %}

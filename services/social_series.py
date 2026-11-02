@@ -408,7 +408,7 @@ def slides(slug, posts, size, n, hook_group=None, cta_group=None, code=None, hoo
         if kind == 'cover':
             symbols = [t for t in tiles if t['img']][:social.COVER_SYMBOLS]
             named = f['dish'].lower() in text.lower()  # the hook names the dish: no name line under it
-            out.append({'kind': 'cover', 'eyebrow': label, 'title': text, 'name': None if named else v['title'],
+            out.append({'kind': 'cover', 'series': True, 'eyebrow': label, 'title': text, 'name': None if named else v['title'],
                         'image': r['image'], 'tiles': tiles, 'symbols': symbols, 'strip_cols': social.strip_columns(len(symbols)),
                         'total': social.clock(f['total']) if f['total'] else None, 'count': len(tiles), 'parts': v['parts']})
         elif kind == 'got_cover':
