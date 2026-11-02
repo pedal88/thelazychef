@@ -110,11 +110,12 @@ def pick(c, k=len(WEEK_DAYS)):
 
 def days_of(views, images, labels=WEEK_DAYS):
     """A day per recipe view (services/recipe_v2/view.page) and dish image, labelled Mon to Fri, or as given."""
-    from services.social import _ingredients, clock
+    from services.social import _ingredients, clock, said_total
     days = []
     for day, view, image in zip(labels, views, images):
         tiles, staples = _ingredients(view)
-        days.append({'day': day, 'title': view['title'], 'total': clock(view['total_min']), 'total_min': view['total_min'],
+        said = said_total(view['total_min'])  # a day's label names the time only when it is short
+        days.append({'day': day, 'title': view['title'], 'total': clock(said) if said else None, 'total_min': view['total_min'],
                      'image': image, 'tiles': tiles, 'staples': staples})
     return days
 
@@ -147,14 +148,15 @@ def shopping(days, views):
 def week_slides(views, images, size='ig', eyebrow=None, title=None, cta=None):
     """The slides for five recipes' views (services/recipe_v2/view.page) and dish images, in the days' order. A
     series (services/social_series.py) gives the cover its own eyebrow and title and the last slide a CTA."""
-    from services.social import columns, end_slide, shop_slides
+    from services.social import columns, end_slide, said_total, shop_slides
     days = days_of(views, images)
     shop, staples = shopping(days, views)
     lines = sum(len(d['tiles']) for d in days)
     times = [d['total_min'] for d in days]
     return [
         {'kind': 'week_cover', 'count': len(shop), 'days': days, 'lines': lines,
-         'fastest': min(times), 'slowest': max(times), 'eyebrow': eyebrow, 'title': title},
+         'fastest': min(times), 'slowest': max(times), 'eyebrow': eyebrow, 'title': title,
+         'each': f'{min(times)}–{max(times)} min each' if said_total(max(times)) else None},
         *shop_slides(shop, staples, size),
         {'kind': 'week', 'title': 'The week', 'days': days},
         # A day's tiles say which other days use them too, a line more under each; many tiles leave the dish smaller

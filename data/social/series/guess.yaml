@@ -1,0 +1,31 @@
+# A series card (docs/SOCIAL.md "The series"). The top is the why, for Pål to correct; the rest is what the code reads.
+name: Guess the dinner
+status: active
+purpose: >
+  Reach and volume: a post anyone can play, and every dish qualifies, so it can run ten times a week.
+message: The ingredient symbols first, the dish on the third slide; guess it before it is given away.
+hypothesis: >
+  A guess earns swipes and comments, which the platforms read as interest, and the symbols are what looks most like
+  the app; the account's most viewed post so far was one (code 2, 30.10.2026).
+signal: Comments and follows per 1000 views; views per slide, for the swipes.
+stop_when: >
+  After 10 posts per platform it is below the median of the other series on follows per 1000 views; it never runs
+  out.
+
+pick:
+  filter: all             # every dinner
+  count: 1
+slides: [grid, end]
+cta: ask
+noun: dinner to guess
+hashtags: "#recipe #ingredients #dinnerideas #easyrecipes #cooking"
+hooks:
+  guess:
+    - text: "Guess the dinner from {symbols} symbols"
+      needs: [symbols]
+    - text: "Can you guess the dinner?"
+      needs: []
+    - text: "{symbols} symbols. One dinner. Guess it."
+      needs: [symbols]
+proposed_hooks: []
+retired_hooks: []

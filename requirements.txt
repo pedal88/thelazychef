@@ -93,6 +93,7 @@ RapidFuzz==3.14.3
 referencing==0.37.0
 rembg==2.0.86
 requests==2.32.5
+PyYAML==6.0.2
 rpds-py==0.30.0
 rsa==4.9.1
 scikit-image==0.26.0

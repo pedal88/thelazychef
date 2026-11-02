@@ -12,6 +12,20 @@ A series is a fixed promise repeated with a new dish each time: same name, same 
 reason to follow, and every post is made from the database (`services/social_series.py`, the page `/social/post`).
 Four run at once; Guess the dinner and the cuisine week come in between, once or twice a week each.
 
+**Every series is a card**, `data/social/series/<slug>.yaml`. The top is the why, to be corrected by hand: `name`,
+`status` (`active`, `paused` or `retired`; every status still renders), `purpose`, `message`, `hypothesis`, the
+`signal` it is judged on and `stop_when`. Below it is what the code reads: `pick` (the filter and how many recipes
+a post takes), `slides` (the kinds in order, `social_series.SLIDE_KINDS`), `cta` (the default group), `noun` and
+`hashtags`, `hooks` (the approved phrasings per group, the first group the default), `proposed_hooks` (the agent's
+suggestions, empty) and `retired_hooks` (text and why). The hook and CTA groups every series shares are
+`data/social/hooks.yaml`, in the same form: a phrasing is `text` with `{facts}` and the `needs` it must have
+(`social_series.FACTS` lists them). `check_cards()` says what is wrong with a card, and a test fails the PR on a hook
+over eight words, a fact no post has, a slide kind that is not one, an unknown group or status, or a why left
+empty. The repo is public, and the why lives there all the same.
+
+To try words that are on no card yet, an admin adds `&hook_text=…` and `&cta_text=…` to a `/social/post` address:
+the post renders with them (the groups are then `preview`). Anyone else's are ignored.
+
 | Series | `?series=` | Filter | Slides |
 |---|---|---|---|
 | Air fryer dinners | `airfryer` | `heat_source` air fryer | the dish and the hook, the air fryer's heat and time, the river delta (small ones) or the time bar, the steps with timers, the shopping list in two, follow |
@@ -40,20 +54,28 @@ much as the cook. The river delta goes on a slide only when it is small: at most
 dish (`max_depth` ≤ `DELTA_DEPTH`) and two branches (`leaves` ≤ `DELTA_LEAVES`), 11 of the 59 public recipes on
 31.10.2026; otherwise the time bar takes its place. Look at a rendered delta slide on a phone before it goes out.
 
-A list for several dinners (the week, Got, the cuisine week) goes over as many slides as it takes to keep
-`SHOP_PER_SLIDE` things or fewer on each ("The shopping list, 1 of 2"), the staples on the last. Times on the slides
-are `social.clock`: minutes up to two hours, then "2 h 37 min" (the recipe page's "2.6 h" reads badly beside "105
-min"; the page is unchanged).
+A list for several dinners (the week, What to make with, the cuisine week) goes over as many slides as it takes
+to keep `SHOP_PER_SLIDE` things or fewer on each ("The shopping list, 1 of 2"), the staples on the last. Times on
+the slides are `social.clock`: minutes up to two hours, then "2 h 37 min" (the recipe page's "2.6 h" reads badly
+beside "105 min"; the page is unchanged).
 
-**Hooks** (`?hook=<group>`): the words on the first slide, at most eight words, every number the post's own. A post
-of several dinners has no single time, so its hooks say none, except "Dinner in 25 minutes" for the fastest and
-only when that is within `QUICK_MINUTES`. The
-groups are `number` ("12 things to buy. 40 minutes."), `lazy` ("9 minutes of work. That's it."), `search` ("Got
-chicken thighs? 3 dinners."), `guess` and `contrast` ("Not an hour. 25 minutes.", only when true). Each group has
-several phrasings; the post draws one with a seed from the series, number and recipes, so the same post renders
-with the same words every time, and different posts of a week get different first slides. A phrasing whose numbers
-the post lacks is never drawn; a group with nothing to say, or one that is not a group, falls back to the series'
-own group (`SERIES[slug]['hook']`), which has phrasings of its own.
+**Time is said only when it is short** (`social.SAY_ACTIVE_UNDER`, `SAY_TOTAL_UPTO`, in one place): the minutes of
+work only under 20, the minutes from start to table only at 30 or less, and under 10 and 20 they may be stressed
+(`STRESS_ACTIVE_UNDER`, `STRESS_TOTAL_UNDER`). Above that no minutes appear anywhere on the post: not in the hook,
+the cover's chip, a day's label ("MON · 34 MIN"), the numbers slide, the timers' title or the caption. The time
+facts a phrasing can need (`active`, `total`, `fastest`, `idle`, `machine_min`) exist only then, so a slow dinner
+never gets a phrasing with minutes, and the air fryer's own time ("200 °C. 16 minutes.") is said only under 20; its
+default hook is the series and the dish ("Air fryer #3: Tandoori Chicken").
+
+**Hooks** (`?hook=<group>`): the words on the first slide, at most eight words filled in, every number the post's
+own. A post of several dinners has no single time, so its hooks say none, except "Dinner in 25 minutes" for the
+fastest, when that may be said. The groups are `number` ("12 things to buy. 20 minutes."), `lazy` ("9 minutes of
+work. That's it."), `search` ("What to make with chicken thighs: 3 dinners"), `guess`, `contrast` ("Not an hour. 25
+minutes.", only when true) and `series` ("Air fryer #3: Tandoori Chicken"). Each group has several phrasings; the post
+draws one with a seed from the series, number and recipes, so the same post renders with the same words every time,
+and different posts of a week get different first slides. A phrasing whose facts the post lacks, or that would run
+over eight words with them, is never drawn; a group with nothing to say, or one that is not a group, falls back to
+the card's own groups in order, then to a number.
 
 **CTAs** (`?cta=<group>`): one per post, on the last slide and in the caption: `follow` (the default while followers
 are the goal), `save`, `send`, `ask` (a real question), `site` ("Every step with timers: thelazychef.app/tiktok/41")

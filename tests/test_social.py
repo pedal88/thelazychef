@@ -138,9 +138,11 @@ class SocialTests(unittest.TestCase):
                          if 'Can you guess the dinner?' in html else html)  # one of the group's phrasings, once
         self.assertNotIn(self.recipe.title, html.split('<main', 1)[1])
         self.assertEqual(self.kinds('grid'), ['collage', 'ingredients', 'dish', 'end'])
-        cover = self.get(f'{base}/map', hook='number', slide=1).get_data(as_text=True)
+        cover = self.get(f'{base}/map', hook='guess', slide=1).get_data(as_text=True)
         self.assertIn('class="name">' + self.recipe.title, cover)  # the dish is still named under the hook
-        self.assertIn('things', cover)  # one of the number group's phrasings
+        self.assertIn('uess', cover)  # one of the guess group's phrasings
+        # A group with nothing true to say about this dish (90 minutes: no time may be said): the post as it was
+        self.assertNotIn('class="name">', self.get(f'{base}/map', hook='number', slide=1).get_data(as_text=True))
         last = self.get(f'{base}/map', cta='follow', code=3, slide=5).get_data(as_text=True)
         self.assertIn('Follow', last)
         self.assertIn('class="address small">thelazychef.app/ig/3', last)

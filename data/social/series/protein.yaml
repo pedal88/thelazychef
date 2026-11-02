@@ -1,0 +1,30 @@
+# A series card (docs/SOCIAL.md "The series"). The top is the why, for Pål to correct; the rest is what the code reads.
+name: High-protein dinners
+status: active
+purpose: Reach the people who count protein and want real dinners, not shakes and chicken with rice.
+message: One dinner with its protein and kcal per serving, the symbols and one shopping list.
+hypothesis: >
+  A true number on the first slide is what the fitness audience stops for, and a dinner that looks like dinner is
+  what they save; the lighter dishes go first so the numbers stay honest.
+signal: Follows and saves per 1000 views.
+stop_when: >
+  After 10 posts per platform it is below the median of the other series on follows per 1000 views, or only the
+  heavy dishes are left (10 of the 30 are under 720 kcal on 2.11.2026).
+
+pick:
+  filter: protein         # at least 35 g protein per serving; the lighter dishes first
+  count: 1
+slides: [cover, numbers, timebar, timers, shop_split, end]
+cta: follow
+noun: high-protein dinner
+hashtags: "#highprotein #proteindinner #healthydinner #dinnerideas #easyrecipes"
+hooks:
+  number:
+    - text: "{protein} g protein. {kcal} kcal."
+      needs: [protein, kcal]
+    - text: "{protein} g of protein in {total} minutes."
+      needs: [protein, total]
+    - text: "{protein} g protein, {count} things to buy."
+      needs: [protein, count]
+proposed_hooks: []
+retired_hooks: []
