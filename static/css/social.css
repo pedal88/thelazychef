@@ -222,10 +222,10 @@ html, body { margin: 0; background: var(--sl-paper); }
 .dishes.n4 img { width: 48%; }
 /* The steps as on the Cook view: the marker, the step's name large, its symbols with amounts; no minutes */
 .cook { flex: 1; margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; justify-content: space-evenly; gap: 24px; }
-.cook-step { display: grid; grid-template-columns: 120px 1fr; gap: 18px; align-items: start; }
+.cook-step { display: grid; grid-template-columns: 168px 1fr; gap: 18px; align-items: start; }  /* room for two digits in F's wide numerals */
 /* The step marker (templates/social/slide.html step_no), marker A: a large numeral in the display face, in a light
    tone of the look's accent, no circle and no phase colour */
-.cook-step .no { font: 800 128px/.86 var(--font-serif); color: rgb(var(--accent-300)); letter-spacing: -.03em; }
+.cook-step .no { font: 800 128px/.86 var(--font-serif); color: rgb(var(--accent-300)); letter-spacing: -.03em; white-space: nowrap; }
 .cook-body h2 { margin: 0; font: 800 66px/1.08 var(--font-serif); letter-spacing: -.015em; }
 .cook-syms { display: flex; flex-wrap: wrap; gap: 4px 20px; margin-top: 14px; }
 .cook-syms .tile { width: 132px; }
