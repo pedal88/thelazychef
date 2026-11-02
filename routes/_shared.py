@@ -189,8 +189,8 @@ LOOK_FONTS = {
 }
 
 # The look visitors see until they choose another (admins, with the chip): a key in LOOK_FONTS, or None for today's.
-# The site and the social slides both start from it.
-SITE_LOOK = 'd'
+# The site and the social slides both start from it. C, D and E stay for now, to show side by side in the admin chip.
+SITE_LOOK = 'f'
 
 
 def look_of(asked):

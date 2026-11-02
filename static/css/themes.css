@@ -44,17 +44,20 @@
   --icon-stroke: 1.5; --radius: 16px; --radius-sm: 10px;
 }
 
+/* The Japanese fonts draw … in the middle of the line: where a title is cut, the three dots come from a Latin font */
+@font-face { font-family: 'Latin Ellipsis'; src: local('Georgia'), local('Times New Roman'), local('Noto Serif'); unicode-range: U+2026; }
+
 :root[data-look="f"] {  /* F Washi */
-  --font-sans: 'Zen Kaku Gothic New', system-ui, sans-serif;
-  --font-serif: 'Shippori Mincho', 'Hiragino Mincho ProN', Georgia, serif;
+  --font-sans: 'Latin Ellipsis', 'Zen Kaku Gothic New', system-ui, sans-serif;
+  --font-serif: 'Latin Ellipsis', 'Shippori Mincho', 'Hiragino Mincho ProN', Georgia, serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
   --paper: 246 245 241;
-  --neutral-50: 234 232 227; --neutral-100: 222 220 212; --neutral-200: 211 207 197; --neutral-300: 178 174 165; --neutral-400: 145 142 133; --neutral-500: 117 114 106; --neutral-600: 93 91 84; --neutral-700: 74 72 66; --neutral-800: 54 52 48; --neutral-900: 38 37 34; --neutral-950: 25 24 22;
+  --neutral-50: 234 232 227; --neutral-100: 222 220 212; --neutral-200: 211 207 197; --neutral-300: 178 174 165; --neutral-400: 132 129 120; --neutral-500: 104 101 94; --neutral-600: 93 91 84; --neutral-700: 74 72 66; --neutral-800: 54 52 48; --neutral-900: 38 37 34; --neutral-950: 25 24 22;
   --accent-50: 240 240 240; --accent-100: 225 224 224; --accent-200: 194 194 193; --accent-300: 157 157 156; --accent-400: 114 113 111; --accent-500: 71 70 67; --accent-600: 38 37 34; --accent-700: 32 31 29; --accent-800: 27 26 24; --accent-900: 22 21 20; --accent-950: 15 15 14;
   --prep-50: 245 246 242; --prep-100: 234 236 229; --prep-200: 214 218 204; --prep-300: 188 195 173; --prep-400: 159 169 136; --prep-500: 129 142 99; --prep-600: 107 122 72; --prep-700: 91 104 61; --prep-800: 75 85 50; --prep-900: 62 71 42; --prep-950: 43 49 29;
   --serve-50: 241 242 245; --serve-100: 227 230 234; --serve-200: 200 204 214; --serve-300: 166 174 188; --serve-400: 127 137 159; --serve-500: 88 101 129; --serve-600: 58 74 107; --serve-700: 49 63 91; --serve-800: 41 52 75; --serve-900: 34 43 62; --serve-950: 23 30 43;
   --color-cook: rgb(138 91 60); --color-cook-soft: rgb(247 244 241); --color-cook-ink: rgb(97 64 42);
-  --icon-stroke: 1.25; --radius: 4px; --radius-sm: 2px;
+  --icon-stroke: 1.5; --radius: 4px; --radius-sm: 2px;
 }
 
 /* ---- What makes each look more than its colours, on every page and on the social slides ---- */
@@ -65,7 +68,9 @@
   --look-go: #F2B630; --look-go-ink: #1C1A17; --look-go-soft: #FCF0CF; }              /* in bright saffron */
 :root[data-look="e"] { --look-title-weight: 800; --look-title-tracking: 0.01em;       /* E Porselen: condensed capitals */
   --look-title-case: uppercase; --look-title-stretch: 72%; }
-:root[data-look="f"] { --look-title-weight: 500; --look-title-tracking: 0.01em; }    /* F Washi: a quiet mincho */
+:root[data-look="f"] { --look-title-weight: 600; --look-title-tracking: 0.01em;       /* F Washi: a quiet mincho, */
+  --look-go: #F2B630; --look-go-ink: #1C1A17;                                         /* saffron its one colour, on */
+  --sl-paper: rgb(var(--paper)); }                                                    /* the badge and a post's address */
 
 /* The headings: the recipe page, the browsing pages, the content pages, the galaxies, the slides */
 :root[data-look] :is(.rv2 h1, .rv2 h2, .rv2.cook .card h2, .lib-head h1, .lbar-title h1, .rcard h3, .lib-empty h3, .fb-head h2,
@@ -96,6 +101,12 @@
 :root[data-look="f"] :is(.rv2 .fact, .slide .facts span) { background: none; border-radius: 0; border: 0; border-top: 1px solid var(--color-ink); padding-inline: 0; }
 :root[data-look="f"] .rv2.ready .bowl { border: 0; border-top: 1px solid var(--color-ink); border-radius: 0; background: none; }
 :root[data-look="f"] .rv2.cook .card { border-radius: 0; background: rgb(var(--paper)); border-left: 2px solid var(--color-cook); }
+
+/* F's title on the dish's picture, and the colour on the last slide. Cards have room for the longer lines of a mincho. */
+:root[data-look="f"] .rv2 .ovl .pp-img figcaption { background: linear-gradient(to bottom, transparent, rgb(0 0 0 / .5) 28%, rgb(0 0 0 / .84)); }
+:root[data-look="f"] .rv2 .ovl .pp-img figcaption h1 { font-weight: 700; text-shadow: 0 1px 14px rgb(0 0 0 / .5); }
+:root[data-look="f"] .slide .end .address { background: var(--look-go); color: var(--look-go-ink); }
+:root[data-look="f"] .rcard h3 { font-size: 18px; -webkit-line-clamp: 3; }
 
 /* The brand's badge (templates/components/brand.html): the mark on the look's main-button colour, as on the profile
    pictures; the accent in a look without one */

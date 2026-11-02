@@ -7,6 +7,9 @@ text and the AI label, and media_publish. The API cannot add music to a carousel
 hand and marked posted. A task that finds its post cancelled or moved does nothing, and one that finds the post already
 up on Instagram (a repeated task after a lost answer) only marks it, so a post never goes up twice. A failed post goes
 back to draft with the reason shown in the queue; it is not retried by itself. The Graph API costs nothing.
+
+TikTok has no such API for us, so its posts wait on a page for the phone instead (tiktok_days, /admin/funnel/tiktok):
+the same slides and text, saved and copied by hand and posted in TikTok's app.
 """
 import datetime
 import hashlib
@@ -37,6 +40,10 @@ def slides_of(post):
     return (post.slide_urls or '').split('\n') if post.slide_urls else []
 
 
+def slide_folder(post):
+    return f'social/{post.platform}-{post.code}'
+
+
 def save_slides(post, jpegs, caption, storage):
     """Puts a post's slides on storage for Meta to fetch and keeps them and the text on the post; returns what is wrong,
     or None. A slide's name holds its content's hash, as storage caches a name for a year and a post can be rendered
@@ -48,7 +55,7 @@ def save_slides(post, jpegs, caption, storage):
             return f'slide {n} is not a JPEG'
         if len(data) > MAX_SLIDE_BYTES:
             return f'slide {n} is over 8 MB'
-    urls = [storage.save(data, f'{n:02d}-{hashlib.sha256(data).hexdigest()[:8]}.jpg', f'social/instagram-{post.code}')
+    urls = [storage.save(data, f'{n:02d}-{hashlib.sha256(data).hexdigest()[:8]}.jpg', slide_folder(post))
             for n, data in enumerate(jpegs, 1)]
     post.slide_urls = '\n'.join(urls)
     post.caption = caption or post.caption
@@ -77,6 +84,27 @@ def queue():
             rows.append({'post': post, 'slides': slides_of(post), 'when': when.strftime('%Y-%m-%dT%H:%M')})
         out.append({'day': day, 'posts': rows})
     return out
+
+
+def tiktok_days():
+    """The TikTok posts rendered and not up yet, oldest day first: [{'day', 'posts': [{'post', 'slides'}]}]."""
+    posts = db.session.execute(
+        db.select(SocialPost).where(SocialPost.platform == 'tiktok', SocialPost.slide_urls.is_not(None),
+                                    SocialPost.status == 'draft')
+        .order_by(SocialPost.posted_on, SocialPost.id)).scalars().all()
+    days = {}
+    for post in posts:
+        days.setdefault(post.posted_on, []).append({'post': post, 'slides': slides_of(post)})
+    return [{'day': day, 'posts': rows} for day, rows in days.items()]
+
+
+def slide_bytes(post, n, storage):
+    """Slide n (from 1) of a post, for the page that saves them on the phone: a script there may only read its own
+    site. None when the post has no such slide."""
+    urls = slides_of(post)
+    if not 1 <= n <= len(urls):
+        return None
+    return storage.read(urls[n - 1].rsplit('/', 1)[1], slide_folder(post))
 
 
 def parse_when(value):

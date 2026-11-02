@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{# The weekly report on the posts (routes/funnel_routes.report_page, services/social_report.py): what Claude read out of
+   the week's numbers, and the numbers. #}
+{% block title %}Weekly report - Funnel - The Lazy Chef{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+  <div class="flex flex-wrap items-center gap-3">
+    <a href="{{ url_for('funnel.dashboard') }}#posts" class="text-sm text-slate-500 hover:text-slate-900">← Funnel</a>
+    <h1 class="font-serif text-2xl font-bold text-slate-900">Weekly report</h1>
+    <form method="post" action="{{ url_for('funnel.write_report') }}" class="ml-auto"><button type="submit" class="px-3 py-1.5 rounded-full border border-slate-300 text-slate-900 text-sm font-semibold">Write it now</button></form>
+  </div>
+
+  {% if report %}
+  {% set r = report.report %}
+  {% set f = report.facts %}
+  <section class="rounded-xl border border-slate-200 bg-white p-4 space-y-4">
+    <p class="text-xs text-slate-500">The week ending {{ report.week_ending.strftime('%d.%m.%Y') }}</p>
+    <p class="text-lg font-semibold text-slate-900">{{ r.headline }}</p>
+    {% for label, items in [('Won', r.won), ('Lost', r.lost)] if items %}
+    <div>
+      <h2 class="text-sm font-semibold text-slate-900">{{ label }}</h2>
+      <ul class="mt-1 list-disc pl-5 text-sm text-slate-700 space-y-1">{% for item in items %}<li>{{ item }}</li>{% endfor %}</ul>
+    </div>
+    {% endfor %}
+    {% if r.change %}
+    <div class="rounded-lg bg-slate-50 p-3">
+      <h2 class="text-sm font-semibold text-slate-900">Change next week</h2>
+      <p class="mt-1 text-sm text-slate-900">{{ r.change }}</p>
+      {% if r.why %}<p class="mt-1 text-sm text-slate-600">{{ r.why }}</p>{% endif %}
+    </div>
+    {% endif %}
+    {% if r.caution %}<p class="text-sm text-slate-500">{{ r.caution }}</p>{% endif %}
+  </section>
+
+  <section>
+    <h2 class="font-semibold text-slate-900">The numbers</h2>
+    <p class="mt-1 text-sm text-slate-500">{{ f.this_week.posts }} post{{ 's' if f.this_week.posts != 1 }}, {{ f.this_week.views }} views, {{ f.this_week.visits }} visits, {{ f.this_week.signups }} sign-ups. The week before: {{ f.last_week.posts }} post{{ 's' if f.last_week.posts != 1 }}, {{ f.last_week.views }} views, {{ f.last_week.visits }} visits, {{ f.last_week.signups }} sign-ups.</p>
+    <div class="mt-2 overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="text-left text-slate-500"><tr><th class="py-2 pr-4 font-medium">Post</th><th class="py-2 pr-4 font-medium text-right">Views</th><th class="py-2 pr-4 font-medium text-right">Saves</th><th class="py-2 pr-4 font-medium text-right">Shares</th><th class="py-2 pr-4 font-medium text-right">Visits</th><th class="py-2 font-medium text-right">Signed up</th></tr></thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for p in f.posts %}
+          <tr>
+            <td class="py-2 pr-4">{{ p.title }} <span class="font-mono text-xs text-slate-500">{{ p.ref }}</span></td>
+            {% for value in (p.views, p.saves, p.shares) %}<td class="py-2 pr-4 text-right tabular-nums {{ 'text-slate-300' if value is none }}">{{ value if value is not none else '–' }}</td>{% endfor %}
+            <td class="py-2 pr-4 text-right tabular-nums">{{ p.visits }}</td>
+            <td class="py-2 text-right tabular-nums">{{ p.signups }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  {% if reports|length > 1 %}
+  <section>
+    <h2 class="font-semibold text-slate-900">Earlier weeks</h2>
+    <ul class="mt-2 space-y-1 text-sm">{% for other in reports if other.id != report.id %}<li><a href="{{ url_for('funnel.report_page', id=other.id) }}" class="underline">{{ other.week_ending.strftime('%d.%m.%Y') }}</a> <span class="text-slate-500">{{ other.report.headline }}</span></li>{% endfor %}</ul>
+  </section>
+  {% endif %}
+  {% else %}
+  <p class="text-sm text-slate-500">No report yet. It is written every Sunday morning, or press Write it now.</p>
+  {% endif %}
+</div>
+{% endblock %}

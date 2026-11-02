@@ -43,13 +43,15 @@ def drafts():
 @social_api_bp.route('/slides/<code>', methods=['POST'])
 @key_required
 def slides(code):
-    """A post's slides for Instagram (JPEGs, the form's files named slides, in order) and its caption: the post then
-    waits in the Instagram queue on the Funnel page. Nothing goes up until it is approved there."""
-    post = db.session.execute(db.select(SocialPost).filter_by(platform='instagram', code=code)).scalar()
+    """A post's slides (JPEGs, the form's files named slides, in order) and its caption, for the form's platform
+    (Instagram unless it says tiktok). An Instagram post then waits in the queue on the Funnel page, where nothing goes
+    up until it is approved; a TikTok post waits on the TikTok page, to be posted by hand."""
+    platform = request.form.get('platform') or 'instagram'
+    post = db.session.execute(db.select(SocialPost).filter_by(platform=platform, code=code)).scalar()
     if post is None:
-        return jsonify({'error': f'no Instagram post with code {code}'}), 404
+        return jsonify({'error': f'no {platform} post with code {code}'}), 404
     if post.status != 'draft':
-        return jsonify({'error': f'instagram-{code} is {post.status}, not a draft'}), 400
+        return jsonify({'error': f'{platform}-{code} is {post.status}, not a draft'}), 400
     error = social_publish.save_slides(post, [f.read() for f in request.files.getlist('slides')],
                                        (request.form.get('caption') or '').strip(), get_storage())
     if error:

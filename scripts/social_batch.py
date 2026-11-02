@@ -165,7 +165,7 @@ def plan_post(post, base, look, context):
 
 
 def jpegs(folder):
-    """The Instagram slides as JPEG, the one kind Instagram's API takes, in order."""
+    """The slides as JPEG, the one kind Instagram's API takes, in order."""
     out = []
     for png in sorted(folder.glob('*.png')):
         buffer = io.BytesIO()
@@ -174,10 +174,11 @@ def jpegs(folder):
     return out
 
 
-def send_to_queue(base, code, folder):
-    """The post's Instagram slides and caption to the app: it then waits in the Instagram queue."""
+def send_to_queue(base, code, folder, platform='instagram'):
+    """The post's slides and caption to the app: it then waits in the Instagram queue, or on the TikTok page."""
     files = [('slides', (f'{n:02d}.jpg', data, 'image/jpeg')) for n, data in enumerate(jpegs(folder), 1)]
-    api(base, f'/slides/{code}', files=files, data={'caption': (folder / 'caption.txt').read_text(encoding='utf-8')})
+    api(base, f'/slides/{code}', files=files, data={'platform': platform,
+                                                    'caption': (folder / 'caption.txt').read_text(encoding='utf-8')})
 
 
 def folder_name(place, entry):
@@ -254,6 +255,10 @@ def main():
             send_to_queue(args.base, entry['code'], day_folder / name / 'ig')
             entry['queued'] = True
             manifest.write_text(json.dumps(entries, indent=1, ensure_ascii=False), encoding='utf-8')
+        if args.force or not entry.get('queued_tiktok'):
+            send_to_queue(args.base, entry['code'], day_folder / name / 'tt', 'tiktok')
+            entry['queued_tiktok'] = True
+            manifest.write_text(json.dumps(entries, indent=1, ensure_ascii=False), encoding='utf-8')
         summary.append(f"{entry['place']}. code {entry['code']}  {entry['title']}"
                        + ('' if entry['new'] else '  (logged before: same code)'))
 
@@ -262,7 +267,7 @@ def main():
             + f"\n\nThe slides: {day_folder}"
             + (f"\nOn the phone: {args.phone / args.day.isoformat()}" if args.phone and not args.no_phone else '')
             + f"\nApprove the Instagram posts: {args.base.rstrip('/')}/admin/funnel/queue"
-            + f"\nWhen a TikTok post is up, mark it posted: {args.base.rstrip('/')}/admin/funnel#posts\n")
+            + f"\nPost on TikTok from the phone: {args.base.rstrip('/')}/admin/funnel/tiktok\n")
     (day_folder / 'day.txt').write_text(text, encoding='utf-8')
     print('\n' + text)
 
