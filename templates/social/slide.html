@@ -230,14 +230,14 @@
   <div class="week">
     {% for d in s.days %}
     <div class="wday"><span class="d">{{ d.day }}</span>{% if d.image %}<img class="dish" src="{{ d.image }}" alt="">{% else %}<i class="dish"></i>{% endif %}
-      <div><b>{{ d.title }}</b>{% if d.total %}<small>{{ d.total }}</small>{% endif %}
+      <div><b>{{ d.title }}</b>
         <p class="syms">{% for t in d.tiles[:12] if t.img %}<img class="{{ 'shared' if t.shared }}" src="{{ t.img }}" alt="">{% endfor %}</p></div></div>
     {% endfor %}
   </div>
   <p class="note">Ringed: bought once, used again.</p>
 
 {% elif s.kind == 'day' %}
-  <p class="eyebrow">{{ s.day }}{% if s.total %} · {{ s.total }}{% endif %}</p>
+  <p class="eyebrow">{{ s.day }}</p>
   <h1 class="title">{{ s.title }}</h1>
   <div class="hero{{ ' small' if s.many }}">{% if s.image %}<img src="{{ s.image }}" alt="">{% endif %}</div>
   {{ grid(s.tiles, s.cols) }}{% if s.note %}

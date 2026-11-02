@@ -246,10 +246,11 @@ class SeriesTests(unittest.TestCase):
             for group in series.HOOKS:
                 text = series.hook(group, slow, seed) or ''
                 self.assertNotIn('min', text, (group, text))
-        # Nor the cover chip, the day label, the numbers slide, the timers' title or the caption
+        # Nor the cover chip, the numbers slide or the caption; a day's label never has minutes
         v = view_of(36, 11)
-        self.assertEqual(social_week.days_of([v], [None], ['Mon'])[0]['total'], None)
-        self.assertEqual(social_week.days_of([view_of(6, 12)], [None], ['Mon'])[0]['total'], '20 min')
+        self.assertNotIn('total', social_week.days_of([view_of(6, 12)], [None], ['Mon'])[0])
+        self.assertNotIn(' min', self.get(series='protein4', ids=','.join(map(str, self.ids[:4])), n=1, slide=2)
+                         .get_data(as_text=True).split('<main', 1)[1].split('class="grid"', 1)[0])
         for quick_or_slow in (v, view_of(6, 12)):  # the big numbers never show minutes now
             self.assertEqual([i['label'] for i in social.numbers_slide(quick_or_slow)['items']], ['things to buy', 'dishes to wash'])
         call = {'group': 'follow', 'text': 'Follow'}

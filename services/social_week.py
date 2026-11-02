@@ -109,13 +109,13 @@ def pick(c, k=len(WEEK_DAYS)):
 
 
 def days_of(views, images, labels=WEEK_DAYS):
-    """A day per recipe view (services/recipe_v2/view.page) and dish image, labelled Mon to Fri, or as given."""
-    from services.social import _ingredients, clock, said_total
+    """A day per recipe view (services/recipe_v2/view.page) and dish image, labelled Mon to Fri, or as given. A
+    day's label carries no minutes (the week format and the series alike); the cover may say the range."""
+    from services.social import _ingredients
     days = []
     for day, view, image in zip(labels, views, images):
         tiles, staples = _ingredients(view)
-        said = said_total(view['total_min'])  # a day's label names the time only when it is short
-        days.append({'day': day, 'title': view['title'], 'total': clock(said) if said else None, 'total_min': view['total_min'],
+        days.append({'day': day, 'title': view['title'], 'total_min': view['total_min'],
                      'protein': (view.get('nutrition') or {}).get('protein'),
                      'image': image, 'tiles': tiles, 'staples': staples})
     return days
