@@ -35,11 +35,11 @@ hooks:
     - text: "Got {ingredient}? Dinner in {fastest} minutes."
       needs: [ingredient, fastest]
   guess:
-    - text: "Guess the dinner from {symbols} symbols"
+    - text: "Guess the {meal} from {symbols} symbols"
       needs: [symbols]
-    - text: "Can you guess the dinner?"
+    - text: "Can you guess the {meal}?"
       needs: []
-    - text: "{symbols} symbols. One dinner. Guess it."
+    - text: "{symbols} symbols. One {meal}. Guess it."
       needs: [symbols]
   # Used sparingly; each is true only under its condition
   contrast:

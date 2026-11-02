@@ -1,0 +1,28 @@
+# A series card (docs/SOCIAL.md "The series"). The top is the why, for Pål to correct; the rest is what the code reads.
+name: 4 high-protein dinners
+status: active
+purpose: Give the people who count protein a week's worth at once, with the dishes large enough to want.
+message: Four high-protein dinners, large on the cover, a dinner each with its symbols, and one shopping list.
+hypothesis: >
+  Four dishes on one cover stop the thumb more than one, and a set is saved for the week's shop; the numbers stay
+  the series' honesty (the lowest protein of the four is the one said).
+signal: Saves per 1000 views, then follows.
+stop_when: After 10 posts per platform it is below the single High-protein dinners on saves per 1000 views.
+
+pick:
+  filter: protein         # at least 35 g protein per serving, four of them, varied as the week is
+  count: 4
+slides: [week_cover, days, shop, end]
+cta: save
+noun: high-protein dinner
+hashtags: "#highprotein #proteindinner #mealprep #dinnerideas #easyrecipes"
+hooks:
+  number:
+    - text: "{dishes} dinners, {protein_min} g protein or more."
+      needs: [many, protein_min]
+    - text: "{dishes} high-protein dinners. One shopping list."
+      needs: [many]
+    - text: "{dishes} dinners. {count} things to buy."
+      needs: [many, count]
+proposed_hooks: []
+retired_hooks: []

@@ -17,6 +17,7 @@ days per series (the post log, SocialPost.series and recipe_ids), never used fir
 puts the lighter dishes first.
 """
 import datetime
+import itertools
 import os
 import random
 import re
@@ -24,7 +25,7 @@ import re
 import yaml
 from sqlalchemy import func
 
-from database.models import Ingredient, Recipe, RecipeMealType, SocialPost, db
+from database.models import Ingredient, Recipe, RecipeMealType, RecipeStep, SocialPost, db
 from services import social, social_week
 from services.recipe_library import FAMILY, one_per_dish
 from services.recipe_v2.derive import ACCENT, ANIMAL, FISH_NAMES, MEAT_LABELS, OTHER_PROTEINS, VESSELS
@@ -34,14 +35,18 @@ CARDS = os.path.join(ROOT, 'data', 'social', 'series')
 SHARED = os.path.join(ROOT, 'data', 'social', 'hooks.yaml')
 
 PROTEIN_G = 35      # High-protein dinners: at least this much protein per serving
-WASH_MAX = 2        # Dishes to wash: at most this many vessels (derive.cleanup_factor 1)
+WASH_MAX = 2        # one or two dishes to wash (the contrast hook)
+BUY_MAX = 6         # Only 6 things to buy: at most this many
+SHARED_MIN = 3      # 3 ingredients, 3 dinners: at least this many shared, staples left out
 ONCE_A_WEEK = 7     # days a recipe stays out of a series after a post
-NOT_AN_INGREDIENT = ('Vegetarian', 'Other')  # protein labels Got [ingredient]? cannot ask for
+NOT_AN_INGREDIENT = ('Vegetarian', 'Other')  # protein labels What to make with cannot ask for
 HOOK_WORDS = 8      # a hook is at most this many words, filled in
 STATUSES = ('active', 'paused', 'retired')
-# The slide kinds a card may list, built in slides(): a kind may stand for several slides (days, shop, grid)
-SLIDE_KINDS = ('cover', 'got_cover', 'week_cover', 'airfryer', 'numbers', 'timebar', 'delta', 'delta_or_timebar',
-               'timers', 'wash', 'ingredients', 'shop_split', 'days', 'shop', 'grid', 'end')
+# The pick filters a card may name (candidates())
+FILTERS = ('all', 'airfryer', 'protein', 'onepot', 'under20', 'only6', 'got', 'three3', 'cuisine')
+# The slide kinds a card may list, built in slides(): a kind may stand for several slides (days, shop, grid, steps)
+SLIDE_KINDS = ('cover', 'got_cover', 'trio_cover', 'week_cover', 'airfryer', 'numbers', 'delta', 'steps', 'wash',
+               'ingredients', 'shop_split', 'days', 'shop', 'grid', 'end')
 # The facts a hook phrasing may need, and what they are (facts()); a time fact exists only when the time may be said
 FACTS = {
     'n': "the post's number in the series", 'series': "the series' name, filled in", 'dish': 'the dish, short',
@@ -57,10 +62,14 @@ FACTS = {
     'vessels': 'dishes to wash', 'one_two': 'one or two dishes to wash', 'few': 'at most 15 things to buy',
     'protein': 'g protein per serving', 'kcal': 'kcal per serving',
     'ingredient': 'the shared ingredient (What to make with)', 'ingredient_cap': 'the same, capitalised',
-    'cuisine': 'the cuisine (the week)',
+    'ingredients': 'the shared ingredients, named (3 ingredients, 3 dinners)',
+    'cuisine': 'the cuisine (the week)', 'meal': '"dinner", or "dish" when the recipe is not a dinner',
+    'vessel': 'the one vessel the food is cooked in ("frying pan"), when there is exactly one',
+    'one_dish': 'exactly one dish to wash, literally', 'protein_min': 'the lowest g protein per serving of the dinners',
+    'only_six': 'at most six things to buy (BUY_MAX)',
 }
 # The facts every post has (never None), so a phrasing may use them without needing them; the rest must be needed
-ALWAYS = ('n', 'series', 'dish', 'title', 'dishes', 'count', 'symbols', 'doer', 'doer_cap', 'vessels')
+ALWAYS = ('n', 'series', 'dish', 'title', 'dishes', 'count', 'symbols', 'doer', 'doer_cap', 'vessels', 'meal')
 
 
 def _phrasings(rows):
@@ -99,7 +108,9 @@ def sample_facts():
             'symbols': 12, 'total': 30, 'active': 19, 'idle': 11, 'fastest': 30, 'doer': 'the slow cooker',
             'doer_cap': 'The slow cooker', 'restful': True, 'machine': True, 'machine_min': 19, 'temp': '200 °C',
             'stress_active': True, 'stress_total': True, 'vessels': 2, 'one_two': True, 'few': True, 'protein': 46,
-            'kcal': 425, 'ingredient': 'chicken thighs', 'ingredient_cap': 'Chicken thighs', 'cuisine': 'Middle Eastern'}
+            'kcal': 425, 'ingredient': 'chicken thighs', 'ingredient_cap': 'Chicken thighs', 'cuisine': 'Middle Eastern',
+            'ingredients': 'chicken, onion, tomatoes', 'meal': 'dinner', 'vessel': 'frying pan', 'one_dish': True,
+            'protein_min': 38, 'only_six': True}
 
 
 def check_cards(cards=None, hooks=None, ctas=None):
@@ -139,6 +150,8 @@ def check_cards(cards=None, hooks=None, ctas=None):
                 problems.append(f'{where}: {key} is empty')
         if card.get('status') not in STATUSES:
             problems.append(f'{where}: status must be one of {", ".join(STATUSES)}, not {card.get("status")!r}')
+        if card.get('filter') not in FILTERS:
+            problems.append(f'{where}: pick.filter must be one of {", ".join(FILTERS)}, not {card.get("filter")!r}')
         for kind in card['slides']:
             if kind not in SLIDE_KINDS:
                 problems.append(f'{where}: slide kind {kind!r} is not one of {", ".join(SLIDE_KINDS)}')
@@ -226,7 +239,7 @@ def short_title(title):
     return short or title
 
 
-def facts(posts, n=None, count=None, ingredient=None, cuisine=None, series=None):
+def facts(posts, n=None, count=None, ingredient=None, cuisine=None, series=None, ingredients=None):
     """What the hooks can say about a post (FACTS): posts are post_of() dicts; count overrides the things to buy
     (one list for several dinners). Every value is the post's own number, and a time is there only when it is
     short enough to be said (social.said_active, social.said_total)."""
@@ -244,8 +257,14 @@ def facts(posts, n=None, count=None, ingredient=None, cuisine=None, series=None)
     idle = idle_min if active is not None else None
     fastest = social.said_total(min(p['view']['total_min'] for p in posts))
     vessels = len([e for e in v['equipment'] if e['id'] in VESSELS])
+    cooking = social.cooking_vessels(v)
     nutrition = v['nutrition'] or {}
+    proteins = [(p['view']['nutrition'] or {}).get('protein') for p in posts]
     f = {'n': n, 'series': series, 'dish': short_title(v['title']), 'title': v['title'], 'dishes': len(posts),
+         'meal': 'dinner' if posts[0].get('dinner', True) else 'dish', 'ingredients': ingredients,
+         'vessel': cooking[0]['name'].lower() if len(cooking) == 1 else None, 'one_dish': vessels == 1,
+         'only_six': (len(tiles) if count is None else count) <= BUY_MAX,
+         'protein_min': min(proteins) if many and all(p is not None for p in proteins) else None,
          'many': many, 'count': len(tiles) if count is None else count, 'symbols': len(tiles),
          'total': total, 'active': active, 'idle': idle, 'fastest': fastest, 'doer': doer, 'doer_cap': doer.capitalize(),
          'restful': bool(idle) and idle >= (active or 0), 'machine': machine,
@@ -264,7 +283,8 @@ def post_of(recipe, view, image, equipment_images):
     """One recipe as the series see it: the view (services/recipe_v2/view.page), its dish image, the equipment
     images by id (routes/_shared.equipment_image, which reads the chosen style) and the recipe's own facts."""
     return {'id': recipe.id, 'view': view, 'image': image, 'eq': equipment_images, 'heat_source': recipe.heat_source,
-            'protein': recipe.protein_type, 'cuisine': recipe.cuisine}
+            'protein': recipe.protein_type, 'cuisine': recipe.cuisine,
+            'dinner': social_week.WEEK_MEAL in recipe.meal_types_list}
 
 
 def _protein_label(ingredient):
@@ -296,6 +316,33 @@ def shared_ingredient(posts, protein):
     return {'keys': keys, 'name': name, 'symbol': symbol}
 
 
+def shared_trio(posts):
+    """3 ingredients, 3 dinners: the ingredients the dinners share (buy keys, staples left out), the names and the
+    symbols of the first SHARED_MIN, a protein first; chicken breast and thigh count as one (merge_key)."""
+    tiles = {p['id']: social._ingredients(p['view'])[0] for p in posts}
+    keys_all = {t['key'] for ts in tiles.values() for t in ts if t['key']}
+    rows = db.session.execute(db.select(Ingredient).where(Ingredient.food_id.in_(keys_all))).scalars().all() if keys_all else []
+    label = {i.food_id: _protein_label(i) for i in rows}
+    merged = {pid: {merge_key(t['key'], label.get(t['key'])) for t in ts} for pid, ts in tiles.items()}
+    common = set.intersection(*merged.values()) if merged else set()
+    keys = {t['key'] for ts in tiles.values() for t in ts if merge_key(t['key'], label.get(t['key'])) in common}
+    by_key = {}
+    for ts in tiles.values():
+        for t in ts:
+            if t['key'] in keys:
+                m = merge_key(t['key'], label.get(t['key']))
+                if m not in by_key or len(t['name']) < len(by_key[m]['name']):
+                    by_key[m] = {'name': t['name'], 'img': t['img'], 'protein': bool(label.get(t['key']))}
+    chosen = sorted(by_key.values(), key=lambda x: (not x['protein'], x['name'].lower()))[:SHARED_MIN]
+    return {'keys': keys, 'names': [c['name'] for c in chosen], 'symbols': chosen}
+
+
+def merge_key(key, protein):
+    """What makes two things to buy the same ingredient for the shared count: chicken breast and chicken thigh are
+    both chicken; everything else is its own pantry item (or its name)."""
+    return 'protein:Chicken' if protein == 'Chicken' else key
+
+
 def slides(slug, posts, size, n, hook_group=None, cta_group=None, code=None, hook_text=None, cta_text=None):
     """The slides of a series post, built from its card's slide kinds, with the hook and CTA chosen:
     (slides, facts, hook group, hook text, cta). posts are post_of() dicts, as many as the series takes. hook_text
@@ -310,18 +357,27 @@ def slides(slug, posts, size, n, hook_group=None, cta_group=None, code=None, hoo
     views, images = [p['view'] for p in posts], [p['image'] for p in posts]
     tiles, staples = social._ingredients(v)
 
-    # What the post is about, by how many dinners it has
-    shared = days = shop = None
+    # What the post is about, by how many dinners it has: a shared ingredient (or three), a cuisine, or one dish
+    shared = days = shop = shop_staples = None
+    if len(posts) > 1:
+        if card['filter'] == 'cuisine':
+            labels = social_week.WEEK_DAYS[:len(posts)]
+        else:
+            labels = [f'Dinner {i + 1}' for i in range(len(posts))]
+        days = social_week.days_of(views, images, labels)
+        shop, shop_staples = social_week.shopping(days, views)
     if card['filter'] == 'got':
         shared = shared_ingredient(posts, r['protein'])
-        days = social_week.days_of(views, images, [f'Dinner {i + 1}' for i in range(len(posts))])
-        shop, shop_staples = social_week.shopping(days, views)
         f = facts(posts, n, count=len(shop), ingredient=shared['name'], series=card['name'].format(ingredient=shared['name']))
-    elif len(posts) > 1:
+    elif card['filter'] == 'three3':
+        shared = shared_trio(posts)
+        names = ', '.join(shared['names'])
+        f = facts(posts, n, count=len(shop), ingredients=names, series=card['name'])
+    elif card['filter'] == 'cuisine':
         cuisine = r['cuisine'] or 'the week'
-        days = social_week.days_of(views, images)
-        shop, shop_staples = social_week.shopping(days, views)
         f = facts(posts, n, count=len(shop), cuisine=cuisine, series=card['name'].format(cuisine=cuisine))
+    elif len(posts) > 1:
+        f = facts(posts, n, count=len(shop), series=card['name'])
     else:
         f = facts(posts, n, series=card['name'])
     label = f"{f['series']} #{n}"
@@ -338,18 +394,24 @@ def slides(slug, posts, size, n, hook_group=None, cta_group=None, code=None, hoo
     for kind in card['slides']:
         if kind == 'cover':
             out.append({'kind': 'cover', 'eyebrow': label, 'title': text, 'name': v['title'], 'image': r['image'],
-                        'tiles': tiles, 'total': social.clock(f['total']) if f['total'] else None,
-                        'count': len(tiles), 'parts': v['parts']})
+                        'tiles': tiles, 'symbols': [t for t in tiles if t['img']][:social.COVER_SYMBOLS],
+                        'total': social.clock(f['total']) if f['total'] else None, 'count': len(tiles), 'parts': v['parts']})
         elif kind == 'got_cover':
             out.append({'kind': 'got_cover', 'eyebrow': label, 'title': text, 'symbol': shared['symbol'],
                         'ingredient': shared['name'], 'dishes': images, 'count': len(posts)})
+        elif kind == 'trio_cover':
+            out.append({'kind': 'trio_cover', 'eyebrow': label, 'title': text, 'symbols': shared['symbols'],
+                        'dishes': images, 'count': len(posts)})
         elif kind == 'week_cover':
-            out.append(social_week.week_slides(views, images, size, eyebrow=label, title=text, cta=call)[0])
+            out.append(social_week.week_slides(views, images, size, eyebrow=label, title=text, cta=call,
+                                               labels=[d['day'] for d in days])[0])
         elif kind == 'days':
             for d in days:
                 keep = [t for t in d['tiles'] if not shared or t['key'] not in shared['keys']]
-                out.append({'kind': 'day', **d, 'tiles': keep, 'many': len(keep) > social_week.DAY_MANY,
-                            'note': f"Plus the {shared['name']}." if shared and len(keep) < len(d['tiles']) else None,
+                plus = None
+                if shared and len(keep) < len(d['tiles']):
+                    plus = f"Plus the {shared['name']}." if 'name' in shared else f"Plus {', '.join(shared['names'])}."
+                out.append({'kind': 'day', **d, 'tiles': keep, 'many': len(keep) > social_week.DAY_MANY, 'note': plus,
                             'cols': max(5, social.columns(len(keep), size, room=social_week.DAY_ROOM_MANY
                                                           if len(keep) > social_week.DAY_MANY else social_week.DAY_ROOM))})
         elif kind == 'shop':
@@ -363,14 +425,12 @@ def slides(slug, posts, size, n, hook_group=None, cta_group=None, code=None, hoo
             out.append(social.airfryer_slide(v, r['eq']))
         elif kind == 'numbers':
             out.append(social.numbers_slide(v, 'Per serving'))
-        elif kind == 'timebar':
-            out.append(social.timebar_slide(v, r['heat_source']))
         elif kind == 'delta':
-            out.append(social.delta_slide(v) or social.timebar_slide(v, r['heat_source']))
-        elif kind == 'delta_or_timebar':
-            out.append(social.delta_slide(v) or social.timebar_slide(v, r['heat_source']))
-        elif kind == 'timers':
-            out.append(social.timers_slide(v))
+            delta = social.delta_slide(v)  # only the small ones; a big one leaves no slide
+            if delta:
+                out.append(delta)
+        elif kind == 'steps':
+            out += social.steps_slides(v, size)
         elif kind == 'wash':
             out.append(social.wash_slide(v, r['eq']))
         elif kind == 'ingredients':
@@ -379,7 +439,7 @@ def slides(slug, posts, size, n, hook_group=None, cta_group=None, code=None, hoo
         elif kind == 'shop_split':
             out.append(social.shop_split_slide(v, size))
         elif kind == 'end':
-            out.append(social.end_slide('', call))
+            out.append(social.end_slide('', call, images))
         else:
             raise ValueError(f'{slug}.yaml: slide kind {kind!r} is not one of {", ".join(SLIDE_KINDS)}')
     return out, f, group, text, call
@@ -394,22 +454,32 @@ def caption(slug, posts, f, text, call, size, code=None):
     """A first draft of a series post's text: what it shows in a sentence, the CTA, the address and the hashtags.
     Minutes only when they may be said (the time facts)."""
     card = SERIES[slug]
+    kind = card['filter']
     where = social.address(size, code)
     titles = ', '.join(p['view']['title'] for p in posts)
     v = posts[0]['view']
     in_time = f" in {f['total']} minutes" if f['total'] else ''
     work = f", {f['active']} minutes of work" if f['active'] else ''
-    if card['filter'] == 'got':
+    if kind == 'got':
         what = f"What to make with {f['ingredient']}: {titles}. One shopping list for all {len(posts)}: {f['count']} things."
-    elif len(posts) > 1:
+    elif kind == 'three3':
+        what = f"{f['ingredients']}: {titles}. One shopping list for all {len(posts)}: {f['count']} things."
+    elif kind == 'cuisine':
         what = f"{len(posts)} {f['cuisine']} weeknights: {titles}. Buy {f['count']} things for the whole week."
-    elif card['filter'] == 'protein':
-        table = f', on the table{in_time}' if in_time else ''
-        what = f"{v['title']}: {f['protein']} g protein and {f['kcal']} kcal per serving{table}."
-    elif card['filter'] == 'dishes':
-        what = f"{v['title']}, with {plural(f['vessels'], 'dish')} to wash{work}."
-    elif card['filter'] == 'all':
-        what = f"{f['symbols']} ingredients, one dinner. Guess it before the third picture gives it away."
+    elif kind == 'protein' and len(posts) > 1:
+        each = f", {f['protein_min']} g protein or more per serving each" if f['protein_min'] else ''
+        what = f"{len(posts)} high-protein dinners: {titles}{each}. One shopping list: {f['count']} things."
+    elif kind == 'protein':
+        what = f"{v['title']}: {f['protein']} g protein and {f['kcal']} kcal per serving."
+    elif kind == 'onepot':
+        pot = f" in one {f['vessel']}" if f['vessel'] else ''
+        what = f"{v['title']}, cooked{pot}, with {plural(f['vessels'], 'dish')} to wash{work}."
+    elif kind == 'under20':
+        what = f"{v['title']}{work or ': under 20 minutes of work'}{in_time}."
+    elif kind == 'only6':
+        what = f"{v['title']}: {plural(f['count'], 'thing')} to buy{work}{in_time}."
+    elif kind == 'all':
+        what = f"{f['symbols']} ingredients, one {f['meal']}. Guess it before the third picture gives it away."
     else:
         what = f"{v['title']}: the whole dinner in the air fryer{work}{in_time}."
     lines = [what, '', call['text']]
@@ -445,34 +515,72 @@ def next_n(slug):
 
 
 def candidates(slug):
-    """The recipes a series may draw from: approved, with a dish image, a dinner (the meal type, as the week takes
-    them: social_week.WEEK_MEAL) and not baby food, one per dish, within the card's filter.
-    {id: {'protein', 'cuisine', 'kcal', 'buy'}}."""
+    """The recipes a series may draw from: approved, with a dish image, not baby food, one per dish, a dinner (the
+    meal type, as the week takes them: social_week.WEEK_MEAL) unless the card's filter is 'all', within the filter
+    (FILTERS). {id: {'protein', 'cuisine', 'kcal', 'buy', 'dinner'}}."""
     kind = SERIES[slug]['filter']
     q = db.select(Recipe.id, FAMILY, Recipe.base_recipe_id).where(
         Recipe.status == 'approved', Recipe.schema_version == 2, Recipe.image_filename.isnot(None),
         Recipe.age_from_months.is_(None),
-        Recipe.id.in_(db.select(RecipeMealType.recipe_id).where(RecipeMealType.meal_type == social_week.WEEK_MEAL)),
         Recipe.id.not_in(db.select(RecipeMealType.recipe_id).where(RecipeMealType.meal_type == social_week.NOT_FOR_WEEK)),
     ).order_by(Recipe.id)
+    dinners = db.select(RecipeMealType.recipe_id).where(RecipeMealType.meal_type == social_week.WEEK_MEAL)
+    if kind != 'all':
+        q = q.where(Recipe.id.in_(dinners))
     if kind == 'airfryer':
         q = q.where(Recipe.heat_source == 'airfryer')
     elif kind == 'protein':
         q = q.where(Recipe.total_protein >= PROTEIN_G * func.coalesce(Recipe.base_servings, 4))
-    elif kind == 'dishes':
-        q = q.where(Recipe.cleanup_factor == 1)
+    elif kind == 'onepot':
+        q = q.where(Recipe.heat_source != 'airfryer')
+    elif kind == 'under20':
+        work = db.select(RecipeStep.recipe_id).group_by(RecipeStep.recipe_id).having(
+            func.sum(RecipeStep.active_minutes) < social.SAY_ACTIVE_UNDER)
+        q = q.where(Recipe.id.in_(work))
     elif kind == 'got':
         q = q.where(Recipe.protein_type.isnot(None), Recipe.protein_type.not_in(NOT_AN_INGREDIENT))
     elif kind == 'cuisine':
         q = q.where(Recipe.cuisine.isnot(None), Recipe.cuisine != '')
     ids = one_per_dish(db.session.execute(q).all())
+    if kind == 'onepot' and ids:
+        # Exactly one vessel the food is cooked in, over all the steps (social.COOK_VESSELS)
+        steps = db.session.execute(db.select(RecipeStep.recipe_id, RecipeStep.equipment)
+                                   .where(RecipeStep.recipe_id.in_(ids))).all()
+        cooking = {}
+        for rid, equipment in steps:
+            cooking.setdefault(rid, set()).update(set(equipment or []) & social.COOK_VESSELS)
+        ids = [i for i in ids if len(cooking.get(i, ())) == 1]
+    buy = social_week.buy_sets(ids) if kind in ('got', 'cuisine', 'only6', 'three3', 'protein') and ids else {}
+    if kind == 'only6':
+        ids = [i for i in ids if 0 < len(buy.get(i, ())) <= BUY_MAX]
     if not ids:
         return {}
+    is_dinner = set(db.session.execute(dinners.where(RecipeMealType.recipe_id.in_(ids))).scalars())
     rows = db.session.execute(db.select(Recipe.id, Recipe.protein_type, Recipe.cuisine, Recipe.total_calories,
-                                        Recipe.base_servings).where(Recipe.id.in_(ids))).all()
-    buy = social_week.buy_sets(ids) if kind in ('got', 'cuisine') else {}
+                                        Recipe.base_servings, Recipe.total_protein).where(Recipe.id.in_(ids))).all()
     return {i: {'protein': protein, 'cuisine': cuisine, 'kcal': (kcal or 0) / (servings or 4),
-                'buy': frozenset(buy.get(i, ()))} for i, protein, cuisine, kcal, servings in rows}
+                'protein_g': (grams or 0) / (servings or 4), 'buy': frozenset(buy.get(i, ())), 'dinner': i in is_dinner}
+            for i, protein, cuisine, kcal, servings, grams in rows}
+
+
+def trio(c, eligible, last):
+    """3 ingredients, 3 dinners: three eligible dinners that share at least SHARED_MIN things to buy (staples left
+    out), one of them a protein; chicken breast and thigh are one ingredient. The set least recently seen first,
+    then the one sharing most; [] when there is none."""
+    ids = list(c)
+    rows = db.session.execute(db.select(Ingredient).where(Ingredient.id.in_(
+        {k for i in ids for k in c[i]['buy'] if isinstance(k, int)}))).scalars().all()
+    label = {i.id: _protein_label(i) for i in rows}
+    merged = {i: {merge_key(k, label.get(k)) for k in c[i]['buy']} for i in ids}
+    best = None
+    for three in itertools.combinations(sorted(eligible), 3):
+        common = set.intersection(*(merged[i] for i in three))
+        if len(common) < SHARED_MIN or not any(k == 'protein:Chicken' or label.get(k) for k in common):
+            continue
+        key = (max(last.get(i, datetime.date.min) for i in three), -len(common), three)
+        if best is None or key < best[0]:
+            best = (key, three)
+    return list(best[1]) if best else []
 
 
 def pick(slug, today=None):
@@ -483,27 +591,34 @@ def pick(slug, today=None):
     since = today - datetime.timedelta(days=ONCE_A_WEEK)
     eligible = [i for i in c if i not in last or last[i] < since]
     card = SERIES[slug]
+    kind = card['filter']
 
     def order(i):
-        return (last.get(i, datetime.date.min), c[i]['kcal'] if card['filter'] == 'protein' else 0, i)
+        return (last.get(i, datetime.date.min), c[i]['kcal'] if kind == 'protein' else 0, i)
     eligible.sort(key=order)
     if card['count'] == 1:
         return eligible[:1]
-    key = 'protein' if card['filter'] == 'got' else 'cuisine'
-    by, group_last = {}, {}
-    for i in eligible:
-        by.setdefault(c[i][key], []).append(i)
-    for i in c:
-        group_last[c[i][key]] = max(group_last.get(c[i][key], datetime.date.min), last.get(i, datetime.date.min))
-    groups = [g for g, ids in by.items() if len(ids) >= card['count']]
-    if not groups:
+    if kind == 'three3':
+        return trio(c, eligible, last)
+    if kind in ('got', 'cuisine'):
+        key = 'protein' if kind == 'got' else 'cuisine'
+        by, group_last = {}, {}
+        for i in eligible:
+            by.setdefault(c[i][key], []).append(i)
+        for i in c:
+            group_last[c[i][key]] = max(group_last.get(c[i][key], datetime.date.min), last.get(i, datetime.date.min))
+        groups = [g for g, ids in by.items() if len(ids) >= card['count']]
+        if not groups:
+            return []
+        # The group least recently seen in the series; among the never seen, the biggest
+        group = min(groups, key=lambda g: (group_last[g], -len(by[g]), g))
+        eligible = by[group]
+    if len(eligible) < card['count']:
         return []
-    # The group least recently seen in the series; among the never seen, the biggest
-    group = min(groups, key=lambda g: (group_last[g], -len(by[g]), g))
-    ids = by[group]
-    if card['filter'] == 'cuisine':
+    if kind in ('cuisine', 'protein'):
+        # Varied as the week is (proteins, no near-copies, fewest things to buy), else the first in order
         varied = social_week.pick({i: {'protein': (c[i]['protein'] or 'none').lower(), 'buy': c[i]['buy']}
-                                   for i in ids if c[i]['buy']}, card['count'])
+                                   for i in eligible if c[i]['buy']}, card['count'])
         if varied:
             return varied
-    return ids[:card['count']]
+    return eligible[:card['count']]

@@ -249,6 +249,7 @@ def build(recipe, servings=None, plan='calm', system=DEFAULT):
             # For the social slides (services/social.py): the equipment ids, the temperature and the minutes as stored
             'equipment_ids': list(s.get('equipment') or []), 'temp_c': s.get('temp_c'),
             'minutes': (s.get('active_minutes') or 0) + (s.get('passive_minutes') or 0),
+            'uses': list(s.get('uses') or []),  # the lines that go in here (pictured below has their symbols)
         })
     # Where the heat goes on, for the step list of the one-page flow: the first step that heats the food (not
     # preheating the oven or bringing water to the boil), and the time from there to the table
@@ -307,6 +308,7 @@ def build(recipe, servings=None, plan='calm', system=DEFAULT):
         'persona_notes': [e['message'] for e in recipe.validation_errors or [] if e.get('rule') == 'persona'],
         'about': about(recipe),
         'delta': delta.build(v2, sch['order'], pictured, system),
+        'pictured': pictured,
         # The whole dish beside cooking mode (services/recipe_v2/whole.py)
         'timeline': whole.timeline(v2, sch, comps) if v2['steps'] else None,
         # The one-page flow's map: a transit map with time down the page

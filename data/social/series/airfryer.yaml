@@ -1,6 +1,6 @@
 # A series card (docs/SOCIAL.md "The series"). The top is the why, for Pål to correct; the rest is what the code reads.
 name: Air fryer dinners
-status: active
+status: paused
 purpose: >
   Reach the people who own an air fryer and want whole dinners from it, not sides and snacks, which is what most
   air fryer content is.
@@ -11,12 +11,12 @@ hypothesis: >
 signal: Follows per 1000 views first, then saves.
 stop_when: >
   After 10 posts per platform it is below the median of the other series on follows per 1000 views, or the catalog
-  runs out (12 dinners on 2.11.2026).
+  runs out (12 dinners on 2.11.2026). Paused in the first rotation; it waits with Only 6 and 3 ingredients.
 
 pick:
   filter: airfryer        # heat_source air fryer (services/social_series.candidates)
   count: 1
-slides: [cover, airfryer, delta_or_timebar, timers, shop_split, end]
+slides: [cover, airfryer, delta, steps, shop_split, end]
 cta: follow
 noun: air fryer dinner
 hashtags: "#airfryer #airfryerrecipes #easydinner #dinnerideas #weeknightdinner"

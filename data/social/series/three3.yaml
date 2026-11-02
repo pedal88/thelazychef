@@ -1,0 +1,30 @@
+# A series card (docs/SOCIAL.md "The series"). The top is the why, for Pål to correct; the rest is what the code reads.
+name: 3 ingredients, 3 dinners
+status: paused
+purpose: Show that three things in the fridge are three dinners, which is the question dinner starts with.
+message: Three ingredients large on the cover, three dinners that share them, and one shopping list.
+hypothesis: >
+  The symbols of three ingredients are a stronger first slide than a dish, and a post that turns what is at home
+  into three dinners gets saved; it is a test, since the catalog has about nine sets today.
+signal: Saves and shares per 1000 views.
+stop_when: >
+  After 8 posts per platform it is below the median of the other series on saves per 1000 views, or the sets run
+  out (about 9 on 2.11.2026). Paused until there are more dinners.
+
+pick:
+  filter: three3          # three dinners sharing at least SHARED_MIN things to buy, one a protein; chicken is one ingredient
+  count: 3
+slides: [trio_cover, days, shop, end]
+cta: save
+noun: dinner idea
+hashtags: "#dinnerideas #whatsfordinner #3ingredients #easyrecipes #mealprep"
+hooks:
+  search:
+    - text: "{ingredients}: {dishes} dinners"
+      needs: [ingredients, many]
+    - text: "Got {ingredients}? {dishes} dinners."
+      needs: [ingredients, many]
+    - text: "{dishes} ingredients, {dishes} dinners."
+      needs: [ingredients, many]
+proposed_hooks: []
+retired_hooks: []

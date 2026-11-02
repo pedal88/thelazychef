@@ -2,18 +2,19 @@
 name: Guess the dinner
 status: active
 purpose: >
-  Reach and volume: a post anyone can play, and every dish qualifies, so it can run ten times a week.
+  Reach and volume: a post anyone can play, and every recipe qualifies, dinner or not, so it can run ten times a
+  week.
 message: The ingredient symbols first, the dish on the third slide; guess it before it is given away.
 hypothesis: >
   A guess earns swipes and comments, which the platforms read as interest, and the symbols are what looks most like
   the app; the account's most viewed post so far was one (code 2, 30.10.2026).
 signal: Comments and follows per 1000 views; views per slide, for the swipes.
 stop_when: >
-  After 10 posts per platform it is below the median of the other series on follows per 1000 views; it never runs
-  out.
+  After 10 posts per platform it is below the median of the other series on follows per 1000 views; with 59
+  recipes it supports about ten posts a week for five weeks before a dish comes round again.
 
 pick:
-  filter: all             # every dinner
+  filter: all             # every recipe, dinner or not (the hook says "dish" on the 11 that are not)
   count: 1
 slides: [grid, end]
 cta: ask
@@ -21,11 +22,11 @@ noun: dinner to guess
 hashtags: "#recipe #ingredients #dinnerideas #easyrecipes #cooking"
 hooks:
   guess:
-    - text: "Guess the dinner from {symbols} symbols"
+    - text: "Guess the {meal} from {symbols} symbols"
       needs: [symbols]
-    - text: "Can you guess the dinner?"
+    - text: "Can you guess the {meal}?"
       needs: []
-    - text: "{symbols} symbols. One dinner. Guess it."
+    - text: "{symbols} symbols. One {meal}. Guess it."
       needs: [symbols]
 proposed_hooks: []
 retired_hooks: []

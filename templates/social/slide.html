@@ -40,7 +40,8 @@
 
 {% if s.kind in ('cover', 'dish') %}
   <p class="eyebrow">{{ s.eyebrow }}</p>
-  <h1 class="title">{{ s.title }}</h1>
+  <h1 class="title">{{ s.title }}</h1>{% if s.symbols %}
+  <p class="strip">{% for t in s.symbols %}<img src="{{ t.img }}" alt="">{% endfor %}</p>{% endif %}
   {% if s.image %}<div class="hero"><img src="{{ s.image }}" alt=""></div>
   {% else %}<div class="hero tiles">{% for t in s.tiles[:12] if t.img %}<img src="{{ t.img }}" alt="">{% endfor %}</div>{% endif %}
   {% if s.name %}<p class="facts"><span class="name">{{ s.name }}</span>{% if s.total %}<span>{{ s.total }}</span>{% endif %}</p>
@@ -53,6 +54,13 @@
     <div class="sym big">{% if s.symbol %}<img src="{{ s.symbol }}" alt="">{% else %}<i>{{ s.ingredient[:1]|upper }}</i>{% endif %}</div>
     <div class="dishes small">{% for d in s.dishes %}{% if d %}<img src="{{ d }}" alt="">{% endif %}{% endfor %}</div>
   </div>
+  <p class="facts"><span>{{ s.count }} dinners</span><span>one shopping list</span></p>
+
+{% elif s.kind == 'trio_cover' %}
+  <p class="eyebrow">{{ s.eyebrow }}</p>
+  <h1 class="title">{{ s.title }}</h1>
+  <div class="trio">{% for t in s.symbols %}<figure class="tile"><div class="sym">{% if t.img %}<img src="{{ t.img }}" alt="">{% else %}<i>{{ t.name[:1]|upper }}</i>{% endif %}</div><figcaption><span>{{ t.name }}</span></figcaption></figure>{% endfor %}</div>
+  <div class="dishes small row">{% for d in s.dishes %}{% if d %}<img src="{{ d }}" alt="">{% endif %}{% endfor %}</div>
   <p class="facts"><span>{{ s.count }} dinners</span><span>one shopping list</span></p>
 
 {% elif s.kind == 'map' %}
@@ -93,26 +101,22 @@
   </ol>
   {% if s.more %}<p class="note">And {{ s.more }} more in the recipe.</p>{% endif %}
 
-{% elif s.kind == 'timers' %}
-  <h2 class="head">{{ s.title }}</h2>
-  <ol class="steps timers">
-    {% for st in s.steps %}<li><b class="no ph-{{ st.phase }}">{{ st.no }}</b><span>{{ st.short }}</span>{% if st.timer %}<small class="timer">{{ st.timer }} timer</small>{% else %}<small>{{ st.duration }}</small>{% endif %}</li>{% endfor %}
+{% elif s.kind == 'cook' %}
+  <p class="eyebrow">{{ s.eyebrow }}</p>
+  <ol class="cook">
+    {% for st in s.steps %}<li class="cook-step">
+      <b class="no ph-{{ st.phase }}">{{ st.no }}</b>
+      <div class="cook-body"><h2>{{ st.short }}</h2>
+        {% if st.symbols %}<div class="cook-syms">{% for t in st.symbols %}<figure class="tile"><div class="sym">{% if t.img %}<img src="{{ t.img }}" alt="">{% else %}<i>{{ t.name[:1]|upper }}</i>{% endif %}</div><figcaption>{% if t.amount %}<b>{{ t.amount }}</b>{% endif %}<span>{{ t.name }}</span></figcaption></figure>{% endfor %}</div>{% endif %}
+      </div>
+    </li>{% endfor %}
   </ol>
-  {% if s.more %}<p class="note">And {{ s.more }} more in the recipe.</p>{% endif %}
 
 {% elif s.kind == 'numbers' %}
   <h2 class="head">{{ s.title }}</h2>
   <div class="numbers">
     {% for i in s['items'] %}<div class="number"><b>{{ i.value }}{% if i.unit %}<small>{{ i.unit }}</small>{% endif %}</b><span>{{ i.label }}</span></div>{% endfor %}
   </div>
-
-{% elif s.kind == 'timebar' %}
-  <h2 class="head">{{ s.title }}</h2>
-  <div class="tbar" style="--you:{{ s.active }}; --other:{{ s.idle }}">
-    <div class="track"><span class="you"></span><span class="other"></span></div>
-    <div class="keys"><span class="you"><b>{{ s.you }}</b></span><span class="other"><b>{{ s.other }}</b></span></div>
-  </div>
-  <p class="note">{{ s.total }} minutes from start to table.</p>
 
 {% elif s.kind == 'airfryer' %}
   <h2 class="head">{{ s.title }}</h2>
@@ -208,7 +212,7 @@
 {% elif s.kind == 'week_cover' %}
   <p class="eyebrow">{{ s.eyebrow or 'One shop, five dinners' }}</p>
   <h1 class="title">{{ s.title or 'Buy ' ~ s.count ~ ' things. Make ' ~ s.days|length ~ ' dinners.' }}</h1>
-  <div class="dishes">{% for d in s.days %}<img src="{{ d.image }}" alt="">{% endfor %}</div>
+  <div class="dishes{% if s.days|length == 4 %} n4{% endif %}">{% for d in s.days %}<img src="{{ d.image }}" alt="">{% endfor %}</div>
   <p class="facts"><span>{{ s.lines }} ingredients, {{ s.count }} to buy</span>{% if s.each %}<span>{{ s.each }}</span>{% endif %}</p>
 
 {% elif s.kind == 'shop' %}
@@ -233,6 +237,16 @@
   <div class="hero{{ ' small' if s.many }}">{% if s.image %}<img src="{{ s.image }}" alt="">{% endif %}</div>
   {{ grid(s.tiles, s.cols) }}{% if s.note %}
   <p class="note">{{ s.note }}</p>{% endif %}
+
+{% elif s.kind == 'end' and s.images %}
+  {# A series: the dish over the whole slide (several in a grid), the CTA as the site's button, the address readable #}
+  <div class="photo n{{ s.count }}">{% for i in s.images %}<img src="{{ i }}" alt="">{% endfor %}</div>
+  <div class="shade"></div>
+  <div class="end over">
+    <p class="line">{{ s.line }}</p>
+    {% if s.cta != 'site' %}<p class="go">{{ 'Link in bio' if size == 'ig' else 'Type it in your browser' }} · <b>{{ address }}</b></p>{% endif %}
+    <p class="word">{{ brand.mark('mark') }}The Lazy Chef</p>
+  </div>
 
 {% elif s.kind == 'end' %}
   <div class="end{{ ' cta' if s.cta }}">

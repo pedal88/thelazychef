@@ -62,8 +62,16 @@ WIDTH = 912
 # 31.10.2026 (serier.md); else the slide shows the time bar.
 DELTA_DEPTH = 2
 DELTA_LEAVES = 2
-# The steps with timers: at most this many on the slide, the rest "and N more"
-TIMER_STEPS = 6
+# The steps as on the Cook view (a series): this many per slide, over as many slides as it takes, each step's
+# symbols with it
+COOK_STEPS = {'ig': 3, 'tt': 4}
+# The symbols on a series cover: this many of the things to buy, under the hook
+COVER_SYMBOLS = 8
+# One Pot Meals count the vessels food is cooked in: not bowls, sieves, machines (derive.VESSELS has them for the
+# washing up) and not the air fryer, which is a series of its own
+COOK_VESSELS = {'grill_pan', 'saucepan', 'large_pot', 'wide_pot', 'dutch_oven', 'frying_pan', 'wok', 'steamer',
+                'deep_fryer', 'slow_cooker', 'baking_tray', 'roasting_pan', 'ovenproof_dish', 'form_20x20', 'form_20x30',
+                'springform_24', 'loaf_tin', 'muffin_tin', 'silicone_cups', 'pie_dish'}
 # A shopping list for several dinners goes over as many slides as it takes to keep SHOP_PER_SLIDE things or fewer on
 # each, split evenly, so a week of 50 things is readable on a phone
 SHOP_PER_SLIDE = 24
@@ -138,12 +146,42 @@ def _staples(v):
             for g in v['shop_groups'] if g['key'] == 'staples' for s in g['items']]
 
 
-def end_slide(line, cta=None):
+def end_slide(line, cta=None, images=()):
     """The last slide: the address, after the line; or a CTA ({'group', 'text'}, services/social_series.py), with the
-    address kept small under it when the CTA is not the site itself."""
+    address kept small under it when the CTA is not the site itself. With the dish images (a series) the slide is
+    the dish over the whole slide, several in a grid, the CTA as the site's button and the address in white."""
     if cta:
-        return {'kind': 'end', 'line': cta['text'], 'cta': cta['group'], 'small': cta['group'] != 'site'}
+        return {'kind': 'end', 'line': cta['text'], 'cta': cta['group'], 'small': cta['group'] != 'site',
+                'images': [i for i in images if i], 'count': len([i for i in images if i])}
     return {'kind': 'end', 'line': line}
+
+
+def cooking_vessels(view):
+    """The vessels food is cooked in (COOK_VESSELS), in the order they are first used: [{'id', 'name', 'image'}]."""
+    return [e for e in view['equipment'] if e['id'] in COOK_VESSELS]
+
+
+def steps_slides(view, size):
+    """The steps as on the Cook view (slide kind 'cook'; 'steps' is the map format's one list), COOK_STEPS at a
+    time: each step's number, its short name, large, and the symbols of the lines that go in with their amounts; no
+    minutes."""
+    pictured = view.get('pictured') or {}
+    steps = []
+    for s in view['steps']:
+        symbols = [{'name': pictured[lid]['name'], 'img': pictured[lid]['img'], 'amount': pictured[lid]['amount']}
+                   for lid in s.get('uses') or [] if lid in pictured]
+        steps.append({'no': s['n'], 'short': s['short'], 'phase': s['phase'], 'symbols': symbols})
+    per = COOK_STEPS[size]
+    pages = max(1, -(-len(steps) // per))
+    base, extra = divmod(len(steps), pages)
+    out, at = [], 0
+    for i in range(pages):
+        page = steps[at:at + base + (1 if i < extra else 0)]
+        at += len(page)
+        first, last = page[0]['no'], page[-1]['no']
+        out.append({'kind': 'cook', 'eyebrow': f'Step {first}' + (f' to {last}' if last != first else '') + f' of {len(steps)}',
+                    'steps': page, 'page': i + 1, 'pages': pages})
+    return out
 
 
 # The slide kinds the series are built from (docs/SOCIAL.md "The series"), each from the recipe page's view
@@ -193,36 +231,14 @@ def machine_temp(view, heat_source):
     return temp(max(temps), view['units']) if temps else None
 
 
-def timebar_slide(view, heat_source=None):
-    """You against the kitchen: "9 min you, 41 min the oven" (hands_off)."""
-    total, active = view['total_min'], min(view['active_min'], view['total_min'])
-    idle, doer = hands_off(view, heat_source)
-    return {'kind': 'timebar', 'title': f'{total} minutes. {active} of them yours.', 'active': active, 'idle': idle,
-            'total': total, 'doer': doer, 'you': f'{active} min you', 'other': f'{idle} min {doer}'}
-
-
-def timers_slide(view):
-    """The steps with their timers, at most TIMER_STEPS; a standing time is the timer."""
-    steps = [{'no': s['n'], 'short': s['short'], 'duration': s['duration'], 'phase': s['phase'],
-              'timer': f"{s['passive_min']} min" if s.get('passive_min') else None} for s in view['steps']]
-    shown = steps if len(steps) <= TIMER_STEPS + 1 else steps[:TIMER_STEPS]
-    total = said_total(view['total_min'])
-    return {'kind': 'timers', 'title': f'{len(steps)} steps' + (f', {clock(total)}' if total else ''), 'steps': shown,
-            'more': len(steps) - len(shown)}
-
-
 def numbers_slide(view, title=None):
-    """The big numbers: protein and kcal per serving (when the recipe has nutrition), and the minutes when they may
-    be said; without either, the things to buy and the dishes to wash."""
+    """The big numbers: protein and kcal per serving (when the recipe has nutrition), no minutes (time is not what a
+    high-protein dinner sells); without nutrition, the things to buy and the dishes to wash."""
     n = view['nutrition']
     items = []
     if n:
         items += [{'value': n['protein'], 'unit': 'g', 'label': 'protein per serving'},
                   {'value': n['kcal'], 'unit': '', 'label': 'kcal per serving'}]
-    if said_total(view['total_min']):
-        items.append({'value': view['total_min'], 'unit': 'min', 'label': 'start to table'})
-    if said_active(view['active_min']):
-        items.append({'value': view['active_min'], 'unit': 'min', 'label': 'of work'})
     if not items:
         items += [{'value': len(_ingredients(view)[0]), 'unit': '', 'label': 'things to buy'},
                   {'value': len([e for e in view['equipment'] if e['id'] in VESSELS]), 'unit': '', 'label': 'dishes to wash'}]

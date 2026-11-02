@@ -145,11 +145,12 @@ def shopping(days, views):
     return shop, sorted(set(staples.values()))
 
 
-def week_slides(views, images, size='ig', eyebrow=None, title=None, cta=None):
+def week_slides(views, images, size='ig', eyebrow=None, title=None, cta=None, labels=WEEK_DAYS):
     """The slides for five recipes' views (services/recipe_v2/view.page) and dish images, in the days' order. A
-    series (services/social_series.py) gives the cover its own eyebrow and title and the last slide a CTA."""
+    series (services/social_series.py) gives the cover its own eyebrow and title, the last slide a CTA and the
+    days their labels (four weeknights, or "Dinner 1" to "Dinner 4")."""
     from services.social import columns, end_slide, said_total, shop_slides
-    days = days_of(views, images)
+    days = days_of(views, images, labels)
     shop, staples = shopping(days, views)
     lines = sum(len(d['tiles']) for d in days)
     times = [d['total_min'] for d in days]

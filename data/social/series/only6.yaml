@@ -1,0 +1,30 @@
+# A series card (docs/SOCIAL.md "The series"). The top is the why, for Pål to correct; the rest is what the code reads.
+name: Only 6 things to buy
+status: paused
+purpose: Sell the dinner by how short the shop is, for the people who skip cooking because of the list.
+message: A dinner with at most six things to buy, the true number in the hook, and what you probably have apart.
+hypothesis: >
+  A short list is what makes a recipe get made and not only saved; the number must be the real one, since "5
+  ingredients" on a dish with six is what the platforms call clickbait.
+signal: Saves per 1000 views, then "I made this" on the site.
+stop_when: >
+  After 8 posts per platform it is below the median of the other series on saves per 1000 views, or the catalog
+  runs out (8 dinners on 2.11.2026, 2 of them with five). Paused until there are more.
+
+pick:
+  filter: only6           # at most BUY_MAX things to buy, staples left out
+  count: 1
+slides: [cover, shop_split, steps, end]
+cta: save
+noun: short-list dinner
+hashtags: "#easyrecipes #fewingredients #budgetmeals #dinnerideas #weeknightdinner"
+hooks:
+  number:
+    - text: "Only {count} things to buy. {dish}."
+      needs: [only_six]
+    - text: "{count} things to buy. That's it."
+      needs: [only_six]
+    - text: "{dish}: {count} things to buy."
+      needs: [only_six]
+proposed_hooks: []
+retired_hooks: []

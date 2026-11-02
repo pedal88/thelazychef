@@ -152,19 +152,6 @@ html, body { margin: 0; background: var(--sl-paper); }
 .airfryer .machine img { width: 135%; max-width: none; max-height: 760px; object-fit: contain; mix-blend-mode: multiply; }
 .airfryer .numbers { flex: none; gap: 40px; }
 .airfryer .number b { font-size: 110px; }
-/* You against the kitchen: one bar in two parts */
-.kind-timebar .tbar { flex: 1; display: flex; flex-direction: column; justify-content: center; margin-bottom: 40px; }
-.tbar .track { display: flex; height: 96px; border-radius: 48px; overflow: hidden; background: var(--sl-line); }
-.tbar .track .you { flex: var(--you) 0 0; background: var(--color-accent); }
-.tbar .track .other { flex: var(--other) 0 0; background: var(--sl-line); }
-.tbar .keys { display: flex; margin-top: 28px; }
-.tbar .keys span { font: 600 36px/1.2 var(--font-sans); }
-.tbar .keys .you { flex: var(--you) 0 0; min-width: min-content; padding-right: 24px; color: var(--color-accent); }
-.tbar .keys .other { flex: var(--other) 0 0; min-width: min-content; color: var(--sl-muted); }
-.tbar .keys b { display: block; }
-/* The steps with timers */
-.steps.timers small.timer { padding: 10px 20px; border-radius: var(--radius-pill); background: var(--color-paper);
-  border: 2px solid var(--sl-line); color: var(--sl-ink); font-weight: 600; }
 /* The dishes to wash: the vessels, large */
 .wash { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(var(--cols), 1fr); align-content: center;
   justify-items: center; gap: 40px 24px; }
@@ -205,3 +192,44 @@ html, body { margin: 0; background: var(--sl-paper); }
 /* The last slide with a CTA: the address small under it, so the visit is still counted */
 .end.cta .line { font-size: 72px; }
 .end .address.small { margin-top: 64px; padding: 0; background: none; color: var(--sl-muted); font: 600 34px/1 var(--font-mono); }
+
+/* The ingredient symbols lifted: a strip under the hook on a series cover */
+.strip { display: flex; gap: 6px; margin: 28px 0 0; }
+.strip img { width: 108px; height: 108px; object-fit: contain; mix-blend-mode: multiply; }
+/* 3 ingredients, 3 dinners: the three symbols large, the dinners small under them */
+.trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 40px; }
+.trio .tile figcaption span { font-size: 34px; color: var(--sl-ink); font-weight: 600; }
+.dishes.small.row { flex: 1; min-height: 0; display: flex; flex-wrap: nowrap; align-items: center; justify-content: center; margin: 16px 0; }
+.dishes.small.row img { width: 30%; mix-blend-mode: multiply; }
+/* Four dinners on a cover: larger than five */
+.dishes.n4 img { width: 48%; }
+/* The steps as on the Cook view: the number, the step's name large, its symbols with amounts; no minutes */
+.cook { flex: 1; margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; justify-content: space-evenly; gap: 24px; }
+.cook-step { display: grid; grid-template-columns: 72px 1fr; gap: 24px; align-items: start; }
+.cook-step .no { width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: var(--ph); color: var(--color-paper); font: 700 34px/1 var(--font-sans); margin-top: 6px; }
+.cook-body h2 { margin: 0; font: 700 58px/1.08 var(--font-serif); letter-spacing: -.01em; }
+.cook-syms { display: flex; flex-wrap: wrap; gap: 4px 20px; margin-top: 14px; }
+.cook-syms .tile { width: 132px; }
+.cook-syms .sym img { width: 120%; height: 120%; }
+.cook-syms .tile figcaption { font-size: 22px; }
+.cook-syms .tile figcaption b { font-size: 24px; }
+.size-tt .cook { gap: 20px; }
+.size-tt .cook-body h2 { font-size: 54px; }
+/* The last slide of a series: the dish over the whole slide (several in a grid), a dark shade for the words, the
+   CTA as the site's main button (the look's --look-go), the address and a small wordmark in white */
+.photo { position: absolute; inset: 0; display: grid; gap: 0; background: var(--sl-paper); }
+.photo img { width: 100%; height: 100%; object-fit: cover; }
+.photo.n2, .photo.n3, .photo.n4, .photo.n5 { grid-template-columns: 1fr 1fr; }
+.photo.n3 img:first-child, .photo.n5 img:first-child { grid-column: 1 / -1; }
+.photo.n5 { grid-template-rows: 1.2fr 1fr 1fr; }
+.shade { position: absolute; inset: 0; background: linear-gradient(to bottom, rgb(0 0 0 / 0) 30%, rgb(10 9 8 / .55) 55%, rgb(10 9 8 / .9) 100%); }
+.end.over { position: absolute; left: 84px; right: 84px; bottom: 150px; justify-content: flex-end; color: #fff; }
+.size-tt .end.over { bottom: 300px; }
+.end.over .line { margin: 0; padding: 28px 48px; border-radius: var(--radius-pill); font: 700 50px/1.15 var(--font-sans);
+  background: var(--look-go, var(--color-accent)); color: var(--look-go-ink, var(--color-paper)); }
+.end.over .go { margin: 40px 0 0; font: 500 34px/1.3 var(--font-sans); color: rgb(255 255 255 / .85); }
+.end.over .go b { font: 700 38px/1 var(--font-mono); color: #fff; }
+.end.over .word { margin: 48px 0 0; display: inline-flex; align-items: center; gap: 14px; font: 600 30px/1 var(--font-sans); color: rgb(255 255 255 / .9); }
+.end.over .word .mark { width: 48px; height: 48px; }
+.slide:has(.end.over) .foot { color: rgb(255 255 255 / .75); }

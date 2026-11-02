@@ -26,33 +26,44 @@ empty. The repo is public, and the why lives there all the same.
 To try words that are on no card yet, an admin adds `&hook_text=…` and `&cta_text=…` to a `/social/post` address:
 the post renders with them (the groups are then `preview`). Anyone else's are ignored.
 
-| Series | `?series=` | Filter | Slides |
-|---|---|---|---|
-| Air fryer dinners | `airfryer` | `heat_source` air fryer | the dish and the hook, the air fryer's heat and time, the river delta (small ones) or the time bar, the steps with timers, the shopping list in two, follow |
-| Got [ingredient]? | `got` | three dinners with the same main protein (`protein_type`) | the ingredient large with the three dishes, each dinner with what it needs beyond the ingredient, one shopping list for all three (×3 = in three dinners), save |
-| High-protein dinners | `protein` | at least 35 g protein per serving; the lighter dishes (fewest kcal) first | the dish and the hook, protein, kcal and minutes as big numbers, the time bar, the steps with timers, the shopping list in two, follow |
-| Dishes to wash: N | `dishes` | at most two vessels to wash (`cleanup_factor` 1) | the dish and the hook, the vessels with their images, the symbols, the river delta (small ones) or the time bar, the steps with timers (at most six), send |
-| Guess the dinner | `guess` | every dish | the `grid` format with the series' name and number: the symbols, the list, the dish, ask |
-| 5 weeknights of [cuisine] | `cuisine` | five dinners of one cuisine, varied as the week is | the five dishes, Monday to Friday one per slide, one shopping list for the week, save |
+| Series | `?series=` | Status | Filter | Slides |
+|---|---|---|---|---|
+| Guess the dinner | `guess` | active | every recipe, dinner or not (the hook says "dish" on the 11 that are not) | the `grid` format with the series' name and number: the symbols, the list, the dish, ask |
+| What to make with [ingredient] | `got` | active | three dinners with the same main protein (`protein_type`) | the ingredient large with the three dishes, each dinner with what it needs beyond the ingredient, one shopping list for all three (×3 = in three dinners), save |
+| High-protein dinners | `protein` | active | at least 35 g protein per serving; the lighter dishes (fewest kcal) first | the dish and the hook, protein and kcal as big numbers (no minutes), the steps, the shopping list in two, follow |
+| 4 high-protein dinners | `protein4` | active | four of the same, varied as the week is | the four dishes large, a dinner each, one shopping list, save |
+| Under 20 minutes of work | `under20` | active | the steps' active minutes add up to under 20 | the dish and the hook, the steps, the shopping list in two, follow |
+| One Pot Meals | `onepot` | active | exactly one vessel the food is cooked in (`social.COOK_VESSELS`: not bowls, sieves, machines, nor the air fryer) | the dish and the hook, the vessels with their images, the river delta (small ones), the steps, the shopping list in two, send |
+| 4 weeknights of [cuisine] | `cuisine` | active | four dinners of one cuisine, varied as the week is | the four dishes large, Monday to Thursday one per slide, one shopping list, save |
+| Only 6 things to buy | `only6` | paused | at most six things to buy, staples left out | the dish and the hook, the shopping list in two, the steps, save |
+| Air fryer dinners | `airfryer` | paused | `heat_source` air fryer | the dish and the hook, the air fryer's heat and time, the river delta (small ones), the steps, the shopping list in two, follow |
+| 3 ingredients, 3 dinners | `three3` | paused | three dinners sharing at least three things to buy, one a protein; chicken breast and thigh count as one | the three ingredient symbols large with the dishes, each dinner with the rest, one shopping list, save |
 
-Every series takes approved recipes with a dish image only, dinners (the meal type, as the week takes them), one
-per dish, no baby food. The shopping list in two is the ingredient symbols with their amounts, so a series with it
-has no symbols slide beside it. The first slide carries the
-series' name and number ("Air fryer dinners #7") and the hook, with the dish named under it; the second slide
-delivers what the hook promised; the shopping list is next to last; the last slide is the CTA.
+The first rotation (serier-v2.md) runs the seven active ones: Guess ten times a week, What to make with seven,
+High-protein six (one and four dishes), Under 20 five, One Pot four, the cuisine week three. The paused ones wait
+for recipes; every status still renders. The hook says "Dishes to wash: 1" only when it is literally one.
 
-The slide kinds the series are built from, each from the recipe page's view (`services/social.py`): `wash` (the
-vessels only, `derive.VESSELS`, with the equipment images in the chosen style), `shop_split` (to buy, with amounts,
-and a row of what you probably have), `delta` (the river delta placed on a grid without its script: a column per
-branch, the dish last, arrows straight down), `timers` (the steps with their standing time as the timer, at most
-`TIMER_STEPS`), `numbers` (protein, kcal, minutes), `timebar` ("9 min you, 41 min the oven") and `airfryer` (the
-highest temperature and the air fryer's minutes, with its image). The minutes the cook is not working have one
-definition for the hook, the time bar and the air fryer slide (`social.hands_off`): the standing time of the steps
-in the heat source ("the air fryer", "the oven") when there is any, else all the time from start to table that is
-not active, "hands off". The "You: 9 min. Air fryer: 20 min." hook is drawn only when the air fryer does at least as
-much as the cook. The river delta goes on a slide only when it is small: at most two levels above the
-dish (`max_depth` ≤ `DELTA_DEPTH`) and two branches (`leaves` ≤ `DELTA_LEAVES`), 11 of the 59 public recipes on
-31.10.2026; otherwise the time bar takes its place. Look at a rendered delta slide on a phone before it goes out.
+Every series takes approved recipes with a dish image only, dinners (the meal type, as the week takes them; Guess
+takes every recipe), one per dish, no baby food. The shopping list in two is the ingredient symbols with their
+amounts, so a series with it has no symbols slide beside it, and a series cover carries a strip of the symbols
+under the hook. The first slide carries the series' name and number ("Air fryer dinners #7") and the hook, with
+the dish named under it; the second slide delivers what the hook promised; the shopping list is next to last; the
+last slide is the CTA.
+
+The slide kinds the series are built from, each from the recipe page's view (`services/social.py`,
+`social_series.SLIDE_KINDS`): `cover`, `got_cover`, `trio_cover` and `week_cover`; `wash` (the vessels only,
+`derive.VESSELS`, with the equipment images in the chosen style); `shop_split` (to buy, with amounts, and a row of
+what you probably have); `delta` (the river delta placed on a grid without its script: a column per branch, the
+dish last, arrows straight down; only when it is small, at most two levels above the dish and two branches, else no
+slide); `steps` (the steps as on the recipe page's Cook view: the number, the step's name large and the symbols of
+what goes in, three to a slide on Instagram and four on TikTok, over as many slides as it takes, no minutes;
+the slide kind is `cook`, since the map format's one list is `steps`); `numbers` (protein and kcal, no minutes);
+`airfryer` (the highest temperature and the air fryer's minutes, with its image); `days` and `shop` for several
+dinners; `grid` for Guess; and `end`: on a series, the dish over the whole slide (several in a grid), a dark shade,
+the CTA as the site's yellow button, the address readable in white and a small wordmark. The formats keep their
+old last slide. There is no time bar any more. The minutes the cook is not working have one definition for the hook
+and the air fryer slide (`social.hands_off`): the standing time of the steps in the heat source when there is any,
+else all the time from start to table that is not active.
 
 A list for several dinners (the week, What to make with, the cuisine week) goes over as many slides as it takes
 to keep `SHOP_PER_SLIDE` things or fewer on each ("The shopping list, 1 of 2"), the staples on the last. Times on
@@ -216,8 +227,8 @@ python -m scripts.social_batch 2026-11-03 --plan day.txt     # or the posts in a
 python -m scripts.social_batch 2026-11-03 --dry-run          # show the plan only
 ```
 
-Without a plan a day takes its posts from the four series that run side by side (`airfryer`, `got`, `protein`,
-`dishes`), by turn from day to day. `guess` on Mondays and Fridays and `cuisine` on Wednesdays take the day's last place,
+Without a plan a day takes its posts from the four series that run side by side (`got`, `protein`, `under20`,
+`onepot`), by turn from day to day. `guess` on Mondays and Fridays and `cuisine` on Wednesdays take the day's last place,
 or the fifth (`scripts/social_batch.DAY_SERIES`, `FIFTH`). A plan has a post per line: a series or a format, the recipes if they are
 fixed, `hook=`, `cta=` and `n=` if they are fixed, and for a format the words it tries after `|`:
 

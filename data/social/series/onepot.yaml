@@ -1,0 +1,38 @@
+# A series card (docs/SOCIAL.md "The series"). The top is the why, for Pål to correct; the rest is what the code reads.
+name: One Pot Meals
+status: active
+purpose: Sell the dinner by how little there is to clean up afterwards, the cost of cooking nobody shows.
+message: One pot, pan, wok or tray does the cooking; the vessels shown as they are, the symbols and the steps.
+hypothesis: >
+  Washing up is what keeps people from cooking on a weeknight; one pot is a promise people search for, and a true
+  small number of dishes ("Dishes to wash: 1", only when it is literally one) is worth a share to whoever does them.
+signal: Shares per 1000 views.
+stop_when: >
+  After 10 posts per platform it is below the median of the other series on shares per 1000 views, or the catalog
+  runs out (about 10 dinners cooked in one vessel on 2.11.2026, 2 of them with nothing else to wash).
+
+pick:
+  filter: onepot          # exactly one vessel the food is cooked in (social.COOK_VESSELS), not the air fryer
+  count: 1
+slides: [cover, wash, delta, steps, shop_split, end]
+cta: send
+noun: one-pot dinner
+hashtags: "#onepot #onepan #onepotmeal #easydinner #dinnerideas"
+hooks:
+  number:
+    - text: "One {vessel}. {dish}."
+      needs: [vessel]
+    - text: "{dish}, in one {vessel}."
+      needs: [vessel]
+    - text: "Dishes to wash: 1"
+      needs: [one_dish]
+    - text: "One {vessel}, {active} min of work."
+      needs: [vessel, active]
+proposed_hooks: []
+retired_hooks:
+  - text: "Dishes to wash: {vessels}"
+    why: The series was Dishes to wash and counted bowls and sieves; One Pot Meals counts the vessel food is cooked in, and says "1" only when it is literally one (2.11.2026).
+  - text: "{vessels} dishes to wash. {active} min of work."
+    why: The same.
+  - text: "One dinner, {vessels} dishes to wash."
+    why: The same.
