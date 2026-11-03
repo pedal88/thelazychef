@@ -84,7 +84,8 @@ class RecipeV2Schema(typing.TypedDict):
     components: list[ComponentV2]
     ingredients: list[IngredientLineV2]
     steps: list[StepV2]
-    chef_note: typing.NotRequired[str]
+    chef_note: typing.NotRequired[str]  # the cook's tip, for the reader
+    estimates: typing.NotRequired[list[str]]  # what the source did not say and the model decided, for the reviewer
     cuisine: typing.NotRequired[Cuisine]
     difficulty: typing.NotRequired[Difficulty]
     meal_types: typing.NotRequired[list[MealType]]

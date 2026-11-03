@@ -13,9 +13,11 @@ A video link (TikTok, Instagram, YouTube) is downloaded and watched by Gemini, w
 pasted recipe.
 """
 import json
+import logging
 import re
 from html import unescape
 
+log = logging.getLogger(__name__)
 PAGE_TEXT_MAX = 60000
 VIDEO_HOSTS = re.compile(r'(^|\.)(tiktok\.com|tiktokv\.com|instagram\.com|youtube\.com|youtu\.be)$', re.IGNORECASE)
 HEADERS = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 '
@@ -148,6 +150,7 @@ def jsonld_text(r):
 
 
 VIDEO_WAIT = 180  # seconds Gemini may take to process an uploaded video
+NO_RECIPE = 'NO RECIPE'  # what the video_text prompt answers when the video shows no dish
 
 
 def fetch_video_text(url, download=None, watch=None):
@@ -158,12 +161,12 @@ def fetch_video_text(url, download=None, watch=None):
     try:
         video = (download or SocialMediaExtractor.download_video)(url)
     except ValueError:  # private, removed or not a video: trying again does not help
-        raise SourceError('Could not get the video. Check that it is public, or paste the recipe text instead.')
+        raise SourceError('Could not get the video. Check that it is public and under 10 minutes, or paste the recipe text instead.')
     try:
         text = (watch or _watch)(video['video_path'], video.get('caption') or '')
     finally:
         SocialMediaExtractor.cleanup(video['video_path'], video.get('thumbnail_path'))
-    if not (text or '').strip():
+    if not (text or '').strip() or text.strip().upper().startswith(NO_RECIPE):
         raise SourceError('No recipe could be read from the video. Paste the recipe text instead.')
     return text
 
@@ -179,17 +182,23 @@ def _watch(path, caption):
 
     client = gemini_client()
     ref = client.files.upload(file=path)
-    waited = 0
-    while ref.state and ref.state.name == 'PROCESSING':
-        if waited >= VIDEO_WAIT:
-            raise TimeoutError('Gemini did not finish processing the video')
-        time.sleep(3)
-        waited += 3
-        ref = client.files.get(name=ref.name)
-    if ref.state and ref.state.name == 'FAILED':
-        raise SourceError('The video could not be read. Paste the recipe text instead.')
-    root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    prompt = Environment(loader=FileSystemLoader(os.path.join(root, 'data', 'prompts'))).get_template(
-        'recipe_v2/video_text.jinja2').render(caption=caption)
-    resp = client.models.generate_content(model=GEMINI_TEXT, contents=[types.Part.from_uri(file_uri=ref.uri, mime_type=ref.mime_type), prompt])
-    return resp.text
+    try:
+        waited = 0
+        while ref.state and ref.state.name == 'PROCESSING':
+            if waited >= VIDEO_WAIT:
+                raise TimeoutError('Gemini did not finish processing the video')
+            time.sleep(3)
+            waited += 3
+            ref = client.files.get(name=ref.name)
+        if ref.state and ref.state.name == 'FAILED':
+            raise SourceError('The video could not be read. Paste the recipe text instead.')
+        root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        prompt = Environment(loader=FileSystemLoader(os.path.join(root, 'data', 'prompts'))).get_template(
+            'recipe_v2/video_text.jinja2').render(caption=caption)
+        resp = client.models.generate_content(model=GEMINI_TEXT, contents=[types.Part.from_uri(file_uri=ref.uri, mime_type=ref.mime_type), prompt])
+        return resp.text
+    finally:
+        try:
+            client.files.delete(name=ref.name)  # someone else's video does not stay on Google's side
+        except Exception:
+            log.warning('Could not delete the uploaded video %s', ref.name)

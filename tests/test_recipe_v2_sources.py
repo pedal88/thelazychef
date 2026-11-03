@@ -158,6 +158,21 @@ class WebRecipeTests(unittest.TestCase):
             with self.assertRaises(SourceError):  # nothing could be read
                 sources.fetch_video_text('https://www.tiktok.com/@cook/video/1', download=lambda u: {'video_path': 'x'}, watch=lambda p, c: ' ')
 
+    def test_a_video_that_shows_no_dish_is_a_source_error(self):
+        with mock.patch('services.social_media_service.SocialMediaExtractor.cleanup'), self.assertRaises(SourceError):
+            sources.fetch_video_text('https://www.tiktok.com/@cook/video/1', download=lambda u: {'video_path': 'x'},
+                                     watch=lambda p, c: 'NO RECIPE')
+
+    def test_a_long_video_is_not_downloaded(self):
+        import yt_dlp
+
+        from services.social_media_service import SocialMediaExtractor as Extractor
+
+        check = yt_dlp.utils.match_filter_func(f'duration <=? {Extractor.MAX_SECONDS}')
+        self.assertIsNone(check({'id': 'a', 'duration': 60}))
+        self.assertIsNone(check({'id': 'b'}))  # a video that does not say is tried
+        self.assertTrue(check({'id': 'c', 'duration': 3600}))
+
     def test_an_unreadable_page_gives_a_flagged_draft_without_retries(self):
         recipe = Recipe(title='x', cuisine='', difficulty='', status='generating', schema_version=2, source_type='web')
         db.session.add(recipe)

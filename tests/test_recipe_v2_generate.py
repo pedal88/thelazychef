@@ -9,6 +9,7 @@ import os
 import sys
 import unittest
 from types import SimpleNamespace
+from unittest import mock
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(ROOT)
@@ -142,6 +143,27 @@ class GenerateTests(unittest.TestCase):
         self.assertTrue(any('spaghetti' in n.lower() for n in linked), linked)
         self.assertTrue(report['missing_in_pantry'])
         self.assertTrue(recipe.is_flagged_for_review)
+
+    def test_what_the_model_estimated_is_a_note_that_does_not_flag_the_recipe(self):
+        answer = copy.deepcopy(self.run_['recipe'])
+        answer.update(chef_note='Take the pan off the heat first.', estimates=['Pasta water: about 3 l, the source gives no amount'])
+        fake = FakeClaude(message('text'), message(json.dumps(answer, ensure_ascii=False)))
+        with mock.patch.object(generate, 'match_pantry', return_value=({}, [])):
+            recipe, report = generate.create_recipe('text', 'a recipe', call=fake)
+
+        saved = db.session.get(Recipe, recipe.id)
+        self.assertEqual(saved.chef_note, 'Take the pan off the heat first.')
+        self.assertEqual(saved.validation_errors, [{'rule': 'estimate', 'message': 'Pasta water: about 3 l, the source gives no amount'}])
+        self.assertEqual(report['estimates'], ['Pasta water: about 3 l, the source gives no amount'])
+        self.assertFalse(saved.is_flagged_for_review)
+        self.assertIn('estimates', fake.requests[1]['schema']['properties'])
+        self.assertIn('23c. estimates', fake.requests[1]['system'])
+
+        for line in saved.lines:  # every line linked, so only the notes can flag it
+            line.ingredient = db.session.execute(db.select(Ingredient)).scalars().first()
+        generate.recalculate(saved)
+        self.assertEqual([e['rule'] for e in saved.validation_errors], ['estimate'])  # the note stays
+        self.assertFalse(saved.is_flagged_for_review)
 
     def test_a_failed_attempt_is_sent_back_with_the_errors(self):
         broken = copy.deepcopy(self.run_['recipe'])
