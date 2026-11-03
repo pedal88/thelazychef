@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{# What the iPhone shortcut opens (routes/video_inbox_routes.py add_page). The page sends itself; the button is there
+   when scripts are off. #}
+{% block title %}Save a video - The Lazy Chef{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/recipe_v2.css') }}">
+{% endblock %}
+{% block content %}
+<article class="rv2 batch">
+  <p class="eyebrow">Recipes · admin</p>
+  <h1>Save a video</h1>
+  {% if usable %}
+  <form method="post" id="save-video" action="{{ url_for('video_inbox.add') }}">
+    <input type="hidden" name="token" value="{{ token }}">
+    <input type="hidden" name="url" value="{{ link }}">
+    <p class="hint">Saving {{ link }}</p>
+    <button type="submit" class="go">Save</button>
+  </form>
+  <script>document.getElementById('save-video').submit();</script>
+  {% elif shared %}
+  <p class="hint">That is not a link to a TikTok, Instagram or YouTube video.</p>
+  {% else %}
+  <p class="hint">Share a video to the shortcut, or open this page with ?url= and a link.</p>
+  {% endif %}
+  <p><a class="back" href="{{ url_for('video_inbox.inbox') }}">Video inbox</a></p>
+</article>
+{% endblock %}

@@ -475,6 +475,26 @@ class ReferralVisit(db.Model):
     count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
 
+class VideoInbox(db.Model):
+    """A cooking video shared from the phone, saved to look at later and maybe make into a recipe. Saving it makes
+    nothing (services/recipe_v2/inbox.py, routes/video_inbox_routes.py). Whether it has been made is read from the
+    recipes' source_input. The fields for what the video is about stay empty until they have been looked up."""
+    __tablename__ = 'video_inbox'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    url: Mapped[str] = mapped_column(String(1000), nullable=False)
+    video_key: Mapped[str] = mapped_column(String(300), nullable=False, unique=True)  # the same video however it is linked
+    status: Mapped[str] = mapped_column(String(20), default='new', server_default='new', nullable=False)  # new, discarded
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+    webpage_url: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
+    caption: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    uploader: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
+    duration_s: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    dish_name: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
+    suggestions: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)  # cuisine, main protein and the like
+    similar: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)  # ids of the recipes it looks most like
+    meta_error: Mapped[Optional[str]] = mapped_column(String(300), nullable=True)
+
+
 class SocialPost(db.Model):
     """A post on TikTok or Instagram, by its code: the code in the address on its last slide (thelazychef.app/tiktok/5
     gives the ref code tiktok-5), so its visits and sign-ups can be put beside the platform's numbers

@@ -87,6 +87,7 @@ MENU = [
                             ('Ingredient galaxy', 'explore_ingredient_galaxy', {}, 'galaxy', 'all')]),
     ('Admin', 'admin', [('New recipe', 'new_recipe', {}, 'pot', 'admin'),
                         ('Many recipes at once', 'recipe_v2.batch_new', {}, 'list', 'admin'),
+                        ('Video inbox', 'video_inbox.inbox', {}, 'list', 'admin'),
                         ('Images for recipes', 'recipe_v2.batch_images', {}, 'image', 'admin'),
                         ('New ingredient', 'new_ingredient_view', {}, 'carrot', 'admin'),
                         None,

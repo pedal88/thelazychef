@@ -27,6 +27,7 @@ In production this runs in Cloud Tasks (`tasks.py`), followed by the **pantry jo
 alias / new item / skip for every unlinked line, then `generate.recalculate`) and the **image job** (`images.py`:
 the dish and its visible parts, each checked by Claude's vision). See `docs/SERVICES_AND_COSTS.md` for the queue.
 `batch.py` reads the Many recipes at once lines.
+`inbox.py` saves video links shared from the phone (table `video_inbox`, `/admin/inbox`, `docs/VIDEO_INBOX.md`); saving makes nothing.
 
 `generate.recalculate(recipe)` is what the Recalculate button and `scripts.fill_pantry` do: link unlinked lines again,
 then `refresh`. Run it on saved recipes after changing derive, nutrition or the chefs' rules.

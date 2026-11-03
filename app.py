@@ -194,6 +194,9 @@ app.register_blueprint(social_bp)
 from routes.social_api_routes import social_api_bp
 app.register_blueprint(social_api_bp)
 
+from routes.video_inbox_routes import video_inbox_bp
+app.register_blueprint(video_inbox_bp)
+
 from routes.error_routes import errors_bp
 app.register_blueprint(errors_bp)
 
