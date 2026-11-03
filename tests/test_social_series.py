@@ -191,8 +191,9 @@ class SeriesTests(unittest.TestCase):
         slides = social.steps_slides(view, 'ig')
         self.assertEqual([len(sl['steps']) for sl in slides], [3, 3, 3])
         self.assertEqual([sl['eyebrow'] for sl in slides], ['Step 1 to 3 of 9', 'Step 4 to 6 of 9', 'Step 7 to 9 of 9'])
-        self.assertEqual([len(sl['steps']) for sl in social.steps_slides(view, 'tt')], [3, 3, 3])  # 9 over 4 a slide
-        self.assertEqual([len(sl['steps']) for sl in social.steps_slides({**view, 'steps': view['steps'][:7]}, 'tt')], [4, 3])
+        self.assertEqual([len(sl['steps']) for sl in social.steps_slides(view, 'tt')], [3, 3, 3])
+        self.assertEqual([len(sl['steps']) for sl in social.steps_slides({**view, 'steps': view['steps'][:7]}, 'tt')],
+                         [3, 2, 2])
         first = slides[0]['steps'][0]
         self.assertEqual(set(first), {'no', 'short', 'phase', 'symbols'})  # no minutes, no timer
         with_symbols = [st for sl in slides for st in sl['steps'] if st['symbols']]

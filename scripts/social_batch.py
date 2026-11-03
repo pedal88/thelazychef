@@ -29,8 +29,9 @@ with that code and those choices fixed (scripts/social_render.py). A series that
 
 The slides go to ~/promptlab-runs/social/<day>/: a folder per post and size with the PNGs, caption.txt and title.txt
 (the hook's words, for TikTok's title), day.txt listing the posts, and plan.json with what was logged. Running the same
-day again reads plan.json, plans only the posts it lacks and renders only what is missing (--force renders again;
---replan plans the whole day anew, which logs new drafts). Each folder is copied to --phone (an iCloud Drive folder by
+day again reads plan.json, plans only the posts it lacks and renders only what is missing (--force renders again,
+--only tiktok or instagram does one platform: a post that is already up is refused; --replan plans the whole day anew,
+which logs new drafts). Each folder is copied to --phone (an iCloud Drive folder by
 default), so it is on the phone without AirDrop. The Instagram slides also go up as JPEGs with the caption, so the post
 waits in the Instagram queue on the Funnel page (services/social_publish.py): nothing goes up until it is approved
 there.
@@ -199,6 +200,7 @@ def main():
     p.add_argument('--dry-run', action='store_true', help='show the plan; log and render nothing')
     p.add_argument('--replan', action='store_true', help="plan the day anew even when it has a plan.json")
     p.add_argument('--force', action='store_true', help='render slides again that are already there')
+    p.add_argument('--only', choices=['tiktok', 'instagram'], help="render and send one platform's slides, not both")
     p.add_argument('--look', choices=['today', 'c', 'd', 'e', 'f'], help="another look than the site's")
     p.add_argument('--base', default=os.environ.get('LAZYCHEF_URL', 'https://thelazychef.app'))
     p.add_argument('--chrome', default=os.environ.get('CHROME', CHROME))
@@ -241,7 +243,8 @@ def main():
     summary = []
     for entry in sorted(entries, key=lambda e: e['place']):
         name = folder_name(entry['place'], entry)
-        for size in SIZES:
+        sizes = [size for size in SIZES if args.only in (None, PLATFORM_OF_SIZE[size])]
+        for size in sizes:
             folder = day_folder / name / size
             if args.force or not rendered(folder):
                 render(args.base, args.chrome, folder, entry['page'], entry['recipe'],
@@ -251,11 +254,11 @@ def main():
             if args.phone and not args.no_phone:
                 shutil.copytree(folder, args.phone / args.day.isoformat() / f'{name}-{PLATFORM_OF_SIZE[size]}',
                                 dirs_exist_ok=True)
-        if args.force or not entry.get('queued'):
+        if 'ig' in sizes and (args.force or not entry.get('queued')):
             send_to_queue(args.base, entry['code'], day_folder / name / 'ig')
             entry['queued'] = True
             manifest.write_text(json.dumps(entries, indent=1, ensure_ascii=False), encoding='utf-8')
-        if args.force or not entry.get('queued_tiktok'):
+        if 'tt' in sizes and (args.force or not entry.get('queued_tiktok')):
             send_to_queue(args.base, entry['code'], day_folder / name / 'tt', 'tiktok')
             entry['queued_tiktok'] = True
             manifest.write_text(json.dumps(entries, indent=1, ensure_ascii=False), encoding='utf-8')

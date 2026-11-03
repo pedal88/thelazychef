@@ -131,8 +131,9 @@ The pantry post's numbers are the share of ingredient lines the staples, the 60 
 dishes home cooks make (`scripts/foundation_sample.py`, 22.10.2026). They are about ingredients, not dinners: the
 slides say "covers 84% of what goes into dinner", never "cooks 84% of dinners".
 
-Two sizes: `ig` (1080 × 1350, Instagram's tallest carousel) and `tt` (1080 × 1920, TikTok's photo mode, with wider
-margins top and bottom where TikTok lays its buttons). The last slide gives the short address for the platform,
+Two sizes: `ig` (1080 × 1350, Instagram's tallest carousel) and `tt` (1080 × 1440, the 3:4 TikTok's photo mode shows on
+a phone, with a wider margin on top where TikTok lays its tabs; a 9:16 picture loses its top and bottom there, measured
+on a post of 03.11.2026). The last slide gives the short address for the platform,
 `thelazychef.app/ig` or `/tiktok`, with the post's code (`/tiktok/3`), so the Funnel page counts each post's visits.
 
 ## Making a post

@@ -51,7 +51,7 @@ def tls():
     return ssl.create_default_context(cafile=certifi.where())
 
 
-SIZES = {'ig': (1080, 1350), 'tt': (1080, 1920)}
+SIZES = {'ig': (1080, 1350), 'tt': (1080, 1440)}
 PLATFORM_OF_SIZE = {'ig': 'instagram', 'tt': 'tiktok'}  # the post log's platforms (services/funnel.PLATFORMS)
 # The series are the cards in data/social/series (services/social_series.py), the hook and CTA groups the shared
 # file; read here without the app, so the script needs no database

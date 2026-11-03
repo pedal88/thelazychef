@@ -11,7 +11,7 @@ html, body { margin: 0; background: var(--sl-paper); }
   box-sizing: border-box; position: relative; overflow: hidden; display: flex; flex-direction: column;
   padding: 96px 84px 150px; background: var(--sl-paper); color: var(--sl-ink); font-family: var(--font-sans);
 }
-.size-tt { padding-top: 200px; padding-bottom: 300px; }  /* TikTok lays its own buttons and text over the edges */
+.size-tt { padding-top: 128px; }  /* TikTok lays its tabs over the top of the 3:4 it shows */
 
 .eyebrow { margin: 0 0 18px; font: 600 30px/1.2 var(--font-mono); letter-spacing: .08em; text-transform: uppercase;
   color: var(--color-accent); }
@@ -126,7 +126,6 @@ html, body { margin: 0; background: var(--sl-paper); }
 
 .foot { position: absolute; left: 84px; right: 84px; bottom: 56px; display: flex; justify-content: space-between;
   align-items: center; font: 600 26px/1 var(--font-sans); color: var(--sl-muted); }
-.size-tt .foot { bottom: 160px; }
 .foot span { display: inline-flex; align-items: center; gap: 14px; }
 .foot .brand-badge { width: 52px; height: 52px; }
 
@@ -138,7 +137,6 @@ html, body { margin: 0; background: var(--sl-paper); }
 .got .sym.big i { font-size: 120px; }
 .got .dishes.three { flex: none; display: flex; flex-wrap: nowrap; justify-content: space-between; align-items: center; width: 1080px; margin: 0 -84px; }
 .got .dishes.three img { width: 33.333%; flex: none; mix-blend-mode: multiply; }
-.size-tt .got .sym.big { width: 44%; }
 /* The big numbers */
 .numbers { flex: 1; display: grid; grid-auto-rows: min-content; align-content: center; gap: 56px; }
 .number { display: flex; flex-direction: column; gap: 6px; }
@@ -232,8 +230,6 @@ html, body { margin: 0; background: var(--sl-paper); }
 .cook-syms .sym img { width: 120%; height: 120%; }
 .cook-syms .tile figcaption { font-size: 22px; }
 .cook-syms .tile figcaption b { font-size: 24px; }
-.size-tt .cook { gap: 20px; }
-.size-tt .cook-body h2 { font-size: 54px; }
 /* The last slide of a series: the dish over the whole slide (several in a grid), a dark shade for the words, the
    CTA as the site's main button (the look's --look-go), the address and a small wordmark in white */
 .photo { position: absolute; inset: 0; display: grid; gap: 0; background: var(--sl-paper); }
@@ -243,7 +239,6 @@ html, body { margin: 0; background: var(--sl-paper); }
 .photo.n5 { grid-template-rows: 1.2fr 1fr 1fr; }
 .shade { position: absolute; inset: 0; background: linear-gradient(to bottom, rgb(0 0 0 / 0) 30%, rgb(10 9 8 / .55) 55%, rgb(10 9 8 / .9) 100%); }
 .end.over { position: absolute; left: 84px; right: 84px; bottom: 150px; justify-content: flex-end; color: #fff; }
-.size-tt .end.over { bottom: 300px; }
 .end.over .line { margin: 0; padding: 28px 48px; border-radius: var(--radius-pill); font: 700 50px/1.15 var(--font-sans);
   background: var(--look-go, var(--color-accent)); color: var(--look-go-ink, var(--color-paper)); }
 .end.over .go { margin: 40px 0 0; font: 500 34px/1.3 var(--font-sans); color: rgb(255 255 255 / .85); }
@@ -252,13 +247,13 @@ html, body { margin: 0; background: var(--sl-paper); }
 .end.over .word .mark { width: 48px; height: 48px; }
 .slide:has(.end.over) .foot { color: rgb(255 255 255 / .75); }
 /* The game on Instagram's shorter slide: a smaller score and tighter rows, so fifteen things with amounts still fit */
-.size-ig .score { margin-top: 18px; gap: 24px; }
-.size-ig .score b { font-size: 128px; }
-.size-ig .score span { font-size: 44px; }
-.size-ig .bar { margin-top: 20px; }
-.size-ig .kind-guess_names .grid, .size-ig .kind-guess_amounts .grid, .size-ig .kind-guess_pictures .grid { gap: 12px 18px; margin-top: 20px; }
-.size-ig .kind-guess_names .tile figcaption, .size-ig .kind-guess_amounts .tile figcaption { font-size: 25px; }
-.size-ig .kind-guess_names .tile figcaption span, .size-ig .kind-guess_amounts .tile figcaption span { font-size: 25px; }
-.size-ig .kind-guess_amounts .tile figcaption b { font-size: 27px; }
-.size-ig .next { margin-top: 14px; font-size: 38px; }
-.size-ig .kind-guess_pictures .sym, .size-ig .kind-guess_names .sym, .size-ig .kind-guess_amounts .sym { width: 72%; }  /* GAME_SYMBOL */
+.size-ig .score, .size-tt .score { margin-top: 18px; gap: 24px; }
+.size-ig .score b, .size-tt .score b { font-size: 128px; }
+.size-ig .score span, .size-tt .score span { font-size: 44px; }
+.size-ig .bar, .size-tt .bar { margin-top: 20px; }
+.size-ig .kind-guess_names .grid, .size-ig .kind-guess_amounts .grid, .size-ig .kind-guess_pictures .grid, .size-tt .kind-guess_names .grid, .size-tt .kind-guess_amounts .grid, .size-tt .kind-guess_pictures .grid { gap: 12px 18px; margin-top: 20px; }
+.size-ig .kind-guess_names .tile figcaption, .size-ig .kind-guess_amounts .tile figcaption, .size-tt .kind-guess_names .tile figcaption, .size-tt .kind-guess_amounts .tile figcaption { font-size: 25px; }
+.size-ig .kind-guess_names .tile figcaption span, .size-ig .kind-guess_amounts .tile figcaption span, .size-tt .kind-guess_names .tile figcaption span, .size-tt .kind-guess_amounts .tile figcaption span { font-size: 25px; }
+.size-ig .kind-guess_amounts .tile figcaption b, .size-tt .kind-guess_amounts .tile figcaption b { font-size: 27px; }
+.size-ig .next, .size-tt .next { margin-top: 14px; font-size: 38px; }
+.size-ig .kind-guess_pictures .sym, .size-ig .kind-guess_names .sym, .size-ig .kind-guess_amounts .sym, .size-tt .kind-guess_pictures .sym, .size-tt .kind-guess_names .sym, .size-tt .kind-guess_amounts .sym { width: 72%; }  /* GAME_SYMBOL */
