@@ -5,6 +5,7 @@ picking keeps a recipe out of a series for a week."""
 import datetime
 import json
 import os
+import re
 import sys
 import unittest
 
@@ -162,6 +163,12 @@ class SeriesTests(unittest.TestCase):
                     self.assertIn('#3', html)  # the series' number on the first slide
                     self.assertIn(f'width:1080px; height:{social.SIZES[size][1]}px', html)
                     self.assertNotIn('kind-timebar', html)
+
+    def test_the_css_for_a_size_and_a_kind_can_match_the_slide(self):
+        # Both classes are on the slide's <main>: with a space between them the rule never applies, and the game's
+        # symbols stay too large for game_columns' estimate and run into the foot
+        with open(os.path.join(os.path.dirname(__file__), '..', 'static', 'css', 'social.css'), encoding='utf-8') as f:
+            self.assertIsNone(re.search(r'\.size-(ig|tt) \.kind-', f.read()))
 
     def test_the_games_pictures_fill_their_rows_and_a_cover_strip_has_no_orphan(self):
         self.assertEqual([social.game_columns(n, 'tt') for n in (5, 8, 12, 15, 13, 14)], [5, 4, 4, 5, 5, 5])
