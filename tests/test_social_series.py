@@ -316,6 +316,8 @@ class SeriesTests(unittest.TestCase):
         self.assertEqual(series.short_title('Chicken Gyros Plate with Tzatziki and Greek Salad'), 'Chicken Gyros Plate')
         self.assertEqual(series.short_title('Air Fryer Salmon Bites with Gochujang Mayo'), 'Salmon Bites')
         self.assertEqual(series.short_title('Kjøttkaker in Brown Sauce, with potatoes'), 'Kjøttkaker')
+        self.assertEqual(series.short_title('Beef and Broccoli Stir Fry with Steamed Rice'), 'Beef and Broccoli Stir Fry')
+        self.assertEqual(series.short_title('Sweet and Sour Chicken with Jasmine Rice'), 'Sweet and Sour Chicken')
         long = series.facts([post_of(view_of(36, 11, title='One Two Three Four Five Six Seven Eight'))], 3, series='Air fryer dinners')
         self.assertIsNone(series.hook('series', long, 'a', 'airfryer'))
         for row in series.SERIES['airfryer']['retired_hooks']:
