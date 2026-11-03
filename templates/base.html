@@ -188,19 +188,26 @@
                 {{ site_nav.desktop() }}
             </div>
 
-            <!-- Hamburger button (mobile only) -->
-            <button id="mobile-menu-btn"
-                class="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-orange-600 transition-colors focus:outline-none"
-                aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
-                <!-- Hamburger icon -->
-                <svg id="hamburger-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-                <!-- Close icon (hidden by default) -->
-                <svg id="hamburger-close" class="hidden w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
+            <div class="md:hidden flex items-center gap-2">
+                {# On a phone a visitor's way in stays in sight, not only at the bottom of the menu #}
+                {% if not current_user.is_authenticated %}
+                <a href="{{ url_for('register') }}" class="top-signup px-3 py-1.5 rounded-full bg-orange-600 text-white text-sm font-semibold whitespace-nowrap hover:bg-orange-700">Sign up</a>
+                {% endif %}
+
+                <!-- Hamburger button (mobile only) -->
+                <button id="mobile-menu-btn"
+                    class="p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-orange-600 transition-colors focus:outline-none"
+                    aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+                    <!-- Hamburger icon -->
+                    <svg id="hamburger-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                    <!-- Close icon (hidden by default) -->
+                    <svg id="hamburger-close" class="hidden w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
         </nav>
 
         <!-- Mobile Menu Panel (hidden by default) -->
