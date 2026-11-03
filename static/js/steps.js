@@ -312,6 +312,7 @@
 
   /* The delta fills as steps are ticked off in the list, and a running timer counts down on its step */
   const dFlow = $('[data-delta-flow]');
+  let dlCentred = null;
   function deltaFlow() {
     if (!dFlow) return;
     const done = new Set(st.done);
@@ -335,6 +336,16 @@
       const from = dFlow.querySelector(`.g2-node[data-n="${g.dataset.f}"]`);
       g.classList.toggle('flowed', !!from && from.classList.contains('flow-done'));
     });
+    deltaCentre();
+  }
+  /* A drawing wider than a phone: the next step in the middle when the view opens or the next step changes. A new
+     layout (the address bar sliding away is a resize) leaves the cook's own scrolling alone. */
+  function deltaCentre() {
+    const wrap = dFlow.querySelector('.dl-wrap'), up = dFlow.querySelector('.g2-node.nextup');
+    if (wrap.scrollWidth <= wrap.clientWidth || !up || up === dlCentred) return;  // it fits, or it is not laid out yet
+    dlCentred = up;
+    const W = wrap.getBoundingClientRect(), U = up.getBoundingClientRect();
+    wrap.scrollLeft += U.left + U.width / 2 - (W.left + W.width / 2);
   }
   function deltaRuns() {
     if (!dFlow) return;
@@ -487,7 +498,10 @@
     $$('.vpanel').forEach(p => { p.hidden = p.dataset.panel !== v; });
     openMenu(false);
     try { localStorage.setItem(VIEW, v); } catch (e) { /* remembered for this visit only */ }
-    if (v === 'delta') dispatchEvent(new Event('resize'));  // the delta lays itself out once it can be seen
+    if (v === 'delta') {
+      dlCentred = null;
+      dispatchEvent(new Event('resize'));  // the delta lays itself out once it can be seen
+    }
     if (v === 'metro') metroFit();
   }
 

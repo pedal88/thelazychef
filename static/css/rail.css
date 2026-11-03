@@ -299,6 +299,9 @@ html.mtx-lines .mt-heads { display: block; position: absolute; left: 52px; top: 
   opacity: 0; pointer-events: none; transition: opacity .15s; }
 .dv-rivers .ing-img[data-state]:hover::after, .dv-rivers .ing-img.say::after { opacity: 1; }
 
+/* The print's note on how far the drawing is scaled would only lie across a step here */
+.dl-panel .dl-scale { display: none; }
+
 /* Above the drawing: the hint, and the key to its signs */
 .dl-top { display: flex; align-items: center; gap: var(--space-4); }
 .dl-top .hint { margin: 0; font-size: 13px; }
@@ -309,6 +312,9 @@ html.mtx-lines .mt-heads { display: block; position: absolute; left: 52px; top: 
 .dl-key[open] summary { color: var(--color-ink); border-color: var(--color-line-strong); }
 .dl-key-panel { position: absolute; left: 0; top: calc(100% + 8px); width: 340px; padding: 12px 16px; background: var(--color-paper); border: 1px solid var(--color-line);
   border-radius: 14px; box-shadow: 0 12px 32px rgb(0 0 0 / .12); font: 400 13px/1.35 var(--font-sans); color: var(--color-ink); }
+@media (max-width: 699px) {  /* Key stands at the right on a phone: the panel opens leftwards, within the screen */
+  .dl-key-panel { left: auto; right: 0; width: min(340px, calc(100vw - 32px)); max-height: calc(100vh - 200px); max-height: calc(100dvh - 200px); overflow: auto; }
+}
 .dl-key-panel .eyebrow { margin: 8px 0 4px; }
 .dl-key-panel .eyebrow:first-child { margin-top: 0; }
 .dl-key-panel ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; }
