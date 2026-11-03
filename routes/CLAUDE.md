@@ -25,7 +25,7 @@ Admin: `generate_routes` (`/new-recipe`, the form page), `recipe_v2_routes` (`/n
 images `/new-recipe/v2/images`, Recalculate), `admin_recipes_routes` (Recipes Management), `admin_ingredients_routes`,
 `admin_chefs_routes`, `recipe_notes_routes`, `funnel_routes` (`funnel.*`: the short addresses `/tiktok`, `/ig`,
 `/tiktok/<code>` (to the post's recipe when the post log has one, to the post's page `/post/<platform>/<code>` when it showed several, else home) and `?ref=` on any page, kept per session and counted, the admin Funnel page `/admin/funnel` and its
-post log `/admin/funnel/posts/…`, the TikTok posts for the phone `/admin/funnel/tiktok`, the weekly report `/admin/funnel/report`; `services/funnel.py`). `social_routes` (`social.*`): the slides of TikTok and Instagram posts, public and noindex
+post log `/admin/funnel/posts/…`, the TikTok posts for the phone `/admin/funnel/tiktok`, the weekly report `/admin/funnel/report`; `services/funnel.py`). `video_inbox_routes` (`video_inbox.*`: `/admin/inbox`, cooking videos saved from the phone; its `/admin/inbox/add?url=` is what the iPhone shortcut opens, and the one form in the app with a CSRF token, because the page sends itself). `social_routes` (`social.*`): the slides of TikTok and Instagram posts, public and noindex
 (`docs/SOCIAL.md`).
 
 ## Rules
