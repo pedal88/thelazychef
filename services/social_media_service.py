@@ -63,7 +63,7 @@ class SocialMediaExtractor:
     @classmethod
     def extract_metadata(cls, url: str) -> dict:
         """
-        Extracts metadata (caption/description) without downloading media.
+        Extracts metadata without downloading media: caption, title, uploader, duration and the video's own address.
         Perfect for fast triage!
         """
         ydl_opts = {
@@ -74,9 +74,12 @@ class SocialMediaExtractor:
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
-                caption = info.get('description') or info.get('title') or "No caption provided."
                 return {
-                    "caption": caption
+                    "caption": info.get('description'),
+                    "title": info.get('title'),
+                    "uploader": info.get('uploader') or info.get('uploader_id'),
+                    "duration": info.get('duration'),
+                    "webpage_url": info.get('webpage_url'),
                 }
         except Exception as e:
             raise ValueError(f"Failed to extract metadata: {str(e)}")

@@ -26,3 +26,8 @@ Log in to thelazychef.app once in Safari on the phone. To save a video: **Share*
 - A video is known by its `video_key`: the same video shared twice, or linked another way, is one row. A short link
   (`vm.tiktok.com/…`) has only itself to go by. Sharing a discarded video again takes it back.
 - A video already made into a recipe is marked, by comparing the keys with the recipes' `source_input`.
+- Each saved video is looked up in the queue (`/internal/tasks/video-inbox/<id>`, `inbox.look_up`): caption, uploader and
+  length with `yt-dlp`, without downloading it, then one small Claude call (`VIDEO_INBOX_MODEL`) for the dish's name, the
+  approved recipes it looks most like, and suggested cuisine, main protein and meal types. Under a cent a video. It need
+  not be perfect: making the recipe has its own logic, and these suggestions do not go into it. A video that cannot be
+  read keeps its link and says why, and costs no model call.

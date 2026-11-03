@@ -1,7 +1,10 @@
 """The video inbox: links saved from the phone, one row per video, nothing made and nothing written on a GET."""
+import json
 import os
 import sys
 import unittest
+from types import SimpleNamespace
+from unittest import mock
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -14,7 +17,7 @@ os.environ.pop('K_SERVICE', None)
 
 from app import app  # noqa: E402
 from database.models import Recipe, User, VideoInbox, db  # noqa: E402
-from services.recipe_v2 import inbox  # noqa: E402
+from services.recipe_v2 import inbox, tasks  # noqa: E402
 
 TIKTOK = 'https://www.tiktok.com/@cook/video/123'
 
@@ -106,6 +109,104 @@ class RouteTests(unittest.TestCase):
         self._save()
         db.session.refresh(row)
         self.assertEqual(row.status, 'new')
+
+    def _approved(self, title='Chicken Pad Thai'):
+        recipe = Recipe(title=title, cuisine='', difficulty='', status='approved', schema_version=2)
+        db.session.add(recipe)
+        db.session.commit()
+        return recipe
+
+    def _row(self, url=TIKTOK):
+        row = VideoInbox(url=url, video_key=inbox.video_key(url))
+        db.session.add(row)
+        db.session.commit()
+        return row
+
+    @staticmethod
+    def _claude(answer, seen=None):
+        def call(model, effort, messages, system=None, schema=None):
+            if seen is not None:
+                seen.append({'model': model, 'system': system, 'user': messages[0]['content'], 'schema': schema})
+            return SimpleNamespace(content=[SimpleNamespace(type='text', text=json.dumps(answer))]), {'cost_usd': 0.001}
+        return call
+
+    ANSWER = {'is_recipe': True, 'dish_name': 'Lemon orzo', 'cuisine': 'Italian', 'main_protein': 'Chicken',
+              'meal_types': ['Dinner'], 'similar': []}
+
+    def test_a_video_is_looked_up_without_being_downloaded(self):
+        recipe = self._approved()
+        draft = Recipe(title='A draft', cuisine='', difficulty='', status='draft', schema_version=2)
+        db.session.add(draft)
+        row = self._row('https://vm.tiktok.com/ZNabc/')
+        seen = []
+        extract = lambda url: {'caption': 'Lemon orzo #dinner', 'title': 't', 'uploader': 'cook', 'duration': 61.5,  # noqa: E731
+                               'webpage_url': TIKTOK + '?_t=1'}
+        answer = dict(self.ANSWER, similar=[recipe.id, recipe.id, 99999, draft.id])
+        inbox.look_up(row, extract=extract, call=self._claude(answer, seen))
+        db.session.commit()
+
+        self.assertEqual((row.dish_name, row.uploader, row.duration_s), ('Lemon orzo', 'cook', 61))
+        self.assertEqual((row.video_key, row.webpage_url), ('tiktok:123', TIKTOK))  # the short link now has its video's key
+        self.assertEqual(row.similar, [recipe.id])  # only recipes that exist and are approved, each once
+        self.assertEqual(row.suggestions['cuisine'], 'Italian')
+        self.assertIn('Chicken Pad Thai', seen[0]['system'])
+        self.assertNotIn('A draft', seen[0]['system'])
+        self.assertIn('Lemon orzo #dinner', seen[0]['user'])
+        html = self.client.get('/admin/inbox').get_data(as_text=True)
+        for text in ('Lemon orzo', 'Looks like:', 'Chicken Pad Thai', 'Italian · Chicken · Dinner', 'cook'):
+            self.assertIn(text, html)
+
+    def test_only_what_the_app_knows_goes_in_the_schema(self):
+        from schemas.recipe_v2 import CUISINES
+
+        props = inbox.schema()['properties']
+        self.assertEqual(props['cuisine']['enum'], list(CUISINES))
+        self.assertIn('Chicken', props['main_protein']['enum'])
+
+    def test_a_short_link_to_a_video_already_in_the_inbox_goes_away(self):
+        long_row = self._row()
+        short = self._row('https://vm.tiktok.com/ZNabc/')
+        kept = inbox.look_up(short, extract=lambda url: {'webpage_url': TIKTOK}, call=self._claude(self.ANSWER))
+        db.session.commit()
+        self.assertEqual(kept.id, long_row.id)
+        self.assertEqual(self._count(), 1)
+
+    def test_a_video_that_cannot_be_read_stays_and_calls_no_model(self):
+        row = self._row()
+
+        def blocked(url):
+            raise ValueError('Failed to extract metadata: blocked')
+
+        def no_call(*a, **k):
+            raise AssertionError('no model call')
+        inbox.look_up(row, extract=blocked, call=no_call)
+        db.session.commit()
+        self.assertEqual(row.meta_error, inbox.NO_DETAILS)
+        html = self.client.get('/admin/inbox').get_data(as_text=True)
+        self.assertIn('Look up', html)
+        self.assertNotIn('Failed to extract', html)  # never the raw error
+
+    def test_the_last_failure_is_noted_and_earlier_ones_try_again(self):
+        row = self._row()
+        with mock.patch.object(inbox, 'look_up', side_effect=RuntimeError('anthropic 529 raw')):
+            with self.assertRaises(RuntimeError):
+                tasks.run_inbox(row.id, attempt=0)
+            self.assertTrue(tasks.run_inbox(row.id, attempt=tasks.MAX_ATTEMPTS - 1))
+        db.session.refresh(row)
+        self.assertTrue(row.meta_error)
+        self.assertNotIn('529', row.meta_error)
+
+    def test_saving_queues_the_look_up_and_a_failure_to_queue_keeps_the_video(self):
+        with mock.patch.object(tasks, 'enqueue_inbox') as enqueue:
+            self._save()
+        enqueue.assert_called_once()
+        with mock.patch.object(tasks, 'enqueue_inbox', side_effect=RuntimeError('queue')):
+            self.assertEqual(self._save('https://www.instagram.com/reel/AbC/').status_code, 302)
+        self.assertEqual(self._count(), 2)
+
+    def test_the_task_needs_the_queue_token(self):
+        row = self._row()
+        self.assertEqual(self.client.post(f'/internal/tasks/video-inbox/{row.id}').status_code, 401)
 
     def test_a_video_made_into_a_recipe_is_marked(self):
         self._save()
