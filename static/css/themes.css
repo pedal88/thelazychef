@@ -69,7 +69,7 @@
 :root[data-look="e"] { --look-title-weight: 800; --look-title-tracking: 0.01em;       /* E Porselen: condensed capitals */
   --look-title-case: uppercase; --look-title-stretch: 72%; }
 :root[data-look="f"] { --look-title-weight: 600; --look-title-tracking: 0.01em;       /* F Washi: a quiet mincho, */
-  --look-go: #F2B630; --look-go-ink: #1C1A17;                                         /* saffron its one colour, on */
+  --look-go: #C4422B; --look-go-ink: #F6F5F1;                                         /* zinnober its one colour, on */
   --sl-paper: rgb(var(--paper)); }                                                    /* the badge and a post's address */
 
 /* The headings: the recipe page, the browsing pages, the content pages, the galaxies, the slides */
@@ -113,6 +113,8 @@
 .brand-badge { display: inline-flex; align-items: center; justify-content: center; flex: none; border-radius: 50%;
   background: var(--look-go, var(--color-accent)); color: var(--look-go-ink, var(--color-paper)); }
 .brand-badge svg { width: 64%; height: 64%; }
+:root[data-look="f"] .brand-badge { border-radius: 2px; }                             /* F: a square seal */
+:root[data-look="f"] .brand-badge svg { width: 72%; height: 72%; }
 
 /* Style and image trial (admins only): a tool floating over the page, not part of it. Its own colours
    and system font, so no look changes it; bottom left, above the Cook bar. */
