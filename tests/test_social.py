@@ -99,10 +99,13 @@ class SocialTests(unittest.TestCase):
         self.assertIn('<html lang="en">', html)
         self.assertNotIn('fonts.googleapis', html)
 
-    def test_the_slides_carry_the_brand_mark_on_the_badge(self):
+    def test_the_last_slide_carries_the_seal_and_the_others_the_badge(self):
         count = int(self.get(f'/social/recipe/{self.recipe.id}/map', slide=1).headers['X-Slides'])
         html = self.get(f'/social/recipe/{self.recipe.id}/map', slide=count).get_data(as_text=True)
-        self.assertEqual(html.count('class="brand-badge'), 1)  # the last slide's; the footer shows no second logo
+        self.assertEqual(html.count('class="brand-seal'), 1)
+        self.assertNotIn('class="brand-badge', html)  # the footer shows no second logo
+        first = self.get(f'/social/recipe/{self.recipe.id}/map', slide=1).get_data(as_text=True)
+        self.assertEqual(first.count('class="brand-badge'), 1)
         self.assertNotIn('brand/mark.svg', html)
 
     def test_the_site_and_the_slides_read_the_looks_fonts_from_one_place(self):
