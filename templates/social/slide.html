@@ -37,8 +37,8 @@
 {%- endmacro %}
 {# step_no: the step's marker on the Cook view's slides, in one place so it is a quick swap (marker A, 2.11.2026: a
    large numeral in the display face, a light tone, no circle and no phase colour) #}
-{% macro grid(tiles, cols, labels=true) -%}
-<div class="grid" style="--cols:{{ cols }}">
+{% macro grid(tiles, cols, labels=true, symbol=none) -%}
+<div class="grid" style="--cols:{{ cols }}{% if symbol %}; --symbol:{{ symbol }}%{% endif %}">
   {% for t in tiles %}{{ tile(t, labels) }}{% endfor %}
 </div>
 {%- endmacro %}
@@ -75,7 +75,7 @@
   <div class="score"><b>{{ s.points }}</b><span>{{ s.line }}</span></div>
   <p class="bar">{% for i in range(5) %}<u{% if i < s.points %} class="on"{% endif %}></u>{% endfor %}</p>
   {% if s.kind == 'guess_dish' %}<div class="hero">{% if s.image %}<img src="{{ s.image }}" alt="">{% endif %}</div>
-  {% else %}{{ grid(s.tiles, s.cols, labels=s.labels) }}{% endif %}
+  {% else %}{{ grid(s.tiles, s.cols, labels=s.labels, symbol=s.symbol) }}{% endif %}
   <p class="next">{{ s.next }}</p>
 
 {% elif s.kind == 'map' %}

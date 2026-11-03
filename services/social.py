@@ -59,8 +59,8 @@ GRID_ROOM = {'ig': 470, 'tt': 502}
 CAPTION = 74
 WIDTH = 912
 # The points game's pictures: the height left for them after the margins, the eyebrow, the score block, the bar and
-# the line at the bottom, per size; a tile's caption; and how much of its cell a symbol takes (static/css/social.css
-# shrinks it there), so that 12 is 4 by 3 and 15 is 5 by 3 on both sizes
+# the line at the bottom, per size; a tile's caption; and the least of its cell a symbol takes (game_symbol, which
+# static/css/social.css applies), so that 12 is 4 by 3 and 15 is 5 by 3 on both sizes
 GAME_HEIGHT = {'ig': 790, 'tt': 848}
 GAME_CAPTION = 82
 GAME_SYMBOL = {'ig': 0.72, 'tt': 0.72}
@@ -335,6 +335,14 @@ def game_columns(n, size):
     if full:
         return full[0]
     return next((c for c in range(4, 9) if fits(c)), 9)
+
+
+def game_symbol(n, size):
+    """How much of its cell a symbol takes in the points game, in percent: as much as game_columns' rows leave room
+    for on the slide with the amounts, from GAME_SYMBOL up to all of it, so ten things are not small for no reason."""
+    cols = game_columns(n, size)
+    room = (GAME_HEIGHT[size] / -(-n // cols) - GAME_CAPTION - 12) / (WIDTH / cols)
+    return round(100 * min(1, max(GAME_SYMBOL[size], room)))
 
 
 def strip_columns(n):
