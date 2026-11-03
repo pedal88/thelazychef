@@ -49,7 +49,7 @@
             {% endif %}
         </div>
         <label class="lib-q">{{ icon('search') }}<input type="search" name="q" value="{{ q }}"
-            placeholder="Search dishes or ingredients" aria-label="Search dishes or ingredients"></label>
+            placeholder="Dish or ingredient" aria-label="Search dishes or ingredients"></label>
         <nav class="lbar-quick" aria-label="Shortcuts" data-lv-swap="quick">
             {% for text, url in active %}<a href="{{ url }}" class="lib-chip-link is-active" aria-label="Remove {{ text }}">{{ text }}{{ icon('close') }}</a>{% endfor %}
             {% for label, url, on in shortcuts if not on %}<a href="{{ url }}" class="lib-chip-link">{{ label }}</a>{% endfor %}
