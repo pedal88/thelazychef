@@ -8,6 +8,13 @@ html.cooking .rv2.make { padding-top: 0; }
 .rv2 .cookmode { margin-top: 0; padding: 52px 0 84px; /* clear of the floating controls at the top and the bottom */ }
 .cookmode[hidden] { display: none; }
 .cookmode .slist { max-width: 780px; margin-inline: auto; }
+/* A margin for the list and the words around the views. The drawings keep the full width: a narrower map breaks its
+   names and a narrower delta stacks its images. A wide screen's views have their own margins (static/css/rail.css). */
+@media (max-width: 999px) {
+  .cookmode :is(.rail, .dl-top, .mt-key, .mt-panel .hint, .tl-status, .legend) { padding-inline: var(--space-4); }
+  .cookmode .tl { --lw: 160px; }
+  .cookmode .tl-l { padding-left: var(--space-4); }
+}
 html.cooking body .trialbar { bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }  /* no bar under it while cooking */
 
 /* The floating controls: small, round and half see-through, over the steps */

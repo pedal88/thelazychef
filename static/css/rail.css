@@ -269,9 +269,11 @@ html.mtx-lines .mt-heads { display: block; position: absolute; left: 52px; top: 
         the verbs in the app's font, the hand kept for the small notes; light boxes without a ring; quiet step
         numbers, the one you are on filled in its colour and underlined; clean lines, the main river in the accent.
         The printed and Overview deltas keep the pencil and the hand. ---- */
-.dv-rivers .g2-node.ph-prep { --ph: var(--color-prep); background: color-mix(in srgb, var(--color-prep-soft) 55%, transparent); }
-.dv-rivers .g2-node.ph-cook { --ph: var(--color-cook); background: color-mix(in srgb, var(--color-cook-soft) 55%, transparent); }
-.dv-rivers .g2-node.ph-serve { --ph: var(--color-serve); background: color-mix(in srgb, var(--color-soft) 70%, transparent); }
+/* Opaque, mixed with the page's colour: a node is its own stacking context, so on a see-through background the images'
+   multiply lets their white show as a box */
+.dv-rivers .g2-node.ph-prep { --ph: var(--color-prep); background: color-mix(in srgb, var(--color-prep-soft) 55%, var(--color-soft)); }
+.dv-rivers .g2-node.ph-cook { --ph: var(--color-cook); background: color-mix(in srgb, var(--color-cook-soft) 55%, var(--color-soft)); }
+.dv-rivers .g2-node.ph-serve { --ph: var(--color-serve); background: var(--color-soft); }
 .dv-rivers .g2-node.main { box-shadow: none; }
 .dv-rivers .mn-v { font: 600 17px/1.2 var(--font-sans); letter-spacing: -.005em; }
 .dv-rivers .g2-node.main .mn-v { font-size: 18px; font-weight: 700; }
@@ -344,7 +346,7 @@ html.dlx-steps .dv-rivers .g2-note:not(.fx-also) { display: none; }  /* the sett
 @media (min-width: 1000px) {
   .cookmode:has(> .vpanel.dl-panel:not([hidden])) { padding-bottom: 64px; }
   .cookmode .vpanel.dl-panel { position: relative; margin-top: 0; }
-  .dl-panel > .split-main { height: calc(100vh - 116px); height: calc(100dvh - 116px); overflow: hidden; }
+  .dl-panel > .split-main { height: calc(100vh - 116px); height: calc(100dvh - 116px); overflow: hidden; padding-inline: var(--space-4); }
   .dl-panel > .side-card.pagecard.dl-strip { position: absolute; z-index: 5; left: 16px; right: 16px; top: auto; bottom: 0; height: auto; max-height: 40%;
     overflow: auto; display: grid; grid-template-columns: 200px minmax(0, 1fr) auto; align-items: center; gap: 0 24px; padding: 12px 18px;
     background: var(--color-paper); border: 1px solid var(--color-line); border-radius: 16px; box-shadow: 0 12px 32px rgb(0 0 0 / .12); }
