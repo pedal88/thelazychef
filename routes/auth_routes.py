@@ -13,6 +13,9 @@ from services import funnel, google_signin, signup
 
 auth_bp = FlatBlueprint("auth", __name__)
 
+# What a new user reads above the quick dishes, when they did not sign up from a dish
+FIRST_DISH = 'These are on the table in 30 minutes: tap the pot on one to cook it next.'
+
 
 def _email(form):
     """An email as stored and looked up: no spaces around it, lower case, so Pal@… and pal@… are one account."""
@@ -27,13 +30,20 @@ def _by_email(email):
 def _signed_in(user, hello=None, args=None):
     """Signs the user in, kept on this device (a year, Flask-Login's remember cookie) so a cook who signs up at
     breakfast is still signed in at dinner, then does what they pressed before they had an account (services/signup.py)
-    and goes back to where they were. args: the address's next, do and recipe (the request's own by default)."""
+    and goes back to where they were. A new user with nowhere to go back to starts among the quick dishes, told what to
+    do there. args: the address's next, do and recipe (the request's own by default)."""
     args = request.args if args is None else args
     login_user(user, remember=True)
     wanted = signup.pending(args)
-    if wanted or hello:
-        flash(signup.do(user, *wanted) if wanted else hello, 'success')
-    return redirect(signup.safe_next(args.get('next')) or url_for('recipes_list'))
+    back = signup.safe_next(args.get('next'))
+    if wanted:
+        flash(signup.do(user, *wanted), 'success')
+    elif hello and not back:
+        flash(f'{hello} {FIRST_DISH}', 'success')
+        return redirect(url_for('recipes_list', time='30'))
+    elif hello:
+        flash(hello, 'success')
+    return redirect(back or url_for('recipes_list'))
 
 
 def _page(template, **context):
