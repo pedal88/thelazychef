@@ -147,6 +147,12 @@ def look_up(row, extract=None, call=None):
     return row
 
 
+def lines(ids):
+    """The chosen videos as lines for Many recipes at once (services/recipe_v2/batch.py), in the order of the list."""
+    found = db.session.execute(db.select(VideoInbox).where(VideoInbox.id.in_(ids)).order_by(VideoInbox.id.desc())).scalars()
+    return '\n'.join(row.webpage_url or row.url for row in found)
+
+
 def rows(status='new'):
     """The rows with the status, newest first, as (row, id of the recipe made from it or None)."""
     made = made_from()

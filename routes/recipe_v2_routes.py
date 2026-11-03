@@ -7,7 +7,7 @@ from flask_login import login_required
 
 from database.models import Ingredient, Recipe, db
 from services.chef_service import get_chefs
-from services.recipe_v2 import batch, generate, tasks
+from services.recipe_v2 import batch, generate, inbox, tasks
 from services.recipe_v2.persona import SETTINGS, age_stages
 from services.recipe_v2.language import DEFAULT as DEFAULT_LANGUAGE, LANGUAGES, code_of
 from services.recipe_v2.sources import is_link, is_video
@@ -87,6 +87,9 @@ def batch_new():
     chefs = get_chefs()
     form = request.form
     text = form.get('lines') or ''
+    chosen_videos = [int(x) for x in form.getlist('inbox') if x.isdigit()]  # sent from the video inbox: "Check" comes first
+    if chosen_videos:
+        text = inbox.lines(chosen_videos)
     default_chef = next((c for c in chefs if c['id'] == form.get('chef_id')), None)
     default_settings = [k for k in form.getlist('settings') if k in SETTINGS]
     ages = {s['from_months'] for s in age_stages()['stages']}
