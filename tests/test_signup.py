@@ -116,6 +116,15 @@ class SignupTests(unittest.TestCase):
         response = self.client.post('/login', data={'email': 'COOK@test', 'password': 'pw'})
         self.assertEqual(response.location, '/recipes')
 
+    def test_a_new_user_with_nowhere_to_go_back_to_starts_among_the_quick_dishes(self):
+        response = self.register()
+        self.assertEqual(response.location, '/recipes?time=30')
+        self.assertIn('tap the pot on one to cook it next', self.client.get(response.location).get_data(as_text=True))
+        self.client.get('/logout')
+        self.assertEqual(self.client.post('/login', data={'email': 'cook@test', 'password': 'pw'}).location, '/recipes')
+        self.client.get('/logout')
+        self.assertEqual(self.register('other@test', '?next=/discover').location, '/discover')  # keeps its place
+
     def test_an_account_from_before_with_capitals_still_logs_in(self):
         old = User(email='Old@Test')
         old.set_password('pw')
@@ -129,7 +138,7 @@ class SignupTests(unittest.TestCase):
             with self.subTest(target=target):
                 client = app.test_client()
                 response = client.post('/register?next=' + target, data={'email': f'{len(target)}@test', 'password': 'pw'})
-                self.assertEqual(response.location, '/recipes')
+                self.assertTrue(response.location.startswith('/recipes'), response.location)
 
 
 if __name__ == '__main__':
