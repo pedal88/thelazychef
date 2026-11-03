@@ -19,6 +19,7 @@
 | The recipe page | `recipe_detail` `/recipe/<id>` | `recipe_v2_make.html` (overview, `#prep`, `#cook` on one page; `/prep`, `/cook`, `/make` redirect there) |
 | Galaxies | `explore_routes` `/explore/galaxy`, `/explore/ingredient-galaxy` | `explore_*.html`, data from `/api/graph/*` |
 | Ingredients, chefs | `pantry_routes`, `chefs_routes` | |
+| Not found, error | `error_routes` (`app_errorhandler`) | `templates/errors/404.html`, `templates/errors/500.html` (on its own, no database); `/api/`, `/internal/` and `/static/` keep the plain answer. A short address typed differently (`/TikTok/4`, `/tiktok/4/`, `/instagram/4`) is sent to the real one |
 
 Admin: `generate_routes` (`/new-recipe`, the form page), `recipe_v2_routes` (`/new-recipe/v2`, batch `/new-recipe/v2/batch`,
 images `/new-recipe/v2/images`, Recalculate), `admin_recipes_routes` (Recipes Management), `admin_ingredients_routes`,

@@ -194,6 +194,9 @@ app.register_blueprint(social_bp)
 from routes.social_api_routes import social_api_bp
 app.register_blueprint(social_api_bp)
 
+from routes.error_routes import errors_bp
+app.register_blueprint(errors_bp)
+
 
 if __name__ == '__main__':
     with app.app_context():
