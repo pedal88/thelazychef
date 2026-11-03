@@ -8,6 +8,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(ROOT)
 
 from tests import test_recipe_v2_view as view_tests  # noqa: E402  (sets the test environment)
+from routes._shared import LOOK_FONTS, SITE_LOOK  # noqa: E402
 from services.recipe_v2 import delta  # noqa: E402
 from services.recipe_v2.planner import plan_v2  # noqa: E402
 
@@ -100,6 +101,8 @@ class DeltaPageTests(unittest.TestCase):
         self.assertIn('data-print="landscape" data-autoprint="1"', html)
         self.assertIn('6 servings', html)
         self.assertNotIn('class="delta-head"', html)  # no buttons on paper
+        self.assertIn(f'data-look="{SITE_LOOK}"', html)  # the site's look, on its own page too
+        self.assertIn(LOOK_FONTS[SITE_LOOK].replace('&', '&amp;'), html)
         res = self.client.get(f'/recipe/{self.ids["carbonara"]}/print', query_string={'orient': 'sideways', 'auto': 0})
         html = res.get_data(as_text=True)
         self.assertIn('size: A4 portrait', html)

@@ -56,7 +56,8 @@ The slide kinds the series are built from, each from the recipe page's view (`se
 what you probably have); `delta` (the river delta placed on a grid without its script: a column per branch, the
 dish last, arrows straight down; only when it is small, at most two levels above the dish and two branches, else no
 slide); `steps` (the steps as on the recipe page's Cook view: the number, the step's name large and the symbols of
-what goes in, three to a slide on Instagram and four on TikTok, over as many slides as it takes, no minutes;
+what goes in, at most three to a slide and fewer when their symbols would run into the foot (`social.COOK_ROOM`),
+over as few slides as they fit, no minutes;
 the slide kind is `cook`, since the map format's one list is `steps`; the step marker is one macro, `step_no`,
 and one CSS block: a large numeral in the display face in a light tone, no circle); `numbers` (protein and kcal, no
 minutes);
