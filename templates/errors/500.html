@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+{# An error on our side (routes/error_routes.py): on its own, not on base.html, so it does not need the database. #}
+<html lang="en"{% if SITE_LOOK %} data-look="{{ SITE_LOOK }}"{% endif %}>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Something went wrong - The Lazy Chef</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/themes.css') }}">
+    {% if SITE_LOOK %}<link rel="stylesheet" href="https://fonts.googleapis.com/css2?{{ LOOK_FONTS[SITE_LOOK] }}&display=swap">{% endif %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/library.css') }}">
+    <style>.icon { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }</style>
+</head>
+<body style="margin: 0; min-height: 100dvh; display: grid; place-items: center; background: var(--color-soft); font-family: var(--font-sans);">
+    <div class="lib-empty">
+        <span class="lib-empty-ic">{{ icon('pot') }}</span>
+        <h1>Something went wrong on our side</h1>
+        <p>It is not you. Try again in a moment.</p>
+        <a class="lib-go" href="/">Back to The Lazy Chef</a>
+    </div>
+</body>
+</html>

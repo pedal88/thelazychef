@@ -67,7 +67,7 @@ content is made: `docs/CONTENT.md`.
 
 `landing.html` (Discover), `recipes_list.html`, `post.html` (where a post of several dinners lands: the dishes and one shopping list),
 `explore_galaxy.html` / `explore_ingredient_galaxy.html`, `recipe_v2_new.html` / `recipe_v2_batch*.html` (admin:
-making recipes), `admin/` (management pages, still mostly plain Tailwind), `admin/funnel_tiktok.html` (TikTok's posts for the phone), `recipe_print.html`, `social/slide.html` (one
+making recipes), `admin/` (management pages, still mostly plain Tailwind), `admin/funnel_tiktok.html` (TikTok's posts for the phone), `recipe_print.html`, `errors/` (not found, and an error on our side), `social/slide.html` (one
 slide of a TikTok or Instagram post, `static/css/social.css`; `docs/SOCIAL.md`).
 
 Check a visual change in the browser on desktop and at phone width (375 px, no sideways scroll) before calling it done.
