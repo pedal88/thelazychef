@@ -58,8 +58,9 @@ Without `TASKS_QUEUE` (local runs) the generation runs inside the request and th
   (`services/social_stats.py`, `docs/SOCIAL.md`), and publishing the approved posts of the Instagram queue
   (`services/social_publish.py`). The Meta app "The Lazy Chef stats", in development mode with the business
   portfolio "The Lazy Chef" and the account thelazychef.ai as Instagram Tester, no App Review. Its Unified login configuration
-  gives a system-user token that never expires, with `instagram_basic`, `instagram_manage_insights` and
-  `instagram_content_publish`. A new Graph API version every few months; each lasts about two years.
+  gives a system-user token that never expires. The code uses its `instagram_basic`, `instagram_manage_insights` and
+  `instagram_content_publish`. A new Graph API version every few months; each lasts about two years. The accounts and
+  access on both platforms, TikTok's included: `docs/SOCIAL_ACCOUNTS.md`.
 - Front-end from CDNs: Tailwind (`cdn.tailwindcss.com`, `templates/base.html`), D3 v7 (the galaxies),
   ECharts (jsdelivr, ingredients admin), Google Fonts.
 - Stock photos from images.unsplash.com only as backgrounds on two admin pages (`index.html`, `new_ingredient.html`).

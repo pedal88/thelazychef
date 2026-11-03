@@ -30,6 +30,7 @@ Folders with more to know have their own `CLAUDE.md`, loaded when you work there
 - `docs/CONTENT.md`: the home page and guides: block kinds, the content package Claude writes, publishing.
 - `docs/SOCIAL.md`: posts for TikTok and Instagram drawn from the recipes: the accounts, the slides and the render
   script, a post from start to finish, codes, and the post log the Funnel page learns from.
+- `docs/SOCIAL_ACCOUNTS.md`: the Instagram and TikTok accounts, the developer access and permissions, and what was left out on purpose.
 - `docs/SERVICES_AND_COSTS.md`: every external service and API, the environment variables, the background jobs,
   and what costs money. Read it before adding a service, a variable or a paid call, and update it in the same PR.
 - `docs/OPERATIONS.md`: deploy pipeline, Trivy, migrations, backups, and running scripts against production.

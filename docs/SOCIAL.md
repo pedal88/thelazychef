@@ -190,7 +190,8 @@ pantry CSV `scripts/local_db.py` reads when there is no production export at han
 The Lazy Chef on TikTok and on Instagram, in English. Both use `static/brand/avatar.png` (the Z line on zinnober)
 as the profile picture. The TikTok bio gives `thelazychef.app/tiktok` as text (a bio link needs 1,000 followers); the
 Instagram bio links to `thelazychef.app/ig`. Links in captions can be read but not tapped on either platform, so people
-come only by typing an address or through the Instagram bio link.
+come only by typing an address or through the Instagram bio link. The accounts, the developer access and what is switched
+on are in `docs/SOCIAL_ACCOUNTS.md`.
 
 ## A post, from start to finish
 
@@ -295,7 +296,7 @@ row of numbers for that day after it went up: every day for the first 14 days, a
 comments, saves, shares and profile visits. A row typed in by hand for a day is left alone. **Fetch from Instagram** on
 the Funnel page does the same now, and says what it found. Numbers can be up to 48 hours late at Meta, so the latest
 days move a little. A post the log does not have is only counted: log it to get its numbers. TikTok has no such fetch: its
-Accounts API needs a verified company.
+Accounts API needs a verified company (`docs/SOCIAL_ACCOUNTS.md`).
 
 ## The weekly report
 
