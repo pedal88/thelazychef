@@ -190,6 +190,7 @@
 @media (hover: hover) {
   .lv .rcard-acts { opacity: 0; transition: opacity .15s; }
   .lv .rcard:hover .rcard-acts, .lv .rcard:focus-within .rcard-acts, .lv .rcard-acts:has([aria-pressed="true"]) { opacity: 1; }
+  main:has(.site-flash) .lv .rcard-acts { opacity: 1; }  /* the message may point at them: "tap the pot" after signing up */
 }
 .lv [data-lv-swap="results"][aria-busy="true"] { opacity: .5; transition: opacity .15s; }  /* the search loading */
 .lib-more { display: flex; justify-content: center; margin: var(--space-8) 0 0; }
