@@ -454,7 +454,8 @@ def slides(slug, posts, size, n, hook_group=None, cta_group=None, code=None, hoo
             # The same columns on all three picture slides, as many as keep the names readable beside the score
             out.append({'kind': kind, 'eyebrow': label, 'points': points, 'line': line, 'next': nxt,
                         'tiles': shown, 'labels': kind != 'guess_pictures', 'image': r['image'],
-                        'cols': social.game_columns(len(tiles), size)})
+                        'cols': social.game_columns(len(tiles), size),
+                        'symbol': social.game_symbol(len(tiles), size)})
         elif kind == 'answer':
             out.append({**social.end_slide('', call, images), 'kind': 'answer', 'eyebrow': 'The answer',
                         'dish': f['dish']})

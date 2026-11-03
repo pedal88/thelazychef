@@ -173,6 +173,9 @@ class SeriesTests(unittest.TestCase):
     def test_the_games_pictures_fill_their_rows_and_a_cover_strip_has_no_orphan(self):
         self.assertEqual([social.game_columns(n, 'tt') for n in (5, 8, 12, 15, 13, 14)], [5, 4, 4, 5, 5, 5])
         self.assertEqual([social.game_columns(n, 'ig') for n in (5, 8, 12, 15, 13, 14)], [5, 4, 4, 5, 5, 5])
+        # The symbols as large as the rows leave room for: all of the cell on two rows, less on three
+        self.assertEqual([social.game_symbol(n, 'ig') for n in (5, 10, 12, 15, 16)], [100, 100, 74, 93, 100])
+        self.assertEqual([social.game_symbol(n, 'tt') for n in (5, 10, 12, 15, 16)], [100, 100, 83, 100, 100])
         self.assertEqual([social.strip_columns(n) for n in (3, 6, 7, 8, 11, 12)], [3, 6, 4, 4, 6, 6])
         # A hook that names the dish leaves no name line under it
         pot = self.get(series='onepot', ids=self.ids[0], n=1, hook_text='One pot. Spaghetti carbonara.', slide=1)
@@ -521,6 +524,8 @@ class SeriesTests(unittest.TestCase):
         title = db.session.get(Recipe, rid).title
         pages = [self.get(series='guess', ids=rid, n=12, code=3, slide=n).get_data(as_text=True) for n in range(1, 6)]
         bodies = [p.split('<main', 1)[1] for p in pages]
+        for body in bodies[:3]:  # the symbols the same size on the three slides with pictures
+            self.assertIn('--symbol:', body)
         for body in bodies[:4]:  # the dish is not named before the answer
             self.assertNotIn(title, body)
             self.assertIn('class="bar"', body)

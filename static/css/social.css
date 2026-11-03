@@ -257,4 +257,4 @@ html, body { margin: 0; background: var(--sl-paper); }
 .size-ig.kind-guess_names .tile figcaption span, .size-ig.kind-guess_amounts .tile figcaption span, .size-tt.kind-guess_names .tile figcaption span, .size-tt.kind-guess_amounts .tile figcaption span { font-size: 25px; }
 .size-ig.kind-guess_amounts .tile figcaption b, .size-tt.kind-guess_amounts .tile figcaption b { font-size: 27px; }
 .size-ig .next, .size-tt .next { margin-top: 14px; font-size: 38px; }
-.size-ig.kind-guess_pictures .sym, .size-ig.kind-guess_names .sym, .size-ig.kind-guess_amounts .sym, .size-tt.kind-guess_pictures .sym, .size-tt.kind-guess_names .sym, .size-tt.kind-guess_amounts .sym { width: 72%; }  /* GAME_SYMBOL */
+.size-ig.kind-guess_pictures .sym, .size-ig.kind-guess_names .sym, .size-ig.kind-guess_amounts .sym, .size-tt.kind-guess_pictures .sym, .size-tt.kind-guess_names .sym, .size-tt.kind-guess_amounts .sym { width: var(--symbol, 72%); }  /* social.game_symbol */
