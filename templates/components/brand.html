@@ -8,3 +8,9 @@
 {% macro badge(cls='') -%}
 <span class="brand-badge {{ cls }}">{{ mark() }}</span>
 {%- endmacro %}
+
+{# The two-line seal, LAZY over CHEF with the mark as the Z: both words have four letters, so they make a block. Its
+   size is its font size. It needs the look's serif, so it has no file in static/brand/. #}
+{% macro seal(cls='') -%}
+<span class="brand-seal {{ cls }}" role="img" aria-label="The Lazy Chef"><span>L</span><span>A</span>{{ mark() }}<span>Y</span><span>C</span><span>H</span><span>E</span><span>F</span></span>
+{%- endmacro %}

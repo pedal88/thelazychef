@@ -105,7 +105,9 @@
 /* F's title on the dish's picture, and the colour on the last slide. Cards have room for the longer lines of a mincho. */
 :root[data-look="f"] .rv2 .ovl .pp-img figcaption { background: linear-gradient(to bottom, transparent, rgb(0 0 0 / .5) 28%, rgb(0 0 0 / .84)); }
 :root[data-look="f"] .rv2 .ovl .pp-img figcaption h1 { font-weight: 700; text-shadow: 0 1px 14px rgb(0 0 0 / .5); }
-:root[data-look="f"] .slide .end .address { background: var(--look-go); color: var(--look-go-ink); }
+:root[data-look="f"] .slide { --color-accent: var(--look-go); }                       /* zinnober, the posts' one accent */
+:root[data-look="f"] .slide .end .address:not(.small) { background: var(--look-go); color: var(--look-go-ink); border-radius: 2px; }
+:root[data-look="f"] .slide .end.over .line { border-radius: 2px; }
 :root[data-look="f"] .rcard h3 { font-size: 18px; -webkit-line-clamp: 3; }
 
 /* The brand's badge (templates/components/brand.html): the mark on the look's main-button colour, as on the profile
@@ -115,6 +117,10 @@
 .brand-badge svg { width: 64%; height: 64%; }
 :root[data-look="f"] .brand-badge { border-radius: 2px; }                             /* F: a square seal */
 :root[data-look="f"] .brand-badge svg { width: 72%; height: 72%; }
+.brand-seal { display: inline-grid; grid-template-columns: repeat(4, 1em); gap: .14em .1em; padding: .42em; flex: none;
+  align-items: center; justify-items: center; border-radius: 2px; font: 700 1em/1 var(--font-serif);
+  background: var(--look-go, var(--color-accent)); color: var(--look-go-ink, var(--color-paper)); }
+.brand-seal svg { width: .88em; height: .88em; transform: translateY(.09em); }  /* level with the mincho's capitals */
 
 /* Style and image trial (admins only): a tool floating over the page, not part of it. Its own colours
    and system font, so no look changes it; bottom left, above the Cook bar. */

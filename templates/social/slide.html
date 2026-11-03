@@ -267,7 +267,7 @@
 
 {% elif s.kind == 'end' %}
   <div class="end{{ ' cta' if s.cta }}">
-    {{ brand.badge('mark') }}
+    {{ brand.seal() }}
     <p class="line">{{ s.line }}</p>
     {% if s.small %}<p class="address small">{{ address }}</p>
     {% elif s.cta %}<p class="note">{{ 'Link in bio' if size == 'ig' else 'Type it in your browser' }}</p>
@@ -277,7 +277,7 @@
 {% endif %}
 
 <footer class="foot">
-  <span>{% if s.kind not in ('end', 'answer') %}{{ brand.badge() }}The Lazy Chef{% endif %}</span>
+  <span>{% if s.kind not in ('end', 'answer') %}{{ brand.badge() }}<span class="wordmark">The Lazy Chef</span>{% endif %}</span>
   <span>{{ n }} / {{ slides }}</span>
 </footer>
 </main>

@@ -212,7 +212,7 @@ class SeriesTests(unittest.TestCase):
         self.assertIn('class="end over"', html)
         self.assertIn('thelazychef.app/ig/4', html)
         self.assertIn('The Lazy Chef', html)
-        self.assertNotIn('class="brand-badge mark"', html)  # no logo in a yellow circle
+        self.assertNotIn('class="brand-seal', html)  # the dish fills the slide: only the small wordmark
         ids = ','.join(map(str, self.ids[:4]))
         count = int(self.get(series='protein4', ids=ids, n=1).headers['X-Slides'])
         html = self.get(series='protein4', ids=ids, n=1, slide=count).get_data(as_text=True)
@@ -220,7 +220,7 @@ class SeriesTests(unittest.TestCase):
         self.assertEqual(html.count('<img src="/static/recipes/'), 4)
         # The formats keep their last slide as it was
         last = self.client.get(f'/social/recipe/{self.ids[0]}/grid', query_string={'slide': 4}).get_data(as_text=True)
-        self.assertIn('class="brand-badge mark"', last)
+        self.assertIn('class="brand-seal', last)
 
     def test_the_answer_says_what_the_post_was_made_of(self):
         r = self.get(series='airfryer', ids=self.ids[0], n=7, hook='guess', cta='save', code=9, size='tt')

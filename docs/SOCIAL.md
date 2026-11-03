@@ -65,8 +65,8 @@ dinners; `guess_pictures`, `guess_names`, `guess_amounts`, `guess_dish` and `ans
 and a five-part bar in the same place on every slide, the pictures in the same places on the first three; the first
 slide's score line is the hook, "5" counted among its eight words; a card may give a CTA group its own words,
 `ctas`); and `end`: on a series, the dish over the whole slide (several in a grid), a dark shade,
-the CTA as the site's yellow button, the address readable in white and a small wordmark. The formats keep their
-old last slide. There is no time bar any more. The minutes the cook is not working have one definition for the hook
+the CTA as a button in the look's colour (zinnober in F), the address readable in white and a small wordmark. The formats keep their
+old last slide, with the two-line seal. There is no time bar any more. The minutes the cook is not working have one definition for the hook
 and the air fryer slide (`social.hands_off`): the standing time of the steps in the heat source when there is any,
 else all the time from start to table that is not active.
 
