@@ -13,7 +13,8 @@ The formats, tests for the first weeks:
   dishes to wash, the shopping list split in "to buy" and "you probably have", the river delta, the steps with
   timers, the big numbers, the active-against-hands-off bar and the air fryer's temperature and time.
 
-Two sizes: ig (1080 × 1350, Instagram's tallest carousel) and tt (1080 × 1920, TikTok's photo mode). The last slide
+Two sizes: ig (1080 × 1350, Instagram's tallest carousel) and tt (1080 × 1440, the 3:4 TikTok's photo mode shows on a
+phone: a taller picture loses its top and bottom there). The last slide
 gives the short address for the platform (thelazychef.app/ig or /tiktok, with the post's code), so a visit that came
 from the post is counted (services/funnel.py).
 """
@@ -22,7 +23,7 @@ from services.measures import temp
 from services.recipe_v2 import groups
 from services.recipe_v2.derive import HEAT_LABELS, HEAT_SOURCES, VESSELS
 
-SIZES = {'ig': (1080, 1350), 'tt': (1080, 1920)}
+SIZES = {'ig': (1080, 1350), 'tt': (1080, 1440)}
 FORMATS = {'map': 'Dinner as a subway map', 'grid': 'Everything in a dish'}
 ADDRESS = {'ig': 'thelazychef.app/ig', 'tt': 'thelazychef.app/tiktok'}
 HASHTAGS = {'map': '#recipe #dinnerideas #easyrecipes #mealprep #cooking',
@@ -37,14 +38,14 @@ COVERAGE = [('The staples alone', 21), ('The 60 most used', 74), ('The 100 most 
 COVERAGE_SAMPLE = '272 dishes home cooks make, in 13 cuisines'
 
 # Steps on one slide of the map format, per size; a longer recipe ends the list with "and N more"
-STEPS_PER_SLIDE = {'ig': 10, 'tt': 14}
+STEPS_PER_SLIDE = {'ig': 10, 'tt': 11}
 # The metro map: every station is named when the names, at least MAP_NAME_GAP apart, stay within MAP_NAME_DRIFT of
 # their stations; else only where a part starts, where parts meet and the end, so the names stay large enough to read
 # on a phone. MAP_ROOM is the height the title, the key and the margins take; the map is scaled to the rest (at most
 # MAP_MAX_SCALE).
 MAP_NAME_DRIFT = 24
 MAP_PAD = 24
-MAP_ROOM = {'ig': 470, 'tt': 760}
+MAP_ROOM = {'ig': 470, 'tt': 502}
 MAP_MAX_SCALE = 2.6
 MAP_NAME_GAP = 46
 # The pantry format's groups fill a slide up to its height less GRID_ROOM: a row of PANTRY_COLS symbols is
@@ -54,15 +55,15 @@ PANTRY_ROW = 190
 PANTRY_HEAD = 70
 # A grid of symbols takes the fewest columns (from 3) whose rows fit the room left on the slide: the slide's height less
 # GRID_ROOM (margins, title, note); a labelled tile is CAPTION taller than it is wide. Columns are WIDTH wide in all.
-GRID_ROOM = {'ig': 470, 'tt': 760}
+GRID_ROOM = {'ig': 470, 'tt': 502}
 CAPTION = 74
 WIDTH = 912
 # The points game's pictures: the height left for them after the margins, the eyebrow, the score block, the bar and
-# the line at the bottom, per size; a tile's caption; and how much of its cell a symbol takes on Instagram's shorter
-# slide (static/css/social.css shrinks it there), so that 12 is 4 by 3 and 15 is 5 by 3 on both sizes
-GAME_HEIGHT = {'ig': 790, 'tt': 1008}
+# the line at the bottom, per size; a tile's caption; and how much of its cell a symbol takes (static/css/social.css
+# shrinks it there), so that 12 is 4 by 3 and 15 is 5 by 3 on both sizes
+GAME_HEIGHT = {'ig': 790, 'tt': 848}
 GAME_CAPTION = 82
-GAME_SYMBOL = {'ig': 0.72, 'tt': 1.0}
+GAME_SYMBOL = {'ig': 0.72, 'tt': 0.72}
 # The symbols strip on a cover: at most this many in a row
 STRIP_COLS = 6
 # The river delta goes on a slide only when it is small enough to read on a phone: at most DELTA_DEPTH levels above
@@ -72,7 +73,7 @@ DELTA_DEPTH = 2
 DELTA_LEAVES = 2
 # The steps as on the Cook view (a series): this many per slide, over as many slides as it takes, each step's
 # symbols with it
-COOK_STEPS = {'ig': 3, 'tt': 4}
+COOK_STEPS = {'ig': 3, 'tt': 3}
 # The symbols on a series cover: this many of the things to buy, under the hook, in two rows of six
 COVER_SYMBOLS = 12
 # One Pot Meals count the vessels food is cooked in: not bowls, sieves, machines (derive.VESSELS has them for the

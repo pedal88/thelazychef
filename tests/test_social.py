@@ -77,7 +77,7 @@ class SocialTests(unittest.TestCase):
     def test_a_slide_is_drawn_at_its_platforms_size_and_kept_out_of_search(self):
         response = self.get(f'/social/recipe/{self.recipe.id}/map', size='tt', slide=1)
         html = response.get_data(as_text=True)
-        self.assertIn('width:1080px; height:1920px', html)
+        self.assertIn('width:1080px; height:1440px', html)
         self.assertIn('<meta name="robots" content="noindex">', html)
         self.assertEqual(response.headers['X-Robots-Tag'], 'noindex')
         self.assertIn(self.recipe.title, html)
