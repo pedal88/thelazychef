@@ -138,8 +138,8 @@ class SeriesTests(unittest.TestCase):
             shop, _ = social_week.shopping(social_week.days_of(views, [None] * len(views)), views)
             return ['shop'] * -(-len(shop) // social.SHOP_PER_SLIDE)
 
-        def steps(rid, size):  # the steps go over slides of COOK_STEPS each
-            return ['cook'] * -(-len(page(db.session.get(Recipe, rid))['steps']) // social.COOK_STEPS[size])
+        def steps(rid, size):  # the steps go over slides of at most COOK_STEPS each
+            return ['cook'] * len(social.steps_slides(page(db.session.get(Recipe, rid)), size))
         delta = ['delta'] if social.delta_fits(page(db.session.get(Recipe, self.ids[0]))['delta']) else []
         expected = {
             'airfryer': (one, lambda size: ['cover', 'airfryer', *delta, *steps(self.ids[0], size), 'shop_split', 'end']),
@@ -194,6 +194,15 @@ class SeriesTests(unittest.TestCase):
         self.assertEqual([len(sl['steps']) for sl in social.steps_slides(view, 'tt')], [3, 3, 3])
         self.assertEqual([len(sl['steps']) for sl in social.steps_slides({**view, 'steps': view['steps'][:7]}, 'tt')],
                          [3, 2, 2])
+        # Steps full of symbols would run into the foot: fewer on a slide, none lost, in order
+        full = {f'l{i}': {'name': 'Salt', 'img': None, 'amount': '1 g'} for i in range(8)}
+        heavy = {**view, 'pictured': full,
+                 'steps': [{**s, 'uses': list(full)} for s in view['steps'][:3]]}
+        for size in ('ig', 'tt'):
+            spread = social.steps_slides(heavy, size)
+            self.assertEqual([[st['no'] for st in sl['steps']] for sl in spread], [[1, 2], [3]])
+            self.assertEqual([sl['pages'] for sl in spread], [2, 2])
+            self.assertEqual(spread[0]['eyebrow'], 'Step 1 to 2 of 3')
         first = slides[0]['steps'][0]
         self.assertEqual(set(first), {'no', 'short', 'phase', 'symbols'})  # no minutes, no timer
         with_symbols = [st for sl in slides for st in sl['steps'] if st['symbols']]

@@ -71,9 +71,20 @@ STRIP_COLS = 6
 # 31.10.2026 (serier.md); else the slide shows the time bar.
 DELTA_DEPTH = 2
 DELTA_LEAVES = 2
-# The steps as on the Cook view (a series): this many per slide, over as many slides as it takes, each step's
+# The steps as on the Cook view (a series): at most this many per slide, over as many slides as it takes, each step's
 # symbols with it
 COOK_STEPS = {'ig': 3, 'tt': 3}
+# Fewer when they would run into the foot. COOK_ROOM is the height from under the eyebrow to just above the foot; a step
+# takes its name's lines (COOK_NAME_CHARS to a line) and rows of symbols (static/css/social.css .cook), at least the
+# numeral. Measured on the 59 recipes in F Washi, 03.11.2026.
+COOK_ROOM = {'ig': 1082, 'tt': 1140}
+COOK_GAP = 24
+COOK_NUMERAL = 110
+COOK_NAME_CHARS = 21
+COOK_NAME_LINE = 72
+COOK_SYMBOLS_ROW = 4
+COOK_SYMBOLS_HEIGHT = 218
+COOK_SYMBOLS_TOP = 14
 # The symbols on a series cover: this many of the things to buy, under the hook, in two rows of six
 COVER_SYMBOLS = 12
 # One Pot Meals count the vessels food is cooked in: not bowls, sieves, machines (derive.VESSELS has them for the
@@ -170,26 +181,50 @@ def cooking_vessels(view):
     return [e for e in view['equipment'] if e['id'] in COOK_VESSELS]
 
 
+def cook_step_height(step):
+    """About how tall a step is on a slide, in the slide's pixels."""
+    height = -(-len(step['short']) // COOK_NAME_CHARS) * COOK_NAME_LINE
+    if step['symbols']:
+        height += COOK_SYMBOLS_TOP + -(-len(step['symbols']) // COOK_SYMBOLS_ROW) * COOK_SYMBOLS_HEIGHT
+    return max(COOK_NUMERAL, height)
+
+
+def cook_pages(steps, size):
+    """The steps over the fewest slides they fit, as evenly as that allows."""
+    def fits(page):
+        return (len(page) <= COOK_STEPS[size] and
+                sum(cook_step_height(st) for st in page) + COOK_GAP * (len(page) - 1) <= COOK_ROOM[size])
+
+    filled = []
+    for st in steps:
+        if filled and fits(filled[-1] + [st]):
+            filled[-1].append(st)
+        else:
+            filled.append([st])
+    base, extra = divmod(len(steps), max(1, len(filled)))
+    even, at = [], 0
+    for i in range(len(filled)):
+        even.append(steps[at:at + base + (1 if i < extra else 0)])
+        at += len(even[-1])
+    return even if all(fits(page) for page in even) else filled
+
+
 def steps_slides(view, size):
     """The steps as on the Cook view (slide kind 'cook'; 'steps' is the map format's one list), COOK_STEPS at a
-    time: each step's number, its short name, large, and the symbols of the lines that go in with their amounts; no
-    minutes."""
+    time, or over more slides when that many would not fit COOK_ROOM: each step's number, its short name, large, and
+    the symbols of the lines that go in with their amounts; no minutes."""
     pictured = view.get('pictured') or {}
     steps = []
     for s in view['steps']:
         symbols = [{'name': pictured[lid]['name'], 'img': pictured[lid]['img'], 'amount': pictured[lid]['amount']}
                    for lid in s.get('uses') or [] if lid in pictured]
         steps.append({'no': s['n'], 'short': s['short'], 'phase': s['phase'], 'symbols': symbols})
-    per = COOK_STEPS[size]
-    pages = max(1, -(-len(steps) // per))
-    base, extra = divmod(len(steps), pages)
-    out, at = [], 0
-    for i in range(pages):
-        page = steps[at:at + base + (1 if i < extra else 0)]
-        at += len(page)
+    pages = cook_pages(steps, size)
+    out = []
+    for i, page in enumerate(pages):
         first, last = page[0]['no'], page[-1]['no']
         out.append({'kind': 'cook', 'eyebrow': f'Step {first}' + (f' to {last}' if last != first else '') + f' of {len(steps)}',
-                    'steps': page, 'page': i + 1, 'pages': pages})
+                    'steps': page, 'page': i + 1, 'pages': len(pages)})
     return out
 
 
