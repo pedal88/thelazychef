@@ -34,6 +34,11 @@
                 title="Made it" aria-label="Made it">{{ icon('check') }}</button>
             <button type="button" data-feedback="{{ recipe.id }}" data-title="{{ recipe.title }}" title="Feedback" aria-label="Feedback">{{ icon('message') }}</button>
             {% endif %}
+            {% else %}
+            {# A visitor's Save goes to sign up, which saves the dish and brings them back here (services/signup.py) #}
+            <button type="button" class="favorite-btn" title="Save" aria-label="Save"
+                data-signup="{{ url_for('register', next=request.full_path.rstrip('?'), do='save', recipe=id) }}"
+                onclick="event.preventDefault(); event.stopPropagation(); location.href = this.dataset.signup">{{ icon('heart') }}</button>
             {% endif %}
         </span>
     </div>

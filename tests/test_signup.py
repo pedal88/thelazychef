@@ -97,6 +97,15 @@ class SignupTests(unittest.TestCase):
         self.assertIn(f'action="/register?next=/recipe/{self.recipe.id}&amp;do=made&amp;recipe={self.recipe.id}"', page)
         self.assertIn(f'href="/login?next=/recipe/{self.recipe.id}&amp;do=made&amp;recipe={self.recipe.id}"', page)
 
+    def test_a_visitor_can_save_from_a_card_and_comes_back_to_the_list(self):
+        html = self.client.get('/recipes?q=carbonara').get_data(as_text=True)
+        address = f'/register?next=/recipes?q%3Dcarbonara&amp;do=save&amp;recipe={self.recipe.id}'
+        self.assertIn(f'data-signup="{address}"', html)
+        response = self.client.post(address.replace('&amp;', '&'), data={'email': 'cook@test', 'password': 'pw'})
+        self.assertEqual(response.location, '/recipes?q=carbonara')
+        self.assertEqual(self.mark(self.user()).status, 'favorite')
+        self.assertNotIn('data-signup', self.client.get('/recipes').get_data(as_text=True))  # signed in: the real heart
+
     def test_a_visitor_is_offered_sign_up_on_the_recipe(self):
         page = self.client.get(f'/recipe/{self.recipe.id}').get_data(as_text=True)
         for action in ('save', 'queue', 'made'):
