@@ -62,7 +62,7 @@
 
         const body = el('div', 'rcard-body');
         const meta = el('div', 'rcard-meta');
-        [r.cuisine, r.time_estimate ? r.time_estimate + ' min' : '', r.difficulty_label].forEach(t => {
+        [(r.cuisine || '').toLowerCase() === 'other' ? '' : r.cuisine, r.time_estimate ? r.time_estimate + ' min' : '', r.difficulty_label].forEach(t => {
             if (t) meta.appendChild(el('span', '', t));
         });
         body.appendChild(meta);
