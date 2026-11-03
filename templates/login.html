@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% from 'components/google_button.html' import google_button with context %}
+{% from 'components/password_field.html' import password_field %}
 {% block title %}Log in - The Lazy Chef{% endblock %}
 {% block content %}
 <div class="h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -20,12 +21,7 @@
                         class="appearance-none rounded-none relative block w-full px-3 py-2 border border-slate-300 placeholder-slate-500 text-slate-900 rounded-t-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
                         placeholder="Email address">
                 </div>
-                <div>
-                    <label for="password" class="sr-only">Password</label>
-                    <input id="password" name="password" type="password" autocomplete="current-password" required
-                        class="appearance-none rounded-none relative block w-full px-3 py-2 border border-slate-300 placeholder-slate-500 text-slate-900 rounded-b-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
-                        placeholder="Password">
-                </div>
+                {{ password_field('current-password') }}
             </div>
             <div>
                 <button type="submit"
@@ -33,6 +29,8 @@
                     Log in
                 </button>
             </div>
+            {# By hand for now: python -m scripts.set_password #}
+            <p class="auth-note">Forgot your password? <a href="mailto:thelazychefai@gmail.com?subject=Forgot%20my%20password">Email us</a> from the address you signed up with, and we will set you a new one.</p>
         </form>
     </div>
 </div>
