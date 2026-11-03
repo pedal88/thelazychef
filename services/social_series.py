@@ -238,12 +238,13 @@ def cta(group, facts, size, address, seed, noun='dinner', slug=None):
     return {'group': group, 'text': text}
 
 
-CUT = re.compile(r'\s+(with|in|on|and|for|from)\s+|,\s+|\s+\(', re.IGNORECASE)
+CUT = re.compile(r'\s+(with|in|on|for|from)\s+|,\s+|\s+\(', re.IGNORECASE)
 
 
 def short_title(title):
-    """The dish in a few words, for a hook: the title up to its first "with", "and", "in", comma or bracket, without
-    a leading "Air fryer" ("Chicken Gyros Plate with Tzatziki and Greek Salad" is "Chicken Gyros Plate")."""
+    """The dish in a few words, for a hook and the game's answer: the title up to its first "with", "in", comma or
+    bracket, without a leading "Air fryer" ("Chicken Gyros Plate with Tzatziki and Greek Salad" is "Chicken Gyros
+    Plate"). Not at "and": it is often part of the name, as in Sweet and Sour Chicken."""
     short = CUT.split(title, 1)[0].strip()
     short = re.sub(r'^air[ -]?fryer\s+', '', short, flags=re.IGNORECASE)
     return short or title
