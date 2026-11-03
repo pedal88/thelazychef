@@ -5,6 +5,7 @@ picking keeps a recipe out of a series for a week."""
 import datetime
 import json
 import os
+import re
 import sys
 import unittest
 
@@ -163,6 +164,12 @@ class SeriesTests(unittest.TestCase):
                     self.assertIn(f'width:1080px; height:{social.SIZES[size][1]}px', html)
                     self.assertNotIn('kind-timebar', html)
 
+    def test_the_css_for_a_size_and_a_kind_can_match_the_slide(self):
+        # Both classes are on the slide's <main>: with a space between them the rule never applies, and the game's
+        # symbols stay too large for game_columns' estimate and run into the foot
+        with open(os.path.join(os.path.dirname(__file__), '..', 'static', 'css', 'social.css'), encoding='utf-8') as f:
+            self.assertIsNone(re.search(r'\.size-(ig|tt) \.kind-', f.read()))
+
     def test_the_games_pictures_fill_their_rows_and_a_cover_strip_has_no_orphan(self):
         self.assertEqual([social.game_columns(n, 'tt') for n in (5, 8, 12, 15, 13, 14)], [5, 4, 4, 5, 5, 5])
         self.assertEqual([social.game_columns(n, 'ig') for n in (5, 8, 12, 15, 13, 14)], [5, 4, 4, 5, 5, 5])
@@ -309,6 +316,8 @@ class SeriesTests(unittest.TestCase):
         self.assertEqual(series.short_title('Chicken Gyros Plate with Tzatziki and Greek Salad'), 'Chicken Gyros Plate')
         self.assertEqual(series.short_title('Air Fryer Salmon Bites with Gochujang Mayo'), 'Salmon Bites')
         self.assertEqual(series.short_title('Kjøttkaker in Brown Sauce, with potatoes'), 'Kjøttkaker')
+        self.assertEqual(series.short_title('Beef and Broccoli Stir Fry with Steamed Rice'), 'Beef and Broccoli Stir Fry')
+        self.assertEqual(series.short_title('Sweet and Sour Chicken with Jasmine Rice'), 'Sweet and Sour Chicken')
         long = series.facts([post_of(view_of(36, 11, title='One Two Three Four Five Six Seven Eight'))], 3, series='Air fryer dinners')
         self.assertIsNone(series.hook('series', long, 'a', 'airfryer'))
         for row in series.SERIES['airfryer']['retired_hooks']:
