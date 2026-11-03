@@ -21,7 +21,7 @@ share one look: paper surfaces, thin lines, mono labels, serif titles, and line 
 - The style trial (`static/css/themes.css`, temporary): a look's colours and fonts, and what makes it more than them
   (headings, the main button, lines), for every page and the social slides alike. Visitors see the site's look
   (`routes/_shared.SITE_LOOK`, set on `<html>` by `base.html`); an admin's choice is kept on the device.
-- The brand: `components/brand.html` (`mark()`, the floppy chef's hat in the text colour; `badge()`, the mark on the
+- The brand: `components/brand.html` (`mark()`, the Z drawn as a metro line, in the text colour; `badge()`, the mark on the
   look's main-button colour), in the top bar and on the slides. `static/brand/` has it as files: `mark.svg`,
   `favicon.svg`, `apple-touch-icon.png`, `avatar.png` (the TikTok and Instagram profile picture) and `share.png`
   (the share card).

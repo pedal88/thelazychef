@@ -185,7 +185,7 @@ pantry CSV `scripts/local_db.py` reads when there is no production export at han
 
 ## The accounts
 
-The Lazy Chef on TikTok and on Instagram, in English. Both use `static/brand/avatar.png` (the chef's hat on saffron)
+The Lazy Chef on TikTok and on Instagram, in English. Both use `static/brand/avatar.png` (the Z line on zinnober)
 as the profile picture. The TikTok bio gives `thelazychef.app/tiktok` as text (a bio link needs 1,000 followers); the
 Instagram bio links to `thelazychef.app/ig`. Links in captions can be read but not tapped on either platform, so people
 come only by typing an address or through the Instagram bio link.
