@@ -263,3 +263,8 @@
 .auth-or::before, .auth-or::after { content: ""; flex: 1; border-top: 1px solid var(--color-line); }
 .auth-note { margin: 0; text-align: center; color: var(--color-muted); font-size: 13px; }
 .auth-note a { color: var(--color-ink); text-decoration: underline; text-underline-offset: 3px; }
+.pw-field { position: relative; }
+.pw-show { position: absolute; z-index: 20; top: 0; right: 0; bottom: 0; padding: 0 var(--space-3); border: 0; background: none; cursor: pointer;
+  color: var(--color-muted); font: 600 13px/1 var(--font-sans); }
+.pw-show:hover { color: var(--color-ink); }
+.pw-show:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -2px; border-radius: 6px; }

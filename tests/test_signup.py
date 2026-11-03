@@ -17,6 +17,7 @@ os.environ.pop('K_SERVICE', None)
 
 from app import app  # noqa: E402
 from database.models import Recipe, User, UserQueue, UserRecipeInteraction, db  # noqa: E402
+from scripts.set_password import set_password  # noqa: E402
 from services.recipe_v2.store import save_v2  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -108,6 +109,23 @@ class SignupTests(unittest.TestCase):
         response = self.register()
         self.assertIn('remember_token=', response.headers.get('Set-Cookie', '') + ''.join(
             response.headers.getlist('Set-Cookie')))
+
+    def test_the_password_can_be_shown_and_forgetting_it_has_a_way_out(self):
+        for url in ('/login', '/register'):
+            self.assertIn('class="pw-show"', self.client.get(url).get_data(as_text=True))
+        self.assertIn('Forgot your password?', self.client.get('/login').get_data(as_text=True))
+
+    def test_a_new_password_is_set_only_when_asked_and_logs_in(self):
+        self.register()
+        self.client.get('/logout')
+        before = self.user().password_hash
+        self.assertEqual(set_password('COOK@test')[0].email, 'cook@test')
+        self.assertEqual(self.user().password_hash, before)
+        self.assertEqual(set_password('nobody@test', apply=True), (None, None))
+        _, password = set_password('cook@test', apply=True)
+        response = self.client.post('/login', data={'email': 'cook@test', 'password': password})
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(self.user().check_password('pw'))
 
     def test_an_email_is_one_account_whatever_its_case_and_spaces(self):
         self.register(' Cook@Test ')

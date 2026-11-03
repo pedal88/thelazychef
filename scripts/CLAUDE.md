@@ -27,6 +27,7 @@ and a printed summary that can be pasted back.
 | `local_db` | A local SQLite database with the pantry and five example recipes (`docs/README_TOP_COMMANDS.md`) |
 | `generate_v2` | Make one v2 recipe from the command line |
 | `seed_admin` | Create or reset an admin user |
+| `set_password` | A new password for someone who forgot theirs and wrote in (`--email`, `--apply`) |
 | `debug/verify_setup`, `debug/list_models`, `debug/check_db` | Check the Gemini key and models, the database |
 | `setup_wif.sh` | Workload Identity Federation for GitHub Actions (done once) |
 
