@@ -18,6 +18,7 @@ class SiteMenuTests(unittest.TestCase):
             self.assertIn(text, html)
         for text in ('Saved', 'Cook next', 'New recipe', 'Many recipes at once', 'Become a Chef', 'Get Started', 'Collections', 'Learn'):
             self.assertNotIn(text, html)
+        self.assertIn('class="top-signup', html)  # in sight on a phone too, not only inside the menu
 
     def test_admins_see_everything_in_every_menu(self):
         self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
