@@ -3,6 +3,9 @@ the sheet with the dishes, with what is not active and drafts kept from visitors
 import os
 import sys
 import unittest
+from unittest.mock import patch
+
+from sqlalchemy.dialects import postgresql
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -15,6 +18,7 @@ os.environ.pop('K_SERVICE', None)
 
 from app import app  # noqa: E402
 from database.models import Ingredient, Recipe, RecipeComponent, RecipeLine, RecipeStep, User, db  # noqa: E402
+from services.ingredient_library import dishes_using  # noqa: E402
 
 
 class IngredientsPageTests(unittest.TestCase):
@@ -86,6 +90,24 @@ class IngredientsPageTests(unittest.TestCase):
         sheet = self.client.get(f'/ingredients/{self.chicken.id}/card').get_data(as_text=True)
         self.assertIn('Roast chicken', sheet)
         self.assertNotIn('Secret draft', sheet)
+
+    def test_an_ingredient_twice_in_a_recipe_counts_once(self):
+        self.assertIn('In 2 dishes', self.client.get(f'/ingredients/{self.chicken.id}/card').get_data(as_text=True))
+        recipe = self.approved
+        step = RecipeStep.query.filter_by(recipe_id=recipe.id).first()
+        db.session.add(RecipeLine(recipe_id=recipe.id, component_id=step.component_id, step_id=step.id, local_id='again',
+                                  name='chicken breast', ingredient_id=self.chicken.id, sort_order=9))
+        db.session.commit()
+        self.assertIn('In 2 dishes', self.client.get(f'/ingredients/{self.chicken.id}/card').get_data(as_text=True))
+
+    def test_the_query_runs_on_postgres_too(self):
+        # SELECT DISTINCT with an ORDER BY outside the list is fine on SQLite and an error on Postgres: production's 500
+        captured = []
+        real = db.session.execute
+        with patch.object(db.session, 'execute', side_effect=lambda stmt, *a, **k: captured.append(stmt) or real(stmt, *a, **k)):
+            dishes_using()
+        sql = str(captured[0].compile(dialect=postgresql.dialect()))
+        self.assertNotIn('DISTINCT', sql)
 
     def test_shortcuts_and_staples(self):
         protein = self.page('?group=protein')
