@@ -73,6 +73,15 @@ class RouteTests(unittest.TestCase):
         self.assertIn('.submit()', html)
         self.assertEqual(self._count(), 0)
 
+    def test_a_link_can_be_pasted_when_the_page_gets_none(self):
+        html = self.client.get('/admin/inbox/add').get_data(as_text=True)
+        self.assertIn('name="url"', html)
+        self.assertNotIn('.submit()', html)  # nothing to send yet
+        self.assertIn('/admin/inbox/add', self.client.get('/admin/inbox').get_data(as_text=True))
+        res = self.client.post('/admin/inbox/add', data={'url': f'Look at this! {TIKTOK}?_t=1'})
+        self.assertEqual(res.status_code, 302)
+        self.assertEqual(db.session.execute(db.select(VideoInbox)).scalar_one().url, TIKTOK)
+
     def test_a_post_from_another_site_saves_nothing(self):
         response = self.client.post('/admin/inbox/add', data={'url': TIKTOK}, headers={'Sec-Fetch-Site': 'cross-site'})
         self.assertEqual(response.status_code, 403)
