@@ -44,6 +44,11 @@ post log `/admin/funnel/posts/…`, the TikTok posts for the phone `/admin/funne
   as drafts in the post log, series with what the site chose for them, and takes their Instagram slides and caption
   for the Instagram queue. It posts nothing: Pål approves in the queue (`/admin/funnel/queue`), and
   `/internal/tasks/social-publish/<id>` publishes at the time.
+- Seeing the site as someone else (`view_as.switch`, `/view-as`, in the admin chip; `services/view_as.py`): the choice is in the
+  signed session and read in `app.load_user`, the one place people are signed in, so `current_user` is an anonymous visitor
+  or `SignedInView`, the account without admin. It only goes down: `account()` checks the real account. Anything new that
+  saves on a GET goes in `WRITES_ON_GET`, a read-only POST in `ALLOWED_WRITES`, and anything new that counts a visitor must
+  also ask `view_as.role()`, as `funnel_routes._a_real_visitor` does.
 - Drafts and pending ingredients must not leak to visitors (`tests/test_public_visibility.py`):
   check `status == 'approved'` or `viewer_is_admin()`.
 - Errors shown to users go through `utils/ai_errors.friendly_ai_error`; never a raw Google or Anthropic message.

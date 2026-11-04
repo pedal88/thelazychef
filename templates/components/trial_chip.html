@@ -4,6 +4,7 @@
 <details class="trialbar" data-trial>
   <summary aria-label="Admin tools and style trial"><span class="tdot"></span>Admin <span class="tstate"><span class="tlook"></span></span></summary>
   <div class="tpanel">
+  {% include "components/view_as_switch.html" %}
   <div class="tgroup" data-look-switch><span class="tlabel">Look</span>
     {%- for key, label, name in [('today', 'Today', "Today's look"), ('c', 'C', 'C Hvit benk'), ('d', 'D', 'D Safran'), ('e', 'E', 'E Porselen'), ('f', 'F', 'F Washi')] %}<button type="button" data-look="{{ key }}" title="{{ name }}" aria-pressed="false">{{ label }}</button>{% endfor -%}
   </div>

@@ -1,0 +1,4 @@
+{# In the admin chip (trial_chip.html and recipe_head.html): see the site as someone else (routes/view_as_routes.py). #}
+<form class="tgroup" method="post" action="{{ url_for('view_as.switch') }}"><span class="tlabel">View as</span><input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+  {%- for key, label in [('admin', 'Admin'), ('user', 'Signed in'), ('visitor', 'Visitor')] %}<button type="submit" name="role" value="{{ key }}" aria-pressed="{{ 'true' if key == 'admin' else 'false' }}">{{ label }}</button>{% endfor %}
+</form>

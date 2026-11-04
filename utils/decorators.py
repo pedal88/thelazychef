@@ -8,4 +8,5 @@ def admin_required(f):
         if not current_user.is_authenticated or not getattr(current_user, 'is_admin', False):
             abort(403)
         return f(*args, **kwargs)
+    decorated_function.admin_only = True  # routes/view_as_routes.py: a page lower roles are refused
     return decorated_function
