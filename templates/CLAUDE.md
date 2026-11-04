@@ -21,6 +21,8 @@ share one look: paper surfaces, thin lines, mono labels, serif titles, and line 
 - The style trial (`static/css/themes.css`, temporary): a look's colours and fonts, and what makes it more than them
   (headings, the main button, lines), for every page and the social slides alike. Visitors see the site's look
   (`routes/_shared.SITE_LOOK`, set on `<html>` by `base.html`); an admin's choice is kept on the device.
+- Seeing the site as someone else: the switch is `components/view_as_switch.html`, in both admin chips; the bar on every page
+  meanwhile is `components/view_as_bar.html`, put first in the body by `services/view_as.mark_page`, so it needs no layout.
 - The brand: `components/brand.html` (`mark()`, the Z drawn as a metro line, in the text colour; `badge()`, the mark on the
   look's main-button colour; `seal()`, LAZY over CHEF with the mark as the Z, on a post's last slide), in the top bar and
   on the slides. In F the slides' accent is the same zinnober, and the name is set in the look's serif, Shippori Mincho. `static/brand/` has it as files: `mark.svg`,

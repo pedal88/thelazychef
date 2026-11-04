@@ -7,7 +7,7 @@ from flask_login import current_user, login_required
 
 from database.models import SocialPost, SocialReport, db
 from routes._shared import get_storage
-from services import funnel, social_publish, social_report, social_stats
+from services import funnel, social_publish, social_report, social_stats, view_as
 from services.recipe_v2 import tasks
 from utils.ai_errors import friendly_ai_error
 from utils.decorators import admin_required
@@ -15,24 +15,29 @@ from utils.decorators import admin_required
 funnel_bp = Blueprint('funnel', __name__)
 
 
+def _a_real_visitor():
+    """Not someone signed in, and not an admin who only looks like a visitor (services/view_as.py)."""
+    return not current_user.is_authenticated and not view_as.role()
+
+
 @funnel_bp.before_app_request
 def keep_ref():
     """?ref= on any page a visitor opens is kept for the session (the first one only) and counted."""
-    if request.method == 'GET' and 'ref' in request.args and not current_user.is_authenticated:
+    if request.method == 'GET' and 'ref' in request.args and _a_real_visitor():
         funnel.remember(request.args.get('ref'), request.user_agent.string)
 
 
 @funnel_bp.app_context_processor
 def ref_unseen():
     """base.html asks /ref/seen to count the visit when this session brought a code that is not counted yet."""
-    return {'ref_unseen': not current_user.is_authenticated and funnel.unseen()}
+    return {'ref_unseen': _a_real_visitor() and funnel.unseen()}
 
 
 @funnel_bp.route('/ref/seen', methods=['POST'])
 def ref_seen():
     """The page has been open in a browser for a few seconds: count the session's visit for its code (once). Open to
     anyone, like the short addresses; it counts nothing without a code kept in the session."""
-    if not current_user.is_authenticated:
+    if _a_real_visitor():
         funnel.seen(request.user_agent.string)
     return '', 204
 
@@ -41,7 +46,7 @@ def ref_seen():
 # for one post (the code tiktok-3). They keep the code and open what the post showed: its recipe, the post's page when
 # it showed several, else the home page (funnel.post_recipes). The visit is counted on the page they open, as anywhere.
 def _short_link(channel, code):
-    if not current_user.is_authenticated:
+    if _a_real_visitor():
         funnel.remember(f'{channel}-{code}' if code else channel, request.user_agent.string)
     post = code and funnel.post_for(channel, code)
     ids = funnel.post_recipes(post) if post else []

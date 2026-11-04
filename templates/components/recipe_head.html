@@ -14,6 +14,7 @@
 <details class="trialbar" data-trial>
   <summary aria-label="Admin tools and style trial"><span class="tdot"></span>Admin <span class="tstate"><span class="tlook"></span> · {{ IMAGE_STYLES[imgs.style] }}</span></summary>
   <div class="tpanel">
+  {% include "components/view_as_switch.html" %}
   <div class="tgroup" data-look-switch><span class="tlabel">Look</span>
     {%- for key, label in [('today', 'Today'), ('c', 'C'), ('d', 'D'), ('e', 'E'), ('f', 'F')] %}<button type="button" data-look="{{ key }}" aria-pressed="false">{{ label }}</button>{% endfor -%}
   </div>
