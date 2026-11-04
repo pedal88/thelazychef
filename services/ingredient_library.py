@@ -53,7 +53,7 @@ def dishes_using(ingredient_id=None):
     stmt = (db.select(RecipeLine.ingredient_id, Recipe.id, FAMILY, Recipe.base_recipe_id)
             .join(Recipe, Recipe.id == RecipeLine.recipe_id)
             .where(Recipe.status == 'approved', RecipeLine.ingredient_id.is_not(None))
-            .distinct().order_by(Recipe.title, Recipe.id))
+            .order_by(Recipe.title, Recipe.id))
     if ingredient_id is not None:
         stmt = stmt.where(RecipeLine.ingredient_id == ingredient_id)
     rows = {}
