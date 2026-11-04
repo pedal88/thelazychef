@@ -12,7 +12,7 @@
     <legend>{{ g.label }}</legend>
     <div class="lib-chip-row">
         {% if g.single and g.get('any', True) %}
-        <label class="lib-chip"><input type="radio" name="{{ g.key }}" value=""{% if not g.options|selectattr(2)|list %} checked{% endif %}><span>Any</span></label>
+        <label class="lib-chip"><input type="radio" name="{{ g.key }}" value=""{% if not g.options|selectattr(2)|list %} checked{% endif %}><span>{{ _('Any') }}</span></label>
         {% endif %}
         {% for value, text, on in g.options %}
         <label class="lib-chip"><input type="{{ 'radio' if g.single else 'checkbox' }}" name="{{ g.key }}" value="{{ value }}"{% if on %} checked{% endif %}><span>{{ text }}</span></label>
@@ -38,7 +38,7 @@
             {% if views|length > 1 %}
             <details class="lbar-views" data-lbar-views>
                 <summary><h1>{{ title }}</h1>{{ icon('chevron-down') }}<span class="lbar-count" data-lv-swap="total">{{ total }}</span></summary>
-                <nav class="lbar-menu" aria-label="Which recipes">
+                <nav class="lbar-menu" aria-label="{{ _('Which recipes') }}">
                     {% for key, label in views %}
                     <a href="{{ url_for('recipes_list', view=key if key != 'discover' else none) }}"{% if key == current_view %} aria-current="page"{% endif %}>{{ icon({'discover': 'book', 'saved': 'heart', 'made': 'check', 'next': 'list-plus'}[key]) }}{{ label }}</a>
                     {% endfor %}
@@ -49,25 +49,25 @@
             {% endif %}
         </div>
         <label class="lib-q">{{ icon('search') }}<input type="search" name="q" value="{{ q }}"
-            placeholder="Dish or ingredient" aria-label="Search dishes or ingredients"></label>
-        <nav class="lbar-quick" aria-label="Shortcuts" data-lv-swap="quick">
-            {% for text, url in active %}<a href="{{ url }}" class="lib-chip-link is-active" aria-label="Remove {{ text }}">{{ text }}{{ icon('close') }}</a>{% endfor %}
+            placeholder="{{ _('Dish or ingredient') }}" aria-label="{{ _('Search dishes or ingredients') }}"></label>
+        <nav class="lbar-quick" aria-label="{{ _('Shortcuts') }}" data-lv-swap="quick">
+            {% for text, url in active %}<a href="{{ url }}" class="lib-chip-link is-active" aria-label="{{ _('Remove %(what)s', what=text) }}">{{ text }}{{ icon('close') }}</a>{% endfor %}
             {% for label, url, on in shortcuts if not on %}<a href="{{ url }}" class="lib-chip-link">{{ label }}</a>{% endfor %}
-            {% if active|length > 1 %}<a class="lbar-clear" href="{{ clear_url() }}">Clear all</a>{% endif %}
+            {% if active|length > 1 %}<a class="lbar-clear" href="{{ clear_url() }}">{{ _('Clear all') }}</a>{% endif %}
         </nav>
-        <button type="button" class="lbar-filters" data-lv-open>{{ icon('list') }}Filters{% if in_use %} <b>{{ in_use }}</b>{% endif %}</button>
+        <button type="button" class="lbar-filters" data-lv-open>{{ icon('list') }}{{ _('Filters') }}{% if in_use %} <b>{{ in_use }}</b>{% endif %}</button>
     </div>
     <dialog class="fb lib-drawer" aria-labelledby="lib-drawer-h" data-lv-drawer data-count="{{ url_for('recipes_count') }}">
         <div class="fb-form">
-            <div class="fb-head"><div><h2 id="lib-drawer-h">Filters</h2></div>
-                <button type="button" class="fb-x" data-lv-close aria-label="Close">{{ icon('close') }}</button></div>
+            <div class="fb-head"><div><h2 id="lib-drawer-h">{{ _('Filters') }}</h2></div>
+                <button type="button" class="fb-x" data-lv-close aria-label="{{ _('Close') }}">{{ icon('close') }}</button></div>
             <div class="fb-body">
                 {% if order %}{{ chip_group(order) }}{% endif %}
                 {% for g in groups %}{{ chip_group(g) }}{% endfor %}
             </div>
             <div class="fb-foot">
-                <a class="fb-cancel lib-drawer-clear" href="{{ clear_url() }}">Clear all</a>
-                <button type="submit" class="fb-save">Show <span data-lv-n>{{ total }} {{ 'recipe' if total == 1 else 'recipes' }}</span></button>
+                <a class="fb-cancel lib-drawer-clear" href="{{ clear_url() }}">{{ _('Clear all') }}</a>
+                <button type="submit" class="fb-save">{{ _('Show') }} <span data-lv-n>{{ _('%(n)s recipe', n=total) if total == 1 else _('%(n)s recipes', n=total) }}</span></button>
             </div>
         </div>
     </dialog>
@@ -76,11 +76,11 @@
 <div class="lv">
     <div data-lv-swap="results">
     {% if not recipes %}
-    {% set empties = {'saved': ('heart', 'No saved recipes yet', 'Tap the heart on a recipe to keep it here.', 'Find recipes'),
-                      'made': ('check', 'Nothing cooked yet', 'Mark a recipe as made after you cook it, and it shows up here.', 'Find recipes'),
-                      'next': ('list-plus', 'Nothing to cook next', 'Tap the plus on a recipe to put it in your queue.', 'Find recipes')} %}
-    {% set ic, line, hint, go = empties.get(current_view, ('search', 'No recipes yet', 'New dishes are on their way.', 'Discover')) %}
-    {% if in_use or q %}{% set ic, line, hint, go = ('search', 'No recipes match', 'Try fewer filters, or clear them.', 'Clear filters') %}{% endif %}
+    {% set empties = {'saved': ('heart', _('No saved recipes yet'), _('Tap the heart on a recipe to keep it here.'), _('Find recipes')),
+                      'made': ('check', _('Nothing cooked yet'), _('Mark a recipe as made after you cook it, and it shows up here.'), _('Find recipes')),
+                      'next': ('list-plus', _('Nothing to cook next'), _('Tap the plus on a recipe to put it in your queue.'), _('Find recipes'))} %}
+    {% set ic, line, hint, go = empties.get(current_view, ('search', _('No recipes yet'), _('New dishes are on their way.'), _('Discover'))) %}
+    {% if in_use or q %}{% set ic, line, hint, go = ('search', _('No recipes match'), _('Try fewer filters, or clear them.'), _('Clear filters')) %}{% endif %}
     <div class="lib-empty">
         <span class="lib-empty-ic">{{ icon(ic) }}</span>
         <h3>{{ line }}</h3>
@@ -93,7 +93,7 @@
         <div class="lib-item">{{ card.recipe_preview_card(recipe, recipe.id, show_inspector=admin, acts=True) }}</div>
         {% endfor %}
     </div>
-    {% if more_url %}<p class="lib-more"><a class="lib-go" href="{{ more_url }}">Show more</a></p>{% endif %}
+    {% if more_url %}<p class="lib-more"><a class="lib-go" href="{{ more_url }}">{{ _('Show more') }}</a></p>{% endif %}
     {% endif %}
     </div>
 </div>
@@ -106,15 +106,15 @@
 <dialog class="fb" id="feedback" aria-labelledby="fb-h">
     <form class="fb-form" data-fb-form>
         <div class="fb-head">
-            <div><h2 id="fb-h">How did it go?</h2><p class="fb-recipe" data-fb-title></p></div>
-            <button type="button" class="fb-x" data-fb-close aria-label="Close">{{ icon('close') }}</button>
+            <div><h2 id="fb-h">{{ _('How did it go?') }}</h2><p class="fb-recipe" data-fb-title></p></div>
+            <button type="button" class="fb-x" data-fb-close aria-label="{{ _('Close') }}">{{ icon('close') }}</button>
         </div>
         <div class="fb-body">
             {{ feedback_fields() }}
         </div>
         <div class="fb-foot">
-            <button type="button" class="fb-cancel" data-fb-close>Cancel</button>
-            <button type="submit" class="fb-save">Save</button>
+            <button type="button" class="fb-cancel" data-fb-close>{{ _('Cancel') }}</button>
+            <button type="submit" class="fb-save">{{ _('Save') }}</button>
         </div>
     </form>
 </dialog>

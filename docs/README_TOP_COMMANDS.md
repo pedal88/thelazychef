@@ -33,6 +33,7 @@ flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 The site's words are English in the code, marked with `_()`, and Norwegian in `translations/nb/LC_MESSAGES/messages.po`;
 what has no translation shows in English. Choosing the language: `services/language.py`. `?lang=no` on any page shows
 Norwegian and stays until `?lang=en`. The `.mo` files are not in git: the Dockerfile and the tests compile them.
+Words kept as data and the scripts' words are listed in `services/labels.py`; pybabel finds them there.
 
 ```bash
 pybabel extract -F babel.cfg -k lazy_gettext --no-location -o translations/messages.pot app.py routes services utils templates  # after marking words

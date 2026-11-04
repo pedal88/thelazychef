@@ -20,6 +20,7 @@ from flask import url_for
 
 from database.models import PageEmbed, Recipe, db
 from services.content import assets
+from services.labels import label as translated
 from services.recipe_library import Filters, cards, from_args, recipe_page
 from werkzeug.datastructures import MultiDict
 
@@ -191,7 +192,7 @@ class CookNext(Block):
         recipes = recipe_page('next', Filters(), shown=s.get('limit', 4), user=ctx.user).recipes
         if not recipes:
             return None
-        return {'title': s.get('title') or 'Cook next', 'recipes': recipes, 'more': url_for('recipes_list', view='next')}
+        return {'title': s.get('title') or translated('Cook next'), 'recipes': recipes, 'more': url_for('recipes_list', view='next')}
 
 
 class Links(Block):
@@ -237,7 +238,7 @@ class Links(Block):
                         'image': assets.resolve(page.slug, text.hero_image)}
             else:
                 title, blurb, icon = LINKABLE[to]
-                tile = {'url': url_for(to), 'title': title, 'text': blurb, 'icon': icon, 'image': None}
+                tile = {'url': url_for(to), 'title': translated(title), 'text': translated(blurb), 'icon': icon, 'image': None}
             tile.update({k: item[k] for k in ('title', 'text', 'icon', 'label') if item.get(k)})
             tiles.append(tile)
         return {'title': s.get('title'), 'tiles': tiles, 'style': s.get('style', 'tiles')} if tiles else None

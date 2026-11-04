@@ -6,35 +6,35 @@
     <div class="fb-head">
         <div class="ing-sheet-h">
             {% if i.image_url %}<img src="{{ i.image_url if i.image_url.startswith('http') else url_for('static', filename=i.image_url) }}" alt="" width="64" height="64">{% endif %}
-            <div><h2>{{ i.name }}</h2><p class="fb-recipe">{{ (i.main_category or 'Other')|capitalize }}{% if i.is_staple %} · Staple{% endif %}</p></div>
+            <div><h2>{{ i.name }}</h2><p class="fb-recipe">{{ (i.main_category or 'Other')|capitalize|label }}{% if i.is_staple %} · {{ _('Staple') }}{% endif %}</p></div>
         </div>
-        <button type="button" class="fb-x" data-ing-close aria-label="Close">{{ icon('close') }}</button>
+        <button type="button" class="fb-x" data-ing-close aria-label="{{ _('Close') }}">{{ icon('close') }}</button>
     </div>
     <div class="fb-body">
         {% if i.calories_per_100g is not none or i.protein_per_100g is not none %}
         <section>
-            <h3 class="ing-sheet-t">Per 100 g{{ ' (about 3½ oz)' if us }}</h3>
+            <h3 class="ing-sheet-t">{{ _('Per 100 g (about 3½ oz)') if us else _('Per 100 g') }}</h3>
             <dl class="ing-facts">
-                {{ fact('Energy', i.calories_per_100g, 'kcal') }}
-                {% if not us %}{{ fact('Energy', i.kj_per_100g, 'kJ') }}{% endif %}
-                {{ fact('Protein', i.protein_per_100g, 'g') }}
-                {{ fact('Carbs', i.carbs_per_100g, 'g') }}
-                {{ fact('Fat', i.fat_per_100g, 'g') }}
-                {{ fact('Sugar', i.sugar_per_100g, 'g') }}
-                {{ fact('Fibre', i.fiber_per_100g, 'g') }}
-                {{ fact('Sodium', i.sodium_mg_per_100g, 'mg') }}
+                {{ fact(_('Energy'), i.calories_per_100g, 'kcal') }}
+                {% if not us %}{{ fact(_('Energy'), i.kj_per_100g, 'kJ') }}{% endif %}
+                {{ fact(_('Protein'), i.protein_per_100g, 'g') }}
+                {{ fact(_('Carbs'), i.carbs_per_100g, 'g') }}
+                {{ fact(_('Fat'), i.fat_per_100g, 'g') }}
+                {{ fact(_('Sugar'), i.sugar_per_100g, 'g') }}
+                {{ fact(_('Fibre'), i.fiber_per_100g, 'g') }}
+                {{ fact(_('Sodium'), i.sodium_mg_per_100g, 'mg') }}
             </dl>
         </section>
         {% endif %}
         <section>
-            <h3 class="ing-sheet-t">{% if uses %}In {{ uses }} {{ 'dish' if uses == 1 else 'dishes' }}{% else %}Not in a dish yet{% endif %}</h3>
+            <h3 class="ing-sheet-t">{% if uses %}{{ _('In %(n)s dish', n=uses) if uses == 1 else _('In %(n)s dishes', n=uses) }}{% else %}{{ _('Not in a dish yet') }}{% endif %}</h3>
             {% if recipes %}
             <ul class="ing-dishes">
                 {% for r in recipes %}
                 <li><a href="{{ url_for('recipe_detail', recipe_id=r.id) }}">{% if r.image_filename %}<img src="{{ get_recipe_image_url(r) }}" alt="" loading="lazy">{% else %}<span class="ing-dish-none">{{ icon('utensils') }}</span>{% endif %}<span>{{ r.title }}</span></a></li>
                 {% endfor %}
             </ul>
-            {% if uses > recipes|length %}<a class="ing-all-link" href="{{ url_for('recipes_list', q=i.name) }}">Find more with {{ i.name }}</a>{% endif %}
+            {% if uses > recipes|length %}<a class="ing-all-link" href="{{ url_for('recipes_list', q=i.name) }}">{{ _('Find more with %(name)s', name=i.name) }}</a>{% endif %}
             {% endif %}
         </section>
     </div>

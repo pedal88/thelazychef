@@ -6,6 +6,7 @@ from flask import current_app, request, url_for
 from markupsafe import Markup
 from flask_login import current_user
 
+from services.labels import label as translated
 from services.storage_service import GoogleCloudStorageProvider
 
 
@@ -111,17 +112,18 @@ def site_menu():
     for label, who, items in MENU:
         if not sees[who]:
             continue
+        name = str if label == 'Admin' else translated  # the Admin group stays English, as its pages
         shown = []
         for item in items:
             if item is None:
                 if shown and shown[-1] is not None:
                     shown.append(None)
             elif sees[item[4]]:
-                shown.append({'label': item[0], 'url': url_for(item[1], **item[2]), 'icon': item[3]})
+                shown.append({'label': name(item[0]), 'url': url_for(item[1], **item[2]), 'icon': item[3]})
         while shown and shown[-1] is None:
             shown.pop()
         if shown:
-            out.append({'label': label, 'items': shown})
+            out.append({'label': name(label), 'items': shown})
     return out
 
 

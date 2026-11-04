@@ -38,7 +38,7 @@
         try {
           const data = await (await fetch(`${drawer.dataset.count}?${params()}`)).json();
           if (mine !== counting) return;
-          drawer.querySelector('[data-lv-n]').textContent = `${data.total} ${data.total === 1 ? 'recipe' : 'recipes'}`;
+          drawer.querySelector('[data-lv-n]').textContent = tr(data.total === 1 ? '%(n)s recipe' : '%(n)s recipes', { n: data.total });
           const empty = new Set(data.empty.map(([k, v]) => `${k}=${v}`));
           drawer.querySelectorAll('.lib-chip input').forEach(input => {
             const none = !input.checked && empty.has(`${input.name}=${input.value}`);
@@ -135,14 +135,14 @@
     try {
       const missed = await fb.save();
       if (missed) {
-        fb.say(`Saved. ${missed}`, true);  // stays open so the note can be read
+        fb.say(tr('Saved. %(note)s', { note: missed }), true);  // stays open so the note can be read
         save.disabled = false;
         return;
       }
-      fb.say('Saved. Thank you.');
+      fb.say(tr('Saved. Thank you.'));
       setTimeout(() => dialog.close(), 1200);
     } catch (err) {
-      fb.say(err.friendly || 'Something went wrong. Please try again.', true);
+      fb.say(err.friendly || tr('Something went wrong. Please try again.'), true);
       save.disabled = false;
     }
   });

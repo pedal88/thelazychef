@@ -48,7 +48,7 @@
       if (onRemove) {
         const x = document.createElement('button');
         x.type = 'button';
-        x.setAttribute('aria-label', 'Remove the photo');
+        x.setAttribute('aria-label', tr('Remove the photo'));
         x.innerHTML = icon('close');
         x.addEventListener('click', onRemove);
         box.append(x);
@@ -101,7 +101,7 @@
       const files = [...photos.files].slice(0, 5);  // the server takes five at most
       if (files.reduce((sum, f) => sum + f.size, 0) > MAX_BYTES) {
         const err = new Error('too large');
-        err.friendly = 'The photos are too large together (20 MB at most). Pick fewer or smaller ones.';
+        err.friendly = tr('The photos are too large together (20 MB at most). Pick fewer or smaller ones.');
         throw err;
       }
       const body = new FormData(form);
@@ -119,8 +119,8 @@
       }
       const missed = data.skipped || [];
       return !missed.length ? ''
-        : missed.length === 1 ? `${missed[0]} could not be saved. Try it as JPG or PNG.`
-        : `${missed.length} photos could not be saved. Try them as JPG or PNG.`;
+        : missed.length === 1 ? tr('%(name)s could not be saved. Try it as JPG or PNG.', { name: missed[0] })
+        : tr('%(n)s photos could not be saved. Try them as JPG or PNG.', { n: missed.length });
     }
 
     return { open, save, say };

@@ -33,8 +33,8 @@
     if (found) {
       const { id, key, st } = found, m = st.meta, q = s => box.querySelector(s);
       q('[data-cont-link]').href = `/recipe/${id}#cook`;
-      q('[data-cont-title]').textContent = m.title || 'Your dish';
-      q('[data-cont-step]').textContent = m.next ? `Step ${m.next.n} of ${m.total} · ${m.next.label}` : `${st.done.length} of ${m.total} steps done`;
+      q('[data-cont-title]').textContent = m.title || tr('Your dish');
+      q('[data-cont-step]').textContent = m.next ? tr('Step %(n)s of %(total)s · %(label)s', { n: m.next.n, total: m.total, label: m.next.label }) : tr('%(done)s of %(total)s steps done', { done: st.done.length, total: m.total });
       q('[data-cont-bar]').style.width = `${Math.round(100 * st.done.length / m.total)}%`;
       if (m.img) {
         const img = document.createElement('img');
@@ -45,7 +45,7 @@
       const run = (st.runs || []).filter(r => r.end > Date.now() - 600e3).sort((a, b) => a.end - b.end)[0];
       if (run) {
         const left = Math.ceil((run.end - Date.now()) / 60e3);
-        q('[data-cont-run]').textContent = left > 0 ? `${run.label}: ${left} min left` : `${run.label}: time is up`;
+        q('[data-cont-run]').textContent = left > 0 ? tr('%(label)s: %(left)s min left', { label: run.label, left }) : tr('%(label)s: time is up', { label: run.label });
         q('[data-cont-run]').hidden = false;
       }
       q('[data-cont-hide]').addEventListener('click', () => {

@@ -1,13 +1,13 @@
 {# The site's language: plain links with ?lang=, which services/language.py keeps in the cookie "lang". Nothing is drawn
    until NORWEGIAN_ON, except for someone already in Norwegian (language.switch). compact: on the top bar's narrowest
-   widths only the other language, or the bar runs out of room at 768 px. #}
+   widths only the other language, or the bar runs out of room at 1024 px. #}
 {% macro lang_switch(cls='', compact=false) %}
 {% set langs = site_lang_switch() %}
 {% if langs %}
 <div class="flex items-center gap-1 {{ cls }}" role="group" aria-label="{{ _('Language') }}" data-lang-switch>
   {%- for l in langs %}
   <a href="{{ l.url }}" hreflang="{{ l.code }}" lang="{{ l.code }}"{% if l.on %} aria-current="true"{% endif %}
-    class="rounded-full border px-2.5 py-1 text-xs font-semibold {{ 'hidden lg:block ' if compact and l.on }}{{ 'bg-slate-900 text-white border-slate-900' if l.on else 'border-slate-200 text-slate-600 hover:border-slate-400' }}">{{ l.name }}</a>
+    class="rounded-full border px-2.5 py-1 text-xs font-semibold {{ 'hidden xl:block ' if compact and l.on }}{{ 'bg-slate-900 text-white border-slate-900' if l.on else 'border-slate-200 text-slate-600 hover:border-slate-400' }}">{{ l.name }}</a>
   {%- endfor %}
 </div>
 {% endif %}

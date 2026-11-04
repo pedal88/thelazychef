@@ -21,6 +21,14 @@
     <!-- The browsing pages (recipe list, Discover) in the recipe page's language -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/library.css') }}">
     <script>
+        // The words of the scripts in the page's language (services/labels.JS_WORDS): tr('%(n)s recipes', {n: 3})
+        window.WORDS = {{ js_words()|tojson }};
+        window.tr = function (word, values) {
+            var text = window.WORDS[word] || word;
+            return values ? text.replace(/%\((\w+)\)s/g, function (_, name) { return values[name]; }) : text;
+        };
+    </script>
+    <script>
         (function () {
             var FONTS = {{ LOOK_FONTS|tojson }};  // routes/_shared.LOOK_FONTS
             var SITE = {{ SITE_LOOK|tojson }};  // the look the page came with (routes/_shared.SITE_LOOK)
@@ -173,31 +181,33 @@
 <body class="flex min-h-full flex-col text-slate-900">
 
     <!-- Navigation -->
+    {# The language switch and the Norwegian words need more room: the phone menu goes on until a wider screen #}
+    {% set wide = 'lg' if site_lang_switch() else 'md' %}
     <header class="bg-white border-b border-gray-200 sticky top-0 z-[100] print:hidden">
         <nav class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <!-- Logo -->
             <a href="/" class="flex items-center gap-2 group">
                 {{ brand.badge('w-8 h-8') }}
-                <span class="font-serif text-xl font-bold tracking-tight group-hover:text-orange-600 transition-colors">
+                <span class="font-serif text-xl font-bold tracking-tight {{ 'whitespace-nowrap' if site_lang_switch() }} group-hover:text-orange-600 transition-colors">
                     The Lazy Chef
                 </span>
             </a>
 
             <!-- The menu (components/site_menu.html), hidden on a phone -->
-            <div class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
+            <div class="hidden {{ wide }}:flex items-center gap-6 text-sm font-medium text-slate-600">
                 {{ site_nav.desktop() }}
             </div>
 
-            <div class="md:hidden flex items-center gap-2">
+            <div class="{{ wide }}:hidden flex items-center gap-2">
                 {# On a phone a visitor's way in stays in sight, not only at the bottom of the menu #}
                 {% if not current_user.is_authenticated %}
-                <a href="{{ url_for('register') }}" class="top-signup px-3 py-1.5 rounded-full bg-orange-600 text-white text-sm font-semibold whitespace-nowrap hover:bg-orange-700">Sign up</a>
+                <a href="{{ url_for('register') }}" class="top-signup px-3 py-1.5 rounded-full bg-orange-600 text-white text-sm font-semibold whitespace-nowrap hover:bg-orange-700">{{ _('Sign up') }}</a>
                 {% endif %}
 
                 <!-- Hamburger button (mobile only) -->
                 <button id="mobile-menu-btn"
                     class="p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-orange-600 transition-colors focus:outline-none"
-                    aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+                    aria-label="{{ _('Open menu') }}" aria-expanded="false" aria-controls="mobile-menu">
                     <!-- Hamburger icon -->
                     <svg id="hamburger-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -211,7 +221,7 @@
         </nav>
 
         <!-- Mobile Menu Panel (hidden by default) -->
-        <div id="mobile-menu" class="hidden md:hidden border-t border-slate-100 bg-white shadow-lg">
+        <div id="mobile-menu" class="hidden {{ wide }}:hidden border-t border-slate-100 bg-white shadow-lg">
             <div class="px-4 py-4 space-y-1 text-sm font-medium text-slate-700">
                 {{ site_nav.listed('py-2') }}
             </div>
@@ -258,8 +268,8 @@
     <!-- Footer -->
     <footer class="bg-slate-50 border-t border-slate-200 mt-auto print:hidden">
         <div class="max-w-screen-2xl mx-auto py-8 px-4 text-center text-slate-500 text-sm">
-            <p class="font-serif italic">"Cooking is the art of adjustment."</p>
-            <p class="mt-2 text-xs">Made in Norway with Claude · <a href="{{ url_for('privacy') }}" class="underline">Privacy</a></p>
+            <p class="font-serif italic">{{ _('"Cooking is the art of adjustment."') }}</p>
+            <p class="mt-2 text-xs">{{ _('Made in Norway with Claude') }} · <a href="{{ url_for('privacy') }}" class="underline">{{ _('Privacy') }}</a></p>
         </div>
     </footer>
 
@@ -351,8 +361,8 @@
                 <div class="absolute inset-0 flex items-center justify-center text-4xl" id="loadingIcon">
                     &#128104;&#8205;&#127859;</div>
             </div>
-            <h3 class="text-xl font-serif font-bold text-white mb-2" id="loadingTitle">Processing...</h3>
-            <p class="text-slate-300" id="loadingText">Please wait.</p>
+            <h3 class="text-xl font-serif font-bold text-white mb-2" id="loadingTitle">{{ _('Processing...') }}</h3>
+            <p class="text-slate-300" id="loadingText">{{ _('Please wait.') }}</p>
             <!-- Progress emulation -->
             <div class="mt-6 w-full bg-slate-700 rounded-full h-1.5 overflow-hidden">
                 <div class="bg-white h-1.5 rounded-full animate-progress origin-left" style="width: 0%"></div>
@@ -417,8 +427,8 @@
             <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"></circle>
             <polyline points="12 6 12 12 16 14" stroke="currentColor" stroke-width="2"></polyline>
         </svg>
-        <span id="global-queue-toast-msg">Added to queue!</span>
-        <a href="/next-recipes" class="ml-1 underline text-orange-300 hover:text-orange-200 text-xs">View Queue</a>
+        <span id="global-queue-toast-msg">{{ _('Added to queue!') }}</span>
+        <a href="/next-recipes" class="ml-1 underline text-orange-300 hover:text-orange-200 text-xs">{{ _('View Queue') }}</a>
     </div>
 
     <script>
@@ -428,7 +438,7 @@
                 .then(data => {
                     if (!data.success) return;
                     const removed = data.action === 'removed';
-                    const msg = removed ? 'Removed from Cook Next queue' : 'Added to Cook Next queue!';
+                    const msg = tr(removed ? 'Removed from Cook Next queue' : 'Added to Cook Next queue!');
                     if (btnEl) {
                         if (removed) {
                             btnEl.classList.remove('text-orange-500');

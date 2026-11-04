@@ -5,6 +5,7 @@ from typing import Optional
 from urllib.parse import urlencode
 
 from database.models import Ingredient, Recipe, RecipeLine, db
+from services.labels import label
 from services.recipe_library import FAMILY, PAGE, one_per_dish
 
 # The shortcuts, each a set of Ingredient.main_category (data/constraints/categories.json)
@@ -91,9 +92,9 @@ def page(f, shown=PAGE, admin=False):
 
 def shortcuts(f):
     """[(label, address, on)]: the groups and Staples, each one a switch that keeps the other choices."""
-    out = [(label, address(f, group='' if f.group == key else key), f.group == key)
-           for key, (label, _) in GROUPS.items()]
-    out.insert(0, ('Staples', address(f, staples='' if f.staples else '1'), f.staples))
+    out = [(label(text), address(f, group='' if f.group == key else key), f.group == key)
+           for key, (text, _) in GROUPS.items()]
+    out.insert(0, (label('Staples'), address(f, staples='' if f.staples else '1'), f.staples))
     return out
 
 

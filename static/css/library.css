@@ -255,6 +255,7 @@
 
 /* Sign up in the top bar on a phone (base.html): on the narrowest phones the name leaves no room, and it stays in the menu */
 @media (max-width: 339px) { .top-signup { display: none; } }
+@media (max-width: 354px) { html:lang(nb) .top-signup { display: none; } }  /* the Norwegian button is wider */
 
 /* Sign up and log in (register.html, login.html): why to have an account, or what it will do with what was pressed */
 .auth-why { margin: var(--space-3) 0 0; text-align: center; color: var(--color-ink); font-size: 15px; line-height: 1.45; }

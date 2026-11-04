@@ -16,7 +16,7 @@ from database.db_connector import configure_database
 from database.models import db, Ingredient, Recipe, RecipeMealType, RecipeDiet, User, Chef, UserRecipeInteraction, UserQueue, UserLink, ConceptVisual, VisualStyleGuide
 from services.storage_service import get_storage_provider
 from services.measures import SYSTEMS
-from services import language, view_as
+from services import labels, language, view_as
 from services.recipe_v2 import states
 from utils.compress import compress
 from utils.cross_site import refuse_cross_site
@@ -107,7 +107,7 @@ Babel(app, locale_selector=language.current)
 @app.template_filter('difficulty_label')
 def difficulty_label(level):
     """Stored difficulty (data/constraints/difficulty.json) as shown to readers."""
-    return DIFFICULTY_LABELS.get(level, level or '')
+    return labels.label(DIFFICULTY_LABELS.get(level, level or ''))
 
 
 @app.context_processor
@@ -128,6 +128,8 @@ app.add_template_global(icon)
 app.add_template_global(site_menu)
 app.add_template_global(language.current, 'site_lang')  # <html lang>
 app.add_template_global(language.switch, 'site_lang_switch')
+app.add_template_global(labels.js_words)  # the words of the scripts, tr() in base.html
+app.add_template_filter(labels.label)
 app.add_template_global(unit_system)  # the reader's measuring system, for the switch in the menu
 app.add_template_global(unit_chosen)
 app.add_template_global(SYSTEMS, 'UNIT_SYSTEMS')
