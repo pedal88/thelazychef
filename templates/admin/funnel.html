@@ -43,7 +43,7 @@
             <form method="post" action="{{ url_for('funnel.mark_posted', post_id=row.post.id) }}" class="inline"><button type="submit" class="ml-1 text-xs font-semibold text-slate-900 underline">Mark posted today</button></form>{% endif %}</td>
           {% for value in (s.views if s else none, s.saves if s else none, s.shares if s else none) %}<td class="py-2 pr-4 text-right tabular-nums {{ 'text-slate-300' if value is none }}">{{ value if value is not none else '–' }}</td>{% endfor %}
           <td class="py-2 pr-4 text-right tabular-nums">{{ row.visits }}</td>
-          <td class="py-2 pr-4 text-right tabular-nums {{ 'text-slate-300' if row.per_1000 is none }}">{{ row.per_1000 if row.per_1000 is not none else '–' }}</td>
+          <td class="py-2 pr-4 text-right tabular-nums {{ 'text-slate-300' if row.per_1000 is none }}">{{ row.per_1000|round|int if row.per_1000 is not none else '–' }}</td>
           <td class="py-2 pr-4 text-right tabular-nums">{{ row.signups }}</td>
           <td class="py-2 text-right tabular-nums">{{ row.made }}</td>
         </tr>
@@ -69,7 +69,7 @@
             <td class="py-2 pr-4 whitespace-nowrap">{{ r.platform_labels.get(g.platform, g.platform) }}</td>
             <td class="py-2 pr-4"><span class="text-xs text-slate-500">{{ kind }}</span> <span class="font-mono">{{ g.label }}</span></td>
             <td class="py-2 pr-4 text-right tabular-nums">{{ g.posts }}</td>
-            {% for value in (g.median_views, g.saves_1000, g.visits_1000) %}<td class="py-2 {{ 'pr-4' if not loop.last }} text-right tabular-nums {{ 'text-slate-300' if value is none }}">{{ value if value is not none else '–' }}</td>{% endfor %}
+            {% for value in (g.median_views, g.saves_1000, g.visits_1000) %}<td class="py-2 {{ 'pr-4' if not loop.last }} text-right tabular-nums {{ 'text-slate-300' if value is none }}">{{ value|round|int if value is not none else '–' }}</td>{% endfor %}
           </tr>
           {% endfor %}
           {% endfor %}

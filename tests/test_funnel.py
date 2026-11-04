@@ -324,6 +324,8 @@ class FunnelTests(unittest.TestCase):
         html = self.client.get('/admin/funnel').get_data(as_text=True)
         self.assertIn('Teriyaki salmon', html)
         self.assertIn('tiktok-5 · map · day 2', html)
+        self.assertIn('>2</td>', html)  # per 1000 views in whole numbers on the page, here and per series
+        self.assertNotIn('1.5</td>', html)
 
     def test_the_post_form_says_what_is_wrong(self):
         recipe = Recipe(title='Pad Thai', cuisine='', difficulty='', status='approved', schema_version=2)
