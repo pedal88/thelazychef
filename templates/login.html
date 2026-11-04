@@ -1,36 +1,37 @@
 {% extends 'base.html' %}
 {% from 'components/google_button.html' import google_button with context %}
 {% from 'components/password_field.html' import password_field %}
-{% block title %}Log in - The Lazy Chef{% endblock %}
+{% block title %}{{ _('Log in') }} - The Lazy Chef{% endblock %}
 {% block content %}
 <div class="h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-lg border border-slate-100">
         <div>
-            <h2 class="mt-6 text-center text-3xl font-extrabold text-slate-900 font-serif">Log in</h2>
-            {% if wanted %}<p class="auth-why">{{ wanted[1].title }} {{ {'save': 'is saved', 'queue': 'goes in Cook next', 'made': 'goes in your Made list'}[wanted[0]] }} as soon as you are in.</p>{% endif %}
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-slate-900 font-serif">{{ _('Log in') }}</h2>
+            {% if wanted %}{% set title = wanted[1].title %}<p class="auth-why">{{ {'save': _('%(title)s is saved as soon as you are in.', title=title), 'queue': _('%(title)s goes in Cook next as soon as you are in.', title=title), 'made': _('%(title)s goes in your Made list as soon as you are in.', title=title)}[wanted[0]] }}</p>{% endif %}
             <p class="mt-2 text-center text-sm text-gray-600">
-                New here? <a href="{{ url_for('register', **carry) }}" class="auth-link">Create an account</a>
+                {{ _('New here?') }} <a href="{{ url_for('register', **carry) }}" class="auth-link">{{ _('Create an account') }}</a>
             </p>
         </div>
         {{ google_button(carry) }}
         <form class="mt-8 space-y-6" action="{{ url_for('login', **carry) }}" method="POST">
             <div class="rounded-md shadow-sm -space-y-px">
                 <div>
-                    <label for="email" class="sr-only">Email address</label>
+                    <label for="email" class="sr-only">{{ _('Email address') }}</label>
                     <input id="email" name="email" type="email" autocomplete="email" required
                         class="appearance-none rounded-none relative block w-full px-3 py-2 border border-slate-300 placeholder-slate-500 text-slate-900 rounded-t-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
-                        placeholder="Email address">
+                        placeholder="{{ _('Email address') }}">
                 </div>
                 {{ password_field('current-password') }}
             </div>
             <div>
                 <button type="submit"
                     class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
-                    Log in
+                    {{ _('Log in') }}
                 </button>
             </div>
             {# By hand for now: python -m scripts.set_password #}
-            <p class="auth-note">Forgot your password? <a href="mailto:thelazychefai@gmail.com?subject=Forgot%20my%20password">Email us</a> from the address you signed up with, and we will set you a new one.</p>
+            {% set mail = 'mailto:thelazychefai@gmail.com?subject=' ~ _('Forgot my password')|urlencode %}
+            <p class="auth-note">{% trans trimmed %}Forgot your password? <a href="{{ mail }}">Email us</a> from the address you signed up with, and we will set you a new one.{% endtrans %}</p>
         </form>
     </div>
 </div>

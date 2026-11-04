@@ -1,46 +1,48 @@
 {% extends 'base.html' %}
 {% from 'components/google_button.html' import google_button with context %}
 {% from 'components/password_field.html' import password_field %}
-{% block title %}Register - The Lazy Chef{% endblock %}
+{% block title %}{{ _('Register') }} - The Lazy Chef{% endblock %}
 {% block content %}
 <div class="h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-lg border border-slate-100">
         <div>
-            <h2 class="mt-6 text-center text-3xl font-extrabold text-slate-900 font-serif">Join The Lazy Chef</h2>
-            {% if wanted %}<p class="auth-why">Make an account and {{ wanted[1].title }} {{ {'save': 'is saved', 'queue': 'goes in Cook next', 'made': 'goes in your Made list'}[wanted[0]] }}. You go straight back.</p>
-            {% else %}<p class="auth-why">Keep the dishes you save, what you want to cook next, and what you made, with your notes for next time.</p>{% endif %}
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-slate-900 font-serif">{{ _('Join The Lazy Chef') }}</h2>
+            {% if wanted %}{% set title = wanted[1].title %}<p class="auth-why">{{ {'save': _('Make an account and %(title)s is saved. You go straight back.', title=title), 'queue': _('Make an account and %(title)s goes in Cook next. You go straight back.', title=title), 'made': _('Make an account and %(title)s goes in your Made list. You go straight back.', title=title)}[wanted[0]] }}</p>
+            {% else %}<p class="auth-why">{{ _('Keep the dishes you save, what you want to cook next, and what you made, with your notes for next time.') }}</p>{% endif %}
             <p class="mt-2 text-center text-sm text-gray-600">
-                Have an account? <a href="{{ url_for('login', **carry) }}" class="auth-link">Log in</a>
+                {{ _('Have an account?') }} <a href="{{ url_for('login', **carry) }}" class="auth-link">{{ _('Log in') }}</a>
             </p>
         </div>
         {{ google_button(carry) }}
         <form class="mt-8 space-y-6" action="{{ url_for('register', **carry) }}" method="POST">
             <div class="rounded-md shadow-sm -space-y-px">
                 <div>
-                    <label for="email" class="sr-only">Email address</label>
+                    <label for="email" class="sr-only">{{ _('Email address') }}</label>
                     <input id="email" name="email" type="email" autocomplete="email" required
                         class="appearance-none rounded-none relative block w-full px-3 py-2 border border-slate-300 placeholder-slate-500 text-slate-900 rounded-t-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
-                        placeholder="Email address">
+                        placeholder="{{ _('Email address') }}">
                 </div>
                 {{ password_field('new-password') }}
             </div>
 
             <div>
-                <label for="source" class="block text-sm font-medium text-slate-700">How did you find us? <span class="font-normal text-slate-500">(optional)</span></label>
+                <label for="source" class="block text-sm font-medium text-slate-700">{{ _('How did you find us?') }} <span class="font-normal text-slate-500">{{ _('(optional)') }}</span></label>
                 <select id="source" name="source"
                     class="mt-1 block w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm">
-                    <option value="">Choose one</option>
-                    {% for value, label in sources %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+                    <option value="">{{ _('Choose one') }}</option>
+                    {# services/funnel.SOURCES has the English, as the admin's Funnel page shows it #}
+                    {% set words = {'search': _('Google or another search'), 'friend': _('A friend'), 'other': _('Somewhere else')} %}
+                    {% for value, label in sources %}<option value="{{ value }}">{{ words.get(value, label) }}</option>{% endfor %}
                 </select>
             </div>
 
             <div>
                 <button type="submit"
                     class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
-                    Create account
+                    {{ _('Create account') }}
                 </button>
             </div>
-            <p class="auth-note">How we handle your data: <a href="/privacy">Privacy</a>.</p>
+            <p class="auth-note">{% trans trimmed %}How we handle your data: <a href="/privacy">Privacy</a>.{% endtrans %}</p>
         </form>
     </div>
 </div>

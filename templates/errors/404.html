@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {# An address that does not exist (routes/error_routes.py). Many are typed by hand from a post. #}
-{% block title %}Page not found - The Lazy Chef{% endblock %}
+{% block title %}{{ _('Page not found') }} - The Lazy Chef{% endblock %}
 {% block content %}
 <div class="lib-empty">
     <span class="lib-empty-ic">{{ icon('search') }}</span>
-    <h1>That page is not here</h1>
-    <p>The address may have a typo in it. Came from a post? Every dish from it is in the recipes.</p>
-    <a class="lib-go" href="{{ url_for('recipes_list') }}">See all recipes</a>
+    <h1>{{ _('That page is not here') }}</h1>
+    <p>{{ _('The address may have a typo in it. Came from a post? Every dish from it is in the recipes.') }}</p>
+    <a class="lib-go" href="{{ url_for('recipes_list') }}">{{ _('See all recipes') }}</a>
 </div>
 {% endblock %}

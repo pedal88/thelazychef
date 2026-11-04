@@ -8,7 +8,7 @@ print(f"--- CONFIG DEBUG: STORAGE_BACKEND={os.getenv('STORAGE_BACKEND')} ---")
 print(f"--- CONFIG DEBUG: DB_BACKEND={os.getenv('DB_BACKEND', 'local')} ---")
 
 from flask import Flask, request, url_for
-from flask_babel import Babel
+from flask_babel import Babel, lazy_gettext
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from database.db_connector import configure_database
@@ -154,6 +154,8 @@ app.extensions['storage_provider'] = storage_provider
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+login_manager.login_message = lazy_gettext('Please log in to access this page.')
+login_manager.localize_callback = str  # the flash goes in the session, as words in the visitor's language
 
 @login_manager.user_loader
 def load_user(user_id):

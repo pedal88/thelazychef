@@ -18,7 +18,7 @@ os.environ.pop('K_SERVICE', None)
 from app import app  # noqa: E402
 from database.models import User, db  # noqa: E402
 from tests.test_smoke import WRITE_METHODS, _build_url, _rules  # noqa: E402
-from utils.cross_site import REFUSED  # noqa: E402
+REFUSED = 'This request came from another site, so it was not carried out. Go back to the page and try again.'
 
 HOST = 'thelazychef.app'
 BASE = f'https://{HOST}'
