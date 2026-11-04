@@ -52,6 +52,8 @@
           {% if s.equipment %}<p class="st-eq">{{ s.equipment }}</p>{% endif %}
           {% if s.done_when %}<p class="st-donewhen"><b>Done when</b> <span lang="{{ lang }}">{{ s.done_when }}</span></p>{% endif %}
           {% if s.passive_min %}<button type="button" class="st-timer" data-start>{{ icon('timer') }} <span>Start {{ s.passive_min }} min</span></button>{% endif %}
+          {# The way on, under the step you are on, on a phone; a wide screen has it on the card beside the steps #}
+          <button type="button" class="st-next" data-step-next>Done <span aria-hidden="true">→</span> next step</button>
         </div>
       </div>
     </li>

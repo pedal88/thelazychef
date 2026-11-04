@@ -147,6 +147,7 @@ class CookTests(unittest.TestCase):
             self.assertIn(part, html)
         self.assertEqual(len(re.findall(r'class="side-card[ "]', html)), 4)  # the rail, the timeline, the metro map and the delta
         self.assertEqual(len(re.findall(r'data-st="[^"]+"[^>]*data-at="\d+"', html)), html.count('class="st-tick"'))
+        self.assertEqual(html.count('data-step-next'), html.count('class="st-tick"'))  # Done under the step, on a phone
         # data-start marks a timer button (static/js/steps.js); on a step it made every tap on it start a timer
         self.assertIsNone(re.search(r'<li[^>]*\bdata-start\b', html))
         # The free time for "While you wait" and the clock; no trials left
