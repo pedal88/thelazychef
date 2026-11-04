@@ -1,8 +1,9 @@
 """The video inbox (services/recipe_v2/inbox.py): cooking videos saved from the phone. Admin only, except the task
 Cloud Tasks calls.
 
-The iPhone shortcut opens /admin/inbox/add?url=… in Safari (docs/VIDEO_INBOX.md). The GET writes nothing: it gives a
-page that sends itself as a POST, which a form on another site cannot do (utils/cross_site.py).
+The iPhone shortcut copies the link and opens /admin/inbox/add, where Paste and save sends it (docs/VIDEO_INBOX.md). With
+?url=… the GET writes nothing: it gives a page that sends itself as a POST, which a form on another site cannot do
+(utils/cross_site.py).
 
 Many links go through /admin/inbox/check, which reads them out of pasted text or a file and saves nothing: it says how many
 are new and what the look-ups cost, and its form saves them.
