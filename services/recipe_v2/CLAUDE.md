@@ -19,8 +19,8 @@ equipment, active and standing minutes, which lines and earlier steps they use).
 2. Round 2 (`structure`): Claude turns the text into the graph with structured output. `services/recipe_v2_validator.py`
    checks it; errors go back for at most `MAX_RETRIES = 2` new attempts. A recipe still invalid is saved as a flagged
    draft with its errors.
-3. `match_pantry` links lines to pantry items (`services/recipe_service._resolve_ingredient`: the model's pantry id,
-   then exact name, alias, fuzzy match). `store.save_v2` writes the graph.
+3. `match_pantry` links lines to pantry items by name only (`services/recipe_service._resolve_ingredient`: exact name,
+   alias, fuzzy match). The model's `pantry_id` links nothing: it points at the nearest item, a swap nobody would see. `store.save_v2` writes the graph.
 4. `refresh`: `derive.apply` (heat source, main protein, clean-up, total time from the planner, derived meal tags),
    `nutrition.apply`, and the chef's hard rules (`persona.check`, noted with rule `persona`).
 

@@ -6,35 +6,20 @@ from ai_engine import get_pantry_id, normalize_ingredient_name
 from services.ingredient_service import normalize_alias
 
 
-def _extract_pre_resolved_id(ing) -> str | None:
-    """Safely extract the LLM-provided pantry_id from an ingredient object."""
-    if hasattr(ing, 'pantry_id'):
-        return getattr(ing, 'pantry_id', None)
-    if isinstance(ing, dict):
-        return ing.get('pantry_id')
-    return None
-
-
 def _resolve_ingredient(ing) -> Ingredient | None:
     """
-    Try to resolve an ingredient to a DB record, in this order:
-    1. The pantry_id the LLM picked (must exist).
-    2. An active ingredient with exactly this name.
-    3. An alias with this name (IngredientAlias).
-    Steps 2 and 3 are tried with the name as written, then without cooking
+    Try to resolve an ingredient to a DB record, by its name only, in this order:
+    1. An active ingredient with exactly this name.
+    2. An alias with this name (IngredientAlias).
+    Steps 1 and 2 are tried with the name as written, then without cooking
     qualifiers.
-    4. Fuzzy name match via get_pantry_id.
+    3. Fuzzy name match via get_pantry_id.
     Returns the Ingredient ORM object or None.
+
+    A pantry_id from the model is not used. It points at the nearest item ("yogurt butter" at butter), which would be
+    a swap nobody sees: the line would keep its name and take another food's nutrition. A line that does not match goes
+    to the pantry job (services/recipe_v2/pantry_fill.py), which decides it.
     """
-    pre_id = _extract_pre_resolved_id(ing)
-
-    if pre_id:
-        record = db.session.execute(
-            db.select(Ingredient).where(Ingredient.food_id == pre_id)
-        ).scalars().first()
-        if record:
-            return record
-
     name = ing.name if hasattr(ing, 'name') else ing.get('name', '')
     # The name as written, then without cooking qualifiers ("feta, crumbled" -> "feta")
     keys = list(dict.fromkeys(k for k in (normalize_alias(name), normalize_alias(normalize_ingredient_name(name))) if k))

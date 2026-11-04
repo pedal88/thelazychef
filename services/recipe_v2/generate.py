@@ -149,7 +149,7 @@ def structure(text, call=None):
 
 
 def match_pantry(data):
-    """Pantry ingredient per line: the model's pantry_id if it exists, otherwise the name matcher.
+    """Pantry ingredient per line, by its name (recipe_service._resolve_ingredient); the rest goes to the pantry job.
 
     Returns (ingredient ids by line local_id, names of lines not in the pantry)."""
     import ai_engine

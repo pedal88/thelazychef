@@ -181,6 +181,8 @@ Pantryet skal dekke det man trenger til de fleste retter, uten å bøye oppskrif
 
 Et bytte må bestå fire spørsmål, og ett nei betyr at Pål spørres: retten er seg selv (ikke det den er oppkalt etter eller særpreget av), varen gjør samme jobb i samme steg, den som spiser merker det ikke, og kaloriene per porsjon endrer seg under omtrent 10 %. Ved tvil spør den, fordi et dårlig bytte ødelegger retten for leseren, mens et spørsmål koster Pål sekunder. Pålitelig blir dette over tid: svarene hans vises Claude neste gang (`pantry_fill.earlier`), så den lærer hvor han trekker grensen. Om en butikk i Norge selger varen, er ikke en del av vurderingen.
 
+Linjer kobles bare på navn (eksakt, alias, fuzzy). `pantry_id` fra modellen kobler ingenting, fordi den peker på nærmeste vare: «yogurt butter» ble stående med næring og symbol fra smør uten at noen så det. `scripts/pantry_links.py` viser slike koblinger fra før og alias den gamle jobben laget.
+
 Retter AI-en skriver selv (`idea`, `version`), ser pantryets navn allerede i runde 1 og kan gå utenfor når retten krever det. Oppskrifter fra en kilde skrives slik kilden sier, og møter pantry-jobben etterpå. Publiserte oppskrifter endres ikke av jobben. Samme ingredienser gjelder på alle språk: den norske teksten viser det norske navnet på samme vare.
 
 **Første gjennomgang:** alle aktive ingredienser sorteres av Claude mot definisjonen over (kjerne, lang hale, ikke en matlagingsingrediens, duplikat av), og Claude foreslår kjerneingredienser som mangler per kjøkken. Admin går gjennom forslagene i et ark før noe endres (`scripts/pantry_review.py`). Duplikater flettes ved at navnet blir alias for vinneren og taperen blir inaktiv, så alt kan reverseres.
