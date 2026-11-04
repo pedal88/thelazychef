@@ -34,7 +34,7 @@
 {% if current_user.is_authenticated %}
 <div class="flex items-center gap-3 border-l pl-4 ml-2">
     <span class="text-xs text-slate-400">{{ current_user.email }}</span>
-    <a href="{{ url_for('logout') }}" class="hover:text-orange-600 transition-colors">Log out</a>
+    <form method="post" action="{{ url_for('logout') }}"><button type="submit" class="hover:text-orange-600 transition-colors">Log out</button></form>
 </div>
 {% else %}
 <a href="{{ url_for('login') }}" class="hover:text-orange-600 transition-colors ml-4">Log in</a>
@@ -59,7 +59,7 @@
 {% if current_user.is_authenticated %}
     <div class="flex items-center justify-between px-3">
         <span class="text-xs text-slate-400 truncate">{{ current_user.email }}</span>
-        <a href="{{ url_for('logout') }}" class="text-sm text-orange-600 font-semibold">Log out</a>
+        <form method="post" action="{{ url_for('logout') }}"><button type="submit" class="text-sm text-orange-600 font-semibold">Log out</button></form>
     </div>
 {% else %}
     <div class="flex gap-3 px-3">

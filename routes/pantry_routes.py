@@ -526,7 +526,7 @@ def search_ingredients_admin_api():
 
 
 
-@pantry_bp.route('/api/admin/set-pending-link/<int:ingredient_id>', methods=['GET'])
+@pantry_bp.route('/api/admin/set-pending-link/<int:ingredient_id>', methods=['POST'])
 @login_required
 def set_pending_link(ingredient_id: int):
     """Store ingredient_id in session so the next recipe save auto-links it."""

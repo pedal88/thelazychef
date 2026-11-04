@@ -2,13 +2,11 @@
 Cloud Tasks calls.
 
 The iPhone shortcut opens /admin/inbox/add?url=… in Safari (docs/VIDEO_INBOX.md). The GET writes nothing: it gives a
-page that sends itself as a POST, with a token kept in the session, so that a form on another site cannot save anything.
+page that sends itself as a POST, which a form on another site cannot do (utils/cross_site.py).
 """
-import hmac
 import logging
-import secrets
 
-from flask import Blueprint, abort, flash, jsonify, redirect, render_template, request, session, url_for
+from flask import Blueprint, abort, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import login_required
 
 from database.models import VideoInbox, db
@@ -18,12 +16,6 @@ from utils.decorators import admin_required
 
 video_inbox_bp = Blueprint('video_inbox', __name__)
 log = logging.getLogger(__name__)
-
-
-def _token():
-    if 'inbox_token' not in session:
-        session['inbox_token'] = secrets.token_urlsafe(32)
-    return session['inbox_token']
 
 
 @video_inbox_bp.route('/admin/inbox')
@@ -42,15 +34,13 @@ def add_page():
     shared = request.args.get('url') or ''
     link = inbox_service.first_link(shared)
     usable = bool(link and is_video(link))
-    return render_template('video_inbox_add.html', shared=shared, link=link, usable=usable, token=_token()), 200 if usable or not shared else 400
+    return render_template('video_inbox_add.html', shared=shared, link=link, usable=usable), 200 if usable or not shared else 400
 
 
 @video_inbox_bp.route('/admin/inbox/add', methods=['POST'])
 @login_required
 @admin_required
 def add():
-    if not hmac.compare_digest(request.form.get('token') or '', session.get('inbox_token') or secrets.token_urlsafe(32)):
-        abort(400)
     row, how = inbox_service.add(request.form.get('url'))
     if row is None:
         flash('That is not a link to a TikTok, Instagram or YouTube video.', 'error')

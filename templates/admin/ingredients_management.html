@@ -1532,7 +1532,7 @@
         btn.disabled = true;
         btn.innerHTML = `<svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg> Setting up…`;
         try {
-            const res = await fetch(`/api/admin/set-pending-link/${_lmIngId}`);
+            const res = await fetch(`/api/admin/set-pending-link/${_lmIngId}`, { method: 'POST' });
             const data = await res.json();
             if (data.success) {
                 // Redirect to the generate page — the session will auto-link after save

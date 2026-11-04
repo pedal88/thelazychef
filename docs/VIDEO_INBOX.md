@@ -28,7 +28,7 @@ estimated. The recipes are drafts until approved. A row stays in the inbox, mark
 
 ## How it works
 
-- `/admin/inbox/add?url=…` writes nothing on the GET. The page sends itself as a POST with a token from the session.
+- `/admin/inbox/add?url=…` writes nothing on the GET. The page sends itself as a POST, which another site's form cannot do (`utils/cross_site.py`).
   Only links to the video hosts in `services/recipe_v2/sources.py` are saved, so a link from someone else can at worst
   add a video to the inbox.
 - A video is known by its `video_key`: the same video shared twice, or linked another way, is one row. A short link

@@ -72,6 +72,8 @@ If Python 3.13 isn't available, say so and rely on CI rather than claiming a loc
 
 - Every endpoint that changes data needs `@login_required`, and admin pages `@admin_required`; `tests/test_smoke.py`
   fails otherwise. Cloud Tasks endpoints check the queue's OIDC token instead (`tasks.verified`).
+- CSRF: `utils/cross_site.py` refuses writes from another site for the whole app, so forms and `fetch` need no token. Never
+  change data on a GET.
 - Model names only in `services/ai_models.py`. Claude calls go through `services/recipe_v2/claude.call` (takes a `call`
   argument so tests can stand in for Claude: tests never call a real model or Google service).
 - User-facing pages use the design tokens and the line icons (`icon()`), not Tailwind colours or emoji.

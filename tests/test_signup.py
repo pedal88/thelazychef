@@ -71,7 +71,7 @@ class SignupTests(unittest.TestCase):
         self.register(query=self.query('save'))
         user = self.user()
         self.assertEqual(self.mark(user).status, 'favorite')
-        self.client.get('/logout')
+        self.client.post('/logout')
         self.client.post('/login' + self.query('queue'), data={'email': 'cook@test', 'password': 'pw'})
         self.client.post('/login' + self.query('queue'), data={'email': 'cook@test', 'password': 'pw'})  # adds once
         self.assertEqual(len(db.session.execute(db.select(UserQueue).filter_by(user_id=user.id)).scalars().all()), 1)
@@ -79,7 +79,7 @@ class SignupTests(unittest.TestCase):
 
     def test_an_existing_email_goes_to_log_in_with_what_was_pressed(self):
         self.register()
-        self.client.get('/logout')
+        self.client.post('/logout')
         response = self.register('Cook@Test ', query=self.query('made'))
         self.assertTrue(response.location.startswith('/login?'))
         self.assertIn('do=made', response.location)
@@ -88,7 +88,7 @@ class SignupTests(unittest.TestCase):
     def test_nothing_is_done_for_a_recipe_a_visitor_cannot_see_or_an_unknown_action(self):
         self.register(query=self.query('made', self.draft))
         self.assertIsNone(db.session.get(UserRecipeInteraction, (self.user().id, self.draft.id)))
-        self.client.get('/logout')
+        self.client.post('/logout')
         self.register('other@test', query=f'?do=delete&recipe={self.recipe.id}')
         self.assertIsNone(self.mark(self.user('other@test')))
 
@@ -126,7 +126,7 @@ class SignupTests(unittest.TestCase):
 
     def test_a_new_password_is_set_only_when_asked_and_logs_in(self):
         self.register()
-        self.client.get('/logout')
+        self.client.post('/logout')
         before = self.user().password_hash
         self.assertEqual(set_password('COOK@test')[0].email, 'cook@test')
         self.assertEqual(self.user().password_hash, before)
@@ -139,7 +139,7 @@ class SignupTests(unittest.TestCase):
     def test_an_email_is_one_account_whatever_its_case_and_spaces(self):
         self.register(' Cook@Test ')
         self.assertIsNotNone(self.user('cook@test'))
-        self.client.get('/logout')
+        self.client.post('/logout')
         response = self.client.post('/login', data={'email': 'COOK@test', 'password': 'pw'})
         self.assertEqual(response.location, '/recipes')
 
@@ -147,9 +147,9 @@ class SignupTests(unittest.TestCase):
         response = self.register()
         self.assertEqual(response.location, '/recipes?time=30')
         self.assertIn('tap the pot on one to cook it next', self.client.get(response.location).get_data(as_text=True))
-        self.client.get('/logout')
+        self.client.post('/logout')
         self.assertEqual(self.client.post('/login', data={'email': 'cook@test', 'password': 'pw'}).location, '/recipes')
-        self.client.get('/logout')
+        self.client.post('/logout')
         self.assertEqual(self.register('other@test', '?next=/discover').location, '/discover')  # keeps its place
 
     def test_an_account_from_before_with_capitals_still_logs_in(self):
