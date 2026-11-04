@@ -162,6 +162,8 @@ def match_pantry(data):
 
 
 PERSONA_KINDS = ('description', 'version')  # recipe.source_type of recipes the chef persona wrote
+ESTIMATE = 'estimate'  # the recipe note: what the source did not say and the model decided (rule 23c of the prompt)
+INFORMATION = ('pantry', ESTIMATE)  # notes that tell the reviewer something and never flag the recipe
 
 
 def refresh(recipe, chef=None):
@@ -177,6 +179,10 @@ def refresh(recipe, chef=None):
     return notes
 
 
+def needs_review(recipe):
+    return any(e.get('rule') not in INFORMATION for e in recipe.validation_errors or [])
+
+
 def recalculate(recipe):
     """Refresh a saved v2 recipe in place (services/recipe_v2/derive.py, nutrition.py, persona.py). Lines not in the
     pantry are matched again first: an ingredient or alias added since ("frozen chopped spinach") links them."""
@@ -188,8 +194,7 @@ def recalculate(recipe):
                 line.ingredient = db.session.get(Ingredient, found[line.local_id])
     refresh(recipe, persona.spec_for(recipe))
     missing = any(line.ingredient_id is None for line in recipe.lines)
-    noted = [e for e in recipe.validation_errors or [] if e.get('rule') != 'pantry']  # what pantry_fill did is information
-    recipe.is_flagged_for_review = bool(noted) or missing
+    recipe.is_flagged_for_review = needs_review(recipe) or missing
     return recipe
 
 
@@ -230,16 +235,17 @@ def create_recipe(kind, source, chef_id=None, language=None, call=None, recipe=N
         ids, missing = match_pantry(data)
         save_v2(recipe, dict(data, title=title), ids)
         db.session.flush()
-        recipe.validation_errors = []
+        recipe.validation_errors = [{'rule': ESTIMATE, 'message': m} for m in data.get('estimates') or []]
         refresh(recipe, chef if kind in ('idea', 'version') else None)
     else:
         recipe.validation_errors = attempts[-1]['errors']
-    recipe.is_flagged_for_review = not data or bool(missing) or bool(data and recipe.validation_errors)
+    recipe.is_flagged_for_review = not data or bool(missing) or needs_review(recipe)
     db.session.commit()
 
     report = {
         'recipe_id': recipe.id, 'valid': bool(data), 'attempts': len(attempts), 'missing_in_pantry': missing,
         'persona_notes': [e['message'] for e in recipe.validation_errors if e.get('rule') == 'persona'],
+        'estimates': [e['message'] for e in recipe.validation_errors if e.get('rule') == ESTIMATE],
         'warnings': attempts[-1]['warnings'], 'cost_usd': round(sum(c['cost_usd'] for c in calls), 4),
         'seconds': round(sum(c['seconds'] for c in calls), 1),
     }

@@ -7,6 +7,10 @@ import glob
 
 class SocialMediaExtractor:
     TEMP_DIR = "temp_video"
+    # Cloud Run's disk is its memory, so a long video must not be downloaded. Nothing is saved over these limits, and
+    # download_video raises as for any other video it cannot get.
+    MAX_SECONDS = 600
+    MAX_BYTES = 200 * 1024 * 1024
 
     @classmethod
     def download_video(cls, url: str) -> dict:
@@ -22,8 +26,11 @@ class SocialMediaExtractor:
         output_template = f"{cls.TEMP_DIR}/{unique_id}.%(ext)s"
 
         ydl_opts = {
-            'format': 'best[ext=mp4]',  # Prefer MP4 for Gemini compatibility
+            'format': 'best[ext=mp4]/best',  # Prefer MP4 for Gemini compatibility
             'outtmpl': output_template,
+            'noplaylist': True,
+            'max_filesize': cls.MAX_BYTES,
+            'match_filter': yt_dlp.utils.match_filter_func(f'duration <=? {cls.MAX_SECONDS}'),
             'quiet': True,
             'no_warnings': True,
             'writethumbnail': True,  # Ask yt-dlp to also grab the cover image

@@ -31,6 +31,7 @@ PUBLIC_WRITE_ENDPOINTS = {
     'register',
     'search_ingredients_api',  # read-only search that happens to use POST
     'funnel.ref_seen',  # counts a visitor's own visit once, like the short addresses they open
+    'logout',  # logs out whoever asks, and nobody when no one is logged in
 }
 
 

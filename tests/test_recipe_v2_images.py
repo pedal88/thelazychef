@@ -156,7 +156,7 @@ class ImageTests(unittest.TestCase):
         self.client.set_cookie('dish_images', 'overhead')
         html = self.client.get(url).get_data(as_text=True)
         self.assertIn('Make “From above” images', html)  # none in that style yet
-        self.client.get('/logout')
+        self.client.post('/logout')
         self.client.set_cookie('dish_images', 'editorial')
         html = self.client.get(f'/recipe/{self.ids["carbonara"]}').get_data(as_text=True)
         self.assertNotIn('trialbar', html)  # visitors see neither the switch nor trial images

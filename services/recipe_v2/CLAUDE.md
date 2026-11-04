@@ -56,7 +56,9 @@ then `refresh`. Run it on saved recipes after changing derive, nutrition or the 
   never reach Claude, Gemini or Google. Recorded answers are in `data/pilot_v2/`.
 - Saved recipes do not change when code changes: derived fields and nutrition change only on `recalculate`.
 - Notes on `recipe.validation_errors` have a `rule`. `persona` and the image check flag a recipe for review;
-  `pantry` (what the pantry job did) is information only and does not flag it.
+  `pantry` (what the pantry job did) and `estimate` (what the source did not say and the model decided, such as an
+  amount a video never gives) are information only and do not flag it (`generate.INFORMATION`). The admin chip shows
+  the estimates. `chef_note` is the cook's tip and is public, so what the model decided never goes there.
 - Nutrition counts the grams that end up in the food (`gram_weight` from the model, else units). Cooked rice, pasta
   and pulses are converted to dry weight (`nutrition.COOKED_GAIN`). The totals are hidden when under 95 % of the
   weight is in the pantry.
