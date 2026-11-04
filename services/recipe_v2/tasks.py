@@ -11,6 +11,7 @@ and APP_BASE_URL. Without TASKS_QUEUE (running locally) the job runs straight
 away in the request.
 """
 import base64
+import datetime
 import json
 import logging
 import os
@@ -25,6 +26,8 @@ TASK_PATH = '/internal/tasks/recipe-v2/{id}'
 IMAGES_PATH = '/internal/tasks/recipe-v2-images/{id}'  # the dish and part images of a recipe already made
 PANTRY_PATH = '/internal/tasks/recipe-v2-pantry/{id}'  # the pantry items for its unlinked lines (pantry_fill.py)
 INBOX_PATH = '/internal/tasks/video-inbox/{id}'  # what a video saved to the inbox is (inbox.py)
+INBOX_MANY_PATH = '/internal/tasks/video-inbox-many'  # queues the look-ups of many videos, spread out in time
+INBOX_SPACING = 5  # seconds between those look-ups: the queue stays free for recipes, and TikTok sees few requests
 
 
 def configured():
@@ -63,10 +66,37 @@ def enqueue_inbox(row_id):
     return True
 
 
-def _queue(path, payload, at=None):
+def enqueue_inbox_many(ids):
+    """Queue the look-ups of many videos with one task, since hundreds would not fit in a request. False without a queue."""
+    if not configured():
+        return False
+    _queue(INBOX_MANY_PATH, {'ids': ids})
+    return True
+
+
+def run_inbox_many(ids):
+    """Queue one look-up per video, INBOX_SPACING seconds apart. One that cannot be queued is logged, and the rest go
+    on: it shows as waiting in the inbox, which can queue those again. Returns how many were queued."""
+    session, queued = _session(), 0
+    start = datetime.datetime.now(datetime.UTC)
+    for n, row_id in enumerate(ids):
+        try:
+            _queue(INBOX_PATH.format(id=row_id), {}, at=start + datetime.timedelta(seconds=n * INBOX_SPACING), session=session)
+            queued += 1
+        except Exception:
+            log.exception('Video inbox %s: could not queue the look-up', row_id)
+    return queued
+
+
+def _session():
     import google.auth
     from google.auth.transport.requests import AuthorizedSession
 
+    credentials, _ = google.auth.default(scopes=['https://www.googleapis.com/auth/cloud-platform'])
+    return AuthorizedSession(credentials)
+
+
+def _queue(path, payload, at=None, session=None):
     base = os.environ['APP_BASE_URL'].rstrip('/')
     queue = f"projects/{PROJECT}/locations/{os.getenv('TASKS_LOCATION', 'europe-west1')}/queues/{os.environ['TASKS_QUEUE']}"
     body = base64.b64encode(json.dumps(payload).encode()).decode()
@@ -79,8 +109,7 @@ def _queue(path, payload, at=None):
     }}
     if at:  # a UTC datetime: the task waits in the queue until then (at most 30 days)
         task['task']['scheduleTime'] = at.strftime('%Y-%m-%dT%H:%M:%SZ')
-    credentials, _ = google.auth.default(scopes=['https://www.googleapis.com/auth/cloud-platform'])
-    res = AuthorizedSession(credentials).post(f'https://cloudtasks.googleapis.com/v2/{queue}/tasks', json=task, timeout=20)
+    res = (session or _session()).post(f'https://cloudtasks.googleapis.com/v2/{queue}/tasks', json=task, timeout=20)
     res.raise_for_status()
 
 
@@ -200,7 +229,7 @@ def run_inbox(row_id, attempt=0):
     from services.recipe_v2 import inbox
 
     row = db.session.get(VideoInbox, row_id)
-    if row is None:
+    if row is None or (row.webpage_url and row.dish_name):  # gone, or queued twice and done
         return True
     try:
         inbox.look_up(row)

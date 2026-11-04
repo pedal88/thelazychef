@@ -4,6 +4,11 @@
 {% block title %}Save a video - The Lazy Chef{% endblock %}
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/recipe_v2.css') }}">
+<style>
+  .inbox-many { margin-top: var(--space-5); padding-top: var(--space-4); border-top: 1px solid var(--color-line); }
+  .inbox-many h2 { margin: 0; }
+  .inbox-many textarea, .inbox-many input[type=file] { width: 100%; box-sizing: border-box; }
+</style>
 {% endblock %}
 {% block content %}
 <article class="rv2 batch">
@@ -23,6 +28,18 @@
     <input id="video-link" type="text" inputmode="url" name="url" required autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste a TikTok, Instagram or YouTube link">
     <button type="submit" class="go">Save</button>
   </form>
+  <section class="inbox-many">
+    <h2>Many links</h2>
+    <p class="hint">Paste a list or any text with links in it, or choose a file such as TikTok's data download. The next page says what it found, and nothing is saved before you say so there.</p>
+    <form method="post" class="newform" enctype="multipart/form-data" action="{{ url_for('video_inbox.check') }}">
+      <label for="many-text" class="eyebrow">Text with links</label>
+      <textarea id="many-text" name="text" rows="6" autocomplete="off" autocapitalize="off" spellcheck="false"></textarea>
+      <label for="many-file" class="eyebrow">Or a file</label>
+      <input id="many-file" type="file" name="file" accept=".txt,.json,.csv,.html,.zip">
+      <p class="hint">A .txt, .json, .csv or .zip file, up to 30 MB. A whole download also lists every video you have watched, so if it finds too many, choose only the file with your favourites.</p>
+      <button type="submit" class="go">Check the links</button>
+    </form>
+  </section>
   {% endif %}
   <p><a class="back" href="{{ url_for('video_inbox.inbox') }}">Video inbox</a></p>
 </article>

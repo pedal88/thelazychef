@@ -6,10 +6,15 @@ video shared twice or linked another way is one row, and a video already made in
 Each saved video is looked up in the background (look_up): its caption with yt-dlp, without downloading it, then one
 small Claude call for the dish's name, the recipes it looks most like and suggested metadata. It need not be perfect,
 since making the recipe has its own logic. Under a cent a video; no video goes to Gemini here.
+
+Many links can be saved at once, from pasted text or a file such as TikTok's data download (sort, save_many). The text
+can be anything: links are read out of it, so nothing here depends on the file's format.
 """
+import io
 import json
 import os
 import re
+import zipfile
 from urllib.parse import parse_qs, urlparse, urlunparse
 
 from jinja2 import Environment, FileSystemLoader
@@ -25,10 +30,15 @@ env = Environment(loader=FileSystemLoader(os.path.join(ROOT, 'data', 'prompts'))
 CAPTION_MAX = 4000  # what the model reads of a caption
 SIMILAR_MAX = 3
 NO_DETAILS = 'Could not read the video\'s details. It may be private or blocked; it can still be tried as a recipe.'
+MAX_LINKS = 1000  # new videos saved at once: a whole data download also lists every video watched
+MAX_TEXT = 30 * 1024 * 1024  # bytes read from what is pasted or uploaded; Cloud Run takes 32 MB a request
+COST_A_VIDEO = 0.01  # at most, in USD (docs/SERVICES_AND_COSTS.md)
 
-LINK = re.compile(r'https?://[^\s<>"\']+', re.IGNORECASE)
+LINK = re.compile(r'https?://[^\s<>"\'\\,\]}]+', re.IGNORECASE)
+SHORT_LINKS = ('vm.tiktok.com', 'vt.tiktok.com')  # hosts where a link only says what it is once it is opened
 # The ways the same video is linked: (host, pattern on the path, the key's prefix)
 KEYS = (('tiktok.com', re.compile(r'/video/(\d+)'), 'tiktok'),
+        ('tiktokv.com', re.compile(r'/video/(\d+)'), 'tiktok'),
         ('instagram.com', re.compile(r'/(?:reels?|p|tv)/([\w-]+)'), 'instagram'),
         ('youtube.com', re.compile(r'/(?:shorts|embed|live)/([\w-]+)'), 'youtube'),
         ('youtu.be', re.compile(r'/([\w-]+)'), 'youtube'))
@@ -83,6 +93,80 @@ def made_from():
     rows = db.session.execute(db.select(Recipe.id, Recipe.source_input).where(
         Recipe.source_type == 'video', Recipe.source_input.isnot(None)).order_by(Recipe.id)).all()
     return {video_key(source): rid for rid, source in rows}
+
+
+def links_in(text):
+    """Every link in the text, whatever the text is: a list, a message or a JSON file with its slashes escaped."""
+    text = (text or '').replace('\\/', '/').replace('\\u002F', '/').replace('\\u002f', '/')
+    return [m.rstrip('.;:!?)') for m in LINK.findall(text)]
+
+
+def text_of_upload(data, filename=''):
+    """The text of an uploaded file. A zip file gives the text of the files in it, as far as MAX_TEXT goes."""
+    if not (filename or '').lower().endswith('.zip'):
+        return data[:MAX_TEXT].decode('utf-8', errors='replace')
+    parts, left = [], MAX_TEXT
+    with zipfile.ZipFile(io.BytesIO(data)) as z:
+        for info in z.infolist():
+            if left > 0 and not info.is_dir() and info.filename.lower().endswith(('.txt', '.json', '.csv', '.html')):
+                with z.open(info) as f:
+                    part = f.read(left)
+                left -= len(part)
+                parts.append(part.decode('utf-8', errors='replace'))
+    return '\n'.join(parts)
+
+
+def _one_video(url):
+    """The key of a link to one video we can read; None for other links on those hosts (a profile, a sound)."""
+    try:
+        if not is_video(url):
+            return None
+        key = video_key(url)
+        host, path = (urlparse(url).hostname or '').lower(), urlparse(url).path
+    except ValueError:  # not a real address
+        return None
+    short = host in SHORT_LINKS or (host.endswith('tiktok.com') and path.startswith('/t/'))
+    if len(url) > 1000 or len(key) > 300 or not (short or key.startswith(('tiktok:', 'instagram:', 'youtube:'))):
+        return None
+    return key
+
+
+def sort(text):
+    """What the links in a text are, saving nothing: {'new': clean links, 'known': how many are in the inbox or made
+    already, or there twice, 'other': how many are no video}."""
+    seen = set(db.session.execute(db.select(VideoInbox.video_key)).scalars()) | set(made_from())
+    new, known, other = [], 0, 0
+    for link in links_in(text):
+        try:
+            url = clean_url(link)
+        except ValueError:  # not a real address
+            other += 1
+            continue
+        key = _one_video(url)
+        if key is None:
+            other += 1
+        elif key in seen:
+            known += 1
+        else:
+            seen.add(key)
+            new.append(url)
+    return {'new': new, 'known': known, 'other': other}
+
+
+def save_many(text):
+    """Save the new videos in the text, up to MAX_LINKS; a discarded video stays discarded. Returns the rows. The caller
+    commits and queues the look-ups."""
+    rows = [VideoInbox(url=url, video_key=video_key(url)) for url in sort(text)['new'][:MAX_LINKS]]
+    db.session.add_all(rows)
+    db.session.flush()
+    return rows
+
+
+def waiting():
+    """The ids of the videos in the inbox that have not been looked up."""
+    return list(db.session.execute(db.select(VideoInbox.id).where(
+        VideoInbox.status == 'new', VideoInbox.webpage_url.is_(None), VideoInbox.dish_name.is_(None),
+        VideoInbox.meta_error.is_(None)).order_by(VideoInbox.id)).scalars())
 
 
 def _proteins():
