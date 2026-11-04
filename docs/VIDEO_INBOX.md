@@ -3,7 +3,16 @@
 Cooking videos seen on the phone are saved to `/admin/inbox`, to pick from later. Saving a video makes nothing and costs
 nothing. Admin only.
 
+## Pasting a link
+
+Copy the link in TikTok or Instagram, open **Paste a link** in the inbox (`/admin/inbox/add`), paste it and save. This is
+the way that is known to work.
+
 ## The iPhone shortcut
+
+**It does not work yet.** Tried on 04.11.2026, with TikTok and Chrome: the address it builds had a space after `url=`,
+so the link was lost on the way to the browser, and the cause was not found. Removing the space in the shortcut did not
+help. These are the steps as far as they went.
 
 Make it once, in the Shortcuts app on the iPhone:
 
