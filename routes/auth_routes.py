@@ -134,7 +134,7 @@ def privacy():
     return render_template('privacy.html')
 
 
-@auth_bp.route('/logout')
+@auth_bp.route('/logout', methods=['POST'])
 def logout():
     logout_user()
     flash('You have been logged out.', 'info')

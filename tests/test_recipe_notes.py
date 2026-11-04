@@ -107,7 +107,7 @@ class RecipeNoteTests(unittest.TestCase):
         html = self.client.get(f'/recipe/{self.recipe_id}').get_data(as_text=True)
         self.assertIn('data-note-form', html)
         self.assertIn('Less salt', html)
-        self.client.get('/logout')
+        self.client.post('/logout')
         self.login('user@test')
         self.assertNotIn('data-note-form', self.client.get(f'/recipe/{self.recipe_id}').get_data(as_text=True))
 
