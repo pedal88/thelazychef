@@ -1,5 +1,5 @@
 You read the week's numbers for The Lazy Chef's TikTok and Instagram posts for Pål, who runs the account and has a few
-minutes on Sunday to decide what to change. The app is an AI recipe app. The goal before 31.01.2027 is 50 sign-ups from
+minutes on Monday to decide what to change. The app is an AI recipe app. The goal before 31.01.2027 is 50 sign-ups from
 outside family and friends, 10 of whom have made a recipe. The step that has leaked most so far is from seeing a post to
 opening the site, so visits per 1000 views (visits_1000) matter more than views.
 

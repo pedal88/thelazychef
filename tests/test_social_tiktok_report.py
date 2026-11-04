@@ -190,6 +190,18 @@ class ReportTests(Base):
         self.assertEqual(response.status_code, 502)
         self.assertNotIn('no credit', response.get_data(as_text=True))
 
+    def test_the_job_writes_the_week_that_ended_on_sunday(self):
+        for day in (9, 10, 15):  # Monday, Tuesday, and the Sunday itself
+            self.assertEqual(social_report.last_sunday(datetime.date(2026, 11, day)),
+                             datetime.date(2026, 11, 15 if day == 15 else 8))
+        row = mock.Mock(week_ending=datetime.date(2026, 11, 8), report={'headline': 'x'})
+        with mock.patch('services.recipe_v2.tasks.verified', return_value=True), \
+                mock.patch.object(social_report, 'last_sunday', return_value=row.week_ending), \
+                mock.patch.object(social_report, 'write_week', return_value=row) as write:
+            response = app.test_client().post('/internal/tasks/social-report')
+        self.assertEqual(response.status_code, 200)
+        write.assert_called_once_with(row.week_ending)
+
     def test_writing_it_by_hand_shows_a_friendly_message_when_it_fails(self):
         with mock.patch.object(social_report, 'write_week', side_effect=RuntimeError('no credit')):
             html = self.client.post('/admin/funnel/report/write', follow_redirects=True).get_data(as_text=True)

@@ -507,6 +507,47 @@ def save_stat(post, form):
     return None
 
 
+def save_tiktok_reading(on, rows, dry_run=False):
+    """A week's numbers read off TikTok Studio's post list on the date on (docs/SOCIAL.md, "TikTok's numbers"): rows are
+    {'code', 'views', 'likes', 'comments', 'shares', 'saves', 'posted_on'}, only what the list shows. A draft that a row
+    gives posted_on for has gone up, and is marked so. Nothing is saved when one row is wrong. Returns (what each row
+    comes to, what is wrong): [{'ref', 'day', 'marked_posted', numbers}], [sentences]."""
+    planned, errors = [], []
+    for row in rows:
+        code = str(row.get('code') or '').strip()
+        post = db.session.execute(db.select(SocialPost).filter_by(platform='tiktok', code=code)).scalar()
+        if post is None:
+            errors.append(f'no TikTok post with code {code!r}')
+            continue
+        numbers = _numbers({key: str(row[key]) for key in STAT_FIELDS if row.get(key) is not None})
+        if isinstance(numbers, str):
+            errors.append(f'{post_ref(post)}: {numbers}')
+            continue
+        if all(v is None for v in numbers.values()):
+            errors.append(f'{post_ref(post)}: no numbers')
+            continue
+        posted_on = post.posted_on
+        if post.status != 'posted':
+            try:
+                posted_on = datetime.date.fromisoformat(str(row.get('posted_on') or ''))
+            except ValueError:
+                errors.append(f'{post_ref(post)} is a draft: give the date it went up')
+                continue
+        if posted_on > on:
+            errors.append(f'{post_ref(post)} went up {posted_on.isoformat()}, after the reading')
+            continue
+        planned.append((post, posted_on, numbers))
+    done = [{'ref': post_ref(post), 'day': (on - posted_on).days, 'marked_posted': post.status != 'posted', **numbers}
+            for post, posted_on, numbers in planned]
+    if errors or dry_run:
+        return done, errors
+    for post, posted_on, numbers in planned:
+        post.status, post.posted_on = 'posted', posted_on
+        _put_stat(post, (on - posted_on).days, numbers)
+    db.session.commit()
+    return done, []
+
+
 # The numbers sheet: the posts of one day in one table, to copy their numbers in at once
 SHEET_DAYS = (2, 7)
 

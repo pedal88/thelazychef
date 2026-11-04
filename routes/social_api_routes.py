@@ -1,6 +1,6 @@
 """The social API: what scripts/social_batch.py uses to log a day's TikTok and Instagram posts as drafts in the Funnel
 page's post log, so each post has its code before its slides are rendered, and the next post of a series sees this
-one as used (docs/SOCIAL.md). It takes the content API's key (CONTENT_API_KEY, as a bearer token) and answers 401
+one as used, and what scripts/social_numbers.py uses to keep TikTok's numbers (docs/SOCIAL.md). It takes the content API's key (CONTENT_API_KEY, as a bearer token) and answers 401
 without it.
 
 Nothing here posts anything: a draft becomes a post when Pål has put it up and marks it posted on the Funnel page."""
@@ -38,6 +38,22 @@ def drafts():
     if errors:
         return jsonify({'errors': errors}), 400
     return jsonify({'day': day.isoformat(), 'posts': planned})
+
+
+@social_api_bp.route('/tiktok-numbers', methods=['POST'])
+@key_required
+def tiktok_numbers():
+    """{"on": "2026-11-08", "dry_run": true, "posts": [{"code": "6", "views": 276, "likes": 11, "comments": 0}, …]} -> what
+    the numbers read off TikTok Studio that day come to, saved unless dry_run (funnel.save_tiktok_reading)."""
+    body = request.get_json(silent=True) or {}
+    on = _day(body.get('on'))
+    posts = body.get('posts')
+    if on is None or not isinstance(posts, list) or not posts or not all(isinstance(p, dict) for p in posts):
+        return jsonify({'error': 'send {"on": "YYYY-MM-DD", "posts": [{"code": …, "views": …}, …]}'}), 400
+    done, errors = funnel.save_tiktok_reading(on, posts, dry_run=bool(body.get('dry_run')))
+    if errors:
+        return jsonify({'errors': errors}), 400
+    return jsonify({'on': on.isoformat(), 'saved': not body.get('dry_run'), 'posts': done})
 
 
 @social_api_bp.route('/slides/<code>', methods=['POST'])

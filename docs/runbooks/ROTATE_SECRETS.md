@@ -265,7 +265,7 @@ gcloud scheduler jobs run social-stats --project $P --location europe-west1
 Ukesrapporten, søndag etter at tallene er hentet (`services/social_report.py`):
 
 ```bash
-gcloud scheduler jobs create http social-report --project $P --location europe-west1 --schedule "0 7 * * 0" --time-zone "Europe/Oslo" --http-method POST --uri https://lazy-chef-app-57buprlcwq-ew.a.run.app/internal/tasks/social-report --oidc-service-account-email recipe-tasks@thelazychefai-prod.iam.gserviceaccount.com --oidc-token-audience https://lazy-chef-app-57buprlcwq-ew.a.run.app --attempt-deadline 300s
+gcloud scheduler jobs create http social-report --project $P --location europe-west1 --schedule "0 10 * * 1" --time-zone "Europe/Oslo" --http-method POST --uri https://lazy-chef-app-57buprlcwq-ew.a.run.app/internal/tasks/social-report --oidc-service-account-email recipe-tasks@thelazychefai-prod.iam.gserviceaccount.com --oidc-token-audience https://lazy-chef-app-57buprlcwq-ew.a.run.app --attempt-deadline 300s
 ```
 
 Bytte tokenet: lag et nytt i Meta (for eksempel etter nye tillatelser i konfigurasjonen), lagre det i Keychain med `security add-generic-password -U -a "$USER" -s thelazychef-instagram -w "$(pbpaste)"` (feltet `security` selv spør med, kutter ved 128 tegn), legg det inn med `gcloud secrets versions add INSTAGRAM_ACCESS_TOKEN --data-file=-` som over, og lag en ny revisjon som under «Senere bytter».

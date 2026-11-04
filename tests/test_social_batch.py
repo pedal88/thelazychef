@@ -4,6 +4,7 @@ routes/social_api_routes.py)."""
 import datetime
 import os
 import sys
+import tempfile
 import unittest
 from unittest import mock
 
@@ -20,6 +21,7 @@ os.environ.pop('K_SERVICE', None)
 from app import app  # noqa: E402
 from database.models import Recipe, SocialPost, User, db  # noqa: E402
 from scripts.social_batch import POSTS_PER_DAY, day_plan, folder_name, parse_plan, plan_post  # noqa: E402
+from scripts.social_numbers import read_rows  # noqa: E402
 from services import funnel, social_series  # noqa: E402
 
 DAY = datetime.date(2026, 11, 3)  # a Tuesday
@@ -233,6 +235,61 @@ class DayOfPostsTests(unittest.TestCase):
         self.assertEqual([(g['label'], g['posts']) for g in month['series'] if g['platform'] == 'tiktok'],
                          [('grid', 2), ('airfryer', 3)])
 
+    # TikTok's numbers, read off TikTok Studio
+
+    def reading(self, **body):
+        return self.client.post('/api/social/tiktok-numbers', json={'on': '2026-11-08', **body},
+                                headers={'Authorization': f'Bearer {KEY}'})
+
+    def tiktok(self, code, status='posted', posted_on=datetime.date(2026, 11, 3)):
+        post = SocialPost(platform='tiktok', code=code, format='series', title=f'Post {code}', status=status,
+                          posted_on=posted_on)
+        db.session.add(post)
+        db.session.commit()
+        return post
+
+    def test_a_reading_is_kept_as_the_row_for_the_day_each_post_had_been_up(self):
+        self.assertEqual(self.client.post('/api/social/tiktok-numbers').status_code, 401)
+        up, draft = self.tiktok('4'), self.tiktok('6', status='draft', posted_on=datetime.date(2026, 11, 2))
+        rows = [{'code': '4', 'views': '273', 'likes': 0, 'comments': 0},
+                {'code': '6', 'views': 276, 'likes': 11, 'comments': 0, 'posted_on': '2026-11-04'}]
+        # A dry run says what they come to and saves nothing
+        answer = self.reading(dry_run=True, posts=rows).get_json()
+        self.assertFalse(answer['saved'])
+        self.assertEqual([(p['ref'], p['day'], p['marked_posted'], p['views']) for p in answer['posts']],
+                         [('tiktok-4', 5, False, 273), ('tiktok-6', 4, True, 276)])
+        self.assertEqual((up.stats, draft.stats, draft.status), ([], [], 'draft'))
+        # Saved: a draft the row dates has gone up, on that date
+        self.assertTrue(self.reading(posts=rows).get_json()['saved'])
+        self.assertEqual((up.stats[0].day, up.stats[0].views, up.stats[0].likes, up.stats[0].saves), (5, 273, 0, None))
+        self.assertEqual(up.stats[0].source, 'manual')
+        self.assertEqual((draft.status, draft.posted_on), ('posted', datetime.date(2026, 11, 4)))
+        self.assertEqual((draft.stats[0].day, draft.stats[0].likes), (4, 11))
+        # The same day again replaces the row
+        self.reading(posts=[{'code': '4', 'views': 300}])
+        self.assertEqual([(s.day, s.views) for s in up.stats], [(5, 300)])
+
+    def test_a_wrong_row_in_a_reading_saves_nothing_and_says_which(self):
+        good = self.tiktok('4')
+        self.tiktok('5', status='draft')
+        self.tiktok('7', posted_on=datetime.date(2026, 11, 9))
+        instagram = SocialPost(platform='instagram', code='8', format='series', title='x', status='posted',
+                               posted_on=datetime.date(2026, 11, 3))
+        db.session.add(instagram)
+        db.session.commit()
+        response = self.reading(posts=[{'code': '4', 'views': 1}, {'code': '5', 'views': 2}, {'code': '7', 'views': 3},
+                                       {'code': '8', 'views': 4}, {'code': '99', 'views': 5}, {'code': '4', 'views': 'many'},
+                                       {'code': '4'}])
+        self.assertEqual(response.status_code, 400)
+        errors = ' '.join(response.get_json()['errors'])
+        for text in ('tiktok-5 is a draft', 'tiktok-7 went up 2026-11-09', "code '8'", "code '99'", 'whole number',
+                     'no numbers'):
+            self.assertIn(text, errors)
+        self.assertEqual(good.stats, [])
+        self.assertEqual(self.reading(posts=[]).status_code, 400)
+        self.assertEqual(self.client.post('/api/social/tiktok-numbers', json={'on': 'soon', 'posts': [{}]},
+                                          headers={'Authorization': f'Bearer {KEY}'}).status_code, 400)
+
     def test_the_funnel_page_shows_series_hooks_and_ctas(self):
         self.drafts({**airfryer(7, [self.ids[2]]), 'cta_group': 'follow'}, day=datetime.date.today())
         self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
@@ -249,6 +306,15 @@ class DayOfPostsTests(unittest.TestCase):
 
 
 class PlanTests(unittest.TestCase):
+    def test_the_script_reads_the_columns_a_row_fills(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = os.path.join(folder, 'numbers.csv')
+            with open(path, 'w', encoding='utf-8') as f:
+                f.write('code,views,likes,comments,posted_on,post\n6,276,11,0,2026-11-04,What to make\n4,273,0,0,,Steak\n\n')
+            self.assertEqual(read_rows(path), [
+                {'code': '6', 'views': '276', 'likes': '11', 'comments': '0', 'posted_on': '2026-11-04'},
+                {'code': '4', 'views': '273', 'likes': '0', 'comments': '0'}])
+
     def test_a_day_takes_its_posts_from_the_series_by_turn(self):
         monday = datetime.date(2026, 11, 2)
         kinds = lambda day, *n: [p['kind'] for p in day_plan(day, *n)]  # noqa: E731

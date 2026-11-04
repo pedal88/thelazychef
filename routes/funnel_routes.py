@@ -202,12 +202,12 @@ def social_stats_task():
 
 @funnel_bp.route('/internal/tasks/social-report', methods=['POST'])
 def social_report_task():
-    """The weekly job (Cloud Scheduler, social-report), Sunday morning after social-stats. A week already written is
-    left alone, so a repeated call costs nothing."""
+    """The weekly job (Cloud Scheduler, social-report), Monday morning after social-stats and after TikTok's numbers
+    are in: the week that ended on Sunday. A week already written is left alone, so a repeated call costs nothing."""
     if not tasks.verified(request.headers.get('Authorization')):
         return jsonify({'error': 'unauthorized'}), 401
     try:
-        row = social_report.write_week()
+        row = social_report.write_week(social_report.last_sunday())
     except Exception as e:
         db.session.rollback()
         print(f'social-report: {e}')
