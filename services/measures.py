@@ -21,6 +21,8 @@ import os
 import re
 from functools import lru_cache
 
+from services import language
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SYSTEMS = {'metric': 'Metric', 'us': 'US'}
 DEFAULT = 'metric'
@@ -63,14 +65,23 @@ def _quarters(v):
 
 def _named(n, unit, amount):
     """n (as written) and the unit, plural when there is more than one: "1½ cups", but "1 cup" for 1.02."""
-    name = (units().get(unit) or {}).get('name_en') or unit
-    return f'{n} {UNIT_PLURALS.get(unit, name) if amount > 1 and n != "1" else name}'
+    u = units().get(unit) or {}
+    many = amount > 1 and n != "1"
+    if language.shown() == 'nb':
+        return f"{n} {u.get('plural' if many else 'name') or unit}"
+    name = u.get('name_en') or unit
+    return f'{n} {UNIT_PLURALS.get(unit, name) if many else name}'
+
+
+def _decimal(n):
+    """A number in the language being drawn: 1.5, or 1,5 in Norwegian."""
+    return f'{n:g}'.replace('.', ',') if language.shown() == 'nb' else f'{n:g}'
 
 
 def _metric(amount, unit):
     if unit in ('g', 'ml'):
         n = round(amount / 10) * 10 if amount >= 100 else round(amount / 5) * 5 if amount >= 10 else round(amount, 1)
-        return f'{n:g} {unit}'
+        return f'{_decimal(n)} {unit}'
     if not unit or unit == 'piece':
         return frac(amount)
     return _named(frac(amount), unit, amount)

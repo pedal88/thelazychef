@@ -24,16 +24,19 @@
   // The answer below the fields, scrolled to where it can be seen
   const tell = (text, error) => { fb.say(text, error); form.querySelector('[data-fb-status]').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); };
 
-  const times = n => (n === 1 ? 'once' : n === 2 ? 'twice' : `${n} times`);
-  const nth = n => n + ({ 1: 'st', 2: 'nd', 3: 'rd' }[(n % 100 > 10 && n % 100 < 14) ? 0 : n % 10] || 'th');
-  const when = iso => new Date(`${iso}Z`).toLocaleDateString(undefined, { day: 'numeric', month: 'long' });
+  const times = n => (n === 1 ? tr('once') : n === 2 ? tr('twice') : tr('%(n)s times', { n }));
+  const lang = document.documentElement.lang === 'nb' ? 'nb' : undefined;  // else the browser's own
+  const nth = n => (lang ? `${n}.` : n + ({ 1: 'st', 2: 'nd', 3: 'rd' }[(n % 100 > 10 && n % 100 < 14) ? 0 : n % 10] || 'th'));
+  const when = iso => new Date(`${iso}Z`).toLocaleDateString(lang, { day: 'numeric', month: 'long' });
 
   function took(minutes) {
     const title = sub.dataset.title, plan = +sub.dataset.plan;
-    if (minutes === null || minutes < 5) return `You made ${title}.`;
+    if (minutes === null || minutes < 5) return tr('You made %(title)s.', { title });
     const diff = plan ? minutes - plan : 0;
-    const vs = !plan ? '' : Math.abs(diff) <= 2 ? ', right on the plan' : diff < 0 ? `, ${-diff} under the plan` : `, the plan said ${plan}`;
-    return `You made ${title} in ${minutes} minutes${vs}.`;
+    if (!plan) return tr('You made %(title)s in %(minutes)s minutes.', { title, minutes });
+    if (Math.abs(diff) <= 2) return tr('You made %(title)s in %(minutes)s minutes, right on the plan.', { title, minutes });
+    return diff < 0 ? tr('You made %(title)s in %(minutes)s minutes, %(under)s under the plan.', { title, minutes, under: -diff })
+      : tr('You made %(title)s in %(minutes)s minutes, the plan said %(plan)s.', { title, minutes, plan });
   }
 
   function confetti() {
@@ -52,19 +55,20 @@
 
   async function open(minutes, early) {
     sub.textContent = took(minutes);
-    steps.textContent = early ? 'Made it' : steps.dataset.all;
+    steps.textContent = early ? tr('Made it') : steps.dataset.all;
     saved = false;
     again = false;
-    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save'; }
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = tr('Save'); }
     if (!dialog.open) dialog.showModal();
     confetti();
     if (!fb) return;
     const data = await fb.open(id);
     made.checked = true;
     const n = data ? data.made_count : 0, last = data && data.last_made_at ? new Date(`${data.last_made_at}Z`) : null;
-    count.textContent = !n ? 'The first time. It goes in your Made list.'
-      : last && Date.now() - last < 3 * 3600e3 ? `Counted already: ${times(n)} so far.`
-      : `You have made it ${times(n)} before${data.last_made_at ? `, last on ${when(data.last_made_at)}` : ''}.`;
+    count.textContent = !n ? tr('The first time. It goes in your Made list.')
+      : last && Date.now() - last < 3 * 3600e3 ? tr('Counted already: %(times)s so far.', { times: times(n) })
+      : data.last_made_at ? tr('You have made it %(times)s before, last on %(when)s.', { times: times(n), when: when(data.last_made_at) })
+      : tr('You have made it %(times)s before.', { times: times(n) });
   }
 
   page.addEventListener('steps:finished', e => open(e.detail ? e.detail.minutes : null));
@@ -91,17 +95,17 @@
       const missed = await fb.save();
       saved = true;
       page.dataset.noted = '1';
-      const done = !n ? 'Saved. Thank you.' : n === 1 ? 'Saved. It is in your Made list now.' : `Saved. That was your ${nth(n)} time.`;
+      const done = !n ? tr('Saved. Thank you.') : n === 1 ? tr('Saved. It is in your Made list now.') : tr('Saved. That was your %(nth)s time.', { nth: nth(n) });
       tell(missed ? `${done} ${missed}` : done, !!missed);
-      saveBtn.textContent = 'Close';
+      saveBtn.textContent = tr('Close');
       saveBtn.disabled = false;
     } catch (err) {
-      tell(err.friendly || 'Something went wrong. Please try again.', true);
+      tell(err.friendly || tr('Something went wrong. Please try again.'), true);
       saveBtn.disabled = false;
     }
   });
   // A change after saving (a photo added or removed, the comment edited) is saved again rather than closed away
-  const unsave = () => { if (saved) { saved = false; saveBtn.textContent = 'Save'; } };
+  const unsave = () => { if (saved) { saved = false; saveBtn.textContent = tr('Save'); } };
   form.addEventListener('change', unsave);
   form.addEventListener('input', unsave);
 })();

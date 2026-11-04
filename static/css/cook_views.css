@@ -89,6 +89,7 @@
 .dv-progress .g2-node { transition: opacity .3s; }
 .dv-progress .g2-node.flow-done { opacity: .35; }
 .dv-progress .g2-node.nextup { background: var(--color-paper); border-radius: 16px; box-shadow: 0 0 0 3px var(--color-cook), 0 8px 24px rgb(0 0 0 / .12); }
+html:lang(nb) .dv-progress .g2-node.nextup::before { content: "neste"; }
 .dv-progress .g2-node.nextup::before { content: "next"; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); padding: 1px 8px; border-radius: var(--radius-pill);
   background: var(--color-cook); color: var(--color-paper); font: 600 10px var(--font-mono); text-transform: uppercase; letter-spacing: .08em; }
 .dv-progress .ed.flowed .pa { stroke: var(--color-prep); stroke-width: 3.4; }

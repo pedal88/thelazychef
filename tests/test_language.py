@@ -21,7 +21,7 @@ os.environ.pop('K_SERVICE', None)
 
 from babel.messages.frontend import CommandLineInterface  # noqa: E402
 from babel.messages.pofile import read_po  # noqa: E402
-from flask_babel import get_locale  # noqa: E402
+from flask_babel import force_locale, get_locale  # noqa: E402
 from werkzeug.exceptions import InternalServerError  # noqa: E402
 
 import ai_engine  # noqa: E402
@@ -33,10 +33,12 @@ from routes.recipes_routes import VIEWS  # noqa: E402
 from scripts import social_render  # noqa: E402
 from services import google_signin, labels, language  # noqa: E402
 from services.ingredient_library import GROUPS  # noqa: E402
-from services.measures import SYSTEMS  # noqa: E402
+from services.measures import SYSTEMS, fmt_amount  # noqa: E402
 from services.recipe_library import QUICK, SORT_LABELS, SPICE_LABELS, TIME_LABELS  # noqa: E402
 from services.recipe_v2.derive import HEAT_LABELS  # noqa: E402
 from services.recipe_v2.persona import SETTINGS  # noqa: E402
+from services.recipe_v2.states import key as state_key  # noqa: E402
+from services.recipe_v2.store import to_v2  # noqa: E402
 from services.social_week import WEEK_DAYS  # noqa: E402
 from services.recipe_v2 import appearance, generate, images, inbox, view  # noqa: E402
 from services.recipe_v2.generate import refresh  # noqa: E402
@@ -311,8 +313,8 @@ class Words(HTMLParser):
 SAME_IN_BOTH = {'The Lazy Chef', 'TikTok', 'Instagram', 'Google', '.', '·', '⋯', 'Datatilsynet',
                 'thelazychefai@gmail.com', 'Cookies', 'English', 'Norsk', 'US', 'Protein', 'Keto', 'Paleo', 'Grill',
                 'Sous vide', 'Snacks', 'Mild', 'Baby', 'Guide', 'Recipe Mirror', '→', ',', 'min', 'Over 45 min',
-                'Under 30 min', 'cook@example.no', 'kcal', 'kJ', 'g', 'mg', 'Per 100 g', '\U0001F468\u200d\U0001F373'}  # the last: the loading overlay's chef
-NUMBERS = re.compile(r'^[\d\s.,:/·]*(min)?[\s,]*$')  # counts and times
+                'Under 30 min', 'Plan', 'cook@example.no', 'kcal', 'kJ', 'g', 'mg', 'Per 100 g', '\U0001F468\u200d\U0001F373'}  # the last: the loading overlay's chef
+NUMBERS = re.compile(r'^(Start )?[\d\s.,:/·+′×−]*(min)?( \+ \d+)?[\s,]*$')  # counts and times
 
 
 def visible(html):
@@ -548,6 +550,133 @@ def test_a_cross_site_refusal_speaks_norwegian(client):
     client.set_cookie('lang', 'nb')
     response = client.post('/login', headers={'Sec-Fetch-Site': 'cross-site'})
     assert response.status_code == 403 and 'Forespørselen kom fra et annet nettsted' in response.get_data(as_text=True)
+
+
+# The recipe page, the cook views and print: only the recipe's own words are English until they are translated
+
+def _recipe_words(recipe):
+    """Everything stored in the recipe's own words, lower case: what may still read the same in Norwegian."""
+    data = to_v2(recipe)
+    return json.dumps([data, recipe.title, recipe.chef_note, recipe.yield_text], ensure_ascii=False).lower()
+
+
+def _no_amount(word):
+    """A pill or tile's words without the amount in front."""
+    return re.sub(r'^[\d¼½¾⅓⅔,. ]+(g|kg|ml|cl|dl|l|cm)?\b\s*', '', word).strip(' .,:()').lower()
+
+
+def english_on_recipe_page(path, recipe_id, client=None):
+    client = client or app.test_client()
+    with app.app_context():
+        own = _recipe_words(db.session.get(Recipe, recipe_id))
+    client.delete_cookie('lang')
+    english = visible(client.get(path).get_data(as_text=True))
+    client.set_cookie('lang', 'nb')
+    norwegian = visible(client.get(path).get_data(as_text=True))
+    client.delete_cookie('lang')
+    assert english and len(english) == len(norwegian), path
+    return [e for e, n in zip(english, norwegian)
+            if e == n and e not in SAME_IN_BOTH and not NUMBERS.match(e)
+            and not all(_no_amount(part) in own for part in re.sub(r'\d+°', '', e).split(','))]
+
+
+def test_a_visitor_on_the_recipe_page_meets_only_the_recipes_own_words(client, launched):
+    recipe_id, _ = _a_recipe()
+    assert english_on_recipe_page(f'/recipe/{recipe_id}', recipe_id) == []
+
+
+def test_a_cook_on_the_recipe_page_meets_only_the_recipes_own_words(client, launched):
+    recipe_id, _ = _a_recipe()
+    cook = _signed_in()
+    cook.post(f'/api/interactions/recipe/{recipe_id}/cooked')
+    cook.post(f'/api/interactions/recipe/{recipe_id}/feedback', data={'rating': '4', 'comment': 'x'})
+    assert english_on_recipe_page(f'/recipe/{recipe_id}', recipe_id, client=cook) == []
+
+
+def test_print_meets_only_the_recipes_own_words(client, launched):
+    recipe_id, _ = _a_recipe()
+    assert english_on_recipe_page(f'/recipe/{recipe_id}/print?auto=0', recipe_id) == []
+
+
+def test_the_recipes_facts_are_in_the_language(client):
+    recipe_id, _ = _a_recipe()
+    with app.app_context():
+        recipe = db.session.get(Recipe, recipe_id)
+        recipe.keeps_days, recipe.freezes, recipe.spice_level, recipe.protein_type = 2, True, 1, 'Chicken'
+        recipe.settings = ['kid_friendly']
+        db.session.commit()
+    client.set_cookie('lang', 'nb')
+    html = client.get(f'/recipe/{recipe_id}').get_data(as_text=True)
+    for word in ('2 dager i kjøleskapet, kan fryses', 'Litt sterk', 'Kylling', 'Barnevennlig', 'Indisk', 'Middels'):
+        assert word in html, word
+
+
+def test_the_page_built_for_one_language_is_not_served_to_the_other(client):
+    recipe_id, _ = _a_recipe()
+    view.clear_cache()
+    first = client.get(f'/recipe/{recipe_id}').get_data(as_text=True)
+    client.set_cookie('lang', 'nb')
+    norwegian = client.get(f'/recipe/{recipe_id}').get_data(as_text=True)
+    client.delete_cookie('lang')
+    again = client.get(f'/recipe/{recipe_id}').get_data(as_text=True)
+    assert 'Gjør klart' in norwegian and 'Gjør klart' not in first
+    assert first == again
+
+
+@pytest.mark.parametrize('amount, unit, english, norwegian', [
+    (2, 'tbsp', '2 tbsp', '2 ss'), (1.5, 'tsp', '1½ tsp', '1½ ts'), (2, 'clove', '2 cloves', '2 fedd'), (1, 'clove', '1 clove', '1 fedd'),
+    (3, 'slice', '3 slices', '3 skiver'), (2.5, 'dl', '2½ dl', '2½ dl'), (7.5, 'g', '7.5 g', '7,5 g'), (0.5, 'ml', '0.5 ml', '0,5 ml'),
+    (400, 'g', '400 g', '400 g'), (3, 'piece', '3', '3'),
+])
+def test_units_and_the_decimal_comma(amount, unit, english, norwegian):
+    assert fmt_amount(amount, unit) == english
+    with app.test_request_context('/recipes?lang=no'):
+        assert fmt_amount(amount, unit) == norwegian
+        with force_locale('en'):
+            assert fmt_amount(amount, unit) == english
+
+
+def test_hours_have_a_comma_in_norwegian():
+    assert (view.duration(150), view.duration(120), view.duration(45)) == ('2.5 h', '2 h', '45 min')
+    with app.test_request_context('/recipes?lang=no'):
+        assert (view.duration(150), view.duration(120), view.duration(45)) == ('2,5 t', '2 t', '45 min')
+
+
+def test_equipment_modes_and_states_use_the_catalogs_norwegian(client):
+    recipe_id, _ = _a_recipe()
+    with app.test_request_context(f'/recipe/{recipe_id}?lang=no'):
+        built = view.page(db.session.get(Recipe, recipe_id))
+        catalog = {e['name_en']: e['name'] for e in json.loads((ROOT / 'data/constraints/equipment.json').read_text(encoding='utf-8'))['equipment'] if e.get('name_en')}
+        assert built['equipment'] and all(e['name'] in catalog.values() for e in built['equipment'])
+        states_shown = {p['cut_word'] for p in built['pictured'].values() if p['cut_word']}
+        words = {s['nb'] for s in appearance_states()['states']} | {g['nb'] for g in appearance_states()['grades']}
+        assert states_shown and all(set(w.split(' (')[0].split(' ')) <= set(' '.join(words).split(' ')) for w in states_shown)
+        assert 'kuttet' in str(state_key())
+    assert 'cut' in str(state_key()) and 'kuttet' not in str(state_key())
+
+
+def appearance_states():
+    return json.loads((ROOT / 'data/constraints/states.json').read_text(encoding='utf-8'))
+
+
+def test_the_shared_parts_on_a_slide_stay_english(client, launched):
+    recipe_id, _ = _a_recipe()
+    client.set_cookie('lang', 'nb')
+    html = client.get(f'/social/recipe/{recipe_id}/map?size=tt&slide=1&lang=no', headers={'Accept-Language': NORWEGIAN}).get_data(as_text=True)
+    assert 'Gjør klart' not in html and 'Lag mat' not in html and ' ss ' not in html
+
+
+def test_v2_text_for_claude_is_english_whoever_looks(client):
+    with open(ROOT / 'data' / 'pilot_v2' / 'fasit' / 'tikka.json', encoding='utf-8') as f:
+        data = json.load(f)
+    base = view.v2_text(data)
+    with app.test_request_context('/recipes?lang=no'):
+        assert view.v2_text(data) == base
+
+
+def test_the_macros_that_set_a_variable_do_not_hide_the_translation_function():
+    for name in ('step_list', 'whole_dish'):
+        assert '{% set _ =' not in (ROOT / 'templates' / 'components' / f'{name}.html').read_text(encoding='utf-8')
 
 
 # The translations

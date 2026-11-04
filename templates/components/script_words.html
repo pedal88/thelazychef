@@ -1,0 +1,8 @@
+<script>
+    // The words of the scripts in the page's language (services/labels.JS_WORDS): tr('%(n)s recipes', {n: 3})
+    window.WORDS = {{ js_words()|tojson }};
+    window.tr = function (word, values) {
+        var text = window.WORDS[word] || word;
+        return values ? text.replace(/%\((\w+)\)s/g, function (_, name) { return values[name]; }) : text;
+    };
+</script>

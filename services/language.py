@@ -10,6 +10,7 @@ import os
 import urllib.parse
 
 from flask import current_app, has_request_context, request
+from flask_babel import get_locale
 
 DEFAULT = 'en'
 NAMES = {'en': 'English', 'nb': 'Norsk'}  # the switch: each language in its own name
@@ -49,6 +50,12 @@ def _chosen():
 def current():
     """The language of this request; English outside one (scripts, the app's own jobs)."""
     return _chosen() if has_request_context() else DEFAULT
+
+
+def shown():
+    """The language words are being drawn in now: current(), unless force_locale says otherwise (as_text does)."""
+    locale = get_locale()
+    return str(locale) if locale else DEFAULT
 
 
 def content_code(code=None):

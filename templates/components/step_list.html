@@ -9,13 +9,13 @@
 {% from "components/delta.html" import delta, delta_key with context %}
 {% from "components/whole_dish.html" import timeline, metro_map %}
 
-{% set VIEWS = [('steps', 'Steps', true), ('timeline', 'Timeline', v.timeline), ('metro', 'Metro map', v.metro_map), ('delta', 'River delta', v.delta)] %}
+{% set VIEWS = [('steps', _('Steps'), true), ('timeline', _('Timeline'), v.timeline), ('metro', _('Metro map'), v.metro_map), ('delta', _('River delta'), v.delta)] %}
 
 {# The choice of view: one small round button that opens a menu upwards #}
 {% macro view_menu() -%}
 <div class="vmenu">
-  <button type="button" class="vmenu-btn" data-view-menu aria-haspopup="menu" aria-expanded="false" aria-label="View: Steps" title="How to show the steps">{{ icon('list') }}</button>
-  <div class="vmenu-list" role="menu" aria-label="How to show the steps" hidden>
+  <button type="button" class="vmenu-btn" data-view-menu aria-haspopup="menu" aria-expanded="false" aria-label="{{ _('View: %(what)s', what=_('Steps')) }}" title="{{ _('How to show the steps') }}">{{ icon('list') }}</button>
+  <div class="vmenu-list" role="menu" aria-label="{{ _('How to show the steps') }}" hidden>
     {%- for key, label, there in VIEWS if there %}<button type="button" role="menuitemradio" data-view="{{ key }}" aria-checked="{{ 'true' if key == 'steps' else 'false' }}">{{ label }}</button>{% endfor -%}
   </div>
 </div>
@@ -23,37 +23,37 @@
 
 {# Steps in focus (the step you are on in full, the rest one line) or all in full #}
 {% macro details_button() -%}
-<button type="button" class="details-btn" data-details aria-pressed="false" aria-label="Show all details" title="Show all details">{{ icon('chevrons-up-down') }}</button>
+<button type="button" class="details-btn" data-details aria-pressed="false" aria-label="{{ _('Show all details') }}" title="{{ _('Show all details') }}">{{ icon('chevrons-up-down') }}</button>
 {%- endmacro %}
 
 {# The bowls, with how many are ready #}
 {% macro bowls_button() -%}
 {% set bowls = v.ready.bowls if v.ready else [] %}
-{% if v.ready %}<button type="button" class="bowls-open" data-sheet="sheet-bowls" aria-label="Bowls and ingredients">{{ icon('salad') }} <span class="bl">Bowls</span>{% if bowls %} <span data-bowl-count>0/{{ bowls|length }}</span>{% endif %}</button>{% endif %}
+{% if v.ready %}<button type="button" class="bowls-open" data-sheet="sheet-bowls" aria-label="{{ _('Bowls and ingredients') }}">{{ icon('salad') }} <span class="bl">{{ _('Bowls') }}</span>{% if bowls %} <span data-bowl-count>0/{{ bowls|length }}</span>{% endif %}</button>{% endif %}
 {%- endmacro %}
 
 {# One step of the list #}
 {% macro step_row(s, lang) -%}
     <li class="st {{ s.phase }}{{ ' setup' if s.setup }}" data-st="{{ s.id }}" data-label="{{ s.short }}" data-done="{{ s.done_when or '' }}"
         data-passive="{{ s.passive_min or 0 }}" data-after="{{ (s.after or [])|join(' ') }}" data-at="{{ s.start }}"{% if s.bowls %} data-bowls="{{ s.bowls|map(attribute='key')|join(' ') }}"{% endif %}>
-      <button type="button" class="st-tick" aria-pressed="false" aria-label="Step {{ s.n }} done"><span class="n" data-n="{{ s.n }}">{{ s.n }}</span></button>
+      <button type="button" class="st-tick" aria-pressed="false" aria-label="{{ _('Step %(n)s done', n=s.n) }}"><span class="n" data-n="{{ s.n }}">{{ s.n }}</span></button>
       <div class="st-body">
         {# Always: what to do, how long, and while what #}
         <div class="st-line">
           <h3 lang="{{ lang }}">{{ s.short }}</h3>
           <span class="st-meta">{{ s.duration or '' }}</span>
           {% if s.while and s.phase == 'prep' %}<span class="st-tag">{{ s.while }}</span>{% endif %}
-          {% if s.passive_min %}<button type="button" class="st-timer-mini" data-start aria-label="Start the {{ s.passive_min }} minute timer">{{ icon('timer') }} <span>{{ s.passive_min }} min</span></button>{% endif %}
+          {% if s.passive_min %}<button type="button" class="st-timer-mini" data-start aria-label="{{ _('Start the %(n)s minute timer', n=s.passive_min) }}">{{ icon('timer') }} <span>{{ s.passive_min }} min</span></button>{% endif %}
         </div>
         {# The details: shown for the step you are on, for a step you open, and for all with "Show all details" #}
         <div class="st-more">
           {% if v.parts|length > 1 and s.component %}<p class="st-part">{{ s.component }}</p>{% endif %}
           <p class="txt" lang="{{ lang }}">{{ s.html }}</p>
           {% if s.equipment %}<p class="st-eq">{{ s.equipment }}</p>{% endif %}
-          {% if s.done_when %}<p class="st-donewhen"><b>Done when</b> <span lang="{{ lang }}">{{ s.done_when }}</span></p>{% endif %}
-          {% if s.passive_min %}<button type="button" class="st-timer" data-start>{{ icon('timer') }} <span>Start {{ s.passive_min }} min</span></button>{% endif %}
+          {% if s.done_when %}<p class="st-donewhen"><b>{{ _('Done when') }}</b> <span lang="{{ lang }}">{{ s.done_when }}</span></p>{% endif %}
+          {% if s.passive_min %}<button type="button" class="st-timer" data-start>{{ icon('timer') }} <span>{{ _('Start %(n)s min', n=s.passive_min) }}</span></button>{% endif %}
           {# The way on, under the step you are on, on a phone; a wide screen has it on the card beside the steps #}
-          <button type="button" class="st-next" data-step-next>Done <span aria-hidden="true">→</span> next step</button>
+          <button type="button" class="st-next" data-step-next>{{ _('Done <span aria-hidden="true">→</span> next step') }}</button>
         </div>
       </div>
     </li>
@@ -66,14 +66,14 @@
    view is shown as a look, with the way back. #}
 {% macro side_card(page=False) -%}
 <aside class="side-card{{ ' pagecard' if page }}" data-side-card aria-live="polite">
-  <div class="side-card-h"><span data-side-card-label></span>{% if page %}<span class="sc-count" data-side-card-count></span><span class="sc-left" data-side-card-left></span><button type="button" class="sc-back" data-sc-back hidden></button>{% endif %}<button type="button" class="side-fold" data-side-fold aria-expanded="true" aria-label="Fold the step">{{ icon('chevron-down') }}</button></div>
+  <div class="side-card-h"><span data-side-card-label></span>{% if page %}<span class="sc-count" data-side-card-count></span><span class="sc-left" data-side-card-left></span><button type="button" class="sc-back" data-sc-back hidden></button>{% endif %}<button type="button" class="side-fold" data-side-fold aria-expanded="true" aria-label="{{ _('Fold the step') }}">{{ icon('chevron-down') }}</button></div>
   <ol class="slist all" data-step-card></ol>
   {% if page %}
-  <ul class="sc-needs" data-side-card-needs aria-label="What the step needs"></ul>
-  <div class="sc-act"><button type="button" class="sc-done" data-sc-done>Done <span aria-hidden="true">→</span> next step</button><button type="button" class="sc-alt" data-sc-alt hidden></button></div>
+  <ul class="sc-needs" data-side-card-needs aria-label="{{ _('What the step needs') }}"></ul>
+  <div class="sc-act"><button type="button" class="sc-done" data-sc-done>{{ _('Done <span aria-hidden="true">→</span> next step') }}</button><button type="button" class="sc-alt" data-sc-alt hidden></button></div>
   <p class="sc-then" data-side-card-then></p>
   <p class="sc-tip" data-side-card-tip hidden></p>
-  <p class="st-reset"><button type="button" data-steps-reset>Untick all the steps</button></p>
+  <p class="st-reset"><button type="button" data-steps-reset>{{ _('Untick all the steps') }}</button></p>
   {% endif %}
 </aside>
 {%- endmacro %}
@@ -84,41 +84,41 @@
 {% macro step_list() -%}
 {% set lang = recipe.language or 'en' %}
 {% set heat = v.heat_on %}
-<section class="vpanel rail" data-panel="steps" aria-label="Steps" data-total="{{ v.total_min }}">
+<section class="vpanel rail" data-panel="steps" aria-label="{{ _('Steps') }}" data-total="{{ v.total_min }}">
   <div class="rail-main" data-fit-steps data-density="normal">
   <ol class="slist focus" data-slist>
-    {% if heat %}<li class="seg-h prep" aria-hidden="true">Get ready</li>{% endif %}
+    {% if heat %}<li class="seg-h prep" aria-hidden="true">{{ _('Get ready') }}</li>{% endif %}
     {% for s in v.steps %}
     {% if heat and s.id == heat.id %}
-    <li class="heat-line" role="separator"><span>Heat on · {{ heat.left }} to the table</span></li>
-    <li class="seg-h cook" aria-hidden="true">Cook</li>
+    <li class="heat-line" role="separator"><span>{{ _('Heat on · %(left)s to the table', left=heat.left) }}</span></li>
+    <li class="seg-h cook" aria-hidden="true">{{ _('Cook') }}</li>
     {% endif %}
     {{ step_row(s, lang) }}
     {% endfor %}
   </ol>
   {# Most cook without ticking every step: I made this is here too, not only after the last one (static/js/done.js) #}
-  <p class="st-made"><button type="button" data-made-it>{{ icon('check') }}<span>Cooked it already? <b>I made this</b></span></button></p>
-  <p class="st-reset rail-reset"><button type="button" data-steps-reset>Untick all the steps</button></p>
+  <p class="st-made"><button type="button" data-made-it>{{ icon('check') }}<span>{{ _('Cooked it already?') }} <b>{{ _('I made this') }}</b></span></button></p>
+  <p class="st-reset rail-reset"><button type="button" data-steps-reset>{{ _('Untick all the steps') }}</button></p>
   {# Every step ticked off (static/js/steps.js); on a wide screen the card beside the steps says the same #}
   <div class="st-finished" data-st-finished hidden>
-    <p class="eyebrow">{{ icon('check') }}The food is ready</p>
-    <button type="button" class="go" data-cook-close>Back to the recipe</button>
-    <div class="st-finished-more"><button type="button" data-st-feedback>How did it go?</button><button type="button" data-steps-reset>Cook it again</button></div>
+    <p class="eyebrow">{{ icon('check') }}{{ _('The food is ready') }}</p>
+    <button type="button" class="go" data-cook-close>{{ _('Back to the recipe') }}</button>
+    <div class="st-finished-more"><button type="button" data-st-feedback>{{ _('How did it go?') }}</button><button type="button" data-steps-reset>{{ _('Cook it again') }}</button></div>
   </div>
   </div>
   {{ side_card(page=True) }}
 </section>
 {# A step tapped in the delta: the same card as in the list, with its tick and timer, in a sheet #}
-<dialog class="step-sheet" id="sheet-step" aria-label="Step">
-  <button type="button" class="sheet-x" data-sheet-close aria-label="Close">{{ icon('close') }}</button>
+<dialog class="step-sheet" id="sheet-step" aria-label="{{ _('Step') }}">
+  <button type="button" class="sheet-x" data-sheet-close aria-label="{{ _('Close') }}">{{ icon('close') }}</button>
   <ol class="slist all" data-step-card></ol>
 </dialog>
-{% if v.timeline %}<section class="vpanel split tl-panel" data-panel="timeline" aria-label="Timeline" hidden>
+{% if v.timeline %}<section class="vpanel split tl-panel" data-panel="timeline" aria-label="{{ _('Timeline') }}" hidden>
   <div class="split-main">{{ timeline(v.timeline) }}</div>
   {{ side_card(page=True) }}
 </section>{% endif %}
-{% if v.metro_map %}{% set part_images = {} %}{% for p in dish_images(recipe).parts %}{% set _ = part_images.update({p.name: p.url}) %}{% endfor %}
-<section class="vpanel split mt-panel" data-panel="metro" aria-label="Metro map" hidden>
+{% if v.metro_map %}{% set part_images = {} %}{% for p in dish_images(recipe).parts %}{% set unused = part_images.update({p.name: p.url}) %}{% endfor %}
+<section class="vpanel split mt-panel" data-panel="metro" aria-label="{{ _('Metro map') }}" hidden>
   <div class="split-main">{{ metro_map(v.metro_map, part_images) }}</div>
   {{ side_card(page=True) }}
 </section>{% endif %}
@@ -126,9 +126,9 @@
    the next step in the drawing ringed, running timers counting down on their step #}
 {# On a wide screen the step you are on as a strip along the bottom (static/css/rail.css, static/js/steps.js
    placeDeltaCard) #}
-{% if v.delta %}<section class="vpanel dv-rivers dv-progress dl-panel" data-panel="delta" data-delta-flow aria-label="River delta" hidden>
+{% if v.delta %}<section class="vpanel dv-rivers dv-progress dl-panel" data-panel="delta" data-delta-flow aria-label="{{ _('River delta') }}" hidden>
   <div class="split-main">
-  <div class="dl-top"><p class="hint">The river fills as you tick off steps. Tap a step for all of it.</p>{{ delta_key() }}</div>
+  <div class="dl-top"><p class="hint">{{ _('The river fills as you tick off steps. Tap a step for all of it.') }}</p>{{ delta_key() }}</div>
   {{ delta(v.delta, recipe.id, print_links=False, folds=True) }}
   </div>
   {{ side_card(page=True) }}

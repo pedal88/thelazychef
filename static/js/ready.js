@@ -35,7 +35,7 @@
     const bar = page.querySelector('.meter span'), count = page.querySelector('[data-count]');
     if (bar) bar.style.width = `${(n / Math.max(1, bowls.length)) * 100}%`;
     if (count) count.innerHTML = bowls.length && n === bowls.length
-      ? '<b>All the bowls are ready.</b> Now the heat can go on.' : `${n} of ${bowls.length} bowls ready`;
+      ? tr('<b>All the bowls are ready.</b> Now the heat can go on.') : tr('%(n)s of %(total)s bowls ready', { n, total: bowls.length });
   }
 
   page.addEventListener('steps:done', e => { stepsDone = new Set(e.detail); paint(); });

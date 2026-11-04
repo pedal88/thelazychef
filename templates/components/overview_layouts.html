@@ -12,29 +12,29 @@
 {% from "components/feedback_fields.html" import feedback_fields with context %}
 
 {% macro corner_buttons() -%}
-<a class="fab ovl-back" href="{{ url_for('recipes_list') }}" aria-label="All recipes">{{ icon('back') }}</a>
-<button type="button" class="fab ovl-menu" data-site-menu aria-expanded="false" aria-label="Show the site menu">{{ icon('menu') }}</button>
+<a class="fab ovl-back" href="{{ url_for('recipes_list') }}" aria-label="{{ _('All recipes') }}">{{ icon('back') }}</a>
+<button type="button" class="fab ovl-menu" data-site-menu aria-expanded="false" aria-label="{{ _('Show the site menu') }}">{{ icon('menu') }}</button>
 {%- endmacro %}
 
 {# Saved and Cook next on the first screen, for a signed-in cook (mine from routes/recipes_routes.recipe_detail);
    the script in recipe_v2_make.html toggles them #}
 {# I made this without ticking off every step: opens the celebration (static/js/done.js), which saves it for a cook
    and offers a visitor to sign up #}
-{% macro made_it() %}<button type="button" class="ovl-tog" data-made-it>{{ icon('check') }}<span>Made it</span></button>{% endmacro %}
+{% macro made_it() %}<button type="button" class="ovl-tog" data-made-it>{{ icon('check') }}<span>{{ _('Made it') }}</span></button>{% endmacro %}
 
 {% macro save_buttons() -%}
 {% if mine %}
 <div class="ovl-mine">
-  <button type="button" class="ovl-tog" data-mine="save" aria-pressed="{{ 'true' if mine.saved else 'false' }}">{{ icon('heart') }}<span data-on="Saved" data-off="Save">{{ 'Saved' if mine.saved else 'Save' }}</span></button>
-  <button type="button" class="ovl-tog" data-mine="queue" aria-pressed="{{ 'true' if mine.queued else 'false' }}">{{ icon('list-plus') }}<span data-on="In Cook next" data-off="Cook next">{{ 'In Cook next' if mine.queued else 'Cook next' }}</span></button>
+  <button type="button" class="ovl-tog" data-mine="save" aria-pressed="{{ 'true' if mine.saved else 'false' }}">{{ icon('heart') }}<span data-on="{{ _('Saved') }}" data-off="{{ _('Save') }}">{{ _('Saved') if mine.saved else _('Save') }}</span></button>
+  <button type="button" class="ovl-tog" data-mine="queue" aria-pressed="{{ 'true' if mine.queued else 'false' }}">{{ icon('list-plus') }}<span data-on="{{ _('In Cook next') }}" data-off="{{ _('Cook next') }}">{{ _('In Cook next') if mine.queued else _('Cook next') }}</span></button>
   {{ made_it() }}
 </div>
 {% else %}
 {# A visitor: the same two buttons, to sign up, which saves the dish (or puts it in Cook next) and comes back here
    (services/signup.py) #}
 <div class="ovl-mine">
-  <a class="ovl-tog" href="{{ url_for('register', next=request.path, do='save', recipe=recipe.id) }}">{{ icon('heart') }}<span>Save</span></a>
-  <a class="ovl-tog" href="{{ url_for('register', next=request.path, do='queue', recipe=recipe.id) }}">{{ icon('list-plus') }}<span>Cook next</span></a>
+  <a class="ovl-tog" href="{{ url_for('register', next=request.path, do='save', recipe=recipe.id) }}">{{ icon('heart') }}<span>{{ _('Save') }}</span></a>
+  <a class="ovl-tog" href="{{ url_for('register', next=request.path, do='queue', recipe=recipe.id) }}">{{ icon('list-plus') }}<span>{{ _('Cook next') }}</span></a>
   {{ made_it() }}
 </div>
 {% endif %}
@@ -43,16 +43,16 @@
 {# What the cook kept from the last time (mine from recipe_detail: the comment, the stars and the photos of "I made
    this", components/feedback_fields.html), so it is at hand when the dish is made again. The AI image stays the
    dish's picture: the cook's own photo is a small round one in its corner. All of it opens the sheet at Your note. #}
-{% macro made_line() %}{% if mine.made_count %} · made {{ {1: 'once', 2: 'twice'}.get(mine.made_count, mine.made_count ~ ' times') }}{% if mine.last_made %}, last {{ mine.last_made }}{% endif %}{% endif %}{% endmacro %}
+{% macro made_line() %}{% if mine.made_count %} · {{ _('made once') if mine.made_count == 1 else _('made twice') if mine.made_count == 2 else _('made %(n)s times', n=mine.made_count) }}{% if mine.last_made %}{{ _(', last %(when)s', when=mine.last_made) }}{% endif %}{% endif %}{% endmacro %}
 
 {% macro my_stars() -%}
-{% if mine.rating %}<span class="mine-stars" role="img" aria-label="{{ mine.rating }} of 5">{% for i in range(5) %}<span{% if i < mine.rating %} class="on"{% endif %}>{{ icon('star') }}</span>{% endfor %}</span>{% endif %}
+{% if mine.rating %}<span class="mine-stars" role="img" aria-label="{{ _('%(n)s of 5', n=mine.rating) }}">{% for i in range(5) %}<span{% if i < mine.rating %} class="on"{% endif %}>{{ icon('star') }}</span>{% endfor %}</span>{% endif %}
 {%- endmacro %}
 
 {% macro note_card() -%}
 {% if mine and (mine.note or mine.rating) %}
 <button type="button" class="ovl-note" data-sheet="sheet-more" data-jump="more-mine">
-  <span class="ovl-note-h"><span class="eyebrow">{{ icon('message') }}Your note{{ made_line() }}</span>{{ my_stars() }}</span>
+  <span class="ovl-note-h"><span class="eyebrow">{{ icon('message') }}{{ _('Your note') }}{{ made_line() }}</span>{{ my_stars() }}</span>
   {% if mine.note %}<span class="ovl-note-text">{{ mine.note }}</span>{% endif %}
 </button>
 {% endif %}
@@ -62,22 +62,22 @@
    picture) opens them in photo_sheet. Closed, the sheet's lazy images are not even loaded. #}
 {% macro my_photo(cls='ovl-myphoto') -%}
 {% if mine and mine.photos %}
-<button type="button" class="{{ cls }}" data-sheet="sheet-photo">{{ icon('image') }}<span>Your photo{{ 's' if mine.photos|length > 1 }}{% if mine.photos|length > 1 %} · {{ mine.photos|length }}{% endif %}</span></button>
+<button type="button" class="{{ cls }}" data-sheet="sheet-photo">{{ icon('image') }}<span>{{ _('Your photos') if mine.photos|length > 1 else _('Your photo') }}{% if mine.photos|length > 1 %} · {{ mine.photos|length }}{% endif %}</span></button>
 {% endif %}
 {%- endmacro %}
 
 {% macro photo_sheet() -%}
 {% if mine and mine.photos %}
-<dialog class="photo-sheet" id="sheet-photo" aria-label="Your photo{{ 's' if mine.photos|length > 1 }}">
-  <button type="button" class="sheet-x" data-sheet-close aria-label="Close">{{ icon('close') }}</button>
-  <div class="photo-strip">{% for u in mine.photos|reverse %}<img src="{{ u }}" alt="Your photo{% if mine.photos|length > 1 %} {{ loop.index }} of {{ mine.photos|length }}{% endif %}" loading="lazy">{% endfor %}</div>
+<dialog class="photo-sheet" id="sheet-photo" aria-label="{{ _('Your photos') if mine.photos|length > 1 else _('Your photo') }}">
+  <button type="button" class="sheet-x" data-sheet-close aria-label="{{ _('Close') }}">{{ icon('close') }}</button>
+  <div class="photo-strip">{% for u in mine.photos|reverse %}<img src="{{ u }}" alt="{{ _('Your photo %(n)s of %(total)s', n=loop.index, total=mine.photos|length) if mine.photos|length > 1 else _('Your photo') }}" loading="lazy">{% endfor %}</div>
 </dialog>
 {% endif %}
 {%- endmacro %}
 
 {% macro servings_part() -%}
-{% if v.scalable %}<div class="ovl-serv"><span class="eyebrow">Servings</span>{{ servings_stepper('recipe_detail') }}</div>
-{% else %}<div class="ovl-serv"><span class="eyebrow">Makes</span> <b>{{ v.yield_text }}</b></div>{% endif %}
+{% if v.scalable %}<div class="ovl-serv"><span class="eyebrow">{{ _('Servings') }}</span>{{ servings_stepper('recipe_detail') }}</div>
+{% else %}<div class="ovl-serv"><span class="eyebrow">{{ _('Makes') }}</span> <b>{{ v.yield_text }}</b></div>{% endif %}
 {%- endmacro %}
 
 {% macro has_parts(imgs) %}{{ 'y' if imgs.parts or v.parts|length > 1 else '' }}{% endmacro %}
@@ -85,21 +85,21 @@
 {# Chips that open the sheet at their part #}
 {% macro more_chips(imgs) -%}
 <div class="ovl-chips">
-  {% if has_parts(imgs) %}<button type="button" class="chip" data-sheet="sheet-more" data-jump="more-parts">Parts · {{ imgs.parts|length if imgs.parts else v.parts|length }}</button>{% endif %}
-  {% if v.chef_note %}<button type="button" class="chip" data-sheet="sheet-more" data-jump="more-chef">From the chef</button>{% endif %}
-  {% if versions %}<button type="button" class="chip" data-sheet="sheet-more" data-jump="more-versions">Versions · {{ versions|length }}</button>{% endif %}
-  <button type="button" class="chip" data-sheet="sheet-more" data-jump="more-facts">Facts &amp; nutrition</button>
+  {% if has_parts(imgs) %}<button type="button" class="chip" data-sheet="sheet-more" data-jump="more-parts">{{ _('Parts') }} · {{ imgs.parts|length if imgs.parts else v.parts|length }}</button>{% endif %}
+  {% if v.chef_note %}<button type="button" class="chip" data-sheet="sheet-more" data-jump="more-chef">{{ _('From the chef') }}</button>{% endif %}
+  {% if versions %}<button type="button" class="chip" data-sheet="sheet-more" data-jump="more-versions">{{ _('Versions') }} · {{ versions|length }}</button>{% endif %}
+  <button type="button" class="chip" data-sheet="sheet-more" data-jump="more-facts">{{ _('Facts &amp; nutrition') }}</button>
 </div>
 {%- endmacro %}
 
 {% macro start_button() -%}
-{% if v.ready %}<a class="go ovl-go" href="#cook" data-cook-open>Start cooking →</a>
-{% else %}<p class="hint">No steps yet.</p>{% endif %}
+{% if v.ready %}<a class="go ovl-go" href="#cook" data-cook-open>{{ _('Start cooking') }} →</a>
+{% else %}<p class="hint">{{ _('No steps yet.') }}</p>{% endif %}
 {%- endmacro %}
 
 {% macro ingredients(imgs) -%}
 <section class="ovl-ings" aria-labelledby="ings-h" data-fit-ings data-density="normal">
-  <div class="sec-head"><h2 id="ings-h">Ingredients</h2><span class="eyebrow">{{ v.shopping|length }} items</span></div>
+  <div class="sec-head"><h2 id="ings-h">{{ _('Ingredients') }}</h2><span class="eyebrow">{{ _('%(n)s items', n=v.shopping|length) }}</span></div>
   <div class="ovl-cols">{{ ingredient_list() }}</div>
 </section>
 {%- endmacro %}
@@ -109,7 +109,7 @@
 <ul class="ovl-versions">
   {% for r in versions %}
   <li>{% if r.id == recipe.id %}<b aria-current="page">{{ r.title }}</b>{% else %}<a href="{{ url_for('recipe_detail', recipe_id=r.id) }}">{{ r.title }}</a>{% endif %}
-    <span class="eyebrow">{{ 'Version' if r.base_recipe_id else 'Original' }}{{ ' by ' ~ r.chef.name if r.chef }}</span></li>
+    <span class="eyebrow">{% if r.chef %}{{ _('Version by %(chef)s', chef=r.chef.name) if r.base_recipe_id else _('Original by %(chef)s', chef=r.chef.name) }}{% else %}{{ _('Version') if r.base_recipe_id else _('Original') }}{% endif %}</span></li>
   {% endfor %}
 </ul>
 {%- endmacro %}
@@ -124,7 +124,7 @@
     {{ my_photo() }}
     <figcaption>
       <h1>{{ v.title }}</h1>
-      <p class="pp-times"><span><b>{{ v.total }}</b> total</span><span><b>{{ v.active }}</b> active</span><span><b>{{ v.steps|length }}</b> steps</span></p>
+      <p class="pp-times"><span><b>{{ v.total }}</b> {{ _('total') }}</span><span><b>{{ v.active }}</b> {{ _('active') }}</span><span><b>{{ v.steps|length }}</b> {{ _('steps') }}</span></p>
       {{ save_buttons() }}
     </figcaption>
   </figure>
@@ -167,12 +167,12 @@
     <figure class="cc-img{% if not imgs.dish %} no-img{% endif %}">{% if imgs.dish %}<img src="{{ imgs.dish }}" alt="{{ v.title }}" width="1200" height="900">{% else %}{{ icon('pot') }}{% endif %}{{ my_photo() }}</figure>
     <div class="cc-head">
       <h1>{{ v.title }}</h1>
-      <p class="pp-times"><span><b>{{ v.total }}</b> total</span><span><b>{{ v.active }}</b> active</span><span><b>{{ v.steps|length }}</b> steps</span></p>
+      <p class="pp-times"><span><b>{{ v.total }}</b> {{ _('total') }}</span><span><b>{{ v.active }}</b> {{ _('active') }}</span><span><b>{{ v.steps|length }}</b> {{ _('steps') }}</span></p>
       {{ servings_part() }}
       <div class="cc-actions">
         {{ start_button() }}
-        {% if v.ready %}<button type="button" class="cc-btn" data-sheet="sheet-bowls">{{ icon('salad') }} Bowls{% if v.ready.bowls %} · {{ v.ready.bowls|length }}{% endif %}</button>{% endif %}
-        <button type="button" class="cc-btn" data-sheet="sheet-more" data-jump="more-top" aria-label="More about the dish">⋯ More</button>
+        {% if v.ready %}<button type="button" class="cc-btn" data-sheet="sheet-bowls">{{ icon('salad') }} {{ _('Bowls') }}{% if v.ready.bowls %} · {{ v.ready.bowls|length }}{% endif %}</button>{% endif %}
+        <button type="button" class="cc-btn" data-sheet="sheet-more" data-jump="more-top" aria-label="{{ _('More about the dish') }}">⋯ {{ _('More') }}</button>
       </div>
       {{ save_buttons() }}
       {{ note_card() }}
@@ -180,19 +180,19 @@
   </div>
   <div class="cc-body">
     {{ ingredients(imgs) }}
-    <aside class="cc-glance" aria-label="At a glance">
-      {% if v.time_strip %}<section><h2 class="eyebrow">Time</h2>{{ time_strip() }}</section>{% endif %}
-      {% if v.equipment %}<section><h2 class="eyebrow">Equipment</h2>{{ equipment_grid() }}</section>{% endif %}
+    <aside class="cc-glance" aria-label="{{ _('At a glance') }}">
+      {% if v.time_strip %}<section><h2 class="eyebrow">{{ _('Time') }}</h2>{{ time_strip() }}</section>{% endif %}
+      {% if v.equipment %}<section><h2 class="eyebrow">{{ _('Equipment') }}</h2>{{ equipment_grid() }}</section>{% endif %}
       {% if imgs.parts %}
-      <section><h2 class="eyebrow">The parts</h2>
+      <section><h2 class="eyebrow">{{ _('The parts') }}</h2>
         <div class="cc-parts">{% for p in imgs.parts %}<figure><img src="{{ p.url }}" alt="" width="600" height="600" loading="lazy"><figcaption>{{ p.name }}</figcaption></figure>{% endfor %}</div>
       </section>
-      {% elif v.parts|length > 1 %}<section><h2 class="eyebrow">The parts</h2><p class="parts">{% for p in v.parts %}<span>{{ p }}</span>{% endfor %}</p></section>
+      {% elif v.parts|length > 1 %}<section><h2 class="eyebrow">{{ _('The parts') }}</h2><p class="parts">{% for p in v.parts %}<span>{{ p }}</span>{% endfor %}</p></section>
       {% endif %}
-      {% if versions %}<section><h2 class="eyebrow">Versions</h2>{{ version_list() }}</section>{% endif %}
+      {% if versions %}<section><h2 class="eyebrow">{{ _('Versions') }}</h2>{{ version_list() }}</section>{% endif %}
       {% if v.chef_note %}
-      <section><h2 class="eyebrow">From the chef</h2><p class="cc-note">{{ v.chef_note }}</p>
-        <button type="button" class="cc-more" data-sheet="sheet-more" data-jump="more-chef">Read all</button></section>
+      <section><h2 class="eyebrow">{{ _('From the chef') }}</h2><p class="cc-note">{{ v.chef_note }}</p>
+        <button type="button" class="cc-more" data-sheet="sheet-more" data-jump="more-chef">{{ _('Read all') }}</button></section>
       {% endif %}
     </aside>
   </div>
@@ -203,37 +203,37 @@
 {% macro more_sheet() -%}
 {% set imgs = dish_images(recipe) %}
 <dialog class="ovl-more" id="sheet-more" aria-labelledby="sheet-more-h">
-  <div class="sheet-h" id="more-top"><h2 id="sheet-more-h">About the dish</h2>
-    <button type="button" class="sheet-x" data-sheet-close aria-label="Close">{{ icon('close') }}</button></div>
+  <div class="sheet-h" id="more-top"><h2 id="sheet-more-h">{{ _('About the dish') }}</h2>
+    <button type="button" class="sheet-x" data-sheet-close aria-label="{{ _('Close') }}">{{ icon('close') }}</button></div>
   {% if mine and (mine.note or mine.rating or mine.photos) %}
   {# Edit turns the note into the feedback fields, filled in with what was saved (static/js/my_note.js) #}
   <section id="more-mine" class="more-mine" data-mine-note>
-    <div class="mine-h"><h3 class="eyebrow">Your note{{ made_line() }}</h3>
-      <button type="button" class="mine-edit" data-mine-edit>Edit</button></div>
+    <div class="mine-h"><h3 class="eyebrow">{{ _('Your note') }}{{ made_line() }}</h3>
+      <button type="button" class="mine-edit" data-mine-edit>{{ _('Edit') }}</button></div>
     <div data-mine-view>
       {{ my_stars() }}
       {% if mine.note %}<p class="note">{{ mine.note }}</p>{% endif %}
       {{ my_photo('mine-photo-open') }}
     </div>
     <form class="mine-form" data-mine-form hidden>
-      {{ feedback_fields('What would you do next time?') }}
-      <div class="mine-foot"><button type="button" class="fb-cancel" data-mine-cancel>Cancel</button>
-        <button type="submit" class="fb-save">Save</button></div>
+      {{ feedback_fields(_('What would you do next time?')) }}
+      <div class="mine-foot"><button type="button" class="fb-cancel" data-mine-cancel>{{ _('Cancel') }}</button>
+        <button type="submit" class="fb-save">{{ _('Save') }}</button></div>
     </form>
   </section>
   {% endif %}
   {% if has_parts(imgs) %}
-  <section id="more-parts"><h3 class="eyebrow">The parts</h3>
+  <section id="more-parts"><h3 class="eyebrow">{{ _('The parts') }}</h3>
     {% if imgs.parts %}
     <div class="part-images">{% for p in imgs.parts %}<figure><img src="{{ p.url }}" alt="" width="600" height="600" loading="lazy"><figcaption>{{ p.name }}</figcaption></figure>{% endfor %}</div>
     {% else %}<p class="parts">{% for p in v.parts %}<span>{{ p }}</span>{% endfor %}</p>{% endif %}
   </section>
   {% endif %}
-  {% if v.time_strip %}<section id="more-time"><h3 class="eyebrow">Time</h3>{{ time_strip() }}</section>{% endif %}
-  {% if v.equipment %}<section id="more-tools"><h3 class="eyebrow">Equipment</h3>{{ equipment_grid() }}</section>{% endif %}
-  {% if versions %}<section id="more-versions"><h3 class="eyebrow">Versions</h3>{{ version_list() }}</section>{% endif %}
-  {% if v.chef_note %}<section id="more-chef"><h3 class="eyebrow">From the chef</h3><p class="note">{{ v.chef_note }}</p></section>{% endif %}
+  {% if v.time_strip %}<section id="more-time"><h3 class="eyebrow">{{ _('Time') }}</h3>{{ time_strip() }}</section>{% endif %}
+  {% if v.equipment %}<section id="more-tools"><h3 class="eyebrow">{{ _('Equipment') }}</h3>{{ equipment_grid() }}</section>{% endif %}
+  {% if versions %}<section id="more-versions"><h3 class="eyebrow">{{ _('Versions') }}</h3>{{ version_list() }}</section>{% endif %}
+  {% if v.chef_note %}<section id="more-chef"><h3 class="eyebrow">{{ _('From the chef') }}</h3><p class="note">{{ v.chef_note }}</p></section>{% endif %}
   <section id="more-facts" class="more-panel">{{ dish_facts('recipe_detail', with_servings=False) }}</section>
-  {% if recipe.source_type in ('web', 'video') and recipe.source_input %}<p class="hint source">Based on <a href="{{ recipe.source_input }}" rel="noopener nofollow" target="_blank">{{ recipe.source_input.split('/')[2] }}</a></p>{% endif %}
+  {% if recipe.source_type in ('web', 'video') and recipe.source_input %}<p class="hint source">{{ _('Based on') }} <a href="{{ recipe.source_input }}" rel="noopener nofollow" target="_blank">{{ recipe.source_input.split('/')[2] }}</a></p>{% endif %}
 </dialog>
 {%- endmacro %}

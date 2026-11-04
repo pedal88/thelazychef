@@ -12,10 +12,12 @@ import time
 from collections import OrderedDict
 from functools import lru_cache
 
-from flask_babel import force_locale
+from flask_babel import force_locale, gettext
 from markupsafe import Markup, escape
 
 from database.models import Ingredient, Recipe, RecipeLine, RecipeStep, db
+from services import language
+from services.labels import label
 from services.measures import DEFAULT, density, fmt_amount, fmt_total, frac, localize_text, temp  # noqa: F401 (frac: tests)
 from services.recipe_v2 import delta, groups, mise, nutrition, states, whole
 from services.recipe_v2.derive import HEAT_LABELS, heat_steps
@@ -43,12 +45,15 @@ def _catalogs():
     eq = load('equipment.json')
     return {
         'equipment_items': {e['id']: e for e in eq['equipment']},
-        'modes': {m['id']: m.get('name_en') or m['name'] for m in eq['modes']},
+        'modes': {m['id']: m for m in eq['modes']},
     }
 
 
 def duration(minutes):
-    return f'{minutes / 60:.1f} h'.replace('.0 h', ' h') if minutes >= 120 else f'{minutes} min'
+    if minutes < 120:
+        return f'{minutes} min'
+    hours = f'{minutes / 60:.1f}'.removesuffix('.0')
+    return gettext('%(hours)s h', hours=hours.replace('.', ',') if language.shown() == 'nb' else hours)
 
 
 def step_duration(s):
@@ -56,7 +61,7 @@ def step_duration(s):
     if s.get('active_minutes'):
         parts.append(f"{s['active_minutes']} min")
     if s.get('passive_minutes'):
-        parts.append(('+ ' if parts else '') + f"{duration(s['passive_minutes'])} standing")
+        parts.append(('+ ' if parts else '') + gettext('%(time)s standing', time=duration(s['passive_minutes'])))
     return ' '.join(parts)
 
 
@@ -70,7 +75,10 @@ def count_of(line, factor=1.0):
 
 
 def equipment_name(e, system=DEFAULT):
-    """An equipment item's name for the reader: name_us for a tin sized in cm ("9-inch springform"), else the English one."""
+    """An equipment item's name for the reader: in Norwegian the catalog's own, else name_us for a tin sized in cm
+    ("9-inch springform"), else the English one."""
+    if language.shown() == 'nb':
+        return e['name']
     return (system == 'us' and e.get('name_us')) or e.get('name_en') or e['name']
 
 
@@ -93,13 +101,13 @@ def time_strip(steps, total):
     """The time from start to table in parts, for the strip on the overview of the one-page flow: getting ready until
     the heat goes on (see heat_on), cooking, and serving. Each part as {phase, label, minutes, text}; parts of no
     length are left out, so a dish that is never heated is one part."""
-    marks = [('prep', 'Prep', 0)]
+    marks = [('prep', gettext('Prep'), 0)]
     heat = next((x['start'] for x in steps if x['heat']), None)
     serve = next((x['start'] for x in steps if x['phase'] == 'serve'), None)
     if heat is not None:
-        marks.append(('cook', 'Cook', heat))
+        marks.append(('cook', gettext('Cook'), heat))
     if serve is not None and serve >= marks[-1][2]:
-        marks.append(('serve', 'Serve', serve))
+        marks.append(('serve', gettext('Serve'), serve))
     parts = []
     for (phase, label, start), end in zip(marks, [m[2] for m in marks[1:]] + [total]):
         if end > start:
@@ -116,7 +124,8 @@ def equipment_text(s, system=DEFAULT):
     if s.get('temp_c'):
         bits.append(temp(s['temp_c'], system))
     if s.get('mode'):
-        bits.append(cat['modes'].get(s['mode'], s['mode']))
+        mode = cat['modes'].get(s['mode'])
+        bits.append(s['mode'] if not mode else mode['name'] if language.shown() == 'nb' else mode.get('name_en') or mode['name'])
     return ', '.join(bits)
 
 
@@ -165,7 +174,7 @@ def clear_cache():
 
 def page(recipe, servings=None, plan='calm', system=DEFAULT):
     """build() for the recipe pages, from the cache when the recipe has not changed."""
-    key = (recipe.id, repr(tuple(getattr(recipe, c.key) for c in Recipe.__table__.columns)), servings, plan, system)
+    key = (recipe.id, repr(tuple(getattr(recipe, c.key) for c in Recipe.__table__.columns)), servings, plan, system, language.shown())
     hit = _cache.get(key)
     if hit and time.monotonic() - hit[0] < CACHE_SECONDS:
         _cache.move_to_end(key)
@@ -223,11 +232,11 @@ def build(recipe, servings=None, plan='calm', system=DEFAULT):
     for e in shopping_list(v2, factor):
         notes = list(e['varieties'])  # the kind to buy first: "poteter · melne"
         if len(e['parts']) > 1:
-            notes.append(' and '.join(e['parts']))
+            notes.append(gettext(' and ').join(e['parts']))
         elif e['uses'] > 1:
-            notes.append(f"used {e['uses']} times")
+            notes.append(gettext('used %(n)s times', n=e['uses']))
         if e['to_taste'] and not e['amounts']:
-            notes.append('to taste')
+            notes.append(gettext('to taste'))
         found = pantry.get(e.get('pantry_id'))
         group = groups.group_of(found, mise.staple({'name': e['name'], **({'pantry_tier': found.tier} if found else {})}))
         shop.append({'name': e['name'], 'amount': fmt_total(e['amounts'], system, density(found)),
@@ -244,8 +253,9 @@ def build(recipe, servings=None, plan='calm', system=DEFAULT):
         steps.append({
             'n': n, 'id': sid, 'phase': s['phase'], 'short': s['short'], 'component': comps.get(s['component_id'], ''),
             'duration': step_duration(s), 'equipment': equipment_text(s, system), 'start': p['start'],
-            'while': f"While: {during['short'].lower()}" if during else '',
-            'html': step_html(s, lines, ingredients, factor, recipe.language, system), 'done_when': s.get('done_when'),
+            'while': gettext('While: %(what)s', what=during['short'].lower()) if during else '',
+            'html': step_html(s, lines, ingredients, factor, 'nb' if language.shown() == 'nb' else recipe.language, system),
+            'done_when': s.get('done_when'),
             'setup': bool(s.get('setup')), 'heat': sid in heated,
             # For the social slides (services/social.py): the equipment ids, the temperature and the minutes as stored
             'equipment_ids': list(s.get('equipment') or []), 'temp_c': s.get('temp_c'),
@@ -262,7 +272,7 @@ def build(recipe, servings=None, plan='calm', system=DEFAULT):
             i['pantry_tier'] = ingredients[i['local_id']].tier
     # A line's state is its own: every v2 recipe has them since the conversion of 26.10.2026, and a line without
     # one is used as it comes (canned corn and sour cream in a "prepare the toppings" step are not cut)
-    lang = recipe.language or 'en'
+    lang = 'nb' if language.shown() == 'nb' else recipe.language or 'en'
 
     def state_of(lid, i):
         return i.get('state') or i.get('cut')
@@ -277,7 +287,7 @@ def build(recipe, servings=None, plan='calm', system=DEFAULT):
                       'group': groups.group_of(ingredients.get(lid), mise.staple(i))} for lid, i in lines.items()}
 
     # Prep: the lines in bowls, and the rest to take out, drawn like in the delta
-    ready = mise.build(v2, sch, recipe.language) if v2['steps'] else None
+    ready = mise.build(v2, sch, lang) if v2['steps'] else None
     if ready:
         def tile(i):
             return {**pictured[i['local_id']], 'lid': i['local_id'], 'mark': states.mark(pictured[i['local_id']]['cut'])}
@@ -299,8 +309,8 @@ def build(recipe, servings=None, plan='calm', system=DEFAULT):
         'title': recipe.title, 'servings': servings, 'scalable': scalable, 'yield_text': localize_text(recipe.yield_text, system),
         'units': system,
         'total': duration(sch['T']), 'total_min': sch['T'], 'active': duration(sch['A']), 'active_min': sch['A'],
-        'plan': plan, 'plans': PLAN_NAMES,
-        'plan_hint': PLAN_HINTS[plan], 'parts': [c['name'] for c in v2['components']],
+        'plan': plan, 'plans': {k: label(name) for k, name in PLAN_NAMES.items()},
+        'plan_hint': label(PLAN_HINTS[plan]), 'parts': [c['name'] for c in v2['components']],
         'shopping': shop, 'shop_groups': groups.grouped(shop), 'equipment': equipment_list(first_use, cat, system), 'steps': steps,
         'heat_on': heat_on, 'time_strip': time_strip(steps, sch['T']),
         'chef_note': localize_text(recipe.chef_note, system), 'missing': sum(1 for s in shop if s['missing']),
@@ -334,7 +344,7 @@ def take_out(loose):
         line = f['line']
         item = items.setdefault(line['name'].strip().lower(), {'key': f['key'], 'line': line, 'group': line['group'],
                                                                'amounts': [], 'steps': []})
-        amount = line['amount'] or 'to taste'
+        amount = line['amount'] or gettext('to taste')
         if amount not in item['amounts']:
             item['amounts'].append(amount)
         if f['used']['no'] not in item['steps']:
@@ -358,7 +368,7 @@ def cook_needs(steps, steps_by, ready):
         })
 
 
-SPICE = ('Mild', 'A little hot', 'Hot', 'Very hot')
+SPICE = ('Mild', 'A little hot', 'Hot', 'Very hot')  # labels.WORDS
 
 
 def about(recipe):
@@ -366,14 +376,15 @@ def about(recipe):
     left to the template, which has the reader-facing names."""
     leftovers = None
     if recipe.keeps_days is not None:
-        leftovers = 'Eat at once' if recipe.keeps_days == 0 else f'{recipe.keeps_days} day{"s" if recipe.keeps_days > 1 else ""} in the fridge'
+        leftovers = (gettext('Eat at once') if recipe.keeps_days == 0 else gettext('%(n)s day in the fridge', n=1) if recipe.keeps_days == 1
+                     else gettext('%(n)s days in the fridge', n=recipe.keeps_days))
         if recipe.freezes:
-            leftovers += ', freezes'
-    facts = [('Cuisine', recipe.cuisine), ('Cooked in', HEAT_LABELS.get(recipe.heat_source)),
-             ('Spice', SPICE[recipe.spice_level] if recipe.spice_level in range(4) else None),
-             ('Leftovers', leftovers), ('Protein', recipe.protein_type),
-             ('Made as', ' · '.join(age_label(recipe) if k == 'baby' else SETTINGS[k][0]
-                                    for k in recipe.settings or [] if k in SETTINGS))]
+            leftovers += gettext(', freezes')
+    facts = [(gettext('Cuisine'), label(recipe.cuisine)), (gettext('Cooked in'), label(HEAT_LABELS.get(recipe.heat_source))),
+             (gettext('Spice'), label(SPICE[recipe.spice_level]) if recipe.spice_level in range(4) else None),
+             (gettext('Leftovers'), leftovers), (gettext('Protein'), label(recipe.protein_type)),
+             (gettext('Made as'), ' · '.join(label(age_label(recipe) if k == 'baby' else SETTINGS[k][0])
+                                             for k in recipe.settings or [] if k in SETTINGS))]
     return [(k, v) for k, v in facts if v]
 
 
@@ -381,12 +392,16 @@ def as_text(recipe):
     """The saved recipe as plain text, in the shape round 1 writes: title, servings, ingredients per part and
     numbered steps in the planned order. Used to make a version of it (services/recipe_v2/generate.py), and it goes to
     Claude, so it is the base text in English whoever is looking."""
-    with force_locale('en'):
-        return v2_text(to_v2(recipe), recipe.yield_text, recipe.chef_note)
+    return v2_text(to_v2(recipe), recipe.yield_text, recipe.chef_note)
 
 
 def v2_text(v2, yield_text=None, chef_note=None):
     """as_text for a recipe in v2 JSON that is not saved, such as the fasit recipes."""
+    with force_locale('en'):
+        return _text_of(v2, yield_text, chef_note)
+
+
+def _text_of(v2, yield_text, chef_note):
     lines = {i['local_id']: i for i in v2['ingredients']}
 
     def line_text(i, prep=True):

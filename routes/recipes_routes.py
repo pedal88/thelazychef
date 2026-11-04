@@ -1,10 +1,12 @@
 """Recipes Blueprint: landing page, recipe library, the recipe page, recipe JSON APIs."""
+from babel.dates import format_date
 from flask import abort, flash, jsonify, redirect, render_template, request, url_for
 from flask_babel import gettext
 from flask_login import current_user, login_required
 from database.models import Ingredient, Recipe, UserQueue, UserRecipeInteraction, db
 from routes._flat import FlatBlueprint
 from routes._shared import DIFFICULTY_LABELS, get_recipe_image_url, unit_system, viewer_is_admin
+from services import language
 from services.chef_service import get_chefs
 from services.labels import label
 from services.recipe_library import PAGE, SORT_LABELS, counts, from_args, quick, recipe_page
@@ -166,6 +168,11 @@ def search_recipes_api():
     })
 
 
+def _short_date(when):
+    """4 Nov, or 4. nov. in Norwegian."""
+    return format_date(when, 'd. MMM', locale='nb') if language.shown() == 'nb' else f'{when.day} {when:%b}'
+
+
 @recipes_bp.route('/recipe/<int:recipe_id>')
 def recipe_detail(recipe_id):
     recipe = db.session.get(Recipe, recipe_id)
@@ -199,7 +206,7 @@ def recipe_detail(recipe_id):
                 'rating': mark.rating if mark else None,
                 'photos': list(mark.user_photos or []) if mark else [],
                 'made_count': (mark.made_count or 0) if mark else 0,
-                'last_made': f"{mark.last_made_at.day} {mark.last_made_at:%b}" if mark and mark.last_made_at else None}
+                'last_made': _short_date(mark.last_made_at) if mark and mark.last_made_at else None}
     # One page: the overview, and prep and cooking together (#prep, #cook)
     return render_template('recipe_v2_make.html', recipe=recipe, v=view, admin=admin, mine=mine,
                            versions=versions if len(versions) > 1 else [])

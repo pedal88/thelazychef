@@ -20,14 +20,7 @@
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='brand/apple-touch-icon.png') }}">
     <!-- The browsing pages (recipe list, Discover) in the recipe page's language -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/library.css') }}">
-    <script>
-        // The words of the scripts in the page's language (services/labels.JS_WORDS): tr('%(n)s recipes', {n: 3})
-        window.WORDS = {{ js_words()|tojson }};
-        window.tr = function (word, values) {
-            var text = window.WORDS[word] || word;
-            return values ? text.replace(/%\((\w+)\)s/g, function (_, name) { return values[name]; }) : text;
-        };
-    </script>
+    {% include "components/script_words.html" %}
     <script>
         (function () {
             var FONTS = {{ LOOK_FONTS|tojson }};  // routes/_shared.LOOK_FONTS

@@ -38,7 +38,7 @@
   const leftMin = r => Math.max(0, Math.ceil((r.end - Date.now()) / 60e3));
   const fmtLeft = r => {
     const s = Math.max(0, Math.round((r.end - Date.now()) / 1000));
-    return s ? `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}` : 'check';
+    return s ? `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}` : tr('check');
   };
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 

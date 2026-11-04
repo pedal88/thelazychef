@@ -21,7 +21,7 @@
 <meta property="og:site_name" content="The Lazy Chef">
 <meta property="og:type" content="article">
 <meta property="og:title" content="{{ v.title }}">
-<meta property="og:description" content="{{ (v.chef_note or 'A recipe you can see: prep, cook and serve, drawn as a map.')|striptags|truncate(200) }}">
+<meta property="og:description" content="{{ (v.chef_note or _('A recipe you can see: prep, cook and serve, drawn as a map.'))|striptags|truncate(200) }}">
 <meta property="og:url" content="{{ absolute_url(url_for('recipe_detail', recipe_id=recipe.id)) }}">
 <meta property="og:image" content="{{ absolute_url(image or url_for('static', filename='brand/share.png')) }}">
 <meta name="twitter:card" content="summary_large_image">
@@ -67,13 +67,13 @@
   {# A recipe with no steps yet (a draft whose structuring failed) is only its overview #}
   {% if v.ready %}
   {# Cooking: the steps over the whole screen #}
-  <section class="cookmode" id="cook" aria-label="Cooking" hidden>
+  <section class="cookmode" id="cook" aria-label="{{ _('Cooking') }}" hidden>
     {# No bars: small floating controls in the corners, so the steps have the whole screen #}
-    <button type="button" class="fab fab-back" data-cook-close aria-label="Back to the overview">{{ icon('back') }}</button>
+    <button type="button" class="fab fab-back" data-cook-close aria-label="{{ _('Back to the overview') }}">{{ icon('back') }}</button>
     <div class="runs-line fab-runs" data-runs aria-live="polite" hidden></div>
     {{ step_list() }}
     <div class="fab-tools">
-      {% if mine and (mine.note or mine.photos) %}<button type="button" class="note-open" data-sheet="sheet-more" data-jump="more-mine" aria-label="Your note from last time" title="Your note from last time">{{ icon('message') }}</button>{% endif %}
+      {% if mine and (mine.note or mine.photos) %}<button type="button" class="note-open" data-sheet="sheet-more" data-jump="more-mine" aria-label="{{ _('Your note from last time') }}" title="{{ _('Your note from last time') }}">{{ icon('message') }}</button>{% endif %}
       {{ details_button() }}
       {{ view_menu() }}
       {{ bowls_button() }}
@@ -82,12 +82,12 @@
 
   {# The bowls over the whole screen, scaled to fit it without scrolling (static/js/steps.js) #}
   <dialog class="sheet sheet-bowls" id="sheet-bowls" aria-labelledby="sheet-bowls-h">
-    <div class="sheet-h"><h2 id="sheet-bowls-h">Bowls and ingredients</h2>
-      {% if r.bowls %}<span class="hint" data-count aria-live="polite">0 of {{ r.bowls|length }} bowls ready</span>{% endif %}
+    <div class="sheet-h"><h2 id="sheet-bowls-h">{{ _('Bowls and ingredients') }}</h2>
+      {% if r.bowls %}<span class="hint" data-count aria-live="polite">{{ _('%(n)s of %(total)s bowls ready', n=0, total=r.bowls|length) }}</span>{% endif %}
       {# Prep is done: the bowls not ticked yet are counted as ready, and the cooking starts at the step after them.
          In the title line, so the bowls get the height; on a phone it floats at the bottom (static/css/make.css) #}
-      {% if r.bowls %}<button type="button" class="go sheet-go" data-bowls-go>The bowls are ready <span aria-hidden="true">→</span> start cooking</button>{% endif %}
-      <button type="button" class="sheet-x" data-sheet-close aria-label="Close">{{ icon('close') }}</button></div>
+      {% if r.bowls %}<button type="button" class="go sheet-go" data-bowls-go>{{ _('The bowls are ready <span aria-hidden="true">→</span> start cooking') }}</button>{% endif %}
+      <button type="button" class="sheet-x" data-sheet-close aria-label="{{ _('Close') }}">{{ icon('close') }}</button></div>
     {% if r.bowls %}<div class="meter" aria-hidden="true"><span></span></div>{% endif %}
     <div class="sheet-fit" data-fit><div class="fit-in">{{ prep_body(links=True) }}</div></div>
   </dialog>
@@ -103,27 +103,27 @@
       <div class="done-hero{% if not done_img %} no-img{% endif %}">
         {% if done_img %}<img src="{{ done_img }}" alt="" width="1200" height="900">{% endif %}
         <div class="done-burst" data-done-burst aria-hidden="true"></div>
-        <button type="button" class="done-x" data-sheet-close aria-label="Close">{{ icon('close') }}</button>
+        <button type="button" class="done-x" data-sheet-close aria-label="{{ _('Close') }}">{{ icon('close') }}</button>
       </div>
       <div class="done-body">
-        <p class="done-eyebrow"><span class="done-tick">{{ icon('check') }}</span><span data-done-steps data-all="All {{ v.steps|length }} steps done">All {{ v.steps|length }} steps done</span></p>
-        <h2 id="done-h">Enjoy your meal!</h2>
-        <p class="done-sub" data-done-sub data-title="{{ v.title }}" data-plan="{{ v.total_min }}">You made {{ v.title }}.</p>
+        <p class="done-eyebrow"><span class="done-tick">{{ icon('check') }}</span><span data-done-steps data-all="{{ _('All %(n)s steps done', n=v.steps|length) }}">{{ _('All %(n)s steps done', n=v.steps|length) }}</span></p>
+        <h2 id="done-h">{{ _('Enjoy your meal!') }}</h2>
+        <p class="done-sub" data-done-sub data-title="{{ v.title }}" data-plan="{{ v.total_min }}">{{ _('You made %(title)s.', title=v.title) }}</p>
         {% if current_user.is_authenticated %}
         <label class="done-made"><input type="checkbox" name="made" checked data-done-made><span class="done-box">{{ icon('check') }}</span>
-          <span><b>I made this</b><small data-done-count>It goes in your Made list.</small></span></label>
-        {{ feedback_fields('How did it turn out? Anything you would change next time?') }}
+          <span><b>{{ _('I made this') }}</b><small data-done-count>{{ _('It goes in your Made list.') }}</small></span></label>
+        {{ feedback_fields(_('How did it turn out? Anything you would change next time?')) }}
         {% else %}
         {# A visitor: I made this signs them up, marks the dish as made and comes back here (services/signup.py) #}
         <a class="done-made" href="{{ url_for('register', next=request.path, do='made', recipe=recipe.id) }}"><span class="done-box">{{ icon('check') }}</span>
-          <span><b>I made this</b><small>Sign up to keep it in your Made list, with your notes for next time.</small></span></a>
-        <p class="done-login">Have an account? <a href="{{ url_for('login', next=request.path, do='made', recipe=recipe.id) }}">Log in</a></p>
+          <span><b>{{ _('I made this') }}</b><small>{{ _('Sign up to keep it in your Made list, with your notes for next time.') }}</small></span></a>
+        <p class="done-login">{{ _('Have an account?') }} <a href="{{ url_for('login', next=request.path, do='made', recipe=recipe.id) }}">{{ _('Log in') }}</a></p>
         {% endif %}
       </div>
       <div class="fb-foot">
-        <button type="button" class="fb-cancel" data-steps-reset>Cook it again</button>
-        {% if current_user.is_authenticated %}<button type="submit" class="fb-save" data-done-save>Save</button>
-        {% else %}<button type="button" class="fb-save" data-sheet-close>Close</button>{% endif %}
+        <button type="button" class="fb-cancel" data-steps-reset>{{ _('Cook it again') }}</button>
+        {% if current_user.is_authenticated %}<button type="submit" class="fb-save" data-done-save>{{ _('Save') }}</button>
+        {% else %}<button type="button" class="fb-save" data-sheet-close>{{ _('Close') }}</button>{% endif %}
       </div>
     </form>
   </dialog>

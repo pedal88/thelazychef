@@ -28,9 +28,9 @@
     try {
       const missed = await fb.save();
       if (!missed) { location.reload(); return; }
-      fb.say(`Saved. ${missed}`, true);
+      fb.say(tr('Saved. %(note)s', { note: missed }), true);
     } catch (err) {
-      fb.say(err.friendly || 'Something went wrong. Please try again.', true);
+      fb.say(err.friendly || tr('Something went wrong. Please try again.'), true);
     }
     saveBtn.disabled = false;
   });

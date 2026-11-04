@@ -14,6 +14,8 @@ import os
 import re
 from functools import lru_cache
 
+from services import language
+
 PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'data', 'constraints', 'states.json')
 
 # Words in a synonym that say the grade ("finhakket", "roughly chopped", "tynne skiver", "stivpisket")
@@ -51,13 +53,15 @@ def mark(state):
     return next(g['sign'] for g in catalog()['groups'] if g['id'] == s['group'])
 
 
-def key(lang='en'):
-    """The signs and what they stand for, in the order of the catalog: [(sign, label, ["chopped", "sliced", …])]."""
+def key(lang=None):
+    """The signs and what they stand for, in the order of the catalog: [(sign, label, ["chopped", "sliced", …])], by
+    default in the language being drawn."""
+    lang = lang or language.shown()
     rows = {}
     for s in catalog()['states']:
         sign = mark(s['id'])
         if sign:
-            label = 'juiced' if sign == 'squeezer' else next(g[lang] for g in catalog()['groups'] if g['id'] == s['group'])
+            label = {'en': 'juiced', 'nb': 'presset'}[lang] if sign == 'squeezer' else next(g[lang] for g in catalog()['groups'] if g['id'] == s['group'])
             rows.setdefault(sign, (sign, label, []))[2].append(s[lang])
     return list(rows.values())
 
