@@ -27,6 +27,7 @@ and a printed summary that can be pasted back.
 | `review_api.sh` | The review API: read a recipe, the pantry, the open questions and the pantry report in production, with no venv and nothing for Pål to run (`docs/OPERATIONS.md`) |
 | `social_render` | Photograph a TikTok or Instagram post's slides from the site, with a caption draft (`docs/SOCIAL.md`) |
 | `social_batch` | A day of posts: the day's series or a plan, logged as drafts with their codes, rendered in both sizes, copied to iCloud Drive for the phone, Instagram's slides sent to the queue (`docs/SOCIAL.md`) |
+| `social_numbers` | TikTok's numbers, read off a screenshot of TikTok Studio into a CSV, sent to the post log (`--apply`; `docs/SOCIAL.md`) |
 | `local_db` | A local SQLite database with the pantry and five example recipes (`docs/README_TOP_COMMANDS.md`) |
 | `generate_v2` | Make one v2 recipe from the command line |
 | `seed_admin` | Create or reset an admin user |

@@ -283,7 +283,19 @@ slides there before posting. The slides are also in iCloud Drive as before.
 
 Reading TikTok by a script is left out on purpose. TikTok's terms for the EEA forbid extracting data with automated
 software it has not approved, and the other version forbids scripts that interact with the service, with no exception
-for your own account; the penalty is the account. TikTok's numbers are typed in, on **Copy in numbers**.
+for your own account; the penalty is the account.
+
+### TikTok's numbers
+
+Once a week, Sunday evening or Monday morning before 10:00, Pål reads them off by hand: a screenshot of **Posts** in TikTok
+Studio (views, likes and comments per post, every post) goes to Claude Code, which reads it into a CSV (code, views, likes,
+comments, and `posted_on` for a draft that has in fact gone up) and sends it with `scripts/social_numbers.py`. It is kept as
+that post's row for the day it had been up, so nobody needs to catch day 2 and day 7. Sending the screenshot is the yes to
+that run. The script's dry run says what the rows come to, and `--apply` saves them; nothing is saved when one is wrong.
+
+TikTok Studio's own exports do not do it (tried 4.11.2026): **Overview** is per day, not per post, and **Content** has only
+the top three posts. Neither has saves, nor does the list: saves are per post, for the few that are judged on them. **Copy
+in numbers** on the Funnel page (`/admin/funnel/numbers`) still takes numbers by hand.
 
 ## The Instagram queue
 
@@ -315,12 +327,12 @@ Accounts API needs a verified company.
 
 ## The weekly report
 
-Sunday at 07:00 the job `social-report` (`services/social_report.py`) reads the week's posts from the post log, with the
-week before and the series, hook and CTA groups over 28 days. Claude (`SOCIAL_REPORT_MODEL`, the prompt in
+Monday at 10:00 the job `social-report` (`services/social_report.py`) reads the posts of the week that ended on Sunday from
+the post log, with the week before and the series, hook and CTA groups over 28 days. Claude (`SOCIAL_REPORT_MODEL`, the prompt in
 `data/prompts/social/weekly_report.md`) says in Norwegian what won, what lost and the one change for next week, and
 may not judge a group on fewer than three posts. It is at **Weekly report** on the Funnel page, kept per week with the
-numbers it was written from; **Write it now** writes the week ending today. TikTok's numbers must be typed in first to
-count. A few cents a week; a week with no posts makes no call.
+numbers it was written from; **Write it now** writes the week ending today. TikTok's numbers must be in first to
+count (above). A few cents a week; a week with no posts makes no call.
 
 ## Learning from the posts
 

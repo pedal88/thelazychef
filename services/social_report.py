@@ -1,8 +1,8 @@
 """The weekly report on the TikTok and Instagram posts (docs/SOCIAL.md, "Learning from the posts"). The week's numbers
 come from the post log (services/funnel.py); Claude reads them and says, in Norwegian, what won, what lost and the one
-thing to change next. It is given numbers only and told not to judge on one post. Sunday morning the Cloud Scheduler job
-social-report calls /internal/tasks/social-report, after social-stats has fetched Instagram's numbers; TikTok's are
-what has been typed in. It lands on the Funnel page. One short Sonnet call, a few cents a week; a week with no posts
+thing to change next. It is given numbers only and told not to judge on one post. Monday morning the Cloud Scheduler job
+social-report calls /internal/tasks/social-report for the week that ended on Sunday, after social-stats has fetched
+Instagram's numbers and TikTok's have been read off TikTok Studio. It lands on the Funnel page. One short Sonnet call, a few cents a week; a week with no posts
 makes no call.
 """
 import datetime
@@ -29,6 +29,12 @@ SCHEMA = {
         'caution': {'type': 'string'},
     },
 }
+
+
+def last_sunday(today=None):
+    """The Sunday a week ends on: today when it is one, else the one before."""
+    today = today or datetime.date.today()
+    return today - datetime.timedelta(days=(today.weekday() + 1) % 7)
 
 
 def _post(row, today):
