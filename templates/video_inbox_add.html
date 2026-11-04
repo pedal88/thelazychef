@@ -1,6 +1,6 @@
 {% extends "base.html" %}
-{# What the iPhone shortcut opens (routes/video_inbox_routes.py add_page). The page sends itself; the button is there
-   when scripts are off. #}
+{# What the iPhone shortcut opens (routes/video_inbox_routes.py add_page). With a link the page sends itself, and the
+   button is there when scripts are off. Without one, the link can be pasted. #}
 {% block title %}Save a video - The Lazy Chef{% endblock %}
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/recipe_v2.css') }}">
@@ -16,10 +16,13 @@
     <button type="submit" class="go">Save</button>
   </form>
   <script>document.getElementById('save-video').submit();</script>
-  {% elif shared %}
-  <p class="hint">That is not a link to a TikTok, Instagram or YouTube video.</p>
   {% else %}
-  <p class="hint">Share a video to the shortcut, or open this page with ?url= and a link.</p>
+  {% if shared %}<p class="hint">That is not a link to a TikTok, Instagram or YouTube video.</p>{% endif %}
+  <form method="post" class="newform" action="{{ url_for('video_inbox.add') }}">
+    <label for="video-link" class="eyebrow">Link to the video</label>
+    <input id="video-link" type="text" inputmode="url" name="url" required autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste a TikTok, Instagram or YouTube link">
+    <button type="submit" class="go">Save</button>
+  </form>
   {% endif %}
   <p><a class="back" href="{{ url_for('video_inbox.inbox') }}">Video inbox</a></p>
 </article>

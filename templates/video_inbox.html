@@ -24,6 +24,7 @@
   <h1>Video inbox</h1>
   <p class="hint">{% if status == 'new' %}Videos saved from the phone. Nothing is made until you choose it.{% else %}Discarded videos.{% endif %}
     {% if status == 'new' and other %}<a href="{{ url_for('video_inbox.inbox', show='discarded') }}">Discarded ({{ other }})</a>{% elif status != 'new' %}<a href="{{ url_for('video_inbox.inbox') }}">Back to the inbox</a>{% endif %}</p>
+  {% if status == 'new' %}<p><a class="back" href="{{ url_for('video_inbox.add_page') }}">Paste a link</a></p>{% endif %}
   {% if rows %}
   <ul class="inbox-list">
     {% for row, made in rows %}
