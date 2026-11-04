@@ -5,8 +5,9 @@ nothing. Admin only.
 
 ## Pasting a link
 
-Copy the link in TikTok or Instagram, open **Paste a link** in the inbox (`/admin/inbox/add`), paste it and save. This is
-the way that is known to work.
+Copy the link in TikTok or Instagram, open **Paste a link** in the inbox (`/admin/inbox/add`) and tap **Paste and save**. The
+browser may show a small **Paste** bubble first: that is the phone asking, and it is one more tap. Or paste the link in the
+field and save. Only a link is sent; anything else on the clipboard stays on the phone.
 
 ## Many links at once
 
@@ -22,22 +23,22 @@ in the inbox, under their own link.
 
 ## The iPhone shortcut
 
-**It does not work yet.** Tried on 04.11.2026, with TikTok and Chrome: the address it builds had a space after `url=`,
-so the link was lost on the way to the browser, and the cause was not found. Removing the space in the shortcut did not
-help. These are the steps as far as they went.
+The shortcut only copies the link and opens the page, and **Paste and save** does the rest. It does not put the link in the
+address: tried on 04.11.2026 with TikTok and Chrome, that address got a space after `url=` and the link was lost, and the
+cause was not found. This way has not been tried on a real iPhone yet.
 
-Make it once, in the Shortcuts app on the iPhone:
+Make it once, in the Shortcuts app (Snarveier) on the iPhone. Names in Norwegian in brackets:
 
-1. Tap **+** to make a new shortcut and name it **Save to Lazy Chef**.
-2. Tap the **i** at the bottom, turn on **Show in Share Sheet**, and tap **Done**.
-3. At the top, set **Receive** to **URLs** and **Text**. If it has no input: **Continue**.
-4. Add the action **URL Encode**, on **Shortcut Input**, with **Encode**.
-5. Add the action **URL**, and write `https://thelazychef.app/admin/inbox/add?url=`, then choose the variable
-   **URL Encoded Text** right after the `=`.
-6. Add the action **Open URLs**.
+1. Tap **+** and name the shortcut **Save to Lazy Chef**.
+2. Tap **i** at the bottom, turn on **Show in Share Sheet** (Vis i delingsark), and tap **Done**.
+3. At the top, set **Receive** (Motta) to **URLs** and **Text**.
+4. Add **Copy to Clipboard** (Kopier til Utklipp). It takes **Shortcut Input** (Snarvei-inndata).
+5. Add **URL**, and write the address: `googlechromes://thelazychef.app/admin/inbox/add` for Chrome, or
+   `https://thelazychef.app/admin/inbox/add` for Safari.
+6. Add **Open URLs** (Åpne URL-er).
 
-Log in to thelazychef.app once in Safari on the phone. To save a video: **Share** in TikTok or Instagram, then
-**Save to Lazy Chef** (it may be under **More**). Safari opens, and the inbox says **Saved**.
+Log in once in that browser with the admin account (`thelazychefai@gmail.com`). To save a video: **Share** in TikTok or
+Instagram, **Save to Lazy Chef** (it may be under **More**), then **Paste and save**.
 
 ## Making recipes
 
@@ -49,7 +50,7 @@ estimated. The recipes are drafts until approved. A row stays in the inbox, mark
 
 ## How it works
 
-- `/admin/inbox/add?url=…` writes nothing on the GET. The page sends itself as a POST, which another site's form cannot do (`utils/cross_site.py`).
+- `/admin/inbox/add?url=…` still works, though the shortcut no longer uses it. It writes nothing on the GET: the page sends itself as a POST, which another site's form cannot do (`utils/cross_site.py`).
   Only links to the video hosts in `services/recipe_v2/sources.py` are saved, so a link from someone else can at worst
   add a video to the inbox.
 - A video is known by its `video_key`: the same video shared twice, or linked another way, is one row. A short link

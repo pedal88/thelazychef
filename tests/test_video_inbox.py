@@ -99,6 +99,15 @@ class RouteTests(unittest.TestCase):
         self.assertIn('.submit()', html)
         self.assertEqual(self._count(), 0)
 
+    def test_the_paste_button_sends_only_the_link_and_only_on_a_tap(self):
+        html = self.client.get('/admin/inbox/add').get_data(as_text=True)
+        self.assertIn('Paste and save', html)
+        script = html[html.index('Reads the clipboard'):html.index('</script>', html.index('Reads the clipboard'))]
+        self.assertLess(script.index("addEventListener('click'"), script.index('readText())'))
+        self.assertIn('field.value = found[0]', script)
+        # With a link the page sends itself, so it has no use for the clipboard
+        self.assertNotIn('Paste and save', self.client.get('/admin/inbox/add', query_string={'url': TIKTOK}).get_data(as_text=True))
+
     def _many(self, n):
         return '\n'.join(f'https://www.tiktok.com/@a/video/{i}' for i in range(1, n + 1))
 
@@ -206,7 +215,7 @@ class RouteTests(unittest.TestCase):
     def test_a_link_can_be_pasted_when_the_page_gets_none(self):
         html = self.client.get('/admin/inbox/add').get_data(as_text=True)
         self.assertIn('name="url"', html)
-        self.assertNotIn('.submit()', html)  # nothing to send yet
+        self.assertNotIn('save-video', html)  # nothing to send by itself yet
         self.assertIn('/admin/inbox/add', self.client.get('/admin/inbox').get_data(as_text=True))
         res = self.client.post('/admin/inbox/add', data={'url': f'Look at this! {TIKTOK}?_t=1'})
         self.assertEqual(res.status_code, 302)
