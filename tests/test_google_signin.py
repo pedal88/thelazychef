@@ -95,7 +95,7 @@ class GoogleSigninTests(unittest.TestCase):
 
     def test_the_google_account_wins_when_the_address_has_changed(self):
         self.come_back(self.go_to_google(), {'sub': '111', 'email': 'old@gmail.com', 'email_verified': True})
-        self.client.get('/logout')
+        self.client.post('/logout')
         self.come_back(self.go_to_google(), {'sub': '111', 'email': 'new@gmail.com', 'email_verified': True})
         self.assertEqual(len(db.session.execute(db.select(User)).scalars().all()), 1)
 

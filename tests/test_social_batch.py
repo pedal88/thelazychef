@@ -164,6 +164,8 @@ class DayOfPostsTests(unittest.TestCase):
         self.assertEqual([funnel.post_ref(r['post']) for r in rows],
                          ['tiktok-1', 'tiktok-2', 'tiktok-3', 'instagram-1', 'instagram-2', 'instagram-3'])
         self.assertEqual(len(funnel.sheet(7, DAY, 'instagram')), 3)
+
+    def test_the_sheets_page_shows_the_date_it_went_up_and_no_other_posts(self):
         self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
         on = datetime.date.today() - datetime.timedelta(days=2)
         self.day_of_posts(on, first=11)

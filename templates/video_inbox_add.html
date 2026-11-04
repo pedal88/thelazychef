@@ -11,7 +11,6 @@
   <h1>Save a video</h1>
   {% if usable %}
   <form method="post" id="save-video" action="{{ url_for('video_inbox.add') }}">
-    <input type="hidden" name="token" value="{{ token }}">
     <input type="hidden" name="url" value="{{ link }}">
     <p class="hint">Saving {{ link }}</p>
     <button type="submit" class="go">Save</button>

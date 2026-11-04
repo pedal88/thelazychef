@@ -143,7 +143,7 @@ class VersionTests(unittest.TestCase):
         base = self._base()
         base.chef_id, base.status = 'the_green_chef', 'approved'
         db.session.commit()
-        self.client.get('/logout')
+        self.client.post('/logout')
         page = self.client.get('/chefs').get_data(as_text=True)
         self.assertIn('The Green Chef', page)
         self.assertIn('Vegetarian', page)

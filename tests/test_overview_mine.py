@@ -135,7 +135,7 @@ class OverviewMineTests(unittest.TestCase):
         other.set_password('pw')
         db.session.add(other)
         db.session.commit()
-        self.client.get('/logout')
+        self.client.post('/logout')
         self.assertNotIn('Next time 11', self.client.get(self.url).get_data(as_text=True))
         self.client.post('/login', data={'email': 'other@test', 'password': 'pw'})
         self.assertNotIn('Next time 11', self.client.get(self.url).get_data(as_text=True))

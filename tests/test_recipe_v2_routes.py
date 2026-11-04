@@ -275,7 +275,7 @@ Taco | smart | spicy
         self.assertEqual([e['rule'] for e in recipe.validation_errors if e['rule'] == 'image'], ['image'])
         self.assertIsNone(recipe.image_filename)
         # Only Cloud Tasks may call the job
-        self.client.get('/logout')
+        self.client.post('/logout')
         self.assertEqual(self.client.post(f'/internal/tasks/recipe-v2-images/{recipe.id}').status_code, 401)
 
     def test_an_unknown_chef_is_ignored(self):

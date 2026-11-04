@@ -59,13 +59,9 @@ class RouteTests(unittest.TestCase):
         db.drop_all()
         self.ctx.pop()
 
-    def _token(self):
-        with self.client.session_transaction() as s:
-            return s.get('inbox_token')
-
     def _save(self, url=TIKTOK):
         self.client.get('/admin/inbox/add', query_string={'url': url})
-        return self.client.post('/admin/inbox/add', data={'url': url, 'token': self._token()})
+        return self.client.post('/admin/inbox/add', data={'url': url}, headers={'Sec-Fetch-Site': 'same-origin'})
 
     def _count(self):
         return db.session.scalar(db.select(db.func.count()).select_from(VideoInbox))
@@ -74,14 +70,12 @@ class RouteTests(unittest.TestCase):
         res = self.client.get('/admin/inbox/add', query_string={'url': f'Look {TIKTOK}?_t=1'})
         html = res.get_data(as_text=True)
         self.assertEqual(res.status_code, 200)
-        self.assertIn(self._token(), html)
         self.assertIn('.submit()', html)
         self.assertEqual(self._count(), 0)
 
-    def test_a_post_without_the_token_saves_nothing(self):
-        self.client.get('/admin/inbox/add')
-        self.assertEqual(self.client.post('/admin/inbox/add', data={'url': TIKTOK}).status_code, 400)
-        self.assertEqual(self.client.post('/admin/inbox/add', data={'url': TIKTOK, 'token': 'wrong'}).status_code, 400)
+    def test_a_post_from_another_site_saves_nothing(self):
+        response = self.client.post('/admin/inbox/add', data={'url': TIKTOK}, headers={'Sec-Fetch-Site': 'cross-site'})
+        self.assertEqual(response.status_code, 403)
         self.assertEqual(self._count(), 0)
 
     def test_only_video_links_are_saved(self):
