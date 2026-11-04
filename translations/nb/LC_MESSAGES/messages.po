@@ -472,10 +472,10 @@ msgid "You probably have"
 msgstr "Dette har du sikkert"
 
 msgid "prep"
-msgstr "gjør klart"
+msgstr "forberede"
 
 msgid "cook"
-msgstr "lag mat"
+msgstr "kokkelere"
 
 msgid "serve"
 msgstr "server"
@@ -865,10 +865,10 @@ msgid "%(time)s standing"
 msgstr "%(time)s står"
 
 msgid "Prep"
-msgstr "Gjør klart"
+msgstr "Forberede"
 
 msgid "Cook"
-msgstr "Lag mat"
+msgstr "Kokkelere"
 
 msgid "Serve"
 msgstr "Server"
@@ -1272,10 +1272,10 @@ msgid "%(total)s in all, %(active)s active"
 msgstr "%(total)s i alt, %(active)s aktivt"
 
 msgid "A recipe you can see: prep, cook and serve, drawn as a map."
-msgstr "En oppskrift du kan se: gjør klart, lag mat og server, tegnet som et kart."
+msgstr "En oppskrift du kan se: forberede, kokkelere og servere, tegnet som et kart."
 
 msgid "Cooking"
-msgstr "Matlaging"
+msgstr "Kokkelere"
 
 msgid "Back to the overview"
 msgstr "Tilbake til oversikten"
@@ -1868,7 +1868,7 @@ msgid "The edge is the step a bowl goes into:"
 msgstr "Kanten viser steget skåla skal brukes i:"
 
 msgid "cooking"
-msgstr "matlaging"
+msgstr "kokkelere"
 
 msgid "serving"
 msgstr "servering"
@@ -1938,7 +1938,7 @@ msgid "What the step needs"
 msgstr "Dette trenger steget"
 
 msgid "Get ready"
-msgstr "Gjør klart"
+msgstr "Forberede"
 
 #, python-format
 msgid "Heat on · %(left)s to the table"

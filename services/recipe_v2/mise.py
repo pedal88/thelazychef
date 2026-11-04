@@ -1,4 +1,4 @@
-"""Prep (Gjør klart): what to set out before the cooking starts, derived from the graph.
+"""Prep (Forberede): what to set out before the cooking starts, derived from the graph.
 
 The rules are in RECIPE_VISUALIZATIONS.md 9.10 and 9.15; the AI does not make mise elements.
 
