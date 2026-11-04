@@ -249,6 +249,8 @@
 .fb-foot button { flex: 1; min-height: var(--tap); border-radius: var(--radius-pill); font: 600 15px/1 var(--font-sans); cursor: pointer; }
 .fb-cancel { border: 1px solid var(--color-line); background: var(--color-paper); color: var(--color-ink); }
 .fb-save { border: 0; background: var(--color-accent); color: var(--color-paper); }
+/* On the recipe page, to win over .ready button { color: inherit }, which left dark text on the dark button */
+:is(.fb-foot, .mine-foot) .fb-save { color: var(--color-paper); }
 .fb-save:disabled { opacity: .6; cursor: default; }
 
 /* Sign up in the top bar on a phone (base.html): on the narrowest phones the name leaves no room, and it stays in the menu */
