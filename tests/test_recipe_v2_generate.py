@@ -86,6 +86,14 @@ class GenerateTests(unittest.TestCase):
         self.assertNotIn(self.run_['source_text'][:40], fake.requests[1]['system'])
         self.assertIsNotNone(fake.requests[1]['schema'])
 
+    def test_a_pantry_id_from_the_model_links_nothing_by_itself(self):
+        db.session.add(Ingredient(food_id='000384', name='butter', status='active', default_unit='g', main_category='pantry'))
+        db.session.commit()
+        lines = [{'local_id': 'i1', 'name': 'yogurt butter', 'pantry_id': '000384'}, {'local_id': 'i2', 'name': 'butter', 'pantry_id': '000384'}]
+        ids, missing = generate.match_pantry({'ingredients': lines})
+        self.assertEqual(missing, ['yogurt butter'])  # goes to the pantry job, which swaps or asks
+        self.assertEqual(list(ids), ['i2'])
+
     def test_a_recipe_the_model_writes_itself_chooses_from_the_pantry(self):
         seen = []
 

@@ -80,6 +80,7 @@ The scripts that matter now (see `scripts/CLAUDE.md` for all of them):
 |---|---|---|
 | `scripts.review_recipes --ids … / --search …` | no (read-only transaction) | A report per recipe: lines and pantry match, steps, time, carbs, the chef's rules and all notes. To `~/promptlab-runs/recipe-review/report.md` |
 | `scripts.fill_pantry --ids 1-400` | with `--apply` | Pantry job for recipes made before it existed, and a recalculation of every v2 recipe in the range (needed after changes to nutrition, derive or the chefs' rules). Dry run by default |
+| `scripts.pantry_links` | no; `--remove … --apply` writes | Aliases the pantry job made and lines linked to an item their name does not match. No AI |
 | `scripts.fill_pantry --symbols` / `--looks "name=…"` | yes (bucket + DB) | Symbols of pantry items added by the pantry job; set how one item looks and redraw it |
 | `scripts.category_symbols [--kind cuisine] [--only …] [--all]` | yes | The galaxies' category and cuisine symbols |
 | `scripts.retire_v1`, `scripts.convert_states` | done | One-off steps of the v2 move, kept for the record |
