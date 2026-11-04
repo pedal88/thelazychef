@@ -401,7 +401,10 @@ class RouteTests(unittest.TestCase):
 
         def not_called(url):
             raise AssertionError('a long video is not read')
-        for read, duration, message in ((fails, 40, inbox.NOT_READ), (no_recipe, 40, inbox.NO_RECIPE_SHOWN),
+        def no_answer(url):
+            raise sources.NoAnswerFromVideo('none')
+
+        for read, duration, message in ((fails, 40, inbox.NOT_READ), (no_recipe, 40, inbox.NO_RECIPE_SHOWN), (no_answer, 40, inbox.NO_ANSWER),
                                         (not_called, inbox.READ_MAX_SECONDS + 1, inbox.TOO_LONG)):
             with self.subTest(message=message):
                 row = VideoInbox(url=TIKTOK, video_key=f'k{duration}{message[:5]}')

@@ -178,6 +178,52 @@ class WebRecipeTests(unittest.TestCase):
             with self.assertRaises(SourceError):  # nothing could be read
                 sources.fetch_video_text('https://www.tiktok.com/@cook/video/1', download=lambda u: {'video_path': 'x'}, watch=lambda p, c: ' ')
 
+    def test_an_empty_answer_is_tried_once_more_and_is_not_called_no_recipe(self):
+        answers = ['', 'Soup']
+
+        def watch(path, caption):
+            return answers.pop(0)
+
+        with mock.patch('services.social_media_service.SocialMediaExtractor.cleanup'):
+            self.assertEqual(sources.fetch_video_text('https://www.tiktok.com/@cook/video/1', download=lambda u: {'video_path': 'x'}, watch=watch), 'Soup')
+            self.assertEqual(answers, [])
+            calls = []
+
+            def empty(path, caption):
+                calls.append(path)
+                return None
+
+            with self.assertRaises(sources.NoAnswerFromVideo) as caught:
+                sources.fetch_video_text('https://www.tiktok.com/@cook/video/1', download=lambda u: {'video_path': 'x'}, watch=empty)
+        self.assertEqual(len(calls), 2)
+        self.assertNotIsInstance(caught.exception, sources.NoRecipeInVideo)
+        self.assertNotIn('recipe could', str(caught.exception))
+        self.assertNotIn('show a recipe', str(caught.exception))
+
+    def test_no_recipe_is_believed_at_once(self):
+        calls = []
+
+        def watch(path, caption):
+            calls.append(path)
+            return 'NO RECIPE'
+
+        with mock.patch('services.social_media_service.SocialMediaExtractor.cleanup'), self.assertRaises(sources.NoRecipeInVideo):
+            sources.fetch_video_text('https://www.tiktok.com/@cook/video/1', download=lambda u: {'video_path': 'x'}, watch=watch)
+        self.assertEqual(len(calls), 1)
+
+    def test_the_log_says_what_gemini_answered(self):
+        resp = SimpleNamespace(text='Soup ' * 100, model_version='gemini-x', candidates=[SimpleNamespace(finish_reason='STOP')],
+                               prompt_feedback=None, usage_metadata='usage')
+        with self.assertLogs('services.recipe_v2.sources', level='INFO') as logs:
+            sources._log_answer(resp, 1920000)
+            sources._log_answer(SimpleNamespace(text=None, candidates=None, prompt_feedback=SimpleNamespace(block_reason='OTHER')), 5)
+        answered, blocked = logs.output
+        for words in ('model=gemini-x', 'finish=STOP', 'file_bytes=1920000', 'answer_chars=500'):
+            self.assertIn(words, answered)
+        self.assertLess(answered.count('Soup'), 45)  # only the start of the answer
+        self.assertIn('blocked=OTHER', blocked)
+        self.assertIn('answer_chars=0', blocked)
+
     def test_a_video_that_shows_no_dish_is_a_source_error(self):
         with mock.patch('services.social_media_service.SocialMediaExtractor.cleanup'), self.assertRaises(SourceError):
             sources.fetch_video_text('https://www.tiktok.com/@cook/video/1', download=lambda u: {'video_path': 'x'},

@@ -33,6 +33,10 @@ class NoRecipeInVideo(SourceError):
     """The video was watched, and it shows no recipe."""
 
 
+class NoAnswerFromVideo(SourceError):
+    """Reading the video gave an empty answer, which says nothing about the video."""
+
+
 def is_link(text):
     return bool(re.fullmatch(r'https?://\S+', (text or '').strip()))
 
@@ -159,7 +163,8 @@ NO_RECIPE = 'NO RECIPE'  # what the video_text prompt answers when the video sho
 
 def fetch_video_text(url, download=None, watch=None):
     """The recipe a cooking video shows, as text for round 1. download and watch can stand in for yt-dlp and Gemini in
-    tests: download(url) -> {'video_path', 'caption', 'thumbnail_path'}; watch(path, caption) -> text."""
+    tests: download(url) -> {'video_path', 'caption', 'thumbnail_path'}; watch(path, caption) -> text. An empty answer is
+    tried once more, since it says nothing about the video; the log says why it came (_log_answer)."""
     from services.social_media_service import SocialMediaExtractor
 
     try:
@@ -168,11 +173,27 @@ def fetch_video_text(url, download=None, watch=None):
         raise SourceError('Could not get the video. Check that it is public and under 10 minutes, or paste the recipe text instead.')
     try:
         text = (watch or _watch)(video['video_path'], video.get('caption') or '')
+        if not (text or '').strip():
+            log.warning('Video read: empty answer, trying once more')
+            text = (watch or _watch)(video['video_path'], video.get('caption') or '')
     finally:
         SocialMediaExtractor.cleanup(video['video_path'], video.get('thumbnail_path'))
-    if not (text or '').strip() or text.strip().upper().startswith(NO_RECIPE):
-        raise NoRecipeInVideo('No recipe could be read from the video. Paste the recipe text instead.')
+    if not (text or '').strip():
+        raise NoAnswerFromVideo('Reading the video gave no answer. Try again, or paste the recipe text instead.')
+    if text.strip().upper().startswith(NO_RECIPE):
+        raise NoRecipeInVideo('The video does not seem to show a recipe. Paste the recipe text instead.')
     return text
+
+
+def _log_answer(resp, size):
+    """What Gemini answered on a read: why it stopped, what blocked it, who answered, and how it began. For the log only,
+    never for a message to a user: the text comes from someone else's video."""
+    candidates = getattr(resp, 'candidates', None) or []
+    text = getattr(resp, 'text', None) or ''
+    log.info('Video read: model=%s finish=%s blocked=%s file_bytes=%s answer_chars=%s start=%r usage=%s',
+             getattr(resp, 'model_version', None), getattr(candidates[0], 'finish_reason', None) if candidates else None,
+             getattr(getattr(resp, 'prompt_feedback', None), 'block_reason', None), size, len(text), text[:200],
+             getattr(resp, 'usage_metadata', None))  # what a read costs is an estimate until measured
 
 
 def _watch(path, caption):
@@ -200,7 +221,7 @@ def _watch(path, caption):
         prompt = Environment(loader=FileSystemLoader(os.path.join(root, 'data', 'prompts'))).get_template(
             'recipe_v2/video_text.jinja2').render(caption=caption)
         resp = client.models.generate_content(model=GEMINI_TEXT, contents=[types.Part.from_uri(file_uri=ref.uri, mime_type=ref.mime_type), prompt])
-        log.info('Video read: %s', getattr(resp, 'usage_metadata', None))  # what a read costs is an estimate until measured
+        _log_answer(resp, os.path.getsize(path))
         return resp.text
     finally:
         try:

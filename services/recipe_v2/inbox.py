@@ -26,7 +26,7 @@ from database.models import Recipe, VideoInbox, db
 from schemas.recipe_v2 import CUISINES, MEAL_TYPES
 from services import ai_models
 from services.recipe_v2 import claude
-from services.recipe_v2.sources import NoRecipeInVideo, fetch_video_text, is_video
+from services.recipe_v2.sources import NoAnswerFromVideo, NoRecipeInVideo, fetch_video_text, is_video
 
 log = logging.getLogger(__name__)
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -36,6 +36,7 @@ SIMILAR_MAX = 3
 NO_DETAILS = 'Could not read the video\'s details. It may be private or blocked; it can still be tried as a recipe.'
 READ_MAX_SECONDS = 180  # a longer video costs more to read, so it waits until the recipe is made
 NO_RECIPE_SHOWN = 'The video does not seem to show a recipe.'
+NO_ANSWER = 'Reading the video gave no answer, which says nothing about the video. It is tried again when the recipe is made.'
 NOT_READ = 'Could not read the video. It is tried again when the recipe is made.'
 TOO_LONG = 'Longer than 3 minutes, so it is read when the recipe is made.'
 MAX_LINKS = 1000  # new videos saved at once: a whole data download also lists every video watched
@@ -226,6 +227,8 @@ def _read(row, read=None):
         row.video_text = (read or fetch_video_text)(row.webpage_url or row.url)
     except NoRecipeInVideo:
         row.meta_error = NO_RECIPE_SHOWN
+    except NoAnswerFromVideo:
+        row.meta_error = NO_ANSWER
     except Exception:
         log.exception('Video inbox %s: could not read the video', row.id)
         row.meta_error = NOT_READ
