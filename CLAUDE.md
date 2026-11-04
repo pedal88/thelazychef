@@ -65,6 +65,8 @@ If Python 3.13 isn't available, say so and rely on CI rather than claiming a loc
   production as a draft with `python -m scripts.content push` (`docs/CONTENT.md`). Publishing is always Pål's click.
 - Production scripts run on Pål's other machine (this one usually has no production credentials): give him the whole
   command, with `cd` and `git fetch`/`checkout` of `origin/main` first, as `docs/OPERATIONS.md` shows.
+- To look at recipes or the pantry in production, use the read-only review API yourself: `./scripts/review_api.sh recipes/382`
+  (`docs/OPERATIONS.md`, "The review API"). It needs nothing from Pål, and reaches nothing about people.
 - Trivy blocks the deploy on fixable HIGH/CRITICAL CVEs: bump the pin in `requirements.txt` to the fixed version and
   check that the other pins still fit.
 

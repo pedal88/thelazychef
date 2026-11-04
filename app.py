@@ -193,6 +193,9 @@ app.register_blueprint(content_bp)
 from routes.content_api_routes import content_api_bp
 app.register_blueprint(content_api_bp)
 
+from routes.review_api_routes import review_api_bp
+app.register_blueprint(review_api_bp)
+
 from routes.funnel_routes import funnel_bp
 app.register_blueprint(funnel_bp)
 

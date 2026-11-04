@@ -9,6 +9,9 @@ Production credentials (database password, Anthropic and Gemini keys, bucket wri
 `gcloud` access to `thelazychefai-prod`. Unless this session runs on that machine with those credentials, **Pål runs
 the command and pastes the output back**. Writing to production needs his yes for that run.
 
+To only read a recipe, the pantry, the open questions or the pantry report, no script is needed: use
+`./scripts/review_api.sh` (`docs/OPERATIONS.md`, "The review API").
+
 ## Steps
 
 1. Say what the script will do, whether it writes, and roughly what it costs (`docs/SERVICES_AND_COSTS.md`).

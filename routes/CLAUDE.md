@@ -3,7 +3,7 @@
 - Blueprints split out of the old `app.py` use `FlatBlueprint` (`_flat.py`) so their endpoint names stay un-prefixed:
   `url_for('recipes_list')`, `url_for('recipe_detail', recipe_id=…)`. Newer areas use a normal `Blueprint` and are
   prefixed: `recipe_v2.*` (New recipe, batch, images, the Cloud Tasks endpoints), `queue.*`, `chefs.*` (the public
-  chef pages), `content.*` (the home page, guides and Admin -> Pages), `content_api.*` (`/api/content`, drafts from Claude Code), `ingredients_mgmt.*` (admin ingredients), `notes.*` (admin notes on recipes). All are registered in `app.py`.
+  chef pages), `content.*` (the home page, guides and Admin -> Pages), `content_api.*` (`/api/content`, drafts from Claude Code), `review_api.*` (`/api/review`, reading for Claude Code), `ingredients_mgmt.*` (admin ingredients), `notes.*` (admin notes on recipes). All are registered in `app.py`.
 - Never import from `app` here (circular import). Shared helpers are in `_shared.py`: `get_storage()`,
   `get_recipe_image_url()`, `viewer_is_admin()`, `icon()` (the line icon sprite), and `MENU` / `site_menu()`, the one
   list the top bar and the phone menu are drawn from (add a page to the menu there).
@@ -44,6 +44,10 @@ post log `/admin/funnel/posts/…`, the TikTok posts for the phone `/admin/funne
   as drafts in the post log, series with what the site chose for them, and takes their Instagram slides and caption
   for the Instagram queue. It posts nothing: Pål approves in the queue (`/admin/funnel/queue`), and
   `/internal/tasks/social-publish/<id>` publishes at the time.
+- `/api/review/…` (`review_api_routes.py`) is for Claude Code too, with a key of its own (`REVIEW_API_KEY`), checked in the
+  blueprint's `before_request`, so a new route cannot forget it. GET only, in a read-only transaction. Recipes and the
+  pantry only, each answer built field by field: never add anything about a person, and `tests/test_review_api.py` fails
+  if a route is added without its own check there. `scripts/` is not in the production image, so nothing here imports it.
 - Seeing the site as someone else (`view_as.switch`, `/view-as`, in the admin chip; `services/view_as.py`): the choice is in the
   signed session and read in `app.load_user`, the one place people are signed in, so `current_user` is an anonymous visitor
   or `SignedInView`, the account without admin. It only goes down: `account()` checks the real account. Anything new that
