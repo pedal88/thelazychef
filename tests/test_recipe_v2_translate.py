@@ -94,6 +94,7 @@ class TranslateTests(unittest.TestCase):
         self.assertEqual(seen[0]['model'], TRANSLATE_MODEL)
         self.assertIn('cream: fløte', seen[0]['system'])
         self.assertIn('Never swap one food for another', seen[0]['system'])
+        self.assertIn('kefalotyri', seen[0]['system'])
         self.assertRegex(seen[0]['messages'][0]['content'], r'\{i\d+\}')
 
     def test_a_step_that_lost_its_placeholder_goes_back_and_is_put_right(self):

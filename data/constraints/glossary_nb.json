@@ -136,6 +136,7 @@
     "vegetable stock": "grønnsakskraft",
     "rice": "ris",
     "pasta": "pasta",
+    "spaghetti": "spaghetti",
     "noodles": "nudler",
     "lentils": "linser",
     "chickpeas": "kikerter",
@@ -193,6 +194,7 @@
     "cutting board": "skjærefjøl",
     "over medium heat": "på middels varme",
     "until golden": "til gyllen",
+    "until it shimmers": "til oljen er varm og lettflytende",
     "to taste": "etter smak"
   }
 }
