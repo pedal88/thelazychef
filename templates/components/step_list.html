@@ -82,7 +82,7 @@
    (static/css/rail.css), fitted to the height (static/js/overview_fit.js); on a narrow screen the list, the step
    you are on in full. #}
 {% macro step_list() -%}
-{% set lang = recipe.language or 'en' %}
+{% set lang = v.text_lang %}
 {% set heat = v.heat_on %}
 <section class="vpanel rail" data-panel="steps" aria-label="{{ _('Steps') }}" data-total="{{ v.total_min }}">
   <div class="rail-main" data-fit-steps data-density="normal">

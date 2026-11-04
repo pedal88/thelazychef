@@ -24,6 +24,7 @@ from services.recipe_v2.derive import HEAT_LABELS, heat_steps
 from services.recipe_v2.persona import SETTINGS, age_label
 from services.recipe_v2.planner import MODES, plan_v2
 from services.recipe_v2.read import shopping_list
+from services.recipe_v2 import translation
 from services.recipe_v2.store import to_v2
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -205,6 +206,8 @@ def build(recipe, servings=None, plan='calm', system=DEFAULT):
     """Everything the v2 recipe template needs, with amounts and temperatures in the reader's measuring system
     (services/measures.py: 'metric' or 'us')."""
     v2 = to_v2(recipe)
+    text = translation.of(recipe) or {}
+    translation.apply(v2, text)
     # The measures in the steps' own words ("200 °C", "3 cm") too, before anything reads them: the step list,
     # Prep's jobs, the timeline, the metro map and the delta
     for st in v2['steps']:
@@ -268,7 +271,7 @@ def build(recipe, servings=None, plan='calm', system=DEFAULT):
 
     for i in v2['ingredients']:
         if ingredients.get(i['local_id']) is not None:
-            i['pantry_name'] = ingredients[i['local_id']].name
+            i['pantry_name'] = translation.ingredient_name(ingredients[i['local_id']])
             i['pantry_tier'] = ingredients[i['local_id']].tier
     # A line's state is its own: every v2 recipe has them since the conversion of 26.10.2026, and a line without
     # one is used as it comes (canned corn and sour cream in a "prepare the toppings" step are not cut)
@@ -306,14 +309,15 @@ def build(recipe, servings=None, plan='calm', system=DEFAULT):
             first_use.setdefault(q, len(first_use))
     cat = _catalogs()
     return {
-        'title': recipe.title, 'servings': servings, 'scalable': scalable, 'yield_text': localize_text(recipe.yield_text, system),
+        'title': v2['title'], 'text_lang': text.get('language') or recipe.language or 'en',
+        'servings': servings, 'scalable': scalable, 'yield_text': localize_text(text.get('yield_text') or recipe.yield_text, system),
         'units': system,
         'total': duration(sch['T']), 'total_min': sch['T'], 'active': duration(sch['A']), 'active_min': sch['A'],
         'plan': plan, 'plans': {k: label(name) for k, name in PLAN_NAMES.items()},
         'plan_hint': label(PLAN_HINTS[plan]), 'parts': [c['name'] for c in v2['components']],
         'shopping': shop, 'shop_groups': groups.grouped(shop), 'equipment': equipment_list(first_use, cat, system), 'steps': steps,
         'heat_on': heat_on, 'time_strip': time_strip(steps, sch['T']),
-        'chef_note': localize_text(recipe.chef_note, system), 'missing': sum(1 for s in shop if s['missing']),
+        'chef_note': localize_text(text.get('chef_note') or recipe.chef_note, system), 'missing': sum(1 for s in shop if s['missing']),
         'errors': [e for e in recipe.validation_errors or [] if e.get('rule') not in ('persona', 'image', 'pantry', 'estimate', 'substitute', 'ask', 'asked')],
         'image_notes': [e['message'] for e in recipe.validation_errors or [] if e.get('rule') == 'image'],
         'persona_notes': [e['message'] for e in recipe.validation_errors or [] if e.get('rule') == 'persona'],

@@ -29,6 +29,7 @@ from database.models import (
 )
 from services.labels import label
 from services.recipe_v2.derive import HEAT_LABELS
+from services.recipe_v2.translation import dress
 
 PAGE = 48
 DATA = Path(__file__).resolve().parent.parent / 'data'
@@ -282,6 +283,7 @@ def cards(on_page, user=None, versions=True):
         marks = {i.recipe_id: i for i in db.session.execute(
             db.select(UserRecipeInteraction).where(UserRecipeInteraction.user_id == user.id,
                                                    UserRecipeInteraction.recipe_id.in_(on_page))).scalars()}
+    dress(recipes)
     for r in recipes:
         r.version_count = counts.get(r.base_recipe_id or r.id, 1)
         r.interaction = marks.get(r.id)

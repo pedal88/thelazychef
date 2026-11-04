@@ -8,7 +8,7 @@
 {%- endmacro %}
 
 {% macro tile(p) -%}
-{% set lang = recipe.language or 'en' %}<span class="tile">{{ sym(p, 64) }}<span class="ta">{{ p.amount or _('to taste') }}</span><span class="tn" lang="{{ lang }}">{{ p.name }}{% if p.state %}<em>{{ p.state }}</em>{% endif %}</span></span>
+{% set lang = v.text_lang %}<span class="tile">{{ sym(p, 64) }}<span class="ta">{{ p.amount or _('to taste') }}</span><span class="tn" lang="{{ lang }}">{{ p.name }}{% if p.state %}<em>{{ p.state }}</em>{% endif %}</span></span>
 {%- endmacro %}
 
 {# A bowl: always its number, a short name, and what goes in it with amount and state. Tap it for the rest: the
@@ -16,7 +16,7 @@
    prep steps filling it does: on the cooking screen the bowl is ready when they are ticked off (static/js/steps.js).
    With links (the cooking screen), the step it goes into is a button that shows that step in the view you are in. #}
 {% macro bowl(b, links=False) -%}
-{% set lang = recipe.language or 'en' %}{% set WHY = {'mix': _('mix ahead'), 'rush': _('goes in fast at the heat'), 'prep': _('cut or prepared')} %}
+{% set lang = v.text_lang %}{% set WHY = {'mix': _('mix ahead'), 'rush': _('goes in fast at the heat'), 'prep': _('cut or prepared')} %}
 <details class="bowl ph-{{ b.used.phase }}" data-bowl data-key="{{ b.key }}" data-steps="{{ (b.steps or [])|join(' ') }}" data-lines="{{ b.lines|map(attribute='lid')|join(' ') }}" style="--n: {{ [b.lines|length, 5]|min }}">
   <summary>
     <span class="bowl-h"><button type="button" class="bcheck" data-tick="{{ b.key }}" aria-pressed="false" aria-label="{{ _('Bowl %(n)s ready', n=b.no) }}"><span class="bno" data-no="{{ b.no }}">{{ b.no }}</span></button><b lang="{{ lang }}">{{ b.name }}</b>{% if links %}<button type="button" class="bowl-go ph-{{ b.used.phase }}" data-goto-step="{{ b.used.id }}" aria-label="{{ _('Show step %(n)s, %(what)s', n=b.used.no, what=b.used.short) }}">{{ _('step %(n)s', n=b.used.no) }}</button>{% endif %}<span class="more-ic" aria-hidden="true">{{ icon('chevron-down') }}</span></span>
@@ -32,7 +32,7 @@
 {%- endmacro %}
 
 {% macro loose(items) -%}
-{% set lang = recipe.language or 'en' %}<div class="fetchgrid">{% for f in items %}
+{% set lang = v.text_lang %}<div class="fetchgrid">{% for f in items %}
   <button type="button" class="tile ftile" data-tick="{{ f.key }}" aria-pressed="false">{{ sym(f.line, 64) }}<span class="ta">{{ f.line.amount or _('to taste') }}</span><span class="tn" lang="{{ lang }}">{{ f.line.name }}<em>{{ _('step %(n)s', n=f.used.no) }}</em></span></button>
 {% endfor %}</div>
 {%- endmacro %}
@@ -41,7 +41,7 @@
    bowl's step is a button and a later group opens when the step it waits for is done (static/js/steps.js). #}
 {% macro prep_body(links=False) -%}
 {% set r = v.ready %}
-{% set lang = recipe.language or 'en' %}
+{% set lang = v.text_lang %}
   {% if r.tasks %}
   <section>
     <div class="sec-head"><h2>{{ _('First') }}</h2></div>

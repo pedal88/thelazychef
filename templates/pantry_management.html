@@ -32,7 +32,7 @@
         {% set r = item.row %}
         <button type="button" class="ing-card" data-ing="{{ r.id }}" aria-haspopup="dialog">
             <span class="ing-img">{% if r.image_url %}<img src="{{ r.image_url if r.image_url.startswith('http') else url_for('static', filename=r.image_url) }}" alt="" loading="lazy">{% else %}{{ icon('carrot') }}{% endif %}</span>
-            <span class="ing-name">{{ r.name }}</span>
+            <span class="ing-name">{{ r|ingredient_name }}</span>
             <span class="ing-meta">{% if item.uses %}{{ _('%(n)s dish', n=item.uses) if item.uses == 1 else _('%(n)s dishes', n=item.uses) }}{% else %}{{ _('Not in a dish yet') }}{% endif %}{% if r.is_staple %} · {{ _('Staple') }}{% endif %}{% if r.status != 'active' %} · {{ r.status }}{% endif %}</span>
         </button>
         {% endfor %}

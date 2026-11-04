@@ -9,6 +9,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+from sqlalchemy import event
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -26,7 +27,7 @@ from werkzeug.exceptions import InternalServerError  # noqa: E402
 
 import ai_engine  # noqa: E402
 from app import app  # noqa: E402
-from database.models import Ingredient, Page, PageText, Recipe, RecipeDiet, db  # noqa: E402
+from database.models import Ingredient, Page, PageText, Recipe, RecipeDiet, RecipeTranslation, db  # noqa: E402
 from routes._shared import DIFFICULTY_LABELS, MENU, site_menu  # noqa: E402
 from routes.error_routes import server_error  # noqa: E402
 from routes.recipes_routes import VIEWS  # noqa: E402
@@ -35,9 +36,11 @@ from services import google_signin, labels, language  # noqa: E402
 from services.ingredient_library import GROUPS  # noqa: E402
 from services.measures import SYSTEMS, fmt_amount  # noqa: E402
 from services.recipe_library import QUICK, SORT_LABELS, SPICE_LABELS, TIME_LABELS  # noqa: E402
+from services.recipe_v2 import translation  # noqa: E402
 from services.recipe_v2.derive import HEAT_LABELS  # noqa: E402
 from services.recipe_v2.persona import SETTINGS  # noqa: E402
 from services.recipe_v2.states import key as state_key  # noqa: E402
+from services.recipe_v2.store import to_v2  # noqa: E402
 from services.recipe_v2.store import to_v2  # noqa: E402
 from services.social_week import WEEK_DAYS  # noqa: E402
 from services.recipe_v2 import appearance, generate, images, inbox, view  # noqa: E402
@@ -700,3 +703,164 @@ def test_the_build_compiles_the_translations():
     dockerfile = (ROOT / 'Dockerfile').read_text(encoding='utf-8')
     assert 'pybabel compile -d translations' in dockerfile
     assert dockerfile.index('COPY --chown') < dockerfile.index('pybabel compile')
+
+
+# A recipe's words in Norwegian (services/recipe_v2/translation.py). Requests run outside the app context the data is
+# set up in, or they would share its session and its choice of language.
+def _norwegian(words):
+    return {k: _norwegian(v) for k, v in words.items()} if isinstance(words, dict) else f'{words} NB'
+
+
+def _english_recipe(title='Pasta'):
+    recipe_id, _ = _a_recipe()
+    recipe = db.session.get(Recipe, recipe_id)
+    recipe.language, recipe.title = 'en', title
+    db.session.commit()
+    view.clear_cache()
+    return recipe
+
+
+def _translated_recipe(title='Pasta'):
+    """The id, a line's name and a step's short of an English recipe with a Norwegian translation."""
+    with app.app_context():
+        recipe = _english_recipe(title)
+        translation.save(recipe, 'nb', _norwegian(translation.source(recipe)))
+        db.session.commit()
+        return recipe.id, recipe.lines[0].name, recipe.steps[0].short
+
+
+def test_a_translated_recipe_shows_in_norwegian_and_stays_as_written_in_english(client):
+    recipe_id, line, short = _translated_recipe()
+    norwegian = client.get(f'/recipe/{recipe_id}?lang=no').get_data(as_text=True)
+    english = client.get(f'/recipe/{recipe_id}?lang=en').get_data(as_text=True)
+    assert 'Pasta NB' in norwegian and f'{line} NB' in norwegian and f'{short} NB' in norwegian and 'lang="nb"' in norwegian
+    assert ' NB' not in english
+
+
+def test_the_pills_in_a_translated_step_still_work(client):
+    recipe_id, line, _ = _translated_recipe()
+    html = client.get(f'/recipe/{recipe_id}?lang=no').get_data(as_text=True)
+    assert 'class="pill" data-l="' in html and not re.search(r'\{i\d+\}', html)
+
+
+def test_a_translation_with_something_wrong_is_not_saved(client):
+    with app.app_context():
+        recipe = _english_recipe()
+        step = next(s for s in recipe.steps if '{' in s.text).local_id
+
+        def refused(change):
+            words = _norwegian(translation.source(recipe))
+            change(words)
+            with pytest.raises(ValueError):
+                translation.save(recipe, 'nb', words)
+        refused(lambda w: w['steps'].pop(step))
+        refused(lambda w: w['steps'][step].update(text='Ingen plassholdere'))
+        refused(lambda w: w['steps'][step].update(text=w['steps'][step]['text'] + ' {i999}'))
+        refused(lambda w: w['steps'][step].update(short='  '))
+        refused(lambda w: w['lines'].update(gone={'name': 'x'}))
+        refused(lambda w: w.pop('title'))
+        assert db.session.get(RecipeTranslation, (recipe.id, 'nb')) is None
+
+
+def test_the_translation_lasts_as_long_as_the_words(client):
+    recipe_id, _, short = _translated_recipe()
+    with app.app_context():
+        recipe = db.session.get(Recipe, recipe_id)
+        words = translation.source(recipe)
+        assert translation.source_hash(dict(reversed(list(words.items())))) == translation.source_hash(words)
+        recipe.revision = (recipe.revision or 1) + 1  # saved again, the same words
+        db.session.commit()
+        assert translation.of(recipe, 'nb')['title'] == 'Pasta NB'
+        recipe.steps[0].short = 'Something else entirely'
+        recipe.revision += 1
+        db.session.commit()
+        assert translation.of(recipe, 'nb') is None
+    html = client.get(f'/recipe/{recipe_id}?lang=no').get_data(as_text=True)
+    assert 'Something else entirely' in html and f'{short} NB' not in html and 'Pasta NB' not in html
+
+
+def test_a_local_id_that_is_gone_breaks_nothing(client):
+    with app.app_context():
+        v2 = to_v2(_english_recipe())
+        shorts = [s['short'] for s in v2['steps']]
+        translation.apply(v2, {'title': 'T', 'steps': {'gone': {'short': 'x'}}, 'components': {'gone': {'name': 'y'}}})
+        assert v2['title'] == 'T' and [s['short'] for s in v2['steps']] == shorts
+
+
+def test_a_recipe_written_in_norwegian_needs_no_translation(client):
+    with app.app_context():
+        recipe = _english_recipe('Norsk rett')
+        recipe.language = 'nb'
+        db.session.commit()
+        recipe_id = recipe.id
+        assert translation.of(recipe, 'nb') is None and translation.of(recipe, 'no') is None
+        assert translation.titles([recipe], 'nb') == {}
+        with pytest.raises(ValueError):
+            translation.save(recipe, 'no', _norwegian(translation.source(recipe)))
+    for lang in ('no', 'en'):
+        assert 'Norsk rett' in client.get(f'/recipe/{recipe_id}?lang={lang}').get_data(as_text=True)
+
+
+def test_no_is_nb_in_the_recipe_tables(client):
+    with app.app_context():
+        recipe = _english_recipe()
+        row = translation.save(recipe, 'no', _norwegian(translation.source(recipe)))
+        db.session.commit()
+        assert row.language == 'nb' == language.recipe_code('no') == language.recipe_code('nb')
+        assert translation.of(recipe, 'no')['title'] == 'Pasta NB'
+
+
+def test_titles_for_a_page_take_one_query_and_english_takes_none(client):
+    with app.app_context():
+        recipe = _english_recipe()
+        translation.save(recipe, 'nb', _norwegian(translation.source(recipe)))
+        db.session.commit()
+        others = [Recipe(title=f'Other {n}', cuisine='', difficulty='', language='en') for n in range(5)]
+        db.session.add_all(others)
+        db.session.commit()
+        asked = []
+
+        def seen(conn, cursor, statement, *rest):
+            if 'recipe_translation' in statement:
+                asked.append(statement)
+        event.listen(db.engine, 'before_cursor_execute', seen)
+        try:
+            assert translation.titles([recipe, *others], 'nb') == {recipe.id: 'Pasta NB'}
+            assert len(asked) == 1
+            assert translation.titles([recipe, *others], 'en') == {}
+            assert len(asked) == 1
+        finally:
+            event.remove(db.engine, 'before_cursor_execute', seen)
+
+
+def test_a_card_shows_the_translated_title_until_the_title_changes(client):
+    recipe_id, _, _ = _translated_recipe()
+    assert 'Pasta NB' in client.get('/recipes?lang=no').get_data(as_text=True)
+    assert 'Pasta NB' not in client.get('/recipes?lang=en').get_data(as_text=True)
+    with app.app_context():
+        db.session.get(Recipe, recipe_id).title = 'Pasta again'
+        db.session.commit()
+    html = client.get('/recipes?lang=no').get_data(as_text=True)
+    assert 'Pasta NB' not in html and 'Pasta again' in html
+
+
+def test_deleting_a_recipe_takes_its_translation(client):
+    recipe_id, _, _ = _translated_recipe()
+    with app.app_context():
+        db.session.delete(db.session.get(Recipe, recipe_id))
+        db.session.commit()
+        assert db.session.get(RecipeTranslation, (recipe_id, 'nb')) is None
+
+
+def test_an_ingredient_has_its_norwegian_name_when_there_is_one(client):
+    with app.app_context():
+        ingredient = Ingredient(food_id='999901', name='testitem', status='active')
+        db.session.add(ingredient)
+        db.session.commit()
+    assert 'testitem' in client.get('/ingredients?lang=no&q=testitem').get_data(as_text=True)
+    with app.app_context():
+        db.session.execute(db.select(Ingredient).filter_by(food_id='999901')).scalar_one().name_nb = 'Norsk  Navn'
+        db.session.commit()
+    assert 'norsk navn' in client.get('/ingredients?lang=no&q=norsk').get_data(as_text=True)
+    english = client.get('/ingredients?lang=en&q=testitem').get_data(as_text=True)
+    assert 'testitem' in english and 'norsk navn' not in english

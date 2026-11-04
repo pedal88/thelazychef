@@ -10,6 +10,7 @@ from services import language
 from services.chef_service import get_chefs
 from services.labels import label
 from services.recipe_library import PAGE, SORT_LABELS, counts, from_args, quick, recipe_page
+from services.recipe_v2.translation import dress
 
 recipes_bp = FlatBlueprint("recipes", __name__)
 
@@ -189,7 +190,7 @@ def recipe_detail(recipe_id):
     # The dish and all its versions by chef personas; visitors see the approved ones, when there is more than one
     root = recipe.base_recipe or recipe
     family = [root] + sorted(root.versions, key=lambda r: r.id)
-    versions = [r for r in family if r.status == 'approved' or r.id == recipe.id]
+    versions = dress([r for r in family if r.status == 'approved' or r.id == recipe.id])
     admin = {}
     if viewer_is_admin():
         # and the chefs that can make one

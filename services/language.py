@@ -65,6 +65,13 @@ def content_code(code=None):
     return 'no' if code == 'nb' else code
 
 
+def recipe_code(code=None):
+    """The code of a language in the recipe tables (Recipe.language, RecipeTranslation.language), 'nb' for either
+    spelling, and the language being drawn when none is named."""
+    code = code or shown()
+    return ASKED.get(code, code)
+
+
 def switch():
     """The switch in the menu, [{'code', 'name', 'url', 'on'}], or nothing: shown after launch, and to anyone already
     in Norwegian so they can get back. Plain links, ?lang= keeps the choice."""

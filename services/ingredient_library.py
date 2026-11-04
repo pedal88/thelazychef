@@ -7,6 +7,7 @@ from urllib.parse import urlencode
 from database.models import Ingredient, Recipe, RecipeLine, db
 from services.labels import label
 from services.recipe_library import FAMILY, PAGE, one_per_dish
+from services.recipe_v2.translation import dress, ingredient_name
 
 # The shortcuts, each a set of Ingredient.main_category (data/constraints/categories.json)
 GROUPS = {
@@ -66,7 +67,7 @@ def dishes_using(ingredient_id=None):
 def page(f, shown=PAGE, admin=False):
     """What the page shows: the ingredients on it with how many dishes each is in, the shortcuts, and how many more
     there are behind Show more and behind Show all."""
-    stmt = db.select(Ingredient.id, Ingredient.name, Ingredient.main_category, Ingredient.image_url,
+    stmt = db.select(Ingredient.id, Ingredient.name, Ingredient.name_nb, Ingredient.main_category, Ingredient.image_url,
                      Ingredient.is_staple, Ingredient.status)
     if not admin:
         stmt = stmt.where(Ingredient.status == 'active')
@@ -74,14 +75,14 @@ def page(f, shown=PAGE, admin=False):
     needle = f.q.casefold()
     found = []
     for row in db.session.execute(stmt):
-        if needle and needle not in row.name.casefold():
+        if needle and needle not in row.name.casefold() and needle not in (row.name_nb or '').casefold():
             continue
         if f.group and _clean(row.main_category) not in GROUPS[f.group][1]:
             continue
         if f.staples and not row.is_staple:
             continue
         found.append(row)
-    found.sort(key=lambda r: (-uses.get(r.id, 0), r.name.casefold()))
+    found.sort(key=lambda r: (-uses.get(r.id, 0), ingredient_name(r).casefold()))
     # A search looks through everything; only a list needs the ones in recipes first
     listed = found if f.everything or f.q else [r for r in found if uses.get(r.id)]
     on_page = listed[:max(shown, 1)]
@@ -106,4 +107,5 @@ def card(ingredient_id, admin=False) -> Optional[dict]:
     ids = dishes_using(ingredient_id).get(ingredient_id, [])
     recipes = db.session.execute(db.select(Recipe).where(Recipe.id.in_(ids[:RECIPES_ON_CARD]))).scalars().all()
     recipes.sort(key=lambda r: ids.index(r.id))
+    dress(recipes)
     return {'ingredient': ingredient, 'recipes': recipes, 'uses': len(ids)}
