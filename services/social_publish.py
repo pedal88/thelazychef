@@ -20,6 +20,7 @@ from zoneinfo import ZoneInfo
 from database.models import SocialPost, db
 from services import social_stats
 from services.recipe_v2 import tasks
+from services.social_series import SERIES
 from services.social_stats import StatsError, graph_get, graph_post
 
 OSLO = ZoneInfo('Europe/Oslo')
@@ -34,6 +35,12 @@ EARLY = datetime.timedelta(minutes=1)  # a task this much before its post's time
 
 def utcnow():
     return datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
+
+
+def by_hand(post):
+    """Whether the post's series goes up on Instagram by hand (its card's instagram_by_hand): the queue shows it, with
+    its slides and text, but cannot approve it."""
+    return bool(SERIES.get(post.series, {}).get('instagram_by_hand'))
 
 
 def slides_of(post):
@@ -81,7 +88,8 @@ def queue():
         for post, default in zip(members, times):
             when = (post.scheduled_at.replace(tzinfo=datetime.timezone.utc).astimezone(OSLO)
                     if post.scheduled_at else datetime.datetime.fromisoformat(f'{day.isoformat()}T{default}'))
-            rows.append({'post': post, 'slides': slides_of(post), 'when': when.strftime('%Y-%m-%dT%H:%M')})
+            rows.append({'post': post, 'slides': slides_of(post), 'when': when.strftime('%Y-%m-%dT%H:%M'),
+                         'by_hand': by_hand(post)})
         out.append({'day': day, 'posts': rows})
     return out
 
@@ -121,6 +129,8 @@ def schedule(post, when, caption, now=None):
     now = now or utcnow()
     if post.status not in ('draft', 'scheduled') or not slides_of(post):
         return f'instagram-{post.code} cannot be scheduled'
+    if by_hand(post):
+        return f'instagram-{post.code} goes up by hand'
     if when is None:
         return f'instagram-{post.code}: give a time'
     if when <= now:

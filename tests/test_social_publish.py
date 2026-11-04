@@ -152,6 +152,22 @@ class QueueTests(unittest.TestCase):
         self.assertIn('name="caption-1"', html)
         self.assertIn('Publishing is not set up here', html)
 
+    def test_a_series_that_goes_up_by_hand_is_shown_but_cannot_be_approved(self):
+        hand = self.post('5', series='whole')
+        other = self.post('6', series='got')
+        self.assertEqual([r['by_hand'] for r in social_publish.queue()[0]['posts']], [True, False])
+        self.login()
+        html = self.client.get('/admin/funnel/queue').get_data(as_text=True)
+        self.assertIn('Post by hand', html)
+        self.assertNotIn(f'name="approve-{hand.id}"', html)
+        self.assertIn(f'name="approve-{other.id}"', html)
+        self.assertIn(f'name="caption-{hand.id}"', html)  # its words to copy
+        when = datetime.datetime(2030, 1, 1, 12)
+        self.assertEqual(social_publish.schedule(hand, when, None), 'instagram-5 goes up by hand')
+        self.assertEqual(hand.status, 'draft')
+        self.client.post('/admin/funnel/queue/approve', data={f'approve-{hand.id}': '1', f'when-{hand.id}': '2030-01-01T12:00'})
+        self.assertEqual(hand.status, 'draft')
+
     def test_approving_schedules_the_ticked_posts_in_oslo_time(self):
         a, b = self.post('5'), self.post('6')
         self.login()

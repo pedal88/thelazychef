@@ -46,15 +46,17 @@ GUESS = [('guess_pictures', 5, 'points if you get it from the pictures', 'Not su
          ('guess_amounts', 3, 'points with the amounts', 'Last clue: swipe to see the dish.'),
          ('guess_dish', 2, 'points if you know it now', 'Swipe for the answer.')]
 GUESS_KINDS = tuple(k for k, _, _, _ in GUESS)
+WHOLE_STEPS = (8, 14)  # The whole recipe: from this many steps to this many, a slide each
 ONCE_A_WEEK = 7     # days a recipe stays out of a series after a post
 NOT_AN_INGREDIENT = ('Vegetarian', 'Other')  # protein labels What to make with cannot ask for
 HOOK_WORDS = 8      # a hook is at most this many words, filled in
 STATUSES = ('active', 'paused', 'retired')
 # The pick filters a card may name (candidates())
-FILTERS = ('guess', 'airfryer', 'protein', 'onepot', 'under20', 'only6', 'got', 'three3', 'cuisine')
-# The slide kinds a card may list, built in slides(): a kind may stand for several slides (days, shop, grid, steps)
-SLIDE_KINDS = ('cover', 'got_cover', 'trio_cover', 'week_cover', 'airfryer', 'numbers', 'delta', 'steps', 'wash',
-               'ingredients', 'shop_split', 'days', 'shop', 'grid', 'end',
+FILTERS = ('guess', 'airfryer', 'protein', 'onepot', 'under20', 'only6', 'got', 'three3', 'cuisine', 'whole')
+# The slide kinds a card may list, built in slides(): a kind may stand for several slides (days, shop, grid, steps,
+# full_steps)
+SLIDE_KINDS = ('cover', 'got_cover', 'trio_cover', 'week_cover', 'airfryer', 'numbers', 'delta', 'steps', 'full_steps',
+               'wash', 'ingredients', 'shop_split', 'days', 'shop', 'grid', 'end',
                'guess_pictures', 'guess_names', 'guess_amounts', 'guess_dish', 'answer')
 # The facts a hook phrasing may need, and what they are (facts()); a time fact exists only when the time may be said
 FACTS = {
@@ -75,10 +77,10 @@ FACTS = {
     'cuisine': 'the cuisine (the week)', 'meal': '"dinner", or "dish" when the recipe is not a dinner',
     'vessel': 'the one vessel the food is cooked in ("frying pan"), when there is exactly one',
     'one_dish': 'exactly one dish to wash, literally', 'protein_min': 'the lowest g protein per serving of the dinners',
-    'only_six': 'at most six things to buy (BUY_MAX)',
+    'only_six': 'at most six things to buy (BUY_MAX)', 'steps': "the first dinner's steps",
 }
 # The facts every post has (never None), so a phrasing may use them without needing them; the rest must be needed
-ALWAYS = ('n', 'series', 'dish', 'title', 'dishes', 'count', 'symbols', 'doer', 'doer_cap', 'vessels', 'meal')
+ALWAYS = ('n', 'series', 'dish', 'title', 'dishes', 'count', 'symbols', 'doer', 'doer_cap', 'vessels', 'meal', 'steps')
 
 
 def _phrasings(rows):
@@ -119,7 +121,7 @@ def sample_facts():
             'stress_active': True, 'stress_total': True, 'vessels': 2, 'one_two': True, 'few': True, 'protein': 46,
             'kcal': 425, 'ingredient': 'chicken thighs', 'ingredient_cap': 'Chicken thighs', 'cuisine': 'Middle Eastern',
             'ingredients': 'chicken, onion, tomatoes', 'meal': 'dinner', 'vessel': 'frying pan', 'one_dish': True,
-            'protein_min': 38, 'only_six': True}
+            'protein_min': 38, 'only_six': True, 'steps': 14}
 
 
 def check_cards(cards=None, hooks=None, ctas=None):
@@ -285,7 +287,8 @@ def facts(posts, n=None, count=None, ingredient=None, cuisine=None, series=None,
          'stress_total': total is not None and total < social.STRESS_TOTAL_UNDER,
          'vessels': vessels, 'one_two': 1 <= vessels <= WASH_MAX, 'few': (len(tiles) if count is None else count) <= 15,
          'protein': nutrition.get('protein'), 'kcal': nutrition.get('kcal'), 'ingredient': ingredient,
-         'ingredient_cap': ingredient[:1].upper() + ingredient[1:] if ingredient else None, 'cuisine': cuisine}
+         'ingredient_cap': ingredient[:1].upper() + ingredient[1:] if ingredient else None, 'cuisine': cuisine,
+         'steps': len(v['steps'])}
     assert set(f) == set(FACTS), set(f) ^ set(FACTS)
     return f
 
@@ -407,7 +410,8 @@ def slides(slug, posts, size, n, hook_group=None, cta_group=None, code=None, hoo
     out = []
     for kind in card['slides']:
         if kind == 'cover':
-            symbols = [t for t in tiles if t['img']][:social.COVER_SYMBOLS]
+            # The whole recipe's cover is the dish and the hook: its symbols come next, on the shopping list
+            symbols = [] if card['filter'] == 'whole' else [t for t in tiles if t['img']][:social.COVER_SYMBOLS]
             named = f['dish'].lower() in text.lower()  # the hook names the dish: no name line under it
             out.append({'kind': 'cover', 'series': True, 'eyebrow': label, 'title': text, 'name': None if named else v['title'],
                         'image': r['image'], 'tiles': tiles, 'symbols': symbols, 'strip_cols': social.strip_columns(len(symbols)),
@@ -469,18 +473,26 @@ def slides(slug, posts, size, n, hook_group=None, cta_group=None, code=None, hoo
                 out.append(delta)
         elif kind == 'steps':
             out += social.steps_slides(v, size)
+        elif kind == 'full_steps':
+            out += social.full_step_slides(v, size)
         elif kind == 'wash':
             out.append(social.wash_slide(v, r['eq']))
         elif kind == 'ingredients':
             out.append({'kind': 'ingredients', 'title': 'What you need', 'tiles': tiles, 'staples': staples,
                         'cols': social.columns(len(tiles), size)})
         elif kind == 'shop_split':
-            out.append(social.shop_split_slide(v, size))
+            out.append(social.shop_split_slide(v, size, serves=card['filter'] == 'whole'))
         elif kind == 'end':
             out.append(social.end_slide('', call, images))
         else:
             raise ValueError(f'{slug}.yaml: slide kind {kind!r} is not one of {", ".join(SLIDE_KINDS)}')
     return out, f, group, text, call
+
+
+def whole_ok(view):
+    """Whether a recipe can be a post of The whole recipe: WHOLE_STEPS steps, each fitting a slide on both sizes. A step
+    is never cut to fit, so a recipe with one that does not is left out."""
+    return WHOLE_STEPS[0] <= len(view['steps']) <= WHOLE_STEPS[1] and social.full_steps_fit(view)
 
 
 def plural(n, word):
@@ -519,6 +531,8 @@ def caption(slug, posts, f, text, call, size, code=None):
     elif kind == 'guess':
         what = (f"One {f['meal']}, {f['symbols']} things to buy. 5 points if you know it from the pictures alone, 4 with "
                 "the names, 3 with the amounts, 2 from the dish. The answer is on the last slide.")
+    elif kind == 'whole':
+        what = f"{v['title']}: the whole recipe, all {f['steps']} steps with their amounts, a slide each."
     else:
         what = f"{v['title']}: the whole dinner in the air fryer{work}{in_time}."
     lines = [what, '', call['text']]
@@ -580,6 +594,9 @@ def candidates(slug):
         q = q.where(Recipe.protein_type.isnot(None), Recipe.protein_type.not_in(NOT_AN_INGREDIENT))
     elif kind == 'cuisine':
         q = q.where(Recipe.cuisine.isnot(None), Recipe.cuisine != '')
+    elif kind == 'whole':
+        q = q.where(Recipe.id.in_(db.select(RecipeStep.recipe_id).group_by(RecipeStep.recipe_id)
+                                  .having(func.count(RecipeStep.id).between(*WHOLE_STEPS))))
     ids = one_per_dish(db.session.execute(q).all())
     if kind == 'onepot' and ids:
         # Exactly one vessel the food is cooked in, over all the steps (social.COOK_VESSELS)
@@ -656,6 +673,9 @@ def pick(slug, today=None):
     def order(i):
         return (last.get(i, datetime.date.min), c[i]['kcal'] if kind == 'protein' else 0, i)
     eligible.sort(key=order)
+    if kind == 'whole':  # the first whose steps all fit, so only as many recipes are built as it takes
+        from services.recipe_v2.view import page
+        return next(([i] for i in eligible if whole_ok(page(db.session.get(Recipe, i)))), [])
     if card['count'] == 1:
         return eligible[:1]
     if kind == 'three3':

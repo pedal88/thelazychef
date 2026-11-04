@@ -1,0 +1,30 @@
+# A series card (docs/SOCIAL.md "The series"). The top is the why, for Pål to correct; the rest is what the code reads.
+name: The whole recipe
+status: active
+purpose: Give the whole recipe away in the post, a slide per step, so it is worth saving and we learn what that does to visits.
+message: The dish, the shopping list and every step in the recipe's own words, numbered as on the recipe page.
+hypothesis: >
+  A post you can cook from is saved more than one that only shows the dish, and the saves are worth more than the visits
+  it costs. The risk is that people no longer need the site when the whole recipe is in the post, so visits count as much as
+  saves. Not in the rotation: it runs from a plan file (a line "whole") until it has been judged.
+signal: Saves and visits per 1000 views.
+stop_when: >
+  After 5 posts per platform: compare saves and visits per 1000 views with the other series on the same platform. Stop if
+  saves do not beat their median, or if visits fall below it and saves do not make up for that.
+
+pick:
+  filter: whole           # 8 to 14 steps (WHOLE_STEPS), every one of them fits a slide in its own words (social.whole_fits)
+  count: 1
+slides: [cover, shop_split, full_steps, end]
+cta: save
+noun: dinner
+hashtags: "#fullrecipe #recipe #stepbystep #easydinner #dinnerideas"
+instagram_by_hand: true   # by hand during the test, for the music the API cannot add: the queue only shows it (11 to 17 slides, Meta's limit is 20)
+ctas:
+  save:
+    - "Save this"
+hooks:
+  number:
+    - text: "The whole recipe. {steps} steps. Save it."
+proposed_hooks: []
+retired_hooks: []

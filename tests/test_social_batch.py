@@ -263,6 +263,12 @@ class PlanTests(unittest.TestCase):
         self.assertEqual(kinds(monday + datetime.timedelta(days=2), 5)[-1], 'cuisine')
         self.assertEqual(kinds(tuesday, 4), ['got', 'protein', 'under20', 'onepot'])
 
+    def test_the_whole_recipe_runs_from_a_plan_and_not_in_the_rotation(self):
+        days = [datetime.date(2026, 11, 2) + datetime.timedelta(days=i) for i in range(28)]
+        for n in (2, 4, 5):
+            self.assertNotIn('whole', {p['kind'] for day in days for p in day_plan(day, n)})
+        self.assertEqual(parse_plan('whole\nwhole 321'), [{'kind': 'whole'}, {'kind': 'whole', 'ids': [321]}])
+
     def test_a_plan_is_a_post_per_line(self):
         text = ('# Tuesday\nairfryer hook=number cta=follow\ngot 323,326,329 hook=search n=4\nguess\n\n'
                 'map 345 cta=save | 4 lines, 1 plate\nweek 1,2,3,4,5\npantry\n')

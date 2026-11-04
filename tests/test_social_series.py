@@ -22,7 +22,7 @@ os.environ.pop('K_SERVICE', None)
 from app import app  # noqa: E402
 from database.models import Recipe, RecipeMealType, SocialPost, User, db  # noqa: E402
 from routes._shared import SITE_LOOK  # noqa: E402
-from services import social, social_series as series, social_week  # noqa: E402
+from services import social, social_publish, social_series as series, social_week  # noqa: E402
 from services.recipe_v2.generate import refresh  # noqa: E402
 from services.recipe_v2.store import save_v2  # noqa: E402
 from services.recipe_v2.view import page  # noqa: E402
@@ -50,8 +50,8 @@ class CardTests(unittest.TestCase):
     def test_the_cards_in_the_repo_pass_the_check(self):
         self.assertEqual(series.check_cards(), [])
         self.assertEqual(sorted(series.SERIES), ['airfryer', 'cuisine', 'got', 'guess', 'onepot', 'only6', 'protein',
-                                                 'protein4', 'three3', 'under20'])
-        self.assertEqual(series.active(), ['cuisine', 'got', 'guess', 'onepot', 'protein', 'protein4', 'under20'])
+                                                 'protein4', 'three3', 'under20', 'whole'])
+        self.assertEqual(series.active(), ['cuisine', 'got', 'guess', 'onepot', 'protein', 'protein4', 'under20', 'whole'])
         self.assertEqual(sorted(set(series.SERIES) - set(series.active())), ['airfryer', 'only6', 'three3'])
         for slug, card in series.SERIES.items():
             with self.subTest(series=slug):
@@ -153,6 +153,7 @@ class SeriesTests(unittest.TestCase):
             'only6': (one, lambda size: ['cover', 'shop_split', *steps(self.ids[0], size), 'end']),
             'guess': (one, lambda size: ['guess_pictures', 'guess_names', 'guess_amounts', 'guess_dish', 'answer']),
             'cuisine': (four, lambda size: ['week_cover', 'day', 'day', 'day', 'day', *shops(self.ids[:4]), 'end']),
+            'whole': (one, lambda size: ['cover', 'shop_split', *['step'] * 9, 'end']),  # carbonara: 9 steps
         }
         self.assertEqual(sorted(expected), sorted(series.SERIES))
         for slug, (ids, kinds) in expected.items():
@@ -495,6 +496,75 @@ class SeriesTests(unittest.TestCase):
         self.assertEqual(slide['img'], 'af.webp')
         self.assertGreater(slide['minutes'], 0)
 
+    # The whole recipe
+
+    def test_the_whole_recipe_is_the_dish_the_list_and_every_step_in_its_own_words(self):
+        rid = self.ids[0]  # carbonara: 9 steps
+        view = page(db.session.get(Recipe, rid))
+        for size in ('ig', 'tt'):
+            with self.subTest(size=size):
+                first = self.get(series='whole', ids=rid, n=1, size=size, code=8)
+                self.assertEqual(first.headers['X-Hook-Text'], 'The whole recipe. 9 steps. Save it.')
+                html = first.get_data(as_text=True)
+                self.assertIn('class="hero"', html)
+                self.assertNotIn('class="strip"', html)  # the dish and the hook: the symbols are on the next slide
+                shop = self.get(series='whole', ids=rid, n=1, size=size, code=8, slide=2).get_data(as_text=True)
+                self.assertIn(f"Serves {view['servings']}", shop)
+                for s in view['steps']:
+                    slide = self.get(series='whole', ids=rid, n=1, size=size, code=8, slide=s['n'] + 2).get_data(as_text=True)
+                    self.assertIn(f"Step {s['n']} of 9", slide)
+                    self.assertIn(str(s['html']), slide)  # the step list's own words, with the amounts, not cut
+                    self.assertIn(s['short'].replace("'", '&#39;'), slide)
+                    if s['done_when']:
+                        self.assertIn(s['done_when'].replace("'", '&#39;'), slide)
+                last = self.get(series='whole', ids=rid, n=1, size=size, code=8, slide=12).get_data(as_text=True)
+                self.assertIn('Save this', last)
+                self.assertIn(f'{social.ADDRESS[size]}/8', last)
+        # A slide says what the step list says about the step, with the symbols of what goes in
+        slides = social.full_step_slides(view, 'ig')
+        self.assertEqual([sl['eyebrow'] for sl in slides][:2], ['Step 1 of 9', 'Step 2 of 9'])
+        with_symbols = next(sl for sl in slides if sl['symbols'])
+        self.assertEqual(set(with_symbols['symbols'][0]), {'name', 'img'})
+        # The symbols take the room the words leave: large alone under a line of text, the smallest under a wall of it
+        one = {**with_symbols, 'symbols': with_symbols['symbols'][:1], 'html': 'Cut the bacon.', 'done_when': None}
+        self.assertEqual(social.full_step_tile(one, 'ig'), social.FULL_TILE_MAX)
+        wall = {**with_symbols, 'symbols': with_symbols['symbols'] * 6, 'html': 'word ' * 90}
+        self.assertEqual(social.full_step_tile(wall, 'ig'), social.FULL_TILE_MIN)
+        timed = {**view, 'steps': [{**view['steps'][0], 'duration': '5 min + 20 min standing', 'equipment': 'Oven, 200 °C',
+                                    'while': 'While: the pasta boils'}]}
+        self.assertEqual(social.full_step_slides(timed, 'tt')[0]['facts'], ['5 min + 20 min standing', 'Oven, 200 °C'])
+        self.assertEqual(social.full_step_slides(timed, 'tt')[0]['during'], 'While: the pasta boils')
+        caption = self.get(series='whole', ids=rid, n=1, code=8, caption=1).get_data(as_text=True)
+        self.assertIn('all 9 steps', caption)
+        self.assertIn('thelazychef.app/ig/8', caption)
+
+    def test_a_step_that_does_not_fit_leaves_the_recipe_out_and_is_never_cut(self):
+        rid = self.ids[0]
+        view = page(db.session.get(Recipe, rid))
+        self.assertTrue(series.whole_ok(view))
+        long = {**view, 'steps': [{**s, 'html': 'word ' * 400} for s in view['steps']]}
+        self.assertFalse(social.full_steps_fit(long))
+        self.assertFalse(series.whole_ok(long))
+        # Too few or too many steps
+        self.assertFalse(series.whole_ok({**view, 'steps': view['steps'][:7]}))
+        self.assertFalse(series.whole_ok({**view, 'steps': view['steps'] * 2}))
+        for rid_out in self.ids[1:3]:  # lasagne and tikka: 15 steps
+            self.assertEqual(self.get(series='whole', ids=rid_out, n=1).status_code, 404)
+        self.assertEqual(set(series.candidates('whole')), {self.ids[0], self.ids[3]})  # carbonara and brownies
+        # The pick goes past one that does not fit
+        real = series.whole_ok
+        series.whole_ok = lambda v: v['title'] != db.session.get(Recipe, self.ids[0]).title and real(v)
+        try:
+            self.assertEqual(series.pick('whole'), [self.ids[3]])
+            self.assertEqual(self.get(series='whole', ids=rid, n=1).status_code, 404)
+        finally:
+            series.whole_ok = real
+
+    def test_the_whole_recipes_posts_stay_within_what_a_carousel_takes(self):
+        kinds = series.SERIES['whole']['slides']
+        self.assertEqual(kinds, ['cover', 'shop_split', 'full_steps', 'end'])
+        self.assertLessEqual(series.WHOLE_STEPS[1] + len(kinds) - 1, social_publish.MAX_SLIDES)
+
     # Picking
 
     def test_every_series_but_guess_takes_dinners_only(self):
@@ -508,7 +578,7 @@ class SeriesTests(unittest.TestCase):
                     self.assertFalse(series.candidates(slug)[breakfast.id]['dinner'])
                 else:
                     self.assertNotIn(breakfast.id, series.candidates(slug))
-                    self.assertIn(self.ids[1], series.candidates(slug) if slug not in ('onepot', 'under20', 'only6')
+                    self.assertIn(self.ids[1], series.candidates(slug) if slug not in ('onepot', 'under20', 'only6', 'whole')
                                   else self.ids)
         # Guess the dish, not the dinner, on the one that is not one: in the caption (the hook is the score line)
         caption = self.get(series='guess', ids=breakfast.id, n=1, caption=1).get_data(as_text=True)

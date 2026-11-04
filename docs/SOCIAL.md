@@ -37,9 +37,10 @@ the post renders with them (the groups are then `preview`). Anyone else's are ig
 | 4 weeknights of [cuisine] | `cuisine` | active | four dinners of one cuisine, varied as the week is | the four dishes large, Monday to Thursday one per slide, one shopping list, save |
 | Only 6 things to buy | `only6` | paused | at most six things to buy, staples left out | the dish and the hook, the shopping list in two, the steps, save |
 | Air fryer dinners | `airfryer` | paused | `heat_source` air fryer | the dish and the hook, the air fryer's heat and time, the river delta (small ones), the steps, the shopping list in two, follow |
+| The whole recipe | `whole` | active, not in the rotation | 8 to 14 steps, each fitting a slide in its own words | the dish and the hook, the shopping list with how many it serves, a slide per step, the dish with Save this and the address |
 | 3 ingredients, 3 dinners | `three3` | paused | three dinners sharing at least three things to buy, one a protein; chicken breast and thigh count as one | the three ingredient symbols large with the dishes, each dinner with the rest, one shopping list, save |
 
-The first rotation (serier-v2.md) runs the seven active ones: Guess ten times a week, What to make with seven,
+The first rotation (serier-v2.md) runs seven of the active ones (not The whole recipe, below): Guess ten times a week, What to make with seven,
 High-protein six (one and four dishes), Under 20 five, One Pot four, the cuisine week three. The paused ones wait
 for recipes; every status still renders. The hook says "Dishes to wash: 1" only when it is literally one.
 
@@ -70,6 +71,17 @@ the CTA as a button in the look's colour (zinnober in F), the address readable i
 old last slide, with the two-line seal. There is no time bar any more. The minutes the cook is not working have one definition for the hook
 and the air fryer slide (`social.hands_off`): the standing time of the steps in the heat source when there is any,
 else all the time from start to table that is not active.
+
+**The whole recipe** is a test of whether a post you can cook from is worth more saved than it costs in visits: the card's
+signal is saves and visits per 1000 views, and it is judged after five posts per platform. It runs from a plan file (a
+line `whole`, or `whole 346` for a fixed recipe), never in `day_plan`. Its slide kind `full_steps` makes a slide per step
+(kind `step`, `social.full_step_slides`): "Step 3 of 12" and the part when the recipe has several, the step's short name,
+its time and equipment with temperature (and `While:` on a step done at the same time as another), the step list's own text
+with the amounts in bold (`html`), Done when, and under that the symbols of what goes in, as large as the room left allows
+(`full_step_tile`). The text is never cut: a recipe with a step that does not fit is left out (`social_series.whole_ok`), by
+the pick, and by the page, which answers 404 so the batch skips the post and says so. Whether it fits is an estimate on the
+careful side (`social.full_step_height`): measured in a browser on 4.11.2026, 31 of the 39 public recipes with 8 to 14 steps
+come through and all their slides end at least 36 px above the limit; of the 8 left out, 3 had room after all.
 
 A list for several dinners (the week, What to make with, the cuisine week) goes over as many slides as it takes
 to keep `SHOP_PER_SLIDE` things or fewer on each ("The shopping list, 1 of 2"), the staples on the last. Times on
@@ -283,7 +295,11 @@ goes up without that approval. If it fails, the post goes back to draft with the
 itself.
 
 The API cannot add music to a carousel. To post one with music, leave it unticked, post it by hand as in step 7, and the
-next morning's fetch marks it posted. Instagram allows 50–100 API posts in 24 hours, far above what we post. A task never
+next morning's fetch marks it posted. A series whose card says `instagram_by_hand` (The whole recipe, during its test, for the
+music) is always posted that way: the queue shows its slides and text marked **Post by hand**, with nothing to tick, and
+refuses to schedule it. A carousel takes 2 to 20 slides (`social_publish.MAX_SLIDES`, Meta's limit, read 4.11.2026), and the app
+refuses other counts when the batch sends them; The whole recipe has at most 17. Instagram allows 50–100 API posts in 24
+hours, far above what we post. A task never
 posts twice: it first looks for the post's code among the latest posts.
 
 ## Instagram's numbers, fetched

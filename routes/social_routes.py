@@ -127,6 +127,8 @@ def series_post():
     if len(ids) != series['count']:
         abort(404)
     posts = [_post(_recipe(i)) for i in ids]
+    if series['filter'] == 'whole' and not social_series.whole_ok(posts[0]['view']):
+        abort(404)  # a step is never cut to fit: the batch skips the post and says so
     n = request.args.get('n', type=int) or social_series.next_n(slug)
     size = _size()
     code = request.args.get('code')
