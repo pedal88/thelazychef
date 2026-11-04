@@ -81,7 +81,7 @@ MENU = [
                         None,
                         ('Saved', 'saved_recipes_view', {}, 'heart', 'user'),
                         ('Made', 'recipes_list', {'view': 'made'}, 'check', 'user'),
-                        ('Cook next', 'queue.next_recipes_view', {}, 'pot', 'user'),
+                        ('Cook next', 'queue.next_recipes_view', {}, 'list-plus', 'user'),
                         ('Recipe Mirror', 'mirror_hub', {}, 'mirror', 'user')]),
     ('Ingredients', 'all', [('All ingredients', 'pantry_management', {}, 'carrot', 'all'),
                             ('Ingredient galaxy', 'explore_ingredient_galaxy', {}, 'galaxy', 'all')]),

@@ -270,6 +270,21 @@
         }};
 
         if (isLoggedIn) {
+            // Initial Load: which cards are in the queue (addToQueue below toggles, so a card must not look empty when it is not)
+            if (document.querySelector('.queue-btn')) {
+                fetch('/api/me/queue')
+                    .then(r => r.json())
+                    .then(data => {
+                        data.queued_ids.forEach(id => {
+                            document.querySelectorAll(`.queue-btn[data-recipe-id="${id}"]`).forEach(btn => {
+                                btn.classList.remove('text-slate-400');
+                                btn.classList.add('text-orange-500');
+                            });
+                        });
+                    })
+                    .catch(err => console.error("Failed to load the queue", err));
+            }
+
             // Initial Load: Fetch Favorites
             fetch('/api/me/favorites')
                 .then(r => r.json())

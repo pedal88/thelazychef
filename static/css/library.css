@@ -36,7 +36,7 @@
   background: color-mix(in srgb, var(--color-paper) 92%, transparent); color: var(--color-muted); box-shadow: 0 1px 4px rgb(0 0 0 / .12); }
 .rcard-acts button:hover { color: var(--color-ink); }
 .rcard-acts .favorite-btn:hover, .rcard-acts .favorite-btn.text-red-500 { color: var(--color-danger); }
-.rcard-acts .queue-btn.text-orange-500 { color: var(--color-accent); }  /* in the queue (addToQueue in base.html) */
+.rcard-acts .queue-btn.text-orange-500 { color: var(--look-go, var(--color-accent)); }  /* in the queue (addToQueue in base.html) */
 .rcard-acts .icon { width: 18px; height: 18px; }
 .rcard-star { position: absolute; top: var(--space-2); left: var(--space-2); z-index: 2; padding: 3px 10px; border-radius: var(--radius-pill);
   background: var(--color-serve); color: var(--color-paper); font: 600 11px/1.6 var(--font-sans); }
@@ -192,7 +192,7 @@
 @media (hover: hover) {
   .lv .rcard-acts { opacity: 0; transition: opacity .15s; }
   .lv .rcard:hover .rcard-acts, .lv .rcard:focus-within .rcard-acts, .lv .rcard-acts:has([aria-pressed="true"]) { opacity: 1; }
-  main:has(.site-flash) .lv .rcard-acts { opacity: 1; }  /* the message may point at them: "tap the pot" after signing up */
+  main:has(.site-flash) .lv .rcard-acts { opacity: 1; }  /* the message may point at them: "tap the plus" after signing up */
 }
 .lv [data-lv-swap="results"][aria-busy="true"] { opacity: .5; transition: opacity .15s; }  /* the search loading */
 .lib-more { display: flex; justify-content: center; margin: var(--space-8) 0 0; }

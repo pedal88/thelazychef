@@ -146,7 +146,7 @@ class SignupTests(unittest.TestCase):
     def test_a_new_user_with_nowhere_to_go_back_to_starts_among_the_quick_dishes(self):
         response = self.register()
         self.assertEqual(response.location, '/recipes?time=30')
-        self.assertIn('tap the pot on one to cook it next', self.client.get(response.location).get_data(as_text=True))
+        self.assertIn('tap the plus on one to cook it next', self.client.get(response.location).get_data(as_text=True))
         self.client.post('/logout')
         self.assertEqual(self.client.post('/login', data={'email': 'cook@test', 'password': 'pw'}).location, '/recipes')
         self.client.post('/logout')
