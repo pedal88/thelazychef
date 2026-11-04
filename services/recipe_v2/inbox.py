@@ -98,10 +98,12 @@ def add(shared):
 
 
 def made_from():
-    """{video key: recipe id} of the recipes made from a video, the newest for a video made twice."""
-    rows = db.session.execute(db.select(Recipe.id, Recipe.source_input).where(
+    """{video key: recipe id} of the recipes made from a video, the newest for a video made twice. One that failed
+    (tasks.run) was not made: its video can be read and chosen again."""
+    rows = db.session.execute(db.select(Recipe.id, Recipe.source_input, Recipe.validation_errors).where(
         Recipe.source_type == 'video', Recipe.source_input.isnot(None)).order_by(Recipe.id)).all()
-    return {video_key(source): rid for rid, source in rows}
+    return {video_key(source): rid for rid, source, errors in rows
+            if not any(e.get('rule') in ('source', 'error') for e in errors or [])}
 
 
 def links_in(text):
