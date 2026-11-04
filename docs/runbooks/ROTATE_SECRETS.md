@@ -194,6 +194,28 @@ Feilet deployen, kjør den feilede jobben på nytt: `gh run rerun <run-id> --fai
 
 Bytte senere: samme blokk, men `gcloud secrets versions add` i stedet for `create` og uten `add-iam-policy-binding`. Lag så en ny revisjon som under «Senere bytter», så appen leser den nye versjonen.
 
+## Nøkkelen til review-API-et (`REVIEW_API_KEY`)
+
+Claude Code leser oppskrifter og pantry i produksjon med denne nøkkelen (`docs/OPERATIONS.md`, «The review API»). Den åpner bare det API-et, og det API-et kan bare lese. Den ligger i Secret Manager og i Keychain på MacBooken, og vises aldri i terminalen. Uten den svarer API-et 401, og ingenting annet i appen påvirkes.
+
+Alt gjøres på MacBooken. Hemmeligheten og tilgangen må finnes før deployen, ellers feiler «Deploy to Prod» med `Permission denied on secret`.
+
+Første gang (eller hvis deployen feilet av den grunnen):
+
+```bash
+P=thelazychefai-prod
+SA=$(gcloud run services describe lazy-chef-app --region europe-west1 --project $P --format='value(spec.template.spec.serviceAccountName)')
+SA=${SA:-$(gcloud projects describe $P --format='value(projectNumber)')-compute@developer.gserviceaccount.com}
+openssl rand -hex 32 | tr -d '\n' | gcloud secrets create REVIEW_API_KEY --data-file=- --project=$P
+gcloud secrets add-iam-policy-binding REVIEW_API_KEY --member="serviceAccount:$SA" --role=roles/secretmanager.secretAccessor --format='value(etag)' --project=$P
+security add-generic-password -U -a "$USER" -s thelazychef-review-api -w "$(gcloud secrets versions access latest --secret=REVIEW_API_KEY --project=$P)"
+security find-generic-password -s thelazychef-review-api -w | wc -c   # 65: 64 tegn og linjeskiftet
+```
+
+Feilet deployen, kjør den feilede jobben på nytt: `gh run rerun <run-id> --failed` (id-en fra `gh run list --branch main --limit 1`). Etterpå skal `./scripts/review_api.sh questions` skrive ut JSON.
+
+Bytte senere: samme blokk, men `gcloud secrets versions add` i stedet for `create` og uten `add-iam-policy-binding`. Lag så en ny revisjon som under «Senere bytter», så appen leser den nye versjonen.
+
 ## Google-innloggingen (`GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`)
 
 «Continue with Google» (`services/google_signin.py`) bruker OAuth-klienten «The Lazy Chef web» i Google Auth Platform

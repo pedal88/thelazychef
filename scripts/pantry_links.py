@@ -20,50 +20,8 @@ import contextlib
 import getpass
 import io
 import os
-import re
 
-NOTE = re.compile(r'^"(?P<line>.+)" is now an alias of (?P<item>.+) \((?P<reason>.*)\)$')
-
-
-def job_aliases(recipes):
-    """{alias name: (item, reason)} from the pantry job's notes on the recipes."""
-    found = {}
-    for recipe in recipes:
-        for note in recipe.validation_errors or []:
-            m = NOTE.match(note.get('message') or '') if note.get('rule') == 'pantry' else None
-            if m:
-                found.setdefault(m['line'].strip().lower(), (m['item'], m['reason']))
-    return found
-
-
-def report(recipes, aliases):
-    """The report as lines of text. aliases is every IngredientAlias row."""
-    from services.recipe_v2.generate import match_pantry
-
-    lines = [line for recipe in recipes for line in recipe.lines]
-    uses = {}
-    for line in lines:
-        key = line.name.strip().lower()
-        uses.setdefault(key, []).append(line)
-    made = job_aliases(recipes)
-    out = [f'{len(recipes)} recipes, {len(lines)} lines, {len(aliases)} aliases, {len(made)} of them noted as made by the pantry job.', '']
-    out.append('ALIASES THE PANTRY JOB MADE (name -> item: lines, reason)')
-    for alias in sorted(aliases, key=lambda a: a.name):
-        if alias.name in made:
-            out.append(f'- {alias.name} -> {alias.ingredient.name}: {len(uses.get(alias.name, []))} lines, {made[alias.name][1]}')
-
-    names = {key: group[0].name for key, group in uses.items()}
-    with contextlib.redirect_stdout(io.StringIO()):  # the matcher prints every miss
-        by_name, _ = match_pantry({'ingredients': [{'local_id': key, 'name': name} for key, name in names.items()]})
-    silent = {}
-    for key, group in uses.items():
-        for line in group:
-            if line.ingredient_id and by_name.get(key) != line.ingredient_id:
-                silent.setdefault((key, line.ingredient.name), []).append(line.recipe_id)
-    out += ['', 'LINES LINKED TO AN ITEM THEIR NAME DOES NOT MATCH (name -> item: recipes)']
-    for (key, item), ids in sorted(silent.items()):
-        out.append(f'- {key} -> {item}: {", ".join(map(str, sorted(set(ids))))}')
-    return out
+from services.recipe_v2.pantry_links import report
 
 
 def remove(names, aliases, recipes):
@@ -110,7 +68,9 @@ def main():
         recipes = db.session.execute(db.select(Recipe).where(Recipe.schema_version == 2).order_by(Recipe.id)).scalars().all()
         aliases = db.session.execute(db.select(IngredientAlias)).scalars().all()
         if not args.remove:
-            print('\n'.join(report(recipes, aliases)))
+            with contextlib.redirect_stdout(io.StringIO()):  # the matcher prints every miss
+                lines = report(recipes, aliases)
+            print('\n'.join(lines))
             db.session.rollback()
             return
         if not args.apply:  # the read-only transaction cannot take the trial run

@@ -74,7 +74,8 @@ GOOGLE_API_KEY="$(gcloud secrets versions access latest --secret=GOOGLE_API_KEY 
 STORAGE_BACKEND=gcs GCS_BUCKET_NAME=thelazychef-assets
 ```
 
-The scripts that matter now (see `scripts/CLAUDE.md` for all of them):
+To only look at recipes or the pantry, use the review API instead (below). The scripts that matter now (see
+`scripts/CLAUDE.md` for all of them):
 
 | Script | Writes? | What |
 |---|---|---|
@@ -87,7 +88,32 @@ The scripts that matter now (see `scripts/CLAUDE.md` for all of them):
 
 ## Checking production
 
+- **The review API** is the first place to look: Claude Code reads recipes and the pantry itself, so Pål need not run
+  anything (below).
 - The site: <https://thelazychef.app>. Public JSON that shows the state without logging in:
   `/api/feed/recipes` (what Discover shows), `/api/graph/galaxy`, `/api/graph/ingredient-galaxy`.
 - Cloud Run logs: `gcloud run services logs read lazy-chef-app --region europe-west1 --project thelazychefai-prod`
   (needs the same `gcloud` access, so Pål runs it).
+
+## The review API
+
+`/api/review` (`routes/review_api_routes.py`) lets Claude Code check production without Pål running a script. It runs
+through `scripts/review_api.sh`, which needs no venv, so it works from any worktree:
+
+```bash
+./scripts/review_api.sh recipes/382                   # any status: source, source_text, lines with pantry item and aliases, steps, notes, times
+./scripts/review_api.sh 'pantry?q=yogurt%20butter'    # pantry items by name or alias, with status and aliases (50 at most)
+./scripts/review_api.sh 'questions?limit=20'          # the open questions and the latest answers, as /admin/pantry-questions
+./scripts/review_api.sh pantry-report                 # the report of scripts.pantry_links; every line goes through the matcher, so it takes a while
+```
+
+- **What it can reach:** recipes, in every status, and the pantry. No route, field or join leads to users, emails,
+  passwords, interactions, queues or an admin's notes on a recipe (`tests/test_review_api.py`). Each answer is built
+  field by field, so a new column stays out until someone adds it.
+- **It only reads:** every route is a GET, and on Postgres the transaction is read only. It costs nothing: no AI calls.
+  `times` shows the saved time and what the planner says now. Flags are as saved: unlike `scripts.review_recipes` it does
+  not recalculate. The cost of making a recipe is not stored, so it is not in the answer.
+- **The key** is `REVIEW_API_KEY`: in Secret Manager, on Pål's MacBook in the Keychain item `thelazychef-review-api`.
+  It opens only this API, and `CONTENT_API_KEY` does not open this one. Making it and changing it:
+  `docs/runbooks/ROTATE_SECRETS.md`. Without the variable the API answers 401 to everything.
+- Anything that writes, or reads something else, still goes through a script Pål runs (above).
