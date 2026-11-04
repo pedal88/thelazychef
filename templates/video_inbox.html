@@ -7,7 +7,9 @@
   .inbox-list { list-style: none; margin: var(--space-4) 0 0; padding: 0; }
   .inbox-list li { display: flex; gap: var(--space-3); justify-content: space-between; align-items: flex-start; padding: var(--space-3) 0; border-top: 1px solid var(--color-line); }
   .inbox-list a { overflow-wrap: anywhere; }
-  .inbox-list .about { min-width: 0; }
+  .inbox-list .about { min-width: 0; flex: 1; }
+  .inbox-list .pick { flex: none; width: 22px; height: 22px; margin-top: 2px; }
+  .inbox-go { margin-top: var(--space-4); }
   .inbox-list .hint { display: block; }
   .inbox-list .actions { flex: none; display: grid; gap: var(--space-2); }
   .inbox-list form { margin: 0; }
@@ -27,6 +29,7 @@
   <ul class="inbox-list">
     {% for row, made in rows %}
     <li>
+      {% if status == 'new' and not made %}<input class="pick" type="checkbox" name="inbox" value="{{ row.id }}" form="make-videos" aria-label="Choose this video">{% endif %}
       <div class="about">
         <a href="{{ row.webpage_url or row.url }}" rel="noopener noreferrer" target="_blank">{{ row.dish_name or row.url }}</a>
         <span class="hint">{% if row.uploader %}{{ row.uploader }} · {% endif %}{% if row.duration_s %}{{ row.duration_s }} s · {% endif %}Saved {{ row.created_at.strftime('%d.%m.%Y') }}{% if made %} · <a href="{{ url_for('recipe_detail', recipe_id=made) }}">Already made: recipe {{ made }}</a>{% endif %}</span>
@@ -50,6 +53,12 @@
     </li>
     {% endfor %}
   </ul>
+  {% if status == 'new' %}
+  <form id="make-videos" class="inbox-go" method="post" action="{{ url_for('recipe_v2.batch_new') }}">
+    <button type="submit" class="go">Go on with the ticked videos</button>
+    <p class="hint">The next page shows how many and what they cost. Nothing is made before you say so there, and the recipes are drafts.</p>
+  </form>
+  {% endif %}
   {% else %}
   <p class="hint">Nothing here.</p>
   {% endif %}

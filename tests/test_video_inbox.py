@@ -211,6 +211,31 @@ class RouteTests(unittest.TestCase):
         row = self._row()
         self.assertEqual(self.client.post(f'/internal/tasks/video-inbox/{row.id}').status_code, 401)
 
+    def test_chosen_videos_go_to_the_batch_page_which_shows_the_cost_first(self):
+        chosen, other = self._row(), self._row('https://www.instagram.com/reel/AbC/')
+        chosen.webpage_url = TIKTOK + '/clean'
+        db.session.commit()
+        self.assertIn(f'name="inbox" value="{chosen.id}"', self.client.get('/admin/inbox').get_data(as_text=True))
+        with mock.patch.object(tasks, 'enqueue') as enqueue:
+            res = self.client.post('/new-recipe/v2/batch', data={'inbox': [str(chosen.id)]})
+            html = res.get_data(as_text=True)
+            self.assertEqual(res.status_code, 200)
+            self.assertIn('Make 1 recipe', html)
+            self.assertIn('USD', html)
+            self.assertIn(TIKTOK + '/clean', html)
+            self.assertNotIn(other.url, html)
+            enqueue.assert_not_called()  # nothing is made before the second step
+            self.assertEqual(self.client.post('/new-recipe/v2/batch', data={'lines': TIKTOK + '/clean', 'action': 'make'}).status_code, 302)
+        recipe = db.session.execute(db.select(Recipe)).scalar_one()
+        self.assertEqual((recipe.source_type, recipe.status, recipe.source_input), ('video', 'generating', TIKTOK + '/clean'))
+        self.assertEqual(enqueue.call_args[0][1:3], ('video', TIKTOK + '/clean'))
+
+    def test_a_video_already_made_cannot_be_ticked(self):
+        row = self._row()
+        db.session.add(Recipe(title='x', cuisine='', difficulty='', status='draft', schema_version=2, source_type='video', source_input=TIKTOK))
+        db.session.commit()
+        self.assertNotIn(f'name="inbox" value="{row.id}"', self.client.get('/admin/inbox').get_data(as_text=True))
+
     def test_a_video_made_into_a_recipe_is_marked(self):
         self._save()
         recipe = Recipe(title='x', cuisine='', difficulty='', status='draft', schema_version=2, source_type='video', source_input=TIKTOK + '?_t=1')
