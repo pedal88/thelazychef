@@ -120,19 +120,41 @@ def batch_new():
         return render_template('recipe_v2_batch.html', **page)
     ids = [start(r['source'], r['kind'], r['chef']['id'] if r['chef'] else None, r['settings'], r['age'], language,
                  page['images']).id for r in todo]
-    return redirect(url_for('recipe_v2.batch_status', ids=','.join(map(str, ids))))
+    return redirect(url_for('recipe_v2.batch_status', ids=','.join(map(str, ids)), **({} if page['images'] else {'images': 0})))
 
 
 @recipe_v2_bp.route('/new-recipe/v2/batch/status')
 @login_required
 @admin_required
 def batch_status():
-    """How the recipes of a batch are getting on; the page reloads itself while any is still being made."""
+    """How the recipes of a batch are getting on, each through its recipe, its steps and its image; the page follows
+    them until the images are done too. images=0: the batch was asked to skip the images, so none are coming."""
     ids = [int(x) for x in (request.args.get('ids') or '').split(',') if x.strip().isdigit()][:batch.MAX_LINES]
     recipes = {r.id: r for r in db.session.execute(db.select(Recipe).where(Recipe.id.in_(ids))).scalars()} if ids else {}
     rows = [recipes[i] for i in ids if i in recipes]
-    return render_template('recipe_v2_batch_status.html', recipes=rows,
-                           working=sum(r.status == 'generating' for r in rows), settings=SETTINGS)
+    images = tasks.configured() and request.args.get('images') != '0'  # without a queue, none are made by themselves
+    progress = {r.id: _progress(r, images) for r in rows}
+    stops = [state for p in progress.values() for state in p.values() if state != 'none']
+    return render_template('recipe_v2_batch_status.html', recipes=rows, progress=progress, settings=SETTINGS,
+                           working=sum(r.status == 'generating' for r in rows),
+                           images_busy=sum(p['image'] == 'now' for p in progress.values()),
+                           made=sum(p['steps'] == 'done' for p in progress.values()),
+                           images_made=sum(p['image'] == 'done' for p in progress.values()),
+                           images_total=sum(p['image'] != 'none' for p in progress.values()),
+                           finished=sum(state in ('done', 'failed') for state in stops), stops=len(stops),
+                           missing=[r.id for r in rows if progress[r.id]['steps'] == 'done' and progress[r.id]['image'] != 'done'])
+
+
+def _progress(recipe, images):
+    """Where a recipe of a batch is: its recipe (round 1), steps (round 2) and image, each done, now, waiting, failed or none."""
+    written = bool(recipe.source_text)
+    if recipe.status == 'generating':
+        return {'recipe': 'done' if written else 'now', 'steps': 'now' if written else 'waiting',
+                'image': 'waiting' if images else 'none'}
+    if not recipe.steps:  # the link could not be read, or the text never became a valid recipe
+        return {'recipe': 'done' if written else 'failed', 'steps': 'failed' if written else 'none', 'image': 'none'}
+    image = 'done' if recipe.image_filename else 'failed' if _image_failed(recipe) else 'now' if images else 'none'
+    return {'recipe': 'done', 'steps': 'done', 'image': image}
 
 
 @recipe_v2_bp.route('/new-recipe/v2/version/<int:recipe_id>', methods=['POST'])
@@ -264,8 +286,9 @@ IMAGES_COST = (0.15, 0.45)  # USD for the dish image and the part images of one 
 @login_required
 @admin_required
 def batch_images():
-    """Images for many recipes at once: the v2 recipes that have no dish image yet, newest first, all ticked.
-    "Make" queues one image job each (made in the background, as the recipes are), then the page follows them."""
+    """Images for many recipes at once: the v2 recipes that have no dish image yet, newest first, all ticked; only=
+    limits them to some, the ones of a batch. "Make" queues one image job each (made in the background, as the recipes
+    are), then the page follows them."""
     if request.method == 'POST':
         ids = [int(x) for x in request.form.getlist('ids') if x.isdigit()][:batch.MAX_LINES]
         for rid in ids:
@@ -275,9 +298,11 @@ def batch_images():
                 flash(friendly_ai_error(e, f'Could not start the images of recipe {rid}.'), 'error')
         return redirect(url_for('recipe_v2.batch_images', started=','.join(map(str, ids))))
     started = [int(x) for x in (request.args.get('started') or '').split(',') if x.isdigit()]
+    only = [int(x) for x in (request.args.get('only') or '').split(',') if x.isdigit()]
     waiting = db.session.execute(db.select(Recipe).where(
         Recipe.schema_version == 2, Recipe.status != 'generating', Recipe.image_filename.is_(None),
-        Recipe.id.notin_(started or [0])).order_by(Recipe.id.desc()).limit(batch.MAX_LINES)).scalars().all()
+        Recipe.id.notin_(started or [0]), Recipe.id.in_(only) if only else db.true()
+    ).order_by(Recipe.id.desc()).limit(batch.MAX_LINES)).scalars().all()
     following = db.session.execute(db.select(Recipe).where(Recipe.id.in_(started))).scalars().all() if started else []
     following.sort(key=lambda r: started.index(r.id))
     low, high = IMAGES_COST

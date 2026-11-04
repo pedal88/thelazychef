@@ -1,28 +1,40 @@
 {% extends "base.html" %}
-{# How the recipes of a batch are getting on (routes/recipe_v2_routes.py batch_status). Reloads itself every 10
-   seconds while any is still being made. #}
+{# How the recipes of a batch are getting on (routes/recipe_v2_routes.py batch_status): real progress, each recipe through
+   its recipe, steps and image. The script below swaps in the new state while any recipe or image is still being made. #}
+{% set busy = working or images_busy %}
+{% macro stop(label, state) %}<li class="at-{{ state }}" aria-label="{{ label }}: {{ {'done': 'done', 'now': 'being made', 'waiting': 'waiting', 'failed': 'failed', 'none': 'not made'}[state] }}">{{ 'No image' if label == 'Image' and state == 'none' else label if state != 'failed' else label ~ ' failed' }}</li>{% endmacro %}
 {% block title %}Making recipes - The Lazy Chef{% endblock %}
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/recipe_v2.css') }}">
-{% if working %}<meta http-equiv="refresh" content="10">{% endif %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/making.css') }}">
 {% endblock %}
 {% block content %}
-<article class="rv2 batch">
+<article class="rv2 batch" id="batch" data-busy="{{ '1' if busy }}">
   <a class="back" href="{{ url_for('recipe_v2.batch_new') }}">← Many recipes</a>
   <p class="eyebrow">Recipe model v2 · admin</p>
-  <h1>{% if working %}Making {{ working }} of {{ recipes|length }} recipes{% else %}{{ recipes|length }} recipe{{ 's' if recipes|length != 1 }} made{% endif %}</h1>
-  <p class="hint">{% if working %}They are made in the background, a few at a time; this page updates itself. You can leave it and come back with the same address.{% else %}All done. Drafts are only seen by admins until they are approved.{% endif %}</p>
-  {% if not working %}<p><a class="go" href="{{ url_for('recipe_v2.batch_images') }}">Images for these →</a></p>{% endif %}
-  <table class="batch-table">
-    <thead><tr><th>Recipe</th><th>Chef</th><th>Settings</th><th>Status</th></tr></thead>
+  <h1>{% if working %}Making {{ working }} of {{ recipes|length }} recipes{% elif images_busy %}Making images for {{ images_busy }} of {{ recipes|length }} recipes{% elif made == recipes|length %}{{ made }} recipe{{ 's' if made != 1 }} made{% else %}{{ made }} of {{ recipes|length }} recipes made{% endif %}</h1>
+  {% if stops %}
+  <div class="batch-sum">
+    <div class="making-line" role="progressbar" aria-label="How far the batch has come" aria-valuemin="0" aria-valuemax="{{ stops }}" aria-valuenow="{{ finished }}"><span class="making-fill" id="batch-fill" style="width: {{ (100 * finished / stops)|round(1) }}%"></span></div>
+    <p class="making-state">{{ made }} of {{ recipes|length }} recipes{% if images_total %} · {{ images_made }} of {{ images_total }} images{% endif %}</p>
+  </div>
+  {% endif %}
+  <p class="hint">{% if working %}They are made in the background, a few at a time; this page updates itself. You can leave it and come back with the same address.{% elif images_busy %}The recipes are written. The images take a minute or two each; this page updates itself until they are done.{% else %}All done. Drafts are only seen by admins until they are approved.{% endif %}</p>
+  {% if not busy and missing %}<p><a class="go" href="{{ url_for('recipe_v2.batch_images', only=missing|join(',')) }}">Images for the {{ missing|length }} without →</a></p>{% endif %}
+  <table class="batch-table batch-follow">
+    <thead><tr><th>Recipe</th><th>Chef</th><th>Settings</th><th>Progress</th></tr></thead>
     <tbody>
       {% for r in recipes %}
       {% set notes = (r.validation_errors or [])|length %}
-      <tr class="{{ 'working' if r.status == 'generating' else 'bad' if r.is_flagged_for_review else 'ok' }}">
+      <tr class="{{ 'bad' if r.is_flagged_for_review else 'ok' }}">
         <td>{% if r.status == 'generating' %}{{ r.title }}{% else %}<a href="{{ url_for('recipe_detail', recipe_id=r.id) }}">{{ r.title }}</a>{% endif %} <span class="n">{{ r.id }}</span></td>
-        <td>{{ r.chef.name if r.chef else '–' }}</td>
-        <td>{% for k in r.settings or [] if k in settings %}{{ settings[k][0] }}{% if k == 'baby' and r.age_from_months %} {{ r.age_from_months }} mo+{% endif %}{{ ', ' if not loop.last }}{% else %}–{% endfor %}</td>
-        <td class="st">{% if r.status == 'generating' %}Being made…{% elif r.is_flagged_for_review %}{{ r.status|capitalize }}, flagged{% if notes %} ({{ notes }} note{{ 's' if notes != 1 }}){% endif %}{% else %}{{ r.status|capitalize }}{% endif %}</td>
+        <td{% if not r.chef %} class="blank"{% endif %}>{{ r.chef.name if r.chef else '–' }}</td>
+        <td{% if not r.settings %} class="blank"{% endif %}>{% for k in r.settings or [] if k in settings %}{{ settings[k][0] }}{% if k == 'baby' and r.age_from_months %} {{ r.age_from_months }} mo+{% endif %}{{ ', ' if not loop.last }}{% else %}–{% endfor %}</td>
+        <td class="st">
+          {% set p = progress[r.id] %}
+          <ol class="batch-line">{{ stop('Recipe', p.recipe) }}{% if p.steps != 'none' %}{{ stop('Steps', p.steps) }}{% endif %}{% if p.image != 'none' or r.steps or r.status == 'generating' %}{{ stop('Image', p.image) }}{% endif %}</ol>
+          {% if r.status != 'generating' %}<span class="batch-note">{{ r.status|capitalize }}{% if r.is_flagged_for_review %}, flagged{% if notes %} ({{ notes }} note{{ 's' if notes != 1 }}){% endif %}{% endif %}</span>{% endif %}
+        </td>
       </tr>
       {% endfor %}
     </tbody>
@@ -34,8 +46,35 @@
   .batch-table th { text-align: left; font: 600 11px var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--color-muted); padding: 6px; border-bottom: 1px solid var(--color-line); }
   .batch-table td { padding: 8px 6px; border-bottom: 1px solid var(--color-line); vertical-align: top; }
   .batch-table .n { font: 11px var(--font-mono); color: var(--color-muted); }
-  .batch-table tr.working .st { color: var(--color-muted); }
-  .batch-table tr.bad .st { color: var(--color-warning, var(--color-danger)); font-weight: 600; }
-  .batch-table tr.ok .st { color: var(--color-prep-ink); font-weight: 600; }
+  .batch-table tr.bad .batch-note { color: var(--color-warning, var(--color-danger)); font-weight: 600; }
+  .batch-table tr.ok .batch-note { color: var(--color-prep-ink); font-weight: 600; }
 </style>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  function follow() {
+    var now = document.getElementById('batch');
+    if (!now.dataset.busy) return;
+    setTimeout(function () {
+      fetch(window.location.href, { headers: { 'Accept': 'text/html' } })
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+          var next = new DOMParser().parseFromString(html, 'text/html').getElementById('batch');
+          if (!next) { window.location.reload(); return; }
+          if (next.innerHTML !== now.innerHTML) {  // left alone otherwise, so what is moving keeps moving
+            var was = document.getElementById('batch-fill'), to = next.querySelector('#batch-fill');
+            var from = was && was.style.width, width = to && to.style.width;
+            if (from && to) to.style.width = from;
+            now.replaceWith(next);
+            if (from && to) requestAnimationFrame(function () { requestAnimationFrame(function () { to.style.width = width; }); });
+          }
+          follow();
+        })
+        .catch(follow);
+    }, 5000);
+  }
+  follow();
+})();
+</script>
 {% endblock %}
