@@ -45,6 +45,9 @@ COPY --chown=appuser:appuser . .
 # Switch to the non-root user
 USER appuser
 
+# The translations, from translations/ to what the app reads; a broken catalog stops the build here
+RUN pybabel compile -d translations
+
 # Expose the port (Cloud Run sets the PORT env var, defaulting to 8080)
 # Note: This is documentation only, the app must bind to the environment variable
 EXPOSE 8080

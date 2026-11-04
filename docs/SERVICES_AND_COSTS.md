@@ -78,6 +78,7 @@ Read by the app (all listed in `.env.example`):
 | `FLASK_DEBUG` | no | Debug mode for `python app.py` |
 | `GOOGLE_API_KEY` | yes (app.py checks it) | Gemini. Scripts that do not call Gemini set a dummy value |
 | `ANTHROPIC_API_KEY` | to generate recipes | Claude |
+| `NORWEGIAN_ON` | no | `1`: Norwegian browsers get Norwegian and the menu has the language switch (`services/language.py`). Without it only `?lang=no` gives Norwegian. Not in `deploy.yaml`: the deploy keeps a value set on the service with `--update-env-vars` |
 | `INSTAGRAM_ACCESS_TOKEN`, `INSTAGRAM_USER_ID` | to fetch Instagram's numbers | The Meta app's system-user token (Secret Manager) and the account's id (`deploy.yaml`); without them nothing is fetched and the numbers are typed in by hand |
 | `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET` | for Continue with Google | The OAuth client (above); without both there is no Google button and `/login/google` is 404 |
 | `CONTENT_API_KEY` | for the content and social APIs | The key Claude Code sends content drafts with (`/api/content`, `docs/CONTENT.md`) and `scripts/social_batch.py` logs a day's posts with (`/api/social`, `docs/SOCIAL.md`); without it both answer 401 |

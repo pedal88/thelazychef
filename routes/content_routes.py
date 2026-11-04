@@ -8,6 +8,7 @@ from flask_login import current_user
 
 from database.models import Page, PageEmbed, PageText, db
 from routes._shared import get_storage
+from services import language
 from services.content import assets
 from services.content.blocks import KINDS, page_url
 from services.content.pages import (DEFAULT_LANG, HOME, LANGS, SLUG, ContentError, default_home, find_page,
@@ -23,6 +24,7 @@ RESIZE = ('<script>(function(){var id=%s;function h(){parent.postMessage({lazyEm
 
 
 def _lang():
+    """The language of the text an admin is looking at; a visitor's is language.content_code()."""
     lang = request.args.get('lang', DEFAULT_LANG)
     return lang if lang in LANGS else DEFAULT_LANG
 
@@ -39,7 +41,7 @@ def _render(page, text, lang, preview=None):
 @content_bp.route('/')
 def home():
     """The home page when it is published; until then Discover, as before."""
-    page, lang = find_page(HOME), _lang()
+    page, lang = find_page(HOME), language.content_code()
     text = page and live_text(page, lang)
     if not text:
         return render_template('landing.html')
@@ -48,7 +50,7 @@ def home():
 
 @content_bp.route('/guides/<slug>')
 def page(slug):
-    found, lang = find_page(slug), _lang()
+    found, lang = find_page(slug), language.content_code()
     text = found and found.kind != 'home' and live_text(found, lang)
     if not text:
         abort(404)

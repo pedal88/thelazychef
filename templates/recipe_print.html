@@ -2,7 +2,7 @@
 {# The river delta on one A4 sheet (routes/recipes_routes.py, recipe_print). Stands alone, without the site around it,
    so the browser prints exactly the sheet. static/js/delta.js scales the drawing to the page and opens the print dialog. #}
 {% from "components/delta.html" import delta with context %}
-<html lang="en"{% if SITE_LOOK %} data-look="{{ SITE_LOOK }}"{% endif %}>
+<html lang="{{ site_lang() }}"{% if SITE_LOOK %} data-look="{{ SITE_LOOK }}"{% endif %}>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">

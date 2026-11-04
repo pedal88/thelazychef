@@ -1,0 +1,16 @@
+# Norwegian (bokmål). English is the source: what is not here shows in English. docs/README_TOP_COMMANDS.md
+msgid ""
+msgstr ""
+"Project-Id-Version: The Lazy Chef\n"
+"POT-Creation-Date: 2026-11-04 11:47+0100\n"
+"PO-Revision-Date: 2026-11-04 11:47+0100\n"
+"Language: nb\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "Language"
+msgstr "Språk"
+

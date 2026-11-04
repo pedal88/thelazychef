@@ -28,6 +28,18 @@ GOOGLE_API_KEY=dummy-for-tests python -m pytest tests/
 flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 ```
 
+## Translations
+
+The site's words are English in the code, marked with `_()`, and Norwegian in `translations/nb/LC_MESSAGES/messages.po`;
+what has no translation shows in English. Choosing the language: `services/language.py`. `?lang=no` on any page shows
+Norwegian and stays until `?lang=en`. The `.mo` files are not in git: the Dockerfile and the tests compile them.
+
+```bash
+pybabel extract -F babel.cfg -k lazy_gettext --no-location -o translations/messages.pot routes services utils templates  # after marking words
+pybabel update -i translations/messages.pot -d translations --no-fuzzy-matching  # then write the Norwegian in the .po
+pybabel compile -d translations  # needed to see them in a local run; tests do it themselves
+```
+
 ## Ship a change
 ```bash
 git checkout -b my-change            # or a worktree

@@ -74,4 +74,12 @@ content is made: `docs/CONTENT.md`.
 making recipes), `recipe_v2_generating.html` (the wait while one is made: a metro line, `static/css/making.css`, estimated and quick at first; the status says when round 1 is done), `recipe_v2_batch_status.html` (a batch: a line per recipe through its recipe, steps and image, real states only, followed until the images are done), `admin/` (management pages, still mostly plain Tailwind), `admin/funnel_tiktok.html` (TikTok's posts for the phone), `recipe_print.html`, `errors/` (not found, and an error on our side), `social/slide.html` (one
 slide of a TikTok or Instagram post, `static/css/social.css`; `docs/SOCIAL.md`).
 
+## Language
+
+Words a visitor reads are English in the template, marked `{{ _('Save') }}`, with values as `{{ _('%(n)s steps', n=n) }}`:
+`tests/test_language.py` fails when a marked word has no Norwegian in `translations/` (how: `docs/README_TOP_COMMANDS.md`).
+`<html lang>` is `site_lang()`. Pages in `services/language.ENGLISH_ONLY`, the slides and admin among them, stay English,
+but they share parts with pages that do not: a part used on a slide stays English there by itself.
+`components/lang_switch.html` is the switch.
+
 Check a visual change in the browser on desktop and at phone width (375 px, no sideways scroll) before calling it done.
