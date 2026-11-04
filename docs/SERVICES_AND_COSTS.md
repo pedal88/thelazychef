@@ -10,7 +10,7 @@ All model names live in `services/ai_models.py`; change a model there, never at 
 
 | What | Model | Where | Used for |
 |---|---|---|---|
-| Claude (Anthropic API) | `claude-opus-5-5`, effort `low` (`RECIPE_V2_MODEL`, `RECIPE_V2_EFFORT`) | `services/recipe_v2/claude.py` (`call`, streamed, structured output, cached system prompt) | Recipe text (round 1) and structure (round 2) in `generate.py`, chef versions, the dish's appearance (`appearance.py`), the vision check of every generated image (`images.py`), the pantry job (`pantry_fill.py`), and scripts (`ingredient_nutrition`, `pantry_review`, `foundation_sample`, `chef_trial`, `generate_v2`) |
+| Claude (Anthropic API) | `claude-opus-5-5`, effort `low` (`RECIPE_V2_MODEL`, `RECIPE_V2_EFFORT`) | `services/recipe_v2/claude.py` (`call`, streamed, structured output, cached system prompt) | Recipe text (round 1) and structure (round 2) in `generate.py`, chef versions, the dish's appearance (`appearance.py`), the vision check of every generated image (`images.py`), the pantry job (`pantry_fill.py`), and scripts (`translate` on Sonnet, `ingredient_nutrition`, `pantry_review`, `foundation_sample`, `chef_trial`, `generate_v2`) |
 | Gemini text (Google GenAI, API key) | `GEMINI_TEXT`, `GEMINI_TEXT_FAST` | `ai_engine.py`, `services/ingredient_evaluation_service.py`, `services/recipe_v2/sources.py` | Ingredient analysis on the New ingredient page, ingredient QA scores, and watching a recipe video (file upload) |
 | Gemini image | `GEMINI_IMAGE` (`gemini-2.5-flash-image`) | `services/image_generation.py` (every image path goes through it) | Dish and component images (`services/recipe_v2/images.py`), ingredient symbols (`ingredient_symbols.py`), equipment symbols, category and cuisine symbols for the galaxies |
 | Vertex AI | text embeddings | `scripts/generate_ingredient_embeddings.py` only | pgvector embeddings on `ingredient.embedding`; not part of the running app |
@@ -107,6 +107,7 @@ constants in the code and measured runs:
 | Pantry job | about $0.01–0.05 per recipe with unlinked lines, an estimate since it also reads the recipe. More recipes reach it now that lines link by name only, fewer as its aliases add up | `pantry_fill.fill` returns `cost_usd` |
 | The pantry's names in round 1 (`idea`, `version`) | about $0.03 for the first recipe, a tenth of that within the cache's 5 minutes; an estimate | `claude.call` usage |
 | A video saved to the inbox | under $0.01, an estimate that has not been measured (Sonnet, one short call; nothing when the caption cannot be read). Many at once: at most 1000, about $10; the page shows it before saving | `services/recipe_v2/inbox.py`, `VIDEO_INBOX_MODEL` |
+| One recipe in Norwegian | about $0.01–0.05, an estimate that has not been measured (Sonnet); only from `scripts/translate.py`, which prints the real cost | `TRANSLATE_MODEL`, `services/recipe_v2/translate.py` |
 | A symbol (ingredient, category, cuisine) | about $0.04 | `scripts/category_symbols.py`, `fill_pantry --symbols` |
 | Batch page estimate | text + images per line, shown before "Make" | `routes/recipe_v2_routes.py` `batch_new` |
 
