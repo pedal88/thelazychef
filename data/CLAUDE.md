@@ -10,6 +10,7 @@ every migration move ending in the category catalog).
 |---|---|
 | `states.json` | The state catalog: what is done to an ingredient before it goes in (chopped, grated…), with grades, synonyms, the step methods that leave a line in that state, and the drawing signs. Read by `services/recipe_v2/states.py`, the structuring prompt and the validator |
 | `methods.json`, `equipment.json`, `units.json` | Step methods (with `heat`), the equipment bank (role, `exclusive`, `capacity`: the air fryer has 2), units with grams/ml |
+| `glossary_nb.json` | English to Norwegian for translating recipes: food and cooking words (`services/recipe_v2/translate.py`) |
 | `us_volume.json` | What US recipes measure by volume although the recipe weighs it (flour, sugar, butter, spices), with grams per ml: rules on the pantry name or sub-category (`services/measures.density`) |
 | `categories.json` | The pantry's main and sub categories, the only allowed values (New ingredient and the pantry job) |
 | `main_protein.json` | The protein labels the recipe filter offers (they must cover what `derive.main_protein` writes) and `symbol_from`, the pantry item whose symbol stands for each label in the galaxy |
@@ -33,7 +34,7 @@ only seeds a fresh database. Rules such as the Minimalist's limits are changed i
 
 - `recipe_v2/`: the generation prompts (Jinja): `text` (round 1), `structure` (round 2, with the catalogs, the
   pantry and two example recipes), `idea`, `version`, `video_text`, `normalize`, `appearance`, `component_image`,
-  `image_check`, `pantry_fill`, `choose_pantry` (round 1 of a recipe the model writes itself), and `idea_helper.txt` (the prompt users copy to their own AI).
+  `image_check`, `pantry_fill`, `translate`, `choose_pantry` (round 1 of a recipe the model writes itself), and `idea_helper.txt` (the prompt users copy to their own AI).
 - `lab/`: prompt lab tasks (`ingredient_image`, `dish_image`, `equipment_image`), built from layers; the `[final]`
   table in each `task.toml` is what the app uses. Try changes with `python -m promptlab` first (`docs/PROMPT_LAB.md`).
 - The other folders (`factory`, `ingredient_*`, `pantry`, `resource_*`, `social`) are prompts for the admin tools.

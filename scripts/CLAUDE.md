@@ -15,6 +15,7 @@ and a printed summary that can be pasted back.
 |---|---|
 | `review_recipes` | Read-only report of saved v2 recipes (`--ids`, `--search`): lines and pantry, steps, time, carbs, rules, notes |
 | `fill_pantry` | Pantry job for recipes made before it ran, and recalculation (`--ids 1-400 --apply`); `--symbols`, `--looks "name=…"` for the symbols of pantry items it added |
+| `translate` | Recipes and pantry names into Norwegian with Claude (`--ids`, `--approved --limit`, `--pantry`, `--remove`; nothing called without `--apply`) |
 | `pantry_links` | Report of aliases the pantry job made and lines linked to an item their name does not match; `--remove "name,name" --apply` takes aliases away and unlinks them in drafts |
 | `category_symbols` | The galaxies' symbols: main ingredient categories, or `--kind cuisine`; `--only`, `--all` |
 | `ingredient_symbols` | Ingredient symbols for the whole pantry: make, review, roll out; also `export` (the pantry as CSV, read only) |
