@@ -81,6 +81,7 @@ To only look at recipes or the pantry, use the review API instead (below). The s
 |---|---|---|
 | `scripts.review_recipes --ids … / --search …` | no (read-only transaction) | A report per recipe: lines and pantry match, steps, time, carbs, the chef's rules and all notes. To `~/promptlab-runs/recipe-review/report.md` |
 | `scripts.fill_pantry --ids 1-400` | with `--apply` | Pantry job for recipes made before it existed, and a recalculation of every v2 recipe in the range (needed after changes to nutrition, derive or the chefs' rules). Dry run by default |
+| `scripts.translate --ids …` | with `--apply` | A recipe's words and its pantry items' names in Norwegian (Claude, the cost is printed). Without `--apply` only a list and an estimate; `--remove` takes a translation away |
 | `scripts.pantry_links` | no; `--remove … --apply` writes | Aliases the pantry job made and lines linked to an item their name does not match. No AI |
 | `scripts.fill_pantry --symbols` / `--looks "name=…"` | yes (bucket + DB) | Symbols of pantry items added by the pantry job; set how one item looks and redraw it |
 | `scripts.category_symbols [--kind cuisine] [--only …] [--all]` | yes | The galaxies' category and cuisine symbols |
