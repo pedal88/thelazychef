@@ -8,6 +8,18 @@ nothing. Admin only.
 Copy the link in TikTok or Instagram, open **Paste a link** in the inbox (`/admin/inbox/add`), paste it and save. This is
 the way that is known to work.
 
+## Many links at once
+
+On the same page, paste a list or any text with links in it, or choose a file such as TikTok's data download. Links are read
+out of whatever the text is, so nothing depends on the file's format, which has not been checked against a real download.
+**Check the links** says how many are new, how many are known (in the inbox, discarded, made, or there twice) and how many
+are no video, with the most the look-ups cost. Nothing is saved before **Save**. At most 1000 new videos at a time: a whole
+download also lists every video watched, so then choose only the file with the favourites.
+
+Each is looked up in the queue, one every 5 seconds (`tasks.INBOX_SPACING`), so recipes are not held up and TikTok sees few
+requests. One that fails stays usable and says why, and the rest go on. Those the caption says are no recipe are kept apart
+in the inbox, under their own link.
+
 ## The iPhone shortcut
 
 **It does not work yet.** Tried on 04.11.2026, with TikTok and Chrome: the address it builds had a space after `url=`,

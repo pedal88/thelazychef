@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{# What many pasted links or a file hold (routes/video_inbox_routes.py check). Nothing is saved before the button. #}
+{% block title %}Check the links - The Lazy Chef{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/recipe_v2.css') }}">
+<style>
+  .inbox-counts { list-style: none; margin: var(--space-4) 0; padding: 0; }
+  .inbox-counts li { padding: var(--space-2) 0; border-top: 1px solid var(--color-line); }
+  .inbox-counts b { font-variant-numeric: tabular-nums; }
+</style>
+{% endblock %}
+{% block content %}
+<article class="rv2 batch">
+  <p class="eyebrow">Recipes · admin</p>
+  <h1>Check the links</h1>
+  <ul class="inbox-counts">
+    <li><b>{{ new|length }} new</b> videos</li>
+    <li><b>{{ known }}</b> already known: in the inbox, discarded, made, or there twice</li>
+    <li><b>{{ other }}</b> other links, which are no videos and are left out</li>
+  </ul>
+  {% if new|length > limit %}
+  <p class="hint">That is too many to save at once: at most {{ limit }}, and the rest are left out. A whole download also lists every video you have watched. Better to <a href="{{ url_for('video_inbox.add_page') }}">choose only the file with your favourites</a>.</p>
+  {% endif %}
+  {% if links %}
+  <form method="post" action="{{ url_for('video_inbox.add_many') }}">
+    <input type="hidden" name="links" value="{{ links|join(' ') }}">
+    <button type="submit" class="go">Save {{ links|length }} {{ 'video' if links|length == 1 else 'videos' }}</button>
+  </form>
+  <p class="hint">Looking them up costs at most {{ '%.2f'|format(cost) }} USD, and takes about {{ minutes or 1 }} {{ 'minute' if minutes <= 1 else 'minutes' }} in the background. No recipe is made.</p>
+  {% else %}
+  <p class="hint">Nothing new to save.</p>
+  {% endif %}
+  <p><a class="back" href="{{ url_for('video_inbox.add_page') }}">Back</a></p>
+</article>
+{% endblock %}

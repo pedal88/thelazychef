@@ -1,8 +1,10 @@
 """The video inbox: links saved from the phone, one row per video, nothing made and nothing written on a GET."""
+import io
 import json
 import os
 import sys
 import unittest
+import zipfile
 from types import SimpleNamespace
 from unittest import mock
 
@@ -42,6 +44,27 @@ class KeyTests(unittest.TestCase):
         self.assertIsNone(inbox.first_link('no link'))
 
 
+class ManyLinksTests(unittest.TestCase):
+    def test_links_are_read_out_of_anything(self):
+        for text, link in (('{"Link":"https:\\/\\/www.tiktokv.com\\/share\\/video\\/7\\/"}', 'https://www.tiktokv.com/share/video/7/'),
+                           ('Date: 2026\nLink: https://www.tiktok.com/@a/video/1.', 'https://www.tiktok.com/@a/video/1'),
+                           ('a,https://vm.tiktok.com/ZN1/,b', 'https://vm.tiktok.com/ZN1/'),
+                           ('<a href="https://youtu.be/x">', 'https://youtu.be/x')):
+            with self.subTest(text=text):
+                self.assertEqual(inbox.links_in(text), [link])
+
+    def test_a_share_link_is_the_same_video(self):
+        self.assertEqual(inbox.video_key('https://www.tiktokv.com/share/video/123/'), inbox.video_key(TIKTOK))
+
+    def test_a_zip_file_gives_the_text_in_it(self):
+        data = io.BytesIO()
+        with zipfile.ZipFile(data, 'w') as z:
+            z.writestr('Activity/Favorite Videos.txt', TIKTOK)
+            z.writestr('picture.png', 'https://www.tiktok.com/@a/video/9')
+        self.assertEqual(inbox.text_of_upload(data.getvalue(), 'export.zip').strip(), TIKTOK)
+        self.assertEqual(inbox.text_of_upload(b'plain \xff text', 'a.txt'), 'plain \ufffd text')
+
+
 class RouteTests(unittest.TestCase):
     def setUp(self):
         app.config['TESTING'] = True
@@ -75,6 +98,110 @@ class RouteTests(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertIn('.submit()', html)
         self.assertEqual(self._count(), 0)
+
+    def _many(self, n):
+        return '\n'.join(f'https://www.tiktok.com/@a/video/{i}' for i in range(1, n + 1))
+
+    def test_checking_says_what_is_there_and_saves_nothing(self):
+        self._save()  # video 123
+        recipe = Recipe(title='x', cuisine='', difficulty='', status='draft', schema_version=2, source_type='video',
+                        source_input='https://www.tiktok.com/@c/video/456')
+        db.session.add(recipe)
+        db.session.commit()
+        text = (f'{TIKTOK} https://www.tiktok.com/@a/video/456 https://www.tiktok.com/@a/video/7?_t=1 https://www.tiktok.com/@a/video/7 '
+                'https://www.tiktok.com/@a https://example.com/x https://vm.tiktok.com/ZNa/ https://[bad')
+        html = self.client.post('/admin/inbox/check', data={'text': text}).get_data(as_text=True)
+        self.assertEqual(self._count(), 1)
+        found = inbox.sort(text)
+        self.assertEqual(found['new'], ['https://www.tiktok.com/@a/video/7', 'https://vm.tiktok.com/ZNa/'])
+        self.assertEqual((found['known'], found['other']), (3, 3))  # in the inbox, made, there twice; a profile, a site, no address
+        self.assertIn('2 new', html)
+        self.assertIn('Save 2 videos', html)
+
+    def test_a_file_can_be_checked(self):
+        html = self.client.post('/admin/inbox/check', data={'file': (io.BytesIO(self._many(3).encode()), 'favorites.txt')},
+                                content_type='multipart/form-data').get_data(as_text=True)
+        self.assertIn('3 new', html)
+        bad = self.client.post('/admin/inbox/check', data={'file': (io.BytesIO(b'nope'), 'a.zip')}, content_type='multipart/form-data')
+        self.assertEqual(bad.status_code, 302)
+
+    def test_a_long_paste_gets_past_the_form_limit(self):
+        text = self._many(2) + ' ' + 'x' * 600_000
+        self.assertIn('2 new', self.client.post('/admin/inbox/check', data={'text': text}).get_data(as_text=True))
+
+    def test_saving_many_saves_all_once_and_queues_one_task(self):
+        links = '\n'.join(inbox.sort(self._many(3))['new'])
+        with mock.patch.object(tasks, 'enqueue_inbox_many', return_value=True) as queue:
+            self.client.post('/admin/inbox/add-many', data={'links': links})
+            queue.assert_called_once()
+            self.assertEqual(len(queue.call_args.args[0]), 3)
+            self.client.post('/admin/inbox/add-many', data={'links': links})  # the page sent twice
+        self.assertEqual(self._count(), 3)
+        self.assertEqual(queue.call_count, 1)
+
+    def test_a_list_over_the_limit_says_so_and_saves_the_limit(self):
+        with mock.patch.object(inbox, 'MAX_LINKS', 2):
+            html = self.client.post('/admin/inbox/check', data={'text': self._many(3)}).get_data(as_text=True)
+            self.assertIn('at most 2', html)
+            with mock.patch.object(tasks, 'enqueue_inbox_many'):
+                self.client.post('/admin/inbox/add-many', data={'links': self._many(3)})
+        self.assertEqual(self._count(), 2)
+
+    def test_a_discarded_video_stays_discarded_in_a_long_list(self):
+        self._save()
+        db.session.execute(db.update(VideoInbox).values(status='discarded'))
+        db.session.commit()
+        self.client.post('/admin/inbox/add-many', data={'links': TIKTOK})
+        self.assertEqual(db.session.execute(db.select(VideoInbox.status)).scalar_one(), 'discarded')
+
+    def test_saved_videos_survive_when_the_queue_fails(self):
+        with mock.patch.object(tasks, 'enqueue_inbox_many', side_effect=RuntimeError('down')):
+            self.assertEqual(self.client.post('/admin/inbox/add-many', data={'links': TIKTOK}).status_code, 302)
+        self.assertEqual(self._count(), 1)
+        self.assertEqual(len(inbox.waiting()), 1)
+        html = self.client.get('/admin/inbox').get_data(as_text=True)
+        self.assertIn('Queue them again', html)
+        with mock.patch.object(tasks, 'enqueue_inbox_many', return_value=True) as queue:
+            self.client.post('/admin/inbox/look-up-waiting')
+        queue.assert_called_once()
+
+    def test_one_look_up_that_cannot_be_queued_does_not_stop_the_rest(self):
+        sent = []
+
+        def queue(path, payload, at=None, session=None):
+            if '/2' in path:
+                raise RuntimeError('down')
+            sent.append((path, at))
+        with mock.patch.object(tasks, '_queue', queue), mock.patch.object(tasks, '_session'):
+            self.assertEqual(tasks.run_inbox_many([1, 2, 3]), 2)
+        self.assertEqual([p for p, _ in sent], ['/internal/tasks/video-inbox/1', '/internal/tasks/video-inbox/3'])
+        self.assertEqual((sent[1][1] - sent[0][1]).total_seconds(), 2 * tasks.INBOX_SPACING)
+
+    def test_the_task_that_queues_needs_the_queue_token(self):
+        self.assertEqual(self.client.post('/internal/tasks/video-inbox-many', json={'ids': [1]}).status_code, 401)
+        with mock.patch.object(tasks, 'verified', return_value=True), mock.patch.object(tasks, 'run_inbox_many', return_value=1) as run:
+            self.assertEqual(self.client.post('/internal/tasks/video-inbox-many', json={'ids': [1]}, headers={'Authorization': 'Bearer x'}).status_code, 200)
+        run.assert_called_once_with([1])
+
+    def test_a_look_up_queued_twice_costs_once(self):
+        row = VideoInbox(url=TIKTOK, video_key='tiktok:123', webpage_url=TIKTOK, dish_name='Soup')
+        db.session.add(row)
+        db.session.commit()
+        with mock.patch.object(inbox, 'look_up') as look_up:
+            tasks.run_inbox(row.id)
+        look_up.assert_not_called()
+
+    def test_what_is_no_recipe_is_kept_apart(self):
+        db.session.add_all([VideoInbox(url=TIKTOK, video_key='a', dish_name='Soup', webpage_url=TIKTOK, suggestions={'is_recipe': True}),
+                            VideoInbox(url=TIKTOK, video_key='b', dish_name='A dance', webpage_url=TIKTOK, suggestions={'is_recipe': False})])
+        db.session.commit()
+        html = self.client.get('/admin/inbox').get_data(as_text=True)
+        self.assertIn('Soup', html)
+        self.assertNotIn('A dance', html)
+        self.assertIn('1 that does not look like a recipe', html)
+        html = self.client.get('/admin/inbox?show=not-recipes').get_data(as_text=True)
+        self.assertIn('A dance', html)
+        self.assertNotIn('Soup', html)
 
     def test_a_link_can_be_pasted_when_the_page_gets_none(self):
         html = self.client.get('/admin/inbox/add').get_data(as_text=True)

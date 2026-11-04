@@ -10,6 +10,8 @@
   .inbox-list .about { min-width: 0; flex: 1; }
   .inbox-list .pick { flex: none; width: 22px; height: 22px; margin-top: 2px; }
   .inbox-go { margin-top: var(--space-4); }
+  .inbox-wait { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; margin: var(--space-3) 0 0; }
+  .inbox-wait button { min-height: var(--tap); padding: 0 var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-pill); background: none; color: inherit; font: inherit; font-weight: 600; cursor: pointer; }
   .inbox-list .hint { display: block; }
   .inbox-list .actions { flex: none; display: grid; gap: var(--space-2); }
   .inbox-list form { margin: 0; }
@@ -25,6 +27,15 @@
   <p class="hint">{% if status == 'new' %}Videos saved from the phone. Nothing is made until you choose it.{% else %}Discarded videos.{% endif %}
     {% if status == 'new' and other %}<a href="{{ url_for('video_inbox.inbox', show='discarded') }}">Discarded ({{ other }})</a>{% elif status != 'new' %}<a href="{{ url_for('video_inbox.inbox') }}">Back to the inbox</a>{% endif %}</p>
   {% if status == 'new' %}<p><a class="back" href="{{ url_for('video_inbox.add_page') }}">Paste a link</a></p>{% endif %}
+  {% if status == 'new' and not_recipes %}
+  <p class="hint">{% if show == 'not-recipes' %}These do not look like recipes, going by their captions. <a href="{{ url_for('video_inbox.inbox') }}">Back to the rest</a>{% else %}<a href="{{ url_for('video_inbox.inbox', show='not-recipes') }}">{{ not_recipes }} {{ 'that does not look like a recipe' if not_recipes == 1 else 'that do not look like recipes' }}</a> {{ 'is' if not_recipes == 1 else 'are' }} kept apart.{% endif %}</p>
+  {% endif %}
+  {% if status == 'new' and waiting %}
+  <form class="inbox-wait" method="post" action="{{ url_for('video_inbox.look_up_waiting') }}">
+    <span class="hint">{{ waiting }} {{ 'waits' if waiting == 1 else 'wait' }} to be looked up, one every few seconds. Stuck?</span>
+    <button type="submit">Queue them again</button>
+  </form>
+  {% endif %}
   {% if rows %}
   <ul class="inbox-list">
     {% for row, made in rows %}
