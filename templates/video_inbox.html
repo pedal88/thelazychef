@@ -27,9 +27,6 @@
   <p class="hint">{% if status == 'new' %}Videos saved from the phone. Nothing is made until you choose it.{% else %}Discarded videos.{% endif %}
     {% if status == 'new' and other %}<a href="{{ url_for('video_inbox.inbox', show='discarded') }}">Discarded ({{ other }})</a>{% elif status != 'new' %}<a href="{{ url_for('video_inbox.inbox') }}">Back to the inbox</a>{% endif %}</p>
   {% if status == 'new' %}<p><a class="back" href="{{ url_for('video_inbox.add_page') }}">Paste a link</a></p>{% endif %}
-  {% if status == 'new' and not_recipes %}
-  <p class="hint">{% if show == 'not-recipes' %}These do not look like recipes, going by their captions. <a href="{{ url_for('video_inbox.inbox') }}">Back to the rest</a>{% else %}<a href="{{ url_for('video_inbox.inbox', show='not-recipes') }}">{{ not_recipes }} {{ 'that does not look like a recipe' if not_recipes == 1 else 'that do not look like recipes' }}</a> {{ 'is' if not_recipes == 1 else 'are' }} kept apart.{% endif %}</p>
-  {% endif %}
   {% if status == 'new' and waiting %}
   <form class="inbox-wait" method="post" action="{{ url_for('video_inbox.look_up_waiting') }}">
     <span class="hint">{{ waiting }} {{ 'waits' if waiting == 1 else 'wait' }} to be looked up, one every few seconds. Stuck?</span>
@@ -46,7 +43,6 @@
         <span class="hint">{% if row.uploader %}{{ row.uploader }} · {% endif %}{% if row.duration_s %}{{ row.duration_s }} s · {% endif %}Saved {{ row.created_at.strftime('%d.%m.%Y') }}{% if made %} · <a href="{{ url_for('recipe_detail', recipe_id=made) }}">Already made: recipe {{ made }}</a>{% endif %}</span>
         {% set s = row.suggestions or {} %}
         {% if s %}<span class="hint">{{ ([s.cuisine, s.main_protein] + (s.meal_types or []))|select|join(' · ') }}</span>{% endif %}
-        {% if s and s.is_recipe == false %}<span class="hint">The caption does not look like a recipe.</span>{% endif %}
         {% set like = (row.similar or [])|select('in', titles)|list %}
         {% if like %}<span class="hint">Looks like: {% for i in like %}<a href="{{ url_for('recipe_detail', recipe_id=i) }}">{{ titles[i] }}</a>{{ ', ' if not loop.last }}{% endfor %}</span>{% endif %}
         {% if row.meta_error %}<span class="hint">{{ row.meta_error }}</span>{% endif %}

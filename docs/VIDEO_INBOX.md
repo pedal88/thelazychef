@@ -18,8 +18,8 @@ are no video, with the most the look-ups cost. Nothing is saved before **Save**.
 download also lists every video watched, so then choose only the file with the favourites.
 
 Each is looked up in the queue, one every 5 seconds (`tasks.INBOX_SPACING`), so recipes are not held up and TikTok sees few
-requests. One that fails stays usable and says why, and the rest go on. Those the caption says are no recipe are kept apart
-in the inbox, under their own link.
+requests. One that fails stays usable and says why, and the rest go on. Every video stays in the list: Pål chooses the links,
+so nothing is sorted away by its caption, and one sent by mistake is discarded by hand.
 
 ## The iPhone shortcut
 
