@@ -31,7 +31,7 @@ Log in to thelazychef.app once in Safari on the phone. To save a video: **Share*
 
 Tick videos in the inbox and go on: **Many recipes at once** gets their links, and shows how many and what they cost
 before anything is made. From there a video is made like any other link: it follows the video's ingredients and amounts,
-without a chef's rules, and goes through the same structuring, validator, pantry job and images. An amount the video does
+without a chef's rules, and goes through the same structuring, validator, pantry job and images. The pantry job can swap an ingredient the pantry lacks, or ask Pål about it (`/admin/pantry-questions`); the video's own words stay in the recipe's source text. An amount the video does
 not give is estimated (salt, pepper and garnish become "to taste"), and the admin chip on the recipe lists what was
 estimated. The recipes are drafts until approved. A row stays in the inbox, marked as made.
 

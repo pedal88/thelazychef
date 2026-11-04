@@ -23,11 +23,18 @@ equipment, active and standing minutes, which lines and earlier steps they use).
 4. `refresh`: `derive.apply` (heat source, main protein, clean-up, total time from the planner, derived meal tags),
    `nutrition.apply`, and the chef's hard rules (`persona.check`, noted with rule `persona`).
 
-In production this runs in Cloud Tasks (`tasks.py`), followed by the **pantry job** (`pantry_fill.py`: Claude decides
-alias / new item / skip for every unlinked line, then `generate.recalculate`) and the **image job** (`images.py`:
+In production this runs in Cloud Tasks (`tasks.py`), followed by the **pantry job** (`pantry_fill.py`: for every unlinked line
+Claude decides, in this dish: alias (the same food), substitute (another pantry item, changed in this recipe only), ask
+(a pending item and a question Pål answers on `/admin/pantry-questions`; the recipe cannot be approved until then) or
+skip; then `generate.recalculate`) and the **image job** (`images.py`:
 the dish and its visible parts, each checked by Claude's vision). See `docs/SERVICES_AND_COSTS.md` for the queue.
 `batch.py` reads the Many recipes at once lines.
 `inbox.py` saves video links shared from the phone (table `video_inbox`, `/admin/inbox`, `docs/VIDEO_INBOX.md`); saving makes nothing.
+
+Recipes choose from the pantry first. A recipe the model writes itself (`idea`, `version`) sees the pantry's names in
+round 1 (`choose_pantry.jinja2`), and may go outside it when the dish needs that; one from a source is written as the
+source says, and its lines meet the pantry job. `source_text` keeps what the source said after a swap. Only Pål lets new
+items in. A swap is never an alias: an alias holds for every recipe, and a swap that is fine in one dish ruins another.
 
 `generate.recalculate(recipe)` is what the Recalculate button and `scripts.fill_pantry` do: link unlinked lines again,
 then `refresh`. Run it on saved recipes after changing derive, nutrition or the chefs' rules.
@@ -56,7 +63,8 @@ then `refresh`. Run it on saved recipes after changing derive, nutrition or the 
   never reach Claude, Gemini or Google. Recorded answers are in `data/pilot_v2/`.
 - Saved recipes do not change when code changes: derived fields and nutrition change only on `recalculate`.
 - Notes on `recipe.validation_errors` have a `rule`. `persona` and the image check flag a recipe for review;
-  `pantry` (what the pantry job did) and `estimate` (what the source did not say and the model decided, such as an
+  `ask` flags it too, until Pål answers. `pantry` (what the pantry job did), `substitute` (a swap), `asked` (Pål's answer,
+  which Claude sees the next time) and `estimate` (what the source did not say and the model decided, such as an
   amount a video never gives) are information only and do not flag it (`generate.INFORMATION`). The admin chip shows
   the estimates. `chef_note` is the cook's tip and is public, so what the model decided never goes there.
 - Nutrition counts the grams that end up in the food (`gram_weight` from the model, else units). Cooked rice, pasta

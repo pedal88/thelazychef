@@ -90,6 +90,7 @@ MENU = [
                         ('Video inbox', 'video_inbox.inbox', {}, 'list', 'admin'),
                         ('Images for recipes', 'recipe_v2.batch_images', {}, 'image', 'admin'),
                         ('New ingredient', 'new_ingredient_view', {}, 'carrot', 'admin'),
+                        ('Ingredient questions', 'pantry_questions.questions', {}, 'carrot', 'admin'),
                         None,
                         ('Recipes', 'admin_recipes_management', {}, 'clipboard', 'admin'),
                         ('Notes on recipes', 'notes.overview', {}, 'file-plus', 'admin'),

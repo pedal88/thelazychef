@@ -86,6 +86,18 @@ class GenerateTests(unittest.TestCase):
         self.assertNotIn(self.run_['source_text'][:40], fake.requests[1]['system'])
         self.assertIsNotNone(fake.requests[1]['schema'])
 
+    def test_a_recipe_the_model_writes_itself_chooses_from_the_pantry(self):
+        seen = []
+
+        def call(model, effort, messages, system=None, schema=None):
+            seen.append(system)
+            return message('Pasta'), {'cost_usd': 0.01}
+        generate.write_text('idea', 'Carbonara', call=call)
+        self.assertIn('Choose from it', seen[0])
+        self.assertIn('spaghetti', seen[0])
+        generate.write_text('text', 'Carbonara: egg and pasta', call=call)  # one from a source is kept as it is
+        self.assertIsNone(seen[1])
+
     def test_verb_state_and_metadata_are_asked_for_and_saved(self):
         answer = copy.deepcopy(self.run_['recipe'])
         answer.update(cuisine='Italian', difficulty='Moderate', meal_types=['Dinner', 'Main Dish'],

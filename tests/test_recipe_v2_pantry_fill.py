@@ -21,7 +21,7 @@ for key in ('TASKS_QUEUE', 'TASKS_SERVICE_ACCOUNT', 'APP_BASE_URL'):
     os.environ.pop(key, None)
 
 from app import app  # noqa: E402
-from database.models import Ingredient, IngredientAlias, Recipe, db  # noqa: E402
+from database.models import Ingredient, IngredientAlias, Recipe, User, db  # noqa: E402
 from scripts.fill_pantry import parse_ids  # noqa: E402
 from services.recipe_v2 import pantry_fill, tasks  # noqa: E402
 from services.recipe_v2.store import save_v2  # noqa: E402
@@ -45,8 +45,9 @@ def answer(decisions, seen=None):
     return call
 
 
-def decision(line, action, food_id='', new=None, reason='because'):
-    return {'line': line, 'action': action, 'food_id': food_id, 'new': new, 'reason': reason}
+def decision(line, action, food_id='', new=None, reason='because', name='', factor=1, replacements=None):
+    return {'line': line, 'action': action, 'food_id': food_id, 'new': new, 'reason': reason, 'name': name,
+            'amount_factor': factor, 'replacements': replacements or []}
 
 
 class PantryFillTests(unittest.TestCase):
@@ -73,36 +74,39 @@ class PantryFillTests(unittest.TestCase):
     def lines(self, name):
         return [line for line in self.recipe.lines if line.name == name]
 
-    def test_aliases_new_items_and_skips_are_carried_out_and_noted(self):
+    def test_aliases_questions_and_skips_are_carried_out_and_noted(self):
         seen = []
         decisions = [decision('spaghetti', 'alias', '000322', reason='the same pasta'),
                      decision('eggeplomme', 'alias', 'nope'),  # no such item: left as it is
-                     decision('pecorino romano', 'new', new=PECORINO, reason='sold in Norway'),
+                     decision('pecorino romano', 'ask', new=PECORINO, reason='it is the dish'),
                      decision('vann', 'skip', reason='water'),
                      decision('something not asked', 'alias', '000322')]
         result = pantry_fill.fill(self.recipe, call=answer(decisions, seen))
         db.session.commit()
 
-        # Claude saw the pantry and each unlinked name once (pecorino is on two lines)
+        # Claude saw the pantry, the recipe and each unlinked name once (pecorino is on two lines)
         self.assertIn('000322 spaghetti', seen[0]['system'])
-        self.assertEqual(seen[0]['user'].count('pecorino romano'), 1)
+        asked = seen[0]['user'].split('LINES NOT IN THE PANTRY')
+        self.assertIn('Method', asked[0])
+        self.assertEqual(asked[1].count('pecorino romano'), 1)
         # Alias: the line is linked; the name equals the item's own name, so no alias row is needed
         self.assertEqual(self.lines('spaghetti')[0].ingredient, self.pasta)
-        # New: an active item marked as Claude's, with its nutrition, on both pecorino lines
+        # Ask: nothing joins the pantry. A pending item marked as Claude's, with its nutrition, on both pecorino lines
         cheese = db.session.execute(db.select(Ingredient).where(Ingredient.name == 'pecorino romano')).scalar_one()
-        self.assertEqual((cheese.status, cheese.data_source, cheese.calories_per_100g), ('active', 'claude_auto', 387))
+        self.assertEqual((cheese.status, cheese.data_source, cheese.calories_per_100g), ('pending', 'claude_auto', 387))
         self.assertTrue(cheese.food_id.startswith('auto-'))
         self.assertEqual(cheese.image_notes, 'pale wedge of hard sheep cheese')  # for the symbol prompt
         self.assertEqual({line.ingredient_id for line in self.lines('pecorino romano')}, {cheese.id})
+        self.assertEqual(cheese.aliases, [])
         # Skipped and unknown stay unlinked
         self.assertIsNone(self.lines('vann')[0].ingredient_id)
         self.assertIsNone(self.lines('eggeplomme')[0].ingredient_id)
-        # One note per decision about a line asked about, kept on the recipe as information
+        # One note per decision about a line asked about, kept on the recipe
         self.assertEqual(len(result['notes']), 4)
-        notes = [e['message'] for e in self.recipe.validation_errors if e['rule'] == 'pantry']
-        self.assertEqual(notes, result['notes'])
-        self.assertIn('new pantry item pecorino romano', ' '.join(notes))
+        self.assertEqual([e['message'] for e in self.recipe.validation_errors], result['notes'])
+        self.assertEqual([e['rule'] for e in self.recipe.validation_errors], ['pantry', 'pantry', 'ask', 'pantry'])
         self.assertEqual(result['cost_usd'], 0.02)
+        self.assertTrue(self.recipe.is_flagged_for_review)
 
     def test_an_alias_name_links_the_next_recipe_without_claude(self):
         pantry_fill.fill(self.recipe, call=answer([decision('sort pepper', 'alias', '000225')]))
@@ -115,10 +119,187 @@ class PantryFillTests(unittest.TestCase):
         recalculate(other)  # the matcher finds the alias
         self.assertEqual([line.ingredient_id for line in other.lines if line.name == 'sort pepper'], [self.egg.id])
 
-    def test_a_new_item_with_a_known_name_reuses_it(self):
-        pantry_fill.fill(self.recipe, call=answer([decision('egg', 'new', new=dict(PECORINO, name='Eggs'))]))
+    def test_a_question_about_an_item_the_pantry_has_is_no_question(self):
+        pantry_fill.fill(self.recipe, call=answer([decision('egg', 'ask', new=dict(PECORINO, name='Eggs'))]))
         self.assertEqual(self.lines('egg')[0].ingredient, self.egg)
         self.assertEqual(db.session.execute(db.select(db.func.count(Ingredient.id))).scalar(), 2)
+        self.assertNotIn('ask', [e['rule'] for e in self.recipe.validation_errors])
+
+    def test_a_substitute_changes_this_recipe_only(self):
+        step = self.lines('pecorino romano')[0].step
+        step.short, step.done_when = 'Mix in the pecorino romano', 'The pecorino is melted'
+        self.recipe.chef_note = 'Pecorino is salty.'
+        revision, amount, grams = self.recipe.revision, self.lines('pecorino romano')[0].amount, self.lines('pecorino romano')[0].gram_weight
+        text = step.text
+        pantry_fill.fill(self.recipe, call=answer([decision(
+            'pecorino romano', 'substitute', '000322', name='parmesan', factor=0.5, reason='close enough',
+            replacements=[{'find': 'pecorino', 'replace': 'parmesan'}])]))
+        db.session.commit()
+
+        lines = self.lines('parmesan')
+        self.assertEqual(len(lines), 2)  # both lines, and none under the old name
+        self.assertEqual(self.lines('pecorino romano'), [])
+        self.assertEqual({line.ingredient_id for line in lines}, {self.pasta.id})
+        self.assertEqual(lines[0].amount, round(amount * 0.5, 2))
+        self.assertEqual(lines[0].gram_weight, round(grams * 0.5, 1))
+        self.assertEqual(step.short, 'Mix in the parmesan')
+        self.assertEqual(step.done_when, 'The parmesan is melted')
+        self.assertEqual(self.recipe.chef_note, 'Parmesan is salty.')  # a capital stays a capital
+        self.assertIn('{i', text)
+        self.assertEqual(self.recipe.revision, revision + 1)
+        # It holds here only: no alias, so another recipe gets its own decision
+        self.assertEqual(db.session.execute(db.select(IngredientAlias.name)).scalars().all(), [])
+        note = next(e for e in self.recipe.validation_errors if e['rule'] == 'substitute')
+        self.assertIn('"pecorino romano" is now parmesan (amount x 0.5)', note['message'])
+
+    def test_a_swap_does_not_touch_a_word_that_only_contains_the_name(self):
+        step = self.lines('vann')[0].step
+        step.short = 'Vannbad med vann'
+        pantry_fill.fill(self.recipe, call=answer([decision('vann', 'substitute', '000322', name='melk')]))
+        self.assertEqual(step.short, 'Vannbad med melk')
+
+    def test_a_substitute_needs_an_item_in_the_pantry_and_a_sane_amount(self):
+        pending = Ingredient(food_id='p1', name='something pending', status='pending')
+        db.session.add(pending)
+        amount = self.lines('spaghetti')[0].amount
+        pantry_fill.fill(self.recipe, call=answer([decision('vann', 'substitute', 'p1'), decision('egg', 'substitute', 'nope'),
+                                                   decision('spaghetti', 'substitute', '000322', factor=50)]))
+        self.assertIsNone(self.lines('vann')[0].ingredient_id)
+        self.assertIsNone(self.lines('egg')[0].ingredient_id)
+        self.assertEqual(self.pasta.food_id, self.lines('spaghetti')[0].ingredient.food_id)
+        self.assertEqual(self.lines('spaghetti')[0].amount, amount)
+
+    def test_a_published_recipe_is_never_changed_or_held_back(self):
+        self.recipe.status = 'approved'
+        before = sorted(line.name for line in self.recipe.lines)
+        pantry_fill.fill(self.recipe, call=answer([decision('vann', 'substitute', '000322', name='melk'),
+                                                   decision('pecorino romano', 'ask', new=PECORINO),
+                                                   decision('spaghetti', 'alias', '000322')]))
+        self.assertEqual(sorted(line.name for line in self.recipe.lines), before)
+        self.assertIsNone(pantry_fill.open_question(self.recipe))
+        self.assertEqual(self.lines('spaghetti')[0].ingredient, self.pasta)
+
+    def _ask_pecorino(self, swap_to='000322'):
+        pantry_fill.fill(self.recipe, call=answer([decision(
+            'pecorino romano', 'ask', swap_to, new=PECORINO, reason='it is the dish', name='parmesan', factor=2,
+            replacements=[{'find': 'pecorino', 'replace': 'parmesan'}])]))
+        db.session.commit()
+        return db.session.execute(db.select(Ingredient).where(Ingredient.name == 'pecorino romano')).scalar_one()
+
+    def test_the_questions_show_what_waits(self):
+        item = self._ask_pecorino()
+        q = pantry_fill.questions()
+        self.assertEqual([x['item'] for x in q], [item])
+        self.assertTrue(q[0]['can_swap'])
+        row = q[0]['rows'][0]
+        self.assertEqual((row['recipe'], row['reason'], row['swap_item']), (self.recipe, 'it is the dish', self.pasta))
+        self.assertEqual(pantry_fill.open_question(self.recipe), item)
+
+    def test_a_second_recipe_with_the_same_item_is_the_same_question(self):
+        item = self._ask_pecorino()
+        other = Recipe(title='Again', cuisine='Italian', difficulty='Simplistic', status='draft')
+        db.session.add(other)
+        save_v2(other, CARBONARA)
+        pantry_fill.fill(other, call=answer([decision('pecorino romano', 'ask', new=PECORINO)]))
+        db.session.commit()
+        q = pantry_fill.questions()
+        self.assertEqual([x['item'] for x in q], [item])
+        self.assertEqual(len(q[0]['rows']), 2)
+        self.assertFalse(q[0]['can_swap'])  # the second has no swap of its own
+
+    def test_adding_the_item_answers_and_lets_it_in(self):
+        item = self._ask_pecorino()
+        self.assertEqual(pantry_fill.without_symbol(), [])  # no symbol is paid for before the answer
+        pantry_fill.add_item(item)
+        db.session.commit()
+        self.assertEqual((item.status, item.tier), ('active', 'long_tail'))
+        self.assertEqual(pantry_fill.questions(), [])
+        self.assertIsNone(pantry_fill.open_question(self.recipe))
+        rules = [e['rule'] for e in self.recipe.validation_errors]
+        self.assertNotIn('ask', rules)
+        self.assertIn('asked', rules)
+        self.assertEqual(pantry_fill.without_symbol(), [item])
+
+    def test_claudes_swap_answers_and_the_item_leaves(self):
+        item = self._ask_pecorino()
+        amount = self.lines('pecorino romano')[0].amount
+        self.assertEqual(pantry_fill.swap(item), [self.recipe])
+        db.session.commit()
+        self.assertEqual(item.status, 'inactive')
+        self.assertEqual(self.lines('parmesan')[0].ingredient, self.pasta)
+        self.assertEqual(self.lines('parmesan')[0].amount, round(amount * 2, 2))
+        self.assertIsNone(pantry_fill.open_question(self.recipe))
+
+    def test_pals_own_item_answers_too_and_keeps_the_amount(self):
+        item = self._ask_pecorino(swap_to='')
+        amount = self.lines('pecorino romano')[0].amount
+        self.assertEqual(pantry_fill.swap(item), [])  # no swap to take: the question stays
+        self.assertEqual(item.status, 'pending')
+        pantry_fill.swap(item, self.egg)
+        self.assertEqual(self.lines('eggs')[0].amount, amount)
+        self.assertEqual(item.status, 'inactive')
+
+    def test_claude_sees_the_answers_the_next_time(self):
+        item = self._ask_pecorino()
+        pantry_fill.swap(item)
+        db.session.commit()
+        seen = []
+        pantry_fill.fill(self.recipe, call=answer([], seen))
+        self.assertIn('WHAT THE OWNER ANSWERED BEFORE', seen[0]['system'])
+        self.assertIn(f'"pecorino romano" in {self.recipe.title}: not added, swapped to spaghetti', seen[0]['system'])
+
+    def test_an_item_said_no_to_can_be_asked_about_again(self):
+        item = self._ask_pecorino()
+        pantry_fill.swap(item)
+        other = Recipe(title='Again', cuisine='Italian', difficulty='Simplistic', status='draft')
+        db.session.add(other)
+        save_v2(other, CARBONARA)
+        pantry_fill.fill(other, call=answer([decision('pecorino romano', 'ask', new=PECORINO)]))
+        self.assertEqual(item.status, 'pending')
+        self.assertEqual(db.session.execute(db.select(db.func.count(Ingredient.id)).where(Ingredient.name == 'pecorino romano')).scalar(), 1)
+
+    def test_the_prompt_is_not_about_shops_in_norway(self):
+        seen = []
+        pantry_fill.fill(self.recipe, call=answer([], seen))
+        self.assertNotIn('Norwegian shopper', seen[0]['system'])
+        self.assertNotIn('WHAT THE OWNER ANSWERED BEFORE', seen[0]['system'])
+
+    def test_a_recipe_with_a_question_cannot_be_approved(self):
+        item = self._ask_pecorino()
+        admin = User(email='admin@example.com', is_admin=True)
+        admin.set_password('test-password')
+        db.session.add(admin)
+        db.session.commit()
+        client = app.test_client()
+        client.post('/login', data={'email': admin.email, 'password': 'test-password'})
+        url = f'/admin/recipes/{self.recipe.id}/status'
+        answer_ = client.post(url, json={'status': 'approved'})
+        self.assertEqual(answer_.status_code, 409)
+        self.assertIn('pecorino romano', answer_.get_json()['error'])
+        self.assertEqual(db.session.get(Recipe, self.recipe.id).status, 'draft')
+
+        page = client.get('/admin/pantry-questions')
+        self.assertEqual(page.status_code, 200)
+        self.assertIn(b'pecorino romano', page.data)
+        with mock.patch.object(pantry_fill, 'make_symbols', return_value=['pecorino romano']) as symbols:
+            self.assertEqual(client.post(f'/admin/pantry-questions/{item.id}/add').status_code, 302)
+        symbols.assert_called_once()
+        self.assertEqual(client.post(f'/admin/pantry-questions/{item.id}/add').status_code, 409)  # answered
+        self.assertEqual(client.post(url, json={'status': 'approved'}).status_code, 200)
+        self.assertIn(b'added pecorino romano', client.get('/admin/pantry-questions').data)
+
+    def test_the_swap_route_refuses_what_the_pantry_lacks(self):
+        item = self._ask_pecorino()
+        admin = User(email='admin@example.com', is_admin=True)
+        admin.set_password('test-password')
+        db.session.add(admin)
+        db.session.commit()
+        client = app.test_client()
+        client.post('/login', data={'email': admin.email, 'password': 'test-password'})
+        client.post(f'/admin/pantry-questions/{item.id}/swap', data={'other': 'nothing like it'})
+        self.assertEqual(db.session.get(Ingredient, item.id).status, 'pending')
+        client.post(f'/admin/pantry-questions/{item.id}/swap', data={'other': 'Eggs'})
+        self.assertEqual(db.session.get(Ingredient, item.id).status, 'inactive')
 
     def test_pantry_notes_do_not_flag_a_recipe_that_is_otherwise_fine(self):
         names = {line.name for line in self.recipe.lines}
@@ -173,8 +354,10 @@ class PantryFillTests(unittest.TestCase):
         self.assertEqual(run.call_args.kwargs['images'], False)
 
     def test_new_items_get_their_symbol_image_and_a_failure_leaves_one_without(self):
-        pantry_fill.fill(self.recipe, call=answer([decision('pecorino romano', 'new', new=PECORINO),
-                                                   decision('vann', 'new', new=dict(PECORINO, name='water'))]))
+        pantry_fill.fill(self.recipe, call=answer([decision('pecorino romano', 'ask', new=PECORINO),
+                                                   decision('vann', 'ask', new=dict(PECORINO, name='water'))]))
+        for item in db.session.execute(db.select(Ingredient).where(Ingredient.status == 'pending')).scalars():
+            pantry_fill.add_item(item)
         db.session.commit()
         items = pantry_fill.without_symbol(self.recipe)
         self.assertEqual([i.name for i in items], ['pecorino romano', 'water'])

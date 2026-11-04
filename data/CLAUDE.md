@@ -33,7 +33,7 @@ only seeds a fresh database. Rules such as the Minimalist's limits are changed i
 
 - `recipe_v2/`: the generation prompts (Jinja): `text` (round 1), `structure` (round 2, with the catalogs, the
   pantry and two example recipes), `idea`, `version`, `video_text`, `normalize`, `appearance`, `component_image`,
-  `image_check`, `pantry_fill`, and `idea_helper.txt` (the prompt users copy to their own AI).
+  `image_check`, `pantry_fill`, `choose_pantry` (round 1 of a recipe the model writes itself), and `idea_helper.txt` (the prompt users copy to their own AI).
 - `lab/`: prompt lab tasks (`ingredient_image`, `dish_image`, `equipment_image`), built from layers; the `[final]`
   table in each `task.toml` is what the app uses. Try changes with `python -m promptlab` first (`docs/PROMPT_LAB.md`).
 - The other folders (`factory`, `ingredient_*`, `pantry`, `resource_*`, `social`) are prompts for the admin tools.

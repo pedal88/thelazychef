@@ -38,8 +38,9 @@ New Recipe and Many recipes at once save a placeholder recipe (status `generatin
 calls the app back with an OIDC token from the `TASKS_SERVICE_ACCOUNT`, checked by `tasks.verified`:
 
 1. `/internal/tasks/recipe-v2/<id>`: both Claude rounds, save, derive, nutrition (`tasks.run` → `generate.create_recipe`).
-2. `/internal/tasks/recipe-v2-pantry/<id>`: only when some lines matched nothing in the pantry. Claude decides alias / new
-   item / skip per line, then the recipe is recalculated and new items get their symbol (`tasks.run_pantry` → `pantry_fill`).
+2. `/internal/tasks/recipe-v2-pantry/<id>`: only when some lines matched nothing in the pantry. Claude decides alias /
+   substitute / ask / skip per line, then the recipe is recalculated (`tasks.run_pantry` → `pantry_fill`). Nothing joins the
+   pantry here: an item Pål adds on `/admin/pantry-questions` gets its symbol then, about $0.04.
 3. `/internal/tasks/recipe-v2-images/<id>`: the dish and component images with their vision check (`tasks.run_images`).
    Queued after 2 (or straight after 1), unless the form said "Skip the images".
 
@@ -101,7 +102,8 @@ constants in the code and measured runs:
 | Claude prices | Opus $4 / $20, Sonnet $2 / $10 per million tokens in / out; cache write ×1.25, cache read ×0.1 | `services/recipe_v2/claude.py` `PRICES`, `usage_of` |
 | One recipe, text and structure | $0.10–0.40 (about $0.15 typical) | `services/recipe_v2/batch.py` `COST_EACH` |
 | One recipe's images (dish + parts, with checks) | $0.15–0.45 | `routes/recipe_v2_routes.py` `IMAGES_COST`; one image ≈ $0.039 (`images.py` `IMAGE_COST`) |
-| Pantry job | about $0.01–0.05 per recipe with unlinked lines | `pantry_fill.fill` returns `cost_usd` |
+| Pantry job | about $0.01–0.05 per recipe with unlinked lines, an estimate since it also reads the recipe | `pantry_fill.fill` returns `cost_usd` |
+| The pantry's names in round 1 (`idea`, `version`) | about $0.03 for the first recipe, a tenth of that within the cache's 5 minutes; an estimate | `claude.call` usage |
 | A video saved to the inbox | under $0.01 (Sonnet, one short call; nothing when the caption cannot be read) | `services/recipe_v2/inbox.py`, `VIDEO_INBOX_MODEL` |
 | A symbol (ingredient, category, cuisine) | about $0.04 | `scripts/category_symbols.py`, `fill_pantry --symbols` |
 | Batch page estimate | text + images per line, shown before "Make" | `routes/recipe_v2_routes.py` `batch_new` |

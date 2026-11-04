@@ -1,7 +1,7 @@
 """Fill the pantry for saved v2 recipes whose lines are not all linked (services/recipe_v2/pantry_fill.py, 27.10.2026).
 
 New recipes get this in the queue after they are made; this is for the ones made before. For each recipe Claude
-decides per unlinked line: alias to a pantry item, a new item, or leave it. Then the recipe is recalculated; a
+decides per unlinked line: alias to a pantry item, a swap, a question to Pål, or leave it; a published recipe only gets aliases. Then the recipe is recalculated; a
 recipe with every line linked is only recalculated (as the Recalculate button), so fixes to the nutrition or the
 chefs' rules reach it too.
 
