@@ -17,6 +17,7 @@ from services.storage_service import get_storage_provider
 from services.measures import SYSTEMS
 from services import view_as
 from services.recipe_v2 import states
+from utils.compress import compress
 from utils.cross_site import refuse_cross_site
 from routes._shared import DIFFICULTY_LABELS, LOOK_FONTS, SITE_LOOK, absolute_url, EQUIPMENT_STYLES, OVERVIEW_LAYOUTS, chosen_overview, IMAGE_STYLES, chosen_equipment_style, dish_images, equipment_image, get_recipe_image_url, get_image_url, icon, notes_text, site_menu, unit_chosen, unit_system
 
@@ -89,6 +90,7 @@ app.config['SESSION_COOKIE_SECURE'] = bool(os.environ.get('K_SERVICE'))
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.before_request(refuse_cross_site)
 app.before_request(view_as.guard)  # an admin viewing the site as someone else saves nothing
+app.after_request(compress)  # first here, so it runs last, on the final body
 app.after_request(view_as.mark_page)
 # Database Configuration (Local vs Cloud SQL)
 configure_database(app)

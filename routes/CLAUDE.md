@@ -56,3 +56,4 @@ post log `/admin/funnel/posts/…`, the TikTok posts for the phone `/admin/funne
 - Drafts and pending ingredients must not leak to visitors (`tests/test_public_visibility.py`):
   check `status == 'approved'` or `viewer_is_admin()`.
 - Errors shown to users go through `utils/ai_errors.friendly_ai_error`; never a raw Google or Anthropic message.
+- Answers are gzipped in `utils/compress.py`, the first `after_request` in `app.py` so that it runs last. A new one that changes the body must be registered after it.
