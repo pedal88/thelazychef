@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 {# An error on our side (routes/error_routes.py): on its own, not on base.html, so it does not need the database. #}
-<html lang="en"{% if SITE_LOOK %} data-look="{{ SITE_LOOK }}"{% endif %}>
+<html lang="{{ site_lang() }}"{% if SITE_LOOK %} data-look="{{ SITE_LOOK }}"{% endif %}>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">

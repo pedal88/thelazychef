@@ -32,6 +32,10 @@ temp_ingredients_for_Mapping
 temp_video/
 data/pantry_*.json
 
+# Compiled in the build (Dockerfile) and by the tests
+*.mo
+translations/messages.pot
+
 # IDEs
 .vscode/
 .idea/

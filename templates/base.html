@@ -1,7 +1,7 @@
 {% import "components/site_menu.html" as site_nav with context -%}
 {% import "components/brand.html" as brand -%}
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-50 antialiased"{% if SITE_LOOK %} data-look="{{ SITE_LOOK }}"{% endif %}>
+<html lang="{{ site_lang() }}" class="h-full bg-slate-50 antialiased"{% if SITE_LOOK %} data-look="{{ SITE_LOOK }}"{% endif %}>
 
 <head>
     <meta charset="UTF-8">

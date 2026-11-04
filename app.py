@@ -8,6 +8,7 @@ print(f"--- CONFIG DEBUG: STORAGE_BACKEND={os.getenv('STORAGE_BACKEND')} ---")
 print(f"--- CONFIG DEBUG: DB_BACKEND={os.getenv('DB_BACKEND', 'local')} ---")
 
 from flask import Flask, request, url_for
+from flask_babel import Babel
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from database.db_connector import configure_database
@@ -15,7 +16,7 @@ from database.db_connector import configure_database
 from database.models import db, Ingredient, Recipe, RecipeMealType, RecipeDiet, User, Chef, UserRecipeInteraction, UserQueue, UserLink, ConceptVisual, VisualStyleGuide
 from services.storage_service import get_storage_provider
 from services.measures import SYSTEMS
-from services import view_as
+from services import language, view_as
 from services.recipe_v2 import states
 from utils.compress import compress
 from utils.cross_site import refuse_cross_site
@@ -92,12 +93,16 @@ app.before_request(refuse_cross_site)
 app.before_request(view_as.guard)  # an admin viewing the site as someone else saves nothing
 app.after_request(compress)  # first here, so it runs last, on the final body
 app.after_request(view_as.mark_page)
+app.after_request(language.remember)
 # Database Configuration (Local vs Cloud SQL)
 configure_database(app)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize Flask-Migrate
 migrate = Migrate(app, db)
+
+# The site's words in the visitor's language; what has no translation stays English (services/language.py)
+Babel(app, locale_selector=language.current)
 
 @app.template_filter('difficulty_label')
 def difficulty_label(level):
@@ -121,6 +126,8 @@ app.add_template_global(absolute_url)
 app.add_template_global(get_image_url)
 app.add_template_global(icon)
 app.add_template_global(site_menu)
+app.add_template_global(language.current, 'site_lang')  # <html lang>
+app.add_template_global(language.switch, 'site_lang_switch')
 app.add_template_global(unit_system)  # the reader's measuring system, for the switch in the menu
 app.add_template_global(unit_chosen)
 app.add_template_global(SYSTEMS, 'UNIT_SYSTEMS')

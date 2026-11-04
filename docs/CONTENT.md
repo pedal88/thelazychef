@@ -31,7 +31,7 @@ to make one. Decided 29.10.2026; the old Learn articles and collections were rem
 ## Addresses
 
 - `/` is the page `home` once it is published; until then Discover, which is also at `/discover`.
-- `/guides/<slug>` is any other page. `?lang=no` asks for Norwegian.
+- `/guides/<slug>` is any other page. The language is the site's (`services/language.py`), so `?lang=no` asks for Norwegian.
 - Admin -> Pages (`/admin/pages`): import a package, preview and publish versions, upload images and interactives.
 
 ## The content package
@@ -150,5 +150,5 @@ have edited a version in Admin -> Pages) rather than from the file in `docs/cont
    and read before publishing.
 5. Commit the files in `docs/content/` in a PR, so the repo keeps what is shown.
 
-Coming next (not built yet): a language switch for visitors and a translation flow, ingredient and equipment links,
+Coming next (not built yet): a translation flow, ingredient and equipment links,
 and "Read more" on recipes.

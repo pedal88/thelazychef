@@ -12,6 +12,7 @@ import time
 from collections import OrderedDict
 from functools import lru_cache
 
+from flask_babel import force_locale
 from markupsafe import Markup, escape
 
 from database.models import Ingredient, Recipe, RecipeLine, RecipeStep, db
@@ -378,8 +379,10 @@ def about(recipe):
 
 def as_text(recipe):
     """The saved recipe as plain text, in the shape round 1 writes: title, servings, ingredients per part and
-    numbered steps in the planned order. Used to make a version of it (services/recipe_v2/generate.py)."""
-    return v2_text(to_v2(recipe), recipe.yield_text, recipe.chef_note)
+    numbered steps in the planned order. Used to make a version of it (services/recipe_v2/generate.py), and it goes to
+    Claude, so it is the base text in English whoever is looking."""
+    with force_locale('en'):
+        return v2_text(to_v2(recipe), recipe.yield_text, recipe.chef_note)
 
 
 def v2_text(v2, yield_text=None, chef_note=None):
