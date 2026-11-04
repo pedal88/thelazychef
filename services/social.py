@@ -18,6 +18,10 @@ phone: a taller picture loses its top and bottom there). The last slide
 gives the short address for the platform (thelazychef.app/ig or /tiktok, with the post's code), so a visit that came
 from the post is counted (services/funnel.py).
 """
+import html
+import re
+import textwrap
+
 from database.models import Ingredient, db
 from services.measures import temp
 from services.recipe_v2 import groups
@@ -85,6 +89,20 @@ COOK_NAME_LINE = 72
 COOK_SYMBOLS_ROW = 4
 COOK_SYMBOLS_HEIGHT = 218
 COOK_SYMBOLS_TOP = 14
+# A step on its own slide (The whole recipe), in its own words, which are never cut: FULL_ROOM is the height from the top
+# margin to just above the foot, and the rest what static/css/social.css .kind-step draws, as lines of about so many
+# characters. full_step_height adds them up.
+FULL_ROOM = {'ig': 1104, 'tt': 1162}
+FULL_EYEBROW = 54
+FULL_FACTS_ONE = 58
+FULL_NAME_CHARS, FULL_NAME_LINE = 26, 76
+FULL_FACTS_TOP, FULL_FACTS_CHARS, FULL_FACTS_LINE = 24, 52, 72
+FULL_TEXT_TOP, FULL_TEXT_CHARS, FULL_TEXT_LINE = 28, 40, 59
+FULL_SYMBOLS_TOP, FULL_SYMBOLS_ROW, FULL_SYMBOLS_HEIGHT, FULL_SYMBOL_NAME_CHARS, FULL_SYMBOL_NAME_LINE = 28, 6, 164, 9, 27
+FULL_DONE_TOP, FULL_DONE_CHARS, FULL_DONE_LINE = 28, 44, 47
+FULL_TILE_MIN, FULL_TILE_MAX, FULL_TILE_GAP, FULL_TILE_CAPTION = 132, 300, 20, 76  # a symbol's width; the room for its name
+SYMBOL_IN_TEXT = re.compile(r'<span class="sym[^>]*>.*?</span>', re.DOTALL)  # view.symbol, as a step's text has it
+SERVES_ROOM = 60  # what "Serves 4" takes from the shopping list's symbols
 # The symbols on a series cover: this many of the things to buy, under the hook, in two rows of six
 COVER_SYMBOLS = 12
 # One Pot Meals count the vessels food is cooked in: not bowls, sieves, machines (derive.VESSELS has them for the
@@ -307,12 +325,79 @@ def airfryer_slide(view, images):
             'img': images.get('airfryer')}
 
 
-def shop_split_slide(view, size):
-    """The shopping list in two: what to buy, with amounts, and what you probably have."""
+def shop_split_slide(view, size, serves=False):
+    """The shopping list in two: what to buy, with amounts, and what you probably have; serves also says how much the
+    amounts make, for a post you can cook from."""
     tiles, _ = _ingredients(view)
     have = _staples(view)
-    return {'kind': 'shop_split', 'title': f'Buy {len(tiles)} things', 'tiles': tiles, 'have': have,
-            'cols': columns(len(tiles), size, room=220 if have else 0)}
+    said = (view.get('yield_text') or f"Serves {view['servings']}") if serves else None
+    return {'kind': 'shop_split', 'title': f'Buy {len(tiles)} things', 'tiles': tiles, 'have': have, 'serves': said,
+            'cols': columns(len(tiles), size, room=(220 if have else 0) + (SERVES_ROOM if serves else 0))}
+
+
+def full_step_slides(view, size):
+    """The whole recipe: a slide per step, in the step list's order and its own words ('html', with the amounts), with
+    what the step list says about it, and the symbols of the lines that go in (kind 'step'), as large as the room under
+    the words lets them (full_step_tile)."""
+    pictured = view.get('pictured') or {}
+    out = []
+    for s in view['steps']:
+        symbols = [{'name': pictured[lid]['name'], 'img': pictured[lid]['img']}
+                   for lid in s.get('uses') or [] if lid in pictured]
+        slide = {'kind': 'step', 'eyebrow': f"Step {s['n']} of {len(view['steps'])}", 'short': s['short'],
+                 'part': s['component'] if len(view['parts']) > 1 else None, 'html': s['html'],
+                 'facts': [fact for fact in (s['duration'], s['equipment']) if fact], 'during': s['while'],
+                 'done_when': s['done_when'], 'symbols': symbols}
+        out.append({**slide, 'tile': full_step_tile(slide, size)})
+    return out
+
+
+def lines_of(text, chars):
+    """The lines a text takes at about chars characters to a line."""
+    return len(textwrap.wrap(text, chars)) or 1
+
+
+def full_step_words(slide):
+    """About how tall a step's slide is without its symbols, in the slide's pixels (static/css/social.css .kind-step). In
+    the step's words: the symbols inside the text's amounts are hidden on the slide, so they do not count."""
+    text = re.sub(r'<[^>]+>', '', SYMBOL_IN_TEXT.sub('', str(slide['html'])))
+    height = FULL_EYEBROW + lines_of(slide['short'], FULL_NAME_CHARS) * FULL_NAME_LINE
+    height += FULL_TEXT_TOP + lines_of(html.unescape(text), FULL_TEXT_CHARS) * FULL_TEXT_LINE
+    if slide['facts'] or slide['during']:
+        chips = ' '.join([*slide['facts'], slide['during']])
+        height += FULL_FACTS_TOP + (lines_of(chips, FULL_FACTS_CHARS) - 1) * FULL_FACTS_LINE + FULL_FACTS_ONE
+    if slide['done_when']:
+        height += FULL_DONE_TOP + lines_of(f"Done when {slide['done_when']}", FULL_DONE_CHARS) * FULL_DONE_LINE
+    return height
+
+
+def full_step_height(slide):
+    """About how tall a step's slide is at the least, with its symbols at their smallest (FULL_SYMBOLS_*): what decides
+    whether it fits, never much less than it comes to in a browser."""
+    height = full_step_words(slide)
+    if slide['symbols']:
+        names = [lines_of(t['name'], FULL_SYMBOL_NAME_CHARS) for t in slide['symbols']]
+        rows = [names[i:i + FULL_SYMBOLS_ROW] for i in range(0, len(names), FULL_SYMBOLS_ROW)]
+        height += FULL_SYMBOLS_TOP + sum(FULL_SYMBOLS_HEIGHT + (max(row) - 1) * FULL_SYMBOL_NAME_LINE for row in rows)
+    return height
+
+
+def full_step_tile(slide, size):
+    """How wide a symbol is on a step's slide, in pixels: the largest, up to FULL_TILE_MAX, whose rows fit the room the
+    words leave; at least FULL_TILE_MIN, which is what full_step_height counts."""
+    n = len(slide['symbols'])
+    room = FULL_ROOM[size] - full_step_words(slide) - FULL_SYMBOLS_TOP
+    best = FULL_TILE_MIN
+    for cols in range(1, min(n, FULL_SYMBOLS_ROW) + 1):
+        width = min((WIDTH - FULL_TILE_GAP * (cols - 1)) // cols, FULL_TILE_MAX)
+        if -(-n // cols) * (width + FULL_TILE_CAPTION) <= room:
+            best = max(best, width)
+    return best
+
+
+def full_steps_fit(view):
+    """Whether every step's slide fits above the foot on both sizes (Instagram's is the shorter)."""
+    return all(full_step_height(slide) <= min(FULL_ROOM.values()) for slide in full_step_slides(view, 'ig'))
 
 
 def columns(n, size, labels=True, room=0):

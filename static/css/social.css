@@ -258,3 +258,20 @@ html, body { margin: 0; background: var(--sl-paper); }
 .size-ig.kind-guess_amounts .tile figcaption b, .size-tt.kind-guess_amounts .tile figcaption b { font-size: 27px; }
 .size-ig .next, .size-tt .next { margin-top: 14px; font-size: 38px; }
 .size-ig.kind-guess_pictures .sym, .size-ig.kind-guess_names .sym, .size-ig.kind-guess_amounts .sym, .size-tt.kind-guess_pictures .sym, .size-tt.kind-guess_names .sym, .size-tt.kind-guess_amounts .sym { width: var(--symbol, 72%); }  /* social.game_symbol */
+/* The whole recipe: a step on its own slide, in the step list's words. The amounts bold in the text and the pictures
+   under it, so the text's small symbols stay out. The symbols fill what the words leave (social.full_step_tile). The sizes are social.FULL_*: change them together */
+.step-name { margin: 0; font: 800 70px/1.08 var(--font-serif); letter-spacing: -.015em; }
+.kind-step .facts { margin-top: 24px; gap: 14px; }
+.kind-step .facts span { padding: 12px 22px; font-size: 30px; line-height: 1.1; }
+.kind-step .facts .during { background: none; border-style: dashed; }
+.step-text { margin: 28px 0 0; font: 400 44px/1.32 var(--font-sans); }
+.step-text .pill { font-weight: 700; }
+.step-text .pill .sym { display: none; }
+.step-text .prep { color: var(--sl-muted); }
+.step-syms { flex: 1; min-height: 0; display: flex; flex-wrap: wrap; align-content: center; justify-content: center; gap: 4px 20px; margin-top: 28px; }
+.step-syms .tile { width: var(--tile); }
+.step-syms .sym img { width: 120%; height: 120%; }
+.step-syms .tile figcaption { font-size: 26px; }
+.step-syms .tile figcaption span { font-size: min(1em, 19cqw); }
+.step-done { margin: 28px 0 0; padding-left: 24px; border-left: 6px solid var(--color-accent); font: 400 36px/1.3 var(--font-sans); }
+.step-done b { display: inline; font-weight: 700; }
