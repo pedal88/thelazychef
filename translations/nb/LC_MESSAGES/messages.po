@@ -416,14 +416,14 @@ msgid "Calm"
 msgstr "Rolig"
 
 msgid "Prep first"
-msgstr "Klargjør først"
+msgstr "Forbered først"
 
 msgid "Just in time"
 msgstr "I siste liten"
 
 msgid "Prep before cooking, but what can wait is done while something stands."
 msgstr ""
-"Gjør klart før du begynner å lage mat, men det som kan vente, gjør du "
+"Forbered før du begynner å lage mat, men det som kan vente, gjør du "
 "mens noe står."
 
 msgid "Everything that needs no heat is done before the first cook step."
@@ -478,7 +478,7 @@ msgid "cook"
 msgstr "kokkelere"
 
 msgid "serve"
-msgstr "server"
+msgstr "servere"
 
 msgid "Chicken"
 msgstr "Kylling"
@@ -871,7 +871,7 @@ msgid "Cook"
 msgstr "Kokkelere"
 
 msgid "Serve"
-msgstr "Server"
+msgstr "Servere"
 
 msgid " and "
 msgstr " og "
@@ -1871,7 +1871,7 @@ msgid "cooking"
 msgstr "kokkelere"
 
 msgid "serving"
-msgstr "servering"
+msgstr "servere"
 
 msgid "bowls in the order you use them"
 msgstr "skåler i den rekkefølgen du bruker dem"
