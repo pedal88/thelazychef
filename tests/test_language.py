@@ -4,6 +4,7 @@ import json
 import os
 import re
 import sys
+from html.parser import HTMLParser
 from pathlib import Path
 
 import pytest
@@ -20,12 +21,14 @@ os.environ.pop('K_SERVICE', None)
 from babel.messages.frontend import CommandLineInterface  # noqa: E402
 from babel.messages.pofile import read_po  # noqa: E402
 from flask_babel import get_locale  # noqa: E402
+from werkzeug.exceptions import InternalServerError  # noqa: E402
 
 import ai_engine  # noqa: E402
 from app import app  # noqa: E402
 from database.models import Page, PageText, Recipe, db  # noqa: E402
+from routes.error_routes import server_error  # noqa: E402
 from scripts import social_render  # noqa: E402
-from services import language  # noqa: E402
+from services import google_signin, language  # noqa: E402
 from services.recipe_v2 import appearance, generate, images, inbox, view  # noqa: E402
 from services.recipe_v2.generate import refresh  # noqa: E402
 from services.recipe_v2.store import save_v2  # noqa: E402
@@ -270,13 +273,148 @@ def test_prompts_are_drawn_without_translation(module):
     assert '_' not in module.env.globals
 
 
+# No English left on a page, in what a visitor reads (the menu and footer come in the next PR)
+
+class Words(HTMLParser):
+    """The visible words of a page, and the words in the attributes a person can meet."""
+    SKIP = {'script', 'style', 'svg', 'head'}
+    SEEN = ('placeholder', 'aria-label', 'title', 'alt', 'data-show', 'data-hide')
+
+    def __init__(self):
+        super().__init__()
+        self.words, self.skip = [], 0
+
+    def handle_starttag(self, tag, attrs):
+        self.skip += tag in self.SKIP
+        self.words += [value for name, value in attrs if name in self.SEEN and value]
+
+    def handle_endtag(self, tag):
+        self.skip -= tag in self.SKIP
+
+    def handle_data(self, data):
+        if not self.skip and data.strip():
+            self.words.append(' '.join(data.split()))
+
+
+# The same in both languages on purpose: names, addresses and the like
+SAME_IN_BOTH = {'The Lazy Chef', 'TikTok', 'Instagram', 'Google', '.', '·', '⋯', 'Datatilsynet',
+                'thelazychefai@gmail.com', 'Cookies'}
+
+
+def visible(html):
+    """The words in <main> (the whole body on a page without one, as the 500 page)."""
+    main = re.search(r'<main\b.*?</main>', html, re.S)
+    words = Words()
+    words.feed(main.group(0) if main else html[html.index('<body'):])
+    return words.words
+
+
+def english_left(path, **kwargs):
+    client = app.test_client()
+    english = visible(client.get(path, **kwargs).get_data(as_text=True))
+    client = app.test_client()
+    client.set_cookie('lang', 'nb')
+    norwegian = visible(client.get(path, **kwargs).get_data(as_text=True))
+    assert english and len(english) == len(norwegian), path
+    return [e for e, n in zip(english, norwegian) if e == n and e not in SAME_IN_BOTH]
+
+
+IPHONE_IN_INSTAGRAM = {'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Instagram 350.0'}
+
+
+@pytest.mark.parametrize('path, headers', [
+    ('/login', {}), ('/register', {}), ('/privacy', {}), ('/no-such-page', {}),
+    ('/login', IPHONE_IN_INSTAGRAM), ('/register', IPHONE_IN_INSTAGRAM),
+])
+def test_sign_up_log_in_privacy_and_errors_have_no_english_left(client, monkeypatch, path, headers):
+    monkeypatch.setattr(google_signin, 'enabled', lambda: True)
+    assert english_left(path, headers=headers) == []
+
+
+@pytest.mark.parametrize('action', ['save', 'queue', 'made'])
+@pytest.mark.parametrize('page', ['login', 'register'])
+def test_what_was_pressed_is_said_in_norwegian(client, page, action):
+    with app.app_context():
+        recipe_id = _tikka().id
+    assert english_left(f'/{page}?do={action}&recipe={recipe_id}&next=/recipe/{recipe_id}') == []
+
+
+def test_the_page_for_an_error_on_our_side_has_no_english_left():
+    def rendered(path):
+        with app.test_request_context(path):
+            return visible(server_error(InternalServerError())[0])
+
+    english, norwegian = rendered('/recipes'), rendered('/recipes?lang=no')
+    assert [e for e, n in zip(english, norwegian) if e == n and e not in SAME_IN_BOTH] == []
+
+
+def _post(client, path, **form):
+    client.set_cookie('lang', 'nb')
+    return client.post(path, data=form, follow_redirects=True).get_data(as_text=True)
+
+
+def test_the_messages_of_signing_up_and_in_are_norwegian(client):
+    assert 'E-posten og passordet stemmer ikke.' in _post(client, '/login', email='a@b.no', password='x')
+    assert 'Skriv inn e-post og passord.' in _post(client, '/register', email='', password='')
+    welcome = _post(client, '/register', email='a@b.no', password='x')
+    assert 'Velkommen til The Lazy Chef.' in welcome and 'Disse står på bordet på 30 minutter.' in welcome
+    assert 'Du er logget ut.' in _post(client, '/logout')
+    assert 'Det finnes allerede en konto' in _post(client, '/register', email='a@b.no', password='y')
+    assert 'Logg inn for å se denne siden.' in client.get('/saved-recipes', follow_redirects=True).get_data(as_text=True)
+
+
+def test_what_was_pressed_is_done_and_said_in_norwegian(client):
+    with app.app_context():
+        recipe_id = _tikka().id
+        title = db.session.get(Recipe, recipe_id).title
+    client.set_cookie('lang', 'nb')
+    html = client.post(f'/register?do=save&recipe={recipe_id}&next=/privacy', data={'email': 'c@d.no', 'password': 'x'},
+                       follow_redirects=True).get_data(as_text=True)
+    assert f'{title} er lagret.' in html
+
+
+def test_a_title_cannot_bring_html_into_the_norwegian(client):
+    with app.app_context():
+        recipe = _tikka()
+        recipe.title = '<b>Bold</b> dish'
+        db.session.commit()
+        recipe_id = recipe.id
+    client.set_cookie('lang', 'nb')
+    html = client.get(f'/register?do=save&recipe={recipe_id}').get_data(as_text=True)
+    assert '<b>Bold</b> dish' not in html and '&lt;b&gt;Bold&lt;/b&gt; dish' in html
+
+
+@pytest.mark.parametrize('path, title', [('/login', 'Logg inn'), ('/register', 'Registrer deg'),
+                                         ('/privacy', 'Personvern'), ('/no-such-page', 'Fant ikke siden')])
+def test_the_tab_title_is_norwegian(client, path, title):
+    client.set_cookie('lang', 'nb')
+    assert f'<title>{title} - The Lazy Chef</title>' in client.get(path).get_data(as_text=True)
+
+
+def test_the_show_button_of_the_password_speaks_norwegian(client):
+    client.set_cookie('lang', 'nb')
+    html = client.get('/login').get_data(as_text=True)
+    assert 'data-show="Vis"' in html and 'data-hide="Skjul"' in html
+
+
+def test_the_privacy_page_names_every_cookie_the_site_sets(client):
+    html = client.get('/privacy').get_data(as_text=True)
+    assert 'Four, all for the site itself' in html and 'remembers your language' in html
+
+
+def test_a_cross_site_refusal_speaks_norwegian(client):
+    client.set_cookie('lang', 'nb')
+    response = client.post('/login', headers={'Sec-Fetch-Site': 'cross-site'})
+    assert response.status_code == 403 and 'Forespørselen kom fra et annet nettsted' in response.get_data(as_text=True)
+
+
 # The translations
 
 def test_everything_marked_has_norwegian(tmp_path):
     pot = tmp_path / 'messages.pot'
     CommandLineInterface().run(['pybabel', '--quiet', 'extract', '-F', str(ROOT / 'babel.cfg'), '-k', 'lazy_gettext',
                                 '--no-location', '-o', str(pot)]
-                               + [str(ROOT / d) for d in ('routes', 'services', 'utils', 'templates')])
+                               + [str(ROOT / d) for d in ('app.py', 'routes', 'services', 'utils', 'templates')])
     with open(pot, encoding='utf-8') as f:
         marked = {m.id for m in read_po(f) if m.id}
     assert marked

@@ -2,6 +2,7 @@
 import secrets
 
 from flask import abort, flash, jsonify, redirect, render_template, request, session, url_for
+from flask_babel import gettext
 from flask_login import current_user, login_required, login_user, logout_user
 from sqlalchemy import func
 
@@ -13,8 +14,9 @@ from services import funnel, google_signin, signup
 
 auth_bp = FlatBlueprint("auth", __name__)
 
-# What a new user reads above the quick dishes, when they did not sign up from a dish
-FIRST_DISH = 'These are on the table in 30 minutes: tap the plus on one to cook it next.'
+
+def _welcome():
+    return gettext('Welcome to The Lazy Chef.')
 
 
 def _email(form):
@@ -39,7 +41,8 @@ def _signed_in(user, hello=None, args=None):
     if wanted:
         flash(signup.do(user, *wanted), 'success')
     elif hello and not back:
-        flash(f'{hello} {FIRST_DISH}', 'success')
+        # What a new user reads above the quick dishes, when they did not sign up from a dish
+        flash(f"{hello} {gettext('These are on the table in 30 minutes: tap the plus on one to cook it next.')}", 'success')
         return redirect(url_for('recipes_list', time='30'))
     elif hello:
         flash(hello, 'success')
@@ -66,7 +69,7 @@ def login():
                 login_user(user, remember=True)
                 return redirect(url_for('new_recipe'))
             return _signed_in(user)
-        flash('That email and password do not match.', 'error')
+        flash(gettext('That email and password do not match.'), 'error')
 
     return _page('login.html')
 
@@ -79,9 +82,9 @@ def register():
     if request.method == 'POST':
         email, password = _email(request.form), request.form.get('password') or ''
         if not email or not password:
-            flash('Give an email and a password.', 'error')
+            flash(gettext('Give an email and a password.'), 'error')
         elif _by_email(email):
-            flash('There is already an account with that email: log in instead.', 'error')
+            flash(gettext('There is already an account with that email: log in instead.'), 'error')
             return redirect(url_for('login', **signup.carry(request.args)))
         else:
             # The user, with where they came from (services/funnel.py)
@@ -91,7 +94,7 @@ def register():
             user.set_password(password)
             db.session.add(user)
             db.session.commit()
-            return _signed_in(user, hello='Welcome to The Lazy Chef.')
+            return _signed_in(user, hello=_welcome())
 
     return _page('register.html', sources=funnel.SOURCES)
 
@@ -122,10 +125,10 @@ def google_done():
         found = google_signin.identity(request.args['code'], _google_back())
     if not found:
         if not request.args.get('error'):  # they closed Google's page or said no: nothing to explain
-            flash('Signing in with Google did not go through. Try again, or use your email.', 'error')
+            flash(gettext('Signing in with Google did not go through. Try again, or use your email.'), 'error')
         return redirect(url_for('login', **args))
     user, made = google_signin.user_for(*found, ref=funnel.session_ref())
-    return _signed_in(user, hello='Welcome to The Lazy Chef.' if made else None, args=args)
+    return _signed_in(user, hello=_welcome() if made else None, args=args)
 
 
 @auth_bp.route('/privacy')
@@ -137,7 +140,7 @@ def privacy():
 @auth_bp.route('/logout', methods=['POST'])
 def logout():
     logout_user()
-    flash('You have been logged out.', 'info')
+    flash(gettext('You have been logged out.'), 'info')
     return redirect(url_for('content.home'))
 
 

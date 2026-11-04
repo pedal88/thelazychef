@@ -35,7 +35,7 @@ what has no translation shows in English. Choosing the language: `services/langu
 Norwegian and stays until `?lang=en`. The `.mo` files are not in git: the Dockerfile and the tests compile them.
 
 ```bash
-pybabel extract -F babel.cfg -k lazy_gettext --no-location -o translations/messages.pot routes services utils templates  # after marking words
+pybabel extract -F babel.cfg -k lazy_gettext --no-location -o translations/messages.pot app.py routes services utils templates  # after marking words
 pybabel update -i translations/messages.pot -d translations --no-fuzzy-matching  # then write the Norwegian in the .po
 pybabel compile -d translations  # needed to see them in a local run; tests do it themselves
 ```

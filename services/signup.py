@@ -3,12 +3,15 @@ what they pressed in the address (/register?next=/recipe/5&do=made&recipe=5), an
 exists, so nothing they tried is lost and they land back where they were (routes/auth_routes.py)."""
 import datetime
 
+from flask_babel import gettext
 from sqlalchemy import func
 
 from database.models import Recipe, UserQueue, UserRecipeInteraction, db
 
 # What a visitor can ask for before they have an account, and what it says once it is done
-ACTIONS = {'save': 'Saved {title}.', 'queue': 'Added {title} to Cook next.', 'made': 'You made {title}: it is in your Made list.'}
+ACTIONS = {'save': lambda title: gettext('Saved %(title)s.', title=title),
+           'queue': lambda title: gettext('Added %(title)s to Cook next.', title=title),
+           'made': lambda title: gettext('You made %(title)s: it is in your Made list.', title=title)}
 
 # Saving again soon after (the steps unticked and ticked off again, Save pressed twice) is the same meal
 SAME_MEAL = datetime.timedelta(hours=3)
@@ -74,4 +77,4 @@ def do(user, action, recipe):
             db.session.add(UserQueue(user_id=user.id, recipe_id=recipe.id, position=(last or 0) + 1,
                                      added_at=datetime.datetime.utcnow()))
             db.session.commit()
-    return ACTIONS[action].format(title=recipe.title)
+    return ACTIONS[action](recipe.title)

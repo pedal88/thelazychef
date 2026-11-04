@@ -2,8 +2,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: The Lazy Chef\n"
-"POT-Creation-Date: 2026-11-04 11:47+0100\n"
-"PO-Revision-Date: 2026-11-04 11:47+0100\n"
+"POT-Creation-Date: 2026-11-04 12:17+0100\n"
+"PO-Revision-Date: 2026-11-04 12:17+0100\n"
 "Language: nb\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
@@ -11,6 +11,296 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
+msgid "Please log in to access this page."
+msgstr "Logg inn for å se denne siden."
+
+msgid "Welcome to The Lazy Chef."
+msgstr "Velkommen til The Lazy Chef."
+
+msgid "These are on the table in 30 minutes: tap the plus on one to cook it next."
+msgstr "Disse står på bordet på 30 minutter. Trykk på plusset på en av dem for å lage den neste."
+
+msgid "That email and password do not match."
+msgstr "E-posten og passordet stemmer ikke."
+
+msgid "Give an email and a password."
+msgstr "Skriv inn e-post og passord."
+
+msgid "There is already an account with that email: log in instead."
+msgstr "Det finnes allerede en konto med den e-posten. Logg inn i stedet."
+
+msgid "Signing in with Google did not go through. Try again, or use your email."
+msgstr "Innloggingen med Google gikk ikke. Prøv igjen, eller bruk e-posten din."
+
+msgid "You have been logged out."
+msgstr "Du er logget ut."
+
+#, python-format
+msgid "Saved %(title)s."
+msgstr "%(title)s er lagret."
+
+#, python-format
+msgid "Added %(title)s to Cook next."
+msgstr "%(title)s er lagt i Lag neste."
+
+#, python-format
+msgid "You made %(title)s: it is in your Made list."
+msgstr "Du laget %(title)s. Den ligger i lista over det du har laget."
+
+msgid "This request came from another site, so it was not carried out. Go back to the page and try again."
+msgstr "Forespørselen kom fra et annet nettsted, så den ble ikke utført. Gå tilbake til siden og prøv igjen."
+
+msgid "Log in"
+msgstr "Logg inn"
+
+#, python-format
+msgid "%(title)s is saved as soon as you are in."
+msgstr "%(title)s lagres så snart du er logget inn."
+
+#, python-format
+msgid "%(title)s goes in Cook next as soon as you are in."
+msgstr "%(title)s legges i Lag neste så snart du er logget inn."
+
+#, python-format
+msgid "%(title)s goes in your Made list as soon as you are in."
+msgstr "%(title)s legges i lista over det du har laget så snart du er logget inn."
+
+msgid "New here?"
+msgstr "Ny her?"
+
+msgid "Create an account"
+msgstr "Opprett en konto"
+
+msgid "Email address"
+msgstr "E-postadresse"
+
+msgid "Forgot my password"
+msgstr "Glemt passordet"
+
+#, python-format
+msgid ""
+"Forgot your password? <a href=\"%(mail)s\">Email us</a> from the address you signed up with, and we will set you a "
+"new one."
+msgstr ""
+"Glemt passordet? <a href=\"%(mail)s\">Send oss en e-post</a> fra adressen du registrerte deg med, så setter vi et "
+"nytt for deg."
+
+msgid "Privacy"
+msgstr "Personvern"
+
+msgid "What we keep about you"
+msgstr "Hva vi lagrer om deg"
+
+msgid "Last changed 4 November 2026."
+msgstr "Sist endret 4. november 2026."
+
+msgid ""
+"The Lazy Chef is a recipe site made and run by Pål Andreas Dahl in Norway, who is responsible for your data. Write to"
+" <a href=\"mailto:thelazychefai@gmail.com\">thelazychefai@gmail.com</a> about anything on this page."
+msgstr ""
+"The Lazy Chef er et oppskriftsnettsted laget og drevet av Pål Andreas Dahl i Norge, som er ansvarlig for dataene "
+"dine. Skriv til <a href=\"mailto:thelazychefai@gmail.com\">thelazychefai@gmail.com</a> om alt på denne siden."
+
+msgid "Without an account"
+msgstr "Uten konto"
+
+msgid ""
+"You can read and cook every recipe without telling us anything. Your ticked-off steps stay in your own browser. When "
+"you come from one of our TikTok or Instagram posts, we count one visit for that post, per day, with nothing that says"
+" who you are."
+msgstr ""
+"Du kan lese og lage alle oppskriftene uten å fortelle oss noe. Stegene du huker av, blir liggende i din egen "
+"nettleser. Når du kommer fra en av postene våre på TikTok eller Instagram, teller vi ett besøk for den posten, per "
+"dag, uten noe som sier hvem du er."
+
+msgid "With an account"
+msgstr "Med konto"
+
+msgid "Your email address, and your password, stored only as a one-way hash we cannot read back."
+msgstr "E-postadressen din, og passordet ditt, lagret bare som en enveis-hash vi ikke kan lese tilbake."
+
+msgid ""
+"If you sign in with Google: the ID of your Google account and the email Google gives us. We ask Google for nothing "
+"else."
+msgstr ""
+"Hvis du logger inn med Google: ID-en til Google-kontoen din og e-postadressen Google gir oss. Vi ber ikke Google om "
+"noe annet."
+
+msgid "When you signed up, your answer to \"How did you find us?\", and which post you came from, if any."
+msgstr "Da du registrerte deg: svaret ditt på «Hvordan fant du oss?», og hvilken post du kom fra, hvis noen."
+
+msgid "What you do with recipes: the ones you save, put in Cook next or mark as made, and your stars, notes and photos."
+msgstr ""
+"Hva du gjør med oppskrifter: de du lagrer, legger i Lag neste eller markerer som laget, og stjernene, notatene og "
+"bildene dine."
+
+msgid "If you pair with someone in Mirror, they see your email and the recipes you have both saved."
+msgstr "Hvis du kobler deg til noen i Mirror, ser de e-postadressen din og oppskriftene dere begge har lagret."
+
+msgid ""
+"We use this only to give you your account and to see, in numbers, which posts bring people who cook. We do not sell "
+"it, show ads or use it to train AI models."
+msgstr ""
+"Vi bruker dette bare til å gi deg kontoen din og til å se, i tall, hvilke poster som bringer folk som lager mat. Vi "
+"selger det ikke, viser ikke reklame og bruker det ikke til å trene AI-modeller."
+
+msgid "Photos"
+msgstr "Bilder"
+
+msgid ""
+"A photo you add to a recipe is stored at an unlisted web address so that your page can show it. It is not linked from"
+" anywhere, but anyone who has the address can open it. Removing a photo from your note deletes the file too."
+msgstr ""
+"Et bilde du legger til en oppskrift, lagres på en ulistet nettadresse slik at siden din kan vise det. Det er ikke "
+"lenket fra noe sted, men alle som har adressen, kan åpne det. Fjerner du et bilde fra notatet ditt, slettes også "
+"fila."
+
+msgid "Cookies"
+msgstr "Cookies"
+
+msgid ""
+"Four, all for the site itself: one for your visit, one that remembers metric or US units if you choose, one that "
+"remembers your language if you choose, and one that keeps you signed in on this device for up to a year, until you "
+"log out. No tracking or advertising cookies."
+msgstr ""
+"Fire, alle for nettstedet selv: én for besøket ditt, én som husker metriske eller amerikanske enheter hvis du velger "
+"det, én som husker språket ditt hvis du velger det, og én som holder deg innlogget på denne enheten i opptil et år, "
+"til du logger ut. Ingen cookies for sporing eller reklame."
+
+msgid "Where it is kept, and who else sees it"
+msgstr "Hvor det lagres, og hvem andre som ser det"
+
+msgid ""
+"Everything is stored with Google Cloud in the EU (Stockholm and Belgium). Google keeps the site's request logs "
+"(address, browser and time of each request) for 30 days."
+msgstr ""
+"Alt lagres hos Google Cloud i EU (Stockholm og Belgia). Google tar vare på nettstedets forespørselslogger (adresse, "
+"nettleser og tidspunkt for hver forespørsel) i 30 dager."
+
+msgid ""
+"Pages load fonts from Google Fonts and styles from Tailwind's servers, which see your IP address as with any web "
+"request."
+msgstr ""
+"Sidene henter fonter fra Google Fonts og stiler fra Tailwinds servere, som ser IP-adressen din som ved enhver "
+"forespørsel på nettet."
+
+msgid ""
+"The recipes and their pictures are written and drawn by AI (Anthropic's Claude and Google's Gemini). Nothing you "
+"write or upload is sent to them."
+msgstr ""
+"Oppskriftene og bildene deres er skrevet og tegnet av AI (Anthropics Claude og Googles Gemini). Ingenting du skriver "
+"eller laster opp, sendes til dem."
+
+msgid "Your rights"
+msgstr "Rettighetene dine"
+
+msgid ""
+"Write to us to see what we have about you, to correct it, or to have your account and everything in it deleted; we "
+"answer within 30 days. You can also complain to the Norwegian Data Protection Authority, <a "
+"href=\"https://www.datatilsynet.no/\" rel=\"noopener\">Datatilsynet</a>. We keep your data for as long as you have an"
+" account."
+msgstr ""
+"Skriv til oss for å se hva vi har om deg, for å rette det eller for å få slettet kontoen din og alt i den. Vi svarer "
+"innen 30 dager. Du kan også klage til <a href=\"https://www.datatilsynet.no/\" rel=\"noopener\">Datatilsynet</a>. Vi "
+"lagrer dataene dine så lenge du har en konto."
+
+msgid "Register"
+msgstr "Registrer deg"
+
+msgid "Join The Lazy Chef"
+msgstr "Bli med i The Lazy Chef"
+
+#, python-format
+msgid "Make an account and %(title)s is saved. You go straight back."
+msgstr "Opprett en konto, så lagres %(title)s. Du kommer rett tilbake."
+
+#, python-format
+msgid "Make an account and %(title)s goes in Cook next. You go straight back."
+msgstr "Opprett en konto, så legges %(title)s i Lag neste. Du kommer rett tilbake."
+
+#, python-format
+msgid "Make an account and %(title)s goes in your Made list. You go straight back."
+msgstr "Opprett en konto, så legges %(title)s i lista over det du har laget. Du kommer rett tilbake."
+
+msgid "Keep the dishes you save, what you want to cook next, and what you made, with your notes for next time."
+msgstr "Ta vare på rettene du lagrer, det du vil lage neste, og det du har laget, med notater til neste gang."
+
+msgid "Have an account?"
+msgstr "Har du konto?"
+
+msgid "How did you find us?"
+msgstr "Hvordan fant du oss?"
+
+msgid "(optional)"
+msgstr "(valgfritt)"
+
+msgid "Choose one"
+msgstr "Velg"
+
+msgid "Google or another search"
+msgstr "Google eller en annen søkemotor"
+
+msgid "A friend"
+msgstr "En venn"
+
+msgid "Somewhere else"
+msgstr "Et annet sted"
+
+msgid "Create account"
+msgstr "Opprett konto"
+
+msgid "How we handle your data: <a href=\"/privacy\">Privacy</a>."
+msgstr "Slik behandler vi dataene dine: <a href=\"/privacy\">Personvern</a>."
+
+msgid ""
+"Continue with Google works in Safari or Chrome: open this page there, from the <b>⋯</b> menu at the top. Or use your "
+"email below."
+msgstr ""
+"Fortsett med Google virker i Safari eller Chrome: åpne siden der, fra <b>⋯</b>-menyen øverst. Eller bruk e-posten din"
+" under."
+
+msgid "Continue with Google"
+msgstr "Fortsett med Google"
+
+msgid "or with email"
+msgstr "eller med e-post"
+
 msgid "Language"
 msgstr "Språk"
+
+msgid "Password"
+msgstr "Passord"
+
+msgid "Show password"
+msgstr "Vis passord"
+
+msgid "Show"
+msgstr "Vis"
+
+msgid "Hide"
+msgstr "Skjul"
+
+msgid "Page not found"
+msgstr "Fant ikke siden"
+
+msgid "That page is not here"
+msgstr "Den siden finnes ikke"
+
+msgid "The address may have a typo in it. Came from a post? Every dish from it is in the recipes."
+msgstr "Adressen kan ha en skrivefeil. Kom du fra en post? Alle rettene derfra finner du i oppskriftene."
+
+msgid "See all recipes"
+msgstr "Se alle oppskriftene"
+
+msgid "Something went wrong"
+msgstr "Noe gikk galt"
+
+msgid "Something went wrong on our side"
+msgstr "Noe gikk galt hos oss"
+
+msgid "It is not you. Try again in a moment."
+msgstr "Det er ikke din feil. Prøv igjen om litt."
+
+msgid "Back to The Lazy Chef"
+msgstr "Tilbake til The Lazy Chef"
 

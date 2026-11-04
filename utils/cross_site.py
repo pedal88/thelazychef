@@ -6,10 +6,10 @@ cooking. The session and remember cookies are also SameSite=Lax (app.py), for a 
 from urllib.parse import urlsplit
 
 from flask import current_app, request
+from flask_babel import gettext
 
 SAFE_METHODS = {'GET', 'HEAD', 'OPTIONS'}
 OWN_SITE = {'same-origin', 'none'}  # none: the visitor's own doing, not a page's
-REFUSED = 'This request came from another site, so it was not carried out. Go back to the page and try again.'
 
 
 def _from_elsewhere():
@@ -25,5 +25,5 @@ def refuse_cross_site():
     if request.method not in SAFE_METHODS and _from_elsewhere():
         current_app.logger.warning('Refused cross-site %s %s (Sec-Fetch-Site %s, Origin %s)', request.method, request.path,
                                    request.headers.get('Sec-Fetch-Site'), request.headers.get('Origin'))
-        return REFUSED, 403, {'Content-Type': 'text/plain; charset=utf-8'}
+        return gettext('This request came from another site, so it was not carried out. Go back to the page and try again.'), 403, {'Content-Type': 'text/plain; charset=utf-8'}
     return None
