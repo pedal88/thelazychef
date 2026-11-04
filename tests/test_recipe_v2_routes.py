@@ -359,6 +359,21 @@ Taco | smart | spicy
         self.assertEqual(recipe.language, 'nb')
         self.assertEqual(self.client.get(f'/new-recipe/v2/{recipe.id}/status').get_json()['status'], 'generating')
 
+    def test_the_waiting_page_draws_the_line_and_the_status_says_when_round_1_is_done(self):
+        self.login()
+        recipe = Recipe(title='Lasagne', cuisine='', difficulty='', status='generating', schema_version=2)
+        db.session.add(recipe)
+        db.session.commit()
+        page = self.client.get(f'/new-recipe/v2/{recipe.id}').get_data(as_text=True)
+        self.assertIn('css/making.css', page)
+        self.assertIn('role="progressbar"', page)
+        self.assertIn('data-written=""', page)
+        self.assertFalse(self.client.get(f'/new-recipe/v2/{recipe.id}/status').get_json()['written'])
+        recipe.source_text = 'the round 1 text'
+        db.session.commit()
+        self.assertIn('data-written="1"', self.client.get(f'/new-recipe/v2/{recipe.id}').get_data(as_text=True))
+        self.assertTrue(self.client.get(f'/new-recipe/v2/{recipe.id}/status').get_json()['written'])
+
     def test_the_task_endpoint_needs_the_queue_token(self):
         recipe = Recipe(title='x', cuisine='', difficulty='', status='generating', schema_version=2)
         db.session.add(recipe)
