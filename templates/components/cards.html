@@ -15,28 +15,28 @@
         {% endif %}
         {# The cook took a photo of the dish: only a small mark; the photo opens from the recipe page #}
         {% set own = recipe.interaction.user_photos if recipe.interaction is defined and recipe.interaction else none %}
-        {% if own %}<span class="rcard-mine" role="img" aria-label="You added a photo" title="You added a photo">{{ icon('image') }}</span>{% endif %}
-        {% if recipe.is_super_liked %}<span class="rcard-star">Super liked</span>{% endif %}
+        {% if own %}<span class="rcard-mine" role="img" aria-label="{{ _('You added a photo') }}" title="{{ _('You added a photo') }}">{{ icon('image') }}</span>{% endif %}
+        {% if recipe.is_super_liked %}<span class="rcard-star">{{ _('Super liked') }}</span>{% endif %}
         <span class="rcard-acts">
             {% if show_inspector %}
             <button type="button" onclick="event.preventDefault(); event.stopPropagation(); openInspector({{ recipe.id }});"
                 title="Inspect the data" aria-label="Inspect the data">{{ icon('list') }}</button>
             {% endif %}
             {% if current_user.is_authenticated %}
-            <button type="button" class="favorite-btn text-slate-400" data-recipe-id="{{ recipe.id }}" title="Save" aria-label="Save">
+            <button type="button" class="favorite-btn text-slate-400" data-recipe-id="{{ recipe.id }}" title="{{ _('Save') }}" aria-label="{{ _('Save') }}">
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                     stroke-linejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
             </button>
-            <button type="button" class="queue-btn text-slate-400" data-recipe-id="{{ recipe.id }}" title="Cook next" aria-label="Cook next"
+            <button type="button" class="queue-btn text-slate-400" data-recipe-id="{{ recipe.id }}" title="{{ _('Cook next') }}" aria-label="{{ _('Cook next') }}"
                 onclick="event.preventDefault(); event.stopPropagation(); addToQueue({{ recipe.id }}, this)">{{ icon('list-plus') }}</button>
             {% if acts %}
             <button type="button" class="made-act" data-made="{{ recipe.id }}" aria-pressed="{{ 'true' if recipe.interaction and recipe.interaction.is_made else 'false' }}"
-                title="Made it" aria-label="Made it">{{ icon('check') }}</button>
-            <button type="button" data-feedback="{{ recipe.id }}" data-title="{{ recipe.title }}" title="Feedback" aria-label="Feedback">{{ icon('message') }}</button>
+                title="{{ _('Made it') }}" aria-label="{{ _('Made it') }}">{{ icon('check') }}</button>
+            <button type="button" data-feedback="{{ recipe.id }}" data-title="{{ recipe.title }}" title="{{ _('Feedback') }}" aria-label="{{ _('Feedback') }}">{{ icon('message') }}</button>
             {% endif %}
             {% else %}
             {# A visitor's Save goes to sign up, which saves the dish and brings them back here (services/signup.py) #}
-            <button type="button" class="favorite-btn" title="Save" aria-label="Save"
+            <button type="button" class="favorite-btn" title="{{ _('Save') }}" aria-label="{{ _('Save') }}"
                 data-signup="{{ url_for('register', next=request.full_path.rstrip('?'), do='save', recipe=id) }}"
                 onclick="event.preventDefault(); event.stopPropagation(); location.href = this.dataset.signup">{{ icon('heart') }}</button>
             {% endif %}
@@ -44,14 +44,14 @@
     </div>
     <div class="rcard-body">
         <p class="rcard-meta">
-            {% if recipe.cuisine and recipe.cuisine|lower != 'other' %}<span class="rcard-cuisine">{{ recipe.cuisine }}</span>{% endif %}
+            {% if recipe.cuisine and recipe.cuisine|lower != 'other' %}<span class="rcard-cuisine">{{ recipe.cuisine|label }}</span>{% endif %}
             {% if recipe.prep_time_mins %}{% set hands = recipe.active_mins if recipe.active_mins and recipe.active_mins < recipe.prep_time_mins else none %}
-            <span class="rcard-time" title="{{ recipe.prep_time_mins }} min from start to table{{ ', ' ~ hands ~ ' of them hands-on' if hands }}">{{ recipe.prep_time_mins }} min{% if hands %}<i class="rcard-hands">, {{ hands }} active</i>{% endif %}</span>{% endif %}
+            <span class="rcard-time" title="{{ _('%(mins)s min from start to table, %(hands)s of them hands-on', mins=recipe.prep_time_mins, hands=hands) if hands else _('%(mins)s min from start to table', mins=recipe.prep_time_mins) }}">{{ recipe.prep_time_mins }} min{% if hands %}<i class="rcard-hands">, {{ _('%(n)s active', n=hands) }}</i>{% endif %}</span>{% endif %}
             {% if recipe.difficulty %}<span>{{ recipe.difficulty|difficulty_label }}</span>{% endif %}
         </p>
         <h3>{{ recipe.title }}</h3>
-        {% if recipe.version_count and recipe.version_count > 1 %}<p class="rcard-versions">{{ icon('chef') }}{{ recipe.version_count }} versions</p>{% endif %}
-        {% if tags %}<p class="rcard-tags">{% for t in tags|unique %}<span>{{ t|capitalize }}</span>{% endfor %}</p>{% endif %}
+        {% if recipe.version_count and recipe.version_count > 1 %}<p class="rcard-versions">{{ icon('chef') }}{{ _('%(n)s versions', n=recipe.version_count) }}</p>{% endif %}
+        {% if tags %}<p class="rcard-tags">{% for t in tags|unique %}<span>{{ t|capitalize|label }}</span>{% endfor %}</p>{% endif %}
     </div>
 </a>
 {% endmacro %}

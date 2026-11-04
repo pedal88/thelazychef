@@ -56,6 +56,6 @@ post log `/admin/funnel/posts/…`, the TikTok posts for the phone `/admin/funne
   also ask `view_as.role()`, as `funnel_routes._a_real_visitor` does.
 - Drafts and pending ingredients must not leak to visitors (`tests/test_public_visibility.py`):
   check `status == 'approved'` or `viewer_is_admin()`.
-- The language (`services/language.py`): `language.current()` is `en` or `nb`, chosen once per request, and `language.content_code()` is what the content tables call it. A new page that stays English goes in `ENGLISH_ONLY`; a new slide route must be under `/social`.
+- The language (`services/language.py`): `language.current()` is `en` or `nb`, chosen once per request, and `language.content_code()` is what the content tables call it. A new page that stays English goes in `ENGLISH_ONLY`; a new slide route must be under `/social`. Stored and catalog words stay English in the data and in filters: `services/labels.label` is for showing them.
 - Errors shown to users go through `utils/ai_errors.friendly_ai_error`; never a raw Google or Anthropic message.
 - Answers are gzipped in `utils/compress.py`, the first `after_request` in `app.py` so that it runs last. A new one that changes the body must be registered after it.

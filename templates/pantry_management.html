@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Ingredients - The Lazy Chef{% endblock %}
+{% block title %}{{ _('Ingredients') }} - The Lazy Chef{% endblock %}
 
 {# The ingredients (services/ingredient_library.py), in the recipe list's bar and grid (static/css/library.css): search
    that follows your typing and the shortcuts (static/js/library.js), a card per ingredient, and its sheet on a tap
@@ -13,10 +13,10 @@
     {% if f.staples %}<input type="hidden" name="staples" value="1">{% endif %}
     {% if f.everything %}<input type="hidden" name="all" value="1">{% endif %}
     <div class="lbar-in ing-bar">
-        <div class="lbar-title"><h1>Ingredients</h1><span class="lbar-count" data-lv-swap="total">{{ total }}</span></div>
+        <div class="lbar-title"><h1>{{ _('Ingredients') }}</h1><span class="lbar-count" data-lv-swap="total">{{ total }}</span></div>
         <label class="lib-q">{{ icon('search') }}<input type="search" name="q" value="{{ f.q }}"
-            placeholder="Find an ingredient" aria-label="Find an ingredient"></label>
-        <nav class="lbar-quick" aria-label="Shortcuts" data-lv-swap="quick">
+            placeholder="{{ _('Find an ingredient') }}" aria-label="{{ _('Find an ingredient') }}"></label>
+        <nav class="lbar-quick" aria-label="{{ _('Shortcuts') }}" data-lv-swap="quick">
             {% for label, url, on in shortcuts %}<a href="{{ url_for('pantry_management') }}{{ url }}" class="lib-chip-link{{ ' is-active' if on }}"{% if on %} aria-current="true"{% endif %}>{{ label }}{% if on %}{{ icon('close') }}{% endif %}</a>{% endfor %}
         </nav>
         {% if admin %}<a class="lbar-filters" href="{{ url_for('ingredients_mgmt.dashboard') }}">{{ icon('package') }}Manage</a>{% endif %}
@@ -24,7 +24,7 @@
 </form>
 
 <div class="lv">
-    <p class="ing-sub">The pantry our recipes are made from, most used first, with nutrition per 100 g{{ ' (about 3½ oz)' if unit_system() == 'us' }}.</p>
+    <p class="ing-sub">{{ _('The pantry our recipes are made from, most used first, with nutrition per 100 g (about 3½ oz).') if unit_system() == 'us' else _('The pantry our recipes are made from, most used first, with nutrition per 100 g.') }}</p>
     <div data-lv-swap="results">
     {% if items %}
     <div class="ing-grid">
@@ -33,24 +33,24 @@
         <button type="button" class="ing-card" data-ing="{{ r.id }}" aria-haspopup="dialog">
             <span class="ing-img">{% if r.image_url %}<img src="{{ r.image_url if r.image_url.startswith('http') else url_for('static', filename=r.image_url) }}" alt="" loading="lazy">{% else %}{{ icon('carrot') }}{% endif %}</span>
             <span class="ing-name">{{ r.name }}</span>
-            <span class="ing-meta">{% if item.uses %}{{ item.uses }} {{ 'dish' if item.uses == 1 else 'dishes' }}{% else %}Not in a dish yet{% endif %}{% if r.is_staple %} · Staple{% endif %}{% if r.status != 'active' %} · {{ r.status }}{% endif %}</span>
+            <span class="ing-meta">{% if item.uses %}{{ _('%(n)s dish', n=item.uses) if item.uses == 1 else _('%(n)s dishes', n=item.uses) }}{% else %}{{ _('Not in a dish yet') }}{% endif %}{% if r.is_staple %} · {{ _('Staple') }}{% endif %}{% if r.status != 'active' %} · {{ r.status }}{% endif %}</span>
         </button>
         {% endfor %}
     </div>
-    {% if more_url %}<p class="lib-more"><a class="lib-go" href="{{ url_for('pantry_management') }}{{ more_url }}">Show more</a></p>{% endif %}
+    {% if more_url %}<p class="lib-more"><a class="lib-go" href="{{ url_for('pantry_management') }}{{ more_url }}">{{ _('Show more') }}</a></p>{% endif %}
     {% else %}
     <div class="lib-empty">
         <span class="lib-empty-ic">{{ icon('search') }}</span>
-        <h3>{{ 'No ingredient matches' if not hidden else 'None of these are in a dish yet' }}</h3>
-        <p>Try another word, or fewer choices.</p>
-        {% if not hidden %}<a class="lib-go" href="{{ url_for('pantry_management') }}">All ingredients</a>{% endif %}
+        <h3>{{ _('No ingredient matches') if not hidden else _('None of these are in a dish yet') }}</h3>
+        <p>{{ _('Try another word, or fewer choices.') }}</p>
+        {% if not hidden %}<a class="lib-go" href="{{ url_for('pantry_management') }}">{{ _('All ingredients') }}</a>{% endif %}
     </div>
     {% endif %}
-    {% if hidden %}<p class="ing-all"><a href="{{ url_for('pantry_management') }}{{ all_url }}">Show all {{ found }}, also those not in a dish yet</a></p>{% endif %}
+    {% if hidden %}<p class="ing-all"><a href="{{ url_for('pantry_management') }}{{ all_url }}">{{ _('Show all %(n)s, also those not in a dish yet', n=found) }}</a></p>{% endif %}
     </div>
 </div>
 
-<dialog class="fb ing-sheet" aria-label="Ingredient" data-ing-sheet data-url="{{ url_for('ingredient_card', id=0) }}"></dialog>
+<dialog class="fb ing-sheet" aria-label="{{ _('Ingredient') }}" data-ing-sheet data-url="{{ url_for('ingredient_card', id=0) }}"></dialog>
 <script src="{{ url_for('static', filename='js/library.js') }}" defer></script>
 <script src="{{ url_for('static', filename='js/ingredients.js') }}" defer></script>
 {% endblock %}

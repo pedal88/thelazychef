@@ -6,6 +6,7 @@ import re
 import sys
 from html.parser import HTMLParser
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
@@ -25,10 +26,18 @@ from werkzeug.exceptions import InternalServerError  # noqa: E402
 
 import ai_engine  # noqa: E402
 from app import app  # noqa: E402
-from database.models import Page, PageText, Recipe, db  # noqa: E402
+from database.models import Ingredient, Page, PageText, Recipe, RecipeDiet, db  # noqa: E402
+from routes._shared import DIFFICULTY_LABELS, MENU, site_menu  # noqa: E402
 from routes.error_routes import server_error  # noqa: E402
+from routes.recipes_routes import VIEWS  # noqa: E402
 from scripts import social_render  # noqa: E402
-from services import google_signin, language  # noqa: E402
+from services import google_signin, labels, language  # noqa: E402
+from services.ingredient_library import GROUPS  # noqa: E402
+from services.measures import SYSTEMS  # noqa: E402
+from services.recipe_library import QUICK, SORT_LABELS, SPICE_LABELS, TIME_LABELS  # noqa: E402
+from services.recipe_v2.derive import HEAT_LABELS  # noqa: E402
+from services.recipe_v2.persona import SETTINGS  # noqa: E402
+from services.social_week import WEEK_DAYS  # noqa: E402
 from services.recipe_v2 import appearance, generate, images, inbox, view  # noqa: E402
 from services.recipe_v2.generate import refresh  # noqa: E402
 from services.recipe_v2.store import save_v2  # noqa: E402
@@ -169,7 +178,9 @@ def test_the_switch_gets_someone_in_norwegian_back_before_launch(client):
 def test_a_translated_word_shows_and_the_rest_falls_back_to_english(client):
     html = client.get('/privacy?lang=no').get_data(as_text=True)
     assert 'Språk' in html
-    assert 'Units' in html  # not translated yet: English, not empty
+    with app.test_request_context('/privacy?lang=no'):
+        assert labels.label('A new cuisine') == 'A new cuisine'  # no translation yet: English, not empty
+        assert labels.label(None) == ''
 
 
 def test_not_found_and_error_pages_follow_the_language(client):
@@ -273,7 +284,7 @@ def test_prompts_are_drawn_without_translation(module):
     assert '_' not in module.env.globals
 
 
-# No English left on a page, in what a visitor reads (the menu and footer come in the next PR)
+# No English left on a page, in what a visitor reads, the menu and footer too
 
 class Words(HTMLParser):
     """The visible words of a page, and the words in the attributes a person can meet."""
@@ -298,25 +309,31 @@ class Words(HTMLParser):
 
 # The same in both languages on purpose: names, addresses and the like
 SAME_IN_BOTH = {'The Lazy Chef', 'TikTok', 'Instagram', 'Google', '.', '·', '⋯', 'Datatilsynet',
-                'thelazychefai@gmail.com', 'Cookies'}
+                'thelazychefai@gmail.com', 'Cookies', 'English', 'Norsk', 'US', 'Protein', 'Keto', 'Paleo', 'Grill',
+                'Sous vide', 'Snacks', 'Mild', 'Baby', 'Guide', 'Recipe Mirror', '→', ',', 'min', 'Over 45 min',
+                'Under 30 min', 'cook@example.no', 'kcal', 'kJ', 'g', 'mg', 'Per 100 g', '\U0001F468\u200d\U0001F373'}  # the last: the loading overlay's chef
+NUMBERS = re.compile(r'^[\d\s.,:/·]*(min)?[\s,]*$')  # counts and times
 
 
 def visible(html):
-    """The words in <main> (the whole body on a page without one, as the 500 page)."""
-    main = re.search(r'<main\b.*?</main>', html, re.S)
+    """The words of the body: the menu, the page and the footer."""
     words = Words()
-    words.feed(main.group(0) if main else html[html.index('<body'):])
+    words.feed(html[html.index('<body'):])
     return words.words
 
 
-def english_left(path, **kwargs):
-    client = app.test_client()
+def english_left(path, client=None, data=(), **kwargs):
+    """What reads the same in both languages and should not. data: what is English until the recipes and ingredients
+    are translated (their names). client: signed in; the choice of language is its cookie."""
+    client = client or app.test_client()
+    client.delete_cookie('lang')
     english = visible(client.get(path, **kwargs).get_data(as_text=True))
-    client = app.test_client()
     client.set_cookie('lang', 'nb')
     norwegian = visible(client.get(path, **kwargs).get_data(as_text=True))
+    client.delete_cookie('lang')
     assert english and len(english) == len(norwegian), path
-    return [e for e, n in zip(english, norwegian) if e == n and e not in SAME_IN_BOTH]
+    same = SAME_IN_BOTH | set(data)
+    return [e for e, n in zip(english, norwegian) if e == n and e not in same and not NUMBERS.match(e)]
 
 
 IPHONE_IN_INSTAGRAM = {'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Instagram 350.0'}
@@ -326,17 +343,142 @@ IPHONE_IN_INSTAGRAM = {'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 li
     ('/login', {}), ('/register', {}), ('/privacy', {}), ('/no-such-page', {}),
     ('/login', IPHONE_IN_INSTAGRAM), ('/register', IPHONE_IN_INSTAGRAM),
 ])
-def test_sign_up_log_in_privacy_and_errors_have_no_english_left(client, monkeypatch, path, headers):
+def test_sign_up_log_in_privacy_and_errors_have_no_english_left(client, launched, monkeypatch, path, headers):
     monkeypatch.setattr(google_signin, 'enabled', lambda: True)
     assert english_left(path, headers=headers) == []
 
 
 @pytest.mark.parametrize('action', ['save', 'queue', 'made'])
 @pytest.mark.parametrize('page', ['login', 'register'])
-def test_what_was_pressed_is_said_in_norwegian(client, page, action):
+def test_what_was_pressed_is_said_in_norwegian(client, launched, page, action):
     with app.app_context():
         recipe_id = _tikka().id
     assert english_left(f'/{page}?do={action}&recipe={recipe_id}&next=/recipe/{recipe_id}') == []
+
+
+def _a_recipe():
+    """An approved recipe with everything a card shows, and its names, which are English until they are translated."""
+    with app.app_context():
+        recipe = _tikka()
+        recipe.cuisine, recipe.difficulty, recipe.prep_time_mins = 'Indian', 'Moderate', 40
+        recipe.settings = ['kid_friendly', 'low_carb']
+        recipe.diets.append(RecipeDiet(diet='gluten-free'))
+        recipe.image_filename = 'x.png'
+        db.session.commit()
+        return recipe.id, {recipe.title} | {line.name for line in recipe.lines}
+
+
+def _signed_in():
+    client = app.test_client()
+    client.post('/register', data={'email': 'cook@example.no', 'password': 'x'}, follow_redirects=True)  # and the welcome is read
+    return client
+
+
+@pytest.mark.parametrize('path', ['/recipes', '/recipes?sort=quick&diet=vegan&time=30', '/recipes?q=nothing-like-this',
+                                  '/discover', '/ingredients', '/ingredients?q=nothing-like-this', '/ingredients?staples=1'])
+def test_a_visitor_browsing_meets_no_english(client, launched, path):
+    _, names = _a_recipe()
+    assert english_left(path, data=names) == []
+
+
+@pytest.mark.parametrize('path', ['/recipes', '/recipes?view=saved', '/recipes?view=made', '/recipes?view=next', '/discover'])
+def test_someone_signed_in_meets_no_english(client, launched, path):
+    _, names = _a_recipe()
+    assert english_left(path, client=_signed_in(), data=names) == []
+
+
+def test_the_card_of_something_saved_and_made_has_no_english(client, launched):
+    recipe_id, names = _a_recipe()
+    cook = _signed_in()
+    cook.post(f'/api/recipes/{recipe_id}/favorite')
+    cook.post(f'/api/queue/add/{recipe_id}')
+    cook.patch(f'/api/interactions/recipe/{recipe_id}/made')
+    for path in ('/recipes?view=saved', '/recipes?view=made', '/recipes?view=next'):
+        assert english_left(path, client=cook, data=names) == [], path
+
+
+def _an_ingredient():
+    """An active staple in a dish, with its nutrition: (id, its name and the dish's, English until translated)."""
+    with app.app_context():
+        recipe = _tikka()
+        ingredient = Ingredient(food_id='x1', name='Butter', main_category='meat', is_staple=True, status='active',
+                                calories_per_100g=700, protein_per_100g=1, carbs_per_100g=1, fat_per_100g=80,
+                                sugar_per_100g=1, fiber_per_100g=1, sodium_mg_per_100g=10)
+        recipe.lines[0].ingredient = ingredient
+        db.session.commit()
+        return ingredient.id, {'Butter', 'butter', recipe.title}  # the sheet's fallback title is lower case
+
+
+def test_the_ingredients_page_with_something_on_it_has_no_english(client, launched):
+    _, names = _an_ingredient()
+    assert english_left('/ingredients', data=names) == []
+
+
+def test_the_sheet_of_an_ingredient_has_no_english(client):
+    ingredient_id, names = _an_ingredient()
+    plain, norsk = app.test_client(), app.test_client()
+    norsk.set_cookie('lang', 'nb')
+    words = [visible('<body>' + c.get(f'/ingredients/{ingredient_id}/card').get_data(as_text=True)) for c in (plain, norsk)]
+    assert len(words[0]) == len(words[1])
+    assert [e for e, n in zip(*words) if e == n and e not in SAME_IN_BOTH | names and not NUMBERS.match(e)] == []
+
+
+def test_every_word_of_the_catalogs_is_a_label():
+    def read(path, key):
+        return json.loads((ROOT / 'data' / path).read_text(encoding='utf-8'))[key]
+
+    words = (list(read('post_processing/cuisines.json', 'cuisines'))
+             + [p['category'] for p in read('constraints/main_protein.json', 'protein_types')]
+             + [d.capitalize() for d in read('constraints/diets.json', 'diets')]
+             + list(read('constraints/meal_types.json', 'meal_types'))
+             + [c.capitalize() for c in read('constraints/categories.json', 'main_categories')]
+             + list(DIFFICULTY_LABELS.values()) + list(HEAT_LABELS.values()) + list(TIME_LABELS.values())
+             + list(SORT_LABELS.values()) + list(SPICE_LABELS.values()) + list(SYSTEMS.values()) + list(WEEK_DAYS)
+             + [q[2] for q in QUICK] + [g[0] for g in GROUPS.values()] + [v[1] for v in VIEWS]
+             + [t.replace('_', ' ').capitalize() for t in SETTINGS]
+             + [item[0] for g in MENU if g[0] != 'Admin' for item in g[2] if item] + [g[0] for g in MENU if g[0] != 'Admin'])
+    assert sorted(set(words) - set(labels.WORDS)) == []
+
+
+def test_every_word_a_script_says_is_in_the_dictionary():
+    said = set()
+    for path in [*(ROOT / 'static' / 'js').glob('*.js'), *(ROOT / 'templates').rglob('*.html')]:
+        for found in re.findall(r"\btr\(\s*(?:[\w.]+\s*(?:===\s*\w+\s*)?\?\s*)?'([^']+)'(?:\s*:\s*'([^']+)')?", path.read_text(encoding='utf-8')):
+            said |= {w for w in found if w}
+    assert said
+    assert sorted(said - set(labels.JS_WORDS)) == []
+
+
+def test_the_scripts_get_their_words_in_the_language_of_the_page(client):
+    assert 'window.WORDS = {};' in client.get('/privacy').get_data(as_text=True)
+    html = client.get('/privacy?lang=no').get_data(as_text=True)
+    assert '"Saved. Thank you.": "Lagret. Takk."' in html
+
+
+def test_the_filters_still_filter_on_the_english_values(client):
+    _a_recipe()
+    client.set_cookie('lang', 'nb')
+    html = client.get('/recipes?cuisine=Indian').get_data(as_text=True)
+    assert 'value="Indian"' in html and '>Indisk<' in html and 'rcard-cuisine">Indisk<' in html
+    assert client.get('/api/recipes/count?cuisine=Indian').get_json()['total'] == 1
+    assert client.get('/api/recipes/count?cuisine=Thai').get_json()['total'] == 0
+
+
+def test_discover_gets_its_cards_in_the_language(client):
+    _a_recipe()
+    assert client.get('/api/feed/recipes').get_json()['recipes'][0]['cuisine'] == 'Indian'
+    client.set_cookie('lang', 'nb')
+    card = client.get('/api/feed/recipes').get_json()['recipes'][0]
+    assert (card['cuisine'], card['difficulty_label'], card['diets']) == ('Indisk', 'Middels', ['Glutenfri'])
+
+
+def test_the_admin_group_of_the_menu_stays_english():
+    with app.test_request_context('/recipes?lang=no'):
+        assert [item for item in MENU if item[0] == 'Admin'][0][2][0][0] == 'New recipe'
+        with patch('routes._shared.current_user', type('Admin', (), {'is_authenticated': True, 'is_admin': True})()):
+            menu = {g['label']: g for g in site_menu()}
+    assert 'Oppskrifter' in menu and 'Admin' in menu
+    assert 'Recipes' in [i['label'] for i in menu['Admin']['items'] if i]
 
 
 def test_the_page_for_an_error_on_our_side_has_no_english_left():

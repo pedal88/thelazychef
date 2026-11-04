@@ -11,6 +11,7 @@ from database.models import Recipe, UserRecipeInteraction, db
 from routes._flat import FlatBlueprint
 from routes._shared import DIFFICULTY_LABELS, get_recipe_image_url, get_storage
 from services import signup
+from services.labels import label
 from services.recipe_library import feed_ids
 
 interactions_bp = FlatBlueprint("interactions", __name__)
@@ -78,14 +79,14 @@ def get_feed_recipes():
             'id': r.id,
             'title': r.title,
             'image_url': get_recipe_image_url(r),
-            'cuisine': r.cuisine,
+            'cuisine': label(r.cuisine),
             'time_estimate': r.prep_time_mins or 30, # Default if missing
             'difficulty': r.difficulty,
-            'difficulty_label': DIFFICULTY_LABELS.get(r.difficulty, r.difficulty or ''),
+            'difficulty_label': label(DIFFICULTY_LABELS.get(r.difficulty, r.difficulty or '')),
             'calories': int(r.total_calories) if getattr(r, 'total_calories', 0) else 0,
             'portions': f"{r.base_servings or 1} servings",
             'diet': r.diets_list[0] if getattr(r, 'diets_list', None) and len(r.diets_list) > 0 else 'None',
-            'diets': list(getattr(r, 'diets_list', None) or [])[:3],
+            'diets': [label(d.capitalize()) for d in list(getattr(r, 'diets_list', None) or [])[:3]],
         })
         
     return jsonify({'recipes': data, 'has_more': len(data) == limit})

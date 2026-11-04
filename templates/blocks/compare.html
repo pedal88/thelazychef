@@ -5,13 +5,13 @@
 {% if d.layout == 'table' %}
 <div class="cmp-table-wrap">
   <table class="cmp-table">
-    <thead><tr><th scope="col"><span class="sr-only">Item</span></th>
+    <thead><tr><th scope="col"><span class="sr-only">{{ _('Item') }}</span></th>
       {% for c in d.criteria %}<th scope="col">{{ c.label }}</th>{% endfor %}
       {% for f in d.facts %}<th scope="col">{{ f.label }}</th>{% endfor %}</tr></thead>
     <tbody>
       {% for i in d.rows %}
       <tr><th scope="row"><b>{{ i.name }}</b>{% if i.tag %}<span>{{ i.tag }}</span>{% endif %}</th>
-        {% for s in i.scores %}<td><span class="dots" role="img" aria-label="{{ s.label }}: {{ s.n }} of {{ d.scale }}">{% for k in range(d.scale) %}<i class="{{ 'on' if k < s.n }}"></i>{% endfor %}</span></td>{% endfor %}
+        {% for s in i.scores %}<td><span class="dots" role="img" aria-label="{{ _('%(label)s: %(n)s of %(scale)s', label=s.label, n=s.n, scale=d.scale) }}">{% for k in range(d.scale) %}<i class="{{ 'on' if k < s.n }}"></i>{% endfor %}</span></td>{% endfor %}
         {% for f in i.facts %}<td>{{ f.value or '' }}</td>{% endfor %}</tr>
       {% endfor %}
     </tbody>
@@ -33,8 +33,8 @@
     {% endif %}
     {% if i.pick or i.avoid %}
     <dl class="cmp-when">
-      {% if i.pick %}<div class="pick"><dt>Pick it if</dt><dd>{{ i.pick }}</dd></div>{% endif %}
-      {% if i.avoid %}<div><dt>Skip it if</dt><dd>{{ i.avoid }}</dd></div>{% endif %}
+      {% if i.pick %}<div class="pick"><dt>{{ _('Pick it if') }}</dt><dd>{{ i.pick }}</dd></div>{% endif %}
+      {% if i.avoid %}<div><dt>{{ _('Skip it if') }}</dt><dd>{{ i.avoid }}</dd></div>{% endif %}
     </dl>
     {% endif %}
   </li>

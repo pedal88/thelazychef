@@ -4,25 +4,25 @@
    arrow keys; tap the card to open the recipe. The cards come from /api/feed/recipes, ten at a time. #}
 {% block content %}
 <header class="lib-head disc-head">
-    <p class="eyebrow">Discover</p>
-    <h1>What shall we cook?</h1>
-    <p class="lib-sub">Save a dish for later or pass on it. Tap the card to open the recipe.{% if not current_user.is_authenticated %} Saving asks you to <a href="{{ url_for('register', next=request.path) }}">sign up</a>, once.{% endif %}</p>
+    <p class="eyebrow">{{ _('Discover') }}</p>
+    <h1>{{ _('What shall we cook?') }}</h1>
+    <p class="lib-sub">{{ _('Save a dish for later or pass on it. Tap the card to open the recipe.') }}{% if not current_user.is_authenticated %} {{ _('Saving asks you to <a href="%(url)s">sign up</a>, once.', url=url_for('register', next=request.path)) }}{% endif %}</p>
 </header>
 
-<section class="disc" aria-label="Recipes to discover">
+<section class="disc" aria-label="{{ _('Recipes to discover') }}">
     <div id="deck" class="disc-deck">
-        <p id="loading" class="disc-loading">Finding recipes…</p>
+        <p id="loading" class="disc-loading">{{ _('Finding recipes…') }}</p>
         <div id="empty-state" class="lib-empty disc-empty" hidden>
             <span class="lib-empty-ic">{{ icon('check') }}</span>
-            <h3>You have seen them all</h3>
-            <p>There are no new dishes for now. Look through the whole list, or come back later.</p>
-            <a class="lib-go" href="{{ url_for('recipes_list') }}">Browse all recipes</a>
+            <h3>{{ _('You have seen them all') }}</h3>
+            <p>{{ _('There are no new dishes for now. Look through the whole list, or come back later.') }}</p>
+            <a class="lib-go" href="{{ url_for('recipes_list') }}">{{ _('Browse all recipes') }}</a>
         </div>
     </div>
 
     <div class="disc-acts" id="disc-acts" hidden>
-        <button type="button" class="disc-btn" data-act="pass" aria-label="Pass">{{ icon('close') }}<span>Pass</span></button>
-        <button type="button" class="disc-btn disc-save" data-act="like" aria-label="Save">{{ icon('heart') }}<span>Save</span></button>
+        <button type="button" class="disc-btn" data-act="pass" aria-label="{{ _('Pass') }}">{{ icon('close') }}<span>{{ _('Pass') }}</span></button>
+        <button type="button" class="disc-btn disc-save" data-act="like" aria-label="{{ _('Save') }}">{{ icon('heart') }}<span>{{ _('Save') }}</span></button>
     </div>
 </section>
 
@@ -74,8 +74,8 @@
         }
         a.appendChild(body);
 
-        a.appendChild(el('span', 'dcard-stamp dcard-stamp-like', 'Saved'));
-        a.appendChild(el('span', 'dcard-stamp dcard-stamp-pass', 'Passed'));
+        a.appendChild(el('span', 'dcard-stamp dcard-stamp-like', tr('Saved')));
+        a.appendChild(el('span', 'dcard-stamp dcard-stamp-pass', tr('Passed')));
         return a;
     }
 

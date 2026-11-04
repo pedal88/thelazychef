@@ -27,6 +27,7 @@ from database.models import (
     UserRecipeInteraction,
     db,
 )
+from services.labels import label
 from services.recipe_v2.derive import HEAT_LABELS
 
 PAGE = 48
@@ -103,6 +104,11 @@ def _catalog(path, key):
     return json.loads((DATA / path).read_text(encoding='utf-8'))[key]
 
 
+def _in_order(key, options):
+    """The alphabetical groups in the order of the words the reader sees."""
+    return sorted(options, key=lambda option: option[1]) if key in ('diet', 'cuisine') else options
+
+
 def from_args(args, difficulty_labels=None):
     """The person's choices in the address (request.args) -> (Filters, the chip groups for the page).
     difficulty_labels: stored difficulty -> what readers see (routes/_shared.DIFFICULTY_LABELS).
@@ -127,9 +133,9 @@ def from_args(args, difficulty_labels=None):
                       difficulties=chosen['difficulty'], heat_sources=chosen['heat_source'], spice=chosen['spice'],
                       proteins=[e for c in chosen['protein'] for e in proteins[c]],
                       time=(chosen['time'] or [''])[0], q=args.get('q', '').strip())
-    shown = [{'key': key, 'label': label, 'single': single, 'more': more,
-              'options': [(v, text, v in chosen[key]) for v, text in options.items()]}
-             for key, label, options, single, more in groups]
+    shown = [{'key': key, 'label': label(title), 'single': single, 'more': more,
+              'options': _in_order(key, [(v, label(text), v in chosen[key]) for v, text in options.items()])}
+             for key, title, options, single, more in groups]
     return filters, shown
 
 
@@ -143,13 +149,13 @@ def quick(args):
     """The shortcuts for the address args: [(label, the args with it switched, on)]. Switching a single-value
     parameter replaces its value; the page starts from the top again (no shown)."""
     out = []
-    for key, value, label in QUICK:
+    for key, value, text in QUICK:
         on = value in args.getlist(key)
         new = args.copy()
         new.pop('shown', None)
         rest = [v for v in args.getlist(key) if v != value and key not in SINGLE]
         new.setlist(key, rest if on else rest + [value])
-        out.append((label, new, on))
+        out.append((label(text), new, on))
     return out
 
 

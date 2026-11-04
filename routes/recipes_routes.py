@@ -1,10 +1,12 @@
 """Recipes Blueprint: landing page, recipe library, the recipe page, recipe JSON APIs."""
 from flask import abort, flash, jsonify, redirect, render_template, request, url_for
+from flask_babel import gettext
 from flask_login import current_user, login_required
 from database.models import Ingredient, Recipe, UserQueue, UserRecipeInteraction, db
 from routes._flat import FlatBlueprint
 from routes._shared import DIFFICULTY_LABELS, get_recipe_image_url, unit_system, viewer_is_admin
 from services.chef_service import get_chefs
+from services.labels import label
 from services.recipe_library import PAGE, SORT_LABELS, counts, from_args, quick, recipe_page
 
 recipes_bp = FlatBlueprint("recipes", __name__)
@@ -45,13 +47,13 @@ def recipes_list():
     # The choices in use, each with the address without it; the order too when it is not the newest first
     active = [(text, without(g['key'], value)) for g in groups for value, text, on in g['options'] if on]
     if sort != 'new':
-        active.insert(0, (SORT_LABELS[sort], without('sort', sort)))
+        active.insert(0, (label(SORT_LABELS[sort]), without('sort', sort)))
     # In All the drawer starts with the order: one choice, no Any
-    order = ({'key': 'sort', 'label': 'Order', 'single': True, 'any': False,
-              'options': [(key, label, key == sort) for key, label in SORT_LABELS.items()]}
+    order = ({'key': 'sort', 'label': label('Order'), 'single': True, 'any': False,
+              'options': [(key, label(text), key == sort) for key, text in SORT_LABELS.items()]}
              if view_mode == 'discover' else None)
-    shortcuts = [(label, url_for('recipes_list', **args.to_dict(flat=False)), on) for label, args, on in quick(request.args)]
-    views = [(key, label) for key, label, signed_in in VIEWS if current_user.is_authenticated or not signed_in]
+    shortcuts = [(text, url_for('recipes_list', **args.to_dict(flat=False)), on) for text, args, on in quick(request.args)]
+    views = [(key, label(text)) for key, text, signed_in in VIEWS if current_user.is_authenticated or not signed_in]
     return render_template('recipes_list.html', recipes=page.recipes, total=page.total, more_url=more_url,
                            current_view=view_mode, views=views, title=dict(views)[view_mode], groups=groups,
                            order=order, q=filters.q, active=active, shortcuts=shortcuts,
@@ -168,7 +170,7 @@ def search_recipes_api():
 def recipe_detail(recipe_id):
     recipe = db.session.get(Recipe, recipe_id)
     if not recipe or (recipe.status != 'approved' and not viewer_is_admin()):
-        flash("Recipe not found.", "error")
+        flash(gettext("Recipe not found."), "error")
         return redirect(url_for('discover'))
 
     # The old recipes (model v1) are retired: archived, and their page is gone (scripts/retire_v1.py)
@@ -226,7 +228,7 @@ def recipe_print(recipe_id):
     """The river delta on one A4 sheet, portrait or landscape. Opens the print dialog unless ?auto=0."""
     recipe = db.session.get(Recipe, recipe_id)
     if not recipe or (recipe.status != 'approved' and not viewer_is_admin()):
-        flash("Recipe not found.", "error")
+        flash(gettext("Recipe not found."), "error")
         return redirect(url_for('discover'))
     if recipe.schema_version != 2:
         return redirect(url_for('recipe_detail', recipe_id=recipe_id))
