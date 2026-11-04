@@ -3,6 +3,7 @@ Queue Blueprint — Manages the user's personal 'Cook Next' queue.
 
 Routes:
     GET  /next-recipes           — The queue management page.
+    GET  /api/me/queue           — The ids in the queue, for the cards.
     POST /api/queue/add/<id>     — Add a recipe to the user's queue (idempotent).
     POST /api/queue/reorder      — Persist a new drag-and-drop ordering.
     DELETE /api/queue/remove/<id>— Remove a recipe from the queue.
@@ -30,6 +31,18 @@ def next_recipes_view() -> str:
     """Legacy route: Redirects to the unified library view."""
     from flask import redirect, url_for
     return redirect(url_for('recipes_list', view='next'))
+
+
+# ---------------------------------------------------------------------------
+# API: Read
+# ---------------------------------------------------------------------------
+
+@queue_bp.route("/api/me/queue", methods=["GET"])
+@login_required
+def my_queue():
+    """The ids of the recipes in the current user's queue, so the cards can show which are in it (base.html)."""
+    ids = db.session.execute(db.select(UserQueue.recipe_id).where(UserQueue.user_id == current_user.id)).scalars().all()
+    return jsonify(queued_ids=list(ids))
 
 
 # ---------------------------------------------------------------------------

@@ -40,7 +40,7 @@
                 <summary><h1>{{ title }}</h1>{{ icon('chevron-down') }}<span class="lbar-count" data-lv-swap="total">{{ total }}</span></summary>
                 <nav class="lbar-menu" aria-label="Which recipes">
                     {% for key, label in views %}
-                    <a href="{{ url_for('recipes_list', view=key if key != 'discover' else none) }}"{% if key == current_view %} aria-current="page"{% endif %}>{{ icon({'discover': 'book', 'saved': 'heart', 'made': 'check', 'next': 'pot'}[key]) }}{{ label }}</a>
+                    <a href="{{ url_for('recipes_list', view=key if key != 'discover' else none) }}"{% if key == current_view %} aria-current="page"{% endif %}>{{ icon({'discover': 'book', 'saved': 'heart', 'made': 'check', 'next': 'list-plus'}[key]) }}{{ label }}</a>
                     {% endfor %}
                 </nav>
             </details>
@@ -78,7 +78,7 @@
     {% if not recipes %}
     {% set empties = {'saved': ('heart', 'No saved recipes yet', 'Tap the heart on a recipe to keep it here.', 'Find recipes'),
                       'made': ('check', 'Nothing cooked yet', 'Mark a recipe as made after you cook it, and it shows up here.', 'Find recipes'),
-                      'next': ('pot', 'Nothing to cook next', 'Tap the pot on a recipe to put it in your queue.', 'Find recipes')} %}
+                      'next': ('list-plus', 'Nothing to cook next', 'Tap the plus on a recipe to put it in your queue.', 'Find recipes')} %}
     {% set ic, line, hint, go = empties.get(current_view, ('search', 'No recipes yet', 'New dishes are on their way.', 'Discover')) %}
     {% if in_use or q %}{% set ic, line, hint, go = ('search', 'No recipes match', 'Try fewer filters, or clear them.', 'Clear filters') %}{% endif %}
     <div class="lib-empty">

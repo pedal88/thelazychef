@@ -65,6 +65,13 @@ class OverviewMineTests(unittest.TestCase):
         self.assertIn('data-mine="queue" aria-pressed="true"', html)
         self.assertIn('>In Cook next</span>', html)
 
+    def test_the_cards_can_read_the_queue(self):
+        self.assertEqual(self.client.get('/api/me/queue').status_code, 302)
+        self.login()
+        self.assertEqual(self.client.get('/api/me/queue').get_json()['queued_ids'], [])
+        self.client.post(f'/api/queue/add/{self.recipe.id}')
+        self.assertEqual(self.client.get('/api/me/queue').get_json()['queued_ids'], [self.recipe.id])
+
     def test_unsaving_keeps_made_and_the_rating(self):
         self.login()
         self.client.post(f'/api/recipes/{self.recipe.id}/favorite')

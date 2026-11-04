@@ -14,7 +14,7 @@ from services import funnel, google_signin, signup
 auth_bp = FlatBlueprint("auth", __name__)
 
 # What a new user reads above the quick dishes, when they did not sign up from a dish
-FIRST_DISH = 'These are on the table in 30 minutes: tap the pot on one to cook it next.'
+FIRST_DISH = 'These are on the table in 30 minutes: tap the plus on one to cook it next.'
 
 
 def _email(form):
