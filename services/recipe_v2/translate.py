@@ -47,11 +47,13 @@ def _system():
     return env.get_template('recipe_v2/translate.jinja2').render(glossary=glossary())
 
 
-def _as_rows(words, pantry_names):
-    """source()'s text as what Claude reads: each table as a list of rows with their ids."""
+def _as_rows(words, pantry_names, amounts):
+    """source()'s text as what Claude reads: each table as a list of rows with their ids, and on a line what it needs
+    to get the number right."""
     def rows(key):
         return [{'id': lid, **fields} for lid, fields in words[key].items()]
-    lines = [{**row, **({'pantry_name_nb': pantry_names[row['id']]} if pantry_names.get(row['id']) else {})} for row in rows('lines')]
+    lines = [{**row, **amounts.get(row['id'], {}), **({'pantry_name_nb': pantry_names[row['id']]} if pantry_names.get(row['id']) else {})}
+             for row in rows('lines')]
     return {k: words[k] for k in ('title', 'chef_note', 'yield_text') if k in words} | {
         'components': rows('components'), 'lines': lines, 'steps': rows('steps')}
 
@@ -64,16 +66,17 @@ def _from_rows(answer):
         key: {row['id']: filled(row) for row in answer.get(key) or []} for key in ('components', 'lines', 'steps')}
 
 
-def translate_recipe(recipe, call=None):
-    """(words in source()'s shape, ready for translation.save, or None; the attempts with their cost)."""
+def translate_recipe(recipe, call=None, model=TRANSLATE_MODEL):
+    """(words in source()'s shape, ready for translation.save, or None; the attempts with their cost and problems)."""
     call = call or claude.call
     original = translation.source(recipe)
     pantry_names = {i.local_id: i.ingredient.name_nb for i in recipe.lines if i.ingredient is not None and i.ingredient.name_nb}
-    messages = [{'role': 'user', 'content': json.dumps(_as_rows(original, pantry_names), ensure_ascii=False)}]
+    amounts = {i.local_id: {k: v for k, v in (('amount', i.amount), ('unit', i.unit)) if v is not None} for i in recipe.lines}
+    messages = [{'role': 'user', 'content': json.dumps(_as_rows(original, pantry_names, amounts), ensure_ascii=False)}]
     system = _system()
     attempts = []
     for n in range(1 + MAX_RETRIES):
-        msg, usage = call(TRANSLATE_MODEL, TRANSLATE_EFFORT, messages, system=system, schema=RECIPE_SCHEMA)
+        msg, usage = call(model, TRANSLATE_EFFORT, messages, system=system, schema=RECIPE_SCHEMA)
         try:
             if msg.stop_reason in ('refusal', 'max_tokens'):
                 raise ValueError(f'stop_reason {msg.stop_reason}')
@@ -91,7 +94,7 @@ def translate_recipe(recipe, call=None):
     return None, attempts
 
 
-def translate_pantry(items, call=None):
+def translate_pantry(items, call=None, model=TRANSLATE_MODEL):
     """({ingredient id: Norwegian name}, usages) for these Ingredients. What an answer leaves out stays without a name."""
     call = call or claude.call
     names, usages = {}, []
@@ -101,7 +104,7 @@ def translate_pantry(items, call=None):
         asked = {i.id for i in batch}
         content = json.dumps({'pantry': [{'id': i.id, 'name': i.name, 'category': i.sub_category or i.main_category} for i in batch]},
                              ensure_ascii=False)
-        msg, usage = call(TRANSLATE_MODEL, TRANSLATE_EFFORT, [{'role': 'user', 'content': content}], system=system, schema=PANTRY_SCHEMA)
+        msg, usage = call(model, TRANSLATE_EFFORT, [{'role': 'user', 'content': content}], system=system, schema=PANTRY_SCHEMA)
         usages.append(usage)
         try:
             found = json.loads(claude.text_of(msg))['items']

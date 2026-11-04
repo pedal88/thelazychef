@@ -22,7 +22,7 @@ os.environ.setdefault('GOOGLE_API_KEY', 'test-key')
 from app import app  # noqa: E402
 from database.models import Ingredient, Recipe, RecipeTranslation, db  # noqa: E402
 from scripts import translate as script  # noqa: E402
-from services.ai_models import TRANSLATE_MODEL  # noqa: E402
+from services.ai_models import CLAUDE_OPUS, TRANSLATE_MODEL  # noqa: E402
 from services.recipe_v2 import translate, translation  # noqa: E402
 from services.recipe_v2.store import save_v2  # noqa: E402
 
@@ -158,6 +158,7 @@ class TranslateTests(unittest.TestCase):
         translate.translate_recipe(self.recipe, call=stand_in(seen=seen))
         asked = json.loads(seen[0]['messages'][0]['content'])
         self.assertEqual(asked['lines'][0]['pantry_name_nb'], 'hvitløk')
+        self.assertEqual(asked['lines'][0]['amount'], self.recipe.lines[0].amount)
         self.assertNotIn('pantry_name_nb', asked['lines'][1])
 
     def test_pantry_names_in_batches_and_only_what_was_asked(self):
@@ -203,6 +204,43 @@ class TranslateTests(unittest.TestCase):
             self._script('--remove', '--ids', str(self.recipe.id), '--apply')
             self.assertIsNone(db.session.get(RecipeTranslation, (self.recipe.id, 'nb')))
 
+    def test_the_script_can_try_a_model_and_save_the_file_later_without_paying_again(self):
+        item = Ingredient(food_id='900001', name='garlic', status='active')
+        db.session.add(item)
+        self.recipe.lines[0].ingredient = item
+        db.session.commit()
+        seen = []
+
+        def call(model, effort, messages, system=None, schema=None):
+            if 'pantry' in messages[0]['content'][:12]:
+                seen.append(model)
+                rows = [{'id': r['id'], 'name_nb': 'hvitløk'} for r in json.loads(messages[0]['content'])['pantry']]
+                return SimpleNamespace(content=[SimpleNamespace(type='text', text=json.dumps({'items': rows}))], stop_reason='end_turn'), {'cost_usd': 0.01}
+            seen.append(model)
+            return stand_in()(model, effort, messages, system=system, schema=schema)
+        with tempfile.TemporaryDirectory() as home:
+            self.home = Path(home)
+            self._script('--ids', str(self.recipe.id), '--try', '--model', 'opus', call=call)
+            self.assertEqual(set(seen), {CLAUDE_OPUS})
+            self.assertIsNone(db.session.get(RecipeTranslation, (self.recipe.id, 'nb')))
+            self.assertIsNone(db.session.execute(db.select(Ingredient).filter_by(food_id='900001')).scalar_one().name_nb)
+            kept = next((self.home / 'promptlab-runs' / 'translate').glob('*.json'))
+            self._script('--from-file', str(kept))  # without --apply: nothing yet
+            self.assertIsNone(db.session.get(RecipeTranslation, (self.recipe.id, 'nb')))
+            self._script('--from-file', str(kept), '--apply')  # Claude is not called
+            self.assertEqual(db.session.get(RecipeTranslation, (self.recipe.id, 'nb')).title, 'Carbonara NB')
+            self.assertEqual(db.session.execute(db.select(Ingredient).filter_by(food_id='900001')).scalar_one().name_nb, 'hvitløk')
+
+    def test_a_saved_file_is_left_out_when_the_words_have_changed(self):
+        with tempfile.TemporaryDirectory() as home:
+            self.home = Path(home)
+            self._script('--ids', str(self.recipe.id), '--try', call=stand_in())
+            kept = next((self.home / 'promptlab-runs' / 'translate').glob('*.json'))
+            self.recipe.steps[0].short = 'Something else'
+            db.session.commit()
+            self._script('--from-file', str(kept), '--apply')
+            self.assertIsNone(db.session.get(RecipeTranslation, (self.recipe.id, 'nb')))
+
     def test_the_script_leaves_a_recipe_written_in_norwegian(self):
         self.recipe.language = 'nb'
         db.session.commit()
@@ -214,6 +252,7 @@ class TranslateTests(unittest.TestCase):
     def test_the_glossary_is_well_formed(self):
         words = translate.glossary()
         self.assertEqual(words['food']['cream'], 'fløte')
+        self.assertEqual(words['food']['sirloin'], 'ytrefilet')
         self.assertTrue(all(isinstance(v, str) and v for part in ('food', 'cooking') for v in words[part].values()))
 
 

@@ -107,7 +107,7 @@ constants in the code and measured runs:
 | Pantry job | about $0.01–0.05 per recipe with unlinked lines, an estimate since it also reads the recipe. More recipes reach it now that lines link by name only, fewer as its aliases add up | `pantry_fill.fill` returns `cost_usd` |
 | The pantry's names in round 1 (`idea`, `version`) | about $0.03 for the first recipe, a tenth of that within the cache's 5 minutes; an estimate | `claude.call` usage |
 | A video saved to the inbox | under $0.01, an estimate that has not been measured (Sonnet, one short call; nothing when the caption cannot be read). Many at once: at most 1000, about $10; the page shows it before saving | `services/recipe_v2/inbox.py`, `VIDEO_INBOX_MODEL` |
-| One recipe in Norwegian | about $0.01–0.05, an estimate that has not been measured (Sonnet); only from `scripts/translate.py`, which prints the real cost | `TRANSLATE_MODEL`, `services/recipe_v2/translate.py` |
+| One recipe in Norwegian | about $0.04 on Sonnet (five measured 04.11.2026, $0.016–0.058), about twice that on Opus; only from `scripts/translate.py`, which prints the real cost | `TRANSLATE_MODEL`, `services/recipe_v2/translate.py` |
 | A symbol (ingredient, category, cuisine) | about $0.04 | `scripts/category_symbols.py`, `fill_pantry --symbols` |
 | Batch page estimate | text + images per line, shown before "Make" | `routes/recipe_v2_routes.py` `batch_new` |
 
