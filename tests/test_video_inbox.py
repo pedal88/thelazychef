@@ -200,17 +200,14 @@ class RouteTests(unittest.TestCase):
             tasks.run_inbox(row.id)
         look_up.assert_not_called()
 
-    def test_what_is_no_recipe_is_kept_apart(self):
-        db.session.add_all([VideoInbox(url=TIKTOK, video_key='a', dish_name='Soup', webpage_url=TIKTOK, suggestions={'is_recipe': True}),
-                            VideoInbox(url=TIKTOK, video_key='b', dish_name='A dance', webpage_url=TIKTOK, suggestions={'is_recipe': False})])
+    def test_every_saved_video_is_in_the_list(self):  # Pål chooses the links, so nothing is sorted away by its caption
+        db.session.add_all([VideoInbox(url=TIKTOK, video_key='a', dish_name='Soup', webpage_url=TIKTOK),
+                            VideoInbox(url=TIKTOK, video_key='b', dish_name='Bowls', webpage_url=TIKTOK, suggestions={'is_recipe': False})])
         db.session.commit()
         html = self.client.get('/admin/inbox').get_data(as_text=True)
         self.assertIn('Soup', html)
-        self.assertNotIn('A dance', html)
-        self.assertIn('1 that does not look like a recipe', html)
-        html = self.client.get('/admin/inbox?show=not-recipes').get_data(as_text=True)
-        self.assertIn('A dance', html)
-        self.assertNotIn('Soup', html)
+        self.assertIn('Bowls', html)
+        self.assertNotIn('look like a recipe', html)
 
     def test_a_link_can_be_pasted_when_the_page_gets_none(self):
         html = self.client.get('/admin/inbox/add').get_data(as_text=True)
@@ -269,7 +266,7 @@ class RouteTests(unittest.TestCase):
             return SimpleNamespace(content=[SimpleNamespace(type='text', text=json.dumps(answer))]), {'cost_usd': 0.001}
         return call
 
-    ANSWER = {'is_recipe': True, 'dish_name': 'Lemon orzo', 'cuisine': 'Italian', 'main_protein': 'Chicken',
+    ANSWER = {'dish_name': 'Lemon orzo', 'cuisine': 'Italian', 'main_protein': 'Chicken',
               'meal_types': ['Dinner'], 'similar': []}
 
     def test_a_video_is_looked_up_without_being_downloaded(self):

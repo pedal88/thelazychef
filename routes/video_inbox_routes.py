@@ -23,22 +23,13 @@ video_inbox_bp = Blueprint('video_inbox', __name__)
 log = logging.getLogger(__name__)
 
 
-def _not_a_recipe(row):
-    return (row.suggestions or {}).get('is_recipe') is False
-
-
 @video_inbox_bp.route('/admin/inbox')
 @login_required
 @admin_required
 def inbox():
-    show = request.args.get('show')
-    status = 'discarded' if show == 'discarded' else 'new'
-    rows = inbox_service.rows(status)
-    not_recipes = [r for r in rows if _not_a_recipe(r[0])] if status == 'new' else []
-    if status == 'new':  # what the caption says is no recipe is kept apart, since a long list is mostly not food
-        rows = not_recipes if show == 'not-recipes' else [r for r in rows if not _not_a_recipe(r[0])]
-    return render_template('video_inbox.html', rows=rows, status=status, show=show, titles=inbox_service.recipe_titles(),
-                           not_recipes=len(not_recipes), waiting=len(inbox_service.waiting()),
+    status = 'discarded' if request.args.get('show') == 'discarded' else 'new'
+    return render_template('video_inbox.html', rows=inbox_service.rows(status), status=status, titles=inbox_service.recipe_titles(),
+                           waiting=len(inbox_service.waiting()),
                            other=db.session.scalar(db.select(db.func.count()).select_from(VideoInbox).where(VideoInbox.status != status)))
 
 

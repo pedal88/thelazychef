@@ -177,8 +177,8 @@ def _proteins():
 
 def schema():
     return {'type': 'object', 'additionalProperties': False,
-            'required': ['is_recipe', 'dish_name', 'cuisine', 'main_protein', 'meal_types', 'similar'],
-            'properties': {'is_recipe': {'type': 'boolean'}, 'dish_name': {'type': 'string'},
+            'required': ['dish_name', 'cuisine', 'main_protein', 'meal_types', 'similar'],
+            'properties': {'dish_name': {'type': 'string'},
                            'cuisine': {'type': 'string', 'enum': list(CUISINES)},
                            'main_protein': {'type': 'string', 'enum': _proteins()},
                            'meal_types': {'type': 'array', 'items': {'type': 'string', 'enum': list(MEAL_TYPES)}},
@@ -202,7 +202,7 @@ def describe(row, title, call=None):
     answer = json.loads(claude.text_of(msg))
     row.dish_name = (answer.get('dish_name') or '').strip()[:200] or None
     row.similar = [i for i in dict.fromkeys(answer.get('similar') or []) if i in titles][:SIMILAR_MAX]
-    row.suggestions = {k: answer.get(k) for k in ('is_recipe', 'cuisine', 'main_protein', 'meal_types')}
+    row.suggestions = {k: answer.get(k) for k in ('cuisine', 'main_protein', 'meal_types')}
 
 
 def look_up(row, extract=None, call=None):
