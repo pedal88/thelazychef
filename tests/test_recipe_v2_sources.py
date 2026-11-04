@@ -194,7 +194,9 @@ class WebRecipeTests(unittest.TestCase):
 
     def test_the_text_pasted_on_a_blocked_recipe_is_made_into_it(self):
         recipe = self.blocked()
-        page = self.client.get(f'/recipe/{recipe.id}').get_data(as_text=True)
+        recipe.source_text = 'the text of a failed round'
+        db.session.commit()
+        page =self.client.get(f'/recipe/{recipe.id}').get_data(as_text=True)
         self.assertIn(f'/new-recipe/v2/paste/{recipe.id}', page)
         self.assertIn('still based on blocked.example', page)
         text = 'Spinach and tomato frittata\n- 6 eggs\n- 1 handful spinach\n\n1. Whisk and bake.'
@@ -205,6 +207,7 @@ class WebRecipeTests(unittest.TestCase):
         recipe = db.session.get(Recipe, recipe.id)
         self.assertEqual((recipe.title, recipe.status, recipe.is_flagged_for_review, recipe.validation_errors),
                          ('Spinach and tomato frittata', 'generating', False, []))
+        self.assertIsNone(recipe.source_text)  # the waiting page starts from round 1
 
     def test_only_text_and_only_on_a_recipe_without_steps(self):
         recipe = self.blocked()

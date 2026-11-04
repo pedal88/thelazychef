@@ -1,36 +1,79 @@
 {% extends "base.html" %}
-{# Shown while Cloud Tasks makes the recipe. Polls the status and moves on to the recipe page when it is done. #}
+{# Shown while Cloud Tasks makes the recipe: a metro line, ahead of the job at the start and never at Done before the job is.
+   Polls the status, which says when round 1 is done, and moves on to the recipe page when the recipe is made. #}
 {% block title %}Making the recipe - The Lazy Chef{% endblock %}
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/recipe_v2.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/making.css') }}">
 {% endblock %}
 {% block content %}
 <article class="rv2">
   <p class="eyebrow">Making the recipe</p>
   <h1>{{ recipe.title }}</h1>
-  <div class="working" role="status" aria-live="polite">
-    <span class="spinner" aria-hidden="true"></span>
-    <p id="state">Writing the recipe, turning it into steps and matching the pantry. This usually takes under a minute.</p>
+  <div class="making" id="making" data-written="{{ '1' if recipe.source_text }}">
+    <div class="making-line" id="making-line" role="progressbar" aria-label="How far the recipe has come" aria-valuemin="0" aria-valuemax="100" aria-valuenow="8">
+      <span class="making-fill" id="making-fill"></span>
+    </div>
+    <ol class="making-stops">
+      <li data-at="0" style="--at: 0%">Idea</li>
+      <li data-at="20" style="--at: 20%">Recipe</li>
+      <li data-at="60" style="--at: 60%">Steps</li>
+      <li data-at="82" style="--at: 82%">Pantry</li>
+      <li data-at="100" style="--at: 100%">Done</li>
+    </ol>
+    <p class="making-state" id="state" role="status" aria-live="polite">Writing the recipe</p>
   </div>
-  <p class="hint">You can leave this page. The recipe appears among the drafts when it is done.</p>
+  <p class="hint">This usually takes about a minute. You can leave this page. The recipe appears among the drafts when it is done.</p>
 </article>
 {% endblock %}
 {% block scripts %}
 <script>
 (function () {
-  var started = Date.now();
+  var box = document.getElementById('making'), line = document.getElementById('making-line'),
+      fill = document.getElementById('making-fill'), state = document.getElementById('state'),
+      stops = [].slice.call(box.querySelectorAll('li')), key = 'making:{{ recipe.id }}', clock = null, timer;
+
+  // The clock lives in the tab, so coming back to the page carries on instead of starting over
+  try { clock = JSON.parse(sessionStorage.getItem(key)); } catch (e) {}
+  if (!clock || Date.now() - clock.started > 600000) clock = { started: Date.now(), written: null };
+  if (!box.dataset.written) clock.written = null;
+  else if (!clock.written) clock.written = Date.now();
+  function save() { try { sessionStorage.setItem(key, JSON.stringify(clock)); } catch (e) {} }
+  save();
+
+  // Estimated, and quick at first: toward Steps until round 1 is done, then toward 95 %. Only the job's end reaches Done.
+  function reached() {
+    if (clock.written) return 60 + 35 * (1 - Math.exp(-(Date.now() - clock.written) / 18000));
+    return 8 + 51.5 * (1 - Math.exp(-(Date.now() - clock.started) / 9000));
+  }
+  function draw(p) {
+    fill.style.width = p + '%';
+    line.setAttribute('aria-valuenow', Math.round(p));
+    stops.forEach(function (li) { li.classList.toggle('on', p >= +li.dataset.at); });
+    var text = p >= 100 ? 'Done' : Date.now() - clock.started > 120000 ? 'This is taking longer than usual. It keeps going in the background; you can come back later.'
+      : !clock.written ? 'Writing the recipe' : p < 82 ? 'Turning it into steps' : 'Matching the pantry';
+    if (state.textContent !== text) state.textContent = text;
+  }
+  function tick() { draw(reached()); }
+
   function check() {
     fetch("{{ url_for('recipe_v2.status', recipe_id=recipe.id) }}", { headers: { 'Accept': 'application/json' } })
       .then(function (r) { return r.json(); })
       .then(function (d) {
-        if (d.status !== 'generating') { window.location = d.url; return; }
-        if (Date.now() - started > 120000) {
-          document.getElementById('state').textContent = 'This is taking longer than usual. It keeps going in the background; you can come back later.';
+        if (d.status !== 'generating') {
+          clearInterval(timer);
+          draw(100);
+          try { sessionStorage.removeItem(key); } catch (e) {}
+          setTimeout(function () { window.location = d.url; }, 500);
+          return;
         }
+        if (d.written && !clock.written) { clock.written = Date.now(); save(); }
         setTimeout(check, 3000);
       })
       .catch(function () { setTimeout(check, 5000); });
   }
+  tick();
+  timer = setInterval(tick, 250);
   setTimeout(check, 3000);
 })();
 </script>

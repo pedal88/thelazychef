@@ -190,6 +190,22 @@ class GenerateTests(unittest.TestCase):
         self.assertEqual(recipe.source_text, 'the round 1 text')
         self.assertEqual(recipe.steps, [])
 
+    def test_the_round_1_text_of_a_placeholder_is_saved_before_round_2(self):
+        placeholder = Recipe(title='x', cuisine='', difficulty='', status='generating', schema_version=2)
+        db.session.add(placeholder)
+        db.session.commit()
+        seen = []
+        fake = FakeClaude(message('the round 1 text'), self._good())
+
+        def call(*args, **kwargs):
+            if kwargs.get('schema'):  # round 2: a rollback here keeps only what round 1 committed
+                db.session.rollback()
+                seen.append((placeholder.source_text, placeholder.status))
+            return fake(*args, **kwargs)
+
+        generate.create_recipe('idea', 'carbonara', call=call, recipe=placeholder)
+        self.assertEqual(seen, [('the round 1 text', 'generating')])
+
     def test_answers_cut_off_by_max_tokens_count_as_failed(self):
         fake = FakeClaude(message('text'), message('{"title": "Car', stop='max_tokens'), self._good())
         _, report = generate.create_recipe('idea', 'carbonara', call=fake)

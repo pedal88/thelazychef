@@ -181,6 +181,7 @@ def paste_source(recipe_id):
         return redirect(url_for('recipe_detail', recipe_id=recipe_id))
     recipe.title = text.splitlines()[0][:120]
     recipe.status, recipe.is_flagged_for_review, recipe.validation_errors = 'generating', False, []
+    recipe.source_text = None  # round 1 starts again (status)
     db.session.commit()
     try:
         tasks.enqueue(recipe.id, 'text', text, recipe.language)
@@ -252,7 +253,8 @@ def generating(recipe_id):
 @admin_required
 def status(recipe_id):
     recipe = db.session.get(Recipe, recipe_id) or abort(404)
-    return jsonify({'status': recipe.status, 'url': url_for('recipe_detail', recipe_id=recipe_id)})
+    # written: round 1 is done, so round 2 is turning the text into steps
+    return jsonify({'status': recipe.status, 'written': bool(recipe.source_text), 'url': url_for('recipe_detail', recipe_id=recipe_id)})
 
 
 IMAGES_COST = (0.15, 0.45)  # USD for the dish image and the part images of one recipe, with the checks

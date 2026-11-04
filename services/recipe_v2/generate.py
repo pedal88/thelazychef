@@ -211,6 +211,9 @@ def create_recipe(kind, source, chef_id=None, language=None, call=None, recipe=N
     age_from_months = recipe.age_from_months if recipe is not None else age_from_months
     chef = persona.spec(db.session.get(Chef, chef_id) if chef_id else None, settings, age_from_months)
     text, round1 = write_text(kind, source, language, call=call, chef=chef)
+    if recipe is not None:  # the waiting page reads this as round 1 being done (recipe_v2_routes.status)
+        recipe.source_text = text
+        db.session.commit()
     data, attempts = structure(text, call=call)
     calls = [round1] + attempts
 
