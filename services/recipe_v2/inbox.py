@@ -216,7 +216,9 @@ def describe(row, title, call=None):
 
 def _read(row, read=None):
     """Have the video watched and keep what it shows. Nothing here stops the look-up: a video not read now is read when
-    the recipe is made."""
+    the recipe is made. A video already read is not paid for again."""
+    if row.video_text:
+        return
     if (row.duration_s or 0) > READ_MAX_SECONDS:
         row.meta_error = TOO_LONG
         return
@@ -236,7 +238,8 @@ def written_down(url):
 
 def look_up(row, extract=None, call=None, read=None):
     """Fill the row from the video's page, its caption and what it shows. A video that cannot be read keeps its link and says why. A
-    short link that turns out to be a video already in the inbox is removed: returns the row that stays. The caller commits."""
+    short link that turns out to be a video already in the inbox is removed: returns the row that stays. The caller commits,
+    but the read is saved here: when the call after it fails, the retry must not pay for it again."""
     from services.social_media_service import SocialMediaExtractor
 
     try:
@@ -256,6 +259,7 @@ def look_up(row, extract=None, call=None, read=None):
         row.video_key = key
     row.meta_error = None
     _read(row, read)
+    db.session.commit()
     if row.caption or info.get('title') or row.video_text:  # nothing to read costs nothing
         describe(row, info.get('title'), call=call)
     return row

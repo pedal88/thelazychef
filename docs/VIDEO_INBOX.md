@@ -1,7 +1,8 @@
 # The video inbox
 
-Cooking videos seen on the phone are saved to `/admin/inbox`, to pick from later. Saving a video makes nothing and costs
-nothing. Admin only.
+Cooking videos seen on the phone are saved to `/admin/inbox`, to pick from later. Saving a video makes no recipe, but it
+costs money: the video is read in the background, about 3 cents for a TikTok (an estimate). The page says so before saving,
+and with many links the cost of them all is shown before anything is saved. Admin only.
 
 ## Pasting a link
 

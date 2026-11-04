@@ -40,7 +40,8 @@ def add_page():
     shared = request.args.get('url') or ''
     link = inbox_service.first_link(shared)
     usable = bool(link and is_video(link))
-    return render_template('video_inbox_add.html', shared=shared, link=link, usable=usable), 200 if usable or not shared else 400
+    return render_template('video_inbox_add.html', shared=shared, link=link, usable=usable,
+                           cents=round(inbox_service.COST_A_VIDEO * 100)), 200 if usable or not shared else 400
 
 
 @video_inbox_bp.route('/admin/inbox/add', methods=['POST'])
