@@ -250,3 +250,13 @@ a.done-made:hover { border-color: var(--color-serve); }
 }
 @keyframes done-up { from { transform: translateY(100%); } }
 @media (prefers-reduced-motion: reduce) { .done-sheet[open], .done-tick { animation: none; } }
+
+/* Done, under the step you are on (components/step_list.html): only in the list, and on a wide screen the card beside
+   the steps has it */
+.st { scroll-margin-top: 72px; }
+.st-next { display: none; }
+.slist:not([data-step-card]) > .st.is-next .st-next { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: var(--tap);
+  margin-top: var(--space-3); padding: 0 var(--space-4); border: 0; border-radius: var(--radius-pill); background: var(--color-ink); color: var(--color-paper);
+  font: 600 15px/1 var(--font-sans); cursor: pointer; }
+.slist:not([data-step-card]) > .st.is-next .st-next:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+@media (min-width: 1000px) { .slist:not([data-step-card]) > .st.is-next .st-next { display: none; } }

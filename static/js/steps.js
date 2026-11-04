@@ -1,7 +1,8 @@
 /* The one-page flow's two screens (templates/recipe_v2_make.html): the overview, and cooking at #cook, which hides
    the site's top bar and footer; the back button or × goes back. And the step list on the cooking screen
    (templates/components/step_list.html).
-   The number ticks a step off; the first step not ticked is the next one, and shows everything. The other steps
+   The number ticks a step off, and so does the Done button under the next step on a phone; the first step not ticked is
+   the next one, and shows everything. The other steps
    show one line and open on a tap, or all of them with the small details button at the bottom right
    (remembered for all recipes). A tap on a step in the timeline, the metro map or the delta opens the same card in a sheet, with its
    tick and timer. A step with waiting time has a
@@ -60,6 +61,7 @@
       r.querySelector('.st-tick').setAttribute('aria-pressed', String(on));
       const n = r.querySelector('.n');
       n.textContent = on ? '✓' : n.dataset.n;
+      r.querySelector('[data-step-next]').innerHTML = rows.length - done.size === 1 ? 'Done' : 'Done <span aria-hidden="true">→</span> next step';
     });
     lists.forEach(l => { l.classList.toggle('all', all); l.classList.toggle('focus', !all); });
     laterNow();
@@ -661,7 +663,7 @@
     // A step in a view, or in the list beside the card, when the card is shown: shown beside it. In the delta a
     // tap anywhere on a step's box shows its first step.
     const shown = el => { const sp = el && splits.find(x => x.panel.contains(el)); return sp && getComputedStyle(sp.card).display !== 'none' ? el : null; };
-    const railRow = !t.closest('.st-tick, [data-start]') && t.closest('.rail-main .st[data-st]');
+    const railRow = !t.closest('.st-tick, [data-start], [data-step-next]') && t.closest('.rail-main .st[data-st]');
     const box = !t.closest('.fx-no') && !t.closest('.fx-seg') && t.closest('.dl-panel .g2-node');
     const pick = shown(!t.closest('.fx-no') && t.closest('.split-main [data-step]')) || shown(railRow) || shown(box && box.querySelector('.fx-seg[data-step]'));
     if (pick) {
@@ -680,6 +682,12 @@
     if (!row) { setTimeout(bowls); return; }
     if (t.closest('[data-start]')) { start(row); return; }
     if (t.closest('.st-tick')) { tick(row); return; }
+    if (t.closest('[data-step-next]')) {  // done, and the next step in view, its top clear of the back button
+      tick(row);
+      const id = nextId();
+      if (id) byId[id].scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+      return;
+    }
     if (t.closest('a') || row.closest('[data-step-card]') || all || row.classList.contains('is-next')) return;
     // Open or close another step to read it
     opened.has(row.dataset.st) ? opened.delete(row.dataset.st) : opened.add(row.dataset.st);

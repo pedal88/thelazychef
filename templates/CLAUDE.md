@@ -40,6 +40,8 @@ One page, `recipe_v2_make.html`, from `services/recipe_v2/view.page`: the overvi
 
 - `steps.js` owns which steps are done (`st.done`) and announces it (`steps:done`); the bowls ask for it
   (`ready:steps`), so the bowls and the step list always agree.
+- A step is done with a tap on its number, or on a phone with Done under the next step (`.st-next`, `data-step-next`); a wide
+  screen has that button on the card beside the steps.
 - Servings scale every amount (`static/js/servings.js`).
 - When the last step is ticked off, `steps.js` says `steps:finished` and the celebration opens (`#sheet-done`; Made it on
   the overview and below the steps, `[data-made-it]`, open it at any time,
