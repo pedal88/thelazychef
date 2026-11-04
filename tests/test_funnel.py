@@ -141,6 +141,17 @@ class FunnelTests(unittest.TestCase):
         db.session.commit()
         self.assertEqual(funnel.posted_recipes(), [7, 8, 5])
 
+    def test_the_recipes_of_posts_not_up_yet_are_left_out(self):
+        day = datetime.date(2026, 11, 1)
+        db.session.add_all([
+            SocialPost(platform='tiktok', code='1', format='map', recipe_id=5, title='A', posted_on=day),
+            SocialPost(platform='tiktok', code='2', format='map', recipe_id=6, title='B', posted_on=day,
+                       status='draft'),
+            SocialPost(platform='instagram', code='2', format='map', recipe_id=7, title='B', posted_on=day,
+                       status='scheduled')])
+        db.session.commit()
+        self.assertEqual(funnel.posted_recipes(), [5])
+
     def test_a_visit_counts_once_when_the_page_asks_not_when_the_address_is_fetched(self):
         self.client.get('/tiktok/3')
         self.assertEqual(self.visits(), set())

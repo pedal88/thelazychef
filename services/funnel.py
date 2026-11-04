@@ -238,10 +238,11 @@ def post_view(post, ids, user=None):
 
 
 def posted_recipes():
-    """Every recipe the posts showed, the newest post first, each once: the home page's "From our posts" row
-    (services/content/blocks.Recipes, source "posts")."""
+    """Every recipe the posts that are up showed (not drafts or scheduled ones), the newest post first, each once:
+    the home page's "From our posts" row (services/content/blocks.Recipes, source "posts")."""
     posts = db.session.execute(
-        db.select(SocialPost).order_by(SocialPost.posted_on.desc(), SocialPost.id.desc())).scalars()
+        db.select(SocialPost).where(SocialPost.status == 'posted')
+        .order_by(SocialPost.posted_on.desc(), SocialPost.id.desc())).scalars()
     return list(dict.fromkeys(i for post in posts for i in _ids_of(post)))
 
 
