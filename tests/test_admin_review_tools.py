@@ -42,6 +42,13 @@ class AdminReviewToolTests(unittest.TestCase):
         self.assertTrue(self.client.post(f'/admin/recipes/{rid}/cuisine', json={'cuisine': 'Nordic'}).get_json()['success'])
         self.assertEqual(db.session.get(Recipe, rid).cuisine, 'Nordic')
 
+    def test_the_list_shows_each_recipes_number_and_sorts_by_it(self):
+        rid = self.ids['carbonara']
+        self.login()
+        page = self.client.get('/admin/recipes-management').get_data(as_text=True)
+        self.assertRegex(page, rf'<td class="recipe-number[^"]*">{rid}</td>')
+        self.assertIn('sort=id&dir=asc', page)  # the newest first, as it opens; a click turns it round
+
     def test_an_alias_is_added_from_ingredients_management(self):
         self.login()
         self.assertIn('data-alias-food', self.client.get('/admin/ingredients-management/').get_data(as_text=True))

@@ -230,6 +230,7 @@
                                     <th scope="col" data-sort-method="none"
                                         class="py-3.5 pl-4 pr-3 text-left text-xs font-semibold text-gray-900 sm:pl-6 no-sort">
                                         Image</th>
+                                    {{ sortable_th('#', 'id', 'py-3.5 px-3 text-left text-xs font-semibold text-gray-900') }}
                                     {{ sortable_th('Name', 'title', 'py-3.5 pl-4 pr-3 text-left text-xs font-semibold
                                     text-gray-900') }}
                                     <th scope="col" data-sort-method="none"
@@ -292,6 +293,7 @@
                                         </div>
                                         {% endif %}
                                     </td>
+                                    <td class="recipe-number whitespace-nowrap px-3 py-4 text-sm text-gray-500 tabular-nums">{{ recipe.id }}</td>
                                     <td class="px-3 py-4 text-sm font-medium text-gray-900 max-w-xs">
                                         <a href="{{ url_for('recipe_detail', recipe_id=recipe.id) }}"
                                             class="line-clamp-2 whitespace-normal hover:text-orange-600 hover:underline"
