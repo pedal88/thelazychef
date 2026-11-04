@@ -25,8 +25,10 @@
       return send.apply(this, arguments).then(function (r) {
         if (r.status === 403 && r.headers.get('{{ header }}')) {
           var note = document.getElementById('view-as-note');
-          note.textContent = 'Nothing was saved: this is what a {{ seen_as }} sees.';
+          note.textContent = {{ note|tojson }};
           note.hidden = false;
+          clearTimeout(window.viewAsNote);  // gone again soon: taller, the bar covers the buttons pinned at the top of a recipe
+          window.viewAsNote = setTimeout(function () { note.hidden = true; }, 6000);
         }
         return r;
       });
