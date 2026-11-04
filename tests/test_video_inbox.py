@@ -19,7 +19,8 @@ os.environ.pop('K_SERVICE', None)
 
 from app import app  # noqa: E402
 from database.models import Recipe, User, VideoInbox, db  # noqa: E402
-from services.recipe_v2 import inbox, tasks  # noqa: E402
+from services.recipe_v2 import inbox, sources, tasks  # noqa: E402
+from services.social_media_service import SocialMediaExtractor  # noqa: E402
 
 TIKTOK = 'https://www.tiktok.com/@cook/video/123'
 
@@ -148,6 +149,12 @@ class RouteTests(unittest.TestCase):
         self.assertEqual(self._count(), 3)
         self.assertEqual(queue.call_count, 1)
 
+    def test_the_cost_of_reading_shows_before_anything_is_saved(self):
+        html = self.client.post('/admin/inbox/check', data={'text': self._many(3)}).get_data(as_text=True)
+        self.assertIn(f"about {3 * inbox.COST_A_VIDEO:.2f} USD", html)
+        self.assertEqual(self._count(), 0)
+        self.assertIn(f'about {round(inbox.COST_A_VIDEO * 100)} cents', self.client.get('/admin/inbox/add').get_data(as_text=True))
+
     def test_a_list_over_the_limit_says_so_and_saves_the_limit(self):
         with mock.patch.object(inbox, 'MAX_LINKS', 2):
             html = self.client.post('/admin/inbox/check', data={'text': self._many(3)}).get_data(as_text=True)
@@ -193,12 +200,25 @@ class RouteTests(unittest.TestCase):
         run.assert_called_once_with([1])
 
     def test_a_look_up_queued_twice_costs_once(self):
-        row = VideoInbox(url=TIKTOK, video_key='tiktok:123', webpage_url=TIKTOK, dish_name='Soup')
+        row = VideoInbox(url=TIKTOK, video_key='tiktok:123', webpage_url=TIKTOK, dish_name='Soup', video_text='Soup')
         db.session.add(row)
         db.session.commit()
         with mock.patch.object(inbox, 'look_up') as look_up:
             tasks.run_inbox(row.id)
         look_up.assert_not_called()
+
+    def test_a_row_looked_up_before_videos_were_read_can_be_read(self):
+        row = VideoInbox(url=TIKTOK, video_key='tiktok:123', webpage_url=TIKTOK, dish_name='Soup', meta_error=inbox.NOT_READ)
+        db.session.add(row)
+        db.session.commit()
+        self.assertIn('Look up', self.client.get('/admin/inbox').get_data(as_text=True))
+        with mock.patch.object(tasks, 'enqueue_inbox', return_value=True):
+            self.client.post(f'/admin/inbox/{row.id}/look-up')
+        db.session.refresh(row)
+        self.assertIsNone(row.meta_error)  # else the task would think it was done
+        with mock.patch.object(inbox, 'look_up') as look_up:
+            tasks.run_inbox(row.id)
+        look_up.assert_called_once()
 
     def test_every_saved_video_is_in_the_list(self):  # Pål chooses the links, so nothing is sorted away by its caption
         db.session.add_all([VideoInbox(url=TIKTOK, video_key='a', dish_name='Soup', webpage_url=TIKTOK),
@@ -269,7 +289,9 @@ class RouteTests(unittest.TestCase):
     ANSWER = {'dish_name': 'Lemon orzo', 'cuisine': 'Italian', 'main_protein': 'Chicken',
               'meal_types': ['Dinner'], 'similar': []}
 
-    def test_a_video_is_looked_up_without_being_downloaded(self):
+    READ = staticmethod(lambda url: 'Lemon orzo\n- 200 g orzo')
+
+    def test_a_video_is_looked_up_and_read(self):
         recipe = self._approved()
         draft = Recipe(title='A draft', cuisine='', difficulty='', status='draft', schema_version=2)
         db.session.add(draft)
@@ -278,7 +300,7 @@ class RouteTests(unittest.TestCase):
         extract = lambda url: {'caption': 'Lemon orzo #dinner', 'title': 't', 'uploader': 'cook', 'duration': 61.5,  # noqa: E731
                                'webpage_url': TIKTOK + '?_t=1'}
         answer = dict(self.ANSWER, similar=[recipe.id, recipe.id, 99999, draft.id])
-        inbox.look_up(row, extract=extract, call=self._claude(answer, seen))
+        inbox.look_up(row, extract=extract, call=self._claude(answer, seen), read=self.READ)
         db.session.commit()
 
         self.assertEqual((row.dish_name, row.uploader, row.duration_s), ('Lemon orzo', 'cook', 61))
@@ -288,9 +310,112 @@ class RouteTests(unittest.TestCase):
         self.assertIn('Chicken Pad Thai', seen[0]['system'])
         self.assertNotIn('A draft', seen[0]['system'])
         self.assertIn('Lemon orzo #dinner', seen[0]['user'])
+        self.assertIn('200 g orzo', seen[0]['user'])
+        self.assertEqual(row.video_text, 'Lemon orzo\n- 200 g orzo')
         html = self.client.get('/admin/inbox').get_data(as_text=True)
-        for text in ('Lemon orzo', 'Looks like:', 'Chicken Pad Thai', 'Italian · Chicken · Dinner', 'cook'):
+        for text in ('Lemon orzo', 'Looks like:', 'Chicken Pad Thai', 'Italian · Chicken · Dinner', 'cook', 'What the video shows'):
             self.assertIn(text, html)
+
+    def test_the_recipe_is_made_from_what_the_inbox_read(self):
+        self._row().video_text = 'Read once'
+        db.session.commit()
+        self.assertEqual(inbox.written_down(TIKTOK + '?_t=1'), 'Read once')
+        self.assertIsNone(inbox.written_down('https://www.tiktok.com/@other/video/999'))
+
+    def _through_the_queue(self, reads, read=None, call=None):
+        def counted(url):
+            reads.append(url)
+            return read(url) if read else 'Soup\n- 1 l stock'
+        return (mock.patch.object(SocialMediaExtractor, 'extract_metadata', return_value={'caption': 'Soup', 'webpage_url': TIKTOK}),
+                mock.patch.object(inbox, 'fetch_video_text', counted),
+                mock.patch.object(inbox.claude, 'call', call or self._claude(self.ANSWER)))
+
+    def test_a_video_is_paid_for_once_and_the_recipe_uses_that_read(self):
+        from services.recipe_v2 import generate
+
+        row = self._row()
+        reads, seen = [], []
+        first, second, third = self._through_the_queue(reads)
+        with first, second, third:
+            tasks.run_inbox(row.id)
+            tasks.run_inbox(row.id)  # queued twice
+        self.assertEqual(len(reads), 1)
+
+        def round_1(model, effort, messages, system=None, schema=None):
+            seen.append(messages[0]['content'])
+            raise RuntimeError('stop after round 1')
+
+        def not_watched(url):
+            raise AssertionError('the video is read once')
+
+        with mock.patch('services.recipe_v2.sources.fetch_video_text', not_watched), mock.patch.object(inbox.claude, 'call', round_1), \
+                self.assertRaises(RuntimeError):
+            generate.create_recipe('video', TIKTOK)
+        self.assertIn('1 l stock', seen[0])
+
+    def test_a_retry_after_the_read_does_not_pay_for_it_again(self):
+        row = self._row()
+        reads, answers = [], [RuntimeError('anthropic 529 raw')]
+        good = self._claude(self.ANSWER)
+
+        def flaky(*a, **k):
+            if answers:
+                raise answers.pop()
+            return good(*a, **k)
+
+        first, second, third = self._through_the_queue(reads, call=flaky)
+        with first, second, third:
+            with self.assertRaises(RuntimeError):
+                tasks.run_inbox(row.id, attempt=0)
+            tasks.run_inbox(row.id, attempt=1)
+        db.session.refresh(row)
+        self.assertEqual(len(reads), 1)
+        self.assertEqual((row.dish_name, row.video_text), ('Lemon orzo', 'Soup\n- 1 l stock'))
+
+    def test_a_failed_read_keeps_the_video_and_is_not_paid_for_twice(self):
+        row = self._row()
+        reads = []
+
+        def fails(url):
+            raise RuntimeError('gemini 503 raw')
+
+        first, second, third = self._through_the_queue(reads, read=fails)
+        with first, second, third:
+            tasks.run_inbox(row.id)
+            tasks.run_inbox(row.id)
+        db.session.refresh(row)
+        self.assertEqual(len(reads), 1)
+        self.assertEqual((row.dish_name, row.meta_error), ('Lemon orzo', inbox.NOT_READ))
+        html = self.client.get('/admin/inbox').get_data(as_text=True)
+        self.assertIn('Lemon orzo', html)
+        self.assertNotIn('503', html)
+
+    def test_a_video_that_was_not_read_still_gets_its_details(self):
+        extract = lambda url: {'caption': 'Bowls', 'webpage_url': TIKTOK}  # noqa: E731
+
+        def fails(url):
+            raise RuntimeError('gemini 503 raw')
+
+        def no_recipe(url):
+            raise sources.NoRecipeInVideo('none')
+
+        def not_called(url):
+            raise AssertionError('a long video is not read')
+        def no_answer(url):
+            raise sources.NoAnswerFromVideo('none')
+
+        for read, duration, message in ((fails, 40, inbox.NOT_READ), (no_recipe, 40, inbox.NO_RECIPE_SHOWN), (no_answer, 40, inbox.NO_ANSWER),
+                                        (not_called, inbox.READ_MAX_SECONDS + 1, inbox.TOO_LONG)):
+            with self.subTest(message=message):
+                row = VideoInbox(url=TIKTOK, video_key=f'k{duration}{message[:5]}')
+                db.session.add(row)
+                db.session.flush()
+                inbox.look_up(row, extract=lambda url: dict(extract(url), duration=duration), call=self._claude(self.ANSWER), read=read)
+                self.assertEqual(row.meta_error, message)
+                self.assertEqual(row.dish_name, 'Lemon orzo')
+                self.assertIsNone(row.video_text)
+                db.session.delete(row)
+                db.session.flush()
 
     def test_only_what_the_app_knows_goes_in_the_schema(self):
         from schemas.recipe_v2 import CUISINES
