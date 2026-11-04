@@ -229,7 +229,7 @@ Taco | smart | spicy
                          [('the_smart_cook', None, None), ('the_minimalist', ['baby'], 8)])
         status = self.client.get(res.headers['Location']).get_data(as_text=True)
         self.assertIn('2 recipes made', status)
-        self.assertNotIn('http-equiv="refresh"', status)
+        self.assertIn('data-busy=""', status)
         # The same lines again: made before, so skipped unless asked
         again = self.client.post('/new-recipe/v2/batch', data={'lines': lines, 'action': 'check'}).get_data(as_text=True)
         self.assertIn('Made before', again)
@@ -358,6 +358,86 @@ Taco | smart | spicy
                          {'kind': 'idea', 'source': 'Lasagne', 'language': 'nb', 'images': True})
         self.assertEqual(recipe.language, 'nb')
         self.assertEqual(self.client.get(f'/new-recipe/v2/{recipe.id}/status').get_json()['status'], 'generating')
+
+    def _batch(self, **args):
+        """Three recipes made locally, as Many recipes at once does, and the address of their status page."""
+        self.login()
+        fakes = []
+
+        def call(*a, **kw):
+            if not fakes or fakes[-1][1] == 2:
+                fakes.append([fake_claude(), 0])
+            fakes[-1][1] += 1
+            return fakes[-1][0](*a, **kw)
+        with mock.patch.object(claude, 'call', call):
+            res = self.client.post('/new-recipe/v2/batch', data={'lines': 'Lasagne\nPad thai\nRamen', 'action': 'make', **args})
+        return db.session.execute(db.select(Recipe).order_by(Recipe.id)).scalars().all(), res.headers['Location']
+
+    def test_a_batch_shows_each_recipe_and_image_and_follows_until_the_images_are_done(self):
+        (one, two, three), url = self._batch()
+        one.image_filename = 'one.webp'
+        two.validation_errors = [{'rule': 'image', 'message': 'Could not make the images.'}]
+        db.session.commit()
+        with mock.patch.dict(os.environ, QUEUE_ENV):
+            page = self.client.get(url).get_data(as_text=True)
+            self.assertIn('Making images for 1 of 3 recipes', page)
+            self.assertIn('3 of 3 recipes · 1 of 3 images', page)
+            self.assertIn('data-busy="1"', page)
+            self.assertIn('aria-label="Image: done"', page)
+            self.assertIn('aria-label="Image: failed"', page)
+            self.assertIn('aria-label="Image: being made"', page)
+            self.assertNotIn('without →', page)  # the job may still be drawing them: no way to pay twice from here
+
+            three.image_filename = 'three.webp'
+            db.session.commit()
+            page = self.client.get(url).get_data(as_text=True)
+            self.assertIn('data-busy=""', page)
+            self.assertIn(f'/new-recipe/v2/images?only={two.id}', page)
+            self.assertIn('Images for the 1 without', page)
+
+    def test_a_batch_still_being_made_says_how_far_each_has_come(self):
+        (one, two, three), url = self._batch()
+        one.status, one.source_text = 'generating', None
+        two.status = 'generating'
+        db.session.commit()
+        with mock.patch.dict(os.environ, QUEUE_ENV):
+            page = self.client.get(url).get_data(as_text=True)
+        self.assertIn('Making 2 of 3 recipes', page)
+        self.assertIn('aria-label="Recipe: being made"', page)
+        self.assertIn('aria-label="Steps: being made"', page)
+        self.assertIn('aria-label="Image: waiting"', page)
+
+    def test_a_batch_that_skips_the_images_waits_for_none(self):
+        recipes, url = self._batch(no_images='1')
+        self.assertIn('images=0', url)
+        with mock.patch.dict(os.environ, QUEUE_ENV):
+            page = self.client.get(url).get_data(as_text=True)
+        self.assertIn('data-busy=""', page)
+        self.assertIn('No image', page)
+        self.assertIn('Images for the 3 without', page)
+        self.assertNotIn(' images</p>', page)
+
+    def test_a_recipe_that_failed_in_a_batch_waits_for_no_image(self):
+        (one, two, three), url = self._batch()
+        for r in (two, three):
+            r.image_filename = 'x.webp'
+        db.session.delete(one)
+        blocked = Recipe(title='blocked', cuisine='', difficulty='', status='draft', schema_version=2, is_flagged_for_review=True)
+        db.session.add(blocked)
+        db.session.commit()
+        with mock.patch.dict(os.environ, QUEUE_ENV):
+            page = self.client.get(f'/new-recipe/v2/batch/status?ids={blocked.id},{two.id},{three.id}').get_data(as_text=True)
+        self.assertIn('data-busy=""', page)
+        self.assertIn('aria-label="Recipe: failed"', page)
+        self.assertIn('2 of 3 recipes made', page)
+        self.assertNotIn('without →', page)
+
+    def test_the_images_page_can_be_limited_to_a_batch(self):
+        (one, two, three), url = self._batch()
+        page = self.client.get(f'/new-recipe/v2/images?only={two.id}').get_data(as_text=True)
+        self.assertIn(f'value="{two.id}"', page)
+        self.assertNotIn(f'value="{one.id}"', page)
+        self.assertIn(f'value="{one.id}"', self.client.get('/new-recipe/v2/images').get_data(as_text=True))
 
     def test_the_waiting_page_draws_the_line_and_the_status_says_when_round_1_is_done(self):
         self.login()
