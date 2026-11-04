@@ -16,7 +16,7 @@
 .rv2 .making-state { margin: var(--space-3) 0 0; font: 500 13px/1.4 var(--font-mono); color: var(--color-muted); }
 
 .batch-sum { margin: var(--space-4) 0; }
-.rv2.batch > p > .go { display: inline-flex; align-items: center; }
+.rv2.batch > p > .go { display: inline-flex; align-items: center; margin-top: var(--space-3); }
 .rv2 .batch-sum .making-state { margin-top: var(--space-2); }
 .rv2 .batch-line { display: grid; grid-template-columns: 72px 72px auto; margin: 0; padding: 0; list-style: none; }
 .batch-line li { position: relative; padding-top: 15px; font: 500 11px/1.3 var(--font-mono); color: var(--color-muted); white-space: nowrap; }
