@@ -184,7 +184,7 @@ class ViewAsTests(unittest.TestCase):
         self.view_as('user')
         fetched = self.client.post(f'/api/interactions/recipe/{recipe.id}/favorite', headers={'Accept': '*/*'})
         self.assertEqual(fetched.status_code, 403)
-        self.assertIn('nothing was saved', fetched.get_json()['error'])
+        self.assertEqual(fetched.get_json()['error'], 'Not saved, because this is only a preview. For a real signed-in user this works as normal.')
         self.assertEqual(fetched.headers[view_as.HEADER], 'user')
         self.assertEqual(db.session.execute(db.select(db.func.count()).select_from(UserRecipeInteraction)).scalar(), 0)
         unit = self.client.post('/api/me/units', json={'units': 'us'})
@@ -193,12 +193,14 @@ class ViewAsTests(unittest.TestCase):
         form = self.client.post(f'/api/interactions/recipe/{recipe.id}/favorite', headers={**HTML, 'Referer': 'http://localhost/recipes?time=30'})
         self.assertEqual(form.status_code, 302)
         self.assertEqual(form.headers['Location'], '/recipes?time=30')
-        self.assertIn('nothing was saved', self.client.get('/recipes').get_data(as_text=True))
+        self.assertIn('only a preview', self.client.get('/recipes').get_data(as_text=True))
 
     def test_no_account_is_made_or_signed_into_in_the_visitor_role(self):
         self.sign_in()
         self.view_as('visitor')
         self.client.post('/register', data={'email': 'new@test', 'password': 'pw'}, headers=HTML)
+        refused = self.client.post('/register', data={'email': 'new@test', 'password': 'pw'})
+        self.assertEqual(refused.get_json()['error'], 'Not saved, because this is only a preview.')  # no signed-in user here
         self.assertIsNone(db.session.execute(db.select(User).where(User.email == 'new@test')).scalar())
         self.client.post('/login', data={'email': 'user@test', 'password': 'pw'}, headers=HTML)
         self.assertIn('Viewing as visitor', self.client.get('/recipes').get_data(as_text=True))

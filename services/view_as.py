@@ -64,7 +64,9 @@ def seen_as(user):
 
 
 def _message():
-    return f'You are viewing the site as a {ROLES[g.view_as]}, so nothing was saved. Go back to admin to change things.'
+    """Says it is the preview that stopped it, not what the people it shows are allowed to do."""
+    real = ' For a real signed-in user this works as normal.' if g.view_as == 'user' else ''
+    return f'Not saved, because this is only a preview.{real}'
 
 
 def refusal():
@@ -113,7 +115,7 @@ def mark_page(response):
     body = BODY.search(html)
     place = body or TITLE.search(html)
     if place:
-        bar = render_template('components/view_as_bar.html', seen_as=ROLES[chosen], header=HEADER)
+        bar = render_template('components/view_as_bar.html', seen_as=ROLES[chosen], header=HEADER, note=_message())
         fit = '' if body else '<meta name="viewport" content="width=device-width, initial-scale=1">'  # so a phone sees the bar
         response.set_data(html[:place.end()] + fit + bar + html[place.end():])
     return response
