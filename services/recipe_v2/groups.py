@@ -6,6 +6,8 @@ order you walk a shop. Staples (pantry tier 'staple': salt, pepper, oil, water, 
 group last: you probably have them.
 Lines that are not in the pantry go under Other.
 """
+from services.labels import label
+
 GROUPS = (
     ('produce', 'Fruit and vegetables'),
     ('meat', 'Meat and fish'),
@@ -50,4 +52,4 @@ def grouped(items, key=lambda item: item['group']):
     out = {g: [] for g, _ in GROUPS}
     for item in items:
         out[key(item) if key(item) in out else 'other'].append(item)
-    return [{'key': g, 'label': LABELS[g], 'items': out[g]} for g, _ in GROUPS if out[g]]
+    return [{'key': g, 'label': label(LABELS[g]), 'items': out[g]} for g, _ in GROUPS if out[g]]

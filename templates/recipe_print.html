@@ -7,6 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ v.title }} - The Lazy Chef</title>
+  {% include "components/script_words.html" %}
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   {# The site's look (routes/_shared.SITE_LOOK, static/css/themes.css), and the river delta's handwriting #}
@@ -35,14 +36,14 @@
 </head>
 <body data-print="{{ orient }}"{% if autoprint %} data-autoprint="1"{% endif %}>
   <div class="bar">
-    <button type="button" onclick="print()">Print</button>
-    <a href="{{ url_for('recipe_print', recipe_id=recipe.id, orient='landscape' if orient == 'portrait' else 'portrait', servings=v.servings, auto=0) }}">{{ 'Landscape' if orient == 'portrait' else 'Portrait' }} instead</a>
-    <a href="{{ url_for('recipe_detail', recipe_id=recipe.id) }}">Back to the recipe</a>
+    <button type="button" onclick="print()">{{ _('Print') }}</button>
+    <a href="{{ url_for('recipe_print', recipe_id=recipe.id, orient='landscape' if orient == 'portrait' else 'portrait', servings=v.servings, auto=0) }}">{{ _('Landscape instead') if orient == 'portrait' else _('Portrait instead') }}</a>
+    <a href="{{ url_for('recipe_detail', recipe_id=recipe.id) }}">{{ _('Back to the recipe') }}</a>
   </div>
   <main class="sheet">
     <header>
       <h1>{{ v.title }}</h1>
-      <span class="meta">{{ v.servings ~ ' servings' if v.scalable else v.yield_text }} · {{ v.total }} in all, {{ v.active }} active · thelazychef.app</span>
+      <span class="meta">{{ _('%(n)s servings', n=v.servings) if v.scalable else v.yield_text }} · {{ _('%(total)s in all, %(active)s active', total=v.total, active=v.active) }} · thelazychef.app</span>
     </header>
     {{ delta(v.delta, recipe.id, print_links=False) }}
   </main>

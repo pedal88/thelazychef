@@ -203,6 +203,7 @@
 .mt-names { left: calc(var(--w) + 62px); }
 .mt-break-l { width: 44px; font: 600 10px var(--font-sans); }
 .mt-now { left: 48px; border-top-color: var(--color-ink); }
+html:lang(nb) .mt-now::before, html:lang(nb) .tl-panel .nowline::before { content: "Nå"; }
 .mt-now::before { content: "Now"; position: absolute; right: 0; top: -16px; font: 600 11px var(--font-sans); color: var(--color-ink); }
 .mt-names .mt-wait { display: block; padding: 0 6px; font: italic 400 12px var(--font-sans); color: var(--color-muted); white-space: nowrap;
   overflow: hidden; text-overflow: ellipsis; pointer-events: none; background: none; }

@@ -12,7 +12,7 @@
     <h3 class="shop-group">{{ g.label }}</h3>
     <ul class="ilist">
       {% for item in g['items'] %}
-      <li>{{ ing_pic(item, 36) }}<span class="line"><b class="amt">{{ item.amount }}</b> {{ item.name }}{% if item.note %}<small>{{ item.note }}</small>{% endif %}{% if item.missing and recipe.status != 'approved' %}<small class="missing">Not in the pantry</small>{% endif %}</span></li>
+      <li>{{ ing_pic(item, 36) }}<span class="line"><b class="amt">{{ item.amount }}</b> {{ item.name }}{% if item.note %}<small>{{ item.note }}</small>{% endif %}{% if item.missing and recipe.status != 'approved' %}<small class="missing">{{ _('Not in the pantry') }}</small>{% endif %}</span></li>
       {% endfor %}
     </ul>
     {% endfor %}
@@ -23,9 +23,9 @@
    so every amount is written by the server in the reader's measuring system. #}
 <form class="stepper" method="get" action="{{ url_for(endpoint, recipe_id=recipe.id) }}" data-servings-form>
   <input type="hidden" name="plan" value="{{ v.plan }}">
-  <button type="button" data-step="-1" aria-label="Fewer servings">−</button>
-  <input type="number" name="servings" value="{{ v.servings }}" min="1" max="24" inputmode="numeric" aria-label="Servings" data-servings-input>
-  <button type="button" data-step="1" aria-label="More servings">+</button>
+  <button type="button" data-step="-1" aria-label="{{ _('Fewer servings') }}">−</button>
+  <input type="number" name="servings" value="{{ v.servings }}" min="1" max="24" inputmode="numeric" aria-label="{{ _('Servings') }}" data-servings-input>
+  <button type="button" data-step="1" aria-label="{{ _('More servings') }}">+</button>
 </form>
 {%- endmacro %}
 
@@ -35,58 +35,58 @@
 {% macro link(servings, plan) %}{{ url_for(endpoint, recipe_id=recipe.id, servings=servings, plan=plan) }}{% endmacro %}
           {% if v.scalable and with_servings %}
           <div class="row">
-            <span>Servings</span>
+            <span>{{ _('Servings') }}</span>
             {{ servings_stepper(endpoint) }}
           </div>
           {% endif %}
           <div class="row">
-            <span>Plan</span>
+            <span>{{ _('Plan') }}</span>
             <span class="seg">{% for key, name in v.plans.items() %}<a href="{{ link(v.servings, key) }}" aria-current="{{ 'true' if key == v.plan else 'false' }}">{{ name }}</a>{% endfor %}</span>
           </div>
           <p class="hint">{{ v.plan_hint }}</p>
 
           {% if v.about or recipe.difficulty %}
           <ul class="about">
-            {% if recipe.difficulty %}<li><span class="eyebrow">Difficulty</span> {{ recipe.difficulty|difficulty_label }}</li>{% endif %}
+            {% if recipe.difficulty %}<li><span class="eyebrow">{{ _('Difficulty') }}</span> {{ recipe.difficulty|difficulty_label }}</li>{% endif %}
             {% for label, value in v.about %}<li><span class="eyebrow">{{ label }}</span> {{ value }}</li>{% endfor %}
           </ul>
           {% endif %}
 
           {% if v.nutrition %}
           <div class="nutrition">
-            <p class="eyebrow">Nutrition per serving, approximate</p>
+            <p class="eyebrow">{{ _('Nutrition per serving, approximate') }}</p>
             {# The label the reader knows: the European one, or for a US reader the US one (its names and order,
                sodium in mg instead of salt). The grams are the same. #}
             {% if v.units == 'us' %}
             <table>
-              <tr><th>Calories</th><td>{{ v.nutrition.kcal }}</td></tr>
-              <tr><th>Total fat</th><td>{{ v.nutrition.fat }} g</td></tr>
-              <tr class="sub"><th>Saturated fat</th><td>{{ v.nutrition.saturated_fat }} g</td></tr>
-              <tr><th>Sodium</th><td>{{ v.nutrition.sodium_mg }} mg</td></tr>
-              <tr><th>Total carbohydrate</th><td>{{ v.nutrition.carbs }} g</td></tr>
-              <tr class="sub"><th>Dietary fiber</th><td>{{ v.nutrition.fiber }} g</td></tr>
-              <tr class="sub"><th>Total sugars</th><td>{{ v.nutrition.sugar }} g</td></tr>
-              <tr><th>Protein</th><td>{{ v.nutrition.protein }} g</td></tr>
+              <tr><th>{{ _('Calories') }}</th><td>{{ v.nutrition.kcal }}</td></tr>
+              <tr><th>{{ _('Total fat') }}</th><td>{{ v.nutrition.fat }} g</td></tr>
+              <tr class="sub"><th>{{ _('Saturated fat') }}</th><td>{{ v.nutrition.saturated_fat }} g</td></tr>
+              <tr><th>{{ _('Sodium') }}</th><td>{{ v.nutrition.sodium_mg }} mg</td></tr>
+              <tr><th>{{ _('Total carbohydrate') }}</th><td>{{ v.nutrition.carbs }} g</td></tr>
+              <tr class="sub"><th>{{ _('Dietary fiber') }}</th><td>{{ v.nutrition.fiber }} g</td></tr>
+              <tr class="sub"><th>{{ _('Total sugars') }}</th><td>{{ v.nutrition.sugar }} g</td></tr>
+              <tr><th>{{ _('Protein') }}</th><td>{{ v.nutrition.protein }} g</td></tr>
             </table>
             {% else %}
             <table>
-              <tr><th>Energy</th><td>{{ v.nutrition.kcal }} kcal</td></tr>
-              <tr><th>Protein</th><td>{{ v.nutrition.protein }} g</td></tr>
-              <tr><th>Carbohydrate</th><td>{{ v.nutrition.carbs }} g</td></tr>
-              <tr class="sub"><th>of which sugars</th><td>{{ v.nutrition.sugar }} g</td></tr>
-              <tr><th>Fat</th><td>{{ v.nutrition.fat }} g</td></tr>
-              <tr class="sub"><th>of which saturated</th><td>{{ v.nutrition.saturated_fat }} g</td></tr>
-              <tr><th>Fibre</th><td>{{ v.nutrition.fiber }} g</td></tr>
-              <tr><th>Salt</th><td>{{ v.nutrition.salt }} g</td></tr>
+              <tr><th>{{ _('Energy') }}</th><td>{{ v.nutrition.kcal }} kcal</td></tr>
+              <tr><th>{{ _('Protein') }}</th><td>{{ v.nutrition.protein }} g</td></tr>
+              <tr><th>{{ _('Carbohydrate') }}</th><td>{{ v.nutrition.carbs }} g</td></tr>
+              <tr class="sub"><th>{{ _('of which sugars') }}</th><td>{{ v.nutrition.sugar }} g</td></tr>
+              <tr><th>{{ _('Fat') }}</th><td>{{ v.nutrition.fat }} g</td></tr>
+              <tr class="sub"><th>{{ _('of which saturated') }}</th><td>{{ v.nutrition.saturated_fat }} g</td></tr>
+              <tr><th>{{ _('Fibre') }}</th><td>{{ v.nutrition.fiber }} g</td></tr>
+              <tr><th>{{ _('Salt') }}</th><td>{{ v.nutrition.salt }} g</td></tr>
             </table>
             {% endif %}
-            <p class="hint">From the ingredients as measured; salt and seasoning added to taste are not included.</p>
+            <p class="hint">{{ _('From the ingredients as measured; salt and seasoning added to taste are not included.') }}</p>
           </div>
           {% endif %}
 
           {% if v.delta %}
-          <p class="hint">The whole dish as one drawing on A4:
-            <a href="{{ url_for('recipe_print', recipe_id=recipe.id, orient='portrait', servings=v.servings) }}" target="_blank" rel="noopener">portrait</a> ·
-            <a href="{{ url_for('recipe_print', recipe_id=recipe.id, orient='landscape', servings=v.servings) }}" target="_blank" rel="noopener">landscape</a></p>
+          <p class="hint">{{ _('The whole dish as one drawing on A4:') }}
+            <a href="{{ url_for('recipe_print', recipe_id=recipe.id, orient='portrait', servings=v.servings) }}" target="_blank" rel="noopener">{{ _('portrait') }}</a> ·
+            <a href="{{ url_for('recipe_print', recipe_id=recipe.id, orient='landscape', servings=v.servings) }}" target="_blank" rel="noopener">{{ _('landscape') }}</a></p>
           {% endif %}
 {%- endmacro %}

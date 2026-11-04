@@ -61,7 +61,7 @@
       r.querySelector('.st-tick').setAttribute('aria-pressed', String(on));
       const n = r.querySelector('.n');
       n.textContent = on ? '✓' : n.dataset.n;
-      r.querySelector('[data-step-next]').innerHTML = rows.length - done.size === 1 ? 'Done' : 'Done <span aria-hidden="true">→</span> next step';
+      r.querySelector('[data-step-next]').innerHTML = rows.length - done.size === 1 ? tr('Done') : tr('Done <span aria-hidden="true">→</span> next step');
     });
     lists.forEach(l => { l.classList.toggle('all', all); l.classList.toggle('focus', !all); });
     laterNow();
@@ -69,7 +69,7 @@
     const sw = $('[data-details]');
     if (sw) {
       sw.setAttribute('aria-pressed', String(all));
-      const say = all ? 'Show the step you are on' : 'Show all details';
+      const say = all ? tr('Show the step you are on') : tr('Show all details');
       sw.setAttribute('aria-label', say);
       sw.title = say;
     }
@@ -97,7 +97,7 @@
       const id = sp.pick || next, list = sp.card.querySelector('[data-step-card]');
       sp.panel.querySelectorAll('.sel').forEach(e => e.classList.remove('sel'));
       if (id) sp.panel.querySelectorAll(`.split-main [data-step="${id}"], .rail-main [data-st="${id}"]`).forEach(e => e.classList.add('sel'));
-      sp.card.querySelector('[data-side-card-label]').textContent = !id ? 'The food is ready' : sp.pick ? 'The step you chose' : 'Next step';
+      sp.card.querySelector('[data-side-card-label]').textContent = !id ? tr('The food is ready') : sp.pick ? tr('The step you chose') : tr('Next step');
       sp.card.classList.toggle('folded', sp.folded);
       sp.card.querySelector('[data-side-fold]').setAttribute('aria-expanded', String(!sp.folded));
       if (!id || !byId[id]) { list.replaceChildren(); if (pc) railCard(sp, null, null); return; }
@@ -131,7 +131,7 @@
     if (!box) return;
     box.hidden = !on;
     page.classList.toggle('all-done', on);
-    box.querySelector('[data-st-feedback]').textContent = noted() ? 'Edit your note' : 'How did it go?';
+    box.querySelector('[data-st-feedback]').textContent = noted() ? tr('Edit your note') : tr('How did it go?');
   }
 
   /* The card beside the steps (the rail): which step of how many, the time from it to the table, what it needs
@@ -143,12 +143,12 @@
     const q = s => sp.card.querySelector(s), row = id && byId[id], num = r => r.querySelector('.n').dataset.n;
     const peek = !!(row && sp.pick), here = byId[nextId()];
     sp.card.classList.toggle('peek', peek);
-    q('[data-side-card-count]').textContent = !row ? 'The food is ready' : peek ? `Looking at step ${num(row)} of ${rows.length}` : `Step ${num(row)} of ${rows.length}`;
+    q('[data-side-card-count]').textContent = !row ? tr('The food is ready') : peek ? tr('Looking at step %(n)s of %(total)s', { n: num(row), total: rows.length }) : tr('Step %(n)s of %(total)s', { n: num(row), total: rows.length });
     const back = q('[data-sc-back]');
     back.hidden = !peek;
-    back.textContent = here ? `← Back to step ${num(here)}` : '← Back';
+    back.textContent = here ? tr('← Back to step %(n)s', { n: num(here) }) : tr('← Back');
     const left = row && !peek && TOTAL ? TOTAL - +row.dataset.at : 0;
-    q('[data-side-card-left]').textContent = left ? `At the table about ${hm(Date.now() + left * 60e3)}` : '';
+    q('[data-side-card-left]').textContent = left ? tr('At the table about %(time)s', { time: hm(Date.now() + left * 60e3) }) : '';
     // A bowl that is ready stands for what is in it: its number and name, which open the bowls
     const ready = (row && row.dataset.bowls ? row.dataset.bowls.split(' ') : [])
       .map(k => document.querySelector(`#sheet-bowls [data-bowl][data-key="${CSS.escape(k)}"]`)).filter(b => b && b.classList.contains('is-ready'));
@@ -158,8 +158,8 @@
       const li = document.createElement('li');
       li.className = 'sc-bowl';
       const no = esc(b.querySelector('.bno').dataset.no);
-      li.innerHTML = `<button type="button" data-sheet="sheet-bowls" aria-label="Bowl ${no}, ready: open the bowls"><span class="bno">${no}</span>`
-        + `<span><b>${esc(b.querySelector('.bowl-h b').textContent)}</b> <small>bowl ${no} · ready</small></span></button>`;
+      li.innerHTML = `<button type="button" data-sheet="sheet-bowls" aria-label="${esc(tr('Bowl %(n)s, ready: open the bowls', { n: no }))}"><span class="bno">${no}</span>`
+        + `<span><b>${esc(b.querySelector('.bowl-h b').textContent)}</b> <small>${esc(tr('bowl %(n)s · ready', { n: no }))}</small></span></button>`;
       return li;
     }), ...(copy ? [...copy.querySelectorAll('.txt .pill')] : []).filter(p => !inBowl.has(p.dataset.l)).map(p => {
       const li = document.createElement('li');
@@ -169,7 +169,7 @@
     needs.hidden = !needs.children.length;
     const done = new Set(st.done), at = row ? rows.indexOf(row) : -1;
     const then = row && rows.slice(at + 1).find(r => !done.has(r.dataset.st) && r.dataset.st !== id);
-    q('[data-side-card-then]').textContent = then && !peek ? `Then: ${then.dataset.label}` : '';
+    q('[data-side-card-then]').textContent = then && !peek ? tr('Then: %(what)s', { what: then.dataset.label }) : '';
     if (sp.panel.classList.contains('rail')) rows.forEach(r => r.classList.toggle('is-then', r === then && !peek));  // not faded in the list (static/css/rail.css)
     // While the step stands: what you could do in the time it leaves you free
     // and the bowls for later that are not ready, for this wait or filled by a step it suggests, instead of their steps
@@ -180,15 +180,15 @@
     const inLater = new Set(lb.flatMap(b => (b.dataset.steps || '').split(' ')));
     const look = ideas ? ideas.list.filter(x => !inLater.has(x.id)) : [];
     tip.hidden = !(look.length || lb.length);
-    if (!tip.hidden) tip.innerHTML = `<b>While you wait${ideas ? `, ${ideas.minutes} min` : ''}:</b> `
-      + [...lb.map(b => `<button type="button" data-sheet="sheet-bowls" data-jump="${esc(b.closest('.later').id)}">Bowl ${esc(b.querySelector('.bno').dataset.no)}: ${esc(b.querySelector('.bowl-h b').textContent)}</button>`),
+    if (!tip.hidden) tip.innerHTML = `<b>${ideas ? tr('While you wait, %(n)s min:', { n: ideas.minutes }) : tr('While you wait:')}</b> `
+      + [...lb.map(b => `<button type="button" data-sheet="sheet-bowls" data-jump="${esc(b.closest('.later').id)}">${esc(tr('Bowl %(n)s: %(what)s', { n: b.querySelector('.bno').dataset.no, what: b.querySelector('.bowl-h b').textContent }))}</button>`),
         ...look.map(x => `<button type="button" data-tip-look="${esc(x.id)}">${esc(byId[x.id].dataset.label)}</button> <span>${x.minutes} min</span>`)].join(' · ');
     const main = q('[data-sc-done]'), alt = q('[data-sc-alt]');
-    main.innerHTML = !row ? 'Back to the recipe' : peek ? esc(back.textContent) : 'Done <span aria-hidden="true">→</span> next step';
+    main.innerHTML = !row ? tr('Back to the recipe') : peek ? esc(back.textContent) : tr('Done <span aria-hidden="true">→</span> next step');
     alt.hidden = !peek && !!row;
-    if (peek) alt.textContent = done.has(id) ? `Untick step ${num(row)}` : `Mark step ${num(row)} as done`;
-    else if (!row) alt.textContent = noted() ? 'Edit your note' : 'How did it go?';
-    q('[data-steps-reset]').textContent = !row ? 'Cook it again' : 'Untick all the steps';
+    if (peek) alt.textContent = done.has(id) ? tr('Untick step %(n)s', { n: num(row) }) : tr('Mark step %(n)s as done', { n: num(row) });
+    else if (!row) alt.textContent = noted() ? tr('Edit your note') : tr('How did it go?');
+    q('[data-steps-reset]').textContent = !row ? tr('Cook it again') : tr('Untick all the steps');
   }
   // The card's main button: done and on to the next step, or back to it from a look at another
   function cardDone(sp) {
@@ -211,7 +211,7 @@
      the free time and on the card), and "While you wait": what you could do in the time you are free, steps
      further on that need only what is ready by then, that are not cooking or setting up, and fit in the time. */
   const tlRow = Object.fromEntries($$('.tl-row[data-step]').map(r => [r.dataset.step, r]));
-  const hm = t => new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+  const hm = t => new Date(t).toLocaleTimeString(document.documentElement.lang === 'nb' ? 'nb' : [], { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
   const zero = () => { const r = byId[nextId()]; return Date.now() - (r ? +r.dataset.at : TOTAL) * 60e3; };  // minute 0 of the plan on the clock
   function fillFree(from, to) {
     const done = new Set(st.done), ready = x => done.has(x) || (tlRow[x] && +tlRow[x].dataset.end <= from);
@@ -241,9 +241,9 @@
     $$('.tl-axis [data-min]').forEach(s => { s.textContent = hm(z + s.dataset.min * 60e3); });
     $$('.tb.free[data-from]').forEach(b => {
       const from = +b.dataset.from, to = +b.dataset.to, ideas = fillFree(from, to), when = `${hm(z + from * 60e3)}–${hm(z + to * 60e3)}`;
-      b.title = `Free ${when}` + (ideas.length ? `. While you wait: ${ideas.map(x => byId[x.id].dataset.label).join(', ')}` : '');
+      b.title = ideas.length ? tr('Free %(when)s. While you wait: %(what)s', { when, what: ideas.map(x => byId[x.id].dataset.label).join(', ') }) : tr('Free %(when)s', { when });
       const label = b.querySelector('b');
-      if (label) label.textContent = `free ${when}` + (ideas.length ? ` · ${byId[ideas[0].id].dataset.label}${ideas.length > 1 ? ` +${ideas.length - 1}` : ''}` : '');
+      if (label) label.textContent = tr('free %(when)s', { when }) + (ideas.length ? ` · ${byId[ideas[0].id].dataset.label}${ideas.length > 1 ? ` +${ideas.length - 1}` : ''}` : '');
     });
   }
 
@@ -265,12 +265,12 @@
     });
     $$('.mt-wait[data-from]').forEach(w => {
       const from = +w.dataset.from, to = +w.dataset.to, ideas = fillFree(from, to);
-      w.textContent = `${to - from} min wait` + (ideas.length ? ` · while you wait: ${ideas.map(x => byId[x.id].dataset.label).join(', ')}` : '');
+      w.textContent = ideas.length ? tr('%(n)s min wait · while you wait: %(what)s', { n: to - from, what: ideas.map(x => byId[x.id].dataset.label).join(', ') }) : tr('%(n)s min wait', { n: to - from });
     });
     $$('[data-mt-lane]').forEach(b => {
       const mine = $$(`.mt-names [data-step][data-lane="${b.dataset.mtLane}"]`), n = mine.filter(li => done.has(li.dataset.step)).length;
       b.classList.toggle('ready', n === mine.length);
-      b.querySelector('[data-mt-count]').textContent = n === mine.length ? '✓ ready' : `${n}/${mine.length}`;
+      b.querySelector('[data-mt-count]').textContent = n === mine.length ? tr('✓ ready') : `${n}/${mine.length}`;
       b.setAttribute('aria-pressed', String(b.dataset.mtLane === mtFocus));
     });
     $$('.mt [data-lane]').forEach(e => e.classList.toggle('dim', mtFocus !== null && e.dataset.lane !== mtFocus));
@@ -412,15 +412,15 @@
     line.innerHTML = st.runs.map(r => {
       const fin = Date.now() >= r.end;
       return `<span class="tm${fin ? ' fin' : ''}"><button type="button" data-run-go="${esc(r.step)}">${esc(r.label)} <b>${fmtLeft(r)}</b></button>`
-        + `<button type="button" class="tm-x" data-run-stop="${esc(r.step)}" aria-label="Stop the timer for ${esc(r.label)}">×</button></span>`;
+        + `<button type="button" class="tm-x" data-run-stop="${esc(r.step)}" aria-label="${esc(tr('Stop the timer for %(what)s', { what: r.label }))}">×</button></span>`;
     }).join('');
     rows.forEach(row => {
       const r = runOf(row.dataset.st), up = r && Date.now() >= r.end;
       row.querySelectorAll('[data-start]').forEach(b => {
         const mini = b.classList.contains('st-timer-mini');
         b.classList.toggle('running', !!r);
-        b.querySelector('span').textContent = !r ? (mini ? `${row.dataset.passive} min` : `Start ${row.dataset.passive} min`)
-          : up ? (mini ? 'Up' : 'Time is up') : (mini ? `${leftMin(r)} min` : `${leftMin(r)} min left`);
+        b.querySelector('span').textContent = !r ? (mini ? `${row.dataset.passive} min` : tr('Start %(n)s min', { n: row.dataset.passive }))
+          : up ? (mini ? tr('Up') : tr('Time is up')) : (mini ? `${leftMin(r)} min` : tr('%(n)s min left', { n: leftMin(r) }));
       });
     });
     card();
@@ -479,9 +479,9 @@
     $('.nowline').style.setProperty('--x', (m / total).toFixed(4));
     const doing = tlRows.filter(r => +r.dataset.start <= m && m < +r.dataset.aend).map(r => r.dataset.short);
     const nxt = tlRows.find(r => +r.dataset.start > m);
-    if (status) status.innerHTML = `<b>Minute ${m} of ${total} in the plan.</b> `
-      + (doing.length ? `Next up: ${esc(doing.join(', '))}. ` : '')
-      + (nxt ? `Then: ${esc(nxt.dataset.short.toLowerCase())} at minute ${nxt.dataset.start}.` : 'The food is ready.');
+    if (status) status.innerHTML = `<b>${tr('Minute %(n)s of %(total)s in the plan.', { n: m, total })}</b> `
+      + (doing.length ? `${esc(tr('Next up: %(what)s.', { what: doing.join(', ') }))} ` : '')
+      + (nxt ? esc(tr('Then: %(what)s at minute %(n)s.', { what: nxt.dataset.short.toLowerCase(), n: nxt.dataset.start })) : tr('The food is ready.'));
   }
 
   /* The view menu: the list is the default; the choice is remembered for all recipes */
@@ -496,7 +496,7 @@
     if (!items.some(b => b.dataset.view === v)) v = 'steps';
     items.forEach(b => b.setAttribute('aria-checked', String(b.dataset.view === v)));
     const item = items.find(b => b.dataset.view === v);
-    if (menuBtn && item) menuBtn.setAttribute('aria-label', `View: ${item.textContent}`);
+    if (menuBtn && item) menuBtn.setAttribute('aria-label', tr('View: %(what)s', { what: item.textContent }));
     $$('.vpanel').forEach(p => { p.hidden = p.dataset.panel !== v; });
     openMenu(false);
     try { localStorage.setItem(VIEW, v); } catch (e) { /* remembered for this visit only */ }

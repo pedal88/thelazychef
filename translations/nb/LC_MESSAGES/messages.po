@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: The Lazy Chef\n"
-"POT-Creation-Date: 2026-11-04 15:14+0100\n"
+"POT-Creation-Date: 2026-11-04 15:33+0100\n"
 "PO-Revision-Date: 2026-11-04 12:17+0100\n"
 "Language: nb\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -412,6 +412,134 @@ msgstr "Alt i matskapet, som et kart."
 msgid "What is in the pantry, with nutrition."
 msgstr "Det som er i matskapet, med næringsinnhold."
 
+msgid "Calm"
+msgstr "Rolig"
+
+msgid "Prep first"
+msgstr "Klargjør først"
+
+msgid "Just in time"
+msgstr "I siste liten"
+
+msgid "Prep before cooking, but what can wait is done while something stands."
+msgstr ""
+"Gjør klart før du begynner å lage mat, men det som kan vente, gjør du "
+"mens noe står."
+
+msgid "Everything that needs no heat is done before the first cook step."
+msgstr "Alt som ikke trenger varme, gjøres før første steg ved komfyren."
+
+msgid "Every step as late as possible. Shortest, busiest."
+msgstr "Hvert steg så sent som mulig. Kortest, men travlest."
+
+msgid "A little hot"
+msgstr "Litt sterk"
+
+msgid "Kid-friendly"
+msgstr "Barnevennlig"
+
+msgid "Baby, 6 months+"
+msgstr "Baby, fra 6 måneder"
+
+msgid "Baby, 8 months+"
+msgstr "Baby, fra 8 måneder"
+
+msgid "Baby, 12 months+"
+msgstr "Baby, fra 12 måneder"
+
+msgid "Fruit and vegetables"
+msgstr "Frukt og grønt"
+
+msgid "Meat and fish"
+msgstr "Kjøtt og fisk"
+
+msgid "Bread"
+msgstr "Brød"
+
+msgid "Pantry"
+msgstr "Tørrvarer"
+
+msgid "Spices and dried herbs"
+msgstr "Krydder og tørkede urter"
+
+msgid "Sauces and flavourings"
+msgstr "Sauser og smakstilsetninger"
+
+msgid "Oils and fats"
+msgstr "Olje og fett"
+
+msgid "You probably have"
+msgstr "Dette har du sikkert"
+
+msgid "prep"
+msgstr "gjør klart"
+
+msgid "cook"
+msgstr "lag mat"
+
+msgid "serve"
+msgstr "server"
+
+msgid "Chicken"
+msgstr "Kylling"
+
+msgid "Turkey"
+msgstr "Kalkun"
+
+msgid "Duck"
+msgstr "And"
+
+msgid "Beef"
+msgstr "Storfe"
+
+msgid "Pork"
+msgstr "Svin"
+
+msgid "Lamb"
+msgstr "Lam"
+
+msgid "Game"
+msgstr "Vilt"
+
+msgid "Salmon"
+msgstr "Laks"
+
+msgid "Oily Fish"
+msgstr "Fet fisk"
+
+msgid "White Fish"
+msgstr "Hvit fisk"
+
+msgid "Shrimp"
+msgstr "Reker"
+
+msgid "Shellfish"
+msgstr "Skalldyr"
+
+msgid "Tofu"
+msgstr "Tofu"
+
+msgid "Beans"
+msgstr "Bønner"
+
+msgid "Lentils"
+msgstr "Linser"
+
+msgid "Eggs"
+msgstr "Egg"
+
+msgid "Halloumi"
+msgstr "Halloumi"
+
+msgid "Tempeh"
+msgstr "Tempeh"
+
+msgid "Legumes"
+msgstr "Belgfrukter"
+
+msgid "Seitan"
+msgstr "Seitan"
+
 msgid "Metric"
 msgstr "Metrisk"
 
@@ -495,6 +623,227 @@ msgstr "%(label)s: %(left)s min igjen"
 msgid "%(label)s: time is up"
 msgstr "%(label)s: tiden er ute"
 
+msgid "once"
+msgstr "én gang"
+
+msgid "twice"
+msgstr "to ganger"
+
+#, python-format
+msgid "%(n)s times"
+msgstr "%(n)s ganger"
+
+#, python-format
+msgid "You made %(title)s."
+msgstr "Du laget %(title)s."
+
+#, python-format
+msgid "You made %(title)s in %(minutes)s minutes."
+msgstr "Du laget %(title)s på %(minutes)s minutter."
+
+#, python-format
+msgid "You made %(title)s in %(minutes)s minutes, right on the plan."
+msgstr "Du laget %(title)s på %(minutes)s minutter, helt etter planen."
+
+#, python-format
+msgid "You made %(title)s in %(minutes)s minutes, %(under)s under the plan."
+msgstr "Du laget %(title)s på %(minutes)s minutter, %(under)s under planen."
+
+#, python-format
+msgid "You made %(title)s in %(minutes)s minutes, the plan said %(plan)s."
+msgstr "Du laget %(title)s på %(minutes)s minutter, planen sa %(plan)s."
+
+msgid "Made it"
+msgstr "Laget den"
+
+msgid "Save"
+msgstr "Lagre"
+
+msgid "Close"
+msgstr "Lukk"
+
+msgid "The first time. It goes in your Made list."
+msgstr "Første gang. Den legges i lista over det du har laget."
+
+#, python-format
+msgid "Counted already: %(times)s so far."
+msgstr "Allerede talt: %(times)s så langt."
+
+#, python-format
+msgid "You have made it %(times)s before, last on %(when)s."
+msgstr "Du har laget den %(times)s før, sist %(when)s."
+
+#, python-format
+msgid "You have made it %(times)s before."
+msgstr "Du har laget den %(times)s før."
+
+msgid "Saved. It is in your Made list now."
+msgstr "Lagret. Den ligger nå i lista over det du har laget."
+
+#, python-format
+msgid "Saved. That was your %(nth)s time."
+msgstr "Lagret. Det var %(nth)s gang."
+
+msgid "<b>All the bowls are ready.</b> Now the heat can go on."
+msgstr "<b>Alle skålene er klare.</b> Nå kan varmen på."
+
+#, python-format
+msgid "%(n)s of %(total)s bowls ready"
+msgstr "%(n)s av %(total)s skåler klare"
+
+#, python-format
+msgid "shown at %(n)s"
+msgstr "vist i %(n)s"
+
+msgid "Done"
+msgstr "Ferdig"
+
+msgid "Done <span aria-hidden=\"true\">→</span> next step"
+msgstr "Ferdig <span aria-hidden=\"true\">→</span> neste steg"
+
+msgid "Show the step you are on"
+msgstr "Vis steget du er på"
+
+msgid "Show all details"
+msgstr "Vis alle detaljer"
+
+msgid "The food is ready"
+msgstr "Maten er klar"
+
+msgid "The step you chose"
+msgstr "Steget du valgte"
+
+msgid "Next step"
+msgstr "Neste steg"
+
+msgid "Edit your note"
+msgstr "Endre notatet ditt"
+
+msgid "How did it go?"
+msgstr "Hvordan gikk det?"
+
+#, python-format
+msgid "Looking at step %(n)s of %(total)s"
+msgstr "Ser på steg %(n)s av %(total)s"
+
+#, python-format
+msgid "Step %(n)s of %(total)s"
+msgstr "Steg %(n)s av %(total)s"
+
+#, python-format
+msgid "← Back to step %(n)s"
+msgstr "← Tilbake til steg %(n)s"
+
+msgid "← Back"
+msgstr "← Tilbake"
+
+#, python-format
+msgid "At the table about %(time)s"
+msgstr "På bordet rundt %(time)s"
+
+#, python-format
+msgid "Bowl %(n)s, ready: open the bowls"
+msgstr "Skål %(n)s, klar: åpne skålene"
+
+#, python-format
+msgid "bowl %(n)s · ready"
+msgstr "skål %(n)s · klar"
+
+#, python-format
+msgid "Then: %(what)s"
+msgstr "Så: %(what)s"
+
+#, python-format
+msgid "While you wait, %(n)s min:"
+msgstr "Mens du venter, %(n)s min:"
+
+msgid "While you wait:"
+msgstr "Mens du venter:"
+
+#, python-format
+msgid "Bowl %(n)s: %(what)s"
+msgstr "Skål %(n)s: %(what)s"
+
+msgid "Back to the recipe"
+msgstr "Tilbake til oppskriften"
+
+#, python-format
+msgid "Untick step %(n)s"
+msgstr "Fjern haken på steg %(n)s"
+
+#, python-format
+msgid "Mark step %(n)s as done"
+msgstr "Marker steg %(n)s som ferdig"
+
+msgid "Cook it again"
+msgstr "Lag den igjen"
+
+msgid "Untick all the steps"
+msgstr "Fjern alle hakene"
+
+#, python-format
+msgid "Free %(when)s. While you wait: %(what)s"
+msgstr "Ledig %(when)s. Mens du venter: %(what)s"
+
+#, python-format
+msgid "Free %(when)s"
+msgstr "Ledig %(when)s"
+
+#, python-format
+msgid "free %(when)s"
+msgstr "ledig %(when)s"
+
+#, python-format
+msgid "Stop the timer for %(what)s"
+msgstr "Stopp tidtakeren for %(what)s"
+
+#, python-format
+msgid "Start %(n)s min"
+msgstr "Start %(n)s min"
+
+msgid "Up"
+msgstr "Ute"
+
+msgid "Time is up"
+msgstr "Tiden er ute"
+
+#, python-format
+msgid "%(n)s min left"
+msgstr "%(n)s min igjen"
+
+#, python-format
+msgid "Minute %(n)s of %(total)s in the plan."
+msgstr "Minutt %(n)s av %(total)s i planen."
+
+#, python-format
+msgid "Next up: %(what)s."
+msgstr "Nå: %(what)s."
+
+#, python-format
+msgid "Then: %(what)s at minute %(n)s."
+msgstr "Så: %(what)s ved minutt %(n)s."
+
+msgid "The food is ready."
+msgstr "Maten er klar."
+
+#, python-format
+msgid "View: %(what)s"
+msgstr "Visning: %(what)s"
+
+#, python-format
+msgid "%(n)s min wait · while you wait: %(what)s"
+msgstr "%(n)s min venting · mens du venter: %(what)s"
+
+#, python-format
+msgid "%(n)s min wait"
+msgstr "%(n)s min venting"
+
+msgid "✓ ready"
+msgstr "✓ klar"
+
+msgid "check"
+msgstr "sjekk"
+
 #, python-format
 msgid "Saved %(title)s."
 msgstr "%(title)s er lagret."
@@ -506,6 +855,60 @@ msgstr "%(title)s er lagt i Lag neste."
 #, python-format
 msgid "You made %(title)s: it is in your Made list."
 msgstr "Du laget %(title)s. Den ligger i lista over det du har laget."
+
+#, python-format
+msgid "%(hours)s h"
+msgstr "%(hours)s t"
+
+#, python-format
+msgid "%(time)s standing"
+msgstr "%(time)s står"
+
+msgid "Prep"
+msgstr "Gjør klart"
+
+msgid "Cook"
+msgstr "Lag mat"
+
+msgid "Serve"
+msgstr "Server"
+
+msgid " and "
+msgstr " og "
+
+#, python-format
+msgid "used %(n)s times"
+msgstr "brukes %(n)s ganger"
+
+msgid "to taste"
+msgstr "etter smak"
+
+#, python-format
+msgid "While: %(what)s"
+msgstr "Mens: %(what)s"
+
+msgid "Eat at once"
+msgstr "Spis med en gang"
+
+#, python-format
+msgid "%(n)s day in the fridge"
+msgstr "%(n)s dag i kjøleskapet"
+
+#, python-format
+msgid "%(n)s days in the fridge"
+msgstr "%(n)s dager i kjøleskapet"
+
+msgid ", freezes"
+msgstr ", kan fryses"
+
+msgid "Spice"
+msgstr "Styrke"
+
+msgid "Leftovers"
+msgstr "Rester"
+
+msgid "Made as"
+msgstr "Laget som"
 
 msgid ""
 "This request came from another site, so it was not carried out. Go back "
@@ -574,9 +977,6 @@ msgstr "Se alle oppskriftene"
 
 msgid "Pass"
 msgstr "Hopp over"
-
-msgid "Save"
-msgstr "Lagre"
 
 msgid "Log in"
 msgstr "Logg inn"
@@ -854,6 +1254,65 @@ msgstr ""
 "rel=\"noopener\">Datatilsynet</a>. Vi lagrer dataene dine så lenge du har"
 " en konto."
 
+msgid "Print"
+msgstr "Skriv ut"
+
+msgid "Landscape instead"
+msgstr "Liggende i stedet"
+
+msgid "Portrait instead"
+msgstr "Stående i stedet"
+
+#, python-format
+msgid "%(n)s servings"
+msgstr "%(n)s porsjoner"
+
+#, python-format
+msgid "%(total)s in all, %(active)s active"
+msgstr "%(total)s i alt, %(active)s aktivt"
+
+msgid "A recipe you can see: prep, cook and serve, drawn as a map."
+msgstr "En oppskrift du kan se: gjør klart, lag mat og server, tegnet som et kart."
+
+msgid "Cooking"
+msgstr "Matlaging"
+
+msgid "Back to the overview"
+msgstr "Tilbake til oversikten"
+
+msgid "Your note from last time"
+msgstr "Notatet ditt fra sist"
+
+msgid "Bowls and ingredients"
+msgstr "Skåler og ingredienser"
+
+msgid "The bowls are ready <span aria-hidden=\"true\">→</span> start cooking"
+msgstr "Skålene er klare <span aria-hidden=\"true\">→</span> begynn å lage mat"
+
+#, python-format
+msgid "All %(n)s steps done"
+msgstr "Alle %(n)s steg ferdige"
+
+msgid "Enjoy your meal!"
+msgstr "Velbekomme!"
+
+msgid "I made this"
+msgstr "Jeg laget denne"
+
+msgid "It goes in your Made list."
+msgstr "Den legges i lista over det du har laget."
+
+msgid "How did it turn out? Anything you would change next time?"
+msgstr "Hvordan ble det? Noe du ville endret til neste gang?"
+
+msgid "Sign up to keep it in your Made list, with your notes for next time."
+msgstr ""
+"Registrer deg for å ta vare på den i lista over det du har laget, med "
+"notater til neste gang."
+
+msgid "Have an account?"
+msgstr "Har du konto?"
+
 msgid "Any"
 msgstr "Alle"
 
@@ -875,9 +1334,6 @@ msgstr "Fjern alle"
 
 msgid "Filters"
 msgstr "Filtre"
-
-msgid "Close"
-msgstr "Lukk"
 
 msgid "Show"
 msgstr "Vis"
@@ -918,9 +1374,6 @@ msgstr "Prøv færre filtre, eller fjern dem."
 msgid "Clear filters"
 msgstr "Fjern filtrene"
 
-msgid "How did it go?"
-msgstr "Hvordan gikk det?"
-
 msgid "Cancel"
 msgstr "Avbryt"
 
@@ -952,9 +1405,6 @@ msgid ""
 msgstr ""
 "Ta vare på rettene du lagrer, det du vil lage neste, og det du har laget,"
 " med notater til neste gang."
-
-msgid "Have an account?"
-msgstr "Har du konto?"
 
 msgid "How did you find us?"
 msgstr "Hvordan fant du oss?"
@@ -1026,9 +1476,6 @@ msgstr "Du la til et bilde"
 msgid "Super liked"
 msgstr "Superfavoritt"
 
-msgid "Made it"
-msgstr "Laget den"
-
 msgid "Feedback"
 msgstr "Tilbakemelding"
 
@@ -1047,6 +1494,159 @@ msgstr "%(n)s aktivt"
 #, python-format
 msgid "%(n)s versions"
 msgstr "%(n)s versjoner"
+
+msgid "Key"
+msgstr "Forklaring"
+
+msgid "What is done to it first"
+msgstr "Dette gjøres først"
+
+msgid "mixed together in a bowl first"
+msgstr "blandes i en skål først"
+
+msgid "Heat and time"
+msgstr "Varme og tid"
+
+msgid "low heat"
+msgstr "lav varme"
+
+msgid "medium heat"
+msgstr "middels varme"
+
+msgid "high heat"
+msgstr "høy varme"
+
+msgid "stands on its own, in minutes"
+msgstr "står for seg selv, i minutter"
+
+msgid "start early: it stands a long time"
+msgstr "begynn tidlig: den står lenge"
+
+msgid "The drawing"
+msgstr "Tegningen"
+
+msgid "the step's number, the same as in the list"
+msgstr "stegets nummer, det samme som i lista"
+
+msgid "how the food flows; the thick one is the main line"
+msgstr "slik flyter maten; den tykke er hovedlinja"
+
+#, python-format
+msgid "+ from %(n)s"
+msgstr "+ fra %(n)s"
+
+#, python-format
+msgid "also uses what step %(n)s made"
+msgstr "bruker også det steg %(n)s laget"
+
+msgid "The whole recipe as a drawing"
+msgstr "Hele oppskriften som en tegning"
+
+msgid "Direction of the drawing"
+msgstr "Tegningens retning"
+
+msgid "Portrait"
+msgstr "Stående"
+
+msgid "Landscape"
+msgstr "Liggende"
+
+msgid "Tap a number when the step is done."
+msgstr "Trykk på et tall når steget er ferdig."
+
+msgid "Print A4:"
+msgstr "Skriv ut A4:"
+
+msgid "portrait"
+msgstr "stående"
+
+msgid "landscape"
+msgstr "liggende"
+
+msgid "start first"
+msgstr "begynn først"
+
+#, python-format
+msgid "+ from <b class=\"fx-ref\">%(n)s</b>"
+msgstr "+ fra <b class=\"fx-ref\">%(n)s</b>"
+
+#, python-format
+msgid "Step %(n)s: %(what)s. Tap when done"
+msgstr "Steg %(n)s: %(what)s. Trykk når det er ferdig"
+
+#, python-format
+msgid "stands %(n)s min"
+msgstr "står %(n)s min"
+
+msgid "Not in the pantry"
+msgstr "Ikke i matskapet"
+
+msgid "Fewer servings"
+msgstr "Færre porsjoner"
+
+msgid "Servings"
+msgstr "Porsjoner"
+
+msgid "More servings"
+msgstr "Flere porsjoner"
+
+msgid "Plan"
+msgstr "Plan"
+
+msgid "Nutrition per serving, approximate"
+msgstr "Næring per porsjon, omtrentlig"
+
+msgid "Calories"
+msgstr "Kalorier"
+
+msgid "Total fat"
+msgstr "Fett totalt"
+
+msgid "Saturated fat"
+msgstr "Mettet fett"
+
+msgid "Sodium"
+msgstr "Natrium"
+
+msgid "Total carbohydrate"
+msgstr "Karbohydrater totalt"
+
+msgid "Dietary fiber"
+msgstr "Kostfiber"
+
+msgid "Total sugars"
+msgstr "Sukker totalt"
+
+msgid "Energy"
+msgstr "Energi"
+
+msgid "Carbohydrate"
+msgstr "Karbohydrater"
+
+msgid "of which sugars"
+msgstr "hvorav sukkerarter"
+
+msgid "Fat"
+msgstr "Fett"
+
+msgid "of which saturated"
+msgstr "hvorav mettet"
+
+msgid "Fibre"
+msgstr "Fiber"
+
+msgid "Salt"
+msgstr "Salt"
+
+msgid ""
+"From the ingredients as measured; salt and seasoning added to taste are "
+"not included."
+msgstr ""
+"Regnet ut fra ingrediensene slik de er målt; salt og krydder etter smak "
+"er ikke med."
+
+msgid "The whole dish as one drawing on A4:"
+msgstr "Hele retten som én tegning på A4:"
 
 msgid "How did it turn out? Anything you would change?"
 msgstr "Hvordan ble det? Noe du ville gjort annerledes?"
@@ -1089,23 +1689,11 @@ msgstr "Per 100 g (omtrent 3½ oz)"
 msgid "Per 100 g"
 msgstr "Per 100 g"
 
-msgid "Energy"
-msgstr "Energi"
-
 msgid "Carbs"
 msgstr "Karbohydrater"
 
-msgid "Fat"
-msgstr "Fett"
-
 msgid "Sugar"
 msgstr "Sukker"
-
-msgid "Fibre"
-msgstr "Fiber"
-
-msgid "Sodium"
-msgstr "Natrium"
 
 #, python-format
 msgid "In %(n)s dish"
@@ -1122,6 +1710,120 @@ msgstr "Finn flere med %(name)s"
 msgid "Language"
 msgstr "Språk"
 
+msgid "Show the site menu"
+msgstr "Vis menyen"
+
+msgid "In Cook next"
+msgstr "I Lag neste"
+
+msgid "made once"
+msgstr "laget én gang"
+
+msgid "made twice"
+msgstr "laget to ganger"
+
+#, python-format
+msgid "made %(n)s times"
+msgstr "laget %(n)s ganger"
+
+#, python-format
+msgid ", last %(when)s"
+msgstr ", sist %(when)s"
+
+msgid "Your note"
+msgstr "Notatet ditt"
+
+msgid "Your photos"
+msgstr "Bildene dine"
+
+msgid "Your photo"
+msgstr "Bildet ditt"
+
+#, python-format
+msgid "Your photo %(n)s of %(total)s"
+msgstr "Bildet ditt, %(n)s av %(total)s"
+
+msgid "Makes"
+msgstr "Gir"
+
+msgid "Parts"
+msgstr "Deler"
+
+msgid "From the chef"
+msgstr "Fra kokken"
+
+msgid "Versions"
+msgstr "Versjoner"
+
+msgid "Facts &amp; nutrition"
+msgstr "Fakta og næring"
+
+msgid "Start cooking"
+msgstr "Begynn å lage mat"
+
+msgid "No steps yet."
+msgstr "Ingen steg ennå."
+
+#, python-format
+msgid "%(n)s items"
+msgstr "%(n)s ingredienser"
+
+#, python-format
+msgid "Version by %(chef)s"
+msgstr "Versjon av %(chef)s"
+
+#, python-format
+msgid "Original by %(chef)s"
+msgstr "Original av %(chef)s"
+
+msgid "Version"
+msgstr "Versjon"
+
+msgid "Original"
+msgstr "Original"
+
+msgid "total"
+msgstr "totalt"
+
+msgid "active"
+msgstr "aktivt"
+
+msgid "steps"
+msgstr "steg"
+
+msgid "Bowls"
+msgstr "Skåler"
+
+msgid "More about the dish"
+msgstr "Mer om retten"
+
+msgid "More"
+msgstr "Mer"
+
+msgid "At a glance"
+msgstr "Kort fortalt"
+
+msgid "Equipment"
+msgstr "Utstyr"
+
+msgid "The parts"
+msgstr "Delene"
+
+msgid "Read all"
+msgstr "Les alt"
+
+msgid "About the dish"
+msgstr "Om retten"
+
+msgid "Edit"
+msgstr "Endre"
+
+msgid "What would you do next time?"
+msgstr "Hva ville du gjort neste gang?"
+
+msgid "Based on"
+msgstr "Basert på"
+
 msgid "Password"
 msgstr "Passord"
 
@@ -1131,11 +1833,156 @@ msgstr "Vis passord"
 msgid "Hide"
 msgstr "Skjul"
 
+msgid "mix ahead"
+msgstr "bland på forhånd"
+
+msgid "goes in fast at the heat"
+msgstr "skal raskt oppi ved varmen"
+
+msgid "cut or prepared"
+msgstr "kuttet eller klargjort"
+
+#, python-format
+msgid "Bowl %(n)s ready"
+msgstr "Skål %(n)s klar"
+
+#, python-format
+msgid "Show step %(n)s, %(what)s"
+msgstr "Vis steg %(n)s, %(what)s"
+
+#, python-format
+msgid "step %(n)s"
+msgstr "steg %(n)s"
+
+#, python-format
+msgid "For step %(n)s"
+msgstr "Til steg %(n)s"
+
+msgid "Why a bowl"
+msgstr "Hvorfor en skål"
+
+msgid "First"
+msgstr "Først"
+
+msgid "The edge is the step a bowl goes into:"
+msgstr "Kanten viser steget skåla skal brukes i:"
+
+msgid "cooking"
+msgstr "matlaging"
+
+msgid "serving"
+msgstr "servering"
+
+msgid "bowls in the order you use them"
+msgstr "skåler i den rekkefølgen du bruker dem"
+
+msgid "Take out"
+msgstr "Ta fram"
+
+msgid "measure it when its step comes"
+msgstr "mål det opp når steget kommer"
+
+msgid "the steps give the amounts"
+msgstr "stegene sier hvor mye"
+
+#, python-format
+msgid "Later, while: %(what)s"
+msgstr "Senere, mens: %(what)s"
+
+#, python-format
+msgid "The plan \"%(plan)s\" puts these in the waiting time."
+msgstr "Planen «%(plan)s» legger disse i ventetiden."
+
+msgid "Now: the wait has started."
+msgstr "Nå: ventetiden har begynt."
+
+msgid "in the order you use it"
+msgstr "i den rekkefølgen du bruker det"
+
 msgid "Log out"
 msgstr "Logg ut"
 
 msgid "Units"
 msgstr "Enheter"
+
+msgid "Steps"
+msgstr "Steg"
+
+msgid "Timeline"
+msgstr "Tidslinje"
+
+msgid "Metro map"
+msgstr "T-banekart"
+
+msgid "River delta"
+msgstr "Elvedelta"
+
+msgid "How to show the steps"
+msgstr "Slik vises stegene"
+
+#, python-format
+msgid "Step %(n)s done"
+msgstr "Steg %(n)s ferdig"
+
+#, python-format
+msgid "Start the %(n)s minute timer"
+msgstr "Start tidtakeren på %(n)s minutter"
+
+msgid "Done when"
+msgstr "Ferdig når"
+
+msgid "Fold the step"
+msgstr "Brett sammen steget"
+
+msgid "What the step needs"
+msgstr "Dette trenger steget"
+
+msgid "Get ready"
+msgstr "Gjør klart"
+
+#, python-format
+msgid "Heat on · %(left)s to the table"
+msgstr "Varmen på · %(left)s til bordet"
+
+msgid "Cooked it already?"
+msgstr "Allerede laget den?"
+
+msgid "Step"
+msgstr "Steg"
+
+msgid "The river fills as you tick off steps. Tap a step for all of it."
+msgstr ""
+"Elva fylles etter hvert som du huker av steg. Trykk på et steg for å se "
+"alt."
+
+msgid "You"
+msgstr "Du"
+
+#, python-format
+msgid "free %(n)s min"
+msgstr "ledig %(n)s min"
+
+msgid "your work"
+msgstr "arbeidet ditt"
+
+msgid "stands on its own"
+msgstr "står for seg selv"
+
+msgid "waits to be used"
+msgstr "venter på å bli brukt"
+
+msgid "the parts meet"
+msgstr "delene møtes"
+
+msgid "The parts of the dish"
+msgstr "Delene av retten"
+
+msgid ""
+"Down the map is time. A zigzag cuts a long wait short and says how long "
+"it is."
+msgstr ""
+"Nedover kartet er tid. En sikksakk korter ned en lang ventetid og sier "
+"hvor lang den er."
 
 msgid "Page not found"
 msgstr "Fant ikke siden"

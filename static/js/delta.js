@@ -135,7 +135,7 @@
       box.style.marginRight = `${-natW * (1 - sc)}px`;
     }
     const note = section.querySelector('.dl-scale');
-    if (note) note.textContent = sc < 0.95 && !page ? `shown at ${Math.round(sc * 100)} %` : '';
+    if (note) note.textContent = sc < 0.95 && !page ? tr('shown at %(n)s', { n: `${Math.round(sc * 100)} %` }) : '';
   }
 
   /* Ticked-off steps, per recipe, on this device. On the one-page flow's cooking screen the steps' own ticks are

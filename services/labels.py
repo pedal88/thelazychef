@@ -2,7 +2,7 @@
 slides go on using the English word, and only what a reader sees goes through label() (in a template, |label).
 
 A catalog word (data/constraints, data/post_processing) has to be listed here to be found by pybabel:
-tests/test_language.py fails when one is missing. Words in static/js are in JS_WORDS, and reach the page's tr() (base.html).
+tests/test_language.py fails when one is missing. Words in static/js are in JS_WORDS, and reach tr() through components/script_words.html.
 """
 from flask_babel import gettext
 
@@ -52,6 +52,17 @@ WORDS = (
     N_('One dish at a time: save it or pass on it.'), N_('Search and filter every dish.'), N_('Recipe galaxy'),
     N_('The dishes as a map, by cuisine and protein.'), N_('Everything in the pantry, as a map.'),
     N_('What is in the pantry, with nutrition.'),
+    # The recipe page (services/recipe_v2/view.py, groups.py, persona.py, whole.py)
+    N_('Calm'), N_('Prep first'), N_('Just in time'), N_('Prep before cooking, but what can wait is done while something stands.'),
+    N_('Everything that needs no heat is done before the first cook step.'),
+    N_('Every step as late as possible. Shortest, busiest.'), N_('A little hot'), N_('Kid-friendly'),
+    N_('Baby, 6 months+'), N_('Baby, 8 months+'), N_('Baby, 12 months+'),
+    N_('Fruit and vegetables'), N_('Meat and fish'), N_('Bread'), N_('Pantry'), N_('Spices and dried herbs'),
+    N_('Sauces and flavourings'), N_('Oils and fats'), N_('You probably have'), N_('prep'), N_('cook'), N_('serve'),
+    # The main protein of a dish (constraints/main_protein.json, examples)
+    N_('Chicken'), N_('Turkey'), N_('Duck'), N_('Beef'), N_('Pork'), N_('Lamb'), N_('Game'), N_('Salmon'), N_('Oily Fish'),
+    N_('White Fish'), N_('Shrimp'), N_('Shellfish'), N_('Tofu'), N_('Beans'), N_('Lentils'), N_('Eggs'), N_('Halloumi'),
+    N_('Tempeh'), N_('Legumes'), N_('Seitan'),
     # The measuring systems (services/measures.SYSTEMS), and a post's days (services/social_week.WEEK_DAYS)
     N_('Metric'), N_('US'), N_('Mon'), N_('Tue'), N_('Wed'), N_('Thu'), N_('Fri'),
 )
@@ -66,6 +77,25 @@ JS_WORDS = (
     N_('Added to Cook Next queue!'), N_('Removed from Cook Next queue'),
     N_('Your dish'), N_('Step %(n)s of %(total)s · %(label)s'), N_('%(done)s of %(total)s steps done'),
     N_('%(label)s: %(left)s min left'), N_('%(label)s: time is up'),
+    # The recipe page (static/js/steps.js, done.js, ready.js, delta.js)
+    N_('once'), N_('twice'), N_('%(n)s times'), N_('You made %(title)s.'), N_('You made %(title)s in %(minutes)s minutes.'),
+    N_('You made %(title)s in %(minutes)s minutes, right on the plan.'),
+    N_('You made %(title)s in %(minutes)s minutes, %(under)s under the plan.'),
+    N_('You made %(title)s in %(minutes)s minutes, the plan said %(plan)s.'), N_('Made it'), N_('Save'), N_('Close'),
+    N_('The first time. It goes in your Made list.'), N_('Counted already: %(times)s so far.'),
+    N_('You have made it %(times)s before, last on %(when)s.'), N_('You have made it %(times)s before.'),
+    N_('Saved. It is in your Made list now.'), N_('Saved. That was your %(nth)s time.'),
+    N_('<b>All the bowls are ready.</b> Now the heat can go on.'), N_('%(n)s of %(total)s bowls ready'), N_('shown at %(n)s'),
+    N_('Done'), N_('Done <span aria-hidden="true">→</span> next step'), N_('Show the step you are on'), N_('Show all details'),
+    N_('The food is ready'), N_('The step you chose'), N_('Next step'), N_('Edit your note'), N_('How did it go?'),
+    N_('Looking at step %(n)s of %(total)s'), N_('Step %(n)s of %(total)s'), N_('← Back to step %(n)s'), N_('← Back'),
+    N_('At the table about %(time)s'), N_('Bowl %(n)s, ready: open the bowls'), N_('bowl %(n)s · ready'),
+    N_('Then: %(what)s'), N_('While you wait, %(n)s min:'), N_('While you wait:'), N_('Bowl %(n)s: %(what)s'),
+    N_('Back to the recipe'), N_('Untick step %(n)s'), N_('Mark step %(n)s as done'), N_('Cook it again'),
+    N_('Untick all the steps'), N_('Free %(when)s. While you wait: %(what)s'), N_('Free %(when)s'), N_('free %(when)s'),
+    N_('Stop the timer for %(what)s'), N_('Start %(n)s min'), N_('Up'), N_('Time is up'), N_('%(n)s min left'),
+    N_('Minute %(n)s of %(total)s in the plan.'), N_('Next up: %(what)s.'), N_('Then: %(what)s at minute %(n)s.'),
+    N_('The food is ready.'), N_('View: %(what)s'), N_('%(n)s min wait · while you wait: %(what)s'), N_('%(n)s min wait'), N_('✓ ready'), N_('check'),
 )
 
 
