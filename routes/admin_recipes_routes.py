@@ -15,6 +15,7 @@ from database.models import (
 )
 from routes._flat import FlatBlueprint
 from services.recipe_service import delete_recipes
+from services.recipe_v2 import pantry_fill
 from utils.decorators import admin_required
 
 admin_recipes_bp = FlatBlueprint("admin_recipes", __name__)
@@ -128,6 +129,10 @@ def update_recipe_status(recipe_id: int):
         recipe = db.session.get(Recipe, recipe_id)
         if not recipe:
             return jsonify({'success': False, 'error': 'Recipe not found'}), 404
+
+        waiting = pantry_fill.open_question(recipe) if new_status == 'approved' else None
+        if waiting is not None:
+            return jsonify({'success': False, 'error': f'{waiting.name} waits for an answer under Admin, Ingredient questions.'}), 409
 
         recipe.status = new_status
         db.session.commit()

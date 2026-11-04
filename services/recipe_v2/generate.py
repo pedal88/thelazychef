@@ -53,6 +53,11 @@ def catalogs():
     }
 
 
+def pantry_names():
+    """What round 1 chooses from when it writes the recipe itself: the active pantry, one name a line."""
+    return '\n'.join(db.session.execute(db.select(Ingredient.name).where(Ingredient.status == 'active').order_by(Ingredient.name)).scalars())
+
+
 def pantry_text():
     """Active pantry ingredients as "food_id name" lines, so the model can pick real ids."""
     rows = db.session.execute(
@@ -83,6 +88,7 @@ def write_text(kind, source, language=None, call=None, chef=None):
     language is a code from services/recipe_v2/language.py. None writes in the language of the idea or the source;
     a version keeps the base recipe's language."""
     language = prompt_name(language)
+    system = None  # a recipe the model writes itself chooses from the pantry; one from a source is kept as it is for now
     if kind == 'web':
         from services.recipe_v2.sources import fetch_recipe_text
 
@@ -96,16 +102,18 @@ def write_text(kind, source, language=None, call=None, chef=None):
     elif kind == 'idea':
         prompt = env.get_template('recipe_v2/idea.jinja2').render(idea=source, language=language,
                                                                   persona=persona.prompt_block(chef))
+        system = env.get_template('recipe_v2/choose_pantry.jinja2').render(pantry=pantry_names())
     elif kind == 'version':
         if not chef:
             raise ValueError('A version needs a chef persona')
         prompt = env.get_template('recipe_v2/version.jinja2').render(source=source, persona=persona.prompt_block(chef))
+        system = env.get_template('recipe_v2/choose_pantry.jinja2').render(pantry=pantry_names())
     elif kind == 'text':
         prompt = env.get_template('recipe_v2/normalize.jinja2').render(kind='text pasted by the user', source=source,
                                                                        language=language)
     else:
         raise ValueError(f'Unknown source kind {kind!r}')
-    msg, usage = (call or claude.call)(RECIPE_V2_MODEL, RECIPE_V2_EFFORT, [{'role': 'user', 'content': prompt}])
+    msg, usage = (call or claude.call)(RECIPE_V2_MODEL, RECIPE_V2_EFFORT, [{'role': 'user', 'content': prompt}], system=system)
     return claude.text_of(msg), usage
 
 
@@ -163,7 +171,10 @@ def match_pantry(data):
 
 PERSONA_KINDS = ('description', 'version')  # recipe.source_type of recipes the chef persona wrote
 ESTIMATE = 'estimate'  # the recipe note: what the source did not say and the model decided (rule 23c of the prompt)
-INFORMATION = ('pantry', ESTIMATE)  # notes that tell the reviewer something and never flag the recipe
+SWAP = 'substitute'  # the recipe note: a line swapped for a pantry item in this recipe (pantry_fill.py)
+ASK = 'ask'  # the recipe note: a question to Pål, whether to add an ingredient; flags the recipe (pantry_fill.py)
+ASKED = 'asked'  # the recipe note: what Pål answered
+INFORMATION = ('pantry', ESTIMATE, SWAP, ASKED)  # notes that tell the reviewer something and never flag the recipe
 
 
 def refresh(recipe, chef=None):

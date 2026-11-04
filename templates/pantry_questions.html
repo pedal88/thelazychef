@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{# Ingredient questions (routes/pantry_questions_routes.py): what recipes need that the pantry lacks, for Pål to answer. #}
+{% block title %}Ingredient questions - The Lazy Chef{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/recipe_v2.css') }}">
+<style>
+  .pq-list { list-style: none; margin: var(--space-4) 0 0; padding: 0; }
+  .pq-list > li { padding: var(--space-4) 0; border-top: 1px solid var(--color-line); }
+  .pq-list h2 { margin: 0; }
+  .pq-list ul { margin: var(--space-2) 0; padding: 0; list-style: none; }
+  .pq-list ul li { margin-top: var(--space-2); }
+  .pq-list .hint { display: block; overflow-wrap: anywhere; }
+  .pq-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; margin-top: var(--space-3); }
+  .pq-actions form { margin: 0; display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .pq-actions input { min-height: var(--tap); min-width: 0; padding: 0 var(--space-3); border: 1px solid var(--color-line); border-radius: var(--radius-pill); background: none; color: inherit; font: inherit; }
+  .pq-actions button { min-height: var(--tap); padding: 0 var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-pill); background: none; color: inherit; font: inherit; font-weight: 600; cursor: pointer; }
+  .pq-actions button:focus-visible, .pq-actions input:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+</style>
+{% endblock %}
+{% block content %}
+<article class="rv2 batch">
+  <p class="eyebrow">Ingredients · admin</p>
+  <h1>Ingredient questions</h1>
+  <p class="hint">What recipes need that the pantry lacks. A recipe with a question stays a draft until you answer.</p>
+  {% if questions %}
+  <datalist id="pantry-names">{% for n in names %}<option value="{{ n }}"></option>{% endfor %}</datalist>
+  <ul class="pq-list">
+    {% for q in questions %}
+    <li>
+      <h2>{{ q.item.name }}</h2>
+      <span class="hint">{{ q.item.main_category or 'No category' }}{% if q.item.calories_per_100g is not none %} · {{ q.item.calories_per_100g|round|int }} kcal per 100 g{% endif %}</span>
+      <ul>
+        {% for r in q.rows %}
+        <li>
+          <a href="{{ url_for('recipe_detail', recipe_id=r.recipe.id) }}">{{ r.recipe.title }}</a>
+          <span class="hint">{% for line in r.lines %}{{ ('%g'|format(line.amount) ~ ' ' ~ (line.unit or '')) if line.amount else 'to taste' }} {{ line.name }}{{ ', ' if not loop.last }}{% endfor %}</span>
+          {% if r.reason %}<span class="hint">{{ r.reason }}</span>{% endif %}
+          {% if r.swap_item %}<span class="hint">Claude's swap: {{ r.swap.name or r.swap_item.name }}{% if r.swap.amount_factor != 1 %} (amount x {{ '%g'|format(r.swap.amount_factor) }}){% endif %}</span>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      <div class="pq-actions">
+        <form method="post" action="{{ url_for('pantry_questions.add', item_id=q.item.id) }}"><button type="submit">Add to the pantry</button></form>
+        {% if q.can_swap %}<form method="post" action="{{ url_for('pantry_questions.swap', item_id=q.item.id) }}"><button type="submit">Use Claude's swap</button></form>{% endif %}
+        <form method="post" action="{{ url_for('pantry_questions.swap', item_id=q.item.id) }}">
+          <input name="other" list="pantry-names" required aria-label="Swap to this pantry item" placeholder="Another pantry item">
+          <button type="submit">Swap to it</button>
+        </form>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="hint">Nothing waits for an answer.</p>
+  {% endif %}
+  {% if answered %}
+  <h2>Answered</h2>
+  <p class="hint">Claude sees these when it decides the next time.</p>
+  <ul class="pq-list">
+    {% for a in answered %}
+    <li><a href="{{ url_for('recipe_detail', recipe_id=a.recipe_id) }}">{{ a.title }}</a>
+      <span class="hint">"{{ a.line }}": {{ a.answer }}</span></li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</article>
+{% endblock %}

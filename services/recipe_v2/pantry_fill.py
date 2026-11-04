@@ -1,36 +1,43 @@
 """Fill the pantry for a made recipe: the lines the matcher could not link (services/recipe_service.py).
 
-One Claude call sees those lines and the whole pantry, and decides for each line:
+Recipes choose from the pantry first, and only Pål lets new items in. One Claude call sees those lines, the recipe and
+the whole pantry, and decides for each line, in this dish:
 
-- alias: the line is a food the pantry has under another name ("neutral oil" is canola oil). The name becomes an
-  alias of that item, so the next recipe with it is linked by the matcher straight away.
-- new: a real product a shopper in Norway buys that the pantry lacks ("lingonberries"). It is added as active, so
-  the matcher and the next recipes use it, marked data_source "claude_auto" so it can be found and checked, with its
-  nutrition per 100 g as sold and how it looks in the shop (image_notes, so the symbol shows flatbrød as thin
-  sheets and not as a round flatbread). Its symbol image is made after (make_symbols), in the app's style.
-- skip: a pinch of something rare that would not change the nutrition and will not come back, or not a food.
+- alias: the same food under another name ("scallion" is spring onion). The name becomes an alias of that item, so
+  the next recipe with it is linked by the matcher straight away. It holds for every recipe, so never a swap.
+- substitute: another pantry item does the job so well that swapping hardly matters here ("yogurt butter" to butter in
+  a sauce). This recipe's lines and text change, in this recipe only: the same swap can ruin another dish. Noted with
+  rule SWAP, which does not flag the recipe; recipe.source_text keeps what the source said.
+- ask: the line matters to the dish and nothing in the pantry does its job. A pending item is made with its nutrition,
+  the lines are linked to it, and Claude's best swap waits with it in a note on the recipe (rule ASK, which flags it).
+  Pål answers on /admin/pantry-questions (add_item, swap); a recipe with an open question cannot be approved.
+- skip: water, not a food, or a pinch that would not change the dish.
 
-Then the recipe is recalculated (generate.recalculate). Each decision is noted on the recipe (rule "pantry",
-which does not flag it), so the review report and the admin chip show what was done. Runs in the queue after a
-recipe is made (tasks.run_pantry), and from scripts/fill_pantry.py for recipes made before.
+Pål's answers are kept on the recipes (rule ASKED) and shown to Claude the next time (earlier), so it learns where he
+draws the line. Then the recipe is recalculated (generate.recalculate). Each decision is noted on the recipe. Runs in
+the queue after a recipe is made (tasks.run_pantry), and from scripts/fill_pantry.py for recipes made before; a
+published recipe is only linked by alias, never changed or held back.
 
 Every step takes `call` so tests can stand in for Claude.
 """
+import datetime
 import json
 import logging
+import re
 import time
 import uuid
-from datetime import datetime
 
-from database.models import Ingredient, Recipe, db
+from database.models import Ingredient, Recipe, RecipeLine, db
 from services.ai_models import RECIPE_V2_EFFORT, RECIPE_V2_MODEL
 from services.recipe_v2 import claude
-from services.recipe_v2.generate import ROOT, env
+from services.recipe_v2.generate import ASK, ASKED, ROOT, SWAP, env
 
 log = logging.getLogger(__name__)
 RULE = 'pantry'  # the recipe note; information only, never a reason to flag the recipe
 AUTO = 'claude_auto'  # Ingredient.data_source of the items added here
 NUTRIENTS = ('calories', 'protein', 'carbs', 'fat', 'fat_saturated', 'sugar', 'fiber', 'sodium_mg')
+FACTOR_RANGE = (0.1, 5)  # outside it an amount_factor is a mistake, and the amount stays
+EARLIER_MAX = 30  # Pål's answers Claude is shown
 
 
 def _categories():
@@ -46,11 +53,15 @@ def schema():
            'properties': {'name': {'type': 'string'}, 'main_category': {'type': 'string'}, 'looks': {'type': 'string'},
                           'sub_category': {'type': 'string'}, 'default_unit': {'type': 'string', 'enum': ['g', 'ml']},
                           'average_g_per_unit': num, **{n: num for n in NUTRIENTS}}}
+    replacement = {'type': 'object', 'additionalProperties': False, 'required': ['find', 'replace'],
+                   'properties': {'find': {'type': 'string'}, 'replace': {'type': 'string'}}}
     line = {'type': 'object', 'additionalProperties': False,
-            'required': ['line', 'action', 'food_id', 'new', 'reason'],
-            'properties': {'line': {'type': 'string'}, 'action': {'type': 'string', 'enum': ['alias', 'new', 'skip']},
-                           'food_id': {'type': 'string'}, 'new': {'anyOf': [new, {'type': 'null'}]},
-                           'reason': {'type': 'string'}}}
+            'required': ['line', 'action', 'food_id', 'name', 'amount_factor', 'replacements', 'new', 'reason'],
+            'properties': {'line': {'type': 'string'},
+                           'action': {'type': 'string', 'enum': ['alias', 'substitute', 'ask', 'skip']},
+                           'food_id': {'type': 'string'}, 'name': {'type': 'string'}, 'amount_factor': num,
+                           'replacements': {'type': 'array', 'items': replacement},
+                           'new': {'anyOf': [new, {'type': 'null'}]}, 'reason': {'type': 'string'}}}
     return {'type': 'object', 'additionalProperties': False, 'required': ['lines'],
             'properties': {'lines': {'type': 'array', 'items': line}}}
 
@@ -73,16 +84,31 @@ def _pantry():
     return '\n'.join(f'{fid} {name}' + (' (pending)' if status == 'pending' else '') for fid, name, status in rows)
 
 
+def _answered():
+    """Pål's answers, newest first, as the notes on the recipes (rule ASKED) with the recipe's title."""
+    rows = db.session.execute(db.select(Recipe.id, Recipe.title, Recipe.validation_errors).where(Recipe.schema_version == 2)).all()
+    found = [dict(e, recipe_id=rid, title=title) for rid, title, notes in rows for e in notes or [] if e.get('rule') == ASKED]
+    return sorted(found, key=lambda e: e.get('at') or '', reverse=True)
+
+
+def earlier():
+    """Pål's answers for the prompt, one a line."""
+    return '\n'.join(f'- "{e["line"]}" in {e["title"]}: {e["answer"]}' for e in _answered()[:EARLIER_MAX])
+
+
 def decide(recipe, lines, call=None):
-    """Claude's decision per line: [{'line', 'action', 'food_id', 'new', 'reason'}] and the usage."""
+    """Claude's decision per line: [{'line', 'action', 'food_id', 'name', 'amount_factor', 'replacements', 'new',
+    'reason'}] and the usage."""
+    from services.recipe_v2.view import as_text
+
     call = call or claude.call
     cats = _categories()
     system = env.get_template('recipe_v2/pantry_fill.jinja2').render(
-        pantry=_pantry(), main_categories=', '.join(cats['main_categories']),
+        pantry=_pantry(), earlier=earlier(), main_categories=', '.join(cats['main_categories']),
         sub_categories='\n'.join(f'{k}: {", ".join(v)}' for k, v in cats['sub_categories'].items()))
     asked = '\n'.join(f'- {line.name}: {line.amount or ""} {line.unit or ""}'.rstrip()
                       + (f' ({line.state})' if line.state else '') for line in lines)
-    user = f'RECIPE\n{recipe.title}\n\nLINES NOT IN THE PANTRY\n{asked}'
+    user = f'RECIPE\n{as_text(recipe)}\n\nLINES NOT IN THE PANTRY\n{asked}'
     msg, usage = call(RECIPE_V2_MODEL, RECIPE_V2_EFFORT, [{'role': 'user', 'content': user}], system=system,
                       schema=schema())
     return json.loads(claude.text_of(msg))['lines'], usage
@@ -99,19 +125,25 @@ def _by_name(name):
     ).scalars().first()
 
 
-def _create(new):
-    """A new pantry item from Claude's description (active, data_source AUTO), or the item that has that name."""
+def _propose(new):
+    """The item Claude asks about: one that already has the name, or a new pending one (data_source AUTO). An item Pål
+    said no to before is asked about again: a swap in one dish says nothing about the next."""
     found = _by_name(new['name'])
     if found:
         return found
+    refused = db.session.execute(db.select(Ingredient).where(
+        db.func.lower(Ingredient.name) == new['name'].strip().lower(), Ingredient.status == 'inactive', Ingredient.data_source == AUTO)).scalars().first()
+    if refused:
+        refused.status = 'pending'
+        return refused
     cats = _categories()
     main = new['main_category'] if new['main_category'] in cats['main_categories'] else 'other'
     sub = new['sub_category'] if new['sub_category'] in cats['sub_categories'].get(main, []) else None
     kcal = new['calories']
     ing = Ingredient(
         food_id=f'auto-{uuid.uuid4().hex[:8]}', name=new['name'].strip().lower(), main_category=main, sub_category=sub,
-        default_unit=new['default_unit'], average_g_per_unit=new['average_g_per_unit'] or None, status='active',
-        data_source=AUTO, created_at=datetime.now().isoformat(), calories_per_100g=kcal,
+        default_unit=new['default_unit'], average_g_per_unit=new['average_g_per_unit'] or None, status='pending',
+        data_source=AUTO, created_at=datetime.datetime.now().isoformat(), calories_per_100g=kcal,
         kj_per_100g=round(kcal * 4.184, 1), protein_per_100g=new['protein'], carbs_per_100g=new['carbs'],
         fat_per_100g=new['fat'], fat_saturated_per_100g=new['fat_saturated'], sugar_per_100g=new['sugar'],
         fiber_per_100g=new['fiber'], sodium_mg_per_100g=new['sodium_mg'],
@@ -121,37 +153,101 @@ def _create(new):
     return ing
 
 
+def _note(recipe, rule, message, **extra):
+    recipe.validation_errors = list(recipe.validation_errors or []) + [{'rule': rule, 'message': message, **extra}]
+    return message
+
+
+def _rewrite(recipe, replacements):
+    """Change the words that name a swapped ingredient, in whatever the recipe says besides its lines. {iN} in a step
+    is the line itself. The first letter stays as it was, so a sentence still starts with a capital."""
+    def sub(text):
+        for r in replacements:
+            find, new = r.get('find') or '', r.get('replace') or ''
+            if text and find:
+                text = re.sub(rf'\b{re.escape(find)}\b', lambda m: new[:1].upper() + new[1:] if m.group(0)[0].isupper() else new,
+                              text, flags=re.IGNORECASE)
+        return text
+
+    for step in recipe.steps:
+        step.text, step.short, step.done_when = sub(step.text), sub(step.short), sub(step.done_when)
+    for component in recipe.components:
+        component.name = sub(component.name)
+    recipe.chef_note = sub(recipe.chef_note)
+
+
+def _swap(recipe, lines, item, name='', factor=1, replacements=(), reason=''):
+    """Make the lines use another pantry item, in this recipe only: name, amount and the words around them."""
+    was, now = lines[0].name, (name or item.name).strip()
+    factor = factor if isinstance(factor, (int, float)) and FACTOR_RANGE[0] <= factor <= FACTOR_RANGE[1] else 1
+    for line in lines:
+        line.ingredient, line.name = item, now
+        if factor != 1:
+            line.amount = round(line.amount * factor, 2) if line.amount else line.amount
+            line.gram_weight = round(line.gram_weight * factor, 1) if line.gram_weight else line.gram_weight
+    _rewrite(recipe, sorted([{'find': was, 'replace': now}, *replacements], key=lambda r: -len(r.get('find') or '')))
+    recipe.revision = (recipe.revision or 1) + 1
+    recipe.revised_at = datetime.datetime.now(datetime.UTC).replace(tzinfo=None)
+    return _note(recipe, SWAP, f'"{was}" is now {now}' + (f' (amount x {factor:g})' if factor != 1 else '') + (f': {reason}' if reason else ''))
+
+
+def _ask(recipe, lines, item, reason, swap=None):
+    """Link the lines to the pending item and leave the question on the recipe."""
+    for line in lines:
+        line.ingredient = item
+    return _note(recipe, ASK, f'"{lines[0].name}": is it worth adding {item.name} to the pantry? {reason}', line=lines[0].name,
+                 item=item.food_id, reason=reason, swap=swap)
+
+
+def _swap_of(d):
+    """Claude's swap in a question, what the note keeps."""
+    if not d.get('food_id'):
+        return None
+    return {'food_id': d['food_id'], 'name': d.get('name') or '', 'amount_factor': d.get('amount_factor') or 1,
+            'replacements': d.get('replacements') or []}
+
+
 def apply(recipe, decisions):
-    """Carry out the decisions on the pantry and the recipe's lines. Returns the notes, one per decision.
-    The caller recalculates and commits."""
+    """Carry out the decisions on the pantry and the recipe's lines. Returns the notes, one per decision, which are
+    also on the recipe. The caller recalculates and commits."""
     from services.ingredient_service import add_alias
 
     lines = {}
     for line in recipe.lines:
         if line.ingredient is None:
             lines.setdefault(line.name.strip().lower(), []).append(line)
+    published = recipe.status == 'approved'
     notes = []
     for d in decisions:
         key = (d.get('line') or '').strip().lower()
         if key not in lines:
             continue  # not one of the lines asked about
-        ing = None
-        if d['action'] == 'alias':
-            ing = _by_food_id(d.get('food_id') or '')
-            if ing is None:
-                notes.append(f'"{d["line"]}": no pantry item {d.get("food_id")!r}, left unlinked')
-                continue
-            add_alias(ing, d['line'])
-            notes.append(f'"{d["line"]}" is now an alias of {ing.name} ({d["reason"]})')
-        elif d['action'] == 'new' and d.get('new'):
-            ing = _create(d['new'])
-            add_alias(ing, d['line'])  # skipped when it is the item's own name
-            notes.append(f'"{d["line"]}": new pantry item {ing.name} ({d["reason"]})')
-        else:
-            notes.append(f'"{d["line"]}" left unlinked ({d["reason"]})')
-        if ing is not None:
+        action, reason = d.get('action'), d.get('reason') or ''
+        item = _by_food_id(d.get('food_id') or '')
+        if action in ('substitute', 'ask') and published:
+            notes.append(_note(recipe, RULE, f'"{d["line"]}" left unlinked, the recipe is published ({reason})'))
+        elif action == 'alias' and item is not None and item.status == 'pending':
+            notes.append(_ask(recipe, lines[key], item, reason))
+        elif action == 'alias' and item is not None:
+            add_alias(item, d['line'])
             for line in lines[key]:
-                line.ingredient = ing
+                line.ingredient = item
+            notes.append(_note(recipe, RULE, f'"{d["line"]}" is now an alias of {item.name} ({reason})'))
+        elif action == 'substitute' and item is not None and item.status == 'active':
+            notes.append(_swap(recipe, lines[key], item, d.get('name'), d.get('amount_factor'), d.get('replacements') or [], reason))
+        elif action == 'ask' and d.get('new'):
+            asked = _propose(d['new'])
+            if asked.status == 'active':  # it was in the pantry after all
+                add_alias(asked, d['line'])
+                for line in lines[key]:
+                    line.ingredient = asked
+                notes.append(_note(recipe, RULE, f'"{d["line"]}" is now an alias of {asked.name} ({reason})'))
+            else:
+                notes.append(_ask(recipe, lines[key], asked, reason, _swap_of(d)))
+        elif action in ('alias', 'substitute'):
+            notes.append(_note(recipe, RULE, f'"{d["line"]}": no pantry item {d.get("food_id")!r}, left unlinked'))
+        else:
+            notes.append(_note(recipe, RULE, f'"{d["line"]}" left unlinked ({reason})'))
     db.session.flush()  # the links are what recalculate looks at
     return notes
 
@@ -165,16 +261,97 @@ def fill(recipe, call=None):
     if not lines:
         return {'notes': [], 'cost_usd': 0.0}
     decisions, usage = decide(recipe, lines, call=call)
+    recipe.validation_errors = [e for e in recipe.validation_errors or [] if e.get('rule') != RULE]
     notes = apply(recipe, decisions)
-    kept = [e for e in recipe.validation_errors or [] if e.get('rule') != RULE]
-    recipe.validation_errors = kept + [{'rule': RULE, 'message': n} for n in notes]
     recalculate(recipe)
     return {'notes': notes, 'cost_usd': usage['cost_usd']}
 
 
+def _waiting(item):
+    """{recipe: its lines} using an item that waits for an answer."""
+    lines = db.session.execute(db.select(RecipeLine).where(RecipeLine.ingredient_id == item.id).order_by(RecipeLine.recipe_id, RecipeLine.sort_order)).scalars()
+    found = {}
+    for line in lines:
+        found.setdefault(line.recipe, []).append(line)
+    return found
+
+
+def _question_on(recipe, item):
+    return next((e for e in recipe.validation_errors or [] if e.get('rule') == ASK and e.get('item') == item.food_id), None)
+
+
+def questions():
+    """What waits for Pål: each pending item recipes use, with the recipes, why Claude asks and the swap it suggests."""
+    used = db.select(RecipeLine.ingredient_id).where(RecipeLine.ingredient_id.isnot(None))
+    items = db.session.execute(db.select(Ingredient).where(Ingredient.status == 'pending', Ingredient.id.in_(used)).order_by(Ingredient.id)).scalars().all()
+    out = []
+    for item in items:
+        rows = []
+        for recipe, lines in _waiting(item).items():
+            note = _question_on(recipe, item) or {}
+            swap = note.get('swap') or None
+            suggested = _by_food_id(swap['food_id']) if swap else None
+            rows.append({'recipe': recipe, 'lines': lines, 'reason': note.get('reason'), 'swap': swap,
+                         'swap_item': suggested if suggested is not None and suggested.status == 'active' else None})
+        out.append({'item': item, 'rows': rows, 'can_swap': all(r['swap_item'] for r in rows)})
+    return out
+
+
+def answered(limit=20):
+    """Pål's latest answers, for the page."""
+    return _answered()[:limit]
+
+
+def _answer(recipe, item, answer):
+    """The question on the recipe becomes the answer, then the recipe is worked out again."""
+    from services.recipe_v2.generate import recalculate
+
+    note = _question_on(recipe, item) or {}
+    recipe.validation_errors = [e for e in recipe.validation_errors or [] if not (e.get('rule') == ASK and e.get('item') == item.food_id)]
+    _note(recipe, ASKED, f'{item.name}: {answer}', line=note.get('line') or item.name, answer=answer, reason=note.get('reason'),
+          at=datetime.datetime.now(datetime.UTC).isoformat())
+    recalculate(recipe)
+
+
+def add_item(item):
+    """Pål's yes: the item joins the pantry as long tail, and what the recipes call it become its aliases. Its symbol is
+    made after (make_symbols). The caller commits."""
+    from services.ingredient_service import add_alias
+
+    item.status, item.tier = 'active', item.tier or 'long_tail'
+    for recipe, lines in _waiting(item).items():
+        for name in {line.name for line in lines}:
+            add_alias(item, name)
+        _answer(recipe, item, f'added {item.name} to the pantry')
+
+
+def swap(item, other=None):
+    """Pål's no: each recipe takes the swap Claude suggested for it, or the pantry item he chose (other), and the item
+    leaves the pantry. A recipe without a swap keeps its question. Returns the recipes changed. The caller commits."""
+    changed = []
+    for recipe, lines in _waiting(item).items():
+        s = (_question_on(recipe, item) or {}).get('swap') or {}
+        target = other or _by_food_id(s.get('food_id') or '')
+        if target is None or target.status != 'active':
+            continue
+        name = '' if other else s.get('name')
+        replacements = [] if other else s.get('replacements') or []
+        _swap(recipe, lines, target, name, 1 if other else s.get('amount_factor'), replacements)
+        _answer(recipe, item, f'not added, swapped to {target.name}')
+        changed.append(recipe)
+    if not _waiting(item):
+        item.status = 'inactive'
+    return changed
+
+
+def open_question(recipe):
+    """The first ingredient in the recipe that waits for an answer, or None. Such a recipe cannot be approved."""
+    return next((line.ingredient for line in recipe.lines if line.ingredient is not None and line.ingredient.status == 'pending'), None)
+
+
 def without_symbol(recipe=None):
-    """The items added here that have no symbol image yet: the recipe's, or all of them."""
-    stmt = db.select(Ingredient).where(Ingredient.data_source == AUTO, Ingredient.image_url.is_(None))
+    """The items added here and let in that have no symbol image yet: the recipe's, or all of them."""
+    stmt = db.select(Ingredient).where(Ingredient.data_source == AUTO, Ingredient.status == 'active', Ingredient.image_url.is_(None))
     if recipe is not None:
         ids = {line.ingredient_id for line in recipe.lines if line.ingredient_id}
         stmt = stmt.where(Ingredient.id.in_(ids or {0}))

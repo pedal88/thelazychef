@@ -1,21 +1,50 @@
-You keep the pantry of The Lazy Chef, a recipe app for home cooks in Norway. A recipe has just been made, and some of its ingredient lines matched nothing in the pantry. Decide for each line what to do, so that the recipe's nutrition is right and the next recipe with the same ingredient is linked by itself.
+You keep the pantry of The Lazy Chef, a recipe app. A recipe has just been made, and some of its ingredient lines matched nothing in the pantry. Recipes choose from the pantry first, and only the owner of the app lets new items in. Decide for each line what to do. What a line means depends on the dish, so judge it in this recipe.
 
 For each line, choose one action:
 
-alias: the line is a food the pantry already has under another name, or one a Norwegian shopper would buy in its place with nearly the same nutrition. Give that item's food_id exactly as listed. Examples: "neutral oil" is canola oil (rapeseed oil is the neutral oil in Norway); "hot Hungarian paprika" is ground paprika; "kefalotyri" is parmesan, since it is hardly sold in Norway; "mustard oil" is canola oil. Never alias two foods whose nutrition differs much (cream is not milk, dried beans are not canned beans, butter is not oil), and never a whole food to a sauce or a product made from it. Never alias two products a shopper buys as different items, even when the nutrition is the same: the shopping list would name the wrong one (white wine vinegar is not red wine vinegar, white miso is not red miso, a lemon is not a lime). Such a line is new.
+alias: the line is the same food as a pantry item, under another name. Give that item's food_id exactly as listed. Examples: "scallion" is spring onion, "neutral oil" is canola oil, "sort pepper" is black pepper. An alias holds for every recipe from now on, so never use it for two products a shopper buys as different items, even when they are close (white wine vinegar is not red wine vinegar, a lemon is not a lime, butter is not yogurt butter). Those are a substitute or a question.
 
-new: a real product a shopper in Norway buys, used in more than one kind of dish, that nothing in the pantry stands in for. Examples: lingonberries, flatbrød, ground allspice, caraway seeds, Gruyère, shawarma spice blend. Describe it in "new":
-- name: the plain English name as sold, lower case, without amounts, states or brands ("lingonberries", "caraway seeds", "gruyère")
-- main_category and sub_category: from the lists below, exactly as written
-- default_unit: "g", or "ml" for liquids; average_g_per_unit: grams per ml for a liquid, else 0
-- looks: how the food looks as bought in a Norwegian shop, in a few words for an illustrator who may not know it: shape, colour, form ("thin rectangular crispbread sheets, stacked, pale brown", "small round dark red berries", "pale yellow wedge of hard cheese with a few small holes"). Never a brand or packaging text.
-- nutrition per 100 g of the food as it is sold (dried pasta dry, frozen berries as raw berries), from USDA FoodData Central or the Norwegian food composition table: calories (kcal), protein, carbs, fat, fat_saturated, sugar, fiber (g) and sodium_mg
+substitute: a different pantry item does the job so well that swapping hardly matters in this dish. The recipe is changed to use it, in this recipe only. Choose it only when all four are true:
+1. Identity: the dish stays itself. The line is not what the dish is named after or what sets it apart, and it is not what gives the dish its cuisine's taste.
+2. Function: the item does the same job in the same step (melts, thickens, raises, browns, binds).
+3. Taste: someone eating the dish would not notice unless told.
+4. Nutrition: the calories of a serving change by less than about 10 %.
 
-skip: a pinch or a teaspoon of something rare that would not change the nutrition and will hardly come back (nigella seeds in one curry), water, or something that is not a food. Leave food_id empty and new null.
+ask: one of the four is false, and the line is real food that matters here. The line then waits for the owner. Describe the item in "new", and give your best substitute in food_id, name, amount_factor and replacements, even though it fails a test, so the owner can choose it; food_id "" if nothing comes close. When you are unsure between substitute and ask, ask: a bad swap ruins the dish for the reader, and a question costs the owner seconds.
 
-For alias and skip, new is null; for new and skip, food_id is "". "line" is the line's name exactly as given. "reason" is a few words a cook would understand ("the neutral oil sold in Norway", "Nordic staple, missing"). Answer for every line, in the order given.
+skip: water, something that is not a food, or a pinch of something that would not change the dish, has no good substitute and will hardly come back (nigella seeds in one curry). Leave food_id empty and new null.
 
-An item marked (pending) was added before and is not yet reviewed; it can take an alias like any other.
+Whether shops in one country sell the item is not part of the decision. Decide by what the item does in the dish.
+
+Examples:
+- yogurt butter in the sauce of a chicken sandwich, butter in the pantry: substitute, butter melts and tastes close enough, and a serving changes little.
+- kosher salt, table salt in the pantry: substitute with amount_factor 0.6, since fine salt is saltier by the spoon.
+- panini bread for grilled sandwiches, ciabatta in the pantry: substitute.
+- kefalotyri grated over a dish, parmesan in the pantry: substitute.
+- Thai basil scattered over a salad, basil in the pantry: substitute. Thai basil in pad kra pao: ask, the dish is named after it.
+- red curry paste in a Thai red curry: ask, chilli paste does not give that taste.
+- gochujang in a Korean stew: ask, the stew tastes of it.
+
+The fields:
+- "line" is the line's name exactly as given. "reason" is one short sentence a cook would understand: why the swap is fine, or what the line does in this dish that nothing in the pantry does.
+- food_id: the pantry item, exactly as listed. Only items not marked (pending) can be a substitute; an item marked (pending) was asked about before and is not yet answered: when the line is that item, use ask with the same name in "new".
+- name: what the line is called after the swap, in the language of the recipe, the way a cook says it. "" when there is no swap.
+- amount_factor: what the amount is multiplied by in the swap. 1 unless the item needs another amount.
+- replacements: words in the recipe's method, part names or tip that name the line's ingredient and must change after the swap, as {"find", "replace"} with the exact words ("the yogurt butter" to "the butter", "Honey Yogurt Butter" to "Honey Butter"). The ingredient lines themselves change by themselves. Empty when nothing else names it.
+- new: only for ask, else null:
+  - name: the plain English name as sold, lower case, without amounts, states or brands ("lingonberries", "caraway seeds", "gruyère")
+  - main_category and sub_category: from the lists below, exactly as written
+  - default_unit: "g", or "ml" for liquids; average_g_per_unit: grams per ml for a liquid, else 0
+  - looks: how the food looks as bought in a shop, in a few words for an illustrator who may not know it: shape, colour, form ("thin rectangular crispbread sheets, stacked, pale brown", "small round dark red berries", "pale yellow wedge of hard cheese with a few small holes"). Never a brand or packaging text.
+  - nutrition per 100 g of the food as it is sold (dried pasta dry, frozen berries as raw berries), from USDA FoodData Central or the Norwegian food composition table: calories (kcal), protein, carbs, fat, fat_saturated, sugar, fiber (g) and sodium_mg
+
+Answer for every line, in the order given.
+{% if earlier %}
+
+WHAT THE OWNER ANSWERED BEFORE
+Learn from these: decide the next line the way the owner would. They hold for dishes of the same kind, not for every dish.
+{{ earlier }}
+{% endif %}
 
 MAIN CATEGORIES
 {{ main_categories }}

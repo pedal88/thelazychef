@@ -149,7 +149,7 @@ def run(recipe_id, kind, source, attempt=0, language=None, images=True):
 
 
 def _symbols(recipe):
-    """The symbol images of the items pantry_fill added for the recipe; a failure leaves them without."""
+    """The symbol images of the recipe's items that pantry_fill added before and that have none; a failure leaves them without."""
     from routes._shared import get_storage
     from services.recipe_v2 import pantry_fill
 
@@ -162,8 +162,8 @@ def _symbols(recipe):
 
 
 def run_pantry(recipe_id, images=True, attempt=0):
-    """Fill the pantry for the recipe's unlinked lines and recalculate it (pantry_fill.fill), make the symbol images
-    of the items it added, then queue the recipe's images.
+    """Decide the recipe's unlinked lines and recalculate it (pantry_fill.fill), make the symbol images of its items
+    that were let in without one, then queue the recipe's images.
     Errors raise, so Cloud Tasks tries again, except on the last attempt: then the error is noted on the recipe
     (rule "pantry") and the images are queued anyway."""
     from services.recipe_v2 import pantry_fill
