@@ -1,10 +1,12 @@
 {% extends "base.html" %}
-{# What the iPhone shortcut opens (routes/video_inbox_routes.py add_page). With a link the page sends itself, and the
-   button is there when scripts are off. Without one, the link can be pasted. #}
+{# Where a video is saved (routes/video_inbox_routes.py add_page). The iPhone shortcut copies the link and opens this page,
+   and Paste and save does the rest. With ?url= the page sends itself, and the button is there when scripts are off. #}
 {% block title %}Save a video - The Lazy Chef{% endblock %}
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/recipe_v2.css') }}">
 <style>
+  #paste-save { margin-bottom: var(--space-4); }
+  #paste-save[hidden] { display: none; }
   .inbox-many { margin-top: var(--space-5); padding-top: var(--space-4); border-top: 1px solid var(--color-line); }
   .inbox-many h2 { margin: 0; }
   .inbox-many textarea, .inbox-many input[type=file] { width: 100%; box-sizing: border-box; }
@@ -23,11 +25,39 @@
   <script>document.getElementById('save-video').submit();</script>
   {% else %}
   {% if shared %}<p class="hint">That is not a link to a TikTok, Instagram or YouTube video.</p>{% endif %}
-  <form method="post" class="newform" action="{{ url_for('video_inbox.add') }}">
+  <div id="paste-save" hidden>
+    <button type="button" class="go">Paste and save</button>
+    <p class="hint" role="status"></p>
+  </div>
+  <form method="post" class="newform" id="one-link" action="{{ url_for('video_inbox.add') }}">
     <label for="video-link" class="eyebrow">Link to the video</label>
     <input id="video-link" type="text" inputmode="url" name="url" required autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste a TikTok, Instagram or YouTube link">
     <button type="submit" class="go">Save</button>
   </form>
+  <script>
+    // Reads the clipboard only on a tap, and sends only the link in it: anything else on the clipboard stays on the phone.
+    (function () {
+      const box = document.getElementById('paste-save');
+      if (!navigator.clipboard || !navigator.clipboard.readText) return;
+      box.hidden = false;
+      const say = box.querySelector('[role=status]');
+      const field = document.getElementById('video-link');
+      box.querySelector('button').addEventListener('click', async function () {
+        try {
+          const found = (await navigator.clipboard.readText()).match(/https?:\/\/[^\s<>"']+/i);
+          if (!found) {
+            say.textContent = 'There is no link on the clipboard. Copy the link to the video, then try again.';
+            return;
+          }
+          field.value = found[0];
+          document.getElementById('one-link').submit();
+        } catch (e) {  // the phone said no
+          say.textContent = 'The browser would not read the clipboard. Hold your finger in the field below, and choose Paste.';
+          field.focus();
+        }
+      });
+    })();
+  </script>
   <section class="inbox-many">
     <h2>Many links</h2>
     <p class="hint">Paste a list or any text with links in it, or choose a file such as TikTok's data download. The next page says what it found, and nothing is saved before you say so there.</p>
