@@ -125,12 +125,18 @@ class RecipeV2ViewTests(unittest.TestCase):
         self.assertNotIn('data-unit-switch data-units-auto', html)
 
     def test_the_ingredients_page_in_us(self):
-        html = self.client.get('/ingredients').get_data(as_text=True)
-        self.assertIn('Kilojoules', html)
         self.client.set_cookie('units', 'us')
-        html = self.client.get('/ingredients').get_data(as_text=True)
-        self.assertIn('per 100 g (about 3½ oz)', html)
-        self.assertNotIn('Kilojoules', html)
+        self.assertIn('per 100 g (about 3½ oz)', self.client.get('/ingredients').get_data(as_text=True))
+
+    def test_an_ingredients_sheet_has_kilojoules_only_in_metric(self):
+        ing = Ingredient(food_id='sheet_test', name='sheet test', status='active', calories_per_100g=100, kj_per_100g=418)
+        db.session.add(ing)
+        db.session.commit()
+        self.assertIn('kJ', self.client.get(f'/ingredients/{ing.id}/card').get_data(as_text=True))
+        self.client.set_cookie('units', 'us')
+        html = self.client.get(f'/ingredients/{ing.id}/card').get_data(as_text=True)
+        self.assertIn('(about 3½ oz)', html)
+        self.assertNotIn('kJ', html)
 
     def test_the_state_follows_the_ingredient_in_cook_steps(self):
         _, html = self.page('tikka')

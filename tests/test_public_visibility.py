@@ -131,7 +131,7 @@ class PublicVisibilityTests(unittest.TestCase):
         self.assertEqual(self.client.get(f'/api/sub-recipe/{self.draft.id}').status_code, 404)
 
     def test_ingredient_endpoints_show_only_active_to_anonymous(self):
-        page = self.client.get('/ingredients').get_data(as_text=True)
+        page = self.client.get('/ingredients?all=1').get_data(as_text=True)
         self.assertIn('onion active', page)
         self.assertNotIn('onion pending', page)
         self.assertNotIn('onion inactive', page)
@@ -148,7 +148,7 @@ class PublicVisibilityTests(unittest.TestCase):
 
     def test_admin_sees_all_ingredients(self):
         self._login_admin()
-        page = self.client.get('/ingredients').get_data(as_text=True)
+        page = self.client.get('/ingredients?all=1').get_data(as_text=True)
         self.assertIn('onion pending', page)
         self.assertEqual(self.client.get(f'/api/ingredient/{self.pending.id}').status_code, 200)
 
