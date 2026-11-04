@@ -129,7 +129,9 @@ def run_many_task():
 @admin_required
 def look_up(row_id):
     """Look up a video again, from the list: in the queue, or straight away without one."""
-    db.session.get(VideoInbox, row_id) or abort(404)
+    row = db.session.get(VideoInbox, row_id) or abort(404)
+    row.meta_error = None  # asked for again, so what stopped it last time does not count
+    db.session.commit()
     if not tasks.enqueue_inbox(row_id):
         tasks.run_inbox(row_id, attempt=tasks.MAX_ATTEMPTS - 1)
     return redirect(url_for('video_inbox.inbox'))

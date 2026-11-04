@@ -27,7 +27,7 @@ IMAGES_PATH = '/internal/tasks/recipe-v2-images/{id}'  # the dish and part image
 PANTRY_PATH = '/internal/tasks/recipe-v2-pantry/{id}'  # the pantry items for its unlinked lines (pantry_fill.py)
 INBOX_PATH = '/internal/tasks/video-inbox/{id}'  # what a video saved to the inbox is (inbox.py)
 INBOX_MANY_PATH = '/internal/tasks/video-inbox-many'  # queues the look-ups of many videos, spread out in time
-INBOX_SPACING = 5  # seconds between those look-ups: the queue stays free for recipes, and TikTok sees few requests
+INBOX_SPACING = 30  # seconds between those look-ups, each of which downloads a video: the queue stays free for recipes, and TikTok sees few requests
 
 
 def configured():
@@ -229,7 +229,7 @@ def run_inbox(row_id, attempt=0):
     from services.recipe_v2 import inbox
 
     row = db.session.get(VideoInbox, row_id)
-    if row is None or (row.webpage_url and row.dish_name):  # gone, or queued twice and done
+    if row is None or (row.webpage_url and row.dish_name and (row.video_text or row.meta_error)):  # gone, or queued twice and done
         return True
     try:
         inbox.look_up(row)

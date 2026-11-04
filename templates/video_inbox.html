@@ -29,7 +29,7 @@
   {% if status == 'new' %}<p><a class="back" href="{{ url_for('video_inbox.add_page') }}">Paste a link</a></p>{% endif %}
   {% if status == 'new' and waiting %}
   <form class="inbox-wait" method="post" action="{{ url_for('video_inbox.look_up_waiting') }}">
-    <span class="hint">{{ waiting }} {{ 'waits' if waiting == 1 else 'wait' }} to be looked up, one every few seconds. Stuck?</span>
+    <span class="hint">{{ waiting }} {{ 'waits' if waiting == 1 else 'wait' }} to be looked up, one at a time. Stuck?</span>
     <button type="submit">Queue them again</button>
   </form>
   {% endif %}
@@ -46,6 +46,7 @@
         {% set like = (row.similar or [])|select('in', titles)|list %}
         {% if like %}<span class="hint">Looks like: {% for i in like %}<a href="{{ url_for('recipe_detail', recipe_id=i) }}">{{ titles[i] }}</a>{{ ', ' if not loop.last }}{% endfor %}</span>{% endif %}
         {% if row.meta_error %}<span class="hint">{{ row.meta_error }}</span>{% endif %}
+        {% if row.video_text %}<details><summary>What the video shows</summary>{{ row.video_text }}</details>{% endif %}
         {% if row.caption %}<details><summary>Caption</summary>{{ row.caption }}</details>{% endif %}
       </div>
       <div class="actions">
@@ -53,7 +54,7 @@
           <input type="hidden" name="status" value="{{ 'discarded' if status == 'new' else 'new' }}">
           <button type="submit">{{ 'Discard' if status == 'new' else 'Take back' }}</button>
         </form>
-        {% if status == 'new' and not row.dish_name %}
+        {% if status == 'new' and not made and not row.video_text %}
         <form method="post" action="{{ url_for('video_inbox.look_up', row_id=row.id) }}"><button type="submit">Look up</button></form>
         {% endif %}
       </div>

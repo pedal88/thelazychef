@@ -29,6 +29,10 @@ class SourceError(Exception):
     """The link cannot be read. The message is safe to show the user."""
 
 
+class NoRecipeInVideo(SourceError):
+    """The video was watched, and it shows no recipe."""
+
+
 def is_link(text):
     return bool(re.fullmatch(r'https?://\S+', (text or '').strip()))
 
@@ -167,7 +171,7 @@ def fetch_video_text(url, download=None, watch=None):
     finally:
         SocialMediaExtractor.cleanup(video['video_path'], video.get('thumbnail_path'))
     if not (text or '').strip() or text.strip().upper().startswith(NO_RECIPE):
-        raise SourceError('No recipe could be read from the video. Paste the recipe text instead.')
+        raise NoRecipeInVideo('No recipe could be read from the video. Paste the recipe text instead.')
     return text
 
 
@@ -196,6 +200,7 @@ def _watch(path, caption):
         prompt = Environment(loader=FileSystemLoader(os.path.join(root, 'data', 'prompts'))).get_template(
             'recipe_v2/video_text.jinja2').render(caption=caption)
         resp = client.models.generate_content(model=GEMINI_TEXT, contents=[types.Part.from_uri(file_uri=ref.uri, mime_type=ref.mime_type), prompt])
+        log.info('Video read: %s', getattr(resp, 'usage_metadata', None))  # what a read costs is an estimate until measured
         return resp.text
     finally:
         try:

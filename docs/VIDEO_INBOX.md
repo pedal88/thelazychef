@@ -14,11 +14,11 @@ field and save. Only a link is sent; anything else on the clipboard stays on the
 On the same page, paste a list or any text with links in it, or choose a file such as TikTok's data download. Links are read
 out of whatever the text is, so nothing depends on the file's format, which has not been checked against a real download.
 **Check the links** says how many are new, how many are known (in the inbox, discarded, made, or there twice) and how many
-are no video, with the most the look-ups cost. Nothing is saved before **Save**. At most 1000 new videos at a time: a whole
+are no video, with about what reading them costs. Nothing is saved before **Save**. At most 1000 new videos at a time: a whole
 download also lists every video watched, so then choose only the file with the favourites.
 
-Each is looked up in the queue, one every 5 seconds (`tasks.INBOX_SPACING`), so recipes are not held up and TikTok sees few
-requests. One that fails stays usable and says why, and the rest go on. Every video stays in the list: Pål chooses the links,
+Each is looked up in the queue, one every 30 seconds (`tasks.INBOX_SPACING`), so recipes are not held up and TikTok sees few
+requests. 100 videos take about 50 minutes. One that fails stays usable and says why, and the rest go on. Every video stays in the list: Pål chooses the links,
 so nothing is sorted away by its caption, and one sent by mistake is discarded by hand.
 
 ## The iPhone shortcut
@@ -57,7 +57,12 @@ estimated. The recipes are drafts until approved. A row stays in the inbox, mark
   (`vm.tiktok.com/…`) has only itself to go by. Sharing a discarded video again takes it back.
 - A video already made into a recipe is marked, by comparing the keys with the recipes' `source_input`.
 - Each saved video is looked up in the queue (`/internal/tasks/video-inbox/<id>`, `inbox.look_up`): caption, uploader and
-  length with `yt-dlp`, without downloading it, then one small Claude call (`VIDEO_INBOX_MODEL`) for the dish's name, the
-  approved recipes it looks most like, and suggested cuisine, main protein and meal types. Under a cent a video. It need
-  not be perfect: making the recipe has its own logic, and these suggestions do not go into it. A video that cannot be
-  read keeps its link and says why, and costs no model call.
+  length with `yt-dlp`; then the video is downloaded and Gemini writes down what it shows (`video_text`, under **What the
+  video shows** in the list); then one small Claude call (`VIDEO_INBOX_MODEL`) for the dish's name, the approved recipes it
+  looks most like, and suggested cuisine, main protein and meal types. About 3 cents for a TikTok of 40 seconds, an estimate
+  (`docs/SERVICES_AND_COSTS.md`). The suggestions do not go into the recipe. A video whose details cannot be read keeps its
+  link and says why, and costs no model call.
+- Making the recipe uses `video_text` (`inbox.written_down`), so the video is paid for once, and the same text gives the same
+  amounts each time. A video not read in the inbox (longer than 3 minutes, or the read failed) is read when the recipe is
+  made, as any other link. A video that shows no recipe says so in the list; it can still be chosen. **Look up** on a row
+  reads it again.

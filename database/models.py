@@ -494,7 +494,8 @@ class ReferralVisit(db.Model):
 class VideoInbox(db.Model):
     """A cooking video shared from the phone, saved to look at later and maybe make into a recipe. Saving it makes
     nothing (services/recipe_v2/inbox.py, routes/video_inbox_routes.py). Whether it has been made is read from the
-    recipes' source_input. The fields for what the video is about stay empty until they have been looked up."""
+    recipes' source_input. The fields for what the video is about stay empty until they have been looked up. video_text is
+    what the video shows, written down, and is what the recipe is made from."""
     __tablename__ = 'video_inbox'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     url: Mapped[str] = mapped_column(String(1000), nullable=False)
@@ -503,6 +504,7 @@ class VideoInbox(db.Model):
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow, nullable=False)
     webpage_url: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
     caption: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    video_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     uploader: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
     duration_s: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     dish_name: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)

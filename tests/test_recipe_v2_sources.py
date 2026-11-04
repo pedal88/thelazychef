@@ -149,6 +149,26 @@ class WebRecipeTests(unittest.TestCase):
         self.assertIn('Smash burgers #dinner', seen[0])
         self.assertEqual(cleaned, [('/tmp/v.mp4', None)])  # the download is removed
 
+    def test_a_video_the_inbox_has_read_is_not_watched_again(self):
+        from database.models import VideoInbox
+        from services.recipe_v2 import claude, generate
+
+        db.session.add(VideoInbox(url='https://www.tiktok.com/@cook/video/123', video_key='tiktok:123', video_text='Read in the inbox: 500 g beef'))
+        db.session.commit()
+        seen = []
+
+        def call(model, effort, messages, system=None, schema=None):
+            seen.append(messages[0]['content'])
+            raise RuntimeError('stop after round 1')
+
+        def not_watched(url):
+            raise AssertionError('the video is read once')
+
+        with mock.patch('services.recipe_v2.sources.fetch_video_text', not_watched), mock.patch.object(claude, 'call', call), \
+                self.assertRaises(RuntimeError):
+            generate.create_recipe('video', 'https://www.tiktok.com/@cook/video/123')
+        self.assertIn('500 g beef', seen[0])
+
     def test_a_video_that_cannot_be_had_is_a_source_error(self):
         def gone(url):
             raise ValueError('Failed to download video: private')
