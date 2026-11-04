@@ -298,18 +298,15 @@
 
                                     <!-- Staple? -->
                                     <td class="whitespace-nowrap px-3 py-4 text-sm">
-                                        {% if ing.is_staple %}
-                                        <span
-                                            class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">⭐
-                                            Yes</span>
-                                        {% else %}
-                                        <span class="text-gray-300">—</span>
-                                        {% endif %}
+                                        <button type="button" onclick="toggleStaple({{ ing.id }}, this)" title="Staple: tells the recipes what you always have"
+                                            class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium {{ 'bg-green-50 text-green-700' if ing.is_staple else 'text-gray-400 hover:bg-gray-50' }}">{{ 'Yes' if ing.is_staple else 'No' }}</button>
                                     </td>
 
                                     <!-- Actions -->
                                     <td
                                         class="relative whitespace-nowrap py-4 pl-3 pr-4 text-center text-sm font-medium sm:pr-6">
+                                        <!-- Edit -->
+                                        <a href="/new-ingredient?edit_id={{ ing.id }}" class="mr-3 inline-block text-gray-400 hover:text-indigo-600 transition-colors" title="Edit">{{ icon('file-plus') }}</a>
                                         <!-- Inspector -->
                                         <button onclick="inspectIngredient({{ ing.id }})"
                                             class="text-gray-400 hover:text-indigo-600 transition-colors"
@@ -960,6 +957,16 @@
             alert('Could not add it. Check the connection and try again.');
         }
     });
+
+    async function toggleStaple(id, btn) {
+        const resp = await fetch(`/api/ingredient/${id}/toggle_basic`, { method: 'POST' });
+        const data = await resp.json();
+        if (!data.success) { alert(data.error || 'Could not change it'); return; }
+        btn.textContent = data.new_status ? 'Yes' : 'No';
+        btn.classList.toggle('bg-green-50', data.new_status);
+        btn.classList.toggle('text-green-700', data.new_status);
+        btn.classList.toggle('text-gray-400', !data.new_status);
+    }
 
     async function deleteIngredient(id, name) {
         if (!confirm(`Delete "${name}"?\n\n• Used in recipes → archived as 'inactive'\n• Unused → permanently deleted`)) return;

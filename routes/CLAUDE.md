@@ -18,7 +18,8 @@
 | Recipe list, Saved, Made, Cook next | `recipes_list` `/recipes` | `recipes_list.html`; which recipes, one card per dish with its versions, search, time and pages: `services/recipe_library.py`; the filter drawer's live count: `/api/recipes/count` |
 | The recipe page | `recipe_detail` `/recipe/<id>` | `recipe_v2_make.html` (overview, `#prep`, `#cook` on one page; `/prep`, `/cook`, `/make` redirect there) |
 | Galaxies | `explore_routes` `/explore/galaxy`, `/explore/ingredient-galaxy` | `explore_*.html`, data from `/api/graph/*` |
-| Ingredients, chefs | `pantry_routes`, `chefs_routes` | |
+| Ingredients | `pantry_management` `/ingredients`, the sheet `/ingredients/<id>/card` | `pantry_management.html`, `templates/components/ingredient_sheet.html`: what is in recipes first, search, shortcuts and Staples (`services/ingredient_library.py`); the admin's tools are on `/admin/ingredients-management` |
+| Chefs | `chefs_routes` | |
 | Not found, error | `error_routes` (`app_errorhandler`) | `templates/errors/404.html`, `templates/errors/500.html` (on its own, no database); `/api/`, `/internal/` and `/static/` keep the plain answer. A short address typed differently (`/TikTok/4`, `/tiktok/4/`, `/instagram/4`) is sent to the real one |
 
 Admin: `generate_routes` (`/new-recipe`, the form page), `recipe_v2_routes` (`/new-recipe/v2`, batch `/new-recipe/v2/batch`,

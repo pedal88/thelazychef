@@ -6,13 +6,14 @@ import os
 import shutil
 import uuid
 
-from flask import current_app, jsonify, render_template, request, session, url_for
+from flask import abort, current_app, jsonify, render_template, request, session, url_for
 from flask_login import current_user, login_required
 
 from ai_engine import analyze_ingredient_ai, extract_nutrients_from_text
 from database.models import Ingredient, Recipe, db
 from routes._flat import FlatBlueprint
 from routes._shared import get_storage, viewer_is_admin
+from services import ingredient_library
 from services.photographer_service import generate_actual_image
 from utils.decorators import admin_required
 from utils.image_helpers import generate_ingredient_placeholder
@@ -22,23 +23,23 @@ pantry_bp = FlatBlueprint("pantry", __name__)
 
 @pantry_bp.route('/ingredients')
 def pantry_management():
-    # Fetch all ingredients sorted by Category then Name
-    query = db.select(Ingredient).order_by(Ingredient.main_category, Ingredient.name)
-    if not viewer_is_admin():
-        query = query.where(Ingredient.status == 'active')
-    ingredients = db.session.execute(query).scalars().all()
-    
-    # Load constraints for dependent filtering
-    data_dir = os.path.join(current_app.root_path, 'data', 'constraints')
-    sub_categories_map = {}
-    try:
-        with open(os.path.join(data_dir, 'categories.json'), 'r') as f:
-            data = json.load(f)
-            sub_categories_map = data.get('sub_categories', {})
-    except Exception as e:
-        print(f"Error loading categories: {e}")
+    """The ingredients, for anyone (services/ingredient_library.py). An admin also sees the ones not active yet."""
+    f = ingredient_library.from_args(request.args)
+    shown = max(request.args.get('shown', ingredient_library.PAGE, type=int) or 0, ingredient_library.PAGE)
+    found = ingredient_library.page(f, shown=shown, admin=viewer_is_admin())
+    return render_template('pantry_management.html', f=f, shortcuts=ingredient_library.shortcuts(f),
+                           all_url=ingredient_library.address(f, all='1'), **found)
 
-    return render_template('pantry_management.html', ingredients=ingredients, sub_categories_map=sub_categories_map)
+
+@pantry_bp.route('/ingredients/<int:id>/card')
+def ingredient_card(id: int):
+    """One ingredient's sheet, as the piece of a page static/js/ingredients.js puts in the drawer."""
+    found = ingredient_library.card(id, admin=viewer_is_admin())
+    if not found:
+        abort(404)
+    return render_template('components/ingredient_sheet.html', i=found['ingredient'], recipes=found['recipes'],
+                           uses=found['uses'])
+
 
 @pantry_bp.route('/api/ingredient/<int:id>/link-recipe', methods=['PATCH'])
 @login_required
@@ -79,7 +80,7 @@ def toggle_basic_ingredient(id):
     
     return jsonify({
         'success': True, 
-        'new_status': ing.is_basic_ingredient,
+        'new_status': ing.is_staple,
         'id': ing.id,
         'name': ing.name
     })
