@@ -6,7 +6,7 @@
     <div class="fb-head">
         <div class="ing-sheet-h">
             {% if i.image_url %}<img src="{{ i.image_url if i.image_url.startswith('http') else url_for('static', filename=i.image_url) }}" alt="" width="64" height="64">{% endif %}
-            <div><h2>{{ i.name }}</h2><p class="fb-recipe">{{ (i.main_category or 'Other')|capitalize|label }}{% if i.is_staple %} · {{ _('Staple') }}{% endif %}</p></div>
+            <div><h2>{{ i|ingredient_name }}</h2><p class="fb-recipe">{{ (i.main_category or 'Other')|capitalize|label }}{% if i.is_staple %} · {{ _('Staple') }}{% endif %}</p></div>
         </div>
         <button type="button" class="fb-x" data-ing-close aria-label="{{ _('Close') }}">{{ icon('close') }}</button>
     </div>
@@ -31,10 +31,10 @@
             {% if recipes %}
             <ul class="ing-dishes">
                 {% for r in recipes %}
-                <li><a href="{{ url_for('recipe_detail', recipe_id=r.id) }}">{% if r.image_filename %}<img src="{{ get_recipe_image_url(r) }}" alt="" loading="lazy">{% else %}<span class="ing-dish-none">{{ icon('utensils') }}</span>{% endif %}<span>{{ r.title }}</span></a></li>
+                <li><a href="{{ url_for('recipe_detail', recipe_id=r.id) }}">{% if r.image_filename %}<img src="{{ get_recipe_image_url(r) }}" alt="" loading="lazy">{% else %}<span class="ing-dish-none">{{ icon('utensils') }}</span>{% endif %}<span>{{ r.shown_title }}</span></a></li>
                 {% endfor %}
             </ul>
-            {% if uses > recipes|length %}<a class="ing-all-link" href="{{ url_for('recipes_list', q=i.name) }}">{{ _('Find more with %(name)s', name=i.name) }}</a>{% endif %}
+            {% if uses > recipes|length %}<a class="ing-all-link" href="{{ url_for('recipes_list', q=i.name) }}">{{ _('Find more with %(name)s', name=i|ingredient_name) }}</a>{% endif %}
             {% endif %}
         </section>
     </div>

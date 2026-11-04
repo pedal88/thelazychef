@@ -108,7 +108,7 @@
 {% macro version_list() -%}
 <ul class="ovl-versions">
   {% for r in versions %}
-  <li>{% if r.id == recipe.id %}<b aria-current="page">{{ r.title }}</b>{% else %}<a href="{{ url_for('recipe_detail', recipe_id=r.id) }}">{{ r.title }}</a>{% endif %}
+  <li>{% if r.id == recipe.id %}<b aria-current="page">{{ r.shown_title }}</b>{% else %}<a href="{{ url_for('recipe_detail', recipe_id=r.id) }}">{{ r.shown_title }}</a>{% endif %}
     <span class="eyebrow">{% if r.chef %}{{ _('Version by %(chef)s', chef=r.chef.name) if r.base_recipe_id else _('Original by %(chef)s', chef=r.chef.name) }}{% else %}{{ _('Version') if r.base_recipe_id else _('Original') }}{% endif %}</span></li>
   {% endfor %}
 </ul>

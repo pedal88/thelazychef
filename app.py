@@ -17,6 +17,7 @@ from database.models import db, Ingredient, Recipe, RecipeMealType, RecipeDiet, 
 from services.storage_service import get_storage_provider
 from services.measures import SYSTEMS
 from services import labels, language, view_as
+from services.recipe_v2.translation import ingredient_name
 from services.recipe_v2 import states
 from utils.compress import compress
 from utils.cross_site import refuse_cross_site
@@ -130,6 +131,7 @@ app.add_template_global(language.current, 'site_lang')  # <html lang>
 app.add_template_global(language.switch, 'site_lang_switch')
 app.add_template_global(labels.js_words)  # the words of the scripts, tr() in base.html
 app.add_template_filter(labels.label)
+app.add_template_filter(ingredient_name)
 app.add_template_global(unit_system)  # the reader's measuring system, for the switch in the menu
 app.add_template_global(unit_chosen)
 app.add_template_global(SYSTEMS, 'UNIT_SYSTEMS')

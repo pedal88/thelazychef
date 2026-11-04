@@ -65,6 +65,7 @@ class Ingredient(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     food_id: Mapped[str] = mapped_column(String, unique=True, index=True) # Must preserve leading zeros (e.g., "000322")
     name: Mapped[str] = mapped_column(String, index=True) # Display name (e.g., "Avocado")
+    name_nb: Mapped[Optional[str]] = mapped_column(String, nullable=True)  # In Norwegian; empty shows name
 
     # Classification
     main_category: Mapped[str] = mapped_column(String, nullable=True)
@@ -137,7 +138,7 @@ class Ingredient(db.Model):
         primaryjoin="Ingredient.sub_recipe_id == Recipe.id",
     )
 
-    @validates('name')
+    @validates('name', 'name_nb')
     def _normalize_name(self, key, value):
         """Names are stored in lower case with single spaces; views decide the casing."""
         return " ".join(value.split()).lower() if value else value
@@ -315,6 +316,7 @@ class Recipe(db.Model):
     interactions: Mapped[list["UserRecipeInteraction"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
     queue_items: Mapped[list["UserQueue"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
     notes: Mapped[list["RecipeNote"]] = relationship(back_populates="recipe", cascade="all, delete-orphan", order_by="RecipeNote.id")
+    translations: Mapped[list["RecipeTranslation"]] = relationship(cascade="all, delete-orphan")
 
 class RecipeNote(db.Model):
     """An admin's note on a recipe, written while trying it (routes/recipe_notes_routes.py): feedback to act on later,
@@ -342,6 +344,20 @@ recipe_step_after = db.Table('recipe_step_after',
     db.Column('step_id', db.Integer, db.ForeignKey('recipe_step.id', ondelete='CASCADE'), primary_key=True),
     db.Column('after_step_id', db.Integer, db.ForeignKey('recipe_step.id', ondelete='CASCADE'), primary_key=True),
 )
+
+
+class RecipeTranslation(db.Model):
+    """A recipe's words in another language, by local_id (services/recipe_v2/translation.py). texts holds what the
+    title does not: chef_note, yield_text, and components, lines and steps by local_id. source_hash is of the words it
+    was made from, and source_title lets a list judge the title without reading the steps."""
+    __tablename__ = 'recipe_translation'
+    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id", ondelete='CASCADE'), primary_key=True)
+    language: Mapped[str] = mapped_column(String(8), primary_key=True)
+    title: Mapped[str] = mapped_column(String, nullable=False)
+    source_title: Mapped[str] = mapped_column(String, nullable=False)
+    texts: Mapped[dict] = mapped_column(JSON, nullable=False)
+    source_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, nullable=False)
 
 
 class RecipeComponent(db.Model):

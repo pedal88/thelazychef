@@ -13,6 +13,7 @@ from routes._shared import DIFFICULTY_LABELS, get_recipe_image_url, get_storage
 from services import signup
 from services.labels import label
 from services.recipe_library import feed_ids
+from services.recipe_v2.translation import dress
 
 interactions_bp = FlatBlueprint("interactions", __name__)
 
@@ -71,13 +72,13 @@ def get_feed_recipes():
     limit = 10
     ids = feed_ids(current_user if current_user.is_authenticated else None, limit)
     by_id = {r.id: r for r in db.session.execute(db.select(Recipe).where(Recipe.id.in_(ids))).scalars()}
-    recipes = [by_id[i] for i in ids]
+    recipes = dress([by_id[i] for i in ids])
 
     data = []
     for r in recipes:
         data.append({
             'id': r.id,
-            'title': r.title,
+            'title': r.shown_title,
             'image_url': get_recipe_image_url(r),
             'cuisine': label(r.cuisine),
             'time_estimate': r.prep_time_mins or 30, # Default if missing

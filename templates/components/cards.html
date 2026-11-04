@@ -32,7 +32,7 @@
             {% if acts %}
             <button type="button" class="made-act" data-made="{{ recipe.id }}" aria-pressed="{{ 'true' if recipe.interaction and recipe.interaction.is_made else 'false' }}"
                 title="{{ _('Made it') }}" aria-label="{{ _('Made it') }}">{{ icon('check') }}</button>
-            <button type="button" data-feedback="{{ recipe.id }}" data-title="{{ recipe.title }}" title="{{ _('Feedback') }}" aria-label="{{ _('Feedback') }}">{{ icon('message') }}</button>
+            <button type="button" data-feedback="{{ recipe.id }}" data-title="{{ recipe.shown_title or recipe.title }}" title="{{ _('Feedback') }}" aria-label="{{ _('Feedback') }}">{{ icon('message') }}</button>
             {% endif %}
             {% else %}
             {# A visitor's Save goes to sign up, which saves the dish and brings them back here (services/signup.py) #}
@@ -49,7 +49,7 @@
             <span class="rcard-time" title="{{ _('%(mins)s min from start to table, %(hands)s of them hands-on', mins=recipe.prep_time_mins, hands=hands) if hands else _('%(mins)s min from start to table', mins=recipe.prep_time_mins) }}">{{ recipe.prep_time_mins }} min{% if hands %}<i class="rcard-hands">, {{ _('%(n)s active', n=hands) }}</i>{% endif %}</span>{% endif %}
             {% if recipe.difficulty %}<span>{{ recipe.difficulty|difficulty_label }}</span>{% endif %}
         </p>
-        <h3>{{ recipe.title }}</h3>
+        <h3>{{ recipe.shown_title or recipe.title }}</h3>
         {% if recipe.version_count and recipe.version_count > 1 %}<p class="rcard-versions">{{ icon('chef') }}{{ _('%(n)s versions', n=recipe.version_count) }}</p>{% endif %}
         {% if tags %}<p class="rcard-tags">{% for t in tags|unique %}<span>{{ t|capitalize|label }}</span>{% endfor %}</p>{% endif %}
     </div>

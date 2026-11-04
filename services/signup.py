@@ -7,6 +7,7 @@ from flask_babel import gettext
 from sqlalchemy import func
 
 from database.models import Recipe, UserQueue, UserRecipeInteraction, db
+from services.recipe_v2.translation import title_of
 
 # What a visitor can ask for before they have an account, and what it says once it is done
 ACTIONS = {'save': lambda title: gettext('Saved %(title)s.', title=title),
@@ -77,4 +78,4 @@ def do(user, action, recipe):
             db.session.add(UserQueue(user_id=user.id, recipe_id=recipe.id, position=(last or 0) + 1,
                                      added_at=datetime.datetime.utcnow()))
             db.session.commit()
-    return ACTIONS[action](recipe.title)
+    return ACTIONS[action](title_of(recipe))
