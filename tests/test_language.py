@@ -619,7 +619,7 @@ def test_the_page_built_for_one_language_is_not_served_to_the_other(client):
     norwegian = client.get(f'/recipe/{recipe_id}').get_data(as_text=True)
     client.delete_cookie('lang')
     again = client.get(f'/recipe/{recipe_id}').get_data(as_text=True)
-    assert 'Gjør klart' in norwegian and 'Gjør klart' not in first
+    assert 'Forberede' in norwegian and 'Forberede' not in first
     assert first == again
 
 
@@ -663,7 +663,7 @@ def test_the_shared_parts_on_a_slide_stay_english(client, launched):
     recipe_id, _ = _a_recipe()
     client.set_cookie('lang', 'nb')
     html = client.get(f'/social/recipe/{recipe_id}/map?size=tt&slide=1&lang=no', headers={'Accept-Language': NORWEGIAN}).get_data(as_text=True)
-    assert 'Gjør klart' not in html and 'Lag mat' not in html and ' ss ' not in html
+    assert 'Forberede' not in html and 'Kokkelere' not in html and ' ss ' not in html
 
 
 def test_v2_text_for_claude_is_english_whoever_looks(client):

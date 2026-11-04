@@ -1,4 +1,4 @@
-"""Prep (Gjør klart): mise elements derived from the graph (services/recipe_v2/mise.py) and the page that shows them."""
+"""Prep (Forberede): mise elements derived from the graph (services/recipe_v2/mise.py) and the page that shows them."""
 import os
 import sys
 import unittest
