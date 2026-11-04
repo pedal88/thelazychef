@@ -29,6 +29,8 @@ RECIPE_V2_MODEL = CLAUDE_OPUS
 RECIPE_V2_EFFORT = "low"
 SOCIAL_REPORT_MODEL = CLAUDE_SONNET  # the weekly report on the posts (services/social_report.py)
 SOCIAL_REPORT_EFFORT = "low"
+VIDEO_INBOX_MODEL = CLAUDE_SONNET  # what a saved video is, from its caption (services/recipe_v2/inbox.py)
+VIDEO_INBOX_EFFORT = "low"
 
 _client = None
 _claude = None

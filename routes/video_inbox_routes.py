@@ -1,17 +1,21 @@
-"""The video inbox (services/recipe_v2/inbox.py): cooking videos saved from the phone. Admin only.
+"""The video inbox (services/recipe_v2/inbox.py): cooking videos saved from the phone. Admin only, except the task
+Cloud Tasks calls.
 
 The iPhone shortcut opens /admin/inbox/add?url=… in Safari (docs/VIDEO_INBOX.md). The GET writes nothing: it gives a
 page that sends itself as a POST, which a form on another site cannot do (utils/cross_site.py).
 """
-from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
+import logging
+
+from flask import Blueprint, abort, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import login_required
 
 from database.models import VideoInbox, db
-from services.recipe_v2 import inbox as inbox_service
+from services.recipe_v2 import inbox as inbox_service, tasks
 from services.recipe_v2.sources import is_video
 from utils.decorators import admin_required
 
 video_inbox_bp = Blueprint('video_inbox', __name__)
+log = logging.getLogger(__name__)
 
 
 @video_inbox_bp.route('/admin/inbox')
@@ -19,7 +23,7 @@ video_inbox_bp = Blueprint('video_inbox', __name__)
 @admin_required
 def inbox():
     status = 'discarded' if request.args.get('show') == 'discarded' else 'new'
-    return render_template('video_inbox.html', rows=inbox_service.rows(status), status=status,
+    return render_template('video_inbox.html', rows=inbox_service.rows(status), status=status, titles=inbox_service.recipe_titles(),
                            other=db.session.scalar(db.select(db.func.count()).select_from(VideoInbox).where(VideoInbox.status != status)))
 
 
@@ -42,8 +46,33 @@ def add():
         flash('That is not a link to a TikTok, Instagram or YouTube video.', 'error')
         return redirect(url_for('video_inbox.inbox'))
     db.session.commit()
+    if not row.dish_name:
+        try:
+            tasks.enqueue_inbox(row.id)
+        except Exception:  # the video is saved; it can be looked up from the list
+            log.exception('Video inbox %s: could not queue the look-up', row.id)
     flash('Saved.' if how == 'saved' else 'Already in the inbox.', 'success')
     return redirect(url_for('video_inbox.inbox'))
+
+
+@video_inbox_bp.route('/admin/inbox/<int:row_id>/look-up', methods=['POST'])
+@login_required
+@admin_required
+def look_up(row_id):
+    """Look up a video again, from the list: in the queue, or straight away without one."""
+    db.session.get(VideoInbox, row_id) or abort(404)
+    if not tasks.enqueue_inbox(row_id):
+        tasks.run_inbox(row_id, attempt=tasks.MAX_ATTEMPTS - 1)
+    return redirect(url_for('video_inbox.inbox'))
+
+
+@video_inbox_bp.route(tasks.INBOX_PATH.replace('{id}', '<int:row_id>'), methods=['POST'])
+def run_task(row_id):
+    """Called by Cloud Tasks, not by users: what a saved video is (tasks.run_inbox)."""
+    if not tasks.verified(request.headers.get('Authorization')):
+        return jsonify({'error': 'unauthorized'}), 401
+    tasks.run_inbox(row_id, attempt=request.headers.get('X-CloudTasks-TaskRetryCount', type=int) or 0)
+    return jsonify({'done': True})
 
 
 @video_inbox_bp.route('/admin/inbox/<int:row_id>/status', methods=['POST'])

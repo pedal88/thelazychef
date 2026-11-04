@@ -24,6 +24,7 @@ MAX_ATTEMPTS = 3  # same as the queue's --max-attempts
 TASK_PATH = '/internal/tasks/recipe-v2/{id}'
 IMAGES_PATH = '/internal/tasks/recipe-v2-images/{id}'  # the dish and part images of a recipe already made
 PANTRY_PATH = '/internal/tasks/recipe-v2-pantry/{id}'  # the pantry items for its unlinked lines (pantry_fill.py)
+INBOX_PATH = '/internal/tasks/video-inbox/{id}'  # what a video saved to the inbox is (inbox.py)
 
 
 def configured():
@@ -52,6 +53,14 @@ def enqueue_images(recipe_id):
         run_images(recipe_id, attempt=MAX_ATTEMPTS - 1)
         return
     _queue(IMAGES_PATH.format(id=recipe_id), {})
+
+
+def enqueue_inbox(row_id):
+    """Queue the look-up of a video in the inbox. False without a queue: nothing is looked up by itself locally."""
+    if not configured():
+        return False
+    _queue(INBOX_PATH.format(id=row_id), {})
+    return True
 
 
 def _queue(path, payload, at=None):
@@ -181,6 +190,29 @@ def run_pantry(recipe_id, images=True, attempt=0):
             enqueue_images(recipe_id)
         except Exception:
             log.exception('Recipe %s: could not queue the images', recipe_id)
+    return True
+
+
+def run_inbox(row_id, attempt=0):
+    """Look up what a video in the inbox is (inbox.look_up). Errors raise, so Cloud Tasks tries again, except on the
+    last attempt: then the error is noted on the row, which stays usable without its details."""
+    from database.models import VideoInbox
+    from services.recipe_v2 import inbox
+
+    row = db.session.get(VideoInbox, row_id)
+    if row is None:
+        return True
+    try:
+        inbox.look_up(row)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        log.exception('Video inbox %s: look-up failed on attempt %s', row_id, attempt + 1)
+        if attempt + 1 < MAX_ATTEMPTS:
+            raise
+        row = db.session.get(VideoInbox, row_id)
+        row.meta_error = friendly_ai_error(e, 'Could not look up the video.')[:300]
+        db.session.commit()
     return True
 
 

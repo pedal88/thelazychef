@@ -43,6 +43,8 @@ calls the app back with an OIDC token from the `TASKS_SERVICE_ACCOUNT`, checked 
 3. `/internal/tasks/recipe-v2-images/<id>`: the dish and component images with their vision check (`tasks.run_images`).
    Queued after 2 (or straight after 1), unless the form said "Skip the images".
 
+The same queue also looks up videos saved to the inbox: `/internal/tasks/video-inbox/<id>` (`tasks.run_inbox`, `docs/VIDEO_INBOX.md`).
+
 The same queue also holds the Instagram queue's posts: `/internal/tasks/social-publish/<id>`, one task per approved post,
 waiting until its time (`scheduleTime`; `services/social_publish.py`). It is not retried on a failure: the post goes back
 to draft with the reason.
@@ -100,6 +102,7 @@ constants in the code and measured runs:
 | One recipe, text and structure | $0.10–0.40 (about $0.15 typical) | `services/recipe_v2/batch.py` `COST_EACH` |
 | One recipe's images (dish + parts, with checks) | $0.15–0.45 | `routes/recipe_v2_routes.py` `IMAGES_COST`; one image ≈ $0.039 (`images.py` `IMAGE_COST`) |
 | Pantry job | about $0.01–0.05 per recipe with unlinked lines | `pantry_fill.fill` returns `cost_usd` |
+| A video saved to the inbox | under $0.01 (Sonnet, one short call; nothing when the caption cannot be read) | `services/recipe_v2/inbox.py`, `VIDEO_INBOX_MODEL` |
 | A symbol (ingredient, category, cuisine) | about $0.04 | `scripts/category_symbols.py`, `fill_pantry --symbols` |
 | Batch page estimate | text + images per line, shown before "Make" | `routes/recipe_v2_routes.py` `batch_new` |
 
