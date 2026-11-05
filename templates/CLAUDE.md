@@ -47,6 +47,7 @@ One page, `recipe_v2_make.html`, from `services/recipe_v2/view.page`: the overvi
 - A step is done with a tap on its number, or on a phone with Done under the next step (`.st-next`, `data-step-next`); a wide
   screen has that button on the card beside the steps.
 - Servings scale every amount (`static/js/servings.js`).
+- Cooking goes to full screen where the browser allows it, and leaving cooking leaves it (`static/js/steps.js`, `fullIn`).
 - When the last step is ticked off, `steps.js` says `steps:finished` and the celebration opens (`#sheet-done`; Made it on
   the overview and below the steps, `[data-made-it]`, open it at any time,
   `static/js/done.js`): the dish, how long it took, and for a signed-in cook "I made this" (counted once per meal,

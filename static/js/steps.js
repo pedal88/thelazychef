@@ -550,10 +550,26 @@
   /* The two screens. Cooking has its own address (#cook), so the back button, a reload and a shared link work */
   const cook = document.getElementById('cook');
   let overviewY = 0;
+  /* Cooking fills the screen where the browser lets it (not on an iPhone). A browser only allows that during a tap: Start
+     cooking is one, and a page opened at #cook asks on its first tap instead. If the cook leaves full screen, it stays
+     so until the next time they start cooking. The home-screen app has no browser around it to begin with. */
+  let fullOnTap = false;
+  const fullEl = () => document.fullscreenElement || document.webkitFullscreenElement;
+  function fullIn() {
+    const root = document.documentElement, ask = root.requestFullscreen || root.webkitRequestFullscreen;
+    if (!ask || !(document.fullscreenEnabled || document.webkitFullscreenEnabled) || root.classList.contains('standalone') || fullEl()) return;
+    try { const asked = ask.call(root, { navigationUI: 'hide' }); if (asked) asked.catch(() => { /* refused: cooking works as it is */ }); } catch (e) { /* the same */ }
+  }
+  function fullOut() {
+    const out = document.exitFullscreen || document.webkitExitFullscreen;
+    if (!fullEl() || !out) return;
+    try { const left = out.call(document); if (left) left.catch(() => { /* already out */ }); } catch (e) { /* the same */ }
+  }
   function cooking(on) {
     if (!cook) return;
     const was = !cook.hidden;
-    if (on && !was) overviewY = scrollY;
+    if (on && !was) { overviewY = scrollY; fullOnTap = true; }
+    if (!on) { fullOnTap = false; fullOut(); }
     document.documentElement.classList.toggle('cooking', on);
     cook.hidden = !on;
     if (on && !was) { scrollTo(0, 0); wake(); dispatchEvent(new Event('resize')); metroFit(); }
@@ -562,7 +578,9 @@
   }
   function startCooking() {
     if (location.hash !== '#cook') history.pushState({ cook: true }, '', '#cook');
+    const entering = cook && cook.hidden;
     cooking(true);
+    if (entering) { fullOnTap = false; fullIn(); }
   }
   function stopCooking() {
     if (history.state && history.state.cook) history.back();  // popstate shows the overview
@@ -617,6 +635,7 @@
   page.addEventListener('click', e => {
     beep(true); wake();
     const t = e.target;
+    if (fullOnTap && !cook.hidden && !t.closest('[data-cook-close]')) { fullOnTap = false; fullIn(); }
     // A bowl's step: shown in the view you are in (the button is in the bowl's summary: it must not fold the bowl)
     const goto = t.closest('[data-goto-step]');
     if (goto) {
