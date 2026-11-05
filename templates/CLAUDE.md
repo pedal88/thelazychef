@@ -92,7 +92,7 @@ is shown (`services/labels.py`, where it must be listed). A script's words are `
 
 Added to the Home Screen or installed, the site runs without a browser around it (`static/manifest.json`). `base.html` then
 sets `html.standalone` and `viewport-fit=cover`, so a page in a browser is untouched, and `library.css` keeps the page clear
-of a notch and the home bar. There is no browser back button there: a page needs its own way on. No service worker: a stale
+of a notch, the home bar and the status bar (an iPad), and gives a phone on its side the phone menu. There is no browser back button there: a page needs its own way on. No service worker: a stale
 page after a deploy would cost more than it gives.
 
 Check a visual change in the browser on desktop and at phone width (375 px, no sideways scroll) before calling it done.

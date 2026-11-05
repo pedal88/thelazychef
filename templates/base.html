@@ -185,8 +185,8 @@
 <body class="flex min-h-full flex-col text-slate-900">
 
     <!-- Navigation -->
-    {# The language switch and the Norwegian words need more room: the phone menu goes on until a wider screen #}
-    {% set wide = 'lg' if site_lang_switch() else 'md' %}
+    {# The language switch, the Norwegian words and a signed-in cook's address need more room: the phone menu goes on until a wider screen #}
+    {% set wide = 'lg' if site_lang_switch() or current_user.is_authenticated else 'md' %}
     <header class="bg-white border-b border-gray-200 sticky top-0 z-[100] print:hidden">
         <nav class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <!-- Logo -->
@@ -198,11 +198,11 @@
             </a>
 
             <!-- The menu (components/site_menu.html), hidden on a phone -->
-            <div class="hidden {{ wide }}:flex items-center gap-6 text-sm font-medium text-slate-600">
+            <div class="site-menu-wide hidden {{ wide }}:flex items-center gap-6 text-sm font-medium text-slate-600">
                 {{ site_nav.desktop() }}
             </div>
 
-            <div class="{{ wide }}:hidden flex items-center gap-2">
+            <div class="site-menu-narrow {{ wide }}:hidden flex items-center gap-2">
                 {# On a phone a visitor's way in stays in sight, not only at the bottom of the menu #}
                 {% if not current_user.is_authenticated %}
                 <a href="{{ url_for('register') }}" class="top-signup px-3 py-1.5 rounded-full bg-orange-600 text-white text-sm font-semibold whitespace-nowrap hover:bg-orange-700">{{ _('Sign up') }}</a>

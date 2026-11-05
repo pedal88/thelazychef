@@ -310,3 +310,19 @@
    the side and of the home bar below the footer. The cooking screen's controls keep clear by themselves. */
 html.standalone body { padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px); }
 html.standalone body > footer { padding-bottom: env(safe-area-inset-bottom, 0px); }
+html.standalone .trialbar { margin-left: env(safe-area-inset-left, 0px); }
+/* The status bar, where the page reaches under it (an iPad): the top bar grows behind the clock, and on the cooking screen,
+   which has no top bar, a strip in the page's colour keeps what scrolls away from the clock */
+html.standalone body > header { padding-top: env(safe-area-inset-top, 0px); }
+html.standalone .lbar { top: calc(64px + env(safe-area-inset-top, 0px)); }
+html.standalone.site-menu .ovl { margin-top: calc(64px + env(safe-area-inset-top, 0px)); }
+html.standalone.cooking body { padding-top: env(safe-area-inset-top, 0px); }
+html.standalone.cooking .rv2.make { margin-bottom: calc(-1 * env(safe-area-inset-top, 0px)); }  /* the screen's own height stays the same */
+html.standalone.cooking body::before { content: ""; position: fixed; z-index: 120; top: 0; left: 0; right: 0; height: env(safe-area-inset-top, 0px); background: var(--color-soft); }
+html.standalone .sheet-h { padding-top: env(safe-area-inset-top, 0px); }
+/* A phone on its side: as wide as a small tablet, but the notch takes the room the full menu needs */
+@media (max-width: 999px) and (max-height: 500px) {
+  html.standalone .site-menu-wide { display: none !important; }
+  html.standalone .site-menu-narrow { display: flex !important; }
+  html.standalone #mobile-menu:not(.hidden) { display: block !important; max-height: calc(100vh - 64px); max-height: calc(100dvh - 64px); overflow: auto; }
+}
