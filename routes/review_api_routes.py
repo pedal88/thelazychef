@@ -106,7 +106,7 @@ def pantry():
 def _waiting_on(row):
     swap_item = row['swap_item']
     return {'recipe_id': row['recipe'].id, 'title': row['recipe'].title, 'status': row['recipe'].status,
-            'lines': sorted({line.name for line in row['lines']}), 'reason': row['reason'], 'swap': row['swap'],
+            'lines': sorted({line.name for line in row['lines']}), 'reason': row['reason'], 'swap': row['swap'], 'odds': row['odds'],
             'swap_item': {'food_id': swap_item.food_id, 'name': swap_item.name} if swap_item else None}
 
 

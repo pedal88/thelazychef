@@ -26,8 +26,8 @@ equipment, active and standing minutes, which lines and earlier steps they use).
 
 In production this runs in Cloud Tasks (`tasks.py`), followed by the **pantry job** (`pantry_fill.py`: for every unlinked line
 Claude decides, in this dish: alias (the same food), substitute (another pantry item, changed in this recipe only), ask
-(a pending item and a question Pål answers on `/admin/pantry-questions`; the recipe cannot be approved until then) or
-skip; then `generate.recalculate`) and the **image job** (`images.py`:
+(a pending item and a question Pål answers on `/admin/pantry-questions`; the recipe cannot be approved until then, and `weigh`
+shares 100 points across adding it and up to five swaps, as advice on that page) or skip; then `generate.recalculate`) and the **image job** (`images.py`:
 the dish and its visible parts, each checked by Claude's vision). See `docs/SERVICES_AND_COSTS.md` for the queue.
 `batch.py` reads the Many recipes at once lines.
 `inbox.py` saves video links shared from the phone, one or many (table `video_inbox`, `/admin/inbox`, `docs/VIDEO_INBOX.md`); saving makes nothing, but the video is read in the background, and the recipe is later made from that text.

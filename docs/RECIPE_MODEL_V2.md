@@ -177,7 +177,7 @@ Pantryet skal dekke det man trenger til de fleste retter, uten å bøye oppskrif
 
 - **Samme vare** under et annet navn («scallion» er vårløk): alias, automatisk. Det gjelder alle oppskrifter fra nå av.
 - **Bytte** til en annen vare i pantryet, når det nesten ikke spiller noen rolle: bare i denne oppskriften, med nytt navn, eventuelt ny mengde og teksten rundt. Aldri alias, fordi samme bytte kan ødelegge en annen rett (thai-basilikum som pynt på en salat, men ikke i pad kra pao). `source_text` beholder det kilden sa.
-- **Spør Pål** når varen betyr noe: en ventende vare (`status` `pending`) med næring og Claudes beste bytte. Svaret gis under Admin → Ingredient questions (legg til, Claudes bytte, eller en annen vare), og oppskriften kan ikke godkjennes før det.
+- **Spør Pål** når varen betyr noe: en ventende vare (`status` `pending`) med næring og Claudes beste bytte. Svaret gis under Admin → Ingredient questions (legg til, Claudes bytte, eller en annen vare), og oppskriften kan ikke godkjennes før det. Der viser Claude også råd for akkurat denne oppskriften: 100 poeng fordelt på å legge til varen og opptil fem bytter (`pantry_fill.weigh`). Rådet avgjør ingenting; det er Pål som velger.
 
 Et bytte må bestå fire spørsmål, og ett nei betyr at Pål spørres: retten er seg selv (ikke det den er oppkalt etter eller særpreget av), varen gjør samme jobb i samme steg, den som spiser merker det ikke, og kaloriene per porsjon endrer seg under omtrent 10 %. Ved tvil spør den, fordi et dårlig bytte ødelegger retten for leseren, mens et spørsmål koster Pål sekunder. Pålitelig blir dette over tid: svarene hans vises Claude neste gang (`pantry_fill.earlier`), så den lærer hvor han trekker grensen. Om en butikk i Norge selger varen, er ikke en del av vurderingen.
 

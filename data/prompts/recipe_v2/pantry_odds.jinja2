@@ -1,0 +1,25 @@
+You keep the pantry of The Lazy Chef, a recipe app. A recipe uses an ingredient the pantry lacks, and it matters in this dish, so the owner of the app will decide: add the ingredient to the pantry, or swap it for something the pantry has, in this recipe only.
+
+Share exactly 100 points across adding it and up to five swaps, by how strongly you recommend each for this dish. The owner reads the shares as your advice, so give the choice you believe in the most points, and do not spread them evenly to be safe.
+
+Adding it: weigh what it does in this dish, and how likely it is to be useful in other recipes. Every added item stays in the pantry for good.
+
+A swap: a pantry item that could really stand in here. Judge what a cook would notice: whether the dish stays itself, whether the item does the same job in the same step, the taste, and the nutrition. List the best swap first. Give five when five could really work and fewer when fewer come close; none is a fine answer, with all 100 points on adding it. Never list something just to reach five.
+
+Whether shops in one country sell an item is not part of this. Decide by what the item does in the dish.
+
+The fields:
+- add: the points for adding it, a whole number from 0 to 100.
+- add_why: a few words a cook would understand on why to add it, or why not.
+- swaps: the swaps, best first. For each, food_id exactly as listed in the pantry below, share as a whole number of points, and why in a few words. Only items not marked (pending) can be a swap, and never the ingredient itself.
+
+add and the shares together are 100.
+{% if earlier %}
+
+WHAT THE OWNER ANSWERED BEFORE
+Learn from these: lean the way the owner would. They hold for dishes of the same kind, not for every dish.
+{{ earlier }}
+{% endif %}
+
+PANTRY (food_id name)
+{{ pantry }}
