@@ -21,6 +21,9 @@ for key in ('TASKS_QUEUE', 'TASKS_SERVICE_ACCOUNT', 'APP_BASE_URL'):
     os.environ.pop(key, None)
 
 from app import app  # noqa: E402
+from flask import g  # noqa: E402
+from sqlalchemy import event  # noqa: E402
+
 from database.models import Ingredient, IngredientAlias, Recipe, User, db  # noqa: E402
 from scripts.fill_pantry import parse_ids  # noqa: E402
 from services.recipe_v2 import pantry_fill, tasks  # noqa: E402
@@ -194,6 +197,50 @@ class PantryFillTests(unittest.TestCase):
         row = q[0]['rows'][0]
         self.assertEqual((row['recipe'], row['reason'], row['swap_item']), (self.recipe, 'it is the dish', self.pasta))
         self.assertEqual(pantry_fill.open_question(self.recipe), item)
+
+    def test_the_admin_menu_is_marked_while_a_question_waits(self):
+        admin = User(email='menu-admin@test', is_admin=True)
+        admin.set_password('test-password')
+        cook = User(email='menu-cook@test')
+        cook.set_password('test-password')
+        db.session.add_all([admin, cook])
+        db.session.commit()
+        client = app.test_client()
+        client.post('/login', data={'email': admin.email, 'password': 'test-password'})
+
+        def unmarked(who):
+            g.pop('_login_user', None)  # this test's app context, with who is signed in, is shared by the clients
+            page = who.get('/explore/galaxy').get_data(as_text=True)
+            self.assertEqual(page.count('class="menu-dot') + page.count('class="menu-count'), 0)
+
+        self.assertEqual(pantry_fill.open_questions(), 0)
+        unmarked(client)
+
+        item = self._ask_pecorino()
+        self.assertEqual(pantry_fill.open_questions(), 1)
+        page = client.get('/explore/galaxy').get_data(as_text=True)
+        self.assertEqual(page.count('<span class="menu-count" aria-label="1 waiting">1</span>'), 2)  # top bar and phone menu
+        self.assertEqual(page.count('class="menu-dot'), 3)  # on Admin in both, and on the phone's menu button
+        self.assertIn('menu-dot-corner', page)
+
+        queries = []
+        record = lambda conn, cursor, statement, *rest: queries.append(statement)
+        event.listen(db.engine, 'before_cursor_execute', record)
+        try:
+            client.get('/explore/galaxy')
+        finally:
+            event.remove(db.engine, 'before_cursor_execute', record)
+        self.assertEqual(len([q for q in queries if 'count(ingredient.id)' in q]), 1)  # the menu is drawn several times, asked once
+
+        g.pop('_login_user', None)
+        other = app.test_client()
+        other.post('/login', data={'email': cook.email, 'password': 'test-password'})
+        unmarked(other)  # nothing for others
+        unmarked(app.test_client())
+
+        pantry_fill.add_item(item)
+        db.session.commit()
+        unmarked(client)  # answered: gone
 
     def test_a_second_recipe_with_the_same_item_is_the_same_question(self):
         item = self._ask_pecorino()

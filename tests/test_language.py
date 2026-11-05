@@ -480,7 +480,8 @@ def test_discover_gets_its_cards_in_the_language(client):
 def test_the_admin_group_of_the_menu_stays_english():
     with app.test_request_context('/recipes?lang=no'):
         assert [item for item in MENU if item[0] == 'Admin'][0][2][0][0] == 'New recipe'
-        with patch('routes._shared.current_user', type('Admin', (), {'is_authenticated': True, 'is_admin': True})()):
+        with patch('routes._shared.current_user', type('Admin', (), {'is_authenticated': True, 'is_admin': True})()), \
+                patch('routes._shared._open_questions', return_value=0):  # this test has no database
             menu = {g['label']: g for g in site_menu()}
     assert 'Oppskrifter' in menu and 'Admin' in menu
     assert 'Recipes' in [i['label'] for i in menu['Admin']['items'] if i]

@@ -280,10 +280,20 @@ def _question_on(recipe, item):
     return next((e for e in recipe.validation_errors or [] if e.get('rule') == ASK and e.get('item') == item.food_id), None)
 
 
+def _waiting_for_answer():
+    """The condition on Ingredient: a pending item recipes use."""
+    used = db.select(RecipeLine.ingredient_id).where(RecipeLine.ingredient_id.isnot(None))
+    return (Ingredient.status == 'pending', Ingredient.id.in_(used))
+
+
+def open_questions():
+    """How many items wait for Pål, for the mark in the admin menu."""
+    return db.session.scalar(db.select(db.func.count(Ingredient.id)).where(*_waiting_for_answer()))
+
+
 def questions():
     """What waits for Pål: each pending item recipes use, with the recipes, why Claude asks and the swap it suggests."""
-    used = db.select(RecipeLine.ingredient_id).where(RecipeLine.ingredient_id.isnot(None))
-    items = db.session.execute(db.select(Ingredient).where(Ingredient.status == 'pending', Ingredient.id.in_(used)).order_by(Ingredient.id)).scalars().all()
+    items = db.session.execute(db.select(Ingredient).where(*_waiting_for_answer()).order_by(Ingredient.id)).scalars().all()
     out = []
     for item in items:
         rows = []

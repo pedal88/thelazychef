@@ -102,12 +102,22 @@ MENU = [
 ]
 
 
+def _open_questions():
+    """The ingredient questions waiting for an answer. A page draws the menu more than once, so this asks once."""
+    if 'lazychef.open_questions' not in request.environ:
+        from services.recipe_v2 import pantry_fill
+        request.environ['lazychef.open_questions'] = pantry_fill.open_questions()
+    return request.environ['lazychef.open_questions']
+
+
 def site_menu():
-    """The menu for the person looking: [{'label', 'items': [{'label', 'url', 'icon'} or None]}], without what they
-    may not see and without a line at the start or end of a group, or two in a row."""
+    """The menu for the person looking: [{'label', 'waiting', 'items': [{'label', 'url', 'icon', 'waiting'} or None]}],
+    without what they may not see and without a line at the start or end of a group, or two in a row. waiting is how many
+    things there wait for the admin, shown as a mark on the item and its group."""
     user = current_user.is_authenticated
     admin = user and getattr(current_user, 'is_admin', False)
     sees = {'all': True, 'user': user, 'admin': admin}
+    waiting = {'pantry_questions.questions': _open_questions()} if admin else {}
     out = []
     for label, who, items in MENU:
         if not sees[who]:
@@ -119,11 +129,12 @@ def site_menu():
                 if shown and shown[-1] is not None:
                     shown.append(None)
             elif sees[item[4]]:
-                shown.append({'label': name(item[0]), 'url': url_for(item[1], **item[2]), 'icon': item[3]})
+                shown.append({'label': name(item[0]), 'url': url_for(item[1], **item[2]), 'icon': item[3],
+                              'waiting': waiting.get(item[1], 0)})
         while shown and shown[-1] is None:
             shown.pop()
         if shown:
-            out.append({'label': name(label), 'items': shown})
+            out.append({'label': name(label), 'items': shown, 'waiting': sum(i['waiting'] for i in shown if i)})
     return out
 
 

@@ -6,7 +6,17 @@
 {% from "components/lang_switch.html" import lang_switch %}
 
 {% macro _link(item, cls) -%}
-<a href="{{ item.url }}" class="{{ cls }}">{{ icon(item.icon, cls='menu-icon') }}{{ item.label }}</a>
+<a href="{{ item.url }}" class="{{ cls }}">{{ icon(item.icon, cls='menu-icon') }}{{ item.label }}{% if item.waiting %}<span class="menu-count" aria-label="{{ item.waiting }} waiting">{{ item.waiting }}</span>{% endif %}</a>
+{%- endmacro %}
+
+{# A small dot when something in the menu waits for the admin #}
+{% macro _dot(waiting, cls='') -%}
+{% if waiting %}<span class="menu-dot {{ cls }}" role="img" aria-label="{{ waiting }} waiting"></span>{% endif %}
+{%- endmacro %}
+
+{# The same dot on the phone's menu button, where the groups are out of sight #}
+{% macro button_dot() -%}
+{{ _dot(site_menu()|sum(attribute='waiting'), 'menu-dot-corner') }}
 {%- endmacro %}
 
 {# The top bar on a wide screen: a group of one is a link, a larger one a dropdown; then who is signed in #}
@@ -18,7 +28,7 @@
 {% else %}
 <div class="relative group">
     <button type="button" class="flex items-center gap-1 hover:text-orange-600 transition-colors focus:outline-none">
-        <span>{{ group.label }}</span>{{ icon('chevron-down', cls='w-4 h-4') }}
+        <span>{{ group.label }}</span>{{ _dot(group.waiting) }}{{ icon('chevron-down', cls='w-4 h-4') }}
     </button>
     <div class="absolute {{ 'right-0 origin-top-right' if loop.last else 'left-0 origin-top-left' }} mt-0 w-52 bg-white border border-slate-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-200 z-[110]">
         <div class="py-1">
@@ -49,7 +59,7 @@
 {% macro listed(pad='py-2') -%}
 {% for group in site_menu() %}
 {% if group['items']|length > 1 %}
-<p class="px-3 pt-3 pb-1 text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ group.label }}</p>
+<p class="px-3 pt-3 pb-1 text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ group.label }}{{ _dot(group.waiting, 'ml-1') }}</p>
 {% elif not loop.first %}<div class="border-t border-slate-100 mt-2 mb-1 mx-3"></div>{% endif %}
 {% for item in group['items'] %}
 {% if item %}{{ _link(item, 'block px-3 ' ~ pad ~ ' rounded-lg hover:bg-orange-50 hover:text-orange-600') }}
