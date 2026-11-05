@@ -40,7 +40,8 @@ def add_page():
     shared = request.args.get('url') or ''
     link = inbox_service.first_link(shared)
     usable = bool(link and is_video(link))
-    return render_template('video_inbox_add.html', shared=shared, link=link, usable=usable), 200 if usable or not shared else 400
+    return render_template('video_inbox_add.html', shared=shared, link=link, usable=usable,
+                           cents=round(inbox_service.COST_A_VIDEO * 100)), 200 if usable or not shared else 400
 
 
 @video_inbox_bp.route('/admin/inbox/add', methods=['POST'])
@@ -129,7 +130,9 @@ def run_many_task():
 @admin_required
 def look_up(row_id):
     """Look up a video again, from the list: in the queue, or straight away without one."""
-    db.session.get(VideoInbox, row_id) or abort(404)
+    row = db.session.get(VideoInbox, row_id) or abort(404)
+    row.meta_error = None  # asked for again, so what stopped it last time does not count
+    db.session.commit()
     if not tasks.enqueue_inbox(row_id):
         tasks.run_inbox(row_id, attempt=tasks.MAX_ATTEMPTS - 1)
     return redirect(url_for('video_inbox.inbox'))

@@ -26,7 +26,7 @@
     <input type="hidden" name="links" value="{{ links|join(' ') }}">
     <button type="submit" class="go">Save {{ links|length }} {{ 'video' if links|length == 1 else 'videos' }}</button>
   </form>
-  <p class="hint">Looking them up costs at most {{ '%.2f'|format(cost) }} USD, and takes about {{ minutes or 1 }} {{ 'minute' if minutes <= 1 else 'minutes' }} in the background. No recipe is made.</p>
+  <p class="hint">Reading them costs about {{ '%.2f'|format(cost) }} USD, and takes about {{ minutes or 1 }} {{ 'minute' if minutes <= 1 else 'minutes' }} in the background. No recipe is made.</p>
   {% else %}
   <p class="hint">Nothing new to save.</p>
   {% endif %}

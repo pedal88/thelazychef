@@ -3,15 +3,18 @@
 Saving makes no recipe: the link is kept, and Pål picks later what to make. A video is known by its key, so the same
 video shared twice or linked another way is one row, and a video already made into a recipe is marked.
 
-Each saved video is looked up in the background (look_up): its caption with yt-dlp, without downloading it, then one
-small Claude call for the dish's name, the recipes it looks most like and suggested metadata. It need not be perfect,
-since making the recipe has its own logic. Under a cent a video; no video goes to Gemini here.
+Each saved video is looked up in the background (look_up): its caption with yt-dlp, then Gemini watches the video and
+writes down what it shows (video_text), then one small Claude call for the dish's name, the recipes it looks most like and
+suggested metadata. The written text is used when the recipe is made (written_down), so a video is read once, and the
+same text gives the same amounts each time. A video not read here is read then, so reading can fail without harm. About
+3 cents a video, an estimate.
 
 Many links can be saved at once, from pasted text or a file such as TikTok's data download (sort, save_many). The text
 can be anything: links are read out of it, so nothing here depends on the file's format.
 """
 import io
 import json
+import logging
 import os
 import re
 import zipfile
@@ -23,16 +26,22 @@ from database.models import Recipe, VideoInbox, db
 from schemas.recipe_v2 import CUISINES, MEAL_TYPES
 from services import ai_models
 from services.recipe_v2 import claude
-from services.recipe_v2.sources import is_video
+from services.recipe_v2.sources import NoAnswerFromVideo, NoRecipeInVideo, fetch_video_text, is_video
 
+log = logging.getLogger(__name__)
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 env = Environment(loader=FileSystemLoader(os.path.join(ROOT, 'data', 'prompts')))
 CAPTION_MAX = 4000  # what the model reads of a caption
 SIMILAR_MAX = 3
 NO_DETAILS = 'Could not read the video\'s details. It may be private or blocked; it can still be tried as a recipe.'
+READ_MAX_SECONDS = 180  # a longer video costs more to read, so it waits until the recipe is made
+NO_RECIPE_SHOWN = 'The video does not seem to show a recipe.'
+NO_ANSWER = 'Reading the video gave no answer, which says nothing about the video. It is tried again when the recipe is made.'
+NOT_READ = 'Could not read the video. It is tried again when the recipe is made.'
+TOO_LONG = 'Longer than 3 minutes, so it is read when the recipe is made.'
 MAX_LINKS = 1000  # new videos saved at once: a whole data download also lists every video watched
 MAX_TEXT = 30 * 1024 * 1024  # bytes read from what is pasted or uploaded; Cloud Run takes 32 MB a request
-COST_A_VIDEO = 0.01  # at most, in USD (docs/SERVICES_AND_COSTS.md)
+COST_A_VIDEO = 0.03  # about, in USD, an estimate: longer videos cost more (docs/SERVICES_AND_COSTS.md)
 
 LINK = re.compile(r'https?://[^\s<>"\'\\,\]}]+', re.IGNORECASE)
 SHORT_LINKS = ('vm.tiktok.com', 'vt.tiktok.com')  # hosts where a link only says what it is once it is opened
@@ -89,10 +98,12 @@ def add(shared):
 
 
 def made_from():
-    """{video key: recipe id} of the recipes made from a video, the newest for a video made twice."""
-    rows = db.session.execute(db.select(Recipe.id, Recipe.source_input).where(
+    """{video key: recipe id} of the recipes made from a video, the newest for a video made twice. One that failed
+    (tasks.run) was not made: its video can be read and chosen again."""
+    rows = db.session.execute(db.select(Recipe.id, Recipe.source_input, Recipe.validation_errors).where(
         Recipe.source_type == 'video', Recipe.source_input.isnot(None)).order_by(Recipe.id)).all()
-    return {video_key(source): rid for rid, source in rows}
+    return {video_key(source): rid for rid, source, errors in rows
+            if not any(e.get('rule') in ('source', 'error') for e in errors or [])}
 
 
 def links_in(text):
@@ -192,11 +203,12 @@ def recipe_titles():
 
 
 def describe(row, title, call=None):
-    """What the caption says the video is, in one small call. Only what the app knows is kept: the text comes from
+    """What the caption and the written-down video say it is, in one small call. Only what the app knows is kept: the text comes from
     strangers, and the answer only ever fills these fields."""
     titles = recipe_titles()
     system = env.get_template('recipe_v2/inbox.jinja2').render(recipes=titles)
-    user = f"TITLE\n{title or ''}\n\nUPLOADER\n{row.uploader or ''}\n\nCAPTION\n{(row.caption or '')[:CAPTION_MAX]}"
+    user = (f"TITLE\n{title or ''}\n\nUPLOADER\n{row.uploader or ''}\n\nCAPTION\n{(row.caption or '')[:CAPTION_MAX]}"
+            f"\n\nWHAT THE VIDEO SHOWS\n{(row.video_text or '')[:CAPTION_MAX]}")
     msg, _ = (call or claude.call)(ai_models.VIDEO_INBOX_MODEL, ai_models.VIDEO_INBOX_EFFORT, [{'role': 'user', 'content': user}],
                                    system=system, schema=schema())
     answer = json.loads(claude.text_of(msg))
@@ -205,9 +217,34 @@ def describe(row, title, call=None):
     row.suggestions = {k: answer.get(k) for k in ('cuisine', 'main_protein', 'meal_types')}
 
 
-def look_up(row, extract=None, call=None):
-    """Fill the row from the video's page and its caption. A video that cannot be read keeps its link and says why. A
-    short link that turns out to be a video already in the inbox is removed: returns the row that stays. The caller commits."""
+def _read(row, read=None):
+    """Have the video watched and keep what it shows. Nothing here stops the look-up: a video not read now is read when
+    the recipe is made. A video already read is not paid for again."""
+    if row.video_text:
+        return
+    if (row.duration_s or 0) > READ_MAX_SECONDS:
+        row.meta_error = TOO_LONG
+        return
+    try:
+        row.video_text = (read or fetch_video_text)(row.webpage_url or row.url)
+    except NoRecipeInVideo:
+        row.meta_error = NO_RECIPE_SHOWN
+    except NoAnswerFromVideo:
+        row.meta_error = NO_ANSWER
+    except Exception:
+        log.exception('Video inbox %s: could not read the video', row.id)
+        row.meta_error = NOT_READ
+
+
+def written_down(url):
+    """What the video at the link shows, if the inbox has read it; else None."""
+    return db.session.execute(db.select(VideoInbox.video_text).filter_by(video_key=video_key(url))).scalar_one_or_none()
+
+
+def look_up(row, extract=None, call=None, read=None):
+    """Fill the row from the video's page, its caption and what it shows. A video that cannot be read keeps its link and says why. A
+    short link that turns out to be a video already in the inbox is removed: returns the row that stays. The caller commits,
+    but the read is saved here: when the call after it fails, the retry must not pay for it again."""
     from services.social_media_service import SocialMediaExtractor
 
     try:
@@ -226,7 +263,9 @@ def look_up(row, extract=None, call=None):
             return other
         row.video_key = key
     row.meta_error = None
-    if row.caption or info.get('title'):  # nothing to read costs nothing
+    _read(row, read)
+    db.session.commit()
+    if row.caption or info.get('title') or row.video_text:  # nothing to read costs nothing
         describe(row, info.get('title'), call=call)
     return row
 

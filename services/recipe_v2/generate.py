@@ -95,10 +95,11 @@ def write_text(kind, source, language=None, call=None, chef=None):
         page, _ = fetch_recipe_text(source)
         prompt = env.get_template('recipe_v2/normalize.jinja2').render(kind='a web page', source=page, language=language)
     elif kind == 'video':
+        from services.recipe_v2.inbox import written_down
         from services.recipe_v2.sources import fetch_video_text
 
         prompt = env.get_template('recipe_v2/normalize.jinja2').render(kind='what a cooking video shows, written down',
-                                                                       source=fetch_video_text(source), language=language)
+                                                                       source=written_down(source) or fetch_video_text(source), language=language)
     elif kind == 'idea':
         prompt = env.get_template('recipe_v2/idea.jinja2').render(idea=source, language=language,
                                                                   persona=persona.prompt_block(chef))
