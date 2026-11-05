@@ -1,20 +1,21 @@
 /* The one-page flow's lists as large as fit the screen: the ingredients on the overview
    (templates/components/overview_layouts.html, static/css/overview_layouts.css) and, on a wide screen, the steps
-   on the cooking screen (templates/components/step_list.html, static/css/rail.css). Large,
-   roomy, normal, snug (the steps) or tight, the first that needs no scrolling; in C the image follows the ingredients. When even
+   on the cooking screen (templates/components/step_list.html, static/css/rail.css). Extra large (the steps, on a large
+   screen), large, roomy, normal, snug (the steps) or tight, the first that needs no scrolling; in C the image follows the ingredients. When even
    tight does not fit, the list stays tight and scrolls (the ingredients on a phone stay normal). Fitted again when
    the screen changes size; the steps also when a tick makes them too tall, then only ever smaller, so the page
    does not jump while you cook. */
 (function () {
   'use strict';
-  const STEPS = ['large', 'roomy', 'normal', 'snug', 'tight'];  // snug: the steps only
+  const INGS = ['large', 'roomy', 'normal', 'snug', 'tight'];  // snug: the steps only
+  const STEPS = ['xxl', 'xl', ...INGS];
   const fits = box => box.scrollHeight <= box.clientHeight + 1;
 
   function fit(box) {
     if (!box.clientHeight) return;  // hidden: the cooking screen on the overview, and the other way round
     // Under 1000 px the steps scroll above their card, at a size that is easy to tap
     if (box.hasAttribute('data-fit-steps') && innerWidth < 1000) { box.dataset.density = 'normal'; return; }
-    for (const step of STEPS) {
+    for (const step of box.hasAttribute('data-fit-steps') ? STEPS : INGS) {
       box.dataset.density = step;
       if (fits(box)) return;
     }

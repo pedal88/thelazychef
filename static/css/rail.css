@@ -4,7 +4,9 @@
    snug or tight). Chosen 25.10.2026: a quiet list, the card as a page, one clear action, the rail as a time line,
    serif titles and calm motion. */
 
-[data-fit-steps] { --row-pad: 10px; --h3: 17px; --tick: 34px; --meta: 12px; }
+[data-fit-steps] { --row-pad: 10px; --h3: 17px; --tick: 34px; --meta: 12px; --dot: 12px; --dot-on: 18px; }
+[data-fit-steps][data-density="xxl"] { --row-pad: 22px; --h3: 38px; --tick: 56px; --meta: 20px; --dot: 20px; --dot-on: 30px; }
+[data-fit-steps][data-density="xl"] { --row-pad: 18px; --h3: 28px; --tick: 48px; --meta: 16px; --dot: 16px; --dot-on: 24px; }
 [data-fit-steps][data-density="large"] { --row-pad: 15px; --h3: 21px; --tick: 42px; --meta: 14px; }
 [data-fit-steps][data-density="roomy"] { --row-pad: 12px; --h3: 19px; --tick: 38px; --meta: 13px; }
 [data-fit-steps][data-density="snug"] { --row-pad: 6px; --h3: 16px; --tick: 30px; --meta: 11.5px; }
@@ -39,24 +41,24 @@
 .rail .pagecard .sc-back[hidden] { display: none; }
 .rail .pagecard .sc-back:hover { background: var(--color-paper); }
 /* The dots: hollow ahead, filled when done, a solid red dot with a halo where you are */
-.rail-main .st-tick { position: relative; z-index: 1; justify-self: center; width: 12px; height: 12px; margin: calc((var(--h3) * 1.3 - 12px) / 2) auto 0;
+.rail-main .st-tick { position: relative; z-index: 1; justify-self: center; width: var(--dot); height: var(--dot); margin: calc((var(--h3) * 1.3 - var(--dot)) / 2) auto 0;
   border: 2px solid var(--color-line); background: var(--color-paper); font-size: 0; }
 .rail-main .st.is-done .st-tick { background: var(--color-line); border-color: var(--color-line); }
 .rail-main { --here: var(--look-go, var(--color-accent)); }
-.rail-main .st.is-next .st-tick { width: 18px; height: 18px; margin-top: calc((var(--h3) * 1.3 - 18px) / 2); border: 0; background: var(--here);
+.rail-main .st.is-next .st-tick { width: var(--dot-on); height: var(--dot-on); margin-top: calc((var(--h3) * 1.3 - var(--dot-on)) / 2); border: 0; background: var(--here);
   box-shadow: 0 0 0 5px color-mix(in srgb, var(--here) 22%, transparent); }
 /* A look at another step says itself, without words: where you are stays red and pulses faintly, like the light on a
    live broadcast, and the step you look at is a red ring with a white core, lit (static/js/steps.js, railCard) */
 .rail.peeking .rail-main .st.is-next .st-tick { animation: step-live 1.8s ease-in-out infinite; }
 .rail.peeking .rail-main .st.is-next .st-body h3 { color: var(--here); }
 .rail.peeking .rail-main .slist .st.sel { opacity: 1; background: var(--color-paper); }
-.rail.peeking .rail-main .slist .st.sel .st-tick { width: 18px; height: 18px; margin-top: calc((var(--h3) * 1.3 - 18px) / 2);
+.rail.peeking .rail-main .slist .st.sel .st-tick { width: var(--dot-on); height: var(--dot-on); margin-top: calc((var(--h3) * 1.3 - var(--dot-on)) / 2);
   border: 3px solid var(--here); background: var(--color-paper); box-shadow: none; box-sizing: border-box; }
 @keyframes step-live { 50% { background: color-mix(in srgb, var(--here) 55%, var(--color-paper));
   box-shadow: 0 0 0 8px color-mix(in srgb, var(--here) 10%, transparent); } }
 /* Where the heat goes on: a mark on the line */
 .rail-main .heat-line { position: relative; display: block; margin: var(--space-2) 0; padding-left: calc(var(--space-2) + var(--tick) + 6px + var(--space-3));
-  font: 500 12px var(--font-sans); color: var(--color-cook-ink); }
+  font: 500 max(12px, calc(var(--h3) * .6)) var(--font-sans); color: var(--color-cook-ink); }
 [data-fit-steps][data-density="tight"] .heat-line { margin: var(--space-1) 0; }
 .rail-main .heat-line::before { content: ""; position: absolute; z-index: 1; left: calc(var(--space-2) + (var(--tick) + 6px) / 2 - 7px); top: 50%;
   width: 14px; height: 4px; margin-top: -2px; border: 0; border-radius: 2px; background: var(--color-cook); }
@@ -200,6 +202,28 @@
     justify-self: start; font: 400 clamp(64px, 6vw, 104px)/.9 var(--font-serif); color: color-mix(in srgb, var(--color-ink) 12%, transparent); }
   .side-card.pagecard [data-step-card] { max-width: calc(62ch + clamp(64px, 6vw, 104px)); }
   .side-card.pagecard :is(.side-card-h, .sc-needs, .sc-act, .sc-then, .sc-tip, .st-reset) { margin-left: clamp(64px, 6vw, 104px); }
+}
+/* ---- The steps take the whole screen, as in full screen on a large Mac: no limit on the width, the card's type follows
+        the width and the height alike (as before up to about 1440 × 900), and the list spreads over the height. ---- */
+@media (min-width: 1000px) {
+  .cookmode .vpanel.rail:not([hidden]) { max-width: none; gap: clamp(32px, 3vw, 96px); padding-inline: clamp(24px, 3vw, 96px); }
+  .rail-main { display: flex; flex-direction: column; }
+  .rail-main .slist { flex: 1 0 auto; display: flex; flex-direction: column; justify-content: space-between; }
+  .rail .side-card.pagecard { --no: clamp(64px, min(6vw, 10vh), 180px); }
+  .rail .side-card.pagecard [data-step-card] { max-width: none; }
+  .rail .side-card.pagecard .st { grid-template-columns: var(--no) minmax(0, 1fr); }
+  .rail .side-card.pagecard .st-tick { font-size: var(--no); }
+  .rail .side-card.pagecard :is(.side-card-h, .sc-needs, .sc-act, .sc-then, .sc-tip, .st-reset) { margin-left: var(--no); }
+  .rail .side-card.pagecard .st-body h3 { font-size: clamp(32px, min(3vw, 5vh), 84px); }
+  .rail .side-card.pagecard .st-meta { font-size: clamp(14px, min(1vw, 1.6vh), 26px); }
+  .rail .side-card.pagecard .st-body .txt { font-size: clamp(19px, min(1.7vw, 2.8vh), 44px); }
+  .rail .side-card.pagecard :is(.st-eq, .st-donewhen, .st-part) { font-size: clamp(15px, min(1.1vw, 1.8vh), 30px); }
+  .rail .side-card.pagecard .st-timer { min-height: clamp(48px, min(3.4vw, 5.4vh), 88px); font-size: clamp(16px, min(1.1vw, 1.8vh), 30px); }
+  .rail .pagecard .sc-needs:not([hidden]) { max-width: none; }
+  .rail .pagecard .sc-needs li { font-size: clamp(15px, min(1.1vw, 1.8vh), 30px); }
+  .rail .pagecard .sc-needs .sym { --s: clamp(32px, min(2.3vw, 3.6vh), 64px) !important; }
+  .rail .pagecard .sc-done { min-height: clamp(56px, min(3.9vw, 6.2vh), 104px); padding-inline: clamp(28px, min(2vw, 3vh), 56px); font-size: clamp(18px, min(1.25vw, 2vh), 34px); }
+  .rail .pagecard .sc-alt { font-size: clamp(15px, min(1.05vw, 1.7vh), 28px); }
 }
 /* ---- The timeline on a wide screen (templates/components/whole_dish.html timeline): beside the same page card,
         over the whole height, in the rail's quiet colours. The rows share the height between them (--rows, from
