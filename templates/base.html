@@ -6,6 +6,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {# Added to the Home Screen or installed: no browser around the page, so it may reach the screen's edges, clear of the
+       notch and the home bar (static/css/library.css). A page in a browser stays as it is. #}
+    <script>if (navigator.standalone === true || matchMedia('(display-mode: standalone)').matches) {
+      document.documentElement.classList.add('standalone');
+      document.querySelector('meta[name=viewport]').content += ', viewport-fit=cover';
+    }</script>
     <title>{% block title %}The Lazy Chef{% endblock %}</title>
 
     <!-- The app's look: fonts, colours and spacing, in one file (static/css/tokens.css) -->
@@ -157,11 +163,12 @@
         }
 
     </style>
-    <!-- PWA Manifest -->
+    <!-- The home-screen app. The status bar stays dark text on the page's colour: on "black-translucent" the clock is white
+         on paper, and the page scrolls under it. -->
     <link rel="manifest" href="/static/manifest.json">
-    <meta name="theme-color" content="#ea580c">
+    <meta name="theme-color" content="#EAE8E3">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
     {# What a shared link shows on TikTok, Instagram, Messenger and the like; the recipe page fills in its own #}
     {% block og %}

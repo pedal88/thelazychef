@@ -1,20 +1,19 @@
 {
     "name": "The Lazy Chef",
     "short_name": "Lazy Chef",
-    "description": "AI-powered recipe discovery and management",
+    "description": "Recipes you can see. Every dinner drawn as a map: prep, cook, serve.",
     "start_url": "/",
     "display": "standalone",
-    "orientation": "portrait",
-    "background_color": "#f8fafc",
-    "theme_color": "#ea580c",
+    "background_color": "#EAE8E3",
+    "theme_color": "#EAE8E3",
     "icons": [
         {
-            "src": "/static/icon-192.png",
+            "src": "/static/brand/icon-192.png",
             "sizes": "192x192",
             "type": "image/png"
         },
         {
-            "src": "/static/icon-512.png",
+            "src": "/static/brand/icon-512.png",
             "sizes": "512x512",
             "type": "image/png"
         }

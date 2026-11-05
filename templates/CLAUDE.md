@@ -26,8 +26,8 @@ share one look: paper surfaces, thin lines, mono labels, serif titles, and line 
 - The brand: `components/brand.html` (`mark()`, the Z drawn as a metro line, in the text colour; `badge()`, the mark on the
   look's main-button colour; `seal()`, LAZY over CHEF with the mark as the Z, on a post's last slide), in the top bar and
   on the slides. In F the slides' accent is the same zinnober, and the name is set in the look's serif, Shippori Mincho. `static/brand/` has it as files: `mark.svg`,
-  `favicon.svg`, `apple-touch-icon.png`, `avatar.png` (the TikTok and Instagram profile picture) and `share.png`
-  (the share card).
+  `favicon.svg`, `apple-touch-icon.png`, `icon-192.png` and `icon-512.png` (the home-screen app, `static/manifest.json`),
+  `avatar.png` (the TikTok and Instagram profile picture) and `share.png` (the share card).
 
 ## The recipe page
 
@@ -87,5 +87,12 @@ but they share parts with pages that do not: a part used on a slide stays Englis
 `components/lang_switch.html` is the switch; while it shows, the top bar becomes the phone menu at `lg` instead of `md` (`base.html`), or
 the Norwegian words run out of room. A word kept as data (a cuisine, a diet, a filter's choice) stays English in the data and goes through `|label` when it
 is shown (`services/labels.py`, where it must be listed). A script's words are `tr('%(n)s recipes', {n: 3})`, listed in `labels.JS_WORDS`, and reach the page from `components/script_words.html` (in `base.html` and the print page).
+
+## The home-screen app
+
+Added to the Home Screen or installed, the site runs without a browser around it (`static/manifest.json`). `base.html` then
+sets `html.standalone` and `viewport-fit=cover`, so a page in a browser is untouched, and `library.css` keeps the page clear
+of a notch and the home bar. There is no browser back button there: a page needs its own way on. No service worker: a stale
+page after a deploy would cost more than it gives.
 
 Check a visual change in the browser on desktop and at phone width (375 px, no sideways scroll) before calling it done.
