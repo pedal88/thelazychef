@@ -10,6 +10,9 @@ A line in the state "cooked" (day-old rice, leftover pasta) is weighed cooked, w
 pasta and dried pulses dry. Its grams are then turned into dry grams with COOKED_GAIN before the pantry's values
 are used. A pantry item whose values are already those of the cooked food (under DRY_KCAL a 100 g) is left as it is.
 
+A line that says its fat percent in its variety ("4 % fat", "7 % fett") counts that fat instead of the pantry item's,
+so a light product needs no pantry item of its own. Calories and saturated fat follow the fat; the rest stays.
+
 The totals are only kept when every measured line has grams and the lines with
 pantry nutrition make up at least COVERAGE of the weight. Otherwise the recipe
 shows no nutrition rather than a wrong number.
@@ -26,6 +29,8 @@ COOKED_GAIN = (('noodle', 2.4), ('rice', 2.8), ('quinoa', 2.7), ('couscous', 2.5
                ('oat', 2.5), ('lentil', 2.5), ('chickpea', 2.4), ('bean', 2.5), ('pea', 2.5), ('pasta', 2.3),
                ('spaghetti', 2.3), ('macaroni', 2.3), ('penne', 2.3), ('fusilli', 2.3), ('tagliatelle', 2.3))
 DRY_KCAL = 250  # a pantry item above this a 100 g is the dry food
+FAT_SAID = re.compile(r'(\d+(?:[.,]\d+)?)\s*%\s*(?:fat|fett)\b', re.IGNORECASE)
+KCAL_A_GRAM_OF_FAT = 9
 # Recipe field -> Ingredient field, per 100 g
 NUTRIENTS = (('calories', 'calories_per_100g'), ('protein', 'protein_per_100g'), ('carbs', 'carbs_per_100g'),
              ('fat', 'fat_per_100g'), ('saturated_fat', 'fat_saturated_per_100g'), ('fiber', 'fiber_per_100g'),
@@ -66,6 +71,19 @@ def dry_grams(line, g):
     return g / gain if gain else g
 
 
+def per_100g(line, ing):
+    """{recipe field: value per 100 g} of the pantry item, with the fat the line says it has."""
+    values = {field: getattr(ing, attr) or 0 for field, attr in NUTRIENTS}
+    said = FAT_SAID.search(getattr(line, 'variety', None) or '')
+    fat = values['fat']
+    if said and fat:
+        now = float(said.group(1).replace(',', '.'))
+        values['calories'] = max(0, values['calories'] + KCAL_A_GRAM_OF_FAT * (now - fat))
+        values['saturated_fat'] *= now / fat
+        values['fat'] = now
+    return values
+
+
 def compute(lines):
     """Totals for the whole recipe and what is missing. Returns a dict:
     totals (field -> amount, or None when not shown), grams, coverage, no_grams and no_nutrition (line names)."""
@@ -87,8 +105,8 @@ def compute(lines):
             continue
         covered_g += g
         counted = dry_grams(line, g)
-        for field, per_100g in NUTRIENTS:
-            sums[field] += counted * (getattr(ing, per_100g) or 0) / 100
+        for field, value in per_100g(line, ing).items():
+            sums[field] += counted * value / 100
     coverage = covered_g / total_g if total_g else 0.0
     ok = not no_grams and total_g > 0 and coverage >= COVERAGE
     return {'totals': {f: (round(v, 1) if ok else None) for f, v in sums.items()}, 'grams': round(total_g),

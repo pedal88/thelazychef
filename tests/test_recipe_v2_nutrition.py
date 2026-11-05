@@ -62,6 +62,31 @@ def test_cooked_grains_count_as_their_dry_weight():
     assert nutrition.dry_grams(line('noodles', 240, 'g', ingredient=noodles, state='cooked'), 240) == 100
 
 
+def test_a_line_that_says_its_fat_counts_that_fat():
+    milk = SimpleNamespace(calories_per_100g=200, protein_per_100g=2, carbs_per_100g=3, fat_per_100g=20, fat_saturated_per_100g=16,
+                           fiber_per_100g=0, sugar_per_100g=2, cholesterol_mg_per_100g=0, sodium_mg_per_100g=10,
+                           calcium_mg_per_100g=0, potassium_mg_per_100g=0, name='coconut milk')
+
+    def totals(variety):
+        said = line('coconut milk', 100, 'g', gram_weight=100, ingredient=milk)
+        said.variety = variety
+        return nutrition.compute([said])['totals']
+
+    light = totals('7 % fat')
+    assert (light['fat'], light['calories'], light['saturated_fat']) == (7, 83, 5.6)  # 13 g less fat, 117 kcal less
+    assert (light['protein'], light['carbs'], light['sodium_mg']) == (2, 3, 10)
+    for said in ('7% fat', '7 % fett', '7,0 % Fat'):
+        assert totals(said)['fat'] == 7
+    for other in (None, '', 'ripe', '70 % cocoa'):  # nothing about fat: the pantry item's values
+        assert (totals(other)['fat'], totals(other)['calories']) == (20, 200)
+    assert totals('0 % fat')['calories'] == 20
+
+    lean = SimpleNamespace(**{**vars(milk), 'fat_per_100g': 0, 'fat_saturated_per_100g': 0})
+    said = line('x', 100, 'g', gram_weight=100, ingredient=lean)
+    said.variety = '4 % fat'
+    assert nutrition.compute([said])['totals']['calories'] == 200  # no fat to go by in the pantry: as it is
+
+
 def test_per_serving_rounds_and_turns_sodium_into_salt():
     recipe = SimpleNamespace(base_servings=4, **{'total_' + f: v for f, v in dict(
         calories=2000, protein=100, carbs=200, fat=80, saturated_fat=20, fiber=12, sugar=30, cholesterol_mg=0,
