@@ -20,10 +20,11 @@ os.environ.setdefault('SECRET_KEY', 'test-secret')
 os.environ.setdefault('GOOGLE_API_KEY', 'test-key')
 
 from app import app  # noqa: E402
-from database.models import Ingredient, Recipe, RecipeTranslation, db  # noqa: E402
+from database.models import Ingredient, Recipe, RecipeTranslation, User, db  # noqa: E402
 from scripts import translate as script  # noqa: E402
 from services.ai_models import CLAUDE_SONNET, TRANSLATE_MODEL  # noqa: E402
-from services.recipe_v2 import translate, translation  # noqa: E402
+from services.recipe_v2 import tasks, translate, translation  # noqa: E402
+from services.recipe_v2.generate import INFORMATION  # noqa: E402
 from services.recipe_v2.store import save_v2  # noqa: E402
 
 with open(os.path.join(ROOT, 'data', 'pilot_v2', 'fasit', 'carbonara.json'), encoding='utf-8') as f:
@@ -255,6 +256,169 @@ class TranslateTests(unittest.TestCase):
         self.assertEqual(words['food']['cream'], 'fløte')
         self.assertEqual(words['food']['sirloin'], 'ytrefilet')
         self.assertTrue(all(isinstance(v, str) and v for part in ('food', 'cooking') for v in words[part].values()))
+
+    def _with_pantry(self):
+        """stand_in that also answers the call for the pantry's names."""
+        words = stand_in()
+
+        def call(model, effort, messages, system=None, schema=None):
+            if 'pantry' in messages[0]['content'][:12]:
+                rows = [{'id': r['id'], 'name_nb': 'hvitløk'} for r in json.loads(messages[0]['content'])['pantry']]
+                return SimpleNamespace(content=[SimpleNamespace(type='text', text=json.dumps({'items': rows}))], stop_reason='end_turn'), {'cost_usd': 0.01}
+            return words(model, effort, messages, system=system, schema=schema)
+        return call
+
+    def test_an_approved_recipe_gets_its_words_and_its_new_items_names_once(self):
+        item = Ingredient(food_id='900002', name='garlic', status='active')
+        named = Ingredient(food_id='900003', name='salt', name_nb='salt', status='active')
+        db.session.add_all([item, named])
+        self.recipe.lines[0].ingredient = item
+        self.recipe.lines[1].ingredient = named
+        db.session.commit()
+        call = mock.Mock(side_effect=self._with_pantry())
+        self.assertTrue(tasks.run_translation(self.recipe.id, call=call))
+        self.assertEqual(db.session.get(RecipeTranslation, (self.recipe.id, 'nb')).title, 'Carbonara NB')
+        self.assertEqual(item.name_nb, 'hvitløk')
+        self.assertEqual(call.call_count, 2)
+        self.assertNotIn('"salt"', call.call_args_list[0].args[2][0]['content'])  # only what has no name
+        self.assertTrue(tasks.run_translation(self.recipe.id, call=call))  # queued twice: nothing more is paid
+        self.assertEqual(call.call_count, 2)
+
+    def test_a_recipe_not_approved_is_not_translated(self):
+        self.recipe.status = 'draft'
+        db.session.commit()
+        call = mock.Mock(side_effect=AssertionError('called Claude'))
+        self.assertTrue(tasks.run_translation(self.recipe.id, call=call))
+        self.assertIsNone(db.session.get(RecipeTranslation, (self.recipe.id, 'nb')))
+
+    def test_a_failed_translation_tries_again_then_leaves_a_note_that_does_not_flag_it(self):
+        call = mock.Mock(side_effect=RuntimeError('Anthropic is down, key sk-secret'))
+        with self.assertRaises(RuntimeError):
+            tasks.run_translation(self.recipe.id, attempt=0, call=call)
+        self.assertTrue(tasks.run_translation(self.recipe.id, attempt=tasks.MAX_ATTEMPTS - 1, call=call))
+        note = [e for e in self.recipe.validation_errors if e['rule'] == 'translate']
+        self.assertEqual(len(note), 1)
+        self.assertNotIn('sk-secret', note[0]['message'])
+        self.assertIn('translate', INFORMATION)
+        self.assertIsNone(db.session.get(RecipeTranslation, (self.recipe.id, 'nb')))
+        self.assertTrue(tasks.run_translation(self.recipe.id, call=self._with_pantry()))  # the next time it clears
+        self.assertEqual([e for e in self.recipe.validation_errors if e['rule'] == 'translate'], [])
+
+    def test_a_translation_is_queued_only_when_there_is_a_queue_and_something_to_do(self):
+        with mock.patch.object(tasks, '_queue') as queue:
+            self.assertFalse(tasks.enqueue_translation(self.recipe))  # no queue
+            with mock.patch.object(tasks, 'configured', return_value=True):
+                self.assertTrue(tasks.enqueue_translation(self.recipe))
+                self.assertEqual(queue.call_args.args[0], f'/internal/tasks/recipe-v2-translate/{self.recipe.id}')
+                translation.save(self.recipe, 'nb', translate._from_rows(_norwegian(json.loads(json.dumps(translate._as_rows(translation.source(self.recipe), {}, {}))))))
+                db.session.commit()
+                queue.reset_mock()
+                self.assertFalse(tasks.enqueue_translation(self.recipe))
+                queue.assert_not_called()
+
+
+class TranslationOnThePages(unittest.TestCase):
+    """Through the client, so no app context is held: it would share the session and the language with the requests."""
+
+    def setUp(self):
+        app.config['TESTING'] = True
+        with app.app_context():
+            db.drop_all()
+            db.create_all()
+            recipe = Recipe(title='placeholder', cuisine='', difficulty='', language='en', status='approved')
+            db.session.add(recipe)
+            db.session.flush()
+            save_v2(recipe, CARBONARA)
+            recipe.title = 'Carbonara'
+            item = Ingredient(food_id='900004', name='garlic', name_nb='hvitløk', status='active')
+            db.session.add(item)
+            recipe.lines[0].ingredient = item
+            db.session.commit()
+            self.id = recipe.id
+            words = translate._from_rows(_norwegian(translate._as_rows(translation.source(recipe), {}, {})))
+            words['title'] = 'Kremet nudelrett'
+            translation.save(recipe, 'nb', words)
+            db.session.commit()
+
+    def tearDown(self):
+        with app.app_context():
+            db.session.remove()
+            db.drop_all()
+
+    def _found(self, q, lang=None):
+        extra = f'&lang={lang}' if lang else ''
+        return f'/recipe/{self.id}' in app.test_client().get(f'/recipes?q={q}{extra}').get_data(as_text=True)
+
+    def test_a_norwegian_reader_finds_a_recipe_by_its_norwegian_title_and_ingredient(self):
+        self.assertTrue(self._found('nudelrett', 'no'))
+        self.assertTrue(self._found('NUDELRETT', 'no'))
+        self.assertTrue(self._found('hvitløk', 'no'))
+        self.assertTrue(self._found('carbonara', 'no'))  # the English words still work
+
+    def test_an_english_reader_does_not_search_the_norwegian(self):
+        self.assertFalse(self._found('nudelrett'))
+        self.assertFalse(self._found('hvitløk'))
+        self.assertTrue(self._found('carbonara'))
+
+    def test_a_translation_out_of_date_is_not_searched_either(self):
+        with app.app_context():
+            db.session.get(Recipe, self.id).title = 'Pasta'
+            db.session.commit()
+        self.assertFalse(self._found('nudelrett', 'no'))
+
+    def test_the_task_endpoint_needs_the_queue_token(self):
+        client = app.test_client()
+        url = f'/internal/tasks/recipe-v2-translate/{self.id}'
+        self.assertEqual(client.post(url, json={}).status_code, 401)
+        with mock.patch.object(tasks, 'verified', return_value=True), mock.patch.object(tasks, 'run_translation') as run:
+            self.assertEqual(client.post(url, json={}, headers={'X-CloudTasks-TaskRetryCount': '2'}).status_code, 200)
+        self.assertEqual(run.call_args.kwargs['attempt'], 2)
+
+    def _admin(self):
+        with app.app_context():
+            admin = User(email='translate-admin@test', is_admin=True)
+            admin.set_password('test-password')
+            db.session.add(admin)
+            db.session.commit()
+        client = app.test_client()
+        client.post('/login', data={'email': 'translate-admin@test', 'password': 'test-password'})
+        return client
+
+    def test_approving_queues_the_translation_and_a_failed_queue_does_not_stop_it(self):
+        client = self._admin()
+        url = f'/admin/recipes/{self.id}/status'
+        with mock.patch.object(tasks, 'enqueue_translation') as queue:
+            self.assertEqual(client.post(url, json={'status': 'draft'}).status_code, 200)
+            queue.assert_not_called()
+            self.assertEqual(client.post(url, json={'status': 'approved'}).status_code, 200)
+            queue.assert_called_once()
+        client.post(url, json={'status': 'draft'})
+        with mock.patch.object(tasks, 'enqueue_translation', side_effect=RuntimeError('no queue')):
+            self.assertTrue(client.post(url, json={'status': 'approved'}).get_json()['success'])
+        with app.app_context():
+            self.assertEqual(db.session.get(Recipe, self.id).status, 'approved')
+
+    def test_search_engines_are_told_the_other_language_only_after_launch(self):
+        client = app.test_client()
+        self.assertNotIn('hreflang="x-default"', client.get('/recipes').get_data(as_text=True))
+        with mock.patch.dict(os.environ, {'NORWEGIAN_ON': '1'}):
+            page = app.test_client().get('/recipes?q=pasta&lang=en').get_data(as_text=True)
+            self.assertIn('hreflang="x-default" href="http://localhost/recipes?q=pasta"', page)
+            self.assertIn('hreflang="en" href="http://localhost/recipes?q=pasta&amp;lang=en"', page)
+            self.assertIn('hreflang="nb" href="http://localhost/recipes?q=pasta&amp;lang=no"', page)
+            self.assertNotIn('rel="alternate" hreflang', app.test_client().get(f'/social/recipe/{self.id}/map').get_data(as_text=True))
+
+    def test_a_shared_link_keeps_the_language_on_its_card(self):
+        page = app.test_client().get(f'/recipe/{self.id}?lang=no').get_data(as_text=True)
+        self.assertIn('<meta property="og:title" content="Kremet nudelrett">', page)
+        self.assertIn(f'/recipe/{self.id}?lang=no">', page)
+        self.assertIn('og:locale" content="nb_NO"', page)
+        page = app.test_client().get(f'/recipe/{self.id}').get_data(as_text=True)
+        self.assertIn('<meta property="og:title" content="Carbonara">', page)
+        self.assertNotIn('og:locale', page)
+        self.assertNotIn(f'/recipe/{self.id}?lang=no"', page.split('</head>')[0])
+        home = app.test_client().get('/recipes?lang=no').get_data(as_text=True)
+        self.assertIn('Oppskrifter du kan se. Hver middag', home.split('</head>')[0])
 
 
 if __name__ == '__main__':

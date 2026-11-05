@@ -100,6 +100,11 @@ def of(recipe, code=None):
     return {**row.texts, 'title': row.title, 'language': code}
 
 
+def needs(recipe, code):
+    """Whether this recipe has no translation to this language that matches its words, and should have one."""
+    return _translates(recipe, code) and of(recipe, code) is None
+
+
 def apply(v2, text):
     """Lay of()'s text over to_v2()'s JSON, field by field: what it does not have stays as written."""
     if not text:

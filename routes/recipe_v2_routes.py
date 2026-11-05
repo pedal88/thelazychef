@@ -331,6 +331,16 @@ def run_images_task(recipe_id):
     return jsonify({'done': True})
 
 
+@recipe_v2_bp.route(tasks.TRANSLATE_PATH.replace('{id}', '<int:recipe_id>'), methods=['POST'])
+def run_translation_task(recipe_id):
+    """Called by Cloud Tasks, not by users: one approved recipe in Norwegian (tasks.run_translation)."""
+    if not tasks.verified(request.headers.get('Authorization')):
+        return jsonify({'error': 'unauthorized'}), 401
+    attempt = request.headers.get('X-CloudTasks-TaskRetryCount', type=int) or 0
+    tasks.run_translation(recipe_id, attempt=attempt)
+    return jsonify({'done': True})
+
+
 @recipe_v2_bp.route(tasks.PANTRY_PATH.replace('{id}', '<int:recipe_id>'), methods=['POST'])
 def run_pantry_task(recipe_id):
     """Called by Cloud Tasks, not by users: the pantry items for one recipe's unlinked lines (tasks.run_pantry)."""

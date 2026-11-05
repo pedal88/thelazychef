@@ -175,7 +175,8 @@ ESTIMATE = 'estimate'  # the recipe note: what the source did not say and the mo
 SWAP = 'substitute'  # the recipe note: a line swapped for a pantry item in this recipe (pantry_fill.py)
 ASK = 'ask'  # the recipe note: a question to Pål, whether to add an ingredient; flags the recipe (pantry_fill.py)
 ASKED = 'asked'  # the recipe note: what Pål answered
-INFORMATION = ('pantry', ESTIMATE, SWAP, ASKED)  # notes that tell the reviewer something and never flag the recipe
+TRANSLATE = 'translate'  # the recipe note: it could not be put into Norwegian and shows in English (tasks.run_translation)
+INFORMATION = ('pantry', ESTIMATE, SWAP, ASKED, TRANSLATE)  # notes that tell the reviewer something and never flag the recipe
 
 
 def refresh(recipe, chef=None):

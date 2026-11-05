@@ -15,7 +15,7 @@ from database.models import (
 )
 from routes._flat import FlatBlueprint
 from services.recipe_service import delete_recipes
-from services.recipe_v2 import pantry_fill
+from services.recipe_v2 import pantry_fill, tasks
 from utils.decorators import admin_required
 
 admin_recipes_bp = FlatBlueprint("admin_recipes", __name__)
@@ -137,6 +137,11 @@ def update_recipe_status(recipe_id: int):
         recipe.status = new_status
         db.session.commit()
         print(f"Status update: Recipe #{recipe_id} -> '{new_status}'")
+        if new_status == 'approved':
+            try:
+                tasks.enqueue_translation(recipe)
+            except Exception as e:  # it is approved all the same, and shows in English until scripts/translate.py runs
+                print(f"Could not queue the translation of recipe #{recipe_id}: {e}")
         return jsonify({'success': True, 'new_status': recipe.status})
 
     except Exception as e:

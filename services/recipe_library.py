@@ -23,10 +23,12 @@ from database.models import (
     RecipeLine,
     RecipeMealType,
     RecipeStep,
+    RecipeTranslation,
     UserQueue,
     UserRecipeInteraction,
     db,
 )
+from services import language
 from services.labels import label
 from services.recipe_v2.derive import HEAT_LABELS
 from services.recipe_v2.translation import dress
@@ -94,9 +96,17 @@ def _filtered(stmt, f):
             stmt = stmt.where(Recipe.prep_time_mins <= high)
     q = f.q.strip()
     if len(q) >= 2:
-        stmt = stmt.where(or_(Recipe.title.icontains(q, autoescape=True),
-                              Recipe.lines.any(RecipeLine.name.icontains(q, autoescape=True)),
-                              Recipe.lines.any(RecipeLine.ingredient.has(Ingredient.name.icontains(q, autoescape=True)))))
+        found = [Recipe.title.icontains(q, autoescape=True),
+                 Recipe.lines.any(RecipeLine.name.icontains(q, autoescape=True)),
+                 Recipe.lines.any(RecipeLine.ingredient.has(Ingredient.name.icontains(q, autoescape=True)))]
+        code = language.recipe_code()
+        if code != language.DEFAULT:  # also what this reader sees: the translated title and the pantry's own name
+            found += [db.select(RecipeTranslation.recipe_id)
+                      .where(RecipeTranslation.recipe_id == Recipe.id, RecipeTranslation.language == code,
+                             RecipeTranslation.source_title == Recipe.title, RecipeTranslation.title.icontains(q, autoescape=True))
+                      .exists(),
+                      Recipe.lines.any(RecipeLine.ingredient.has(Ingredient.name_nb.icontains(q, autoescape=True)))]
+        stmt = stmt.where(or_(*found))
     return stmt
 
 
