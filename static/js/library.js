@@ -5,7 +5,10 @@
   'use strict';
 
   const form = document.querySelector('[data-lib-form]');
+  // The list as it is now, with its filters and search, for the recipe page's back arrow (recipe_v2_make.html)
+  const keep = () => { try { sessionStorage.setItem('recipes-list', location.pathname + location.search); } catch (e) { /* this page only */ } };
   if (form) {
+    keep();
     // The bar is in the page's colour until it sticks under the top bar (a mark just above it scrolls out of view)
     const mark = document.querySelector('[data-lbar-mark]');
     if (mark && 'IntersectionObserver' in window) {
@@ -30,15 +33,20 @@
     // The filter drawer
     const drawer = form.querySelector('[data-lv-drawer]');
     if (drawer) {
-      // The button counts the cards as you choose, and choices that would give none are dimmed
+      // The button counts the cards as you choose, and choices that would give none are dimmed. The number is asked
+      // first on its own, as it is quick; the dimmed choices take a query per group and follow
       let counting = 0;
+      const show = n => { drawer.querySelector('[data-lv-n]').textContent = tr(n === 1 ? '%(n)s recipe' : '%(n)s recipes', { n }); };
       const recount = async () => {
         if (!drawer.dataset.count) return;
-        const mine = ++counting;
+        const mine = ++counting, url = `${drawer.dataset.count}?${params()}`;
         try {
-          const data = await (await fetch(`${drawer.dataset.count}?${params()}`)).json();
+          const first = await (await fetch(`${url}&only=total`)).json();
           if (mine !== counting) return;
-          drawer.querySelector('[data-lv-n]').textContent = tr(data.total === 1 ? '%(n)s recipe' : '%(n)s recipes', { n: data.total });
+          show(first.total);
+          const data = await (await fetch(url)).json();
+          if (mine !== counting) return;
+          show(data.total);
           const empty = new Set(data.empty.map(([k, v]) => `${k}=${v}`));
           drawer.querySelectorAll('.lib-chip input').forEach(input => {
             const none = !input.checked && empty.has(`${input.name}=${input.value}`);
@@ -76,6 +84,7 @@
               if (old) old.replaceWith(document.importNode(fresh, true));
             });
             history.replaceState(null, '', url);
+            keep();
           } catch (err) {
             console.error('Could not search', err);
             if (results) results.removeAttribute('aria-busy');

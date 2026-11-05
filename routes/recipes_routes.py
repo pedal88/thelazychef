@@ -66,11 +66,12 @@ def recipes_list():
 @recipes_bp.route('/api/recipes/count')
 def recipes_count():
     """How many cards the choices in the address give, and the choices that would give none: the filter drawer's
-    live count. Read only, approved recipes only; a query per choice (services/recipe_library.counts)."""
+    live count. Read only, approved recipes only (services/recipe_library.counts). only=total: the number alone."""
     view = request.args.get('view', 'discover')
     if view not in ('saved', 'made', 'next') or not current_user.is_authenticated:
         view = 'discover'
-    return jsonify(counts(view, request.args, current_user if current_user.is_authenticated else None))
+    return jsonify(counts(view, request.args, current_user if current_user.is_authenticated else None,
+                          total_only=request.args.get('only') == 'total'))
 
 
 def _v2_lines_and_steps(recipe):
