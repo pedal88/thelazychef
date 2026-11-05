@@ -40,7 +40,8 @@ One page, `recipe_v2_make.html`, from `services/recipe_v2/view.page`: the overvi
 
 - A step tapped in the list is a look at it, shown in the card: beside the list on a wide screen, under it at the thumb below
   1000 px. The list's marks say so without words (`static/css/rail.css`, `.peeking`): a solid red dot with a halo where you
-  are, pulsing during a look, and a red ring with a white core on the step you look at.
+  are, pulsing during a look, and a red ring with a white core on the step you look at. On a wide screen the card is only the step: the list has when the
+  food is ready and unticking them all. A step names its part only outside the dish's main part (`view.main_part`).
 - `steps.js` owns which steps are done (`st.done`) and announces it (`steps:done`); the bowls ask for it
   (`ready:steps`), so the bowls and the step list always agree.
 - A step is done with a tap on its number, or on a phone with Done under the next step (`.st-next`, `data-step-next`); a wide

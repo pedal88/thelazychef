@@ -9,7 +9,7 @@ import json
 import os
 import re
 import time
-from collections import OrderedDict
+from collections import Counter, OrderedDict
 from functools import lru_cache
 
 from flask_babel import force_locale, gettext
@@ -202,6 +202,13 @@ def load_graph(recipe):
     )).scalars().all()
 
 
+def main_part(parts):
+    """The part with most of a dish's steps, or None when parts tie for it. A step says which part it belongs to only
+    outside the main part: "Boil the water" needs "Steamed broccoli", and eight steps of the chicken do not need the name."""
+    top = Counter(parts).most_common(2)
+    return top[0][0] if top and (len(top) == 1 or top[0][1] > top[1][1]) else None
+
+
 def build(recipe, servings=None, plan='calm', system=DEFAULT):
     """Everything the v2 recipe template needs, with amounts and temperatures in the reader's measuring system
     (services/measures.py: 'metric' or 'us')."""
@@ -248,6 +255,7 @@ def build(recipe, servings=None, plan='calm', system=DEFAULT):
                      'img': found.image_url if found is not None else None, 'pantry_id': e.get('pantry_id')})
 
     heated = {x['local_id'] for x in heat_steps(v2)}
+    main = main_part(steps_by[sid]['component_id'] for sid in sch['order'])
     steps = []
     for n, sid in enumerate(sch['order'], 1):
         s = steps_by[sid]
@@ -255,6 +263,7 @@ def build(recipe, servings=None, plan='calm', system=DEFAULT):
         during = steps_by.get(p.get('during')) if p.get('during') else None
         steps.append({
             'n': n, 'id': sid, 'phase': s['phase'], 'short': s['short'], 'component': comps.get(s['component_id'], ''),
+            'part_note': comps.get(s['component_id'], '') if s['component_id'] != main else '',
             'duration': step_duration(s), 'equipment': equipment_text(s, system), 'start': p['start'],
             'while': gettext('While: %(what)s', what=during['short'].lower()) if during else '',
             'html': step_html(s, lines, ingredients, factor, 'nb' if language.shown() == 'nb' else recipe.language, system),

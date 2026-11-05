@@ -47,7 +47,7 @@
         </div>
         {# The details: shown for the step you are on, for a step you open, and for all with "Show all details" #}
         <div class="st-more">
-          {% if v.parts|length > 1 and s.component %}<p class="st-part">{{ s.component }}</p>{% endif %}
+          {% if v.parts|length > 1 and s.part_note %}<p class="st-part">{{ s.part_note }}</p>{% endif %}
           <p class="txt" lang="{{ lang }}">{{ s.html }}</p>
           {% if s.equipment %}<p class="st-eq">{{ s.equipment }}</p>{% endif %}
           {% if s.done_when %}<p class="st-donewhen"><b>{{ _('Done when') }}</b> <span lang="{{ lang }}">{{ s.done_when }}</span></p>{% endif %}
@@ -96,6 +96,7 @@
     {{ step_row(s, lang) }}
     {% endfor %}
   </ol>
+  <p class="rail-table" data-rail-table></p>
   {# Most cook without ticking every step: I made this is here too, not only after the last one (static/js/done.js) #}
   <p class="st-made"><button type="button" data-made-it>{{ icon('check') }}<span>{{ _('Cooked it already?') }} <b>{{ _('I made this') }}</b></span></button></p>
   <p class="st-reset rail-reset"><button type="button" data-steps-reset>{{ _('Untick all the steps') }}</button></p>
