@@ -1581,6 +1581,9 @@ msgstr "står %(n)s min"
 msgid "Not in the pantry"
 msgstr "Ikke i matskapet"
 
+msgid "Checking the pantry…"
+msgstr "Sjekker matskapet …"
+
 msgid "Fewer servings"
 msgstr "Færre porsjoner"
 

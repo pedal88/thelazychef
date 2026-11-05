@@ -2,6 +2,7 @@
 
 Claude is replaced by a stand-in that answers with fixed decisions, so nothing outside the test is called.
 """
+import datetime
 import json
 import os
 import sys
@@ -26,7 +27,7 @@ from sqlalchemy import event  # noqa: E402
 
 from database.models import Ingredient, IngredientAlias, Recipe, User, db  # noqa: E402
 from scripts.fill_pantry import parse_ids  # noqa: E402
-from services.recipe_v2 import pantry_fill, tasks  # noqa: E402
+from services.recipe_v2 import generate, pantry_fill, tasks  # noqa: E402
 from services.recipe_v2.store import save_v2  # noqa: E402
 
 with open(os.path.join(ROOT, 'data', 'pilot_v2', 'fasit', 'carbonara.json'), encoding='utf-8') as f:
@@ -481,6 +482,89 @@ class PantryFillTests(unittest.TestCase):
         self.assertEqual(client.post(f'/admin/pantry-questions/{item.id}/add').status_code, 409)  # answered
         self.assertEqual(client.post(url, json={'status': 'approved'}).status_code, 200)
         self.assertIn(b'added pecorino romano', client.get('/admin/pantry-questions').data)
+
+    def _admin(self):
+        admin = User(email='checking-admin@test', is_admin=True)
+        admin.set_password('test-password')
+        db.session.add(admin)
+        db.session.commit()
+        client = app.test_client()
+        client.post('/login', data={'email': admin.email, 'password': 'test-password'})
+        return client
+
+    def test_the_recipe_page_says_the_job_is_at_work_until_it_is_done(self):
+        client = self._admin()
+        url = f'/recipe/{self.recipe.id}'
+        status = f'/new-recipe/v2/{self.recipe.id}/status'
+        self.assertIn('Not in the pantry', client.get(url).get_data(as_text=True))
+        self.assertFalse(client.get(status).get_json()['checking_pantry'])
+
+        pantry_fill.mark_checking(self.recipe)
+        db.session.commit()
+        self.assertFalse(generate.needs_review(self.recipe))  # the note flags nothing
+        page = client.get(url).get_data(as_text=True)
+        self.assertIn('Checking the pantry', page)
+        self.assertNotIn('Not in the pantry', page)
+        self.assertIn(status, page)  # it follows the job
+        self.assertTrue(client.get(status).get_json()['checking_pantry'])
+
+        pantry_fill.fill(self.recipe, call=answer([decision('spaghetti', 'alias', '000322')]))
+        db.session.commit()
+        self.assertFalse(pantry_fill.is_checking(self.recipe))
+        page = client.get(url).get_data(as_text=True)
+        self.assertNotIn('Checking the pantry', page)
+        self.assertIn('Not in the pantry', page)  # lines nobody decided
+        self.assertFalse(client.get(status).get_json()['checking_pantry'])
+
+    def test_a_job_that_is_lost_does_not_say_it_is_at_work_for_ever(self):
+        client = self._admin()
+        pantry_fill.mark_checking(self.recipe)
+        old = (datetime.datetime.now(datetime.UTC) - datetime.timedelta(minutes=pantry_fill.CHECKING_MINUTES + 1)).isoformat()
+        self.recipe.validation_errors = [dict(e, checking=old) if e.get('checking') else e for e in self.recipe.validation_errors]
+        db.session.commit()
+        self.assertFalse(pantry_fill.is_checking(self.recipe))
+        self.assertIn('Not in the pantry', client.get(f'/recipe/{self.recipe.id}').get_data(as_text=True))
+
+    def test_an_approved_recipe_never_says_it(self):
+        self.recipe.status = 'approved'
+        pantry_fill.mark_checking(self.recipe)
+        db.session.commit()
+        page = self._admin().get(f'/recipe/{self.recipe.id}').get_data(as_text=True)
+        self.assertNotIn('Checking the pantry', page)
+
+    def test_the_mark_is_set_before_the_job_is_queued_and_cleared_if_it_cannot_be(self):
+        recipe = Recipe(title='Queued', cuisine='Italian', difficulty='Simplistic', status='generating', schema_version=2)
+        db.session.add(recipe)
+        db.session.commit()
+        rid = recipe.id
+
+        def made(kind, source, chef_id=None, recipe=None, language=None):
+            save_v2(recipe, CARBONARA)
+            recipe.status = 'draft'
+            db.session.commit()
+
+        seen = []
+
+        def queue(recipe_id, images=True):
+            seen.append(pantry_fill.is_checking(db.session.get(Recipe, recipe_id)))
+
+        with mock.patch.object(tasks, 'configured', return_value=True), mock.patch.object(tasks, 'enqueue_pantry', queue), \
+                mock.patch('services.recipe_v2.generate.create_recipe', made):
+            tasks.run(rid, 'text', 'x', images=False)
+        self.assertEqual(seen, [True])
+        recipe = db.session.get(Recipe, rid)
+        self.assertTrue(pantry_fill.is_checking(recipe))
+
+        recipe.status = 'generating'
+        pantry_fill.clear_checking(recipe)
+        for child in (*recipe.lines, *recipe.steps, *recipe.components):
+            db.session.delete(child)
+        db.session.commit()
+        with mock.patch.object(tasks, 'configured', return_value=True), \
+                mock.patch.object(tasks, 'enqueue_pantry', side_effect=RuntimeError('no queue')), \
+                mock.patch('services.recipe_v2.generate.create_recipe', made):
+            tasks.run(rid, 'text', 'x', images=False)
+        self.assertFalse(pantry_fill.is_checking(db.session.get(Recipe, rid)))
 
     def test_the_swap_route_refuses_what_the_pantry_lacks(self):
         item = self._ask_pecorino()

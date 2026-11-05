@@ -164,16 +164,21 @@ def run(recipe_id, kind, source, attempt=0, language=None, images=True):
         db.session.commit()
         return True
     if configured():
-        from services.recipe_v2.pantry_fill import needs_filling
+        from services.recipe_v2 import pantry_fill
 
         try:
-            if needs_filling(recipe_id):
+            if pantry_fill.needs_filling(recipe_id):
+                pantry_fill.mark_checking(db.session.get(Recipe, recipe_id))
+                db.session.commit()  # before the job is queued, or it could run first
                 enqueue_pantry(recipe_id, images)
             elif images:
                 enqueue_images(recipe_id)
         except Exception:
             # The recipe is made; the rest can still be done from the images page and scripts/fill_pantry.py
             log.exception('Recipe %s: could not queue the follow-up jobs', recipe_id)
+            db.session.rollback()
+            pantry_fill.clear_checking(db.session.get(Recipe, recipe_id))
+            db.session.commit()
     return True
 
 

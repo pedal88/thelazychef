@@ -164,4 +164,18 @@
     });
   })();
 </script>
+{% if v.checking_pantry %}
+<script>
+  // The pantry job is at work (seconds): show what it decided when it is done. Drafts, so only admins see this.
+  (function poll() {
+    setTimeout(async function () {
+      try {
+        var state = await (await fetch({{ url_for('recipe_v2.status', recipe_id=recipe.id)|tojson }})).json();
+        if (!state.checking_pantry) { location.reload(); return; }
+      } catch (error) { /* try again */ }
+      poll();
+    }, 3000);
+  })();
+</script>
+{% endif %}
 {% endblock %}

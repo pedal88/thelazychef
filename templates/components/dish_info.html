@@ -12,7 +12,7 @@
     <h3 class="shop-group">{{ g.label }}</h3>
     <ul class="ilist">
       {% for item in g['items'] %}
-      <li>{{ ing_pic(item, 36) }}<span class="line"><b class="amt">{{ item.amount }}</b> {{ item.name }}{% if item.note %}<small>{{ item.note }}</small>{% endif %}{% if item.missing and recipe.status != 'approved' %}<small class="missing">{{ _('Not in the pantry') }}</small>{% endif %}</span></li>
+      <li>{{ ing_pic(item, 36) }}<span class="line"><b class="amt">{{ item.amount }}</b> {{ item.name }}{% if item.note %}<small>{{ item.note }}</small>{% endif %}{% if item.missing and v.checking_pantry %}<small>{{ _('Checking the pantry…') }}</small>{% elif item.missing and recipe.status != 'approved' %}<small class="missing">{{ _('Not in the pantry') }}</small>{% endif %}</span></li>
       {% endfor %}
     </ul>
     {% endfor %}

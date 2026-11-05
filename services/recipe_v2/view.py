@@ -173,6 +173,12 @@ def clear_cache():
     _cache.clear()
 
 
+def _pantry_job_at_work(recipe):
+    from services.recipe_v2.pantry_fill import is_checking
+
+    return is_checking(recipe)
+
+
 def page(recipe, servings=None, plan='calm', system=DEFAULT):
     """build() for the recipe pages, from the cache when the recipe has not changed."""
     key = (recipe.id, repr(tuple(getattr(recipe, c.key) for c in Recipe.__table__.columns)), servings, plan, system, language.shown())
@@ -327,6 +333,7 @@ def build(recipe, servings=None, plan='calm', system=DEFAULT):
         'shopping': shop, 'shop_groups': groups.grouped(shop), 'equipment': equipment_list(first_use, cat, system), 'steps': steps,
         'heat_on': heat_on, 'time_strip': time_strip(steps, sch['T']),
         'chef_note': localize_text(text.get('chef_note') or recipe.chef_note, system), 'missing': sum(1 for s in shop if s['missing']),
+        'checking_pantry': recipe.status != 'approved' and any(s['missing'] for s in shop) and _pantry_job_at_work(recipe),
         'errors': [e for e in recipe.validation_errors or [] if e.get('rule') not in ('persona', 'image', 'pantry', 'estimate', 'substitute', 'ask', 'asked')],
         'image_notes': [e['message'] for e in recipe.validation_errors or [] if e.get('rule') == 'image'],
         'persona_notes': [e['message'] for e in recipe.validation_errors or [] if e.get('rule') == 'persona'],
