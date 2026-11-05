@@ -29,7 +29,10 @@ import json
 import os
 from functools import lru_cache
 
+from flask_babel import gettext
+
 from services.chef_service import chef_to_dict
+from services.labels import label
 
 ANIMAL = {'meat', 'fish and seafood'}
 NOT_VEGAN = ANIMAL | {'dairy and egg'}
@@ -289,22 +292,23 @@ def ingredients_of(recipe):
 
 
 def badges(p):
-    """The hard rules in a few reader-facing words, for the persona pages."""
+    """The hard rules in a few reader-facing words, in the reader's language, for the persona pages."""
     rules = p.get('constraints') or {}
     out = []
     if rules.get('max_total_minutes'):
-        out.append(f"Under {rules['max_total_minutes']} minutes")
+        out.append(gettext('Under %(n)s minutes', n=rules['max_total_minutes']))
     if rules.get('diet'):
-        out.append(rules['diet'].capitalize())
+        out.append(label(rules['diet'].capitalize()))
     if rules.get('max_carbs_per_serving'):
-        out.append(f"About {rules['max_carbs_per_serving']} g net carbs a serving")
+        out.append(gettext('About %(n)s g net carbs a serving', n=rules['max_carbs_per_serving']))
     if rules.get('max_spice') is not None and rules['max_spice'] <= 1:
-        out.append('Mild')
+        out.append(label('Mild'))
     if rules.get('max_cleanup') and rules['max_cleanup'] <= 3:
-        out.append('Little washing-up')
+        out.append(gettext('Little washing-up'))
     if rules.get('max_ingredients'):
-        out.append(f"{rules['max_ingredients']} ingredients or fewer")
+        out.append(gettext('%(n)s ingredients or fewer', n=rules['max_ingredients']))
     levels = rules.get('difficulties') or []
     if 0 < len(levels) < 3:
-        out.append(' or '.join({'Simplistic': 'Easy', 'Moderate': 'Medium', 'Elevated': 'Challenging'}.get(d, d) for d in levels))
+        words = [label({'Simplistic': 'Easy', 'Moderate': 'Medium', 'Elevated': 'Challenging'}.get(d, d)) for d in levels]
+        out.append(words[0] if len(words) == 1 else gettext('%(a)s or %(b)s', a=words[0], b=words[1]))
     return out
