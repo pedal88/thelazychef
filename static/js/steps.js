@@ -91,6 +91,9 @@
   // The delta has it too, shown on a wide screen with the trial "card" (static/css/rail.css)
   const splits = $$('.vpanel.split, .vpanel.rail, .vpanel.dl-panel').map(panel => ({ panel, card: panel.querySelector('[data-side-card]'), pick: null, folded: false }));
   const marksNew = () => document.documentElement.classList.contains('marks-new');  // the trial "Marks" in the admin chip
+  // The trial "Upright", In list: on an upright screen the step you are on opens in the list, kept near the middle
+  const upright = matchMedia('(max-width: 999px) and (orientation: portrait)');
+  const inList = () => document.documentElement.classList.contains('upright-list') && upright.matches;
   function splitRender() {
     const next = nextId();
     splits.forEach(sp => {
@@ -115,7 +118,7 @@
       sp.last = id;
       list.replaceChildren(copy);
       if (pc) railCard(sp, id, copy);
-      if (moved && sp === railSplit) byId[id].scrollIntoView({ block: 'nearest' });  // the list scrolls under 1000 px, once the card has its height
+      if (moved && sp === railSplit) byId[id].scrollIntoView({ block: inList() ? 'center' : 'nearest' });  // the list scrolls under 1000 px, once the card has its height
     });
     placeDeltaCard();
   }
@@ -686,6 +689,15 @@
       render();
       return;
     }
+    const up = t.closest('[data-upright]');  // the trial: the steps on an upright screen
+    if (up) {
+      ['a', 'card', 'list'].forEach(k => document.documentElement.classList.toggle(`upright-${k}`, up.dataset.upright === k));
+      $$('[data-upright]').forEach(b => b.setAttribute('aria-pressed', String(b === up)));
+      try { localStorage.setItem('upright-x', up.dataset.upright); } catch (err) { /* this visit */ }
+      railSplit.last = null;  // centred again in the list
+      render();
+      return;
+    }
     const tipLook = t.closest('[data-tip-look]');  // a step suggested while you wait: a look at it
     if (tipLook) { const sp = splits.find(x => x.card.contains(tipLook)); sp.pick = tipLook.dataset.tipLook; splitRender(); return; }
     if (t.closest('[data-sc-done], [data-sc-back]')) { cardDone(splits.find(x => x.card.contains(t))); return; }
@@ -753,7 +765,7 @@
     if (t.closest('[data-step-next]')) {  // done, and the next step in view, its top clear of the back button
       tick(row);
       const id = nextId();
-      if (id) byId[id].scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+      if (id) byId[id].scrollIntoView({ block: inList() ? 'center' : 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
       return;
     }
     if (t.closest('a') || row.closest('[data-step-card]') || all || row.classList.contains('is-next')) return;
@@ -854,6 +866,8 @@
   }
   $$('[data-mtx]').forEach(b => b.setAttribute('aria-pressed', String(document.documentElement.classList.contains(`mtx-${b.dataset.mtx}`))));
   $$('[data-marks]').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.marks === 'new') === marksNew())));
+  $$('[data-upright]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.upright === 'now'
+    ? !['a', 'card', 'list'].some(k => document.documentElement.classList.contains(`upright-${k}`)) : document.documentElement.classList.contains(`upright-${b.dataset.upright}`))));
   $$('[data-dlx]').forEach(b => b.setAttribute('aria-pressed', String(document.documentElement.classList.contains(`dlx-${b.dataset.dlx}`))));
   $$('[data-dltap]').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.dltap === '2') === document.documentElement.classList.contains('dltap-2'))));
   // The delta's key closes on a click outside it or on Esc

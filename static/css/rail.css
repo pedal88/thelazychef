@@ -108,6 +108,41 @@
   .rail .side-card.pagecard { flex: 3 1 0; max-height: none; border-top: 0; border-left: 1px solid var(--color-line); border-radius: 16px 0 0 0; }
 }
 
+/* ---- The trial "Upright" (temporary; the admin chip, static/js/steps.js), on an upright screen under 1000 px: A, the list
+        larger and spread down to a larger card; A card, the same with the card standing free in a frame; In list, the
+        step you are on opened where it is in the list, the steps before above and the ones after below. ---- */
+@media (max-width: 999px) and (orientation: portrait) {
+  html:is(.upright-a, .upright-card, .upright-list) .rail-main { --row-pad: clamp(6px, 1.8vw, 16px); --h3: clamp(17px, 3.1vw, 26px); --tick: clamp(34px, 5.5vw, 44px);
+    --meta: clamp(12px, 1.9vw, 15px); --dot: clamp(12px, 1.8vw, 14px); --dot-on: clamp(18px, 2.9vw, 24px); display: flex; flex-direction: column; }
+  html:is(.upright-a, .upright-card, .upright-list) .rail-main .slist { flex: 1 0 auto; display: flex; flex-direction: column; justify-content: space-between; }
+  html:is(.upright-a, .upright-card, .upright-list) .rail-main .st-tick { width: var(--dot); height: var(--dot); margin-top: calc((var(--h3) * 1.3 - var(--dot)) / 2); }
+  html:is(.upright-a, .upright-card, .upright-list) .rail-main .st.is-next .st-tick { width: var(--dot-on); height: var(--dot-on); margin-top: calc((var(--h3) * 1.3 - var(--dot-on)) / 2); }
+  html:is(.upright-a, .upright-card) .rail .side-card.pagecard { padding-inline: clamp(16px, 3vw, 28px); }
+  html:is(.upright-a, .upright-card) .rail .side-card.pagecard .st-body h3 { font-size: clamp(22px, 4.4vw, 36px); }
+  html:is(.upright-a, .upright-card) .rail .side-card.pagecard .st-body .txt { font-size: clamp(16px, 2.9vw, 23px); }
+  html:is(.upright-a, .upright-card) .rail .pagecard .sc-done { min-height: clamp(46px, 7vw, 58px); font-size: clamp(15px, 2.3vw, 19px); white-space: nowrap; }
+  html.upright-card .rail .side-card.pagecard { margin: 0 12px calc(12px + env(safe-area-inset-bottom, 0px)); padding-bottom: 16px;
+    border: 1px solid var(--color-line-strong); border-radius: 22px; box-shadow: 0 10px 30px rgb(0 0 0 / .1); }
+  html.upright-card.cooking .fab-tools { right: max(26px, env(safe-area-inset-right, 0px)); bottom: calc(28px + env(safe-area-inset-bottom, 0px)); }
+  html.upright-list .rail .side-card.pagecard { display: none; }
+  html.upright-list .rail-main { padding-bottom: 88px; }
+  html.upright-list .rail .st-finished:not([hidden]) { display: grid; }
+  html.upright-list .rail-main .slist .st:is(.is-next, .is-open) .st-more { display: block; }
+  html.upright-list .rail-main .slist .st.is-next { opacity: 1; margin-block: var(--space-2); padding: clamp(14px, 2.4vw, 20px) clamp(14px, 2.4vw, 20px) clamp(16px, 2.6vw, 22px) var(--space-2);
+    border-radius: 16px; background: var(--color-paper); box-shadow: 0 6px 24px rgb(0 0 0 / .07); }
+  html.upright-list .rail-main .slist .st.is-open:not(.is-next) { opacity: 1; background: color-mix(in srgb, var(--color-paper) 60%, transparent); border-radius: 16px; }
+  html.upright-list .rail-main .st.is-next .st-body h3 { font-family: var(--font-serif); font-weight: 700; font-size: clamp(22px, 4.4vw, 36px); line-height: 1.15; letter-spacing: -.01em; }
+  html.upright-list .rail-main .st:is(.is-next, .is-open) .st-more .txt { margin-top: var(--space-2); font-size: clamp(16px, 2.9vw, 23px); line-height: 1.5; }
+  html.upright-list .rail-main .st.is-next .st-timer-mini { display: none; }
+  html.upright-list .rail-main .slist > .st.is-next .st-next { width: auto; min-height: clamp(48px, 7vw, 58px); padding: 0 clamp(22px, 3.4vw, 30px); font-size: clamp(15px, 2.3vw, 19px); }
+  /* A step opened to look at it: a red ring with a white core, and where you are pulses */
+  html.upright-list .rail-main .st.is-open:not(.is-next):not(.is-done) .st-tick { width: var(--dot-on); height: var(--dot-on); margin-top: calc((var(--h3) * 1.3 - var(--dot-on)) / 2);
+    border: 3px solid var(--here); background: var(--color-paper); box-sizing: border-box; }
+  html.upright-list .rail-main:has(.st.is-open:not(.is-next)) .st.is-next .st-tick { animation: step-live 1.8s ease-in-out infinite; }
+}
+@media (max-width: 999px) and (orientation: portrait) and (prefers-reduced-motion: reduce) {
+  html.upright-list .rail-main .st.is-next .st-tick { animation: none; }
+}
 
 .rail-table { display: none; }
 
