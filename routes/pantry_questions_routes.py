@@ -1,7 +1,7 @@
 """Ingredient questions (services/recipe_v2/pantry_fill.py): what a recipe needs that the pantry lacks and only Pål can
-let in. Admin only. Adding an item draws its symbol, about 0.04 USD. Asking Claude for its advice is a small call per
-recipe, about 0.01-0.03 USD."""
-from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
+let in. Admin only. Adding an item draws its symbol, about 0.04 USD. Claude's advice on a question comes with the pantry
+job; the page asks for any that is missing, a small call per recipe, about 0.01-0.03 USD."""
+from flask import Blueprint, abort, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import login_required
 
 from database.models import Ingredient, db
@@ -45,19 +45,23 @@ def add(item_id):
 @login_required
 @admin_required
 def weigh(item_id):
-    """Claude's advice on a question that has none: one asked before the advice existed, or whose call failed."""
+    """Claude's advice on a question that has none, which the page asks for by itself: one whose call in the pantry job
+    failed. The recipe is read again after the call, since an answer given meanwhile must not be overwritten."""
     item = _waiting_item(item_id)
     question = next((q for q in pantry_fill.questions() if q['item'].id == item.id), None)
+    weighed = 0
     try:
         for row in (question or {}).get('rows', []):
             if not row['odds']:
-                pantry_fill.weigh(row['recipe'], item)
+                odds, _cost = pantry_fill.advice(row['recipe'], item)
+                db.session.refresh(row['recipe'])
+                pantry_fill.keep_advice(row['recipe'], item, odds)
+                weighed += bool(odds)
     except Exception as e:
         db.session.rollback()
-        flash(friendly_ai_error(e, 'Could not ask Claude.'), 'error')
-        return redirect(url_for('pantry_questions.questions'))
+        return jsonify({'error': friendly_ai_error(e, 'Could not ask Claude.')}), 502
     db.session.commit()
-    return redirect(url_for('pantry_questions.questions'))
+    return jsonify({'weighed': weighed})
 
 
 @pantry_questions_bp.route('/admin/pantry-questions/<int:item_id>/swap', methods=['POST'])

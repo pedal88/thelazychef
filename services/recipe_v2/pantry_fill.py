@@ -296,27 +296,38 @@ def _clean_odds(answer, item):
     return {'add': add, 'add_why': answer.get('add_why') or '', 'swaps': sorted(swaps, key=lambda s: -s['share'])}
 
 
-def weigh(recipe, item, call=None):
-    """Claude's advice on one open question, kept on its note on the recipe (odds), in place of any before. Returns the
-    cost in USD. The caller commits."""
+def advice(recipe, item, call=None):
+    """Claude's advice on one open question, saved nowhere yet: (odds or None, cost in USD)."""
     from services.recipe_v2.view import as_text
 
     note = _question_on(recipe, item)
     if note is None:
-        return 0.0
+        return None, 0.0
     call = call or claude.call
     system = env.get_template('recipe_v2/pantry_odds.jinja2').render(pantry=_pantry(), earlier=earlier())
     user = (f'RECIPE\n{as_text(recipe)}\n\nTHE INGREDIENT\n{item.name}, in the recipe as "{note.get("line") or item.name}"'
             f'\nWhy it matters here: {note.get("reason") or "not given"}')
     msg, usage = call(RECIPE_V2_MODEL, RECIPE_V2_EFFORT, [{'role': 'user', 'content': user}], system=system, schema=odds_schema())
-    odds = _clean_odds(json.loads(claude.text_of(msg)), item)
-    recipe.validation_errors = [dict(e, odds=odds) if e is note else e for e in recipe.validation_errors]
-    return usage['cost_usd']
+    return _clean_odds(json.loads(claude.text_of(msg)), item), usage['cost_usd']
+
+
+def keep_advice(recipe, item, odds):
+    """Keep the advice on the question's note on the recipe. Nothing when the question has been answered meanwhile."""
+    note = _question_on(recipe, item)
+    if note is not None and odds:
+        recipe.validation_errors = [dict(e, odds=odds) if e is note else e for e in recipe.validation_errors]
+
+
+def weigh(recipe, item, call=None):
+    """Ask for the advice on one open question and keep it. Returns the cost in USD. The caller commits."""
+    odds, cost = advice(recipe, item, call=call)
+    keep_advice(recipe, item, odds)
+    return cost
 
 
 def _weigh_open(recipe, call=None):
     """Weigh the recipe's questions that have no advice yet. It is only advice: one that fails is logged and left without,
-    and the question can still be answered. Returns the cost in USD."""
+    the question can still be answered, and the page asks again when it is opened. Returns the cost in USD."""
     cost = 0.0
     for note in [e for e in recipe.validation_errors or [] if e.get('rule') == ASK and not e.get('odds')]:
         try:

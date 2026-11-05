@@ -330,28 +330,64 @@ class PantryFillTests(unittest.TestCase):
         self.assertEqual(pantry_fill._weigh_open(self.recipe, call=broken), 0.0)
         self.assertIsNone(pantry_fill.questions()[0]['rows'][0]['odds'])
 
-    def test_the_page_shows_the_shares_and_asks_for_those_without(self):
-        item = self._ask_pecorino()
+    def _odds_client(self):
         admin = User(email='odds-admin@test', is_admin=True)
         admin.set_password('test-password')
         db.session.add(admin)
         db.session.commit()
         client = app.test_client()
         client.post('/login', data={'email': admin.email, 'password': 'test-password'})
-        self.assertIn('Ask Claude for advice', client.get('/admin/pantry-questions').get_data(as_text=True))
-        with mock.patch.object(pantry_fill.claude, 'call', self.odds(60, ('000322', 40))):
-            self.assertEqual(client.post(f'/admin/pantry-questions/{item.id}/weigh').status_code, 302)
+        return client
+
+    def test_the_page_asks_by_itself_for_advice_that_is_missing(self):
+        item = self._ask_pecorino()
+        client = self._odds_client()
         page = client.get('/admin/pantry-questions').get_data(as_text=True)
-        self.assertNotIn('Ask Claude for advice', page)
+        self.assertIn(f'data-weigh="/admin/pantry-questions/{item.id}/weigh"', page)
+        self.assertIn('data-no-advice', page)
+        self.assertNotIn('<button type="submit" data-wait="Asking', page)  # no button to press
+        with mock.patch.object(pantry_fill.claude, 'call', self.odds(60, ('000322', 40))):
+            self.assertEqual(client.post(f'/admin/pantry-questions/{item.id}/weigh').get_json(), {'weighed': 1})
+        page = client.get('/admin/pantry-questions').get_data(as_text=True)
+        self.assertNotIn('data-weigh="', page)
+        self.assertNotIn('data-no-advice>', page)
         self.assertIn('>60%<', page)
         self.assertIn('>40%<', page)
         self.assertIn(f'data-pick="{self.pasta.name}"', page)
         self.assertIn('data-wait="Adding', page)
+        with mock.patch.object(pantry_fill.claude, 'call') as call:  # there is advice: nothing to ask
+            self.assertEqual(client.post(f'/admin/pantry-questions/{item.id}/weigh').get_json(), {'weighed': 0})
+        call.assert_not_called()
+
+    def test_a_failed_call_says_so_without_the_raw_error_or_new_advice(self):
+        item = self._ask_pecorino()
+        client = self._odds_client()
         with mock.patch.object(pantry_fill.claude, 'call', side_effect=RuntimeError('secret detail')):
-            self.recipe.validation_errors = [{k: v for k, v in e.items() if k != 'odds'} for e in self.recipe.validation_errors]
-            db.session.commit()
-            refused = client.post(f'/admin/pantry-questions/{item.id}/weigh', follow_redirects=True).get_data(as_text=True)
-        self.assertNotIn('secret detail', refused)
+            refused = client.post(f'/admin/pantry-questions/{item.id}/weigh')
+        self.assertEqual(refused.status_code, 502)
+        self.assertNotIn('secret detail', refused.get_data(as_text=True))
+        with mock.patch.object(pantry_fill.claude, 'call', self.odds(0)):  # nothing to go on: the page must not reload for it
+            self.assertEqual(client.post(f'/admin/pantry-questions/{item.id}/weigh').get_json(), {'weighed': 0})
+
+    def test_an_answer_given_while_claude_thinks_is_not_overwritten(self):
+        item = self._ask_pecorino()
+        client = self._odds_client()
+        rid, iid = self.recipe.id, item.id
+
+        def answered_meanwhile(model, effort, messages, system=None, schema=None):
+            # The answer, saved by another request while this one waits for Claude
+            with db.engine.begin() as conn:
+                notes = [e for e in db.session.get(Recipe, rid).validation_errors if e.get('rule') != 'ask']
+                notes.append({'rule': 'asked', 'message': 'answered', 'line': 'x', 'answer': 'added'})
+                conn.execute(Recipe.__table__.update().where(Recipe.id == rid).values(validation_errors=notes))
+            return self.odds(60, ('000322', 40))(model, effort, messages, system, schema)
+
+        with mock.patch.object(pantry_fill.claude, 'call', answered_meanwhile):
+            self.assertEqual(client.post(f'/admin/pantry-questions/{iid}/weigh').status_code, 200)
+        db.session.expire_all()
+        rules = [e['rule'] for e in db.session.get(Recipe, rid).validation_errors]
+        self.assertIn('asked', rules)
+        self.assertNotIn('ask', rules)
 
     def test_a_second_recipe_with_the_same_item_is_the_same_question(self):
         item = self._ask_pecorino()
