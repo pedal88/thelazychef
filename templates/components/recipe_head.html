@@ -32,6 +32,9 @@
   {# How the timeline, the metro map and the delta show where you are and the step you look at, on this device
      (static/js/steps.js, static/css/rail.css); temporary #}
   <div class="tgroup" data-marks-switch><span class="tlabel">Marks</span><button type="button" data-marks="now" aria-pressed="true">Now</button><button type="button" data-marks="new" aria-pressed="false">New</button></div>
+  {# The steps on an upright screen under 1000 px (a tablet or a phone): today, A (larger, spread to the card), A as a card,
+     or the step opened in the list (static/css/rail.css, static/js/steps.js); temporary #}
+  <div class="tgroup" data-upright-switch><span class="tlabel">Upright</span><button type="button" data-upright="now" aria-pressed="true">Now</button><button type="button" data-upright="a" aria-pressed="false">A</button><button type="button" data-upright="card" aria-pressed="false">A card</button><button type="button" data-upright="list" aria-pressed="false">In list</button></div>
   <div class="tgroup" data-eq-switch><span class="tlabel">Tools</span>
     {%- for key, label in EQUIPMENT_STYLES.items() %}<button type="button" data-eq="{{ key }}" aria-pressed="{{ 'true' if key == chosen_equipment_style() else 'false' }}">{{ label }}</button>{% endfor -%}
   </div>
