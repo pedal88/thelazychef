@@ -2018,3 +2018,71 @@ msgstr "Det er ikke din feil. Prøv igjen om litt."
 msgid "Back to The Lazy Chef"
 msgstr "Tilbake til The Lazy Chef"
 
+msgid "Our chefs"
+msgstr "Våre kokker"
+
+msgid "Different cooks, different ways to dinner"
+msgstr "Ulike kokker, ulike veier til middag"
+
+msgid "Each chef cooks for a different kind of kitchen. Pick the one that sounds like yours."
+msgstr "Hver kokk lager mat for sitt slags kjøkken. Velg den som høres ut som ditt."
+
+msgid "1 recipe"
+msgstr "1 oppskrift"
+
+msgid "No recipes from %(name)s yet."
+msgstr "Ingen oppskrifter fra %(name)s ennå."
+
+msgid "All chefs"
+msgstr "Alle kokkene"
+
+msgid "Under %(n)s minutes"
+msgstr "Under %(n)s minutter"
+
+msgid "About %(n)s g net carbs a serving"
+msgstr "Omtrent %(n)s g netto karbohydrater per porsjon"
+
+msgid "Little washing-up"
+msgstr "Lite oppvask"
+
+msgid "%(n)s ingredients or fewer"
+msgstr "%(n)s ingredienser eller færre"
+
+msgid "%(a)s or %(b)s"
+msgstr "%(a)s eller %(b)s"
+
+msgid "The Classicist"
+msgstr "Klassikeren"
+
+msgid "The Original"
+msgstr "Originalen"
+
+msgid "The Minimalist"
+msgstr "Minimalisten"
+
+msgid "The Essentialist"
+msgstr "Essensialisten"
+
+msgid "The Smart Cook"
+msgstr "Den smarte kokken"
+
+msgid "The Optimizer"
+msgstr "Optimalisereren"
+
+msgid "Cooks the dish the way it is meant to be, in any cuisine: the classic ingredients and the classic method. Never swaps what makes the dish itself, and takes the time it takes."
+msgstr "Lager retten slik den skal være, fra ethvert kjøkken: de klassiske ingrediensene og den klassiske metoden. Bytter aldri ut det som gjør retten til seg selv, og bruker den tiden det tar."
+
+msgid "As few ingredients, steps and pots as possible, and done fast. Happy to trade a little of the result for a lot less work."
+msgstr "Så få ingredienser, steg og gryter som mulig, og raskt gjort. Bytter gjerne litt av resultatet mot mye mindre arbeid."
+
+msgid "Gets nearly all of the classic result for far less work. Takes a shortcut only when you would hardly taste the difference, and puts the effort where it shows on the plate."
+msgstr "Får nesten hele det klassiske resultatet for langt mindre arbeid. Tar en snarvei bare når du knapt smaker forskjellen, og legger innsatsen der den synes på tallerkenen."
+
+msgid "Let the onions take their time; this is where the sauce gets its depth."
+msgstr "La løken ta den tiden den trenger; det er her sausen får dybden sin."
+
+msgid "Everything on one tray, into the oven, done."
+msgstr "Alt på ett brett, inn i ovnen, ferdig."
+
+msgid "Tinned tomatoes are as good here as fresh; save your effort for browning the meat well."
+msgstr "Hermetiske tomater er like gode som ferske her; spar kreftene til å brune kjøttet godt."

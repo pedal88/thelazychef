@@ -56,7 +56,7 @@ version; nothing is shown until published.
 ```
 
 The pilot guide is the example to start from: `docs/content/frying-pans/` holds its package in English
-(`frying-pans.json`) and Norwegian (`frying-pans.no.json`) and its five images. `docs/content/home.json` is the home
+(`frying-pans.json`) and Norwegian (`frying-pans.no.json`) and its five images. `docs/content/home.json` (and `home.no.json`) is the home
 page as published. `tests/test_content.py` keeps them valid as the block kinds change. The database is what is shown:
 when a page is changed in Admin -> Pages, update its file here in the same round.
 

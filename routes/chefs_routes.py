@@ -8,6 +8,7 @@ from flask import Blueprint, abort, render_template
 from database.models import Chef, Recipe, db
 from services.chef_service import chef_to_dict
 from services.recipe_v2.persona import badges
+from services.recipe_v2.translation import dress
 
 chefs_bp = Blueprint('chefs', __name__)
 
@@ -33,4 +34,4 @@ def index():
 def detail(chef_id):
     chef = db.session.get(Chef, chef_id) or abort(404)
     p = chef_to_dict(chef)
-    return render_template('chef_persona.html', chef=dict(p, badges=badges(p)), recipes=_published(chef_id))
+    return render_template('chef_persona.html', chef=dict(p, badges=badges(p)), recipes=dress(_published(chef_id)))

@@ -1,0 +1,20 @@
+{
+  "slug": "home",
+  "kind": "home",
+  "lang": "no",
+  "title": "I kveld",
+  "summary": "Hva du kan lage i kveld.",
+  "hero_image": null,
+  "note": "Norsk forside, oversatt fra home.json",
+  "blocks": [
+    {"kind": "text", "settings": {"style": "intro", "markdown": "# Middag, ett steg om gangen\n\nHver oppskrift her er lagt opp slik du lager den: hva du skal kjøpe, skålene du setter frem, og så hvert steg med sin egen tidtaker. Gratis, uten reklame, ingenting å installere."}, "audience": "signed_out"},
+    {"kind": "text", "settings": {"style": "intro", "markdown": "# Hva skal vi lage i kveld?\n\nVelg en rett, sett frem skålene og lag den steg for steg."}, "audience": "signed_in"},
+    {"kind": "continue", "settings": {"title": "Fortsett å lage mat"}, "audience": "all"},
+    {"kind": "cook_next", "settings": {"title": "Lag neste", "limit": 5}, "audience": "signed_in"},
+    {"kind": "recipes", "settings": {"title": "Fra innleggene våre", "text": "Rettene fra TikTok og Instagram.", "source": "posts", "limit": 7}, "audience": "all"},
+    {"kind": "recipes", "settings": {"title": "Raskt i kveld", "text": "På bordet på 30 minutter eller mindre.", "filter": {"time": "30"}, "sort": "quick", "limit": 5, "more": true}, "audience": "all"},
+    {"kind": "recipes", "settings": {"title": "Nye retter", "sort": "new", "limit": 5, "more": true}, "audience": "all"},
+    {"kind": "links", "settings": {"title": "Guider", "style": "cards", "items": [{"to": "page:frying-pans", "label": "Guide · 5 panner", "text": "Fem typer side om side, og hvilken du skal ta til jobben foran deg.", "icon": "pot"}, {"to": "page:knives", "label": "Guide · 6 kniver", "text": "De tre du trenger, tre du kan legge til senere, og hvordan du holder dem skarpe.", "icon": "utensils"}]}, "audience": "all"},
+    {"kind": "links", "settings": {"title": "Finn veien", "items": [{"to": "discover"}, {"to": "recipes_list"}, {"to": "explore_galaxy"}, {"to": "explore_ingredient_galaxy"}]}, "audience": "all"}
+  ]
+}

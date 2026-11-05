@@ -27,12 +27,13 @@ from werkzeug.exceptions import InternalServerError  # noqa: E402
 
 import ai_engine  # noqa: E402
 from app import app  # noqa: E402
-from database.models import Ingredient, Page, PageText, Recipe, RecipeDiet, RecipeTranslation, db  # noqa: E402
+from database.models import Chef, Ingredient, Page, PageText, Recipe, RecipeDiet, RecipeTranslation, db  # noqa: E402
 from routes._shared import DIFFICULTY_LABELS, MENU, site_menu  # noqa: E402
 from routes.error_routes import server_error  # noqa: E402
 from routes.recipes_routes import VIEWS  # noqa: E402
 from scripts import social_render  # noqa: E402
 from services import google_signin, labels, language  # noqa: E402
+from services.content import pages  # noqa: E402
 from services.ingredient_library import GROUPS  # noqa: E402
 from services.measures import SYSTEMS, fmt_amount  # noqa: E402
 from services.recipe_library import QUICK, SORT_LABELS, SPICE_LABELS, TIME_LABELS  # noqa: E402
@@ -316,7 +317,7 @@ class Words(HTMLParser):
 SAME_IN_BOTH = {'The Lazy Chef', 'TikTok', 'Instagram', 'Google', '.', '·', '⋯', 'Datatilsynet',
                 'thelazychefai@gmail.com', 'Cookies', 'English', 'Norsk', 'US', 'Protein', 'Keto', 'Paleo', 'Grill',
                 'Sous vide', 'Snacks', 'Mild', 'Baby', 'Guide', 'Recipe Mirror', '→', ',', 'min', 'Over 45 min',
-                'Under 30 min', 'Plan', 'cook@example.no', 'kcal', 'kJ', 'g', 'mg', 'Per 100 g', '\U0001F468\u200d\U0001F373'}  # the last: the loading overlay's chef
+                'Under 30 min', 'Plan', 'cook@example.no', '\U0001F373', 'kcal', 'kJ', 'g', 'mg', 'Per 100 g', '\U0001F468\u200d\U0001F373'}  # the last: the loading overlay's chef
 NUMBERS = re.compile(r'^(Start )?[\d\s.,:/·+′×−]*(min)?( \+ \d+)?[\s,]*$')  # counts and times
 
 
@@ -390,6 +391,68 @@ def test_a_visitor_browsing_meets_no_english(client, launched, path):
 def test_someone_signed_in_meets_no_english(client, launched, path):
     _, names = _a_recipe()
     assert english_left(path, client=_signed_in(), data=names) == []
+
+
+def _the_home_page(name):
+    with open(os.path.join(ROOT, 'docs', 'content', name), encoding='utf-8') as f:
+        home = json.load(f)
+    for block in home['blocks']:  # the guides have pages of their own, tested in test_content.py
+        if block['kind'] == 'links':
+            block['settings']['items'] = [i for i in block['settings']['items'] if not i['to'].startswith('page:')]
+    home['blocks'] = [b for b in home['blocks'] if b['kind'] != 'links' or b['settings']['items']]
+    return home
+
+
+def test_the_norwegian_home_page_is_the_english_one_in_other_words():
+    english, norwegian = _the_home_page('home.json'), _the_home_page('home.no.json')
+    shape = lambda home: [(b['kind'], b['audience'], {k: v for k, v in b['settings'].items() if k not in ('title', 'text', 'markdown', 'items')}) for b in home['blocks']]
+    assert shape(english) == shape(norwegian)
+    assert english['slug'] == norwegian['slug'] and norwegian['lang'] == 'no'
+    for a, b in zip(english['blocks'], norwegian['blocks']):
+        for key in ('title', 'text', 'markdown'):
+            assert (key in a['settings']) == (key in b['settings'])
+            if key in a['settings']:
+                assert a['settings'][key] != b['settings'][key]
+
+
+@pytest.mark.parametrize('signed_in', [False, True])
+def test_the_home_page_has_no_english_once_it_is_published(client, launched, signed_in):
+    with app.app_context():
+        for name in ('home.json', 'home.no.json'):
+            pages.publish(pages.save_version(_the_home_page(name)))
+        db.session.commit()
+    _, names = _a_recipe()
+    assert english_left('/', client=_signed_in() if signed_in else None, data=names) == []
+
+
+def test_the_chefs_have_no_english(client, launched):
+    with app.app_context():
+        db.session.add(Chef(image_filename='x.png', id='the_smart_cook', name='The Smart Cook', archetype='The Optimizer', active=True,
+                            description='Gets nearly all of the classic result for far less work. Takes a shortcut only when you would hardly taste the difference, and puts the effort where it shows on the plate.',
+                            constraints=json.dumps({'max_total_minutes': 60, 'max_cleanup': 3, 'max_ingredients': 10, 'difficulties': ['Simplistic', 'Moderate']})))
+        db.session.commit()
+    assert english_left('/chefs') == []
+    assert english_left('/chefs/the_smart_cook') == []
+
+
+def test_a_chef_edited_in_the_admin_stays_as_written(client):
+    with app.app_context():
+        db.session.add(Chef(image_filename='x.png', id='new_one', name='The New One', archetype='A Test', description='Something new.', active=True))
+        db.session.commit()
+    page = app.test_client().get('/chefs?lang=no').get_data(as_text=True)
+    assert 'The New One' in page and 'Something new.' in page
+
+
+def test_the_card_of_a_translated_recipe_on_a_chefs_page_is_norwegian(client):
+    recipe_id, _ = _a_recipe()
+    with app.app_context():
+        db.session.add(Chef(image_filename='x.png', id='the_minimalist', name='The Minimalist', archetype='The Essentialist', description='x', active=True))
+        recipe = db.session.get(Recipe, recipe_id)
+        recipe.chef_id, recipe.language = 'the_minimalist', 'en'
+        words = translation.source(recipe)
+        translation.save(recipe, 'nb', {**words, 'title': 'Kokt på norsk'})
+        db.session.commit()
+    assert 'Kokt på norsk' in app.test_client().get('/chefs/the_minimalist?lang=no').get_data(as_text=True)
 
 
 def test_the_card_of_something_saved_and_made_has_no_english(client, launched):
