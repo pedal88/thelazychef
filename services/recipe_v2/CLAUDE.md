@@ -71,8 +71,9 @@ then `refresh`. Run it on saved recipes after changing derive, nutrition or the 
   amount a video never gives) are information only and do not flag it (`generate.INFORMATION`). The admin chip shows
   the estimates. `chef_note` is the cook's tip and is public, so what the model decided never goes there.
 - Nutrition counts the grams that end up in the food (`gram_weight` from the model, else units). Cooked rice, pasta
-  and pulses are converted to dry weight (`nutrition.COOKED_GAIN`). The totals are hidden when under 95 % of the
-  weight is in the pantry.
+  and pulses are converted to dry weight (`nutrition.COOKED_GAIN`). A line whose variety says its fat ("4 % fat") counts
+  that fat, with the calories and saturated fat that follow. The totals are hidden when under 95 % of the weight is in
+  the pantry.
 - `derive.main_protein`'s labels are the protein filter's (`data/constraints/main_protein.json`, a test checks).
   Cured meat used for flavour counts at half weight and never beats real meat or fish.
 - The `cut` field in old JSON (`line.get('cut')`) is still read as a state by the validator and views; the database
