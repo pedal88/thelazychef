@@ -1,5 +1,6 @@
 """Translate a recipe's words and the pantry's names into Norwegian with Claude. services/recipe_v2/translation.py keeps
-and shows what comes back; this only asks. scripts/translate.py runs it for saved recipes.
+and shows what comes back; this only asks. tasks.run_translation runs it when a recipe is approved, and
+scripts/translate.py for saved recipes.
 
 The answer is checked with translation.problems: a field missing or a step with other {iN} than the original goes back
 for at most MAX_RETRIES new attempts, and a recipe still wrong is left in English. Every function takes `call` so tests
@@ -64,6 +65,16 @@ def _from_rows(answer):
         return {k: v for k, v in row.items() if k != 'id' and v not in (None, '')}
     return {k: answer[k] for k in ('title', 'chef_note', 'yield_text') if answer.get(k)} | {
         key: {row['id']: filled(row) for row in answer.get(key) or []} for key in ('components', 'lines', 'steps')}
+
+
+def name_items(recipe, call=None, model=TRANSLATE_MODEL):
+    """Norwegian names for this recipe's pantry items that have none, before its words: they are what the lines use. The
+    caller commits."""
+    items = list({i.ingredient.id: i.ingredient for i in recipe.lines if i.ingredient is not None and not i.ingredient.name_nb}.values())
+    if items:
+        names, _ = translate_pantry(items, call=call, model=model)
+        for item in items:
+            item.name_nb = names.get(item.id) or item.name_nb
 
 
 def translate_recipe(recipe, call=None, model=TRANSLATE_MODEL):

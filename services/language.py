@@ -80,6 +80,22 @@ def switch():
     return [{'code': code, 'name': name, 'on': code == current(), 'url': _with_lang(code)} for code, name in NAMES.items()]
 
 
+def alternates():
+    """The address of this page in each language for search engines, [(hreflang, url)], once the site is open in both."""
+    if english_only() or not norwegian_on():
+        return []
+    args = request.args.to_dict(flat=False)
+    args.pop('lang', None)
+    plain = f"{request.path}?{urllib.parse.urlencode(args, doseq=True)}" if args else request.path
+    return [('x-default', plain), ('en', _with_lang('en')), ('nb', _with_lang('no'))]
+
+
+def share_url():
+    """What a link shared from this page keeps of the language: a card fetched without a browser's language would be
+    English otherwise."""
+    return '?lang=no' if shown() == 'nb' else ''
+
+
 def _with_lang(code):
     args = request.args.to_dict(flat=False)
     args['lang'] = [code]

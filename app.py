@@ -129,6 +129,8 @@ app.add_template_global(icon)
 app.add_template_global(site_menu)
 app.add_template_global(language.current, 'site_lang')  # <html lang>
 app.add_template_global(language.switch, 'site_lang_switch')
+app.add_template_global(language.alternates, 'site_lang_alternates')  # hreflang in base.html
+app.add_template_global(language.share_url, 'site_share_lang')
 app.add_template_global(labels.js_words)  # the words of the scripts, tr() in base.html
 app.add_template_filter(labels.label)
 app.add_template_filter(ingredient_name)

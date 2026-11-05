@@ -1271,6 +1271,9 @@ msgstr "%(n)s porsjoner"
 msgid "%(total)s in all, %(active)s active"
 msgstr "%(total)s i alt, %(active)s aktivt"
 
+msgid "Recipes you can see. Every dinner drawn as a map: prep, cook, serve."
+msgstr "Oppskrifter du kan se. Hver middag tegnet som et kart: forberede, kokkelere, servere."
+
 msgid "A recipe you can see: prep, cook and serve, drawn as a map."
 msgstr "En oppskrift du kan se: forberede, kokkelere og servere, tegnet som et kart."
 

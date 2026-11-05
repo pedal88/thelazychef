@@ -43,6 +43,7 @@ calls the app back with an OIDC token from the `TASKS_SERVICE_ACCOUNT`, checked 
    pantry here: an item Pål adds on `/admin/pantry-questions` gets its symbol then, about $0.04.
 3. `/internal/tasks/recipe-v2-images/<id>`: the dish and component images with their vision check (`tasks.run_images`).
    Queued after 2 (or straight after 1), unless the form said "Skip the images".
+4. `/internal/tasks/recipe-v2-translate/<id>`: when a recipe is approved, its words in Norwegian and the names of its pantry items that have none (`tasks.run_translation`). What fails leaves a `translate` note, and the recipe shows in English until `scripts/translate.py` runs.
 
 The same queue also looks up videos saved to the inbox: `/internal/tasks/video-inbox/<id>` (`tasks.run_inbox`, `docs/VIDEO_INBOX.md`), and for many at once `/internal/tasks/video-inbox-many`, which queues one look-up every 30 seconds.
 
@@ -108,7 +109,7 @@ constants in the code and measured runs:
 | Claude's advice on a pantry question | about $0.01–0.03 per question, an estimate: one short call that shares 100 points across adding the item and up to five swaps, right after the pantry job asks; `/admin/pantry-questions` asks by itself for any that is missing | `pantry_fill.weigh` |
 | The pantry's names in round 1 (`idea`, `version`) | about $0.03 for the first recipe, a tenth of that within the cache's 5 minutes; an estimate | `claude.call` usage |
 | A video saved to the inbox | about $0.01–0.03 for a TikTok of 40 seconds, $0.02–0.09 for 3 minutes, an estimate that has not been measured (Gemini watches it, logged as `Video read`, then one short Sonnet call). Longer videos are not read here. Nothing when its details cannot be read. The read is reused when the recipe is made. Many at once: at most 1000, about $30; the page shows it before saving | `services/recipe_v2/inbox.py`, `GEMINI_TEXT`, `VIDEO_INBOX_MODEL` |
-| One recipe in Norwegian | about $0.06 on Opus (five measured 04.11.2026), about half that on Sonnet; only from `scripts/translate.py`, which prints the real cost | `TRANSLATE_MODEL`, `services/recipe_v2/translate.py` |
+| One recipe in Norwegian | about $0.06 on Opus (five measured 04.11.2026), about half that on Sonnet; when a recipe is approved (`tasks.run_translation`, logged), and from `scripts/translate.py`, which prints the real cost | `TRANSLATE_MODEL`, `services/recipe_v2/translate.py` |
 | A symbol (ingredient, category, cuisine) | about $0.04 | `scripts/category_symbols.py`, `fill_pantry --symbols` |
 | Batch page estimate | text + images per line, shown before "Make" | `routes/recipe_v2_routes.py` `batch_new` |
 

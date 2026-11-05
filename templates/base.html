@@ -175,10 +175,14 @@
     <meta property="og:site_name" content="The Lazy Chef">
     <meta property="og:type" content="website">
     <meta property="og:title" content="The Lazy Chef">
-    <meta property="og:description" content="Recipes you can see. Every dinner drawn as a map: prep, cook, serve.">
+    <meta property="og:description" content="{{ _('Recipes you can see. Every dinner drawn as a map: prep, cook, serve.') }}">
     <meta property="og:image" content="{{ absolute_url(url_for('static', filename='brand/share.png')) }}">
     <meta name="twitter:card" content="summary_large_image">
     {% endblock %}
+    {% if site_lang() == 'nb' %}<meta property="og:locale" content="nb_NO">
+    <meta property="og:locale:alternate" content="en_US">{% endif %}
+    {% for code, url in site_lang_alternates() %}<link rel="alternate" hreflang="{{ code }}" href="{{ absolute_url(url) }}">
+    {% endfor %}
     {% block head %}{% endblock %}
 </head>
 

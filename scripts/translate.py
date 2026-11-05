@@ -1,5 +1,5 @@
 """Translate saved recipes and the pantry's names into Norwegian (services/recipe_v2/translate.py), and take a translation
-away again. New recipes are not translated by themselves yet.
+away again. A recipe is translated by itself when it is approved (tasks.run_translation); this is for the rest.
 
 Without --apply nothing is called and nothing is saved: it lists what would be translated, with an estimate of the cost.
 With --apply it first gives the recipes' pantry items their Norwegian names where they have none, then translates each

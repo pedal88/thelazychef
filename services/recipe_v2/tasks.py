@@ -25,6 +25,7 @@ MAX_ATTEMPTS = 3  # same as the queue's --max-attempts
 TASK_PATH = '/internal/tasks/recipe-v2/{id}'
 IMAGES_PATH = '/internal/tasks/recipe-v2-images/{id}'  # the dish and part images of a recipe already made
 PANTRY_PATH = '/internal/tasks/recipe-v2-pantry/{id}'  # the pantry items for its unlinked lines (pantry_fill.py)
+TRANSLATE_PATH = '/internal/tasks/recipe-v2-translate/{id}'  # its words in Norwegian, when it is approved (translate.py)
 INBOX_PATH = '/internal/tasks/video-inbox/{id}'  # what a video saved to the inbox is (inbox.py)
 INBOX_MANY_PATH = '/internal/tasks/video-inbox-many'  # queues the look-ups of many videos, spread out in time
 INBOX_SPACING = 30  # seconds between those look-ups, each of which downloads a video: the queue stays free for recipes, and TikTok sees few requests
@@ -56,6 +57,17 @@ def enqueue_images(recipe_id):
         run_images(recipe_id, attempt=MAX_ATTEMPTS - 1)
         return
     _queue(IMAGES_PATH.format(id=recipe_id), {})
+
+
+def enqueue_translation(recipe):
+    """Queue the job that puts an approved recipe into Norwegian (run_translation), unless it is there already. False
+    without a queue or with nothing to do: locally and for what this misses, there is scripts/translate.py."""
+    from services.recipe_v2 import translation
+
+    if not configured() or not translation.needs(recipe, 'nb'):
+        return False
+    _queue(TRANSLATE_PATH.format(id=recipe.id), {})
+    return True
 
 
 def enqueue_inbox(row_id):
@@ -224,6 +236,45 @@ def run_pantry(recipe_id, images=True, attempt=0):
             enqueue_images(recipe_id)
         except Exception:
             log.exception('Recipe %s: could not queue the images', recipe_id)
+    return True
+
+
+def _translation_note(recipe, message=None):
+    """The note saying a recipe is left in English (rule "translate", information only), or none when it is not."""
+    from services.recipe_v2.generate import TRANSLATE
+
+    kept = [x for x in recipe.validation_errors or [] if x.get('rule') != TRANSLATE]
+    recipe.validation_errors = kept + ([{'rule': TRANSLATE, 'message': message}] if message else [])
+
+
+def run_translation(recipe_id, attempt=0, call=None):
+    """Give an approved recipe's new pantry items their Norwegian names, then the recipe its words. A recipe no longer
+    approved or already translated is left alone, so a task queued twice costs nothing.
+    Errors raise, so Cloud Tasks tries again, except on the last attempt: then the error is noted on the recipe. It
+    shows in English meanwhile, and scripts/translate.py can do it later."""
+    from services.recipe_v2 import translate, translation
+
+    recipe = db.session.get(Recipe, recipe_id)
+    if recipe is None or recipe.status != 'approved' or not recipe.steps or not translation.needs(recipe, 'nb'):
+        return True
+    try:
+        translate.name_items(recipe, call=call)
+        db.session.commit()
+        words, attempts = translate.translate_recipe(recipe, call=call)
+        log.info('Recipe %s: translated in %s attempt(s), %.3f USD', recipe_id, len(attempts), sum(a['cost_usd'] for a in attempts))
+        if words is None:
+            _translation_note(recipe, 'Left in English: the translation failed its checks.')
+        else:
+            translation.save(recipe, 'nb', words)
+            _translation_note(recipe)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        log.exception('Recipe %s: translation failed on attempt %s', recipe_id, attempt + 1)
+        if attempt + 1 < MAX_ATTEMPTS:
+            raise
+        _translation_note(db.session.get(Recipe, recipe_id), friendly_ai_error(e, 'Could not translate the recipe.'))
+        db.session.commit()
     return True
 
 

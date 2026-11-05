@@ -22,7 +22,7 @@
 <meta property="og:type" content="article">
 <meta property="og:title" content="{{ v.title }}">
 <meta property="og:description" content="{{ (v.chef_note or _('A recipe you can see: prep, cook and serve, drawn as a map.'))|striptags|truncate(200) }}">
-<meta property="og:url" content="{{ absolute_url(url_for('recipe_detail', recipe_id=recipe.id)) }}">
+<meta property="og:url" content="{{ absolute_url(url_for('recipe_detail', recipe_id=recipe.id)) ~ site_share_lang() }}">
 <meta property="og:image" content="{{ absolute_url(image or url_for('static', filename='brand/share.png')) }}">
 <meta name="twitter:card" content="summary_large_image">
 {% endblock %}
