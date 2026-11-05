@@ -57,6 +57,7 @@
       const on = done.has(r.dataset.st);
       r.classList.toggle('is-done', on);
       r.classList.toggle('is-next', r === next);
+      if (r === next) r.setAttribute('aria-current', 'step'); else r.removeAttribute('aria-current');
       r.classList.toggle('is-open', opened.has(r.dataset.st));
       r.querySelector('.st-tick').setAttribute('aria-pressed', String(on));
       const n = r.querySelector('.n');
@@ -136,17 +137,24 @@
 
   /* The card beside the steps (the rail): which step of how many, the time from it to the table, what it needs
      (its ingredients, from the pills in the text), and the step after it.
-     A step tapped in the list is a look at it, not a jump: the card says so, its main button goes back to the step
-     you are on, and a small one ticks the step you look at off (or back on, for a step that is done). */
+     A step tapped in the list is a look at it, not a jump, and its main button goes back to the step you are on; a small
+     one ticks the step you look at off (or back on, for a step that is done). Beside the rail the list's marks say it
+     (.peeking, static/css/rail.css), so the words are only for screen readers and the way back is a round arrow. */
   const TOTAL = +(($('.vpanel.rail') || {}).dataset || {}).total || 0;
   function railCard(sp, id, copy) {
     const q = s => sp.card.querySelector(s), row = id && byId[id], num = r => r.querySelector('.n').dataset.n;
     const peek = !!(row && sp.pick), here = byId[nextId()];
+    const marks = sp.panel.classList.contains('rail');
     sp.card.classList.toggle('peek', peek);
-    q('[data-side-card-count]').textContent = !row ? tr('The food is ready') : peek ? tr('Looking at step %(n)s of %(total)s', { n: num(row), total: rows.length }) : tr('Step %(n)s of %(total)s', { n: num(row), total: rows.length });
-    const back = q('[data-sc-back]');
+    sp.panel.classList.toggle('peeking', peek && marks);
+    const count = q('[data-side-card-count]'), of = { n: row && num(row), total: rows.length };
+    count.textContent = !row ? tr('The food is ready') : peek && !marks ? tr('Looking at step %(n)s of %(total)s', of) : tr('Step %(n)s of %(total)s', of);
+    if (peek && marks) count.innerHTML = `<span class="sr-only">${esc(tr('Looking at step %(n)s of %(total)s', of))}</span><span aria-hidden="true">${esc(tr('Step %(n)s of %(total)s', of))}</span>`;
+    const back = q('[data-sc-back]'), backSays = here ? tr('← Back to step %(n)s', { n: num(here) }) : tr('← Back');
     back.hidden = !peek;
-    back.textContent = here ? tr('← Back to step %(n)s', { n: num(here) }) : tr('← Back');
+    back.textContent = marks ? '←' : backSays;
+    back.title = backSays;
+    back.setAttribute('aria-label', backSays.replace(/^←\s*/, ''));
     const left = row && !peek && TOTAL ? TOTAL - +row.dataset.at : 0;
     q('[data-side-card-left]').textContent = left ? tr('At the table about %(time)s', { time: hm(Date.now() + left * 60e3) }) : '';
     // A bowl that is ready stands for what is in it: its number and name, which open the bowls
@@ -184,7 +192,8 @@
       + [...lb.map(b => `<button type="button" data-sheet="sheet-bowls" data-jump="${esc(b.closest('.later').id)}">${esc(tr('Bowl %(n)s: %(what)s', { n: b.querySelector('.bno').dataset.no, what: b.querySelector('.bowl-h b').textContent }))}</button>`),
         ...look.map(x => `<button type="button" data-tip-look="${esc(x.id)}">${esc(byId[x.id].dataset.label)}</button> <span>${x.minutes} min</span>`)].join(' · ');
     const main = q('[data-sc-done]'), alt = q('[data-sc-alt]');
-    main.innerHTML = !row ? tr('Back to the recipe') : peek ? esc(back.textContent) : tr('Done <span aria-hidden="true">→</span> next step');
+    main.innerHTML = !row ? tr('Back to the recipe') : peek ? esc(backSays) : tr('Done <span aria-hidden="true">→</span> next step');
+    main.hidden = peek && marks;
     alt.hidden = !peek && !!row;
     if (peek) alt.textContent = done.has(id) ? tr('Untick step %(n)s', { n: num(row) }) : tr('Mark step %(n)s as done', { n: num(row) });
     else if (!row) alt.textContent = noted() ? tr('Edit your note') : tr('How did it go?');

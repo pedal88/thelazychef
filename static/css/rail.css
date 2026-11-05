@@ -46,14 +46,21 @@
   .rail-main .st.is-next { background: none; }
   .rail-main .st.is-done { opacity: .45; }
   .rail-main .st.is-done .st-body { opacity: 1; }
-  .rail-main .slist .st:hover, .rail-main .slist .st.sel { background: color-mix(in srgb, var(--color-soft) 60%, transparent); }
   .rail-main .slist .st.sel { background: var(--color-soft); }
-  /* The dots: hollow ahead, filled when done, larger in the step's colour where you are */
+  /* The dots: hollow ahead, filled when done, a solid red dot where you are */
   .rail-main .st-tick { position: relative; z-index: 1; justify-self: center; width: 12px; height: 12px; margin: calc((var(--h3) * 1.3 - 12px) / 2) auto 0;
     border: 2px solid var(--color-line); background: var(--color-paper); font-size: 0; }
   .rail-main .st.is-done .st-tick { background: var(--color-line); border-color: var(--color-line); }
-  .rail-main .st.is-next .st-tick { width: 18px; height: 18px; margin-top: calc((var(--h3) * 1.3 - 18px) / 2); border: 0; background: var(--ph);
-    box-shadow: 0 0 0 5px color-mix(in srgb, var(--ph) 22%, transparent); }
+  .rail-main { --here: var(--look-go, var(--color-accent)); }
+  .rail-main .st.is-next .st-tick { width: 18px; height: 18px; margin-top: calc((var(--h3) * 1.3 - 18px) / 2); border: 0; background: var(--here); }
+  /* A look at another step says itself, without words: where you are stays red and pulses faintly, like the light on a
+     live broadcast, and the step you look at is a red ring with a white core, lit (static/js/steps.js, railCard) */
+  .rail.peeking .rail-main .st.is-next .st-tick { animation: step-live 1.8s ease-in-out infinite; }
+  .rail.peeking .rail-main .st.is-next .st-body h3 { color: var(--here); }
+  .rail.peeking .rail-main .slist .st.sel { opacity: 1; background: var(--color-paper); }
+  .rail.peeking .rail-main .slist .st.sel .st-tick { width: 18px; height: 18px; margin-top: calc((var(--h3) * 1.3 - 18px) / 2);
+    border: 5px solid var(--here); background: var(--color-paper); box-sizing: border-box; }
+  @keyframes step-live { 50% { background: color-mix(in srgb, var(--here) 45%, var(--color-paper)); } }
   /* Where the heat goes on: a mark on the line */
   .rail-main .heat-line { position: relative; display: block; margin: var(--space-2) 0; padding-left: calc(var(--space-2) + var(--tick) + 6px + var(--space-3));
     font: 500 12px var(--font-sans); color: var(--color-cook-ink); }
@@ -93,7 +100,7 @@
   .pagecard .sc-needs .sc-bowl .bno { width: 32px; height: 32px; background: var(--color-prep); color: var(--color-paper); }
   .pagecard .sc-needs .sc-bowl small { color: var(--color-muted); font-size: .8em; }
   .pagecard .sc-act { display: flex; align-items: center; gap: var(--space-3); margin-top: var(--space-6); }
-  .pagecard .sc-act:has(> .sc-done[hidden]) { display: none; }
+  .pagecard .sc-act:has(> .sc-done[hidden]):has(> .sc-alt[hidden]) { display: none; }
   .pagecard .sc-done { min-height: 56px; padding: 0 28px; border: 0; border-radius: var(--radius-pill); background: var(--color-ink); color: var(--color-paper);
     font: 600 18px var(--font-sans); cursor: pointer; }
   .pagecard .sc-done:hover { background: color-mix(in srgb, var(--color-ink) 85%, var(--color-paper)); }
@@ -105,6 +112,10 @@
   .pagecard .sc-back { margin-left: var(--space-2); padding: 0; border: 0; background: none; color: var(--color-ink); font: 600 13px var(--font-sans);
     text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
   .pagecard .sc-back[hidden] { display: none; }
+  .rail .pagecard .sc-back { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 1px solid var(--color-line-strong);
+    border-radius: 50%; font-size: 16px; text-decoration: none; }
+  .rail .pagecard .sc-back[hidden] { display: none; }
+  .rail .pagecard .sc-back:hover { background: var(--color-paper); }
   .side-card.pagecard.peek .sc-count { color: var(--color-ink); }
   .side-card.pagecard.peek [data-step-card] .st-body { opacity: .78; }
   .side-card.pagecard.peek .sc-needs { opacity: .78; }
@@ -120,12 +131,12 @@
 /* ---- The step you are on, lifted (chosen 25.10.2026): the rest of the list fades back, and the card has larger
         type a little above the middle with the step's number large and faint beside it ---- */
 @media (min-width: 1000px) {
-  /* The steps ahead fade back, but not the next one, nor one with a timer running; all back on a hover */
-  .rail-main .st { transition: opacity .2s; }
+  /* The steps ahead fade back, but not the next one, nor one with a timer running; a step lights up under the mouse */
+  .rail-main .st { border-radius: var(--radius); transition: opacity .2s, background-color .12s; }
   /* :where keeps this at the weight of one class, so done steps and the hover below win over it */
   .rail-main :where(.st:not(.is-next):not(.is-then):not(.sel):not(:has(.st-timer-mini.running))) { opacity: .5; }
   .rail-main .st.is-done { opacity: .28; }
-  .rail-main:hover .st:not(.is-done) { opacity: 1; }
+  @media (hover: hover) { .rail .rail-main .slist:is(.focus, .all) .st:hover { opacity: 1; background: var(--color-paper); } }
   .rail-main .heat-line { opacity: .6; }
 
   .side-card.pagecard { padding-bottom: 10vh; }
@@ -376,4 +387,4 @@ html.dlx-steps .dv-rivers .g2-note:not(.fx-also) { display: none; }  /* the sett
 .sc-tip button { padding: 0; border: 0; background: none; color: var(--color-ink); font: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 
 @keyframes sc-in { from { opacity: 0; transform: translateY(8px); } }
-@media (prefers-reduced-motion: reduce) { .pagecard .sc-new { animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { .pagecard .sc-new, .rail.peeking .rail-main .st.is-next .st-tick { animation: none !important; } }
