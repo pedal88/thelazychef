@@ -305,3 +305,8 @@
 .ing-dishes a { display: flex; align-items: center; gap: var(--space-3); min-height: var(--tap); color: var(--color-ink); text-decoration: none; }
 .ing-dishes a:hover span:last-child { text-decoration: underline; text-underline-offset: 3px; }
 .ing-dishes img, .ing-dish-none { flex: none; display: grid; place-items: center; width: 56px; height: 56px; border-radius: var(--radius-sm); object-fit: cover; background: var(--color-soft); color: var(--color-line-strong); }
+
+/* The home-screen app (html.standalone, templates/base.html): the page reaches the screen's edges, clear of a notch at
+   the side and of the home bar below the footer. The cooking screen's controls keep clear by themselves. */
+html.standalone body { padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px); }
+html.standalone body > footer { padding-bottom: env(safe-area-inset-bottom, 0px); }
