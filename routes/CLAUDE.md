@@ -15,7 +15,7 @@
 | Home | `content.home` `/` | The page `home` made of blocks once it is published, else Discover (`routes/content_routes.py`, `docs/CONTENT.md`) |
 | Guides | `content.page` `/guides/<slug>` | `page.html` with `templates/blocks/`; Admin -> Pages imports, previews and publishes them |
 | Discover | `recipes_routes.discover` `/discover` | `landing.html`, cards from `/api/feed/recipes` (approved recipes with an image only, one per dish: `recipe_library.feed_ids`) |
-| Recipe list, Saved, Made, Cook next | `recipes_list` `/recipes` | `recipes_list.html`; which recipes, one card per dish with its versions, search, time and pages: `services/recipe_library.py`; the filter drawer's live count: `/api/recipes/count` |
+| Recipe list, Saved, Made, Cook next | `recipes_list` `/recipes` | `recipes_list.html`; which recipes, one card per dish with its versions, search, time and pages: `services/recipe_library.py`; the filter drawer's live count: `/api/recipes/count` (`only=total` for the number alone, which the drawer asks first); the recipe page's back arrow returns to the list as it was left in the tab (`sessionStorage` `recipes-list`) |
 | The recipe page | `recipe_detail` `/recipe/<id>` | `recipe_v2_make.html` (overview, `#prep`, `#cook` on one page; `/prep`, `/cook`, `/make` redirect there) |
 | Galaxies | `explore_routes` `/explore/galaxy`, `/explore/ingredient-galaxy` | `explore_*.html`, data from `/api/graph/*` |
 | Ingredients | `pantry_management` `/ingredients`, the sheet `/ingredients/<id>/card` | `pantry_management.html`, `templates/components/ingredient_sheet.html`: what is in recipes first, search, shortcuts and Staples (`services/ingredient_library.py`); the admin's tools are on `/admin/ingredients-management` |

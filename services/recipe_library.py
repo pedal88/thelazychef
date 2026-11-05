@@ -9,7 +9,7 @@ Two queries for a page: one for the ids of everything that matches (small rows),
 """
 import json
 import random
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from functools import lru_cache
 from pathlib import Path
 
@@ -227,8 +227,8 @@ def versions_count(recipes):
     return dict(rows)
 
 
-def matching_ids(view, f, sort='new', user=None, pictured=False):
-    """The ids of the cards a list shows, in order: in All one per dish. pictured: only recipes with a dish image."""
+def _listed(view, user=None, pictured=False):
+    """The recipes a list draws from, before the person's choices: approved, and in Saved, Made and Cook next theirs."""
     stmt = db.select(Recipe.id, FAMILY, Recipe.base_recipe_id).where(Recipe.status == 'approved')
     if pictured:
         stmt = stmt.where(Recipe.image_filename.isnot(None))
@@ -240,27 +240,62 @@ def matching_ids(view, f, sort='new', user=None, pictured=False):
                                                       UserRecipeInteraction.is_made.is_(True))
     elif view == 'next':
         stmt = stmt.join(UserQueue).where(UserQueue.user_id == user.id)
-    rows = db.session.execute(_ordered(_filtered(stmt, f), view, sort)).all()
+    return stmt
+
+
+def matching_ids(view, f, sort='new', user=None, pictured=False):
+    """The ids of the cards a list shows, in order: in All one per dish. pictured: only recipes with a dish image."""
+    rows = db.session.execute(_ordered(_filtered(_listed(view, user, pictured), f), view, sort)).all()
     return one_per_dish(rows) if view == 'discover' else [r[0] for r in rows]
 
 
-def counts(view, args, user=None):
+# A chip group's parameter -> its field in Filters
+FIELDS = {'time': 'time', 'heat_source': 'heat_sources', 'protein': 'proteins', 'diet': 'diets', 'cuisine': 'cuisines',
+          'meal_type': 'meal_types', 'difficulty': 'difficulties', 'spice': 'spice'}
+
+
+def _in_time(minutes, key):
+    low, high = TIMES[key]
+    return minutes is not None and (low is None or minutes >= low) and (high is None or minutes <= high)
+
+
+def _present(view, user, f, key, values):
+    """Of a group's values, the ones some recipe matching f has (f without the group's own choices)."""
+    ids = db.select(_filtered(_listed(view, user), f).subquery().c.id)
+    if key == 'protein':  # a group of labels, also found in the lines: asked one group at a time
+        groups = {p['category']: p['examples'] for p in _catalog('constraints/main_protein.json', 'protein_types')}
+        return {v for v in values if db.session.execute(
+            _filtered(_listed(view, user), replace(f, proteins=groups[v])).limit(1)).first()}
+    column = {'heat_source': Recipe.heat_source, 'cuisine': Recipe.cuisine, 'difficulty': Recipe.difficulty,
+              'spice': func.coalesce(Recipe.spice_level, 0), 'time': Recipe.prep_time_mins}.get(key)
+    if column is not None:
+        found = set(db.session.execute(db.select(column).where(Recipe.id.in_(ids)).distinct()).scalars())
+    else:
+        table = {'diet': (RecipeDiet, RecipeDiet.diet), 'meal_type': (RecipeMealType, RecipeMealType.meal_type)}[key]
+        found = set(db.session.execute(db.select(table[1]).where(table[0].recipe_id.in_(ids)).distinct()).scalars())
+    if key == 'time':
+        return {v for v in values if any(_in_time(m, v) for m in found)}
+    return {str(v) for v in found} if key == 'spice' else found
+
+
+def counts(view, args, user=None, total_only=False):
     """For the filter drawer: how many cards the choices in args give, and the choices not made yet that would give
-    none ([key, value]). One query per choice: fine for a catalog of hundreds."""
+    none ([key, value]). A query per group rather than per choice (each choice took a query, some seven seconds in
+    all): a choice gives none when no recipe that matches the other groups has it. Another choice in a group already
+    chosen only widens the list, so while the list has cards none of those is empty. total_only: the number alone,
+    which the drawer asks first so it can show it at once."""
     f, groups = from_args(args)
     total = len(matching_ids(view, f, user=user))
+    if total_only:
+        return {'total': total}
     empty = []
     for g in groups:
-        for value, _, on in g['options']:
-            if on:
-                continue
-            alt = args.copy()
-            if g['single']:
-                alt.setlist(g['key'], [value])
-            else:
-                alt.add(g['key'], value)
-            if not matching_ids(view, from_args(alt)[0], user=user):
-                empty.append([g['key'], value])
+        chosen = any(on for _, _, on in g['options'])
+        if chosen and not g['single'] and total:
+            continue
+        rest = replace(f, **{FIELDS[g['key']]: '' if g['key'] == 'time' else []})
+        present = _present(view, user, rest, g['key'], [value for value, _, _ in g['options']])
+        empty += [[g['key'], value] for value, _, on in g['options'] if not on and value not in present]
     return {'total': total, 'empty': empty}
 
 

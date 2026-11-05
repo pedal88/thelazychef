@@ -135,6 +135,11 @@
 </article>
 <script>
   (function () {
+    // The back arrow goes to the list as it was left in this tab, with its filters and search (static/js/library.js)
+    var back = document.querySelector('a.ovl-back');
+    try { var list = sessionStorage.getItem('recipes-list'); if (back && list) back.href = list; } catch (e) { /* the plain list */ }
+  })();
+  (function () {
     // Saved and Cook next on the overview (components/overview_layouts.html, save_buttons): each a toggle
     var mineUrl = { save: '/api/recipes/{{ recipe.id }}/favorite', queue: '/api/queue/add/{{ recipe.id }}' };
     document.addEventListener('click', function (e) {
