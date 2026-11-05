@@ -1,11 +1,13 @@
 """Ingredient questions (services/recipe_v2/pantry_fill.py): what a recipe needs that the pantry lacks and only Pål can
-let in. Admin only. Adding an item draws its symbol, about 0.04 USD."""
+let in. Admin only. Adding an item draws its symbol, about 0.04 USD. Asking Claude for its advice is a small call per
+recipe, about 0.01-0.03 USD."""
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import login_required
 
 from database.models import Ingredient, db
 from routes._shared import get_storage
 from services.recipe_v2 import pantry_fill
+from utils.ai_errors import friendly_ai_error
 from utils.decorators import admin_required
 
 pantry_questions_bp = Blueprint('pantry_questions', __name__)
@@ -36,6 +38,25 @@ def add(item_id):
     made = pantry_fill.make_symbols([item], get_storage())  # a failure leaves it without; the ingredient page can make it
     db.session.commit()
     flash(f'{item.name} is in the pantry.' + ('' if made else ' Its symbol could not be made.'), 'success')
+    return redirect(url_for('pantry_questions.questions'))
+
+
+@pantry_questions_bp.route('/admin/pantry-questions/<int:item_id>/weigh', methods=['POST'])
+@login_required
+@admin_required
+def weigh(item_id):
+    """Claude's advice on a question that has none: one asked before the advice existed, or whose call failed."""
+    item = _waiting_item(item_id)
+    question = next((q for q in pantry_fill.questions() if q['item'].id == item.id), None)
+    try:
+        for row in (question or {}).get('rows', []):
+            if not row['odds']:
+                pantry_fill.weigh(row['recipe'], item)
+    except Exception as e:
+        db.session.rollback()
+        flash(friendly_ai_error(e, 'Could not ask Claude.'), 'error')
+        return redirect(url_for('pantry_questions.questions'))
+    db.session.commit()
     return redirect(url_for('pantry_questions.questions'))
 
 

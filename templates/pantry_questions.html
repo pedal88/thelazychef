@@ -15,6 +15,15 @@
   .pq-actions input { min-height: var(--tap); min-width: 0; padding: 0 var(--space-3); border: 1px solid var(--color-line); border-radius: var(--radius-pill); background: none; color: inherit; font: inherit; }
   .pq-actions button { min-height: var(--tap); padding: 0 var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-pill); background: none; color: inherit; font: inherit; font-weight: 600; cursor: pointer; }
   .pq-actions button:focus-visible, .pq-actions input:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+  .pq-actions button:disabled { opacity: .5; cursor: progress; }
+  .pq-odds { margin-top: var(--space-2) !important; }
+  .pq-odds > li { display: grid; grid-template-columns: minmax(0, 11rem) minmax(3rem, 1fr) 2.5rem; gap: 0 var(--space-3); align-items: center; margin-top: var(--space-1) !important; }
+  .pq-odds .pq-pick { padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; text-decoration: underline; text-decoration-color: var(--color-line); text-underline-offset: 3px; cursor: pointer; overflow-wrap: anywhere; }
+  .pq-odds .pq-pick:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+  .pq-bar { display: block; height: 4px; border-radius: var(--radius-pill); background: var(--color-line); overflow: hidden; }
+  .pq-bar span { display: block; height: 100%; background: var(--color-accent); }
+  .pq-share { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+  .pq-odds .hint { grid-column: 1 / -1; }
 </style>
 {% endblock %}
 {% block content %}
@@ -36,16 +45,25 @@
           <span class="hint">{% for line in r.lines %}{{ ('%g'|format(line.amount) ~ ' ' ~ (line.unit or '')) if line.amount else 'to taste' }} {{ line.name }}{{ ', ' if not loop.last }}{% endfor %}</span>
           {% if r.reason %}<span class="hint">{{ r.reason }}</span>{% endif %}
           {% if r.swap_item %}<span class="hint">Claude's swap: {{ r.swap.name or r.swap_item.name }}{% if r.swap.amount_factor != 1 %} (amount x {{ '%g'|format(r.swap.amount_factor) }}){% endif %}</span>{% endif %}
+          {% if r.odds %}
+          <ul class="pq-odds" aria-label="What Claude recommends, shares of 100">
+            <li><span>Add to the pantry</span><span class="pq-bar"><span style="width: {{ r.odds.add }}%"></span></span><span class="pq-share">{{ r.odds.add }}%</span>{% if r.odds.add_why %}<span class="hint">{{ r.odds.add_why }}</span>{% endif %}</li>
+            {% for s in r.odds.swaps %}
+            <li><button type="button" class="pq-pick" data-pick="{{ s.name }}" title="Put {{ s.name }} in Another pantry item">{{ s.name }}</button><span class="pq-bar"><span style="width: {{ s.share }}%"></span></span><span class="pq-share">{{ s.share }}%</span>{% if s.why %}<span class="hint">{{ s.why }}</span>{% endif %}</li>
+            {% endfor %}
+          </ul>
+          {% endif %}
         </li>
         {% endfor %}
       </ul>
       <div class="pq-actions">
-        <form method="post" action="{{ url_for('pantry_questions.add', item_id=q.item.id) }}"><button type="submit">Add to the pantry</button></form>
-        {% if q.can_swap %}<form method="post" action="{{ url_for('pantry_questions.swap', item_id=q.item.id) }}"><button type="submit">Use Claude's swap</button></form>{% endif %}
+        <form method="post" action="{{ url_for('pantry_questions.add', item_id=q.item.id) }}"><button type="submit" data-wait="Adding… usually 15 seconds">Add to the pantry</button></form>
+        {% if q.can_swap %}<form method="post" action="{{ url_for('pantry_questions.swap', item_id=q.item.id) }}"><button type="submit" data-wait="Swapping…">Use Claude's swap</button></form>{% endif %}
         <form method="post" action="{{ url_for('pantry_questions.swap', item_id=q.item.id) }}">
           <input name="other" list="pantry-names" required aria-label="Swap to this pantry item" placeholder="Another pantry item">
-          <button type="submit">Swap to it</button>
+          <button type="submit" data-wait="Swapping…">Swap to it</button>
         </form>
+        {% if q.rows|rejectattr('odds')|list %}<form method="post" action="{{ url_for('pantry_questions.weigh', item_id=q.item.id) }}"><button type="submit" data-wait="Asking Claude…">Ask Claude for advice</button></form>{% endif %}
       </div>
     </li>
     {% endfor %}
@@ -64,4 +82,22 @@
   </ul>
   {% endif %}
 </article>
+<script>
+  // An answer takes a while (the recipes are worked out again, a symbol is drawn), so say so, and one click is enough.
+  document.querySelectorAll('.pq-actions form').forEach(function (form) {
+    form.addEventListener('submit', function (event) {
+      if (event.submitter && event.submitter.dataset.wait) event.submitter.textContent = event.submitter.dataset.wait;
+      document.querySelectorAll('.pq-actions button').forEach(function (button) { button.disabled = true; });
+    });
+  });
+  window.addEventListener('pageshow', function (event) { if (event.persisted) location.reload(); });  // back to this page
+  // A swap's name goes into Another pantry item, ready to confirm
+  document.querySelectorAll('[data-pick]').forEach(function (pick) {
+    pick.addEventListener('click', function () {
+      var input = pick.closest('.pq-list > li').querySelector('input[name="other"]');
+      input.value = pick.dataset.pick;
+      input.focus();
+    });
+  });
+</script>
 {% endblock %}

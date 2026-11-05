@@ -108,7 +108,7 @@ class PantryFillTests(unittest.TestCase):
         self.assertEqual(len(result['notes']), 4)
         self.assertEqual([e['message'] for e in self.recipe.validation_errors], result['notes'])
         self.assertEqual([e['rule'] for e in self.recipe.validation_errors], ['pantry', 'pantry', 'ask', 'pantry'])
-        self.assertEqual(result['cost_usd'], 0.02)
+        self.assertEqual(result['cost_usd'], 0.04)  # the decisions, and the advice on its question
         self.assertTrue(self.recipe.is_flagged_for_review)
 
     def test_an_alias_name_links_the_next_recipe_without_claude(self):
@@ -273,6 +273,85 @@ class PantryFillTests(unittest.TestCase):
         pantry_fill.add_item(item)
         db.session.commit()
         unmarked(client)  # answered: gone
+
+    def odds(self, add, *swaps):
+        """A stand-in for claude.call that answers with Claude's shares."""
+        def call(model, effort, messages, system=None, schema=None):
+            self.asked = {'system': system, 'user': messages[0]['content'], 'schema': schema}
+            text = json.dumps({'add': add, 'add_why': 'it is the dish',
+                               'swaps': [{'food_id': f, 'share': s, 'why': 'close'} for f, s in swaps]})
+            return SimpleNamespace(content=[SimpleNamespace(type='text', text=text)]), {'cost_usd': 0.02, 'seconds': 1.0}
+        return call
+
+    def test_claude_shares_100_across_adding_and_swaps(self):
+        item = self._ask_pecorino()
+        self.assertEqual(pantry_fill.weigh(self.recipe, item, call=self.odds(60, ('000322', 40))), 0.02)
+        db.session.commit()
+        self.assertIn('000322 spaghetti', self.asked['system'])
+        self.assertIn('pecorino romano', self.asked['user'])
+        self.assertIn('it is the dish', self.asked['user'])
+        odds = pantry_fill.questions()[0]['rows'][0]['odds']
+        self.assertEqual(odds, {'add': 60, 'add_why': 'it is the dish',
+                                'swaps': [{'food_id': '000322', 'name': self.pasta.name, 'share': 40, 'why': 'close'}]})
+
+    def test_the_shares_always_add_up_to_100_with_at_most_five_real_swaps(self):
+        item = self._ask_pecorino()
+        extra = [Ingredient(food_id=f'x{i}', name=f'item {i}', status='active') for i in range(6)]
+        db.session.add_all([*extra, Ingredient(food_id='off', name='gone', status='inactive')])
+        db.session.flush()
+        answer_ = {'add': 10, 'add_why': '', 'swaps': [{'food_id': f'x{i}', 'share': 30 - i, 'why': ''} for i in range(6)]
+                   + [{'food_id': 'off', 'share': 90, 'why': ''}, {'food_id': 'no such', 'share': 90, 'why': ''},
+                      {'food_id': item.food_id, 'share': 90, 'why': 'itself'}, {'food_id': 'x0', 'share': 90, 'why': 'twice'}]}
+        odds = pantry_fill._clean_odds(answer_, item)
+        self.assertEqual([s['food_id'] for s in odds['swaps']], ['x0', 'x1', 'x2', 'x3', 'x4'])
+        self.assertEqual(odds['add'] + sum(s['share'] for s in odds['swaps']), 100)
+        self.assertEqual(pantry_fill._clean_odds({'add': 100, 'add_why': '', 'swaps': []}, item)['add'], 100)
+        self.assertIsNone(pantry_fill._clean_odds({'add': 0, 'swaps': []}, item))
+        self.assertEqual(pantry_fill._to_100([1, 1, 1]), [34, 33, 33])
+
+    def test_the_job_weighs_its_questions_and_a_failure_leaves_the_question(self):
+        calls = []
+
+        def call(model, effort, messages, system=None, schema=None):
+            calls.append(schema)
+            if len(calls) == 1:
+                return answer([decision('pecorino romano', 'ask', new=PECORINO, reason='it is the dish')])(model, effort, messages, system, schema)
+            return self.odds(70, ('000322', 30))(model, effort, messages, system, schema)
+
+        result = pantry_fill.fill(self.recipe, call=call)
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(result['cost_usd'], 0.04)
+        db.session.commit()
+        self.assertEqual(pantry_fill.questions()[0]['rows'][0]['odds']['add'], 70)
+
+        def broken(*args, **kwargs):
+            raise RuntimeError('overloaded')
+        self.recipe.validation_errors = [{k: v for k, v in e.items() if k != 'odds'} for e in self.recipe.validation_errors]
+        self.assertEqual(pantry_fill._weigh_open(self.recipe, call=broken), 0.0)
+        self.assertIsNone(pantry_fill.questions()[0]['rows'][0]['odds'])
+
+    def test_the_page_shows_the_shares_and_asks_for_those_without(self):
+        item = self._ask_pecorino()
+        admin = User(email='odds-admin@test', is_admin=True)
+        admin.set_password('test-password')
+        db.session.add(admin)
+        db.session.commit()
+        client = app.test_client()
+        client.post('/login', data={'email': admin.email, 'password': 'test-password'})
+        self.assertIn('Ask Claude for advice', client.get('/admin/pantry-questions').get_data(as_text=True))
+        with mock.patch.object(pantry_fill.claude, 'call', self.odds(60, ('000322', 40))):
+            self.assertEqual(client.post(f'/admin/pantry-questions/{item.id}/weigh').status_code, 302)
+        page = client.get('/admin/pantry-questions').get_data(as_text=True)
+        self.assertNotIn('Ask Claude for advice', page)
+        self.assertIn('>60%<', page)
+        self.assertIn('>40%<', page)
+        self.assertIn(f'data-pick="{self.pasta.name}"', page)
+        self.assertIn('data-wait="Adding', page)
+        with mock.patch.object(pantry_fill.claude, 'call', side_effect=RuntimeError('secret detail')):
+            self.recipe.validation_errors = [{k: v for k, v in e.items() if k != 'odds'} for e in self.recipe.validation_errors]
+            db.session.commit()
+            refused = client.post(f'/admin/pantry-questions/{item.id}/weigh', follow_redirects=True).get_data(as_text=True)
+        self.assertNotIn('secret detail', refused)
 
     def test_a_second_recipe_with_the_same_item_is_the_same_question(self):
         item = self._ask_pecorino()

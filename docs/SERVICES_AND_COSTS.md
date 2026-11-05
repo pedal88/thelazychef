@@ -39,7 +39,7 @@ calls the app back with an OIDC token from the `TASKS_SERVICE_ACCOUNT`, checked 
 
 1. `/internal/tasks/recipe-v2/<id>`: both Claude rounds, save, derive, nutrition (`tasks.run` → `generate.create_recipe`).
 2. `/internal/tasks/recipe-v2-pantry/<id>`: only when some lines matched nothing in the pantry. Claude decides alias /
-   substitute / ask / skip per line, then the recipe is recalculated (`tasks.run_pantry` → `pantry_fill`). Nothing joins the
+   substitute / ask / skip per line, then the recipe is recalculated and each question weighed (`tasks.run_pantry` → `pantry_fill`). Nothing joins the
    pantry here: an item Pål adds on `/admin/pantry-questions` gets its symbol then, about $0.04.
 3. `/internal/tasks/recipe-v2-images/<id>`: the dish and component images with their vision check (`tasks.run_images`).
    Queued after 2 (or straight after 1), unless the form said "Skip the images".
@@ -105,6 +105,7 @@ constants in the code and measured runs:
 | One recipe, text and structure | $0.10–0.40 (about $0.15 typical) | `services/recipe_v2/batch.py` `COST_EACH` |
 | One recipe's images (dish + parts, with checks) | $0.15–0.45 | `routes/recipe_v2_routes.py` `IMAGES_COST`; one image ≈ $0.039 (`images.py` `IMAGE_COST`) |
 | Pantry job | about $0.01–0.05 per recipe with unlinked lines, an estimate since it also reads the recipe. More recipes reach it now that lines link by name only, fewer as its aliases add up | `pantry_fill.fill` returns `cost_usd` |
+| Claude's advice on a pantry question | about $0.01–0.03 per question, an estimate: one short call that shares 100 points across adding the item and up to five swaps, right after the pantry job asks, or from Ask Claude for advice on `/admin/pantry-questions` | `pantry_fill.weigh` |
 | The pantry's names in round 1 (`idea`, `version`) | about $0.03 for the first recipe, a tenth of that within the cache's 5 minutes; an estimate | `claude.call` usage |
 | A video saved to the inbox | about $0.01–0.03 for a TikTok of 40 seconds, $0.02–0.09 for 3 minutes, an estimate that has not been measured (Gemini watches it, logged as `Video read`, then one short Sonnet call). Longer videos are not read here. Nothing when its details cannot be read. The read is reused when the recipe is made. Many at once: at most 1000, about $30; the page shows it before saving | `services/recipe_v2/inbox.py`, `GEMINI_TEXT`, `VIDEO_INBOX_MODEL` |
 | One recipe in Norwegian | about $0.06 on Opus (five measured 04.11.2026), about half that on Sonnet; only from `scripts/translate.py`, which prints the real cost | `TRANSLATE_MODEL`, `services/recipe_v2/translate.py` |

@@ -10,7 +10,8 @@ the whole pantry, and decides for each line, in this dish:
   rule SWAP, which does not flag the recipe; recipe.source_text keeps what the source said.
 - ask: the line matters to the dish and nothing in the pantry does its job. A pending item is made with its nutrition,
   the lines are linked to it, and Claude's best swap waits with it in a note on the recipe (rule ASK, which flags it).
-  Pål answers on /admin/pantry-questions (add_item, swap); a recipe with an open question cannot be approved.
+  Pål answers on /admin/pantry-questions (add_item, swap); a recipe with an open question cannot be approved. A second
+  Claude call shares 100 points across adding the item and up to five swaps (weigh), his advice on that page.
 - skip: water, not a food, or a pinch that would not change the dish.
 
 Pål's answers are kept on the recipes (rule ASKED) and shown to Claude the next time (earlier), so it learns where he
@@ -38,6 +39,7 @@ AUTO = 'claude_auto'  # Ingredient.data_source of the items added here
 NUTRIENTS = ('calories', 'protein', 'carbs', 'fat', 'fat_saturated', 'sugar', 'fiber', 'sodium_mg')
 FACTOR_RANGE = (0.1, 5)  # outside it an amount_factor is a mistake, and the amount stays
 EARLIER_MAX = 30  # Pål's answers Claude is shown
+SWAPS_MAX = 5  # swaps Claude weighs against adding an item
 
 
 def _categories():
@@ -257,9 +259,76 @@ def apply(recipe, decisions):
     return notes
 
 
+def odds_schema():
+    """The answer: 100 points shared across adding the item and up to five swaps."""
+    swap = {'type': 'object', 'additionalProperties': False, 'required': ['food_id', 'share', 'why'],
+            'properties': {'food_id': {'type': 'string'}, 'share': {'type': 'integer'}, 'why': {'type': 'string'}}}
+    return {'type': 'object', 'additionalProperties': False, 'required': ['add', 'add_why', 'swaps'],
+            'properties': {'add': {'type': 'integer'}, 'add_why': {'type': 'string'}, 'swaps': {'type': 'array', 'items': swap}}}
+
+
+def _to_100(shares):
+    """Whole numbers that add up to 100, in proportion: the rest goes to those that lost the most by rounding."""
+    total = sum(shares)
+    exact = [s * 100 / total for s in shares]
+    whole = [int(x) for x in exact]
+    for i in sorted(range(len(exact)), key=lambda i: whole[i] - exact[i])[:100 - sum(whole)]:
+        whole[i] += 1
+    return whole
+
+
+def _clean_odds(answer, item):
+    """What the note keeps: {'add', 'add_why', 'swaps': [{'food_id', 'name', 'share', 'why'}]}, best first, adding up to
+    100. Only active pantry items, each once, and at most five. None when the answer gives nothing to go on."""
+    swaps, seen = [], {item.food_id}
+    for s in answer.get('swaps') or []:
+        found = _by_food_id(s.get('food_id') or '') if s.get('food_id') not in seen else None
+        if found is not None and found.status == 'active' and (s.get('share') or 0) > 0:
+            seen.add(found.food_id)
+            swaps.append({'food_id': found.food_id, 'name': found.name, 'share': s['share'], 'why': s.get('why') or ''})
+    swaps = sorted(swaps, key=lambda s: -s['share'])[:SWAPS_MAX]
+    add = max(answer.get('add') or 0, 0)
+    if not add + sum(s['share'] for s in swaps):
+        return None
+    add, *shares = _to_100([add, *(s['share'] for s in swaps)])
+    for s, share in zip(swaps, shares):
+        s['share'] = share
+    return {'add': add, 'add_why': answer.get('add_why') or '', 'swaps': sorted(swaps, key=lambda s: -s['share'])}
+
+
+def weigh(recipe, item, call=None):
+    """Claude's advice on one open question, kept on its note on the recipe (odds), in place of any before. Returns the
+    cost in USD. The caller commits."""
+    from services.recipe_v2.view import as_text
+
+    note = _question_on(recipe, item)
+    if note is None:
+        return 0.0
+    call = call or claude.call
+    system = env.get_template('recipe_v2/pantry_odds.jinja2').render(pantry=_pantry(), earlier=earlier())
+    user = (f'RECIPE\n{as_text(recipe)}\n\nTHE INGREDIENT\n{item.name}, in the recipe as "{note.get("line") or item.name}"'
+            f'\nWhy it matters here: {note.get("reason") or "not given"}')
+    msg, usage = call(RECIPE_V2_MODEL, RECIPE_V2_EFFORT, [{'role': 'user', 'content': user}], system=system, schema=odds_schema())
+    odds = _clean_odds(json.loads(claude.text_of(msg)), item)
+    recipe.validation_errors = [dict(e, odds=odds) if e is note else e for e in recipe.validation_errors]
+    return usage['cost_usd']
+
+
+def _weigh_open(recipe, call=None):
+    """Weigh the recipe's questions that have no advice yet. It is only advice: one that fails is logged and left without,
+    and the question can still be answered. Returns the cost in USD."""
+    cost = 0.0
+    for note in [e for e in recipe.validation_errors or [] if e.get('rule') == ASK and not e.get('odds')]:
+        try:
+            cost += weigh(recipe, _by_food_id(note.get('item') or ''), call=call)
+        except Exception:
+            log.exception('Recipe %s: no advice on %s', recipe.id, note.get('item'))
+    return cost
+
+
 def fill(recipe, call=None):
-    """Decide and apply for one recipe, then recalculate it. Returns {'notes', 'cost_usd'}; nothing to do when every
-    line is linked. The caller commits."""
+    """Decide and apply for one recipe, then recalculate it and weigh its questions. Returns {'notes', 'cost_usd'}; nothing
+    to do when every line is linked. The caller commits."""
     from services.recipe_v2.generate import recalculate
 
     lines = unlinked(recipe)
@@ -269,7 +338,7 @@ def fill(recipe, call=None):
     recipe.validation_errors = [e for e in recipe.validation_errors or [] if e.get('rule') != RULE]
     notes = apply(recipe, decisions)
     recalculate(recipe)
-    return {'notes': notes, 'cost_usd': usage['cost_usd']}
+    return {'notes': notes, 'cost_usd': usage['cost_usd'] + _weigh_open(recipe, call=call)}
 
 
 def _waiting(item):
@@ -306,7 +375,7 @@ def questions():
             note = _question_on(recipe, item) or {}
             swap = note.get('swap') or None
             suggested = _by_food_id(swap['food_id']) if swap else None
-            rows.append({'recipe': recipe, 'lines': lines, 'reason': note.get('reason'), 'swap': swap,
+            rows.append({'recipe': recipe, 'lines': lines, 'reason': note.get('reason'), 'swap': swap, 'odds': note.get('odds'),
                          'swap_item': suggested if suggested is not None and suggested.status == 'active' else None})
         out.append({'item': item, 'rows': rows, 'can_swap': all(r['swap_item'] for r in rows)})
     return out
