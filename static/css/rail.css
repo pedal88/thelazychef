@@ -441,3 +441,48 @@ html.dlx-steps .dv-rivers .g2-note:not(.fx-also) { display: none; }  /* the sett
 
 @keyframes sc-in { from { opacity: 0; transform: translateY(8px); } }
 @media (prefers-reduced-motion: reduce) { .pagecard .sc-new, .rail.peeking .rail-main .st.is-next .st-tick { animation: none !important; } }
+
+/* ---- The trial "Marks" (temporary; the admin chip, static/js/steps.js): the steps' language on the other views. Where
+        you are is a red dot with a halo, the step you look at a red ring with a white core, and the dot pulses while you
+        look elsewhere. Timeline: the dots are the heads of two lines. Metro map: the stations. Delta: the numbers. ---- */
+html.marks-new .cookmode { --here: var(--look-go, var(--color-accent)); --halo: color-mix(in srgb, var(--here) 22%, transparent); }
+html.marks-new .tl { padding-top: 34px; }
+.seeline { display: none; }
+html.marks-new .tl-panel .nowline, html.marks-new .seeline { top: 14px; z-index: 3; }
+html.marks-new .tl-panel .nowline { width: 2px; background: var(--here); }
+html.marks-new .tl-panel .nowline::before { content: none; }
+html.marks-new .seeline:not([hidden]) { display: block; position: absolute; bottom: 22px; left: calc(var(--lw) + (100% - var(--lw)) * var(--x));
+  border-left: 2px dashed var(--here); pointer-events: none; transition: left .3s; }
+html.marks-new .tl-panel .nowline::after, html.marks-new .seeline::after { content: ""; position: absolute; top: 0; left: 50%; width: 16px; height: 16px; border-radius: 50%;
+  box-sizing: border-box; transform: translate(-50%, -50%); }
+html.marks-new .seeline::after { left: -1px; }
+html.marks-new .tl-panel .nowline::after { background: var(--here); box-shadow: 0 0 0 5px var(--halo); }
+html.marks-new .seeline::after { background: var(--color-paper); border: 3px solid var(--here); }
+html.marks-new .tl-panel .tl-row.cur, html.marks-new .tl-panel .tl-row.sel { background: none; box-shadow: none; }
+html.marks-new .tl-panel.peeking .tl-row.cur .tl-l span { color: var(--here); }
+html.marks-new .tl-panel.peeking .nowline::after { animation: step-live 1.8s ease-in-out infinite; }
+@media (min-width: 1000px) {  /* the rows give up the room the heads take */
+  html.marks-new .tl-panel .tl { --rowh: clamp(20px, calc((100vh - 244px) / var(--rows)), 46px); --rowh: clamp(20px, calc((100dvh - 244px) / var(--rows)), 46px); }
+}
+
+html.marks-new .mt-now { display: none; }
+html.marks-new .mt-st.cur circle:not(.dot), html.marks-new .mt-st.cur rect { fill: var(--here); stroke: var(--halo); stroke-width: 12; paint-order: stroke; filter: none; }
+html.marks-new .mt-st.cur:not(.merge):not(.final) circle { r: 9px; filter: none; }
+html.marks-new .mt-st.cur .dot { fill: var(--color-paper); }
+html.marks-new .peeking .mt-st.sel:not(.cur) circle:not(.dot), html.marks-new .peeking .mt-st.sel:not(.cur) rect { fill: var(--color-paper); stroke: var(--here); stroke-width: 3.5; }
+html.marks-new .peeking .mt-st.sel:not(.cur):not(.merge):not(.final) circle { r: 9px; }
+html.marks-new .mt-names li.cur, html.marks-new .mt-names li.sel { background: none; box-shadow: none; }
+html.marks-new .peeking .mt-names li.cur .mt-name { color: var(--here); }
+html.marks-new .peeking .mt-st.cur circle:not(.dot), html.marks-new .peeking .mt-st.cur rect { animation: marks-live 1.8s ease-in-out infinite; }
+@keyframes marks-live { 50% { stroke: color-mix(in srgb, var(--here) 10%, transparent); stroke-width: 20; } }  /* the halo breathes; a fading fill turned black in the SVG */
+
+html.marks-new .dl-panel .fx-seg:is(.cur, .sel) .mn-v { text-decoration: none; background: none; }
+html.marks-new .dl-panel .fx-seg.cur .fx-no, html.marks-new .dl-panel.peeking .fx-seg.sel .fx-no { min-width: 26px; height: 26px; font-size: 12px; font-weight: 600; box-sizing: border-box; }
+html.marks-new .dl-panel .fx-seg.cur .fx-no { background: var(--here); border-color: var(--here); color: var(--color-paper); box-shadow: 0 0 0 5px var(--halo); }
+html.marks-new .dl-panel.peeking .fx-seg.sel:not(.cur) .fx-no { background: var(--color-paper); border: 3px solid var(--here); color: var(--here); }
+html.marks-new .dl-panel.peeking .g2-node:has(.fx-seg.sel:not(.cur)) { background: var(--color-paper); }
+html.marks-new .dl-panel.peeking .fx-seg.cur .mn-v { color: var(--here); }
+html.marks-new .dl-panel.peeking .fx-seg.cur .fx-no { animation: step-live 1.8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  html.marks-new .peeking :is(.nowline, .fx-seg.cur .fx-no), html.marks-new .peeking .nowline::after, html.marks-new .peeking .mt-st.cur :is(circle, rect) { animation: none; }
+}

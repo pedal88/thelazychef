@@ -21,6 +21,7 @@
     <div class="tl-axis"><div></div><div>{% for k in t.ticks %}<span style="left:{{ k.left }}%" data-min="{{ k.label }}">{{ k.label }}</span>{% endfor %}</div></div>
     {% for ph in t.phases %}<div class="phline{{ ' r' if ph.right }}" style="--x:{{ ph.x }}"><span>{{ ph.label|label }}</span></div>{% endfor %}
     <div class="nowline" style="--x:0"></div>
+    <div class="seeline" style="--x:0" hidden></div>
   </div>
 </div>
 <p class="tl-status" data-tl-status aria-live="polite"></p>

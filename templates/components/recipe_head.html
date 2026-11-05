@@ -29,6 +29,9 @@
   {# The river delta's trial on this device (static/js/steps.js); temporary: every step on the drawing #}
   <div class="tgroup" data-dlx-switch><span class="tlabel">Delta</span><button type="button" data-dlx="steps" aria-pressed="false">All steps</button></div>
   <div class="tgroup" data-dltap-switch><span class="tlabel">Tap</span><button type="button" data-dltap="1" aria-pressed="true">1 Number ticks</button><button type="button" data-dltap="2" aria-pressed="false">2 Done in card</button></div>
+  {# How the timeline, the metro map and the delta show where you are and the step you look at, on this device
+     (static/js/steps.js, static/css/rail.css); temporary #}
+  <div class="tgroup" data-marks-switch><span class="tlabel">Marks</span><button type="button" data-marks="now" aria-pressed="true">Now</button><button type="button" data-marks="new" aria-pressed="false">New</button></div>
   <div class="tgroup" data-eq-switch><span class="tlabel">Tools</span>
     {%- for key, label in EQUIPMENT_STYLES.items() %}<button type="button" data-eq="{{ key }}" aria-pressed="{{ 'true' if key == chosen_equipment_style() else 'false' }}">{{ label }}</button>{% endfor -%}
   </div>
