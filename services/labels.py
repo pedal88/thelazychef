@@ -52,6 +52,16 @@ WORDS = (
     N_('One dish at a time: save it or pass on it.'), N_('Search and filter every dish.'), N_('Recipe galaxy'),
     N_('The dishes as a map, by cuisine and protein.'), N_('Everything in the pantry, as a map.'),
     N_('What is in the pantry, with nutrition.'),
+    # The chefs as the live table has them, on their public pages (routes/chefs_routes.py). Edited in the admin, a chef's
+    # words stay English until they are listed here again.
+    N_('The Classicist'), N_('The Original'), N_('The Minimalist'), N_('The Essentialist'), N_('The Smart Cook'),
+    N_('The Optimizer'),
+    N_('Cooks the dish the way it is meant to be, in any cuisine: the classic ingredients and the classic method. Never swaps what makes the dish itself, and takes the time it takes.'),
+    N_('As few ingredients, steps and pots as possible, and done fast. Happy to trade a little of the result for a lot less work.'),
+    N_('Gets nearly all of the classic result for far less work. Takes a shortcut only when you would hardly taste the difference, and puts the effort where it shows on the plate.'),
+    N_('Let the onions take their time; this is where the sauce gets its depth.'),
+    N_('Everything on one tray, into the oven, done.'),
+    N_('Tinned tomatoes are as good here as fresh; save your effort for browning the meat well.'),
     # The recipe page (services/recipe_v2/view.py, groups.py, persona.py, whole.py)
     N_('Calm'), N_('Prep first'), N_('Just in time'), N_('Prep before cooking, but what can wait is done while something stands.'),
     N_('Everything that needs no heat is done before the first cook step.'),

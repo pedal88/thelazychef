@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Our chefs — The Lazy Chef{% endblock %}
+{% block title %}{{ _('Our chefs') }} — The Lazy Chef{% endblock %}
 
 {% block content %}
 <section class="bg-slate-900">
     <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-        <span class="inline-block text-xs font-bold uppercase tracking-widest text-orange-400 mb-4">Our chefs</span>
-        <h1 class="font-serif text-5xl md:text-6xl font-bold text-white mb-6">Different cooks, different ways to dinner</h1>
-        <p class="text-lg text-slate-300 max-w-2xl mx-auto">Each chef cooks for a different kind of kitchen. Pick the one that sounds like yours.</p>
+        <span class="inline-block text-xs font-bold uppercase tracking-widest text-orange-400 mb-4">{{ _('Our chefs') }}</span>
+        <h1 class="font-serif text-5xl md:text-6xl font-bold text-white mb-6">{{ _('Different cooks, different ways to dinner') }}</h1>
+        <p class="text-lg text-slate-300 max-w-2xl mx-auto">{{ _('Each chef cooks for a different kind of kitchen. Pick the one that sounds like yours.') }}</p>
     </div>
 </section>
 
@@ -22,18 +22,18 @@
                     {% else %}<span class="text-3xl" aria-hidden="true">👩‍🍳</span>{% endif %}
                 </div>
                 <div>
-                    <h2 class="font-serif text-xl font-bold text-slate-900 group-hover:text-orange-700">{{ chef.name }}</h2>
-                    <p class="text-sm text-slate-500">{{ chef.archetype }}</p>
+                    <h2 class="font-serif text-xl font-bold text-slate-900 group-hover:text-orange-700">{{ chef.name|label }}</h2>
+                    <p class="text-sm text-slate-500">{{ chef.archetype|label }}</p>
                 </div>
             </div>
-            <p class="text-sm text-slate-600 mb-4">{{ chef.description }}</p>
+            <p class="text-sm text-slate-600 mb-4">{{ chef.description|label }}</p>
             {% if chef.badges %}
             <ul class="flex flex-wrap gap-2 mb-4">
                 {% for b in chef.badges %}<li class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">{{ b }}</li>{% endfor %}
             </ul>
             {% endif %}
             <p class="text-xs font-semibold uppercase tracking-wide text-orange-600">
-                {% set n = counts.get(chef.id, 0) %}{{ n }} recipe{{ '' if n == 1 else 's' }} →
+                {% set n = counts.get(chef.id, 0) %}{{ _('1 recipe') if n == 1 else _('%(n)s recipes', n=n) }} →
             </p>
         </a>
         {% endfor %}
