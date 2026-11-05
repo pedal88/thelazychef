@@ -6,7 +6,8 @@
 {% block title %}{{ title }} - The Lazy Chef{% endblock %}
 
 {# One group of chips in the filter drawer (services/recipe_library.from_args, and the order from the route):
-   checkboxes, or radios, with Any first unless the group says any: False #}
+   checkboxes, or radios, with Any first unless the group says any: False; a symbol before the words where the group
+   has one (recipe_library._symbols) #}
 {% macro chip_group(g) %}
 <fieldset class="lib-chips">
     <legend>{{ g.label }}</legend>
@@ -15,7 +16,9 @@
         <label class="lib-chip"><input type="radio" name="{{ g.key }}" value=""{% if not g.options|selectattr(2)|list %} checked{% endif %}><span>{{ _('Any') }}</span></label>
         {% endif %}
         {% for value, text, on in g.options %}
-        <label class="lib-chip"><input type="{{ 'radio' if g.single else 'checkbox' }}" name="{{ g.key }}" value="{{ value }}"{% if on %} checked{% endif %}><span>{{ text }}</span></label>
+        {% set sym = (g.symbols or {}).get(value) %}
+        <label class="lib-chip"><input type="{{ 'radio' if g.single else 'checkbox' }}" name="{{ g.key }}" value="{{ value }}"{% if on %} checked{% endif %}><span>
+            {%- if sym and sym.icon %}{{ icon(sym.icon) }}{% elif sym %}<img class="lib-chip-img" src="{{ equipment_image(sym) }}" alt="" width="24" height="24" loading="lazy">{% endif %}{{ text }}</span></label>
         {% endfor %}
     </div>
 </fieldset>

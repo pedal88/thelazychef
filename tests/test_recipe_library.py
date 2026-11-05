@@ -3,6 +3,7 @@ pages, and the Made mark in every list."""
 import os
 import sys
 import unittest
+from pathlib import Path
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -207,6 +208,22 @@ class RecipeLibraryTests(unittest.TestCase):
         args, on = dict((l, (a, o)) for l, a, o in quick(MultiDict([('diet', 'vegetarian')])))['Vegetarian']
         self.assertTrue(on)
         self.assertEqual(args.getlist('diet'), [])
+
+    def test_the_drawer_has_symbols_for_where_it_cooks_and_the_protein_only(self):
+        from services.recipe_library import PROTEIN_ICONS
+        groups = {g['key']: g for g in from_args(MultiDict())[1]}
+        self.assertIn('equipment', groups['heat_source']['symbols']['oven']['image'])
+        self.assertNotIn('none', groups['heat_source']['symbols'])  # no heat, no symbol
+        self.assertEqual(groups['protein']['symbols']['Poultry'], {'icon': 'drumstick'})
+        self.assertEqual(groups['cuisine']['symbols'], {})
+        sprite = (Path(__file__).resolve().parent.parent / 'static' / 'icons' / 'icons.svg').read_text(encoding='utf-8')
+        for name in PROTEIN_ICONS.values():
+            self.assertIn(f'id="i-{name}"', sprite)
+        self.recipe('Pasta')
+        db.session.commit()
+        page = self.client.get('/recipes').get_data(as_text=True)
+        self.assertIn('#i-drumstick', page)
+        self.assertIn('class="lib-chip-img"', page)
 
     def test_the_drawer_counts_and_finds_empty_choices(self):
         quick_dish = self.recipe('Quick', minutes=15)
