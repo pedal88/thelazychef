@@ -26,7 +26,7 @@
   const lists = page ? [...page.querySelectorAll('[data-slist]')] : [];  // two with the step layout trial "phases"
   if (!lists.length) return;
   const { beep, ring, wake, leftMin, fmtLeft, esc } = window.Kitchen;
-  const KEY = `steps:${page.dataset.recipe}`, VIEW = 'one-page-view', DETAILS = 'one-page-details';
+  const KEY = `steps:${page.dataset.recipe}`, DETAILS = 'one-page-details';
   const $ = s => page.querySelector(s), $$ = s => [...page.querySelectorAll(s)];
   const rows = $$('.st[data-st]');
   const byId = Object.fromEntries(rows.map(r => [r.dataset.st, r]));
@@ -524,7 +524,7 @@
       + (nxt ? esc(tr('Then: %(what)s at minute %(n)s.', { what: nxt.dataset.short.toLowerCase(), n: nxt.dataset.start })) : tr('The food is ready.'));
   }
 
-  /* The view menu: the list is the default; the choice is remembered for all recipes */
+  /* The view menu: cooking always starts at the list; another view lasts until the cook leaves cooking */
   const menu = $('.vmenu-list'), menuBtn = $('[data-view-menu]');
   function openMenu(on) {
     if (!menu) return;
@@ -539,7 +539,6 @@
     if (menuBtn && item) menuBtn.setAttribute('aria-label', tr('View: %(what)s', { what: item.textContent }));
     $$('.vpanel').forEach(p => { p.hidden = p.dataset.panel !== v; });
     openMenu(false);
-    try { localStorage.setItem(VIEW, v); } catch (e) { /* remembered for this visit only */ }
     if (v === 'delta') {
       dlCentred = null;
       dispatchEvent(new Event('resize'));  // the delta lays itself out once it can be seen
@@ -580,7 +579,7 @@
     if (location.hash !== '#cook') history.pushState({ cook: true }, '', '#cook');
     const entering = cook && cook.hidden;
     cooking(true);
-    if (entering) { fullOnTap = false; fullIn(); }
+    if (entering) { fullOnTap = false; fullIn(); view('steps'); }
   }
   function stopCooking() {
     if (history.state && history.state.cook) history.back();  // popstate shows the overview
@@ -842,7 +841,7 @@
     });
   }
 
-  try { view(localStorage.getItem(VIEW)); } catch (e) { view('steps'); }
+  view('steps');
   // Prep and Cook lead here as #prep and #cook: both open the cooking screen, #prep with the bowls
   if (location.hash === '#cook' || location.hash === '#prep') {
     const bowlsFirst = location.hash === '#prep';
