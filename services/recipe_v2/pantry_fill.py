@@ -40,6 +40,7 @@ NUTRIENTS = ('calories', 'protein', 'carbs', 'fat', 'fat_saturated', 'sugar', 'f
 FACTOR_RANGE = (0.1, 5)  # outside it an amount_factor is a mistake, and the amount stays
 EARLIER_MAX = 30  # Pål's answers Claude is shown
 SWAPS_MAX = 5  # swaps Claude weighs against adding an item
+CHECKING_MINUTES = 10  # how long the recipe page says the job is at work, should the job be lost
 
 
 def _categories():
@@ -337,11 +338,30 @@ def _weigh_open(recipe, call=None):
     return cost
 
 
+def mark_checking(recipe):
+    """The job is queued: a note (rule RULE, so it flags nothing, and fill replaces it) for the recipe page to say so."""
+    _note(recipe, RULE, 'The pantry job is checking this recipe', checking=datetime.datetime.now(datetime.UTC).isoformat())
+
+
+def clear_checking(recipe):
+    recipe.validation_errors = [e for e in recipe.validation_errors or [] if not e.get('checking')]
+
+
+def is_checking(recipe):
+    """Whether the job is queued or at work on this recipe, as far as the notes say."""
+    now = datetime.datetime.now(datetime.UTC)
+    for note in recipe.validation_errors or []:
+        if note.get('checking'):
+            return now - datetime.datetime.fromisoformat(note['checking']) < datetime.timedelta(minutes=CHECKING_MINUTES)
+    return False
+
+
 def fill(recipe, call=None):
     """Decide and apply for one recipe, then recalculate it and weigh its questions. Returns {'notes', 'cost_usd'}; nothing
     to do when every line is linked. The caller commits."""
     from services.recipe_v2.generate import recalculate
 
+    clear_checking(recipe)
     lines = unlinked(recipe)
     if not lines:
         return {'notes': [], 'cost_usd': 0.0}

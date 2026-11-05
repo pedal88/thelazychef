@@ -7,7 +7,7 @@ from flask_login import login_required
 
 from database.models import Ingredient, Recipe, db
 from services.chef_service import get_chefs
-from services.recipe_v2 import batch, generate, inbox, tasks
+from services.recipe_v2 import batch, generate, inbox, pantry_fill, tasks
 from services.recipe_v2.persona import SETTINGS, age_stages
 from services.recipe_v2.language import DEFAULT as DEFAULT_LANGUAGE, LANGUAGES, code_of
 from services.recipe_v2.sources import is_link, is_video
@@ -275,8 +275,9 @@ def generating(recipe_id):
 @admin_required
 def status(recipe_id):
     recipe = db.session.get(Recipe, recipe_id) or abort(404)
-    # written: round 1 is done, so round 2 is turning the text into steps
-    return jsonify({'status': recipe.status, 'written': bool(recipe.source_text), 'url': url_for('recipe_detail', recipe_id=recipe_id)})
+    # written: round 1 is done, so round 2 is turning the text into steps; checking_pantry: the pantry job has yet to finish
+    return jsonify({'status': recipe.status, 'written': bool(recipe.source_text), 'checking_pantry': pantry_fill.is_checking(recipe),
+                    'url': url_for('recipe_detail', recipe_id=recipe_id)})
 
 
 IMAGES_COST = (0.15, 0.45)  # USD for the dish image and the part images of one recipe, with the checks
