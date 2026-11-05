@@ -3,7 +3,7 @@ away again. New recipes are not translated by themselves yet.
 
 Without --apply nothing is called and nothing is saved: it lists what would be translated, with an estimate of the cost.
 With --apply it first gives the recipes' pantry items their Norwegian names where they have none, then translates each
-recipe, committed on its own; about 0.04 USD a recipe on Sonnet (measured on five, 04.11.2026), about twice that on Opus.
+recipe, committed on its own; about 0.06 USD a recipe on Opus (measured on five, 04.11.2026), about half that on Sonnet.
 A recipe that already has a translation matching its words is left alone unless --force, which also names its pantry
 items again. The originals and the translations go to ~/promptlab-runs/translate/<time>-<model>.json, and nothing shows
 to anyone who has not chosen Norwegian.
@@ -16,7 +16,7 @@ later without paying again, if the recipes' words have not changed.
     ... -m scripts.translate --approved --limit 20 --apply
     ... -m scripts.translate --pantry --apply          (every active pantry item without a Norwegian name)
     ... -m scripts.translate --remove --ids 374 --apply
-    ... -m scripts.translate --ids 374,380 --force --try --model opus
+    ... -m scripts.translate --ids 374,380 --force --try --model sonnet
     ... -m scripts.translate --from-file ~/promptlab-runs/translate/<file>.json --apply
 """
 import argparse

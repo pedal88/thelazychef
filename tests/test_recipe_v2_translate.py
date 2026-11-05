@@ -22,7 +22,7 @@ os.environ.setdefault('GOOGLE_API_KEY', 'test-key')
 from app import app  # noqa: E402
 from database.models import Ingredient, Recipe, RecipeTranslation, db  # noqa: E402
 from scripts import translate as script  # noqa: E402
-from services.ai_models import CLAUDE_OPUS, TRANSLATE_MODEL  # noqa: E402
+from services.ai_models import CLAUDE_SONNET, TRANSLATE_MODEL  # noqa: E402
 from services.recipe_v2 import translate, translation  # noqa: E402
 from services.recipe_v2.store import save_v2  # noqa: E402
 
@@ -221,8 +221,8 @@ class TranslateTests(unittest.TestCase):
             return stand_in()(model, effort, messages, system=system, schema=schema)
         with tempfile.TemporaryDirectory() as home:
             self.home = Path(home)
-            self._script('--ids', str(self.recipe.id), '--try', '--model', 'opus', call=call)
-            self.assertEqual(set(seen), {CLAUDE_OPUS})
+            self._script('--ids', str(self.recipe.id), '--try', '--model', 'sonnet', call=call)
+            self.assertEqual(set(seen), {CLAUDE_SONNET})
             self.assertIsNone(db.session.get(RecipeTranslation, (self.recipe.id, 'nb')))
             self.assertIsNone(db.session.execute(db.select(Ingredient).filter_by(food_id='900001')).scalar_one().name_nb)
             kept = next((self.home / 'promptlab-runs' / 'translate').glob('*.json'))

@@ -31,7 +31,7 @@ SOCIAL_REPORT_MODEL = CLAUDE_SONNET  # the weekly report on the posts (services/
 SOCIAL_REPORT_EFFORT = "low"
 VIDEO_INBOX_MODEL = CLAUDE_SONNET  # what a saved video is, from its caption (services/recipe_v2/inbox.py)
 VIDEO_INBOX_EFFORT = "low"
-TRANSLATE_MODEL = CLAUDE_SONNET  # a recipe's words and the pantry's names in Norwegian (services/recipe_v2/translate.py)
+TRANSLATE_MODEL = CLAUDE_OPUS  # a recipe's words and the pantry's names in Norwegian (services/recipe_v2/translate.py)
 TRANSLATE_EFFORT = "low"
 
 _client = None
