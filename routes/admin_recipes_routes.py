@@ -15,7 +15,7 @@ from database.models import (
 )
 from routes._flat import FlatBlueprint
 from services.recipe_service import delete_recipes
-from services.recipe_v2 import pantry_fill, tasks
+from services.recipe_v2 import estimated, pantry_fill, tasks
 from utils.decorators import admin_required
 
 admin_recipes_bp = FlatBlueprint("admin_recipes", __name__)
@@ -133,6 +133,9 @@ def update_recipe_status(recipe_id: int):
         waiting = pantry_fill.open_question(recipe) if new_status == 'approved' else None
         if waiting is not None:
             return jsonify({'success': False, 'error': f'{waiting.name} waits for an answer under Admin, Ingredient questions.'}), 409
+        if new_status == 'approved' and estimated.holds(recipe):
+            percent = round(estimated.share(recipe.lines) * 100)
+            return jsonify({'success': False, 'error': f'{percent} % of the weight is estimated. Try it, or accept it in the admin chip on the recipe page.'}), 409
 
         recipe.status = new_status
         db.session.commit()

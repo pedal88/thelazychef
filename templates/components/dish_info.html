@@ -8,6 +8,7 @@
 {% macro ingredient_list() -%}
     {# One line each, the amount first, as a shopping list (chosen 23.10.2026 from four variants). What the
        line is used for, and whether it is missing from the pantry, on a quiet second line. #}
+    {% if v.estimates_said %}<p class="hint">{{ _('The amounts are estimated: the source does not give them.') }}</p>{% endif %}
     {% for g in v.shop_groups %}
     <h3 class="shop-group">{{ g.label }}</h3>
     <ul class="ilist">

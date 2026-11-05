@@ -45,7 +45,7 @@ def _item(item):
 def _line(line):
     return {'local_id': line.local_id, 'component': line.component.local_id, 'step': line.step.local_id,
             'name': line.name, 'amount': line.amount, 'unit': line.unit, 'gram_weight': line.gram_weight,
-            'state': line.state, 'grade': line.grade, 'variety': line.variety, 'prep_style': line.prep_style,
+            'state': line.state, 'grade': line.grade, 'variety': line.variety, 'prep_style': line.prep_style, 'estimated': line.estimated,
             'pantry': _item(line.ingredient) if line.ingredient else None}
 
 

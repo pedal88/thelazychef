@@ -436,6 +436,7 @@ class RecipeLine(db.Model):
     prep_style: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
     state: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)  # id in data/constraints/states.json
     grade: Mapped[Optional[str]] = mapped_column(String(12), nullable=True)  # how fine, thin or stiff: a grade of the state
+    estimated: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)  # the source did not give this amount (estimated.py)
     variety: Mapped[Optional[str]] = mapped_column(String(80), nullable=True)  # the kind ("floury", "San Marzano"), not a state
     gram_weight: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
 

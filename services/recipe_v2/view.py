@@ -19,7 +19,7 @@ from database.models import Ingredient, Recipe, RecipeLine, RecipeStep, db
 from services import language
 from services.labels import label
 from services.measures import DEFAULT, density, fmt_amount, fmt_total, frac, localize_text, temp  # noqa: F401 (frac: tests)
-from services.recipe_v2 import delta, groups, mise, nutrition, states, whole
+from services.recipe_v2 import delta, estimated, groups, mise, nutrition, states, whole
 from services.recipe_v2.derive import HEAT_LABELS, heat_steps
 from services.recipe_v2.persona import SETTINGS, age_label
 from services.recipe_v2.planner import MODES, plan_v2
@@ -143,6 +143,11 @@ def line_state(line, lang='en'):
     return ', '.join(x for x in (states.word(line.get('state') or line.get('cut'), line.get('grade'), lang), line.get('prep_style')) if x)
 
 
+def said_about(amount, is_estimated):
+    """An amount the source did not give, as the reader sees it."""
+    return gettext('about %(amount)s', amount=amount) if amount and is_estimated else amount
+
+
 def step_html(s, lines, ingredients, factor, lang='en', system=DEFAULT):
     """Step text with each {iN} as a pill: symbol, amount and name. In cook and serve steps the state and note follow in brackets."""
     def pill(m):
@@ -151,7 +156,7 @@ def step_html(s, lines, ingredients, factor, lang='en', system=DEFAULT):
             return escape(m.group(0))
         amount = fmt_amount(line['amount'] * factor if line.get('amount') is not None else None, line.get('unit'), system,
                             density(ingredients.get(m.group(1))))
-        label = f"{amount} {line['name']}".strip()
+        label = f"{said_about(amount, line.get('estimated'))} {line['name']}".strip()
         out = Markup('<span class="pill" data-l="{lid}">{sym}{label}</span>').format(lid=m.group(1), sym=symbol(ingredients.get(m.group(1)), line['name'], 24), label=label)
         said = line_state(line, lang) if s['phase'] != 'prep' else ''
         if said:
@@ -255,7 +260,7 @@ def build(recipe, servings=None, plan='calm', system=DEFAULT):
             notes.append(gettext('to taste'))
         found = pantry.get(e.get('pantry_id'))
         group = groups.group_of(found, mise.staple({'name': e['name'], **({'pantry_tier': found.tier} if found else {})}))
-        shop.append({'name': e['name'], 'amount': fmt_total(e['amounts'], system, density(found)),
+        shop.append({'name': e['name'], 'amount': said_about(fmt_total(e['amounts'], system, density(found)), e['estimated']),
                      'note': ' · '.join(notes), 'symbol': symbol(found, e['name'], 36 if group == 'staples' else 56),
                      'missing': not e.get('pantry_id') or e['pantry_id'] not in pantry, 'group': group,
                      'img': found.image_url if found is not None else None, 'pantry_id': e.get('pantry_id')})
@@ -296,7 +301,7 @@ def build(recipe, servings=None, plan='calm', system=DEFAULT):
         return i.get('state') or i.get('cut')
     # The river delta: every line as the drawing shows it, with the amount for these servings
     pictured = {lid: {'name': i['name'], 'img': (ingredients.get(lid).image_url if ingredients.get(lid) is not None else None),
-                      'amount': fmt_amount(i['amount'] * factor, i.get('unit'), system, density(ingredients.get(lid)))
+                      'amount': said_about(fmt_amount(i['amount'] * factor, i.get('unit'), system, density(ingredients.get(lid))), i.get('estimated'))
                       if i.get('amount') is not None else '',
                       'prep': i.get('prep_style') or '', 'cut': state_of(lid, i), 'count': count_of(i, factor),
                       'state': line_state({**i, 'state': state_of(lid, i)}, lang),
@@ -334,10 +339,12 @@ def build(recipe, servings=None, plan='calm', system=DEFAULT):
         'heat_on': heat_on, 'time_strip': time_strip(steps, sch['T']),
         'chef_note': localize_text(text.get('chef_note') or recipe.chef_note, system), 'missing': sum(1 for s in shop if s['missing']),
         'checking_pantry': recipe.status != 'approved' and any(s['missing'] for s in shop) and _pantry_job_at_work(recipe),
-        'errors': [e for e in recipe.validation_errors or [] if e.get('rule') not in ('persona', 'image', 'pantry', 'estimate', 'substitute', 'ask', 'asked')],
+        'errors': [e for e in recipe.validation_errors or [] if e.get('rule') not in ('persona', 'image', 'pantry', 'estimate', 'substitute', 'ask', 'asked', estimated.ACCEPTED)],
         'image_notes': [e['message'] for e in recipe.validation_errors or [] if e.get('rule') == 'image'],
         'persona_notes': [e['message'] for e in recipe.validation_errors or [] if e.get('rule') == 'persona'],
         'estimates': [e['message'] for e in recipe.validation_errors or [] if e.get('rule') == 'estimate'],
+        'estimated_percent': round(estimated.share(recipe.lines) * 100), 'estimates_held': estimated.holds(recipe),
+        'estimates_said': estimated.share(recipe.lines) > estimated.SAY_SHARE,
         'swaps': [e['message'] for e in recipe.validation_errors or [] if e.get('rule') == 'substitute'],
         'questions': [e['message'] for e in recipe.validation_errors or [] if e.get('rule') == 'ask'],
         'about': about(recipe),

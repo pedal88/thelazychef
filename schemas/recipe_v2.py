@@ -55,6 +55,7 @@ class IngredientLineV2(typing.TypedDict):
     variety: typing.NotRequired[str]
     prep_style: typing.NotRequired[str]  # only a note the catalog cannot say: "etter smak", "valgfritt"
     gram_weight_estimate: typing.NotRequired[float]
+    estimated: typing.NotRequired[bool]  # true when the source did not give this amount (services/recipe_v2/estimated.py)
     pantry_id: typing.NotRequired[str]
 
 

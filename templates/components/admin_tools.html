@@ -10,6 +10,8 @@
   {% if v.questions %}<p><a href="{{ url_for('pantry_questions.questions') }}">Waits for an answer</a>, and cannot be approved until then:</p><ul>{% for n in v.questions %}<li>{{ n }}</li>{% endfor %}</ul>{% endif %}
   {% if v.swaps %}<p>Swapped for what the pantry has:</p><ul>{% for n in v.swaps %}<li>{{ n }}</li>{% endfor %}</ul>{% endif %}
   {% if v.estimates %}<p>Estimated, because the source did not say:</p><ul>{% for n in v.estimates %}<li>{{ n }}</li>{% endfor %}</ul>{% endif %}
+  {% if v.estimates_held %}<p>{{ v.estimated_percent }} % of the weight is estimated, so it cannot be approved until you have tried it or accept it.</p>
+  <form method="post" action="{{ url_for('recipe_v2.accept_estimates', recipe_id=recipe.id) }}"><button type="submit">I have tried it, or accept it</button></form>{% endif %}
 </div>
 {% endif %}
 {% if v.nutrition_gap and not v.nutrition %}

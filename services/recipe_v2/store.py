@@ -10,7 +10,7 @@ from database.models import Recipe, RecipeComponent, RecipeLine, RecipeMealType,
 
 STEP_FIELDS = ('phase', 'short', 'verb', 'text', 'active_minutes', 'passive_minutes', 'holds_minutes', 'method',
                'temp_c', 'mode', 'done_when')
-LINE_FIELDS = ('name', 'amount', 'unit', 'prep_style', 'state', 'grade', 'variety')
+LINE_FIELDS = ('name', 'amount', 'unit', 'prep_style', 'state', 'grade', 'variety', 'estimated')
 
 
 def save_v2(recipe: Recipe, data: dict, ingredient_ids: dict | None = None) -> Recipe:
@@ -87,7 +87,7 @@ def to_v2(recipe: Recipe) -> dict:
         'ingredients': [drop_none({
             'local_id': i.local_id, 'component_id': i.component.local_id, 'name': i.name, 'amount': i.amount,
             'unit': i.unit, 'prep_style': i.prep_style, 'state': i.state, 'grade': i.grade,
-            'variety': i.variety, 'gram_weight_estimate': i.gram_weight,
+            'variety': i.variety, 'gram_weight_estimate': i.gram_weight, 'estimated': i.estimated,
             'pantry_id': i.ingredient.food_id if i.ingredient else None,
         }) for i in recipe.lines],  # The state is the line's only state. The old cut column, from before the state
                                      # catalog, was converted where it was right (scripts/convert_states.py) and then
