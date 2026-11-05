@@ -48,9 +48,9 @@ def answer(decisions, seen=None):
     return call
 
 
-def decision(line, action, food_id='', new=None, reason='because', name='', factor=1, replacements=None):
+def decision(line, action, food_id='', new=None, reason='because', name='', factor=1, replacements=None, unit=''):
     return {'line': line, 'action': action, 'food_id': food_id, 'new': new, 'reason': reason, 'name': name,
-            'amount_factor': factor, 'replacements': replacements or []}
+            'amount_factor': factor, 'unit': unit, 'replacements': replacements or []}
 
 
 class PantryFillTests(unittest.TestCase):
@@ -171,6 +171,38 @@ class PantryFillTests(unittest.TestCase):
         self.assertIsNone(self.lines('egg')[0].ingredient_id)
         self.assertEqual(self.pasta.food_id, self.lines('spaghetti')[0].ingredient.food_id)
         self.assertEqual(self.lines('spaghetti')[0].amount, amount)
+
+    def test_a_swap_can_change_the_unit_and_a_made_up_unit_is_ignored(self):
+        line = self.lines('spaghetti')[0]
+        before = line.unit
+        pantry_fill.fill(self.recipe, call=answer([decision('spaghetti', 'substitute', '000322', unit='cube')]))
+        self.assertEqual(line.unit, before)
+        for other in self.lines('pecorino romano'):
+            other.unit, other.amount = 'tbsp', 1
+        pantry_fill.fill(self.recipe, call=answer([decision('pecorino romano', 'substitute', '000322', name='parmesan', unit='piece')]))
+        self.assertEqual({x.unit for x in self.lines('parmesan')}, {'piece'})
+
+    def test_a_swap_in_a_question_keeps_its_unit(self):
+        for line in self.lines('pecorino romano'):
+            line.unit, line.amount = 'tbsp', 1
+        pantry_fill.fill(self.recipe, call=answer([decision('pecorino romano', 'ask', '000322', new=PECORINO, name='parmesan', unit='piece')]))
+        item = self.lines('pecorino romano')[0].ingredient
+        pantry_fill.swap(item)
+        self.assertEqual({x.unit for x in self.lines('parmesan')}, {'piece'})
+
+    def test_claude_sees_the_kind_a_line_asks_for(self):
+        self.lines('pecorino romano')[0].variety = '4 % fat'
+        seen = []
+        pantry_fill.fill(self.recipe, call=answer([], seen))
+        self.assertIn('[kind: 4 % fat]', seen[0]['user'].split('LINES NOT IN THE PANTRY')[1])
+
+    def test_the_prompts_say_what_stays_on_a_line(self):
+        with open('data/prompts/recipe_v2/structure.jinja2', encoding='utf-8') as f:
+            self.assertIn('"boneless", "skinless", "4 % fat"', f.read())
+        with open('data/prompts/recipe_v2/pantry_fill.jinja2', encoding='utf-8') as f:
+            prompt = f.read()
+        self.assertIn('all five are true', prompt)
+        self.assertIn('1 tbsp stock concentrate is 1 piece', prompt)
 
     def test_a_published_recipe_is_never_changed_or_held_back(self):
         self.recipe.status = 'approved'
