@@ -204,6 +204,8 @@ class PantryFillTests(unittest.TestCase):
             prompt = f.read()
         self.assertIn('all five are true', prompt)
         self.assertIn('1 tbsp stock concentrate is 1 piece', prompt)
+        self.assertIn('smoked tofu on a ramen, tofu in the pantry: ask', prompt)
+        self.assertIn('do not argue that other ingredients cover for it', prompt)
 
     def test_a_published_recipe_is_never_changed_or_held_back(self):
         self.recipe.status = 'approved'
