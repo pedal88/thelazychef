@@ -38,8 +38,9 @@ One page, `recipe_v2_make.html`, from `services/recipe_v2/view.page`: the overvi
 `make.css`, `cook_views.css`, `delta.css`, `rail.css`, `overview_layouts.css`. Design decisions:
 `docs/RECIPE_VISUALIZATIONS.md` (Norwegian), section 9.
 
-- On a wide screen, a step tapped in the list is a look at it. The list's marks say so without words (`static/css/rail.css`,
-  `.peeking`): a solid red dot where you are, pulsing during a look, and a red ring with a white core on the step you look at.
+- A step tapped in the list is a look at it, shown in the card: beside the list on a wide screen, under it at the thumb below
+  1000 px. The list's marks say so without words (`static/css/rail.css`, `.peeking`): a solid red dot with a halo where you
+  are, pulsing during a look, and a red ring with a white core on the step you look at.
 - `steps.js` owns which steps are done (`st.done`) and announces it (`steps:done`); the bowls ask for it
   (`ready:steps`), so the bowls and the step list always agree.
 - A step is done with a tap on its number, or on a phone with Done under the next step (`.st-next`, `data-step-next`); a wide
