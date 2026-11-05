@@ -56,10 +56,10 @@ def schema():
     replacement = {'type': 'object', 'additionalProperties': False, 'required': ['find', 'replace'],
                    'properties': {'find': {'type': 'string'}, 'replace': {'type': 'string'}}}
     line = {'type': 'object', 'additionalProperties': False,
-            'required': ['line', 'action', 'food_id', 'name', 'amount_factor', 'replacements', 'new', 'reason'],
+            'required': ['line', 'action', 'food_id', 'name', 'amount_factor', 'unit', 'replacements', 'new', 'reason'],
             'properties': {'line': {'type': 'string'},
                            'action': {'type': 'string', 'enum': ['alias', 'substitute', 'ask', 'skip']},
-                           'food_id': {'type': 'string'}, 'name': {'type': 'string'}, 'amount_factor': num,
+                           'food_id': {'type': 'string'}, 'name': {'type': 'string'}, 'amount_factor': num, 'unit': {'type': 'string'},
                            'replacements': {'type': 'array', 'items': replacement},
                            'new': {'anyOf': [new, {'type': 'null'}]}, 'reason': {'type': 'string'}}}
     return {'type': 'object', 'additionalProperties': False, 'required': ['lines'],
@@ -97,7 +97,7 @@ def earlier():
 
 
 def decide(recipe, lines, call=None):
-    """Claude's decision per line: [{'line', 'action', 'food_id', 'name', 'amount_factor', 'replacements', 'new',
+    """Claude's decision per line: [{'line', 'action', 'food_id', 'name', 'amount_factor', 'unit', 'replacements', 'new',
     'reason'}] and the usage."""
     from services.recipe_v2.view import as_text
 
@@ -107,7 +107,7 @@ def decide(recipe, lines, call=None):
         pantry=_pantry(), earlier=earlier(), main_categories=', '.join(cats['main_categories']),
         sub_categories='\n'.join(f'{k}: {", ".join(v)}' for k, v in cats['sub_categories'].items()))
     asked = '\n'.join(f'- {line.name}: {line.amount or ""} {line.unit or ""}'.rstrip()
-                      + (f' ({line.state})' if line.state else '') for line in lines)
+                      + (f' ({line.state})' if line.state else '') + (f' [kind: {line.variety}]' if line.variety else '') for line in lines)
     user = f'RECIPE\n{as_text(recipe)}\n\nLINES NOT IN THE PANTRY\n{asked}'
     msg, usage = call(RECIPE_V2_MODEL, RECIPE_V2_EFFORT, [{'role': 'user', 'content': user}], system=system,
                       schema=schema())
@@ -176,8 +176,11 @@ def _rewrite(recipe, replacements):
     recipe.chef_note = sub(recipe.chef_note)
 
 
-def _swap(recipe, lines, item, name='', factor=1, replacements=(), reason=''):
-    """Make the lines use another pantry item, in this recipe only: name, amount and the words around them."""
+def _swap(recipe, lines, item, name='', factor=1, replacements=(), reason='', unit=''):
+    """Make the lines use another pantry item, in this recipe only: name, amount, unit and the words around them. A unit
+    not in the catalog is a mistake, and the unit stays."""
+    from services.measures import units
+
     was, now = lines[0].name, (name or item.name).strip()
     factor = factor if isinstance(factor, (int, float)) and FACTOR_RANGE[0] <= factor <= FACTOR_RANGE[1] else 1
     for line in lines:
@@ -185,6 +188,8 @@ def _swap(recipe, lines, item, name='', factor=1, replacements=(), reason=''):
         if factor != 1:
             line.amount = round(line.amount * factor, 2) if line.amount else line.amount
             line.gram_weight = round(line.gram_weight * factor, 1) if line.gram_weight else line.gram_weight
+        if line.amount and unit in units():
+            line.unit = unit
     _rewrite(recipe, sorted([{'find': was, 'replace': now}, *replacements], key=lambda r: -len(r.get('find') or '')))
     recipe.revision = (recipe.revision or 1) + 1
     recipe.revised_at = datetime.datetime.now(datetime.UTC).replace(tzinfo=None)
@@ -203,7 +208,7 @@ def _swap_of(d):
     """Claude's swap in a question, what the note keeps."""
     if not d.get('food_id'):
         return None
-    return {'food_id': d['food_id'], 'name': d.get('name') or '', 'amount_factor': d.get('amount_factor') or 1,
+    return {'food_id': d['food_id'], 'name': d.get('name') or '', 'amount_factor': d.get('amount_factor') or 1, 'unit': d.get('unit') or '',
             'replacements': d.get('replacements') or []}
 
 
@@ -234,7 +239,7 @@ def apply(recipe, decisions):
                 line.ingredient = item
             notes.append(_note(recipe, RULE, f'"{d["line"]}" is now an alias of {item.name} ({reason})'))
         elif action == 'substitute' and item is not None and item.status == 'active':
-            notes.append(_swap(recipe, lines[key], item, d.get('name'), d.get('amount_factor'), d.get('replacements') or [], reason))
+            notes.append(_swap(recipe, lines[key], item, d.get('name'), d.get('amount_factor'), d.get('replacements') or [], reason, d.get('unit') or ''))
         elif action == 'ask' and d.get('new'):
             asked = _propose(d['new'])
             if asked.status == 'active':  # it was in the pantry after all
@@ -346,7 +351,7 @@ def swap(item, other=None):
             continue
         name = '' if other else s.get('name')
         replacements = [] if other else s.get('replacements') or []
-        _swap(recipe, lines, target, name, 1 if other else s.get('amount_factor'), replacements)
+        _swap(recipe, lines, target, name, 1 if other else s.get('amount_factor'), replacements, unit='' if other else s.get('unit') or '')
         _answer(recipe, item, f'not added, swapped to {target.name}')
         changed.append(recipe)
     if not _waiting(item):

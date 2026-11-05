@@ -4,13 +4,14 @@ For each line, choose one action:
 
 alias: the line is the same food as a pantry item, under another name. Give that item's food_id exactly as listed. Examples: "scallion" is spring onion, "neutral oil" is canola oil, "sort pepper" is black pepper. An alias holds for every recipe from now on, so never use it for two products a shopper buys as different items, even when they are close (white wine vinegar is not red wine vinegar, a lemon is not a lime, butter is not yogurt butter). Those are a substitute or a question.
 
-substitute: a different pantry item does the job so well that swapping hardly matters in this dish. The recipe is changed to use it, in this recipe only. Choose it only when all four are true:
+substitute: a different pantry item does the job so well that swapping hardly matters in this dish. The recipe is changed to use it, in this recipe only. Choose it only when all five are true:
 1. Identity: the dish stays itself. The line is not what the dish is named after or what sets it apart, and it is not what gives the dish its cuisine's taste.
 2. Function: the item does the same job in the same step (melts, thickens, raises, browns, binds).
 3. Taste: someone eating the dish would not notice unless told.
 4. Nutrition: the calories of a serving change by less than about 10 %.
+5. Work: the swap asks for no work the recipe's steps leave out. Fresh mushrooms for canned ones need slicing that the method never says, so that is a question. Your reason must not rely on anything the recipe does not say.
 
-ask: one of the four is false, and the line is real food that matters here. The line then waits for the owner. Describe the item in "new", and give your best substitute in food_id, name, amount_factor and replacements, even though it fails a test, so the owner can choose it; food_id "" if nothing comes close. When you are unsure between substitute and ask, ask: a bad swap ruins the dish for the reader, and a question costs the owner seconds.
+ask: one of the five is false, and the line is real food that matters here. The line then waits for the owner. Describe the item in "new", and give your best substitute in food_id, name, amount_factor and replacements, even though it fails a test, so the owner can choose it; food_id "" if nothing comes close. When you are unsure between substitute and ask, ask: a bad swap ruins the dish for the reader, and a question costs the owner seconds.
 
 skip: water, something that is not a food, or a pinch of something that would not change the dish, has no good substitute and will hardly come back (nigella seeds in one curry). Leave food_id empty and new null.
 
@@ -30,12 +31,14 @@ The fields:
 - food_id: the pantry item, exactly as listed. Only items not marked (pending) can be a substitute; an item marked (pending) was asked about before and is not yet answered: when the line is that item, use ask with the same name in "new".
 - name: what the line is called after the swap, in the language of the recipe, the way a cook says it. "" when there is no swap.
 - amount_factor: what the amount is multiplied by in the swap. 1 unless the item needs another amount.
+- unit: the unit after the swap when the item is not measured as the line is, an id from g, kg, ml, cl, dl, l, tsp, tbsp, piece. "" otherwise. A cook counts a stock cube: 1 tbsp stock concentrate is 1 piece, not 1 tbsp of cube. Set amount_factor so the amount fits the new unit.
 - replacements: words in the recipe's method, part names or tip that name the line's ingredient and must change after the swap, as {"find", "replace"} with the exact words ("the yogurt butter" to "the butter", "Honey Yogurt Butter" to "Honey Butter"). The ingredient lines themselves change by themselves. Empty when nothing else names it.
 - new: only for ask, else null:
   - name: the plain English name as sold, lower case, without amounts, states or brands ("lingonberries", "caraway seeds", "gruyère")
   - main_category and sub_category: from the lists below, exactly as written
   - default_unit: "g", or "ml" for liquids; average_g_per_unit: grams per ml for a liquid, else 0
   - looks: how the food looks as bought in a shop, in a few words for an illustrator who may not know it: shape, colour, form ("thin rectangular crispbread sheets, stacked, pale brown", "small round dark red berries", "pale yellow wedge of hard cheese with a few small holes"). Never a brand or packaging text.
+  - A line marked [kind: ...] that changes the nutrition, such as "4 % fat": put the kind in name ("cooking cream 4 %"), and give the nutrition of that kind.
   - nutrition per 100 g of the food as it is sold (dried pasta dry, frozen berries as raw berries), from USDA FoodData Central or the Norwegian food composition table: calories (kcal), protein, carbs, fat, fat_saturated, sugar, fiber (g) and sodium_mg
 
 Answer for every line, in the order given.
