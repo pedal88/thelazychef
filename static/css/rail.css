@@ -109,8 +109,10 @@
 }
 
 
+.rail-table { display: none; }
+
 @media (min-width: 1000px) {
-  .rail-reset, .st-finished { display: none; }
+  .st-finished { display: none; }
   html:has(.vpanel.rail:not([hidden])) .fab-tools .details-btn { display: none; }  /* every step is one line */
 
   /* The layout: the height between the controls at the top and the bottom, without the page scrolling */
@@ -158,6 +160,17 @@
   .pagecard .sc-done:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
   .pagecard .sc-then { display: block; margin: var(--space-6) 0 0; color: var(--color-muted); font-size: 15px; }
   .side-card.pagecard .st-reset { margin: var(--space-4) 0 0; text-align: left; }
+
+  /* Beside the rail the card is only the step: the list has the rest (which step, the one after it, when the food is
+     ready and unticking them all). Which step stays for screen readers, and the way back has the row to itself. */
+  .rail .side-card.pagecard .side-card-h { justify-content: flex-end; padding: 0; }
+  .rail .pagecard :is(.sc-left, .sc-then), .rail .side-card.pagecard .st-reset { display: none; }
+  .rail .pagecard .sc-count { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .rail .pagecard:has([data-step-card]:empty) .side-card-h { justify-content: flex-start; }
+  .rail .pagecard:has([data-step-card]:empty) .sc-count { position: static; width: auto; height: auto; overflow: visible; clip-path: none; }
+  .rail .side-card.pagecard:has([data-step-card]:empty) .st-reset { display: block; }
+  .rail-table:not(:empty) { display: block; margin: var(--space-2) 0 0; padding-left: calc(var(--space-2) + var(--tick) + 6px + var(--space-3));
+    font: 500 13px var(--font-sans); color: var(--color-muted); }
 
   /* A look at another step than the one you are on: said at the top, a little quieter, with the way back */
   .pagecard .sc-back { margin-left: var(--space-2); padding: 0; border: 0; background: none; color: var(--color-ink); font: 600 13px var(--font-sans);

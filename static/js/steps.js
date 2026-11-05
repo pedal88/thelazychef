@@ -159,6 +159,11 @@
     back.setAttribute('aria-label', backSays.replace(/^←\s*/, ''));
     const left = row && !peek && TOTAL ? TOTAL - +row.dataset.at : 0;
     q('[data-side-card-left]').textContent = left ? tr('At the table about %(time)s', { time: hm(Date.now() + left * 60e3) }) : '';
+    // On a wide screen the list says when the food is ready, counted from the step you are on, also during a look
+    if (marks) {
+      const fromHere = here && TOTAL ? TOTAL - +here.dataset.at : 0;
+      sp.panel.querySelector('[data-rail-table]').textContent = fromHere ? tr('At the table about %(time)s', { time: hm(Date.now() + fromHere * 60e3) }) : '';
+    }
     // A bowl that is ready stands for what is in it: its number and name, which open the bowls
     const ready = (row && row.dataset.bowls ? row.dataset.bowls.split(' ') : [])
       .map(k => document.querySelector(`#sheet-bowls [data-bowl][data-key="${CSS.escape(k)}"]`)).filter(b => b && b.classList.contains('is-ready'));

@@ -17,7 +17,7 @@ os.environ.pop('K_SERVICE', None)
 from app import app  # noqa: E402
 from database.models import Ingredient, Recipe, User, db  # noqa: E402
 from services.recipe_v2.store import save_v2  # noqa: E402
-from services.recipe_v2.view import fmt_amount, frac  # noqa: E402
+from services.recipe_v2.view import fmt_amount, frac, main_part  # noqa: E402
 
 
 def fasit(name):
@@ -58,6 +58,12 @@ class RecipeV2ViewTests(unittest.TestCase):
     def page(self, name, part='', **args):
         res = self.client.get(f'/recipe/{self.ids[name]}{part}', query_string=args)
         return res.status_code, res.get_data(as_text=True)
+
+    def test_a_step_names_its_part_only_outside_the_main_part(self):
+        self.assertEqual(main_part(['chicken', 'chicken', 'broccoli']), 'chicken')
+        self.assertEqual(main_part(['chicken', 'chicken']), 'chicken')
+        self.assertIsNone(main_part(['chicken', 'broccoli']))  # a tie: both are named
+        self.assertIsNone(main_part([]))
 
     def test_page_shows_overview_and_shopping_list(self):
         status, html = self.page('carbonara')
