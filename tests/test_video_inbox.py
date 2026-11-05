@@ -494,6 +494,21 @@ class RouteTests(unittest.TestCase):
         db.session.commit()
         self.assertNotIn(f'name="inbox" value="{row.id}"', self.client.get('/admin/inbox').get_data(as_text=True))
 
+    def test_a_recipe_that_failed_does_not_count_as_made(self):
+        row = self._row()
+        for rule in ('source', 'error'):
+            db.session.add(Recipe(title='x', cuisine='', difficulty='', status='draft', schema_version=2, source_type='video', source_input=TIKTOK,
+                                  validation_errors=[{'rule': rule, 'message': 'No recipe could be read'}]))
+        db.session.commit()
+        html = self.client.get('/admin/inbox').get_data(as_text=True)
+        self.assertNotIn('Already made', html)
+        self.assertIn(f'name="inbox" value="{row.id}"', html)
+        self.assertIn('Look up', html)
+        db.session.add(Recipe(title='y', cuisine='', difficulty='', status='draft', schema_version=2, source_type='video', source_input=TIKTOK,
+                              validation_errors=[{'rule': 'image', 'message': 'Could not make the images.'}]))
+        db.session.commit()
+        self.assertIn('Already made', self.client.get('/admin/inbox').get_data(as_text=True))  # the recipe is there, only its images failed
+
     def test_a_video_made_into_a_recipe_is_marked(self):
         self._save()
         recipe = Recipe(title='x', cuisine='', difficulty='', status='draft', schema_version=2, source_type='video', source_input=TIKTOK + '?_t=1')

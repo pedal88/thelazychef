@@ -56,7 +56,8 @@ estimated. The recipes are drafts until approved. A row stays in the inbox, mark
   add a video to the inbox.
 - A video is known by its `video_key`: the same video shared twice, or linked another way, is one row. A short link
   (`vm.tiktok.com/…`) has only itself to go by. Sharing a discarded video again takes it back.
-- A video already made into a recipe is marked, by comparing the keys with the recipes' `source_input`.
+- A video already made into a recipe is marked, by comparing the keys with the recipes' `source_input`. A recipe that failed
+  does not count, so its video can be read and chosen again.
 - Each saved video is looked up in the queue (`/internal/tasks/video-inbox/<id>`, `inbox.look_up`): caption, uploader and
   length with `yt-dlp`; then the video is downloaded and Gemini writes down what it shows (`video_text`, under **What the
   video shows** in the list); then one small Claude call (`VIDEO_INBOX_MODEL`) for the dish's name, the approved recipes it
