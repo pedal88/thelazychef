@@ -70,6 +70,9 @@ then `refresh`. Run it on saved recipes after changing derive, nutrition or the 
   which Claude sees the next time) and `estimate` (what the source did not say and the model decided, such as an
   amount a video never gives) are information only and do not flag it (`generate.INFORMATION`). The admin chip shows
   the estimates. `chef_note` is the cook's tip and is public, so what the model decided never goes there.
+- A line whose amount the source did not give has `RecipeLine.estimated` (`estimated.py`). The reader sees "about" on the
+  amount, and a sentence when over half the weight is estimated. Over 30 % a recipe cannot be approved until Pål has tried
+  it or accepts it in the admin chip (note `estimates_accepted`). Recipes made before have no marks.
 - Nutrition counts the grams that end up in the food (`gram_weight` from the model, else units). Cooked rice, pasta
   and pulses are converted to dry weight (`nutrition.COOKED_GAIN`). A line whose variety says its fat ("4 % fat") counts
   that fat, with the calories and saturated fat that follow. The totals are hidden when under 95 % of the weight is in

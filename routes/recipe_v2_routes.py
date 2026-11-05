@@ -7,7 +7,7 @@ from flask_login import login_required
 
 from database.models import Ingredient, Recipe, db
 from services.chef_service import get_chefs
-from services.recipe_v2 import batch, generate, inbox, pantry_fill, tasks
+from services.recipe_v2 import batch, estimated, generate, inbox, pantry_fill, tasks
 from services.recipe_v2.persona import SETTINGS, age_stages
 from services.recipe_v2.language import DEFAULT as DEFAULT_LANGUAGE, LANGUAGES, code_of
 from services.recipe_v2.sources import is_link, is_video
@@ -212,6 +212,18 @@ def paste_source(recipe_id):
         recipe.validation_errors = [{'rule': 'error', 'message': friendly_ai_error(e, 'Could not start making the recipe.')}]
         db.session.commit()
     return redirect(url_for('recipe_v2.generating', recipe_id=recipe.id))
+
+
+@recipe_v2_bp.route('/new-recipe/v2/accept-estimates/<int:recipe_id>', methods=['POST'])
+@login_required
+@admin_required
+def accept_estimates(recipe_id):
+    """Pål has tried a recipe with many estimated amounts, or accepts it: it can now be approved."""
+    recipe = db.session.get(Recipe, recipe_id) or abort(404)
+    estimated.accept(recipe)
+    db.session.commit()
+    flash('Noted: it can now be approved.', 'success')
+    return redirect(url_for('recipe_detail', recipe_id=recipe_id))
 
 
 @recipe_v2_bp.route('/new-recipe/v2/recalculate/<int:recipe_id>', methods=['POST'])

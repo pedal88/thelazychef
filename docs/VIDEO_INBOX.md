@@ -66,7 +66,7 @@ estimated. The recipes are drafts until approved. A row stays in the inbox, mark
   link and says why, and costs no model call.
 - Making the recipe uses `video_text` (`inbox.written_down`), so the video is paid for once, and the same text gives the same
   amounts each time. A video not read in the inbox (longer than 3 minutes, or the read failed) is read when the recipe is
-  made, as any other link. A video that shows no recipe says so in the list; it can still be chosen. An empty answer from
+  made, as any other link. A video that shows no recipe says so in the list; it can still be chosen. Amounts a video does not give are estimated and marked: see `services/recipe_v2/estimated.py`. An empty answer from
   Gemini is not the same thing: it is tried once more, and the row says that reading gave no answer. Each read logs `Video
   read` with the model, why it stopped, what blocked it, the file's size, and how the answer began. **Look up** on a row
   reads it again.

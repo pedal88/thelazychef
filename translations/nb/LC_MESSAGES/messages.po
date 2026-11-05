@@ -2018,6 +2018,14 @@ msgstr "Det er ikke din feil. Prøv igjen om litt."
 msgid "Back to The Lazy Chef"
 msgstr "Tilbake til The Lazy Chef"
 
+
+#, python-format
+msgid "about %(amount)s"
+msgstr "ca. %(amount)s"
+
+msgid "The amounts are estimated: the source does not give them."
+msgstr "Mengdene er anslått: kilden oppgir dem ikke."
+
 msgid "Our chefs"
 msgstr "Våre kokker"
 
