@@ -90,6 +90,7 @@
   // (railCard), so it stays chosen when it is done and goes back only on purpose
   // The delta has it too, shown on a wide screen with the trial "card" (static/css/rail.css)
   const splits = $$('.vpanel.split, .vpanel.rail, .vpanel.dl-panel').map(panel => ({ panel, card: panel.querySelector('[data-side-card]'), pick: null, folded: false }));
+  const marksNew = () => document.documentElement.classList.contains('marks-new');  // the trial "Marks" in the admin chip
   function splitRender() {
     const next = nextId();
     splits.forEach(sp => {
@@ -98,6 +99,11 @@
       const id = sp.pick || next, list = sp.card.querySelector('[data-step-card]');
       sp.panel.querySelectorAll('.sel').forEach(e => e.classList.remove('sel'));
       if (id) sp.panel.querySelectorAll(`.split-main [data-step="${id}"], .rail-main [data-st="${id}"]`).forEach(e => e.classList.add('sel'));
+      const see = sp.panel.querySelector('.seeline'), seen = see && sp.pick && sp.panel.querySelector(`.tl-row[data-step="${sp.pick}"]`);
+      if (see) {  // the step you look at on the timeline: a dashed line at its minute
+        see.hidden = !seen;
+        if (seen) see.style.setProperty('--x', (+seen.dataset.start / +see.closest('.tl').dataset.total).toFixed(4));
+      }
       sp.card.querySelector('[data-side-card-label]').textContent = !id ? tr('The food is ready') : sp.pick ? tr('The step you chose') : tr('Next step');
       sp.card.classList.toggle('folded', sp.folded);
       sp.card.querySelector('[data-side-fold]').setAttribute('aria-expanded', String(!sp.folded));
@@ -127,6 +133,14 @@
     }
   }
 
+  /* The trial "Marks", under 1000 px: the docked card must not hide the step you just chose (the page has room to scroll) */
+  function seeInSight(sp) {
+    const el = marksNew() && sp.pick && innerWidth < 1000 && sp.panel.querySelector('.split-main .sel');
+    if (!el) return;
+    const over = el.getBoundingClientRect().bottom - sp.card.getBoundingClientRect().top + 48;
+    if (over > 0) scrollBy(0, over);
+  }
+
   /* The food is ready: the block under the list (a phone; on a wide screen the card says it) */
   const noted = () => page.dataset.noted === '1';
   function finishedBlock(on) {
@@ -148,7 +162,7 @@
     const peek = !!(row && sp.pick), here = byId[nextId()];
     const marks = sp.panel.classList.contains('rail');
     sp.card.classList.toggle('peek', peek);
-    sp.panel.classList.toggle('peeking', peek && marks);
+    sp.panel.classList.toggle('peeking', peek && (marks || marksNew()));
     const count = q('[data-side-card-count]'), of = { n: row && num(row), total: rows.length };
     count.textContent = !row ? tr('The food is ready') : peek && !marks ? tr('Looking at step %(n)s of %(total)s', of) : tr('Step %(n)s of %(total)s', of);
     if (peek && marks) count.innerHTML = `<span class="sr-only">${esc(tr('Looking at step %(n)s of %(total)s', of))}</span><span aria-hidden="true">${esc(tr('Step %(n)s of %(total)s', of))}</span>`;
@@ -488,6 +502,16 @@
       const seg = $(`.vpanel .fx-seg[data-step="${id}"]`);
       if (seg) seg.closest('.g2-node').classList.add('cur');
     }
+    if (marksNew()) {  // a step the map or the drawing leaves out (preheating, say): the dot goes on the next it shows
+      const done = new Set(st.done), first = sel => rows.map(r => !done.has(r.dataset.st) && $(sel(r.dataset.st))).find(Boolean);
+      const name = first(s => `.mt .mt-names [data-step="${s}"]`);
+      if (name && !$('.mt .mt-names .cur')) $$(`.mt [data-step="${name.dataset.step}"]`).forEach(e => e.classList.add('cur'));
+      // A step folded into a box stands for the box: the dot goes on the box's own first number
+      const seg = first(s => `.dl-panel .fx-seg[data-step="${s}"]`);
+      const folded = seg && seg.classList.contains('fx-fold') && !document.documentElement.classList.contains('dlx-steps');
+      const dot = folded ? seg.closest('.g2-node').querySelector('.fx-seg:not(.fx-fold)') : seg;
+      if (dot) dot.classList.add('cur');
+    }
     const tl = $('.tl'), status = $('[data-tl-status]');
     if (!tl) return;
     const total = +tl.dataset.total, tlRows = $$('.tl-row[data-step]'), here = tlRows.find(r => r.dataset.step === id);
@@ -635,6 +659,14 @@
       try { localStorage.setItem('delta-tap', dlt.dataset.dltap); } catch (err) { /* this visit */ }
       return;
     }
+    const mk = t.closest('[data-marks]');  // the trial: how the views mark where you are and what you look at
+    if (mk) {
+      document.documentElement.classList.toggle('marks-new', mk.dataset.marks === 'new');
+      $$('[data-marks]').forEach(b => b.setAttribute('aria-pressed', String(b === mk)));
+      try { localStorage.setItem('marks-x', mk.dataset.marks); } catch (err) { /* this visit */ }
+      render();
+      return;
+    }
     const tipLook = t.closest('[data-tip-look]');  // a step suggested while you wait: a look at it
     if (tipLook) { const sp = splits.find(x => x.card.contains(tipLook)); sp.pick = tipLook.dataset.tipLook; splitRender(); return; }
     if (t.closest('[data-sc-done], [data-sc-back]')) { cardDone(splits.find(x => x.card.contains(t))); return; }
@@ -686,6 +718,7 @@
       const sp = splits.find(x => x.panel.contains(pick)), id = pick.dataset.step || pick.dataset.st;
       sp.pick = sp.pick === id ? null : id;
       splitRender();
+      seeInSight(sp);
       return;
     }
     // A step in the timeline, the metro map or the delta (the delta's own numbers still tick there)
@@ -801,6 +834,7 @@
     if (bowlsFirst && sheet && sheet.showModal) { sheet.showModal(); requestAnimationFrame(fit); }
   }
   $$('[data-mtx]').forEach(b => b.setAttribute('aria-pressed', String(document.documentElement.classList.contains(`mtx-${b.dataset.mtx}`))));
+  $$('[data-marks]').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.marks === 'new') === marksNew())));
   $$('[data-dlx]').forEach(b => b.setAttribute('aria-pressed', String(document.documentElement.classList.contains(`dlx-${b.dataset.dlx}`))));
   $$('[data-dltap]').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.dltap === '2') === document.documentElement.classList.contains('dltap-2'))));
   // The delta's key closes on a click outside it or on Esc
