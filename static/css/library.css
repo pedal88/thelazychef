@@ -171,6 +171,9 @@
 .lib-chip input:checked + span { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-paper); }
 .lib-chip input:focus-visible + span { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 .lib-chip.is-empty span { opacity: .4; cursor: default; }
+.lib-chip span:has(> .icon, > .lib-chip-img) { gap: 7px; padding-left: 10px; }
+.lib-chip span .icon { flex: none; width: 17px; height: 17px; }
+.lib-chip-img { flex: none; width: 24px; height: 24px; object-fit: contain; border-radius: 50%; }  /* the symbols have a light ground: a round mark on a chosen chip */
 .lib-chip.is-empty span:hover { border-color: var(--color-line); }
 .lib-drawer-clear { display: inline-grid; place-items: center; text-decoration: none; }
 

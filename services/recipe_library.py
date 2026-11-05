@@ -120,11 +120,27 @@ def _in_order(key, options):
     return sorted(options, key=lambda option: option[1]) if key in ('diet', 'cuisine') else options
 
 
+# Symbols in the drawer's chips (templates/recipes_list.html): where the food is cooked as the equipment's own symbol,
+# the one the recipe page draws (data/constraints/equipment.json), and the protein as a line icon. Cuisine and diet stay
+# words: a cuisine is no country, and the interface has no emoji. No heat has no symbol.
+HEAT_EQUIPMENT = {'pan': 'frying_pan', 'pot': 'large_pot', 'oven': 'oven', 'grill': 'grill', 'airfryer': 'airfryer',
+                  'slow_cooker': 'slow_cooker', 'microwave': 'microwave', 'sous_vide': 'sous_vide'}
+PROTEIN_ICONS = {'Poultry': 'drumstick', 'Red Meat': 'beef', 'Seafood': 'fish', 'Vegetarian': 'salad', 'Vegan': 'vegan'}
+
+
+def _symbols():
+    """{group: {value: symbol}}: an equipment item as routes/_shared.equipment_image takes it, or {'icon': name}."""
+    equipment = {e['id']: e for e in _catalog('constraints/equipment.json', 'equipment')}
+    heat = {source: {'image': equipment[eq]['image'], 'images': equipment[eq].get('image_variants') or {}}
+            for source, eq in HEAT_EQUIPMENT.items() if (equipment.get(eq) or {}).get('image')}
+    return {'heat_source': heat, 'protein': {value: {'icon': name} for value, name in PROTEIN_ICONS.items()}}
+
+
 def from_args(args, difficulty_labels=None):
     """The person's choices in the address (request.args) -> (Filters, the chip groups for the page).
     difficulty_labels: stored difficulty -> what readers see (routes/_shared.DIFFICULTY_LABELS).
-    A group: {'key' (the parameter), 'label', 'options': [(value, label, chosen)], 'single', 'more'} where single is
-    one choice (radio) and more puts it behind More filters. Protein is chosen by group (Poultry, Seafood, ...) and
+    A group: {'key' (the parameter), 'label', 'options': [(value, label, chosen)], 'single', 'more', 'symbols'} where
+    single is one choice (radio), more puts it behind More filters, and symbols is {value: symbol} (_symbols). Protein is chosen by group (Poultry, Seafood, ...) and
     filters on the group's labels (data/constraints/main_protein.json)."""
     proteins = {p['category']: p['examples'] for p in _catalog('constraints/main_protein.json', 'protein_types')}
     groups = [
@@ -144,7 +160,8 @@ def from_args(args, difficulty_labels=None):
                       difficulties=chosen['difficulty'], heat_sources=chosen['heat_source'], spice=chosen['spice'],
                       proteins=[e for c in chosen['protein'] for e in proteins[c]],
                       time=(chosen['time'] or [''])[0], q=args.get('q', '').strip())
-    shown = [{'key': key, 'label': label(title), 'single': single, 'more': more,
+    symbols = _symbols()
+    shown = [{'key': key, 'label': label(title), 'single': single, 'more': more, 'symbols': symbols.get(key, {}),
               'options': _in_order(key, [(v, label(text), v in chosen[key]) for v, text in options.items()])}
              for key, title, options, single, more in groups]
     return filters, shown
