@@ -104,10 +104,12 @@
       if (!id || !byId[id]) { list.replaceChildren(); if (pc) railCard(sp, null, null); return; }
       const copy = byId[id].cloneNode(true);
       copy.classList.add('is-open');
-      copy.classList.toggle('sc-new', sp.last !== id);  // eases in when the step changes, not on every timer tick
+      const moved = sp.last !== id;
+      copy.classList.toggle('sc-new', moved);  // eases in when the step changes, not on every timer tick
       sp.last = id;
       list.replaceChildren(copy);
       if (pc) railCard(sp, id, copy);
+      if (moved && sp === railSplit) byId[id].scrollIntoView({ block: 'nearest' });  // the list scrolls under 1000 px, once the card has its height
     });
     placeDeltaCard();
   }
@@ -764,7 +766,7 @@
     railSplit.card.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
     railSplit.card.addEventListener('touchend', e => {
       const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
-      if (x0 !== null && railOn() && dx < -80 && Math.abs(dy) < 60) cardDone(railSplit);
+      if (x0 !== null && innerWidth >= 1000 && railOn() && dx < -80 && Math.abs(dy) < 60) cardDone(railSplit);
       x0 = null;
     });
   }

@@ -896,6 +896,8 @@ Prototype: `docs/prototypes/telefon.html`, laget i tre runder med tilbakemelding
 
 Telefonflyten bygges først (steg 7b). Utformingen på stor skjerm gjøres i 7c. Nettbrett på kjøkkenbenken regnes som stor skjerm.
 
+**Endret 05.11.2026:** under 1000 px har Steg-visningen nå samme modell som stor skjerm: lista med én linje per steg, og kortet under den, ved tommelen. Et trykk på et steg er et tyvkikk. Rød prikk med glorie viser hvor du er, og pulserer når du kikker. Rød ring med hvit kjerne viser hva du kikker på.
+
 **Flyten:** tre steg i toppfeltet: Oversikt, Gjør klart, Lag mat. I appen heter fanene Overview, Prep og Cook (21.10.2026). Mengde, plan og variant (brødet til hamburgeren) ligger bak en meny (☰) og gjelder alle tre.
 
 **Oversikt** viser totaltid, aktiv tid, mengde, delene retten består av, én handleliste og utstyret. Handlelisten har hver ingrediens én gang, summert, med en merknad når den brukes flere ganger («brukes 2 ganger») eller i flere deler («Kjøttsaus og salat»). En liste per del ble valgt bort: når samme ingrediens brukes to ganger i samme del (hvitløk i marinaden og i sausen), sto den to ganger under samme overskrift. Fordelingen per del og steg kommer i Gjør klart og på kortene, der den brukes.

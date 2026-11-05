@@ -12,6 +12,8 @@
 
   function fit(box) {
     if (!box.clientHeight) return;  // hidden: the cooking screen on the overview, and the other way round
+    // Under 1000 px the steps scroll above their card, at a size that is easy to tap
+    if (box.hasAttribute('data-fit-steps') && innerWidth < 1000) { box.dataset.density = 'normal'; return; }
     for (const step of STEPS) {
       box.dataset.density = step;
       if (fits(box)) return;
@@ -35,7 +37,7 @@
       const page = box.closest('[data-recipe]');
       if (page) page.addEventListener('steps:render', () => {
         let i = STEPS.indexOf(box.dataset.density);
-        while (box.clientHeight && !fits(box) && i < STEPS.length - 1) box.dataset.density = STEPS[++i];
+        while (innerWidth >= 1000 && box.clientHeight && !fits(box) && i < STEPS.length - 1) box.dataset.density = STEPS[++i];
       });
     }
   });
