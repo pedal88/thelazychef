@@ -923,12 +923,6 @@ msgstr "Registrer deg"
 msgid "Open menu"
 msgstr "Åpne menyen"
 
-msgid "\"Cooking is the art of adjustment.\""
-msgstr "«Matlaging er kunsten å justere.»"
-
-msgid "Made in Norway with Claude"
-msgstr "Laget i Norge med Claude"
-
 msgid "Privacy"
 msgstr "Personvern"
 
