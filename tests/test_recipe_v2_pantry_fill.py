@@ -26,7 +26,7 @@ from flask import g  # noqa: E402
 from sqlalchemy import event  # noqa: E402
 
 from database.models import Ingredient, IngredientAlias, Recipe, User, db  # noqa: E402
-from scripts.fill_pantry import parse_ids  # noqa: E402
+from scripts.fill_pantry import parse_ids, parse_nutrition, set_nutrition  # noqa: E402
 from services.recipe_v2 import generate, pantry_fill, tasks  # noqa: E402
 from services.recipe_v2.store import save_v2  # noqa: E402
 
@@ -206,6 +206,29 @@ class PantryFillTests(unittest.TestCase):
         self.assertIn('1 tbsp stock concentrate is 1 piece', prompt)
         self.assertIn('smoked tofu on a ramen, tofu in the pantry: ask', prompt)
         self.assertIn('do not argue that other ingredients cover for it', prompt)
+
+    def test_one_items_nutrition_is_set_and_its_recipes_recalculated(self):
+        name, values = parse_nutrition('spaghetti = calories:100, fat:1')
+        self.assertEqual((name, values), ('spaghetti', {'calories_per_100g': 100.0, 'fat_per_100g': 1.0}))
+        for bad in ('spaghetti', 'spaghetti=', 'spaghetti=kcal:100'):
+            with self.assertRaises(ValueError):
+                parse_nutrition(bad)
+
+        for line in self.lines('spaghetti'):
+            line.ingredient = self.pasta
+        other = Recipe(title='Other', cuisine='Italian', difficulty='Simplistic', status='approved')
+        db.session.add(other)
+        save_v2(other, CARBONARA)
+        db.session.commit()
+
+        with mock.patch('services.recipe_v2.generate.recalculate') as recalculated:
+            old, rows = set_nutrition(self.pasta, values, ids=[other.id])
+        self.assertEqual(old, {'calories_per_100g': 371, 'fat_per_100g': 1.5})
+        self.assertEqual(self.pasta.kj_per_100g, 418.4)
+        self.assertEqual([r.id for r, _, _ in rows], [self.recipe.id, other.id])  # the one using it, and the one asked for
+        self.assertEqual([c.args[0].id for c in recalculated.call_args_list], [self.recipe.id, other.id])
+        db.session.rollback()
+        self.assertEqual(db.session.get(Ingredient, self.pasta.id).calories_per_100g, 371)  # nothing kept without a commit
 
     def test_a_published_recipe_is_never_changed_or_held_back(self):
         self.recipe.status = 'approved'

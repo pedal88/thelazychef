@@ -14,7 +14,7 @@ and a printed summary that can be pasted back.
 | Script | What |
 |---|---|
 | `review_recipes` | Read-only report of saved v2 recipes (`--ids`, `--search`): lines and pantry, steps, time, carbs, rules, notes |
-| `fill_pantry` | Pantry job for recipes made before it ran, and recalculation (`--ids 1-400 --apply`); `--symbols`, `--looks "name=…"` for the symbols of pantry items it added |
+| `fill_pantry` | Pantry job for recipes made before it ran, and recalculation (`--ids 1-400 --apply`); `--symbols`, `--looks "name=…"` for the symbols of pantry items it added; `--nutrition "name=calories:…"` sets one item's values and recalculates the recipes using it |
 | `translate` | Recipes and pantry names into Norwegian with Claude (`--ids`, `--approved --limit`, `--pantry`, `--remove`; nothing called without `--apply` or `--try`, and `--from-file` saves a tried file) |
 | `clean_chef_notes` | Take what the model decided out of saved chef's notes and keep it as `estimate` notes, from a file (`--from-file`, `--apply`) |
 | `pantry_links` | Report of aliases the pantry job made and lines linked to an item their name does not match; `--remove "name,name" --apply` takes aliases away and unlinks them in drafts |
