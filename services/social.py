@@ -62,6 +62,15 @@ PANTRY_HEAD = 70
 GRID_ROOM = {'ig': 470, 'tt': 502}
 CAPTION = 74
 WIDTH = 912
+# TikTok lays its buttons over the right of the slide from about half way down (measured on a real post, 06.11.2026:
+# the right 13 % of the 1080, from 52 % of the height): there the symbols keep RIGHT_CLEAR more pixels free
+# (static/css/social.css .size-tt), and are counted that much narrower.
+RIGHT_CLEAR = {'ig': 0, 'tt': 66}
+
+
+def inner(size):
+    """The width the symbols have on a slide of this size."""
+    return WIDTH - RIGHT_CLEAR[size]
 # The points game's pictures: the height left for them after the margins, the eyebrow, the score block, the bar and
 # the line at the bottom, per size; a tile's caption; and the least of its cell a symbol takes (game_symbol, which
 # static/css/social.css applies), so that 12 is 4 by 3 and 15 is 5 by 3 on both sizes
@@ -389,7 +398,7 @@ def full_step_tile(slide, size):
     room = FULL_ROOM[size] - full_step_words(slide) - FULL_SYMBOLS_TOP
     best = FULL_TILE_MIN
     for cols in range(1, min(n, FULL_SYMBOLS_ROW) + 1):
-        width = min((WIDTH - FULL_TILE_GAP * (cols - 1)) // cols, FULL_TILE_MAX)
+        width = min((inner(size) - FULL_TILE_GAP * (cols - 1)) // cols, FULL_TILE_MAX)
         if -(-n // cols) * (width + FULL_TILE_CAPTION) <= room:
             best = max(best, width)
     return best
@@ -405,7 +414,7 @@ def columns(n, size, labels=True, room=0):
     height = SIZES[size][1] - GRID_ROOM[size] - room
     for cols in range(3, 9):
         rows = -(-n // cols)
-        if rows * (WIDTH / cols + (CAPTION if labels else 0) + 20) <= height:
+        if rows * (inner(size) / cols + (CAPTION if labels else 0) + 20) <= height:
             return cols
     return 9
 
@@ -415,7 +424,7 @@ def game_columns(n, size):
     4 by 3, 15 is 5 by 3), with the symbols as large as fit; else the fewest columns from 4 that fit the slide."""
     def fits(cols):
         rows = -(-n // cols)
-        return rows * (WIDTH / cols * GAME_SYMBOL[size] + GAME_CAPTION + 12) <= GAME_HEIGHT[size]
+        return rows * (inner(size) / cols * GAME_SYMBOL[size] + GAME_CAPTION + 12) <= GAME_HEIGHT[size]
     full = [c for c in range(4, STRIP_COLS + 1) if n % c == 0 and fits(c)]
     if full:
         return full[0]
@@ -426,7 +435,7 @@ def game_symbol(n, size):
     """How much of its cell a symbol takes in the points game, in percent: as much as game_columns' rows leave room
     for on the slide with the amounts, from GAME_SYMBOL up to all of it, so ten things are not small for no reason."""
     cols = game_columns(n, size)
-    room = (GAME_HEIGHT[size] / -(-n // cols) - GAME_CAPTION - 12) / (WIDTH / cols)
+    room = (GAME_HEIGHT[size] / -(-n // cols) - GAME_CAPTION - 12) / (inner(size) / cols)
     return round(100 * min(1, max(GAME_SYMBOL[size], room)))
 
 

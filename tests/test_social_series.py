@@ -176,8 +176,13 @@ class SeriesTests(unittest.TestCase):
         self.assertEqual([social.game_columns(n, 'ig') for n in (5, 8, 12, 15, 13, 14)], [5, 4, 4, 5, 5, 5])
         # The symbols as large as the rows leave room for: all of the cell on two rows, less on three
         self.assertEqual([social.game_symbol(n, 'ig') for n in (5, 10, 12, 15, 16)], [100, 100, 74, 93, 100])
-        self.assertEqual([social.game_symbol(n, 'tt') for n in (5, 10, 12, 15, 16)], [100, 100, 83, 100, 100])
+        self.assertEqual([social.game_symbol(n, 'tt') for n in (5, 10, 12, 15, 16)], [100, 100, 89, 100, 100])  # TikTok's cells are narrower (RIGHT_CLEAR)
         self.assertEqual([social.strip_columns(n) for n in (3, 6, 7, 8, 11, 12)], [3, 6, 4, 4, 6, 6])
+        # TikTok shows its own counter and covers the bottom right, so its slides have none; Instagram's keep theirs
+        tt = self.get(series='onepot', ids=self.ids[0], n=1, size='tt', slide=1).get_data(as_text=True)
+        ig = self.get(series='onepot', ids=self.ids[0], n=1, size='ig', slide=1).get_data(as_text=True)
+        self.assertNotRegex(tt.split('<footer', 1)[1], r'\d+ / \d+')
+        self.assertRegex(ig.split('<footer', 1)[1], r'\d+ / \d+')
         # A hook that names the dish leaves no name line under it
         pot = self.get(series='onepot', ids=self.ids[0], n=1, hook_text='One pot. Spaghetti carbonara.', slide=1)
         self.client.post('/login', data={'email': 'admin@test', 'password': 'pw'})
