@@ -12,6 +12,11 @@ html, body { margin: 0; background: var(--sl-paper); }
   padding: 96px 84px 150px; background: var(--sl-paper); color: var(--sl-ink); font-family: var(--font-sans);
 }
 .size-tt { padding-top: 128px; }  /* TikTok lays its tabs over the top of the 3:4 it shows */
+/* and its buttons over the right from about half way down, and its own counter at the top right; a stream of avatars
+   runs up the left. Measured on a real post 06.11.2026: the symbols keep the right free (services/social.RIGHT_CLEAR),
+   and a step's number stands at the right of its column, clear of the avatars */
+.size-tt .grid, .size-tt .step-syms, .size-tt .have-row, .size-tt .group .row, .size-tt .wash { margin-right: 66px; }
+.size-tt .cook-step .no { justify-self: end; }
 
 .eyebrow { margin: 0 0 18px; font: 600 30px/1.2 var(--font-mono); letter-spacing: .08em; text-transform: uppercase;
   color: var(--color-accent); }

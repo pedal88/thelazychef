@@ -287,7 +287,8 @@
 
 <footer class="foot">
   <span>{% if s.kind not in ('end', 'answer') %}{{ brand.badge() }}<span class="wordmark">The Lazy Chef</span>{% endif %}</span>
-  <span>{{ n }} / {{ slides }}</span>
+  {# TikTok shows its own counter at the top, and its buttons cover the bottom right #}
+  {% if size != 'tt' %}<span>{{ n }} / {{ slides }}</span>{% endif %}
 </footer>
 </main>
 </body>

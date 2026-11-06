@@ -146,7 +146,10 @@ slides say "covers 84% of what goes into dinner", never "cooks 84% of dinners".
 
 Two sizes: `ig` (1080 × 1350, Instagram's tallest carousel) and `tt` (1080 × 1440, the 3:4 TikTok's photo mode shows on
 a phone, with a wider margin on top where TikTok lays its tabs; a 9:16 picture loses its top and bottom there, measured
-on a post of 03.11.2026). The last slide gives the short address for the platform,
+on a post of 03.11.2026). On a real post (06.11.2026) TikTok's buttons cover the right 13 % of the slide from about
+half way down, its own counter sits at the top right, and a stream of avatars runs up the left: so on `tt` the symbols
+keep 66 px more free on the right (`services/social.RIGHT_CLEAR`), a step's number stands at the right of its column,
+and the slide has no counter of its own. The last slide gives the short address for the platform,
 `thelazychef.app/ig` or `/tiktok`, with the post's code (`/tiktok/3`), so the Funnel page counts each post's visits.
 
 ## Making a post
